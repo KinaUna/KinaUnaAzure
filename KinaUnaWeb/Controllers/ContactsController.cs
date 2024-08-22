@@ -248,7 +248,11 @@ namespace KinaUnaWeb.Controllers
 
             return new FileContentResult(fileContentBytes, contact.GetPictureFileContentType());
         }
-        
+
+        /// <summary>
+        /// Page for adding a new Contact.
+        /// </summary>
+        /// <returns>View with ContactViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> AddContact()
         {
@@ -268,6 +272,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for adding a new Contact.
+        /// </summary>
+        /// <param name="model">ContactViewModel with the properties for the new Contact.</param>
+        /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(100_000_000)]
@@ -301,6 +310,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Contacts");
         }
 
+        /// <summary>
+        /// Page for editing a Contact.
+        /// </summary>
+        /// <param name="itemId">The ContactId of the Contact to update.</param>
+        /// <returns>View with ContactViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> EditContact(int itemId)
         {
@@ -328,6 +342,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for updating a Contact.
+        /// </summary>
+        /// <param name="model">ContactViewModel with the updated properties for the Contact.</param>
+        /// <returns>Redirects to Contacts/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(100_000_000)]
@@ -362,6 +381,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Contacts");
         }
 
+        /// <summary>
+        /// Page for deleting a Contact.
+        /// </summary>
+        /// <param name="itemId">The ContactId of the Contact to delete.</param>
+        /// <returns>View with ContactViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> DeleteContact(int itemId)
         {
@@ -381,6 +405,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for deleting a Contact.
+        /// </summary>
+        /// <param name="model">ContactViewModel with the properties of the Contact to delete.</param>
+        /// <returns>Redirects to Contacts/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteContact(ContactViewModel model)

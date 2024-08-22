@@ -18,6 +18,15 @@ namespace KinaUnaWeb.Controllers
 {
     public class FriendsController(ImageStore imageStore, IFriendsHttpClient friendsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
+        /// <summary>
+        /// Index page for Friends. Shows a list of all friends for the current Progeny.
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to show Friends for.</param>
+        /// <param name="tagFilter">Filter the list of Friends by Tags. Empty string includes all Friends.</param>
+        /// <param name="sort">Sort order. 0 = oldest first, 1 = newest first.</param>
+        /// <param name="sortBy">Property to sort Contacts by. 0 = FriendsSince, 1 = Name, 2 = FirstName, 3 = LastName.</param>
+        /// <param name="sortTags">Sort the list of all tags. 0 = no sorting, 1 = sort alphabetically.</param>
+        /// <returns>View with FriendsListViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0)
         {
@@ -42,6 +51,13 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// Shows details for a single friend.
+        /// </summary>
+        /// <param name="friendId">The FriendId of the Friend to display.</param>
+        /// <param name="tagFilter">Filter tags. Empty string includes all tags.</param>
+        /// <param name="partialView">Return partial view, for fetching HTML inline to show in a modal/popup.</param>
+        /// <returns>View or PartialView with FriendViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> ViewFriend(int friendId, string tagFilter = "", bool partialView = false)
         {
@@ -88,6 +104,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Gets a partial view with a Friend element, for friends lists to fetch HTML for each contact.
+        /// </summary>
+        /// <param name="parameters">FriendItemParameters object with the Contact details.</param>
+        /// <returns>PartialView with FriendViewModel.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> FriendElement([FromBody] FriendItemParameters parameters)
@@ -121,6 +142,11 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// HttpPost endpoint for fetching a list of Friends.
+        /// </summary>
+        /// <param name="parameters">FriendsPageParameters object.</param>
+        /// <returns>Json of FriendsPageResponse</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> FriendsList([FromBody] FriendsPageParameters parameters)
@@ -185,6 +211,12 @@ namespace KinaUnaWeb.Controllers
             });
         }
 
+        /// <summary>
+        /// Gets the image file for a Contact's profile picture.
+        /// Checks if the user has access to the Contact. If not, returns a default image.
+        /// </summary>
+        /// <param name="id">The ContactId of the Contact to get a profile picture for.</param>
+        /// <returns>FileContentResult with the image file.</returns>
         [AllowAnonymous]
         public async Task<FileContentResult> ProfilePicture(int id)
         {
@@ -205,6 +237,10 @@ namespace KinaUnaWeb.Controllers
             return new FileContentResult(fileContentBytes, friend.GetPictureFileContentType());
         }
 
+        /// <summary>
+        /// Page for adding a new Friend.
+        /// </summary>
+        /// <returns>View with FriendViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> AddFriend()
         {
@@ -248,6 +284,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for adding a new Friend.
+        /// </summary>
+        /// <param name="model">FriendViewModel with the Friend to add.</param>
+        /// <returns>Redirects to Friends/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(100_000_000)]
@@ -280,6 +321,12 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Friends");
         }
 
+
+        /// <summary>
+        /// Page for editing a Friend.
+        /// </summary>
+        /// <param name="itemId">The FriendId of the Friend to edit.</param>
+        /// <returns>View with FriendViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> EditFriend(int itemId)
         {
@@ -320,6 +367,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for editing a Friend.
+        /// </summary>
+        /// <param name="model">FriendViewModel with the updated properties.</param>
+        /// <returns>Redirects to Friends/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(100_000_000)]
@@ -355,6 +407,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Friends");
         }
 
+        /// <summary>
+        /// Page for deleting a Friend.
+        /// </summary>
+        /// <param name="itemId">The FriendId of the Friend to delete.</param>
+        /// <returns>View with FriendViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> DeleteFriend(int itemId)
         {
@@ -374,6 +431,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for deleting a Friend.
+        /// </summary>
+        /// <param name="model">FriendViewModel with the properties of the Friend to delete.</param>
+        /// <returns>Redirects to Friends/Index.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteFriend(FriendViewModel model)
