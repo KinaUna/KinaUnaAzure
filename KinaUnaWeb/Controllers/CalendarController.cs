@@ -14,8 +14,19 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
+    /// <summary>
+    /// Calendar controller. Handles all actions related to the Calendar.
+    /// </summary>
+    /// <param name="calendarsHttpClient"></param>
+    /// <param name="viewModelSetupService"></param>
     public class CalendarController(ICalendarsHttpClient calendarsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
+        /// <summary>
+        /// Calendar Index page.
+        /// </summary>
+        /// <param name="id">Optional EventId of a CalendarItem to show in a popup.</param>
+        /// <param name="childId">The Id of the Progeny to show the calendar for.</param>
+        /// <returns>View with a CalendarListViewModel.</returns>
         [AllowAnonymous]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> Index(int? id, int childId = 0)
@@ -29,6 +40,12 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Display a single CalendarItem.
+        /// </summary>
+        /// <param name="eventId">The EventId of the CalendarItem to show.</param>
+        /// <param name="partialView">If true, returns partial view. For inline fetching of HTML to show in a modal or popup.</param>
+        /// <returns></returns>
         [AllowAnonymous]
         public async Task<IActionResult> ViewEvent(int eventId, bool partialView = false)
         {
@@ -55,6 +72,10 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Page to add a new CalendarItem.
+        /// </summary>
+        /// <returns>View with CalendarItemViewModel</returns>
         [HttpGet]
         public async Task<IActionResult> AddEvent()
         {
@@ -77,6 +98,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost action to add a new CalendarItem.
+        /// </summary>
+        /// <param name="model">CalendarItemViewModel with the properties for the new CalendarItem.</param>
+        /// <returns>Redirect to Calendar/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddEvent(CalendarItemViewModel model)
@@ -97,6 +123,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Calendar");
         }
 
+        /// <summary>
+        /// Edit page for a CalendarItem.
+        /// </summary>
+        /// <param name="itemId">The EventId of the CalendarItem to edit.</param>
+        /// <returns>View with CalendarItemViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> EditEvent(int itemId)
         {
@@ -116,6 +147,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost action to update an edited CalendarItem.
+        /// </summary>
+        /// <param name="model">CalendarItemViewModel with the properties for updating the CalendarItem.</param>
+        /// <returns>Redirects to Calendar/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditEvent(CalendarItemViewModel model)
@@ -138,6 +174,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Calendar");
         }
 
+        /// <summary>
+        /// Page to delete a CalendarItem.
+        /// </summary>
+        /// <param name="itemId">The EventId of the CalendarItem to delete.</param>
+        /// <returns>View with a CalendarItemViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> DeleteEvent(int itemId)
         {
@@ -158,6 +199,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost action to delete a CalendarItem.
+        /// </summary>
+        /// <param name="model">CalendarItemViewModel with the CalendarItem properties.</param>
+        /// <returns>Redirects to Calendar/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteEvent(CalendarItemViewModel model)
@@ -178,6 +224,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Calendar");
         }
 
+        /// <summary>
+        /// HttpPost action to get a list of upcoming CalendarItems.
+        /// </summary>
+        /// <param name="parameters">TimeLineParameters object.</param>
+        /// <returns>Json of TimelineList object.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> GetUpcomingEventsList([FromBody] TimelineParameters parameters)
@@ -208,6 +259,12 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// Provides a partial view with translations for the Scheduler.
+        /// The HTML returned contains JavaScript with the translated strings for the Syncfusion Scheduler.
+        /// </summary>
+        /// <param name="languageId">The Id of the language to translate into.</param>
+        /// <returns>PartialView.</returns>
         public IActionResult SchedulerTranslations(int languageId)
         {
             return PartialView("_SchedulerTranslationsPartial", languageId);
