@@ -11,9 +11,20 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
+    /// <summary>
+    /// Provides pages and actions for managing family data.
+    /// </summary>
+    /// <param name="progenyHttpClient"></param>
+    /// <param name="userAccessHttpClient"></param>
+    /// <param name="viewModelSetupService"></param>
     public class FamilyController(IProgenyHttpClient progenyHttpClient, IUserAccessHttpClient userAccessHttpClient, IViewModelSetupService viewModelSetupService)
         : Controller
     {
+        /// <summary>
+        /// The Family Index page.
+        /// Shows a list of all Progeny and the user access lists for each.
+        /// </summary>
+        /// <returns>View with FamilyViewModel.</returns>
         public async Task<IActionResult> Index()
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
