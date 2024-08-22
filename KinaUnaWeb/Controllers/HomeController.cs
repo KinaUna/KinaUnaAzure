@@ -28,6 +28,11 @@ namespace KinaUnaWeb.Controllers
         IDistributedCache cache)
         : Controller
     {
+        /// <summary>
+        /// The Home Index page.
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to view data for.</param>
+        /// <returns>View with HomeFeedViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
@@ -71,6 +76,10 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Not implemented. This action should handle access requests.
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         public IActionResult RequestAccess()
         {
@@ -78,6 +87,11 @@ namespace KinaUnaWeb.Controllers
             return View();
         }
 
+        /// <summary>
+        /// The About page.
+        /// </summary>
+        /// <param name="languageId">The Id of the language to show the about page in.</param>
+        /// <returns>View with AboutViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> About(int languageId = 0)
         {
@@ -96,7 +110,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
         
-
+        /// <summary>
+        /// Privacy page.
+        /// </summary>
+        /// <param name="languageId">The Id of the language to show the privacy page in.</param>
+        /// <returns>View with AboutViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Privacy(int languageId = 0)
         {
@@ -116,6 +134,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Terms and conditions page.
+        /// </summary>
+        /// <param name="languageId">The Id of the language to show the terms and conditions page in.</param>
+        /// <returns>View with AboutViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Terms(int languageId = 0)
         {
@@ -135,7 +158,11 @@ namespace KinaUnaWeb.Controllers
 
             return View(model);
         }
-        
+
+        /// <summary>
+        /// Error page.
+        /// </summary>
+        /// <returns>View with ErrorViewModel.</returns>
         [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
@@ -143,6 +170,12 @@ namespace KinaUnaWeb.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
+        /// <summary>
+        /// HttpPost action to set the current Progeny as default to view.
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to set as default.</param>
+        /// <param name="languageId">The current language's Id.</param>
+        /// <returns>Redirects to Home page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetViewChild(int childId, int languageId = 1)
@@ -158,6 +191,12 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", new{ childId });
         }
 
+        /// <summary>
+        /// HttpPost action to set the current language.
+        /// </summary>
+        /// <param name="culture">The culture code of the language, i.e. en-US, de-DE, da-DK.</param>
+        /// <param name="returnUrl">The page to return to.</param>
+        /// <returns>Redirects to returnUrl.</returns>
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -182,6 +221,12 @@ namespace KinaUnaWeb.Controllers
             return Redirect(returnUrl);
         }
 
+        /// <summary>
+        /// HttpGet action to set the current language.
+        /// </summary>
+        /// <param name="languageId">The Id of the language to set.</param>
+        /// <param name="returnUrl">The page to return to.</param>
+        /// <returns>Redirects to returnUrl.</returns>
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> SetLanguageId(string languageId, string returnUrl)
@@ -212,13 +257,6 @@ namespace KinaUnaWeb.Controllers
             
             Response.SetLanguageCookie(languageId);
             return Redirect(returnUrl);
-        }
-
-
-        [AllowAnonymous]
-        public IActionResult Start()
-        {
-            return Redirect(Constants.WebAppUrl);
         }
         
     }
