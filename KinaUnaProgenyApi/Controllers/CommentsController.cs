@@ -11,7 +11,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for comments.
     /// </summary>
-    /// <param name="imageStore"></param>
     /// <param name="azureNotifications"></param>
     /// <param name="commentsService"></param>
     /// <param name="progenyService"></param>
@@ -22,7 +21,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class CommentsController(
-        IImageStore imageStore,
         IAzureNotifications azureNotifications,
         ICommentsService commentsService,
         IProgenyService progenyService,
