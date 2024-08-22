@@ -15,9 +15,25 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
+    /// <summary>
+    /// Provides page and API endpoints for managing contacts.
+    /// </summary>
+    /// <param name="imageStore"></param>
+    /// <param name="locationsHttpClient"></param>
+    /// <param name="contactsHttpClient"></param>
+    /// <param name="viewModelSetupService"></param>
     public class ContactsController(ImageStore imageStore, ILocationsHttpClient locationsHttpClient, IContactsHttpClient contactsHttpClient, IViewModelSetupService viewModelSetupService)
         : Controller
     {
+        /// <summary>
+        /// Index page for contacts. Shows a list of contacts
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to show Contacts for.</param>
+        /// <param name="tagFilter">Filter the list of contacts by Tags. If empty string shows all contacts.</param>
+        /// <param name="sort">Sort order. 0 = oldest first, 1 = newest first.</param>
+        /// <param name="sortBy">Property to sort Contacts by. 0 = Date, 1 = DisplayName, 2 = FirstName, 3 = LastName.</param>
+        /// <param name="sortTags">Sort the list of all tags. 0 = no sorting, 1 = sort alphabetically.</param>
+        /// <returns>View with ContactListViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0)
         {
@@ -43,6 +59,13 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// Shows details for a single contact.
+        /// </summary>
+        /// <param name="contactId">The ContactId of the Contact to display.</param>
+        /// <param name="tagFilter">Filter tags. Empty string includes all tags.</param>
+        /// <param name="partialView">Return partial view, for fetching HTML inline to show in a modal/popup.</param>
+        /// <returns>View or PartialView with ContactViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> ViewContact(int contactId, string tagFilter, bool partialView = false)
         {
@@ -78,6 +101,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Gets a partial view with a Contact element, for contact lists to fetch HTML for each contact.
+        /// </summary>
+        /// <param name="parameters">ContactItemParameters object with the Contact details.</param>
+        /// <returns>PartialView with ContactViewModel.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> ContactElement([FromBody] ContactItemParameters parameters)
@@ -111,6 +139,11 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// HttpPost endpoint for fetching a list of Contacts.
+        /// </summary>
+        /// <param name="parameters">ContactsPageParameters object.</param>
+        /// <returns>Json of ContactsPageResponse</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> ContactsList([FromBody] ContactsPageParameters parameters)
@@ -190,6 +223,12 @@ namespace KinaUnaWeb.Controllers
             });
         }
 
+        /// <summary>
+        /// Gets the image file for a Contact's profile picture.
+        /// Checks if the user has access to the Contact. If not, returns a default image.
+        /// </summary>
+        /// <param name="id">The ContactId of the Contact to get a profile picture for.</param>
+        /// <returns>FileContentResult with the image file.</returns>
         [AllowAnonymous]
         public async Task<FileContentResult> ProfilePicture(int id)
         {
