@@ -29,6 +29,12 @@ namespace KinaUnaWeb.Controllers
             WriteIndented = true
         };
 
+        /// <summary>
+        /// Notification index page. Shows a list of notifications.
+        /// </summary>
+        /// <param name="Id">Optional Notification Id to highlight.</param>
+        /// <param name="count">Number of Notfications to load.</param>
+        /// <returns>View with NotificationsListViewModel.</returns>
         public async Task<IActionResult> Index(int Id = 0, int count = 10)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
@@ -52,6 +58,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method to get Json of a list of notifications.
+        /// </summary>
+        /// <param name="parameters">WebNotificationsParameters to specify which Notes to include.</param>
+        /// <returns>Json of WebNotificationsList.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> GetWebNotificationsPage([FromBody] WebNotificationsParameters parameters)
@@ -83,6 +94,11 @@ namespace KinaUnaWeb.Controllers
             return Json(webNotificationsList);
         }
 
+        /// <summary>
+        /// HttpPost method to get a single notification as a PartialView.
+        /// </summary>
+        /// <param name="model">WebNotificationViewModel with parameters for displaying a Note.</param>
+        /// <returns>PartialView with WebNotificationViewModel.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult> GetWebNotificationElement([FromBody] WebNotificationViewModel model)
@@ -100,7 +116,11 @@ namespace KinaUnaWeb.Controllers
             return PartialView("_GetWebNotificationElementPartial", model);
         }
 
-
+        /// <summary>
+        /// Partial view to show a single notification in menus and lists.
+        /// </summary>
+        /// <param name="notification">WebNotification object to show.</param>
+        /// <returns>PartialView with WebNotificationViewModel.</returns>
         public async Task<IActionResult> ShowNotification(WebNotification notification)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
@@ -121,6 +141,12 @@ namespace KinaUnaWeb.Controllers
         }
 
 
+        /// <summary>
+        /// Set a WebNotification as unread.
+        /// Uses SignalR to send the updated notification to the user.
+        /// </summary>
+        /// <param name="Id">The Id of the WebNotification to update.</param>
+        /// <returns>OkObjectResult with string.</returns>
         public async Task<IActionResult> SetUnread(int Id)
         {
             string userId = User.GetUserId() ?? "NoUser";
@@ -138,6 +164,12 @@ namespace KinaUnaWeb.Controllers
             return Ok("Notification set as unread. Id: " + Id);
         }
 
+        /// <summary>
+        /// Set a WebNotification as read.
+        /// Uses SignalR to send the updated notification to the user.
+        /// </summary>
+        /// <param name="Id">The Id of the WebNotification to update.</param>
+        /// <returns>OkObjectResult with string.</returns>
         public async Task<IActionResult> SetRead(int Id)
         {
             string userId = User.GetUserId() ?? "NoUser";
@@ -156,6 +188,10 @@ namespace KinaUnaWeb.Controllers
             return Ok("Notification set as read. Id: " + Id);
         }
 
+        /// <summary>
+        /// Set all unread WebNotifications as read.
+        /// </summary>
+        /// <returns>OkObjectResult with string.</returns>
         public async Task<IActionResult> SetAllRead()
         {
             string userId = User.GetUserId() ?? "NoUser";
@@ -183,7 +219,11 @@ namespace KinaUnaWeb.Controllers
             return Ok("All notification set as read");
         }
 
-
+        /// <summary>
+        /// Deletes a WebNotification.
+        /// </summary>
+        /// <param name="Id">The Id of the WebNotification to delete.</param>
+        /// <returns>OkObjectResult with string.</returns>
         public async Task<IActionResult> Remove(int Id)
         {
             string userId = User.GetUserId() ?? "NoUser";
