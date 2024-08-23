@@ -31,6 +31,18 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly string _hereMapsApiKey = configuration.GetValue<string>("HereMapsKey");
 
+        /// <summary>
+        /// Picture gallery page.
+        /// </summary>
+        /// <param name="id">The current page number.</param>
+        /// <param name="pageSize">Number of pictures per page.</param>
+        /// <param name="childId">The Id of the Progeny to show pictures for.</param>
+        /// <param name="sortBy">Sort order. 0 = oldest first. 1 >= newest first.</param>
+        /// <param name="tagFilter">Filter by Tag content. If empty string include all pictures.</param>
+        /// <param name="year">Start year.</param>
+        /// <param name="month">Start month.</param>
+        /// <param name="day">Start day.</param>
+        /// <returns>View with PicturesListViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int id = 1, int pageSize = 10, int childId = 0, int sortBy = 2, string tagFilter = "", int year = 0, int month = 0, int day = 0)
         {
@@ -59,6 +71,14 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Picture details page or PartialView.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture to show.</param>
+        /// <param name="tagFilter">The active tag filter.</param>
+        /// <param name="sortBy">The active sort order.</param>
+        /// <param name="partialView">If true, return a PartialView for use in popups/modals.</param>
+        /// <returns>View or PartialView with PictureItemViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Picture(int id, string tagFilter = "", int sortBy = 1, bool partialView = false)
         {
@@ -130,6 +150,12 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Download the original picture file.
+        /// Images are stored in Azure Blob Storage, direct URLs require time limited SAS tokens, this method authenticates users and gets a stream for the file and returns it as a FileContentResult.
+        /// </summary>
+        /// <param name="id">The PictureId of the picture to download.</param>
+        /// <returns>FileContentResult with the file.</returns>
         public async Task<FileContentResult> OriginalPicture(int id)
         {
             Picture picture = await mediaHttpClient.GetPicture(id, Constants.DefaultTimezone);
@@ -147,6 +173,13 @@ namespace KinaUnaWeb.Controllers
             return new FileContentResult(fileContentBytes, picture.GetPictureFileContentType());
         }
 
+        /// <summary>
+        /// URL for picture files.
+        /// Images are stored in Azure Blob Storage, direct URLs require time limited SAS tokens, this method authenticates users and gets a stream for the file and returns it as a FileContentResult.
+        /// </summary>
+        /// <param name="id">The PictureId of the file to get.</param>
+        /// <param name="size">The size of the picture, 600 = the PictureLink600 file, 1200= the PictureLink1200 file, all other values returns the original in PictureLink.</param>
+        /// <returns>FileContentResult with the file data.</returns>
         [AllowAnonymous]
         public async Task<FileContentResult> File([FromQuery] int id, [FromQuery] int size)
         {
@@ -174,6 +207,10 @@ namespace KinaUnaWeb.Controllers
             return new FileContentResult(fileContentBytes, picture.GetPictureFileContentType());
         }
 
+        /// <summary>
+        /// Page for adding a new picture.
+        /// </summary>
+        /// <returns>View with UploadPictureViewModel.</returns>
         public async Task<IActionResult> AddPicture()
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
@@ -192,6 +229,12 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for adding a new picture.
+        /// For ASP.NET form.
+        /// </summary>
+        /// <param name="model">UploadPictureViewModel with the Picture properties.</param>
+        /// <returns>View with UploadPictureViewModel.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadPictures(UploadPictureViewModel model)
@@ -256,6 +299,12 @@ namespace KinaUnaWeb.Controllers
             return View(result);
         }
 
+        /// <summary>
+        /// HttpPost method for saving a new picture.
+        /// For AJAX calls.
+        /// </summary>
+        /// <param name="model">UploadPictureViewModel with the Picture properties.</param>
+        /// <returns>Json of the Picture that was added.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SavePicture(UploadPictureViewModel model)
@@ -311,6 +360,11 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// HttpPost method for saving a new picture.
+        /// </summary>
+        /// <param name="model">PictureItemViewModel with the updated Picture properties.</param>
+        /// <returns>Redirects to Picture details page, or Json of the PictureItemViewModel with updated the Picture properties.</returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -348,7 +402,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = model.Picture.PictureId, childId = model.Picture.ProgenyId, tagFilter = model.TagFilter, sortBy = model.SortBy });
         }
 
-
+        /// <summary>
+        /// Page for deleting a picture.
+        /// </summary>
+        /// <param name="pictureId">The PictureId of the Picture to delete.</param>
+        /// <returns>View with PictureItemViewModel.</returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> DeletePicture(int pictureId)
@@ -375,6 +433,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for deleting a picture.
+        /// </summary>
+        /// <param name="model">PictureItemViewModel with the properties for the Picture to delete.</param>
+        /// <returns>Redirects to Pictures/Index page.</returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -396,6 +459,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Pictures");
         }
 
+        /// <summary>
+        /// HttpPost method for adding a new picture comment.
+        /// </summary>
+        /// <param name="model">CommentViewModel with the properties of the Comment.</param>
+        /// <returns>Redirects to the Picture details page or Json with the updated CommentViewModel.</returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -417,6 +485,7 @@ namespace KinaUnaWeb.Controllers
 
             foreach (string toMail in emails)
             {
+                // Todo: Translate email text.
                 await emailSender.SendEmailAsync(toMail, "New Comment on " + model.CurrentProgeny.NickName + "'s Picture",
                     "A comment was added to " + model.CurrentProgeny.NickName + "'s picture by " + comment.DisplayName + ":<br/><br/>" + comment.CommentText + "<br/><br/>Picture Link: <a href=\"" + imgLink + "\">" + imgLink + "</a>");
             }
@@ -429,6 +498,13 @@ namespace KinaUnaWeb.Controllers
             return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = model.ItemId, childId = model.CurrentProgenyId, sortBy = model.SortBy });
         }
 
+        /// <summary>
+        /// HttpPost method for deleting a picture comment.
+        /// </summary>
+        /// <param name="commentId">The CommentId of the Comment to delete.</param>
+        /// <param name="pictureId">The PictureId of the Picture the Comment belongs to.</param>
+        /// <param name="progenyId">The Id of the Progeny the Picture and Comment belongs to.</param>
+        /// <returns>Redirects to the Picture details page.</returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -439,6 +515,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = pictureId, childId = progenyId });
         }
 
+        /// <summary>
+        /// HttpPost method for getting a list of pictures.
+        /// </summary>
+        /// <param name="parameters">PicturesPageParameters object.</param>
+        /// <returns>Json of PicturesList object.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> GetPictureList([FromBody] PicturesPageParameters parameters)
@@ -551,6 +632,12 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// HttpPost method for getting HTML for a single picture element.
+        /// For AJAX calls.
+        /// </summary>
+        /// <param name="pictureViewModel">PictureViewModel with the properties for displaying the picture.</param>
+        /// <returns>PartialView with PictureItemViewModel.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult> GetPictureElement([FromBody] PictureViewModel pictureViewModel)
