@@ -41,6 +41,12 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Family");
         }
 
+        /// <summary>
+        /// Profile picture for a Progeny. If the Progeny has no picture or the user has no access to the picture, a default image is returned.
+        /// Images are stored in Azure Blob Storage, this provides a static URL for profile pictures.
+        /// </summary>
+        /// <param name="id">The Id of the Progeny to get the profile picture for.</param>
+        /// <returns>FileContentResult with the image data.</returns>
         [AllowAnonymous]
         public async Task<FileContentResult> ProfilePicture(int id)
         {
@@ -60,6 +66,10 @@ namespace KinaUnaWeb.Controllers
             return new FileContentResult(fileContentBytes, baseModel.CurrentProgeny.GetPictureFileContentType());
         }
 
+        /// <summary>
+        /// Page for adding a new Progeny.
+        /// </summary>
+        /// <returns>View with ProgenyViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> AddProgeny()
         {
@@ -74,6 +84,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Handles the POST request for adding a new Progeny.
+        /// </summary>
+        /// <param name="model">ProgenyViewModel with the properties of the Progeny to add.</param>
+        /// <returns>Redirects to Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(100_000_000)]
@@ -106,6 +121,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Page for editing a Progeny.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny to edit.</param>
+        /// <returns>View with ProgenyViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> EditProgeny(int progenyId)
         {
@@ -134,6 +154,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Handles the POST request for editing a Progeny.
+        /// </summary>
+        /// <param name="model">ProgenyViewModel with the updated Progeny properties.</param>
+        /// <returns>Redirects to Index.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(100_000_000)]
@@ -165,6 +190,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Page for deleting a Progeny.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny to delete.</param>
+        /// <returns>View with Progeny as model.</returns>
         [HttpGet]
         public async Task<IActionResult> DeleteProgeny(int progenyId)
         {
@@ -180,6 +210,13 @@ namespace KinaUnaWeb.Controllers
             return View(prog);
         }
 
+        // Todo: This will take a relative long time, and may time out. Use split it up and use ajax to delete Progeny and related data.
+        /// <summary>
+        /// Handles the POST request for deleting a Progeny.
+        /// Also deletes all related data for the Progeny.
+        /// </summary>
+        /// <param name="model">Progeny object with the properties of the Progeny to delete.</param>
+        /// <returns>Redirects to Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteProgeny(Progeny model)
@@ -396,6 +433,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Gets all tags from all items that have tags for a Progeny.
+        /// </summary>
+        /// <param name="suggestionsList">AutoSuggestList with ProgenyId of the Progeny to get tags for.</param>
+        /// <returns>AutoSuggestList object.</returns>
         [HttpPost]
         public async Task<IActionResult> GetAllProgenyTags([FromBody] AutoSuggestList suggestionsList)
         {
@@ -405,6 +447,11 @@ namespace KinaUnaWeb.Controllers
             return Json(suggestionsList);
         }
 
+        /// <summary>
+        /// Gets all contexts from all items that have contexts for a Progeny.
+        /// </summary>
+        /// <param name="suggestionsList">AutoSuggestList with ProgenyId of the Progeny to get contexts for.</param>
+        /// <returns>AutoSuggestList object</returns>
         [HttpPost]
         public async Task<IActionResult> GetAllProgenyContexts([FromBody] AutoSuggestList suggestionsList)
         {
@@ -413,6 +460,11 @@ namespace KinaUnaWeb.Controllers
             return Json(suggestionsList);
         }
 
+        /// <summary>
+        /// Gets all locations from all items that have locations for a Progeny.
+        /// </summary>
+        /// <param name="suggestionsList">AutoSuggestList with ProgenyId of the Progeny to get locations for.</param>
+        /// <returns>AutoSuggestList object</returns>
         [HttpPost]
         public async Task<IActionResult> GetAllProgenyLocations([FromBody] AutoSuggestList suggestionsList)
         {
@@ -421,6 +473,11 @@ namespace KinaUnaWeb.Controllers
             return Json(suggestionsList);
         }
 
+        /// <summary>
+        /// Gets all categories from all items that have categories for a Progeny.
+        /// </summary>
+        /// <param name="suggestionsList">AutoSuggestList with ProgenyId of the Progeny to get categories for.</param>
+        /// <returns>AutoSuggestList object</returns>
         [HttpPost]
         public async Task<IActionResult> GetAllProgenyCategories([FromBody] AutoSuggestList suggestionsList)
         {
