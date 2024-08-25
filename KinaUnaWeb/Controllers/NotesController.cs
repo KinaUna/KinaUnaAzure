@@ -51,7 +51,7 @@ namespace KinaUnaWeb.Controllers
         /// Page or Partial view to show a single Note.
         /// </summary>
         /// <param name="noteId">The NoteId of the Note to show.</param>
-        /// <param name="partialView">If True return a partial view, for fetching HTML inline to show in a modal/popup.</param>
+        /// <param name="partialView">If True returns a partial view, for fetching HTML inline to show in a modal/popup.</param>
         /// <returns>View or PartialView with NoteViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> ViewNote(int noteId, bool partialView = false)

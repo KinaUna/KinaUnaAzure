@@ -8,6 +8,12 @@ using Microsoft.Extensions.Configuration;
 namespace KinaUnaWeb.Controllers
 {
     // Source: https://github.com/coryjthompson/WebPushDemo/tree/master/WebPushDemo
+
+    /// <summary>
+    /// Controller for managing (Web) Push Devices.
+    /// </summary>
+    /// <param name="configuration"></param>
+    /// <param name="messageSender"></param>
     [Authorize]
     public class PushDevicesController(IConfiguration configuration, IPushMessageSender messageSender) : Controller
     {

@@ -15,6 +15,11 @@ namespace KinaUnaWeb.Controllers
 {
     public class SkillsController(ISkillsHttpClient skillsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
+        /// <summary>
+        /// Skills Index page. Shows a list of all skills for a progeny.
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to show Skills for.</param>
+        /// <returns>View with SkillsListViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
@@ -60,6 +65,12 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// View a single Skill item.
+        /// </summary>
+        /// <param name="skillId">The SkillId of the Skill to view.</param>
+        /// <param name="partialView">If True returns a partial view, for fetching HTML inline to show in a modal/popup.</param>
+        /// <returns>View or PartialView with SkillViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> ViewSkill(int skillId, bool partialView = false)
         {
@@ -84,6 +95,10 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Page for adding a new Skill item.
+        /// </summary>
+        /// <returns>View with SkillViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> AddSkill()
         {
@@ -103,6 +118,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost for submitting new Skill form.
+        /// </summary>
+        /// <param name="model">SkillViewModel with the properties for the Skill to add.</param>
+        /// <returns>Redirects to Skills/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddSkill(SkillViewModel model)
@@ -123,6 +143,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Skills");
         }
 
+        /// <summary>
+        /// Page for editing a Skill item.
+        /// </summary>
+        /// <param name="itemId">The SkillId of the Skill to edit.</param>
+        /// <returns>View with SkillViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> EditSkill(int itemId)
         {
@@ -145,6 +170,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost for submitting edit Skill form.
+        /// </summary>
+        /// <param name="model">SkillViewModel with the updated properties of the Skill.</param>
+        /// <returns>Redirects to Skills/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditSkill(SkillViewModel model)
@@ -165,6 +195,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Skills");
         }
 
+        /// <summary>
+        /// Page for deleting a Skill item.
+        /// </summary>
+        /// <param name="itemId">The SkillId of the Skill to delete.</param>
+        /// <returns>View with SkillViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> DeleteSkill(int itemId)
         {
@@ -182,6 +217,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost for deleting a Skill item.
+        /// </summary>
+        /// <param name="model">SkillViewModel with the properties of the Skill to delete.</param>
+        /// <returns>Redirects to Skills/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteSkill(SkillViewModel model)
