@@ -14,6 +14,11 @@ namespace KinaUnaWeb.Controllers
 {
     public class SleepController(ISleepHttpClient sleepHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
+        /// <summary>
+        /// Sleep Index page. Shows a list of all sleep items for a progeny.
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to show sleep data for.</param>
+        /// <returns>View with SleepViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
@@ -27,6 +32,12 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Displays a single sleep item.
+        /// </summary>
+        /// <param name="sleepId">The SleepId of the Sleep item to display.</param>
+        /// <param name="partialView">If True returns a partial view, for fetching HTML inline to show in a modal/popup.</param>
+        /// <returns>View or PartialView with SleepViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> ViewSleep(int sleepId, bool partialView = false)
         {
@@ -47,6 +58,11 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// Sleep Calendar page. Shows a calendar with sleep items for a progeny.
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to show sleep data for.</param>
+        /// <returns>View with SleepViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> SleepCalendar(int childId = 0)
         {
@@ -60,6 +76,10 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Page for adding a new sleep item.
+        /// </summary>
+        /// <returns>View with SleepViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> AddSleep()
         {
@@ -79,6 +99,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost for submitting new sleep form.
+        /// </summary>
+        /// <param name="model">SleepViewModel with the properties of the Sleep item to add.</param>
+        /// <returns>Redirects to Sleep/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddSleep(SleepViewModel model)
@@ -102,6 +127,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Sleep");
         }
 
+        /// <summary>
+        /// Page for editing a sleep item.
+        /// </summary>
+        /// <param name="itemId">The SleepId of the Sleep item to edit.</param>
+        /// <returns>View with SleepViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> EditSleep(int itemId)
         {
@@ -122,6 +152,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost for submitting edit sleep form.
+        /// </summary>
+        /// <param name="model">SleepViewModel with the updated properties of the Sleep item.</param>
+        /// <returns>Redirects to Sleep/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditSleep(SleepViewModel model)
@@ -149,6 +184,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Sleep");
         }
 
+        /// <summary>
+        /// Page for deleting a sleep item.
+        /// </summary>
+        /// <param name="itemId">The SleepId of the Sleep item to delete.</param>
+        /// <returns>View with SleepViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> DeleteSleep(int itemId)
         {
@@ -167,6 +207,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost for form to delete a sleep item.
+        /// </summary>
+        /// <param name="model">SleepViewModel with the properties for the Sleep item to delete.</param>
+        /// <returns>Redirects to Sleep/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteSleep(SleepViewModel model)
