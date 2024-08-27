@@ -11,11 +11,17 @@ using WebPush;
 namespace KinaUnaWeb.Controllers
 {
     // Source: https://github.com/coryjthompson/WebPushDemo/tree/master/WebPushDemo
+    
     [Authorize]
     public class WebPushController(IConfiguration configuration, IPushMessageSender pushMessageSender) : Controller
     {
         private readonly string _adminEmail = configuration.GetValue<string>("AdminEmail");
 
+        /// <summary>
+        /// Page for sending a push message.
+        /// Only available for the Admin user.
+        /// </summary>
+        /// <returns>View.</returns>
         public IActionResult Send()
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
@@ -28,6 +34,11 @@ namespace KinaUnaWeb.Controllers
             return View();
         }
 
+        /// <summary>
+        /// HttpPost action for sending a push message.
+        /// </summary>
+        /// <param name="id">The UserId of the user to send a message to.</param>
+        /// <returns>View.</returns>
         [HttpPost, ActionName("Send")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Send(int id)
@@ -56,6 +67,12 @@ namespace KinaUnaWeb.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Page for generating VAPID keys.
+        /// For the Admin user only.
+        /// Should only be used once, and the keys should be stored in the configuration file, environment variable, or Azure Key Vault.
+        /// </summary>
+        /// <returns>View.</returns>
         public IActionResult GenerateKeys()
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
