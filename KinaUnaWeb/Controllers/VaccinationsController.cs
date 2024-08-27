@@ -13,6 +13,11 @@ namespace KinaUnaWeb.Controllers
 {
     public class VaccinationsController(IVaccinationsHttpClient vaccinationsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
+        /// <summary>
+        /// Vaccinations Index page. Shows a list of all vaccinations for a progeny.
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to show vaccinations for.</param>
+        /// <returns>View with VaccinationViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
@@ -25,6 +30,12 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Displays a single vaccination item.
+        /// </summary>
+        /// <param name="vaccinationId">The VaccinationId of the Vaccination item to display.</param>
+        /// <param name="partialView">If True returns a partial view, for fetching HTML inline to show in a modal/popup.</param>
+        /// <returns>View or PartialView with VaccinationViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> ViewVaccination(int vaccinationId, bool partialView = false)
         {
@@ -49,6 +60,10 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Page for adding a new vaccination item.
+        /// </summary>
+        /// <returns>View with VaccinationViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> AddVaccination()
         {
@@ -68,6 +83,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for adding a new vaccination item.
+        /// </summary>
+        /// <param name="model">VaccinationViewModel with the properties of the Vaccination item to add.</param>
+        /// <returns>Redirects to Vaccinations/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddVaccination(VaccinationViewModel model)
@@ -88,6 +108,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Vaccinations");
         }
 
+        /// <summary>
+        /// Page for editing a vaccination item.
+        /// </summary>
+        /// <param name="itemId">The VaccinationId of the Vaccination item to edit.</param>
+        /// <returns>View with VaccinationViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> EditVaccination(int itemId)
         {
@@ -108,6 +133,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for editing a vaccination item.
+        /// </summary>
+        /// <param name="model">VaccinationViewModel with the updated properties of the Vaccination that was edited.</param>
+        /// <returns>Redirects to Vaccination/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditVaccination(VaccinationViewModel model)
@@ -126,6 +156,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Vaccinations");
         }
 
+        /// <summary>
+        /// Page for deleting a vaccination item.
+        /// </summary>
+        /// <param name="itemId">The VaccinationId of the Vaccination item to delete.</param>
+        /// <returns>View with VaccinationViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> DeleteVaccination(int itemId)
         {
@@ -144,6 +179,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for deleting a vaccination item.
+        /// </summary>
+        /// <param name="model">VaccinationViewModel with the properties of the Vaccination item to delete.</param>
+        /// <returns>Redirects to Vaccinations/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteVaccination(VaccinationViewModel model)
