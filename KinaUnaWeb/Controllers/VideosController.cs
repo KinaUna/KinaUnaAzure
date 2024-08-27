@@ -28,6 +28,18 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly string _hereMapsApiKey = configuration.GetValue<string>("HereMapsKey");
 
+        /// <summary>
+        /// Video gallery page.
+        /// </summary>
+        /// <param name="id">The current page number.</param>
+        /// <param name="pageSize">Number of videos per page.</param>
+        /// <param name="childId">The Id of the Progeny to show videos for.</param>
+        /// <param name="sortBy">Sort order. 0 = oldest first. 1 >= newest first.</param>
+        /// <param name="tagFilter">Filter by Tag content. If empty string include all videos.</param>
+        /// <param name="year">Start year.</param>
+        /// <param name="month">Start month.</param>
+        /// <param name="day">Start day.</param>
+        /// <returns>View with VideoListViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int id = 1, int pageSize = 16, int childId = 0, int sortBy = 2, string tagFilter = "", int year = 0, int month = 0, int day = 0)
         {
@@ -66,6 +78,14 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Video details page or PartialView.
+        /// </summary>
+        /// <param name="id">The VideoId of the Video to show.</param>
+        /// <param name="tagFilter">The active tag filter.</param>
+        /// <param name="sortBy">The active sort order.</param>
+        /// <param name="partialView">If true, return a PartialView for use in popups/modals.</param>
+        /// <returns>View or PartialView with VideoItemViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Video(int id, string tagFilter = "", int sortBy = 1, bool partialView = false)
         {
@@ -129,12 +149,22 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Page for showing a Youtube video.
+        /// Used by mobile clients to embed in WebView.
+        /// </summary>
+        /// <param name="link">The Youtube video id of the video.</param>
+        /// <returns>View</returns>
         [AllowAnonymous]
         public IActionResult Youtube(string link)
         {
             return PartialView("Youtube", link);
         }
 
+        /// <summary>
+        /// Page for adding a new video item.
+        /// </summary>
+        /// <returns>View with UploadVideoViewModel.</returns>
         public async Task<IActionResult> AddVideo()
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
@@ -179,6 +209,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for adding a new video item.
+        /// </summary>
+        /// <param name="model">UploadVideoViewModel with the properties for the Video to add.</param>
+        /// <returns>View with UploadVideoViewModel.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadVideo(UploadVideoViewModel model)
@@ -204,6 +239,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for updating a Video.
+        /// </summary>
+        /// <param name="model">VideoViewModel with the updated properties of the Video.</param>
+        /// <returns>Redirects to the Videos/Video page of the item.</returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -242,7 +282,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToRoute(new { controller = "Videos", action = "Video", id = model.Video.VideoId, childId = model.Video.ProgenyId, tagFilter = model.TagFilter, sortBy = model.SortBy });
         }
 
-
+        /// <summary>
+        /// Page for deleting a Video item.
+        /// </summary>
+        /// <param name="videoId">The VideoId of the Video to delete.</param>
+        /// <returns>View with VideoItemViewModel.</returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> DeleteVideo(int videoId)
@@ -268,6 +312,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for deleting a Video item.
+        /// </summary>
+        /// <param name="model">VideoItemViewModel with the properties of the Video to delete.</param>
+        /// <returns>Redirects to Video/Index page.</returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -299,6 +348,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Videos");
         }
 
+        /// <summary>
+        /// HttpPost method for adding a new comment to a Video.
+        /// </summary>
+        /// <param name="model">CommentViewModel with the properties of the Comment to add.</param>
+        /// <returns>If model.PartialView is true, Json of the updated model, else redirects to the Videos/Video page for the Video item. </returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -331,6 +385,13 @@ namespace KinaUnaWeb.Controllers
             return RedirectToRoute(new { controller = "Videos", action = "Video", id = model.ItemId, childId = model.CurrentProgenyId });
         }
 
+        /// <summary>
+        /// HttpPost method for deleting a comment from a Video.
+        /// </summary>
+        /// <param name="commentId">The CommentId of the Comment to delete.</param>
+        /// <param name="videoId">The VideoId of the Video the Comment belongs to.</param>
+        /// <param name="progenyId">The Id of the Progeny the Video belongs to.</param>
+        /// <returns>Redirect to the Videos/Video page for the Video the Comment belongs to.</returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -341,6 +402,12 @@ namespace KinaUnaWeb.Controllers
             return RedirectToRoute(new { controller = "Videos", action = "Video", id = videoId, childId = progenyId });
         }
 
+        /// <summary>
+        /// HttpPost method for getting a list of Video for a Progeny.
+        /// For Ajax calls.
+        /// </summary>
+        /// <param name="parameters">VideoPageParameters object.</param>
+        /// <returns>Json of VideosList object.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> GetVideoList([FromBody] VideosPageParameters parameters)
@@ -453,6 +520,12 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// HttpPost method for getting a Video element.
+        /// For inserting HTML using Ajax calls.
+        /// </summary>
+        /// <param name="videoViewModel">VideoViewModel.</param>
+        /// <returns>PartialView with VideoItemViewModel.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult> GetVideoElement([FromBody] VideoViewModel videoViewModel)
