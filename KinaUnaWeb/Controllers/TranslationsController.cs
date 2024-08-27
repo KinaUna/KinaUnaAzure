@@ -11,6 +11,11 @@ namespace KinaUnaWeb.Controllers
     [AllowAnonymous]
     public class TranslationsController(ITranslationsHttpClient translationsHttpClient) : Controller
     {
+        /// <summary>
+        /// HttpPost method for getting a translation.
+        /// </summary>
+        /// <param name="translation">TextTranslation object with the word, page and languageId for getting a translation.</param>
+        /// <returns>Json of TextTranslation object.</returns>
         [HttpPost]
         public async Task<IActionResult> GetTranslation([FromBody] TextTranslation translation)
         {
@@ -19,6 +24,11 @@ namespace KinaUnaWeb.Controllers
             return Json(translation);
         }
 
+        /// <summary>
+        /// HttpGet method for getting translations for the ZebraDatePicker.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>Json of ZebraDatePickerTranslations object.</returns>
         [HttpGet]
         public async Task<IActionResult> ZebraDatePicker(int id)
         {
