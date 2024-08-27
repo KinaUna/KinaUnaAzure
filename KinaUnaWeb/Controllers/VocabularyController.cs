@@ -14,6 +14,11 @@ namespace KinaUnaWeb.Controllers
 {
     public class VocabularyController(IWordsHttpClient wordsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
+        /// <summary>
+        /// Vocabulary Index page. Shows a list of all vocabulary items for a progeny.
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to show VocabularyItems for.</param>
+        /// <returns>View with VocabularyListViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
@@ -29,6 +34,12 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Displays a single vocabulary item.
+        /// </summary>
+        /// <param name="vocabularyId">The WordId of the VocabularyItem to display.</param>
+        /// <param name="partialView">If true, return a PartialView for use in popups/modals.</param>
+        /// <returns>View or PartialView with VocabularyItemViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> ViewVocabularyItem(int vocabularyId, bool partialView = false)
         {
@@ -53,6 +64,10 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Page for adding a new vocabulary item.
+        /// </summary>
+        /// <returns>View with VocabularyItemViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> AddVocabulary()
         {
@@ -72,6 +87,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for adding a new vocabulary item.
+        /// </summary>
+        /// <param name="model">VocabularyItemViewModel with the properties of the VocabularyItem to add.</param>
+        /// <returns>Redirects to Vocabulary/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddVocabulary(VocabularyItemViewModel model)
@@ -95,6 +115,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Vocabulary");
         }
 
+        /// <summary>
+        /// Page for editing a vocabulary item.
+        /// </summary>
+        /// <param name="itemId">The WordId of the VocabularyItem to edit.</param>
+        /// <returns>View with VocabularyItemViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> EditVocabulary(int itemId)
         {
@@ -115,6 +140,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for editing a vocabulary item.
+        /// </summary>
+        /// <param name="model">VocabularyItemViewModel with the updated properties of the edited VocabularyItem.</param>
+        /// <returns>Redirects to Vocabulary/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditVocabulary(VocabularyItemViewModel model)
@@ -135,6 +165,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Vocabulary");
         }
 
+        /// <summary>
+        /// Page for deleting a vocabulary item.
+        /// </summary>
+        /// <param name="itemId">The WordId of the VocabularyItem to delete.</param>
+        /// <returns>View with VocabularyItemViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> DeleteVocabulary(int itemId)
         {
@@ -153,6 +188,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for deleting a vocabulary item.
+        /// </summary>
+        /// <param name="model">VocabularyItemViewModel with the properties of the VocabularyItem to delete.</param>
+        /// <returns>Redirects to Vocabulary/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteVocabulary(VocabularyItemViewModel model)
