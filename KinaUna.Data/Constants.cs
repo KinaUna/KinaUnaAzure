@@ -1,5 +1,8 @@
 ﻿namespace KinaUna.Data
 {
+    /// <summary>
+    /// Solution wide constants.
+    /// </summary>
     public static class Constants
     {
         public const string ApiVersion = "1.1.10";
@@ -27,6 +30,9 @@
         public const string PlaceholderImageLink = "ab5fe7cb-2a66-4785-b39a-aa4eb7953c3d.png";
     }
 
+    /// <summary>
+    /// Page names, for TextTranslations and KinaUnaTexts.
+    /// </summary>
     public static class PageNames
     {
         public const string Layout = "Layout";
