@@ -18,7 +18,6 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.AccessLevel = otherCalendarItem.AccessLevel;
             currentCalendarItem.AllDay = otherCalendarItem.AllDay;
             currentCalendarItem.Context = otherCalendarItem.Context;
-            currentCalendarItem.End = otherCalendarItem.End;
             currentCalendarItem.EndString = otherCalendarItem.EndString;
             currentCalendarItem.EndTime = otherCalendarItem.EndTime;
             currentCalendarItem.StartTime = otherCalendarItem.StartTime;
@@ -26,7 +25,6 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.Location = otherCalendarItem.Location;
             currentCalendarItem.Notes = otherCalendarItem.Notes;
             currentCalendarItem.ProgenyId = otherCalendarItem.ProgenyId;
-            currentCalendarItem.Start = otherCalendarItem.Start;
             currentCalendarItem.StartString = otherCalendarItem.StartString;
             currentCalendarItem.Title = otherCalendarItem.Title;
             currentCalendarItem.Progeny = otherCalendarItem.Progeny;

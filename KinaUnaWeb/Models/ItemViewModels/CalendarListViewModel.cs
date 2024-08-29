@@ -61,8 +61,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 // ToDo: Replace format string with configuration or user defined value
                 ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
                 ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
-                ev.Start = ev.StartTime.Value;
-                ev.End = ev.EndTime.Value;
                 ev.IsReadonly = !IsCurrentUserProgenyAdmin;
                 // Todo: Add color property
                 EventsList.Add(ev);
