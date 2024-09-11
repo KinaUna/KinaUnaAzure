@@ -1,4 +1,4 @@
-import { setMomentLocale } from '../data-tools-v6.js';
+import { setMomentLocale } from '../data-tools-v7.js';
 
 declare var Chart: any;
 declare var moment: any;

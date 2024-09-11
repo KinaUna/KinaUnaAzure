@@ -485,5 +485,18 @@ namespace KinaUnaWeb.Controllers
             
             return Json(suggestionsList);
         }
+
+        /// <summary>
+        /// Gets all languages from all VocabularyItems for a Progeny.
+        /// </summary>
+        /// <param name="suggestionsList">AutoSuggestList with ProgenyId of the Progeny to get languages for.</param>
+        /// <returns>AutoSuggestList object</returns>
+        [HttpPost]
+        public async Task<IActionResult> GetAllProgenyVocabularyLanguages([FromBody] AutoSuggestList suggestionsList)
+        {
+            suggestionsList.Suggestions = await autoSuggestsHttpClient.GetVocabularyLanguageList(suggestionsList.ProgenyId, 0);
+
+            return Json(suggestionsList);
+        }
     }
 }
