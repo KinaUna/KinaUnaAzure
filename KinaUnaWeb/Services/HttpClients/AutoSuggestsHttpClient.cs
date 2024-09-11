@@ -57,7 +57,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <summary>
         /// Gets the list of all unique contexts for a Progeny, including only items that the user has access to.
         /// </summary>
-        /// <param name="progenyId">The ProgenyId of the Progeny to get tags for.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get contexts for.</param>
         /// <param name="accessLevel">The user's access level for the Progeny</param>
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetContextsList(int progenyId, int accessLevel)
@@ -82,7 +82,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <summary>
         /// Gets the list of all unique location names for a Progeny, including only items that the user has access to.
         /// </summary>
-        /// <param name="progenyId">The ProgenyId of the Progeny to get tags for.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get locations for.</param>
         /// <param name="accessLevel">The user's access level for the Progeny</param>
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetLocationsList(int progenyId, int accessLevel)
@@ -107,7 +107,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <summary>
         /// Gets the list of all unique categories for a Progeny, including only items that the user has access to.
         /// </summary>
-        /// <param name="progenyId">The ProgenyId of the Progeny to get tags for.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get categories for.</param>
         /// <param name="accessLevel">The user's access level for the Progeny</param>
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetCategoriesList(int progenyId, int accessLevel)
@@ -127,6 +127,31 @@ namespace KinaUnaWeb.Services.HttpClients
             resultCategoriesList = JsonConvert.DeserializeObject<List<string>>(categoriesListAsString);
 
             return resultCategoriesList;
+        }
+
+        /// <summary>
+        /// Gets the list of all unique languages for a Progeny's VocabularyItems, including only items that the user has access to.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get languages for.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny</param>
+        /// <returns>List of strings.</returns>
+        public async Task<List<string>> GetVocabularyLanguageList(int progenyId, int accessLevel)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            List<string> resultLanguagesList = [];
+
+            string languagesApiPath = "/api/AutoSuggests/GetVocabularyLanguagesSuggestList/" + progenyId + "/" + accessLevel;
+
+            HttpResponseMessage languagesResponse = await _httpClient.GetAsync(languagesApiPath).ConfigureAwait(false);
+            if (!languagesResponse.IsSuccessStatusCode) return resultLanguagesList;
+
+            string languagesListAsString = await languagesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            resultLanguagesList = JsonConvert.DeserializeObject<List<string>>(languagesListAsString);
+
+            return resultLanguagesList;
         }
     }
 }
