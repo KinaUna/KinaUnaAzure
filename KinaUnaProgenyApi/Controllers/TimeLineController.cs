@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -289,6 +290,20 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(timeLineList.Skip(start).Take(count));
 
+        }
+
+        /// <summary>
+        /// Gets a list of TimeLineItems that happened on the same day for each year, month, or week, for a Progeny,
+        /// Filtering by TimeLineItem type, category, tags is optional.
+        /// </summary>
+        /// <param name="onThisDayRequest"></param>
+        /// <returns>OnThisDayResponse object.</returns>
+        [HttpPost]
+        public async Task<IActionResult> GetOnThisDayTimeLineItems([FromBody] OnThisDayRequest onThisDayRequest)
+        {
+            // Todo: Implement this method.
+            OnThisDayResponse onThisDayResponse = new OnThisDayResponse();
+            return Ok(onThisDayResponse);
         }
     }
 }
