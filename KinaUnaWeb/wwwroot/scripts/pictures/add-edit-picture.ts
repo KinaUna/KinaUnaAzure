@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v6.js';
-import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
+import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v7.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 import { Picture, PictureViewModel } from '../page-models-v6.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';

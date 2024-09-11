@@ -297,6 +297,64 @@ export async function setCategoriesAutoSuggestList(progenyId, elementId = 'categ
         resolve();
     });
 }
+/** Fetches the full auto-suggest list of Vocabulary languages for a given progenyId.
+ * @param progenyId The Id of the Progeny to get languages for.
+ * @returns The full list of languages for the Progeny.
+ */
+export async function getVocabularyLanguagesList(progenyId) {
+    let languagesList = new AutoSuggestList(progenyId);
+    const getLanguagesListParameters = new AutoSuggestList(progenyId);
+    await fetch('/Progeny/GetAllProgenyVocabularyLanguages/', {
+        method: 'POST',
+        body: JSON.stringify(getLanguagesListParameters),
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    }).then(async function (getLanguagesResponse) {
+        languagesList = await getLanguagesResponse.json();
+    }).catch(function (error) {
+        console.log('Error loading language autosuggestions. Error: ' + error);
+    });
+    return new Promise(function (resolve, reject) {
+        resolve(languagesList);
+    });
+}
+/** Updates the autosuggest list for Vocabulary languages for a given progenyId, and cofigures the Amsify-Suggestags properties.
+ * @param progenyId The Id of the Progeny to set languages for.
+ * @param elementId The Id of the element to set the autosuggest list for.
+ */
+export async function setVocabularyLanguagesAutoSuggestList(progenyId, elementId = 'vocabulary-languages-input') {
+    let languageInputElement = document.getElementById(elementId);
+    if (languageInputElement !== null) {
+        const languagesList = await getVocabularyLanguagesList(progenyId);
+        $('#' + elementId).amsifySuggestags({
+            suggestions: languagesList.suggestions,
+            selectOnHover: false,
+            printValues: false
+        });
+        const suggestInputElement = languageInputElement.querySelector('.amsify-suggestags-input');
+        if (suggestInputElement !== null) {
+            suggestInputElement.tabIndex = -1;
+            suggestInputElement.addEventListener('keydown', function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    const originalInputElement = document.getElementById(elementId);
+                    if (originalInputElement !== null) {
+                        if (originalInputElement.value.length > 0) {
+                            originalInputElement.value += ',';
+                        }
+                        originalInputElement.value += this.value;
+                    }
+                    return false;
+                }
+            });
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
 /** Hides all items with the specified class by adding the d-none class.
  *  @param classToHide The class of elements to hide.
  */
@@ -388,4 +446,4 @@ export function getFormattedDateString(date, timeFormat = '') {
     let timeString = moment(date).format(timeFormat);
     return timeString;
 }
-//# sourceMappingURL=data-tools-v6.js.map
+//# sourceMappingURL=data-tools-v7.js.map

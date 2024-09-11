@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v6.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, setVocabularyLanguagesAutoSuggestList } from '../data-tools-v7.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
@@ -38,6 +38,7 @@ function setupProgenySelectList(): void {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
+            await setVocabularyLanguagesAutoSuggestList(currentProgenyId);
         });
     }
 }
@@ -51,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     await setupDateTimePicker();
     setupProgenySelectList();    
+    await setVocabularyLanguagesAutoSuggestList(currentProgenyId);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
