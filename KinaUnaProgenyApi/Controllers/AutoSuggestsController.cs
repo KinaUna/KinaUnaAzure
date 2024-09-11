@@ -22,6 +22,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="picturesService"></param>
     /// <param name="videosService"></param>
     /// <param name="locationService"></param>
+    /// <param name="vocabularyService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -35,7 +36,8 @@ namespace KinaUnaProgenyApi.Controllers
         ISkillService skillService,
         IPicturesService picturesService,
         IVideosService videosService,
-        ILocationService locationService)
+        ILocationService locationService,
+        IVocabularyService vocabularyService)
         : ControllerBase
     {
         /// <summary>
@@ -359,6 +361,48 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
+            autoSuggestList = autoSuggestList.Distinct().ToList();
+            autoSuggestList.Sort();
+
+            return Ok(autoSuggestList);
+        }
+
+        /// <summary>
+        /// Returns a list of strings for language auto suggest inputs when adding or editing a VocabularyItem for a given Progeny.
+        /// Only returns languages with an access level equal to or higher than the accessLevel parameter.
+        /// </summary>
+        /// <param name="id">The id of the Progeny.</param>
+        /// <param name="accessLevel"></param>
+        /// <returns>List of string.</returns>
+        [Route("[action]/{id:int}/{accessLevel:int}")]
+        [HttpGet]
+        public async Task<IActionResult> GetVocabularyLanguagesSuggestList(int id, int accessLevel)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+
+            if (userAccess == null && id != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
+            List<VocabularyItem> allVocabularyItems = await vocabularyService.GetVocabularyList(id);
+            allVocabularyItems = allVocabularyItems.Where(p => p.AccessLevel >= accessLevel).ToList();
+            List<string> autoSuggestList = [];
+            foreach (VocabularyItem vocabularyItem in allVocabularyItems)
+            {
+                if (string.IsNullOrEmpty(vocabularyItem.Language)) continue;
+
+                List<string> languageList = [.. vocabularyItem.Language.Split(',')];
+                foreach (string languageString in languageList)
+                {
+                    if (!autoSuggestList.Contains(languageString.Trim()))
+                    {
+                        autoSuggestList.Add(languageString.Trim());
+                    }
+                }
+            }
+            
             autoSuggestList = autoSuggestList.Distinct().ToList();
             autoSuggestList.Sort();
 
