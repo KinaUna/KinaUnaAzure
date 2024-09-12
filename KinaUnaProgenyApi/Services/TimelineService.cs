@@ -5,6 +5,8 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -250,5 +252,36 @@ namespace KinaUnaProgenyApi.Services
             return timeLineList;
         }
 
+        /// <summary>
+        /// Creates a OnThisDayResponse for displaying TimeLineItems on the OnThisDay page.
+        /// </summary>
+        /// <param name="onThisDayRequest">The OnThisDayRequest object with the parameters.</param>
+        /// <returns>OnThisDayResponse object.</returns>
+        public async Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest)
+        {
+            OnThisDayResponse onThisDayResponse = new();
+            onThisDayResponse.Request = onThisDayRequest;
+
+            List<TimeLineItem> allTimeLineItems = await GetTimeLineList(onThisDayRequest.ProgenyId);
+            allTimeLineItems = allTimeLineItems.Where(t => t.AccessLevel >= onThisDayRequest.AccessLevel).ToList();
+            
+            allTimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(allTimeLineItems, onThisDayRequest);
+
+            onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimeLineItems, onThisDayRequest.TimeLineTypeFilter);
+
+            // Todo: Implement Tags for TimeLineItems.
+            // onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
+
+            onThisDayResponse.TimeLineItems = onThisDayResponse.TimeLineItems.Skip(onThisDayRequest.Skip).Take(onThisDayRequest.NumberOfItems).ToList();
+            onThisDayResponse.RemainingItems = allTimeLineItems.Count - (onThisDayRequest.Skip + onThisDayRequest.NumberOfItems);
+            
+            if(onThisDayResponse.RemainingItems < 0)
+            {
+                onThisDayResponse.RemainingItems = 0;
+            }
+
+            return onThisDayResponse;
+        }
+        
     }
 }

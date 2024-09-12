@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -50,5 +51,12 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="progenyId">The ProgenyId of the Progeny to get TimeLineItems for.</param>
         /// <returns>List of TimeLineItem objects.</returns>
         Task<List<TimeLineItem>> GetTimeLineList(int progenyId);
+
+        /// <summary>
+        /// Creates a OnThisDayResponse for displaying TimeLineItems on the OnThisDay page.
+        /// </summary>
+        /// <param name="onThisDayRequest">The OnThisDayRequest object with the parameters.</param>
+        /// <returns>OnThisDayResponse object.</returns>
+        Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest);
     }
 }

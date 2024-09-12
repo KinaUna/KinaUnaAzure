@@ -301,8 +301,18 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> GetOnThisDayTimeLineItems([FromBody] OnThisDayRequest onThisDayRequest)
         {
-            // Todo: Implement this method.
-            OnThisDayResponse onThisDayResponse = new OnThisDayResponse();
+            Progeny progeny = await progenyService.GetProgeny(onThisDayRequest.ProgenyId);
+            if (progeny == null) return Ok(new OnThisDayResponse());
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(onThisDayRequest.ProgenyId, userEmail);
+            if (userAccess == null) return Ok(new OnThisDayResponse());
+            
+            onThisDayRequest.AccessLevel = userAccess.AccessLevel; 
+            
+            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest);
+            
             return Ok(onThisDayResponse);
         }
     }
