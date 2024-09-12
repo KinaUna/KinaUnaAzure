@@ -259,8 +259,10 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>OnThisDayResponse object.</returns>
         public async Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest)
         {
-            OnThisDayResponse onThisDayResponse = new();
-            onThisDayResponse.Request = onThisDayRequest;
+            OnThisDayResponse onThisDayResponse = new()
+            {
+                Request = onThisDayRequest
+            };
 
             List<TimeLineItem> allTimeLineItems = await GetTimeLineList(onThisDayRequest.ProgenyId);
             allTimeLineItems = allTimeLineItems.Where(t => t.AccessLevel >= onThisDayRequest.AccessLevel).ToList();

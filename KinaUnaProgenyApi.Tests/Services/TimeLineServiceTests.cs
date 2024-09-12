@@ -1,5 +1,6 @@
 ﻿using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -367,6 +368,62 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(timeLineItemsList2);
             Assert.IsType<List<TimeLineItem>>(timeLineItemsList2);
             Assert.Empty(timeLineItemsList2);
+        }
+
+        [Fact]
+        public async Task GetOnThisDayData_Should_Return_OnThisDayResponse_With_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase("GetTimeLineItemsList_Should_Return_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems").Options;
+            await using ProgenyDbContext context = new(dbOptions);
+
+            TimeLineItem timeLineItem1 = new()
+            {
+                ProgenyId = 1,
+                AccessLevel = 0,
+                CreatedBy = "User1",
+                CreatedTime = DateTime.UtcNow,
+                ItemId = "1",
+                ItemType = 1,
+                ProgenyTime = DateTime.UtcNow,
+            };
+
+            TimeLineItem timeLineItem2 = new()
+            {
+                ProgenyId = 1,
+                AccessLevel = 0,
+                CreatedBy = "User1",
+                CreatedTime = DateTime.UtcNow,
+                ItemId = "2",
+                ItemType = 1,
+                ProgenyTime = DateTime.UtcNow,
+            };
+
+            context.Add(timeLineItem1);
+            context.Add(timeLineItem2);
+            await context.SaveChangesAsync();
+
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            TimelineService timelineService = new(context, memoryCache);
+
+            OnThisDayRequest onThisDayRequest = new OnThisDayRequest
+            {
+                ProgenyId = 2,
+                ThisDayDateTime = DateTime.UtcNow,
+                AccessLevel = 0,
+                Skip = 0,
+                NumberOfItems = 10,
+                TagFilter = string.Empty,
+                OnThisDayPeriod = OnThisDayPeriod.Year,
+                TimeLineTypeFilter = new List<KinaUnaTypes.TimeLineType>()
+            };
+
+            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest);
+
+            Assert.NotNull(onThisDayResponse);
+            Assert.IsType<OnThisDayResponse>(onThisDayResponse);
+            Assert.Empty(onThisDayResponse.TimeLineItems);
         }
     }
 }
