@@ -424,6 +424,77 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(onThisDayResponse);
             Assert.IsType<OnThisDayResponse>(onThisDayResponse);
             Assert.Empty(onThisDayResponse.TimeLineItems);
+            Assert.NotNull(onThisDayResponse.Request);
+        }
+
+        [Fact]
+        public async Task GetOnThisDayData_Should_Return_OnThisDayResponse_With_List_Of_TimeLineItem_When_Progeny_Has_Saved_TimeLineItems()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase("GetTimeLineItemsList_Should_Return_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems").Options;
+            await using ProgenyDbContext context = new(dbOptions);
+
+            TimeLineItem timeLineItem1 = new()
+            {
+                ProgenyId = 1,
+                AccessLevel = 0,
+                CreatedBy = "User1",
+                CreatedTime = DateTime.UtcNow - TimeSpan.FromDays(14),
+                ItemId = "1",
+                ItemType = 1,
+                ProgenyTime = DateTime.UtcNow - TimeSpan.FromDays(14),
+            };
+
+            TimeLineItem timeLineItem2 = new()
+            {
+                ProgenyId = 1,
+                AccessLevel = 0,
+                CreatedBy = "User1",
+                CreatedTime = DateTime.UtcNow - TimeSpan.FromDays(7),
+                ItemId = "2",
+                ItemType = 1,
+                ProgenyTime = DateTime.UtcNow - TimeSpan.FromDays(7),
+            };
+
+            TimeLineItem timeLineItem3 = new()
+            {
+                ProgenyId = 1,
+                AccessLevel = 0,
+                CreatedBy = "User1",
+                CreatedTime = DateTime.UtcNow - TimeSpan.FromDays(1),
+                ItemId = "3",
+                ItemType = 1,
+                ProgenyTime = DateTime.UtcNow - TimeSpan.FromDays(1),
+            };
+
+            context.Add(timeLineItem1);
+            context.Add(timeLineItem2);
+            context.Add(timeLineItem3);
+            await context.SaveChangesAsync();
+
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            TimelineService timelineService = new(context, memoryCache);
+
+            OnThisDayRequest onThisDayRequest = new OnThisDayRequest
+            {
+                ProgenyId = 1,
+                ThisDayDateTime = DateTime.UtcNow,
+                AccessLevel = 0,
+                Skip = 0,
+                NumberOfItems = 10,
+                TagFilter = string.Empty,
+                OnThisDayPeriod = OnThisDayPeriod.Week,
+                TimeLineTypeFilter = new List<KinaUnaTypes.TimeLineType>()
+            };
+
+            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest);
+
+            Assert.NotNull(onThisDayResponse);
+            Assert.IsType<OnThisDayResponse>(onThisDayResponse);
+            Assert.NotEmpty(onThisDayResponse.TimeLineItems);
+            Assert.Equal(2, onThisDayResponse.TimeLineItems.Count);
+            Assert.Equal(0, onThisDayResponse.RemainingItems);
         }
     }
 }
