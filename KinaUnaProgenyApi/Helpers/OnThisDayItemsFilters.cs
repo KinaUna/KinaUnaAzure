@@ -70,14 +70,17 @@ namespace KinaUnaProgenyApi.Helpers
                     timeLineItems = timeLineItems.Where(t => t.ProgenyTime.DayOfWeek == onThisDayRequest.ThisDayDateTime.DayOfWeek).ToList();
                     break;
                 case OnThisDayPeriod.Month:
-                    timeLineItems = timeLineItems.Where(t => t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month).ToList();
+                    timeLineItems = timeLineItems.Where(t => t.ProgenyTime.Day == onThisDayRequest.ThisDayDateTime.Day).ToList();
                     break;
                 case OnThisDayPeriod.Quarter:
                 {
-                    List<TimeLineItem> quarterTimeLineItems = timeLineItems.Where(t => t.ProgenyTime.Month >= onThisDayRequest.ThisDayDateTime.Month).ToList();
-                    quarterTimeLineItems.AddRange(timeLineItems.Where(t => t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.AddMonths(3).Month));
-                    quarterTimeLineItems.AddRange(timeLineItems.Where(t => t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.AddMonths(6).Month));
-                    quarterTimeLineItems.AddRange(timeLineItems.Where(t => t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.AddMonths(9).Month));
+                    List<TimeLineItem> quarterTimeLineItems = timeLineItems.Where(t => t.ProgenyTime.Day >= onThisDayRequest.ThisDayDateTime.Day).ToList();
+                    quarterTimeLineItems = quarterTimeLineItems.Where(t => 
+                        t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month 
+                         || t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month + 3
+                         || t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month + 6 
+                         || t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month + 9)
+                        .ToList();
                     timeLineItems = quarterTimeLineItems;
                     break;
                 }
