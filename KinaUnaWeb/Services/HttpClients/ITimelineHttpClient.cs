@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -46,5 +47,12 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="order">Sort order: 0 for ascending, 1 for descending</param>
         /// <returns>List of TimeLineItem objects.</returns>
         Task<List<TimeLineItem>> GetTimeline(int progenyId, int accessLevel, int order);
+
+        /// <summary>
+        /// Gets data for the OnThisDay page.
+        /// </summary>
+        /// <param name="onThisDayRequest">OnThisDayRequest object with the parameters for the OnThisDay Page.</param>
+        /// <returns>OnThisDayResponse object.</returns>
+        Task<OnThisDayResponse> GetOnThisDayTimeLineItems(OnThisDayRequest onThisDayRequest);
     }
 }

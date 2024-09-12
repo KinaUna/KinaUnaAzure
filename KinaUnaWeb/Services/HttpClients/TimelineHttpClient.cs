@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using IdentityModel.Client;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
@@ -135,6 +136,20 @@ namespace KinaUnaWeb.Services.HttpClients
             }
 
             return progenyTimeline;
+        }
+
+        public async Task<OnThisDayResponse> GetOnThisDayTimeLineItems(OnThisDayRequest onThisDayRequest)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string onThisDayApiPath = "/api/Timeline/GetOnThisDayTimeLineItems";
+            HttpResponseMessage onThisDayResponse = await _httpClient.PostAsync(onThisDayApiPath, new StringContent(JsonConvert.SerializeObject(onThisDayRequest), System.Text.Encoding.UTF8, "application/json"));
+            if (!onThisDayResponse.IsSuccessStatusCode) return new OnThisDayResponse();
+
+            string onThisDayResponseAsString = await onThisDayResponse.Content.ReadAsStringAsync();
+            OnThisDayResponse onThisDayResponseObject = JsonConvert.DeserializeObject<OnThisDayResponse>(onThisDayResponseAsString);
+            return onThisDayResponseObject ?? new OnThisDayResponse();
         }
     }
 }
