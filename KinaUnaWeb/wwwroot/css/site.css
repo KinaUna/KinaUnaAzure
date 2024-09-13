@@ -3486,11 +3486,11 @@ noUi-handle:after, .noUi-handle:before {
 .item-details-close-button {
     position: absolute;
     top: -1rem;
-    right: 1rem;
+    right: 0.2rem;
     z-index: 1051;
     padding: 1rem 1rem;
-    margin: -1rem -1rem -1rem auto;
     font-size: 2.5rem;
+    background-color: #aabbcc55 !important;
 }
 
 .item-details-close-button-full-screen {

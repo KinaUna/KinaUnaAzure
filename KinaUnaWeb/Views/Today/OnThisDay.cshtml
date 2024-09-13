@@ -93,7 +93,7 @@
             </div>
             <div class="space-20"></div>
             <div class="row">
-                <div class="col-12">
+                <div id="period-label-div" class="col-12">
                     @await LocaleManager.GetTranslation("Period for items:", PageNames.Timeline, Model.LanguageId)
                 </div>
                 <div class="col-auto ml-4">
@@ -155,4 +155,4 @@
         </button>
     </div>
 </div>
-<script src="/js/timeline/on-this-day.js" type="module" asp-append-version="true"></script>
+<script src="/js/today/on-this-day.js" type="module" asp-append-version="true"></script>

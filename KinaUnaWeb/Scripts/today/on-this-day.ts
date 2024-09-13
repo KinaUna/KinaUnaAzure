@@ -18,7 +18,7 @@ const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('
 const onThisDayStartDateTimePicker: any = $('#settings-start-date-datetimepicker');
 const onThisDaySettingsNotificationDiv = document.querySelector<HTMLDivElement>('#settings-notification-div');
 const startLabelDiv = document.querySelector<HTMLDivElement>('#start-label-div');
-
+const periodLabelDiv = document.querySelector<HTMLDivElement>('#period-label-div');
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let zebraDateTimeFormat: string;
 let startDateTimeFormatMoment: string;
@@ -48,7 +48,7 @@ async function getOnThisDayData(parameters: OnThisDayRequest) {
 
     parameters.skip = timelineItemsList.length;
     
-    await fetch('/Timeline/GetOnThisDayList', {
+    await fetch('/Today/GetOnThisDayList', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -137,11 +137,18 @@ function updateSettingsNotificationDiv(): void {
     onThisDaySettingsNotificationText += '<br/>' + startLabelDiv?.innerHTML;
     onThisDaySettingsNotificationText += onThisDayStartDateTimePicker.val();
 
+    onThisDaySettingsNotificationText += '<br/>' + periodLabelDiv?.innerHTML;
+    const periodButtons = document.querySelectorAll<HTMLButtonElement>('.on-this-day-period-button');
+    periodButtons.forEach(function (button: HTMLButtonElement) {
+        if (parseInt(button.dataset.period ?? '-1') === onThisDayParameters.onThisDayPeriod) {
+            onThisDaySettingsNotificationText += button.innerHTML;
+        }
+    });
+    
     if (onThisDaySettingsNotificationDiv !== null && onThisDaySettingsNotificationText !== undefined) {
         onThisDaySettingsNotificationDiv.innerHTML = onThisDaySettingsNotificationText;
     }
 
-    // Todo: Show period in settings notification div.
 }
 
 /** Clears the list of timeline elements in the timeline-items-div and scrolls to above the timeline-items-div.

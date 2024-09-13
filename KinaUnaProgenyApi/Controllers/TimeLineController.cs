@@ -9,7 +9,6 @@ using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static System.Collections.Specialized.BitVector32;
 
 namespace KinaUnaProgenyApi.Controllers
 {
