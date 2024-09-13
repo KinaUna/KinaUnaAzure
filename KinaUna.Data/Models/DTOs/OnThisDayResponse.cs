@@ -6,6 +6,6 @@ namespace KinaUna.Data.Models.DTOs
     {
         public List<TimeLineItem> TimeLineItems { get; set; } = [];
         public OnThisDayRequest Request { get; set; } = new OnThisDayRequest();
-        public int RemainingItems { get; set; } = 0;
+        public int RemainingItemsCount { get; set; } = 0;
     }
 }

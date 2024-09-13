@@ -56,7 +56,8 @@ namespace KinaUnaProgenyApi.Services
         /// Creates a OnThisDayResponse for displaying TimeLineItems on the OnThisDay page.
         /// </summary>
         /// <param name="onThisDayRequest">The OnThisDayRequest object with the parameters.</param>
+        /// <param name="timezone">The timezone to use for the dates.</param>
         /// <returns>OnThisDayResponse object.</returns>
-        Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest);
+        Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest, string timezone);
     }
 }

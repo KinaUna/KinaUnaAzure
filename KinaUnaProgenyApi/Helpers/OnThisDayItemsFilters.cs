@@ -74,7 +74,7 @@ namespace KinaUnaProgenyApi.Helpers
                     break;
                 case OnThisDayPeriod.Quarter:
                 {
-                    List<TimeLineItem> quarterTimeLineItems = timeLineItems.Where(t => t.ProgenyTime.Day >= onThisDayRequest.ThisDayDateTime.Day).ToList();
+                    List<TimeLineItem> quarterTimeLineItems = timeLineItems.Where(t => t.ProgenyTime.Day == onThisDayRequest.ThisDayDateTime.Day).ToList();
                     quarterTimeLineItems = quarterTimeLineItems.Where(t => 
                         t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month 
                          || t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month + 3
@@ -85,7 +85,7 @@ namespace KinaUnaProgenyApi.Helpers
                     break;
                 }
                 case OnThisDayPeriod.Year:
-                    timeLineItems = timeLineItems.Where(t => t.ProgenyTime.DayOfYear == onThisDayRequest.ThisDayDateTime.DayOfYear).ToList();
+                    timeLineItems = timeLineItems.Where(t => t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month && t.ProgenyTime.Day == onThisDayRequest.ThisDayDateTime.Day).ToList();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(onThisDayRequest), "onThisDayRequest.OnThisDayPeriod is out of range.");

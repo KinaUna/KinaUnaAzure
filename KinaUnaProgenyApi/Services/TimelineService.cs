@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -256,8 +257,9 @@ namespace KinaUnaProgenyApi.Services
         /// Creates a OnThisDayResponse for displaying TimeLineItems on the OnThisDay page.
         /// </summary>
         /// <param name="onThisDayRequest">The OnThisDayRequest object with the parameters.</param>
+        /// <param name="timezone">The timezone to use for the dates.</param>
         /// <returns>OnThisDayResponse object.</returns>
-        public async Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest)
+        public async Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest, string timezone)
         {
             OnThisDayResponse onThisDayResponse = new()
             {
@@ -265,21 +267,38 @@ namespace KinaUnaProgenyApi.Services
             };
 
             List<TimeLineItem> allTimeLineItems = await GetTimeLineList(onThisDayRequest.ProgenyId);
-            allTimeLineItems = allTimeLineItems.Where(t => t.AccessLevel >= onThisDayRequest.AccessLevel).ToList();
-            
-            allTimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(allTimeLineItems, onThisDayRequest);
+            allTimeLineItems = allTimeLineItems.Where(t => t.AccessLevel >= onThisDayRequest.AccessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
+            if (allTimeLineItems.Count == 0)
+            {
+                onThisDayResponse.TimeLineItems = [];
+                onThisDayResponse.RemainingItemsCount = 0;
+                return onThisDayResponse;
+            }
 
+            onThisDayResponse.Request.FirstItemYear = allTimeLineItems.Min(t => t.ProgenyTime.Year);
             onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimeLineItems, onThisDayRequest.TimeLineTypeFilter);
 
             // Todo: Implement Tags for TimeLineItems.
             // onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
+            foreach (TimeLineItem timeLineItem in onThisDayResponse.TimeLineItems)
+            {
+                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(timezone));
+            }
+
+            onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(onThisDayResponse.TimeLineItems, onThisDayRequest);
+
+            onThisDayResponse.TimeLineItems = onThisDayResponse.TimeLineItems.OrderByDescending(t => t.ProgenyTime).ToList();
+            if (onThisDayRequest.SortOrder == 0)
+            {
+                onThisDayResponse.TimeLineItems.Reverse();
+            }
 
             onThisDayResponse.TimeLineItems = onThisDayResponse.TimeLineItems.Skip(onThisDayRequest.Skip).Take(onThisDayRequest.NumberOfItems).ToList();
-            onThisDayResponse.RemainingItems = allTimeLineItems.Count - (onThisDayRequest.Skip + onThisDayRequest.NumberOfItems);
+            onThisDayResponse.RemainingItemsCount = allTimeLineItems.Count - (onThisDayRequest.Skip + onThisDayRequest.NumberOfItems);
             
-            if(onThisDayResponse.RemainingItems < 0)
+            if(onThisDayResponse.RemainingItemsCount < 0)
             {
-                onThisDayResponse.RemainingItems = 0;
+                onThisDayResponse.RemainingItemsCount = 0;
             }
 
             return onThisDayResponse;

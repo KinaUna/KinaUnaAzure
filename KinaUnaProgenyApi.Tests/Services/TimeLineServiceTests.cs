@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Contexts;
+﻿using KinaUna.Data;
+using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
@@ -11,6 +12,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 {
     public class TimeLineServiceTests
     {
+        private readonly DateTime _sampleDateTime = new DateTime(2020, 1, 1, 10, 0, 0, DateTimeKind.Utc);
+
         [Fact]
         public async Task GetTimeLineItem_Should_Return_TimeLineItem_Object_When_Id_Is_Valid()
         {
@@ -22,10 +25,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "1",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             TimeLineItem timeLineItem2 = new()
@@ -33,10 +36,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "2",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             context.Add(timeLineItem1);
@@ -76,10 +79,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "1",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             context.Add(timeLineItem1);
@@ -107,10 +110,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "1",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             context.Add(timeLineItem1);
@@ -125,10 +128,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "2",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             TimeLineItem addedTimeLineItem = await timelineService.AddTimeLineItem(timeLineItemToAdd);
@@ -169,10 +172,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "1",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             TimeLineItem timeLineItem2 = new()
@@ -180,10 +183,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "2",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             context.Add(timeLineItem1);
@@ -235,10 +238,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "1",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             TimeLineItem timeLineItem2 = new()
@@ -246,10 +249,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "2",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             context.Add(timeLineItem1);
@@ -283,10 +286,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "1",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             TimeLineItem timeLineItem2 = new()
@@ -294,10 +297,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "2",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             context.Add(timeLineItem1);
@@ -334,10 +337,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "1",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             TimeLineItem timeLineItem2 = new()
@@ -345,10 +348,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "2",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             context.Add(timeLineItem1);
@@ -374,7 +377,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetOnThisDayData_Should_Return_OnThisDayResponse_With_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
-                .UseInMemoryDatabase("GetTimeLineItemsList_Should_Return_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems").Options;
+                .UseInMemoryDatabase("GetOnThisDayData_Should_Return_OnThisDayResponse_With_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems").Options;
             await using ProgenyDbContext context = new(dbOptions);
 
             TimeLineItem timeLineItem1 = new()
@@ -382,10 +385,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "1",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             TimeLineItem timeLineItem2 = new()
@@ -393,10 +396,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow,
+                CreatedTime = _sampleDateTime,
                 ItemId = "2",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow,
+                ProgenyTime = _sampleDateTime,
             };
 
             context.Add(timeLineItem1);
@@ -410,7 +413,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             OnThisDayRequest onThisDayRequest = new OnThisDayRequest
             {
                 ProgenyId = 2,
-                ThisDayDateTime = DateTime.UtcNow,
+                ThisDayDateTime = _sampleDateTime,
                 AccessLevel = 0,
                 Skip = 0,
                 NumberOfItems = 10,
@@ -419,7 +422,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 TimeLineTypeFilter = new List<KinaUnaTypes.TimeLineType>()
             };
 
-            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest);
+            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, Constants.DefaultTimezone);
 
             Assert.NotNull(onThisDayResponse);
             Assert.IsType<OnThisDayResponse>(onThisDayResponse);
@@ -431,7 +434,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetOnThisDayData_Should_Return_OnThisDayResponse_With_List_Of_TimeLineItem_When_Progeny_Has_Saved_TimeLineItems()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
-                .UseInMemoryDatabase("GetTimeLineItemsList_Should_Return_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems").Options;
+                .UseInMemoryDatabase("GetOnThisDayData_Should_Return_OnThisDayResponse_With_List_Of_TimeLineItem_When_Progeny_Has_Saved_TimeLineItems").Options;
             await using ProgenyDbContext context = new(dbOptions);
 
             TimeLineItem timeLineItem1 = new()
@@ -439,10 +442,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow - TimeSpan.FromDays(14),
+                CreatedTime = _sampleDateTime - TimeSpan.FromDays(14),
                 ItemId = "1",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow - TimeSpan.FromDays(14),
+                ProgenyTime = _sampleDateTime - TimeSpan.FromDays(14),
             };
 
             TimeLineItem timeLineItem2 = new()
@@ -450,10 +453,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow - TimeSpan.FromDays(7),
+                CreatedTime = _sampleDateTime - TimeSpan.FromDays(7),
                 ItemId = "2",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow - TimeSpan.FromDays(7),
+                ProgenyTime = _sampleDateTime - TimeSpan.FromDays(7),
             };
 
             TimeLineItem timeLineItem3 = new()
@@ -461,10 +464,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 AccessLevel = 0,
                 CreatedBy = "User1",
-                CreatedTime = DateTime.UtcNow - TimeSpan.FromDays(1),
+                CreatedTime = _sampleDateTime - TimeSpan.FromDays(2),
                 ItemId = "3",
                 ItemType = 1,
-                ProgenyTime = DateTime.UtcNow - TimeSpan.FromDays(1),
+                ProgenyTime = _sampleDateTime - TimeSpan.FromDays(2),
             };
 
             context.Add(timeLineItem1);
@@ -479,7 +482,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             OnThisDayRequest onThisDayRequest = new OnThisDayRequest
             {
                 ProgenyId = 1,
-                ThisDayDateTime = DateTime.UtcNow,
+                ThisDayDateTime = _sampleDateTime,
                 AccessLevel = 0,
                 Skip = 0,
                 NumberOfItems = 10,
@@ -488,13 +491,13 @@ namespace KinaUnaProgenyApi.Tests.Services
                 TimeLineTypeFilter = new List<KinaUnaTypes.TimeLineType>()
             };
 
-            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest);
+            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, Constants.DefaultTimezone);
 
             Assert.NotNull(onThisDayResponse);
             Assert.IsType<OnThisDayResponse>(onThisDayResponse);
             Assert.NotEmpty(onThisDayResponse.TimeLineItems);
             Assert.Equal(2, onThisDayResponse.TimeLineItems.Count);
-            Assert.Equal(0, onThisDayResponse.RemainingItems);
+            Assert.Equal(0, onThisDayResponse.RemainingItemsCount);
         }
     }
 }

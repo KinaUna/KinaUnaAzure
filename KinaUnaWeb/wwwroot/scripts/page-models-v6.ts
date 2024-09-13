@@ -285,6 +285,27 @@ export class TimelineList {
     firstItemYear: number = 0;
 }
 
+export class OnThisDayRequest {
+    progenyId: number = 0;
+    accessLevel: number = 5;
+    skip: number = 0;
+    numberOfItems: number = 5;
+    year: number = 0;
+    month: number = 0;
+    day: number = 0;
+    tagFilter: string = '';
+    timeLineTypeFilter: TimeLineType[] = [];
+    onThisDayPeriod: OnThisDayPeriod = OnThisDayPeriod.Year;
+    sortOrder: number = 1;
+    firstItemYear: number = 1900;
+}
+
+export class OnThisDayResponse {
+    timeLineItems: TimelineItem[] = [];
+    remainingItemsCount: number = 0;
+    request: OnThisDayRequest = new OnThisDayRequest();
+}
+
 export class WebNotification {
     id: number = 0;
     to: string = "";
@@ -304,4 +325,14 @@ export class WebNotificationsList {
     notificationsList: WebNotification[] = [];
     allNotificationsCount: number = 0;
     remainingItemsCount: number = 0;
+}
+
+export enum TimeLineType {
+    Photo = 1, Video = 2, Calendar = 3, Vocabulary = 4, Skill = 5,
+    Friend = 6, Measurement = 7, Sleep = 8, Note = 9, Contact = 10,
+    Vaccination = 11, Location = 12, User = 13, UserAccess = 14, Child = 100
+}
+
+export enum OnThisDayPeriod {
+    Week = 1, Month = 2, Quarter = 3, Year = 4
 }

@@ -9,6 +9,7 @@ using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static System.Collections.Specialized.BitVector32;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -18,11 +19,12 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="progenyService"></param>
     /// <param name="userAccessService"></param>
     /// <param name="timelineService"></param>
+    /// <param name="userInfoService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class TimeLineController(IProgenyService progenyService, IUserAccessService userAccessService, ITimelineService timelineService) : ControllerBase
+    public class TimeLineController(IProgenyService progenyService, IUserAccessService userAccessService, ITimelineService timelineService, IUserInfoService userInfoService) : ControllerBase
     {
         /// <summary>
         /// Gets a list of all TimeLineItems for a Progeny with the given ProgenyId that a user with a given access level can access.
@@ -299,6 +301,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="onThisDayRequest"></param>
         /// <returns>OnThisDayResponse object.</returns>
         [HttpPost]
+        [Route("[action]")]
         public async Task<IActionResult> GetOnThisDayTimeLineItems([FromBody] OnThisDayRequest onThisDayRequest)
         {
             Progeny progeny = await progenyService.GetProgeny(onThisDayRequest.ProgenyId);
@@ -308,10 +311,14 @@ namespace KinaUnaProgenyApi.Controllers
 
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(onThisDayRequest.ProgenyId, userEmail);
             if (userAccess == null) return Ok(new OnThisDayResponse());
-            
-            onThisDayRequest.AccessLevel = userAccess.AccessLevel; 
-            
-            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest);
+            UserInfo currentUser = await userInfoService.GetUserInfoByEmail(userEmail);
+            onThisDayRequest.AccessLevel = userAccess.AccessLevel;
+            if (onThisDayRequest.SortOrder == 1)
+            {
+                DateTime updateTime = new DateTime(onThisDayRequest.ThisDayDateTime.Year, onThisDayRequest.ThisDayDateTime.Month, onThisDayRequest.ThisDayDateTime.Day, 23, 59, 59);
+                onThisDayRequest.ThisDayDateTime = updateTime;
+            }
+            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, currentUser.Timezone);
             
             return Ok(onThisDayResponse);
         }

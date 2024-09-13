@@ -291,6 +291,29 @@ export class TimelineList {
         this.firstItemYear = 0;
     }
 }
+export class OnThisDayRequest {
+    constructor() {
+        this.progenyId = 0;
+        this.accessLevel = 5;
+        this.skip = 0;
+        this.numberOfItems = 5;
+        this.year = 0;
+        this.month = 0;
+        this.day = 0;
+        this.tagFilter = '';
+        this.timeLineTypeFilter = [];
+        this.onThisDayPeriod = OnThisDayPeriod.Year;
+        this.sortOrder = 1;
+        this.firstItemYear = 1900;
+    }
+}
+export class OnThisDayResponse {
+    constructor() {
+        this.timeLineItems = [];
+        this.remainingItemsCount = 0;
+        this.request = new OnThisDayRequest();
+    }
+}
 export class WebNotification {
     constructor() {
         this.id = 0;
@@ -316,4 +339,29 @@ export class WebNotificationsList {
         this.remainingItemsCount = 0;
     }
 }
+export var TimeLineType;
+(function (TimeLineType) {
+    TimeLineType[TimeLineType["Photo"] = 1] = "Photo";
+    TimeLineType[TimeLineType["Video"] = 2] = "Video";
+    TimeLineType[TimeLineType["Calendar"] = 3] = "Calendar";
+    TimeLineType[TimeLineType["Vocabulary"] = 4] = "Vocabulary";
+    TimeLineType[TimeLineType["Skill"] = 5] = "Skill";
+    TimeLineType[TimeLineType["Friend"] = 6] = "Friend";
+    TimeLineType[TimeLineType["Measurement"] = 7] = "Measurement";
+    TimeLineType[TimeLineType["Sleep"] = 8] = "Sleep";
+    TimeLineType[TimeLineType["Note"] = 9] = "Note";
+    TimeLineType[TimeLineType["Contact"] = 10] = "Contact";
+    TimeLineType[TimeLineType["Vaccination"] = 11] = "Vaccination";
+    TimeLineType[TimeLineType["Location"] = 12] = "Location";
+    TimeLineType[TimeLineType["User"] = 13] = "User";
+    TimeLineType[TimeLineType["UserAccess"] = 14] = "UserAccess";
+    TimeLineType[TimeLineType["Child"] = 100] = "Child";
+})(TimeLineType || (TimeLineType = {}));
+export var OnThisDayPeriod;
+(function (OnThisDayPeriod) {
+    OnThisDayPeriod[OnThisDayPeriod["Week"] = 1] = "Week";
+    OnThisDayPeriod[OnThisDayPeriod["Month"] = 2] = "Month";
+    OnThisDayPeriod[OnThisDayPeriod["Quarter"] = 3] = "Quarter";
+    OnThisDayPeriod[OnThisDayPeriod["Year"] = 4] = "Year";
+})(OnThisDayPeriod || (OnThisDayPeriod = {}));
 //# sourceMappingURL=page-models-v6.js.map

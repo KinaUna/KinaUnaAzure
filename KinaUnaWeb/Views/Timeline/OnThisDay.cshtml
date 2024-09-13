@@ -1,17 +1,17 @@
-﻿@using KinaUnaWeb.Services
-@using KinaUna.Data
-@model KinaUnaWeb.Models.ItemViewModels.TimeLineViewModel
+﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.ItemViewModels.OnThisDayViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Timeline", PageNames.Timeline, Model.LanguageId);
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("On This Day", PageNames.Timeline, Model.LanguageId);
     string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Timeline, Model.LanguageId);
     string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Timeline, Model.LanguageId);
     string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     const string longDateTimeFormatMoment = "DD-MMMM-YYYY";
-    DateTime startDateTime = new(Model.Year, Model.Month, Model.Day);
-    string pageParameters = Json.Serialize(Model.Parameters).ToString();
+    DateTime startDateTime = new(Model.OnThisDayRequest.ThisDayDateTime.Year, Model.OnThisDayRequest.ThisDayDateTime.Month, Model.OnThisDayRequest.ThisDayDateTime.Day);
+    string pageParameters = Json.Serialize(Model.OnThisDayRequest).ToString();
 }
 
 @section Scripts{
@@ -23,7 +23,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-ch.min.js" integrity="sha512-7VvKBnFgucrOLF0GLzWUuhtDcRKYUuOy9O5AqiqvccZFp4zAqAzkMqIlNVCDR3DJ6OZ6dsdn+MLiJ8vZx84WhQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
-<div id="timeline-page-parameters-div" class="d-none" data-timeline-page-parameters="@pageParameters"></div>
+
+<div id="on-this-day-page-parameters-div" class="d-none" data-on-this-day-page-parameters="@pageParameters"></div>
 <div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
 <div class="ml-md-auto mr-md-auto col" style="max-width: 600px;">
@@ -32,13 +33,13 @@
         @ViewData["Title"]
     </div>
     <div class="space-20"></div>
-    <div id="latest-posts-parent-div" class="d-none">
-        <div id="timeline-items-div">
+    <div id="on-this-day-posts-parent-div" class="d-none">
+        <div id="on-this-day-items-div">
 
         </div>
         <div style="height: 150px;">
-            <button id="more-timeline-items-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
-            <div id="loading-timeline-items-div" class="w-100">
+            <button id="more-on-this-day-items-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+            <div id="loading-on-this-day-items-div" class="w-100">
                 <div class="space-50"></div>
             </div>
         </div>
@@ -93,6 +94,36 @@
             <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">
+                    @await LocaleManager.GetTranslation("Period for items:", PageNames.Timeline, Model.LanguageId)
+                </div>
+                <div class="col-auto ml-4">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button class="btn btn-outline-info active on-this-day-period-button" data-period="4">
+                                @await LocaleManager.GetTranslation("Year", PageNames.Timeline, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info on-this-day-period-button" data-period="3">
+                                @await LocaleManager.GetTranslation("Quarter", PageNames.Timeline, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info on-this-day-period-button" data-period="2">
+                                @await LocaleManager.GetTranslation("Month", PageNames.Timeline, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info on-this-day-period-button" data-period="1">
+                                @await LocaleManager.GetTranslation("Week", PageNames.Timeline, Model.LanguageId)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
                     @await LocaleManager.GetTranslation("Number of items to get:", PageNames.Timeline, Model.LanguageId)
                 </div>
                 <div class="col ml-4">
@@ -112,7 +143,7 @@
             <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">
-                    <button id="timeline-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <button id="on-this-day-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
                 </div>
 
             </div>
@@ -124,4 +155,4 @@
         </button>
     </div>
 </div>
-<script src="/js/timeline/timeline-index.js" type="module" asp-append-version="true"></script>
+<script src="/js/timeline/on-this-day.js" type="module" asp-append-version="true"></script>

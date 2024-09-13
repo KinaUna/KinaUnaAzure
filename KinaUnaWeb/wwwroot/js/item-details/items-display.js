@@ -11,7 +11,7 @@ import { addSkillItemListeners } from '../skills/skill-details.js';
 import { addVocabularyItemListeners } from '../vocabulary/vocabulary-details.js';
 import { addVaccinationItemListeners } from '../vaccinations/vaccination-details.js';
 /**
- * Adds event listeners for a given timeline item.
+ * Adds event listeners for a given timeline item. Used to show popups for items.
  * @param {TimelineItem} item The timeline item to add event listeners for.
  */
 export function addTimelineItemEventListener(item) {
