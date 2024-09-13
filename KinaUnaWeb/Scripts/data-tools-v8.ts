@@ -1,4 +1,4 @@
-﻿import { AutoSuggestList } from './page-models-v6.js';
+﻿import { AutoSuggestList } from './page-models-v8.js';
 
 declare let moment: any;
 let currentMomentLocale: string = 'en';

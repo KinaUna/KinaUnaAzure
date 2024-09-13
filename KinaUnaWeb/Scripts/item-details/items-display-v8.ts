@@ -1,6 +1,6 @@
-import { addPictureItemEventListeners } from '../pictures/picture-details.js';
+﻿import { addPictureItemEventListeners } from '../pictures/picture-details.js';
 import { addCalendarEventListeners } from '../calendar/calendar-details.js';
-import { TimelineItem } from '../page-models-v6.js'
+import { TimelineItem } from '../page-models-v8.js'
 import { addVideoItemEventListeners } from '../videos/video-details.js';
 import { addNoteEventListeners } from '../notes/note-details.js';
 import { addSleepEventListeners } from '../sleep/sleep-details.js';

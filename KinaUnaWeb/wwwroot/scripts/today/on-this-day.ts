@@ -1,9 +1,9 @@
-import * as LocaleHelper from '../localization-v6.js';
-import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList, OnThisDayRequest, OnThisDayResponse, OnThisDayPeriod } from '../page-models-v6.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v7.js';
-import * as SettingsHelper from '../settings-tools-v6.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
-import { addTimelineItemEventListener } from '../item-details/items-display.js';
+import * as LocaleHelper from '../localization-v8.js';
+import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList, OnThisDayRequest, OnThisDayResponse, OnThisDayPeriod } from '../page-models-v8.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
+import * as SettingsHelper from '../settings-tools-v8.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
+import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
 
 const onThisDayPageSettingsStorageKey = 'on_this_day_page_parameters';
 const onThisDayParameters: OnThisDayRequest = new OnThisDayRequest();
@@ -18,7 +18,7 @@ const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('
 const onThisDayStartDateTimePicker: any = $('#settings-start-date-datetimepicker');
 const onThisDaySettingsNotificationDiv = document.querySelector<HTMLDivElement>('#settings-notification-div');
 const startLabelDiv = document.querySelector<HTMLDivElement>('#start-label-div');
-
+const periodLabelDiv = document.querySelector<HTMLDivElement>('#period-label-div');
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let zebraDateTimeFormat: string;
 let startDateTimeFormatMoment: string;
@@ -137,11 +137,18 @@ function updateSettingsNotificationDiv(): void {
     onThisDaySettingsNotificationText += '<br/>' + startLabelDiv?.innerHTML;
     onThisDaySettingsNotificationText += onThisDayStartDateTimePicker.val();
 
+    onThisDaySettingsNotificationText += '<br/>' + periodLabelDiv?.innerHTML;
+    const periodButtons = document.querySelectorAll<HTMLButtonElement>('.on-this-day-period-button');
+    periodButtons.forEach(function (button: HTMLButtonElement) {
+        if (parseInt(button.dataset.period ?? '-1') === onThisDayParameters.onThisDayPeriod) {
+            onThisDaySettingsNotificationText += button.innerHTML;
+        }
+    });
+    
     if (onThisDaySettingsNotificationDiv !== null && onThisDaySettingsNotificationText !== undefined) {
         onThisDaySettingsNotificationDiv.innerHTML = onThisDaySettingsNotificationText;
     }
 
-    // Todo: Show period in settings notification div.
 }
 
 /** Clears the list of timeline elements in the timeline-items-div and scrolls to above the timeline-items-div.

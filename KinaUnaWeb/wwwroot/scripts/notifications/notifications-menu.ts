@@ -1,4 +1,4 @@
-import { WebNotification } from "../page-models-v6";
+import { WebNotification } from "../page-models-v8";
 import { updateNoficationElementEvents } from "./notification-actions.js";
 
 declare let signalR: any;

@@ -66,4 +66,4 @@ export function getPageSettingsStartDate(momentDateTimeFormat) {
     let settingsStartTime = moment($('#settings-start-date-datetimepicker').val(), momentDateTimeFormat);
     return settingsStartTime;
 }
-//# sourceMappingURL=settings-tools-v6.js.map
+//# sourceMappingURL=settings-tools-v8.js.map

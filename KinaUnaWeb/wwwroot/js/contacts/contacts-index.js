@@ -1,8 +1,8 @@
-import { updateFilterButtonDisplay } from '../data-tools-v7.js';
-import { addTimelineItemEventListener } from '../item-details/items-display.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
-import * as pageModels from '../page-models-v6.js';
-import * as SettingsHelper from '../settings-tools-v6.js';
+import { updateFilterButtonDisplay } from '../data-tools-v8.js';
+import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
+import * as pageModels from '../page-models-v8.js';
+import * as SettingsHelper from '../settings-tools-v8.js';
 const contactsPageSettingsStorageKey = 'contacts_page_parameters';
 let contactsPageParameters = new pageModels.ContactsPageParameters();
 const sortAscendingSettingsButton = document.querySelector('#settings-sort-ascending-button');

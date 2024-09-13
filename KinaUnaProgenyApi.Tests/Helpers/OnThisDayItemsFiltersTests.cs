@@ -20,7 +20,7 @@ namespace KinaUnaProgenyApi.Tests.Helpers
                 new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Video }
             ];
 
-            List<KinaUnaTypes.TimeLineType> timeLineTypes = new List<KinaUnaTypes.TimeLineType>();
+            List<KinaUnaTypes.TimeLineType> timeLineTypes = [];
             List<TimeLineItem> result = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(timeLineItems, timeLineTypes);
 
             Assert.Equal(timeLineItems.Count, result.Count);
@@ -91,7 +91,7 @@ namespace KinaUnaProgenyApi.Tests.Helpers
                 new TimeLineItem { ProgenyTime = DateTime.UtcNow.AddDays(-7) }
             ];
 
-            OnThisDayRequest onThisDayRequest = new OnThisDayRequest
+            OnThisDayRequest onThisDayRequest = new()
             {
                 ThisDayDateTime = DateTime.UtcNow,
                 OnThisDayPeriod = OnThisDayPeriod.Week
@@ -107,7 +107,7 @@ namespace KinaUnaProgenyApi.Tests.Helpers
         [Fact]
         public void FilterOnThisDayItemsByPeriod_Returns_Only_Items_With_Same_DayOfMonth_When_Period_Is_Month()
         {
-            DateTime sampleDateTime = new DateTime(2000, 1, 1);
+            DateTime sampleDateTime = new(2000, 1, 1);
             List<TimeLineItem> timeLineItems =
             [
                 new TimeLineItem { ProgenyTime = sampleDateTime.AddMonths(-1) },
@@ -116,7 +116,7 @@ namespace KinaUnaProgenyApi.Tests.Helpers
                 new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-30) },
             ];
 
-            OnThisDayRequest onThisDayRequest = new OnThisDayRequest
+            OnThisDayRequest onThisDayRequest = new()
             {
                 ThisDayDateTime = sampleDateTime,
                 OnThisDayPeriod = OnThisDayPeriod.Month
@@ -132,7 +132,7 @@ namespace KinaUnaProgenyApi.Tests.Helpers
         [Fact]
         public void FilterOnThisDayItemsByPeriod_Returns_Only_Items_With_Same_DayOfMonth_When_Period_Is_Quarter()
         {
-            DateTime sampleDateTime = new DateTime(2000, 1, 1);
+            DateTime sampleDateTime = new(2000, 1, 1);
             List<TimeLineItem> timeLineItems =
             [
                 new TimeLineItem { ProgenyTime = sampleDateTime.AddMonths(-12) },
@@ -144,7 +144,7 @@ namespace KinaUnaProgenyApi.Tests.Helpers
                 new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-30) },
             ];
 
-            OnThisDayRequest onThisDayRequest = new OnThisDayRequest
+            OnThisDayRequest onThisDayRequest = new()
             {
                 ThisDayDateTime = sampleDateTime,
                 OnThisDayPeriod = OnThisDayPeriod.Quarter
@@ -160,7 +160,7 @@ namespace KinaUnaProgenyApi.Tests.Helpers
         [Fact]
         public void FilterOnThisDayItemsByPeriod_Returns_Only_Items_With_Same_DayOfYear_When_Period_Is_Year()
         {
-            DateTime sampleDateTime = new DateTime(2000, 1, 1);
+            DateTime sampleDateTime = new(2000, 1, 1);
 
             List<TimeLineItem> timeLineItems =
             [
@@ -173,7 +173,7 @@ namespace KinaUnaProgenyApi.Tests.Helpers
                 new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-30) },
             ];
 
-            OnThisDayRequest onThisDayRequest = new OnThisDayRequest
+            OnThisDayRequest onThisDayRequest = new()
             {
                 ThisDayDateTime = sampleDateTime,
                 OnThisDayPeriod = OnThisDayPeriod.Year

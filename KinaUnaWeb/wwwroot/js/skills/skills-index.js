@@ -1,4 +1,4 @@
-import { setMomentLocale } from '../data-tools-v7.js';
+import { setMomentLocale } from '../data-tools-v8.js';
 /**
  * Sets up the DataTable for the Skills list.
  */

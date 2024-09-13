@@ -12,7 +12,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 {
     public class TimeLineServiceTests
     {
-        private readonly DateTime _sampleDateTime = new DateTime(2020, 1, 1, 10, 0, 0, DateTimeKind.Utc);
+        private readonly DateTime _sampleDateTime = new(2020, 1, 1, 10, 0, 0, DateTimeKind.Utc);
 
         [Fact]
         public async Task GetTimeLineItem_Should_Return_TimeLineItem_Object_When_Id_Is_Valid()
@@ -410,7 +410,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             TimelineService timelineService = new(context, memoryCache);
 
-            OnThisDayRequest onThisDayRequest = new OnThisDayRequest
+            OnThisDayRequest onThisDayRequest = new()
             {
                 ProgenyId = 2,
                 ThisDayDateTime = _sampleDateTime,
@@ -419,7 +419,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 NumberOfItems = 10,
                 TagFilter = string.Empty,
                 OnThisDayPeriod = OnThisDayPeriod.Year,
-                TimeLineTypeFilter = new List<KinaUnaTypes.TimeLineType>()
+                TimeLineTypeFilter = []
             };
 
             OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, Constants.DefaultTimezone);
@@ -479,7 +479,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             TimelineService timelineService = new(context, memoryCache);
 
-            OnThisDayRequest onThisDayRequest = new OnThisDayRequest
+            OnThisDayRequest onThisDayRequest = new()
             {
                 ProgenyId = 1,
                 ThisDayDateTime = _sampleDateTime,
@@ -488,7 +488,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 NumberOfItems = 10,
                 TagFilter = string.Empty,
                 OnThisDayPeriod = OnThisDayPeriod.Week,
-                TimeLineTypeFilter = new List<KinaUnaTypes.TimeLineType>()
+                TimeLineTypeFilter = []
             };
 
             OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, Constants.DefaultTimezone);

@@ -287,7 +287,7 @@ namespace KinaUnaProgenyApi.Services
 
             onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(onThisDayResponse.TimeLineItems, onThisDayRequest);
 
-            onThisDayResponse.TimeLineItems = onThisDayResponse.TimeLineItems.OrderByDescending(t => t.ProgenyTime).ToList();
+            onThisDayResponse.TimeLineItems = [.. onThisDayResponse.TimeLineItems.OrderByDescending(t => t.ProgenyTime)];
             if (onThisDayRequest.SortOrder == 0)
             {
                 onThisDayResponse.TimeLineItems.Reverse();

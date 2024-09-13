@@ -47,8 +47,10 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> GetOnThisDayList([FromBody] OnThisDayRequest parameters)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parameters.ProgenyId);
-            OnThisDayViewModel model = new(baseModel);
-            model.OnThisDayRequest = parameters;
+            OnThisDayViewModel model = new(baseModel)
+            {
+                OnThisDayRequest = parameters
+            };
             model.OnThisDayRequest.AccessLevel = baseModel.CurrentAccessLevel;
 
             return Json(await timelineHttpClient.GetOnThisDayTimeLineItems(model.OnThisDayRequest));

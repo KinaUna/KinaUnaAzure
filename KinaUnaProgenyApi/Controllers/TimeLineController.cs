@@ -314,7 +314,7 @@ namespace KinaUnaProgenyApi.Controllers
             onThisDayRequest.AccessLevel = userAccess.AccessLevel;
             if (onThisDayRequest.SortOrder == 1)
             {
-                DateTime updateTime = new DateTime(onThisDayRequest.ThisDayDateTime.Year, onThisDayRequest.ThisDayDateTime.Month, onThisDayRequest.ThisDayDateTime.Day, 23, 59, 59);
+                DateTime updateTime = new(onThisDayRequest.ThisDayDateTime.Year, onThisDayRequest.ThisDayDateTime.Month, onThisDayRequest.ThisDayDateTime.Day, 23, 59, 59);
                 onThisDayRequest.ThisDayDateTime = updateTime;
             }
             OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, currentUser.Timezone);

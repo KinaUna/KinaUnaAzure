@@ -1,6 +1,6 @@
 const serviceWorkerVersion = 'v5';
-import { startFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v6.js';
-import { initSidebar } from './sidebar-v6.js';
+import { startFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v8.js';
+import { initSidebar } from './sidebar-v8.js';
 const serviceWorkerVersion_key = 'service_worker_version';
 /**
  * Removes all service workers from the browser.
