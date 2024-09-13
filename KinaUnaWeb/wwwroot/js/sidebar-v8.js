@@ -241,10 +241,10 @@ export async function initSidebar() {
     setSidebarLayout();
     highlightActivePageIcon();
     addSidebarEventListeners();
+    setSidebarText();
     await setSideBarPosition().catch(function (error) {
         console.log('Error setting sidebar position. Error: ' + error);
     });
-    setSidebarText();
     return new Promise(function (resolve, reject) {
         resolve();
     });

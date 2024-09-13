@@ -264,11 +264,11 @@ export async function initSidebar(): Promise<void> {
     highlightActivePageIcon();
 
     addSidebarEventListeners();
-
+        
+    setSidebarText();
     await setSideBarPosition().catch(function (error) {
         console.log('Error setting sidebar position. Error: ' + error);
     });
-    setSidebarText();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
