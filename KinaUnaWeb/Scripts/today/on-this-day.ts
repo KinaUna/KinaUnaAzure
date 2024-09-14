@@ -1,5 +1,5 @@
 ﻿import * as LocaleHelper from '../localization-v8.js';
-import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList, OnThisDayRequest, OnThisDayResponse, OnThisDayPeriod } from '../page-models-v8.js';
+import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList, OnThisDayRequest, OnThisDayResponse, OnThisDayPeriod, TimeLineType } from '../page-models-v8.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
@@ -265,6 +265,55 @@ function updatePeriodButtons(): void {
 }
 
 /**
+ * Adds or removes the TimeLineType in the onThisDayParameters.timeLineTypeFilter.
+ * @param type The TimeLineType to toggle.
+ */
+function toggleTimeLineType(type: TimeLineType): void {
+    const index = onThisDayParameters.timeLineTypeFilter.indexOf(type);
+    if (index > -1) {
+        onThisDayParameters.timeLineTypeFilter.splice(index, 1);
+    }
+    else {
+        onThisDayParameters.timeLineTypeFilter.push(type);
+    }
+
+    updateTimeLineTypeButtons();
+}
+
+/**
+ * Updates the TimeLineType buttons to show the currently selected types as active.
+ */
+function updateTimeLineTypeButtons(): void {
+    const allButton = document.querySelector<HTMLButtonElement>('#toggle-all-time-line-types-button');
+    if (allButton !== null) {
+
+        if (onThisDayParameters.timeLineTypeFilter.length === 0) {
+            allButton.classList.add('active');
+            }
+        else {
+            allButton?.classList.remove('active');
+        }    
+    }
+    
+    const typeButtons = document.querySelectorAll<HTMLButtonElement>('.timeline-type-filter-button');
+    typeButtons.forEach(function (button: HTMLButtonElement) {
+        button.classList.remove('active');
+        if (onThisDayParameters.timeLineTypeFilter.includes(parseInt(button.dataset.type ?? '-1'))) {
+            button.classList.add('active');
+        }
+    });
+}
+
+/**
+ * Sets the TimeLineTypeFilter to empty, which means all types are included.
+ */
+function setTimeLineTypeFilterToAll(): void {
+    onThisDayParameters.timeLineTypeFilter = [];
+    updateTimeLineTypeButtons();
+}
+
+
+/**
  * Saves the current page parameters to local storage and reloads the timeline items list.
  */
 async function saveOnThisDayPageSettings(): Promise<void> {
@@ -380,6 +429,19 @@ async function initialSettingsPanelSetup(): Promise<void> {
         });
     });
 
+    // Event listeners for TimeLineType buttons.
+    const typeButtons = document.querySelectorAll<HTMLButtonElement>('.timeline-type-filter-button');
+    typeButtons.forEach(function (button: HTMLButtonElement) {
+        button.addEventListener('click', function () {
+            toggleTimeLineType(parseInt(button.dataset.type ?? '-1'));
+        });
+    });
+
+    const allButton = document.querySelector<HTMLButtonElement>('#toggle-all-time-line-types-button');
+    if (allButton !== null) {
+        allButton.addEventListener('click', setTimeLineTypeFilterToAll);
+    }
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
@@ -402,7 +464,6 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     initialSettingsPanelSetup();
 
     SettingsHelper.initPageSettings();
-
 
     moreOnThisDayItemsButton = document.querySelector<HTMLButtonElement>('#more-on-this-day-items-button');
     if (moreOnThisDayItemsButton !== null) {

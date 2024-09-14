@@ -233,6 +233,48 @@ function updatePeriodButtons() {
     });
 }
 /**
+ * Adds or removes the TimeLineType in the onThisDayParameters.timeLineTypeFilter.
+ * @param type The TimeLineType to toggle.
+ */
+function toggleTimeLineType(type) {
+    const index = onThisDayParameters.timeLineTypeFilter.indexOf(type);
+    if (index > -1) {
+        onThisDayParameters.timeLineTypeFilter.splice(index, 1);
+    }
+    else {
+        onThisDayParameters.timeLineTypeFilter.push(type);
+    }
+    updateTimeLineTypeButtons();
+}
+/**
+ * Updates the TimeLineType buttons to show the currently selected types as active.
+ */
+function updateTimeLineTypeButtons() {
+    const allButton = document.querySelector('#toggle-all-time-line-types-button');
+    if (allButton !== null) {
+        if (onThisDayParameters.timeLineTypeFilter.length === 0) {
+            allButton.classList.add('active');
+        }
+        else {
+            allButton?.classList.remove('active');
+        }
+    }
+    const typeButtons = document.querySelectorAll('.timeline-type-filter-button');
+    typeButtons.forEach(function (button) {
+        button.classList.remove('active');
+        if (onThisDayParameters.timeLineTypeFilter.includes(parseInt(button.dataset.type ?? '-1'))) {
+            button.classList.add('active');
+        }
+    });
+}
+/**
+ * Sets the TimeLineTypeFilter to empty, which means all types are included.
+ */
+function setTimeLineTypeFilterToAll() {
+    onThisDayParameters.timeLineTypeFilter = [];
+    updateTimeLineTypeButtons();
+}
+/**
  * Saves the current page parameters to local storage and reloads the timeline items list.
  */
 async function saveOnThisDayPageSettings() {
@@ -336,6 +378,17 @@ async function initialSettingsPanelSetup() {
             setPeriod(parseInt(button.dataset.period ?? '-1'));
         });
     });
+    // Event listeners for TimeLineType buttons.
+    const typeButtons = document.querySelectorAll('.timeline-type-filter-button');
+    typeButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            toggleTimeLineType(parseInt(button.dataset.type ?? '-1'));
+        });
+    });
+    const allButton = document.querySelector('#toggle-all-time-line-types-button');
+    if (allButton !== null) {
+        allButton.addEventListener('click', setTimeLineTypeFilterToAll);
+    }
     return new Promise(function (resolve, reject) {
         resolve();
     });
