@@ -143,6 +143,15 @@
             <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">
+                    <a id="timeline-toggle-filters-button" class="btn-settings-panel" href="#">@await LocaleManager.GetTranslation("Filters", PageNames.Timeline, Model.LanguageId) 
+                        <i id="show-filters-chevron" class="material-icons sidebar-icon chevron-right">chevron_right</i>
+                    </a>
+                    
+                </div>
+            </div>
+            <div class="row ml-4 timeline-filter-options d-none">
+                <div class="col-12">
+                    <div class="space-20"></div>
                     @await LocaleManager.GetTranslation("Types:", PageNames.Timeline, Model.LanguageId)
                 </div>
                 <div class="col ml-4">

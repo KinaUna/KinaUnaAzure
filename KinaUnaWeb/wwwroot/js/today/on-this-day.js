@@ -232,6 +232,26 @@ function updatePeriodButtons() {
         }
     });
 }
+function toggleShowFilters() {
+    const filtersElements = document.querySelectorAll('.timeline-filter-options');
+    const toggleShowFiltersChevron = document.getElementById('show-filters-chevron');
+    filtersElements.forEach(function (element) {
+        if (element.classList.contains('d-none')) {
+            element.classList.remove('d-none');
+        }
+        else {
+            element.classList.add('d-none');
+        }
+    });
+    if (toggleShowFiltersChevron !== null) {
+        if (toggleShowFiltersChevron.classList.contains('chevron-right-rotate-down')) {
+            toggleShowFiltersChevron.classList.remove('chevron-right-rotate-down');
+        }
+        else {
+            toggleShowFiltersChevron.classList.add('chevron-right-rotate-down');
+        }
+    }
+}
 /**
  * Adds or removes the TimeLineType in the onThisDayParameters.timeLineTypeFilter.
  * @param type The TimeLineType to toggle.
@@ -378,6 +398,14 @@ async function initialSettingsPanelSetup() {
             setPeriod(parseInt(button.dataset.period ?? '-1'));
         });
     });
+    // Event listener for the show filters button.
+    const toggleShowFiltersButton = document.querySelector('#timeline-toggle-filters-button');
+    if (toggleShowFiltersButton !== null) {
+        toggleShowFiltersButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            toggleShowFilters();
+        });
+    }
     // Event listeners for TimeLineType buttons.
     const typeButtons = document.querySelectorAll('.timeline-type-filter-button');
     typeButtons.forEach(function (button) {

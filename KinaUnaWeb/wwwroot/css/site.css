@@ -3602,3 +3602,33 @@ noUi-handle:after, .noUi-handle:before {
     border-radius: 3rem;
     outline: 0;
 }
+
+.btn-settings-panel {
+    color: white;
+    background: transparent;
+    border: 0;
+    font-size: 16px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    border: 1px solid transparent;
+    line-height: 1;
+    width: 100%;
+    min-width: 52px;
+    text-align: left;
+    display: inline-block;
+}
+
+    .btn-settings-panel:hover {
+        color: #fbd10d;
+    }
+
+    .btn-settings-panel:focus {
+        color: white;
+    }
+
+.chevron-right {
+    transition: rotate 500ms ease-in-out;
+}
+.chevron-right-rotate-down {
+    rotate: 90deg;
+}
