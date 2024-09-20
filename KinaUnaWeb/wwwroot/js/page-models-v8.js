@@ -301,6 +301,8 @@ export class OnThisDayRequest {
         this.month = 0;
         this.day = 0;
         this.tagFilter = '';
+        this.categoryFilter = '';
+        this.contextFilter = '';
         this.timeLineTypeFilter = [];
         this.onThisDayPeriod = OnThisDayPeriod.Year;
         this.sortOrder = 1;

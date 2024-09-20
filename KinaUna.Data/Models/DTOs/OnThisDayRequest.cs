@@ -41,6 +41,8 @@ namespace KinaUna.Data.Models.DTOs
         public int Skip { get; set; } = 0;
         public int NumberOfItems { get; set; } = 10;
         public string TagFilter { get; set; } = string.Empty;
+        public string CategoryFilter { get; set; } = string.Empty;
+        public string ContextFilter { get; set; } = string.Empty;
         public OnThisDayPeriod OnThisDayPeriod { get; set; } = OnThisDayPeriod.Year;
         public List<KinaUnaTypes.TimeLineType> TimeLineTypeFilter { get; set; } = [];
         public int SortOrder { get; set; } = 1; // 0 = Ascending, 1 = Descending.

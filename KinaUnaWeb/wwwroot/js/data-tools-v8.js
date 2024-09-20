@@ -151,14 +151,16 @@ export async function getContextsList(progenyId) {
  * @param progenyId The Id of the Progeny to set contexts for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setContextAutoSuggestList(progenyId, elementId = 'context-input') {
+export async function setContextAutoSuggestList(progenyId, elementId = 'context-input', whiteList = false, tagLimit = 0) {
     let contextInputElement = document.getElementById(elementId);
     if (contextInputElement !== null) {
         const contextsList = await getContextsList(progenyId);
         $('#' + elementId).amsifySuggestags({
             suggestions: contextsList.suggestions,
             selectOnHover: false,
-            printValues: false
+            printValues: false,
+            whiteList: whiteList,
+            tagLimit: tagLimit
         });
         const suggestInputElement = contextInputElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
@@ -209,7 +211,7 @@ export async function getLocationsList(progenyId) {
  * @param progenyId The Id of the Progeny to set locations for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setLocationAutoSuggestList(progenyId, elementId = 'location-input') {
+export async function setLocationAutoSuggestList(progenyId, elementId = 'location-input', whiteList = false, tagLimit = 5) {
     let locationInputElement = document.getElementById(elementId);
     if (locationInputElement !== null) {
         const locationsList = await getLocationsList(progenyId);
@@ -217,7 +219,8 @@ export async function setLocationAutoSuggestList(progenyId, elementId = 'locatio
             suggestions: locationsList.suggestions,
             selectOnHover: false,
             printValues: false,
-            tagLimit: 5
+            whiteList: whiteList,
+            tagLimit: tagLimit
         });
         const suggestInputElement = locationInputElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
@@ -268,14 +271,16 @@ export async function getCategoriesList(progenyId) {
  * @param progenyId The Id of the Progeny to set categories for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setCategoriesAutoSuggestList(progenyId, elementId = 'category-input') {
+export async function setCategoriesAutoSuggestList(progenyId, elementId = 'category-input', whiteList = false, tagLimit = 0) {
     let categoryInputElement = document.getElementById(elementId);
     if (categoryInputElement !== null) {
         const categoriesList = await getCategoriesList(progenyId);
         $('#' + elementId).amsifySuggestags({
             suggestions: categoriesList.suggestions,
             selectOnHover: false,
-            printValues: false
+            printValues: false,
+            whiteList: whiteList,
+            tagLimit: tagLimit
         });
         const suggestInputElement = categoryInputElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
@@ -326,14 +331,16 @@ export async function getVocabularyLanguagesList(progenyId) {
  * @param progenyId The Id of the Progeny to set languages for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setVocabularyLanguagesAutoSuggestList(progenyId, elementId = 'vocabulary-languages-input') {
+export async function setVocabularyLanguagesAutoSuggestList(progenyId, elementId = 'vocabulary-languages-input', whiteList = false, tagLimit = 0) {
     let languageInputElement = document.getElementById(elementId);
     if (languageInputElement !== null) {
         const languagesList = await getVocabularyLanguagesList(progenyId);
         $('#' + elementId).amsifySuggestags({
             suggestions: languagesList.suggestions,
             selectOnHover: false,
-            printValues: false
+            printValues: false,
+            whiteList: whiteList,
+            tagLimit: tagLimit
         });
         const suggestInputElement = languageInputElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {

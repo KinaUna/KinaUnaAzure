@@ -175,7 +175,7 @@ export async function getContextsList(progenyId: number): Promise<AutoSuggestLis
  * @param progenyId The Id of the Progeny to set contexts for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setContextAutoSuggestList(progenyId: number, elementId: string = 'context-input'): Promise<void> {
+export async function setContextAutoSuggestList(progenyId: number, elementId: string = 'context-input', whiteList: boolean = false, tagLimit: number = 0): Promise<void> {
     let contextInputElement = document.getElementById(elementId);
     if (contextInputElement !== null) {
         const contextsList = await getContextsList(progenyId);
@@ -183,7 +183,9 @@ export async function setContextAutoSuggestList(progenyId: number, elementId: st
         ($('#' + elementId) as any).amsifySuggestags({
             suggestions: contextsList.suggestions,
             selectOnHover: false,
-            printValues: false
+            printValues: false,
+            whiteList: whiteList,
+            tagLimit: tagLimit
         });
 
         const suggestInputElement = contextInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
@@ -241,7 +243,7 @@ export async function getLocationsList(progenyId: number): Promise<AutoSuggestLi
  * @param progenyId The Id of the Progeny to set locations for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setLocationAutoSuggestList(progenyId: number, elementId: string = 'location-input'): Promise<void> {
+export async function setLocationAutoSuggestList(progenyId: number, elementId: string = 'location-input', whiteList: boolean = false, tagLimit: number = 5): Promise<void> {
     let locationInputElement = document.getElementById(elementId);
     if (locationInputElement !== null) {
         const locationsList = await getLocationsList(progenyId);
@@ -250,7 +252,8 @@ export async function setLocationAutoSuggestList(progenyId: number, elementId: s
             suggestions: locationsList.suggestions,
             selectOnHover: false,
             printValues: false,
-            tagLimit: 5
+            whiteList: whiteList,
+            tagLimit: tagLimit
         });
 
         const suggestInputElement = locationInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
@@ -308,7 +311,7 @@ export async function getCategoriesList(progenyId: number): Promise<AutoSuggestL
  * @param progenyId The Id of the Progeny to set categories for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setCategoriesAutoSuggestList(progenyId: number, elementId: string = 'category-input'): Promise<void> {
+export async function setCategoriesAutoSuggestList(progenyId: number, elementId: string = 'category-input', whiteList: boolean = false, tagLimit: number = 0): Promise<void> {
     let categoryInputElement = document.getElementById(elementId);
     if (categoryInputElement !== null) {
         const categoriesList = await getCategoriesList(progenyId);
@@ -316,7 +319,9 @@ export async function setCategoriesAutoSuggestList(progenyId: number, elementId:
         ($('#' + elementId) as any).amsifySuggestags({
             suggestions: categoriesList.suggestions,
             selectOnHover: false,
-            printValues: false
+            printValues: false,
+            whiteList: whiteList,
+            tagLimit: tagLimit
         });
 
         const suggestInputElement = categoryInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
@@ -374,7 +379,7 @@ export async function getVocabularyLanguagesList(progenyId: number): Promise<Aut
  * @param progenyId The Id of the Progeny to set languages for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setVocabularyLanguagesAutoSuggestList(progenyId: number, elementId: string = 'vocabulary-languages-input'): Promise<void> {
+export async function setVocabularyLanguagesAutoSuggestList(progenyId: number, elementId: string = 'vocabulary-languages-input', whiteList: boolean = false, tagLimit: number = 0): Promise<void> {
     let languageInputElement = document.getElementById(elementId);
     if (languageInputElement !== null) {
         const languagesList = await getVocabularyLanguagesList(progenyId);
@@ -382,7 +387,9 @@ export async function setVocabularyLanguagesAutoSuggestList(progenyId: number, e
         ($('#' + elementId) as any).amsifySuggestags({
             suggestions: languagesList.suggestions,
             selectOnHover: false,
-            printValues: false
+            printValues: false,
+            whiteList: whiteList,
+            tagLimit: tagLimit
         });
 
         const suggestInputElement = languageInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');

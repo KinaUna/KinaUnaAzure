@@ -150,12 +150,19 @@ function updateSettingsNotificationDiv(): void {
         onThisDaySettingsNotificationText += '<br/>' + tagFilterSpan?.innerHTML + onThisDayParameters.tagFilter;
     }
 
+    const categoryFilterSpan = document.querySelector<HTMLSpanElement>('#category-filter-span')
+    if (onThisDayParameters.categoryFilter !== '') {
+        onThisDaySettingsNotificationText += '<br/>' + categoryFilterSpan?.innerHTML + onThisDayParameters.categoryFilter;
+    }
+
+    const contextFilterSpan = document.querySelector<HTMLSpanElement>('#context-filter-span')
+    if (onThisDayParameters.contextFilter !== '') {
+        onThisDaySettingsNotificationText += '<br/>' + contextFilterSpan?.innerHTML + onThisDayParameters.contextFilter;
+    }
+
     if (onThisDaySettingsNotificationDiv !== null && onThisDaySettingsNotificationText !== undefined) {
         onThisDaySettingsNotificationDiv.innerHTML = onThisDaySettingsNotificationText;
     }
-
-    
-
 }
 
 /** Clears the list of timeline elements in the timeline-items-div and scrolls to above the timeline-items-div.
@@ -357,6 +364,17 @@ async function saveOnThisDayPageSettings(): Promise<void> {
     if (tagFilterInput !== null) {
         onThisDayParameters.tagFilter = tagFilterInput.value;
     }
+
+    const categoryFilterInput = document.querySelector<HTMLInputElement>('#category-filter-input');
+    if (categoryFilterInput !== null) {
+        onThisDayParameters.categoryFilter = categoryFilterInput.value;
+    }
+
+    const contextFilterInput = document.querySelector<HTMLInputElement>('#context-filter-input');
+    if (contextFilterInput !== null) {
+        onThisDayParameters.contextFilter = contextFilterInput.value;
+    }
+
     SettingsHelper.savePageSettings<OnThisDayRequest>(onThisDayPageSettingsStorageKey, onThisDayParameters);
     SettingsHelper.toggleShowPageSettings();
     clearTimeLineElements();
@@ -485,6 +503,8 @@ async function initialSettingsPanelSetup(): Promise<void> {
     }
 
     await setTagsAutoSuggestList(getCurrentProgenyId(), 'tag-filter-input', true);
+    await setTagsAutoSuggestList(getCurrentProgenyId(), 'category-filter-input', true);
+    await setTagsAutoSuggestList(getCurrentProgenyId(), 'context-filter-input', true);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

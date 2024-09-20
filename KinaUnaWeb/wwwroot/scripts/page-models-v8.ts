@@ -294,6 +294,8 @@ export class OnThisDayRequest {
     month: number = 0;
     day: number = 0;
     tagFilter: string = '';
+    categoryFilter: string = '';
+    contextFilter: string = '';
     timeLineTypeFilter: TimeLineType[] = [];
     onThisDayPeriod: OnThisDayPeriod = OnThisDayPeriod.Year;
     sortOrder: number = 1;

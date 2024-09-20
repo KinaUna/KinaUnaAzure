@@ -13,7 +13,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SetBaseProperties(baseItemsViewModel);
         }
 
-        public void SetRequestParameters(int skip, int numberOfItems, OnThisDayPeriod onThisDayPeriod, int year, int month, int day, string tagFilter, int sortOrder)
+        public void SetRequestParameters(int skip, int numberOfItems, OnThisDayPeriod onThisDayPeriod, int year, int month, int day, string tagFilter, string categoryFilter, string contextFilter, int sortOrder)
         {
             DateTime thisDayDateTime = DateTime.UtcNow;
             if (year > 0 && month > 0 && day > 0)
@@ -34,6 +34,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 OnThisDayPeriod = onThisDayPeriod,
                 ThisDayDateTime = thisDayDateTime,
                 TagFilter = tagFilter,
+                CategoryFilter = categoryFilter,
+                ContextFilter = contextFilter,
                 AccessLevel = CurrentAccessLevel,
                 TimeLineTypeFilter = [],
                 SortOrder = sortOrder

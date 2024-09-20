@@ -233,6 +233,24 @@
                     <input id="tag-filter-input" type="text"/>
                 </div>
             </div>
+            <div class="row ml-4 timeline-filter-options d-none">
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    <span id="category-filter-span">@await LocaleManager.GetTranslation("Category Filter:", PageNames.Timeline, Model.LanguageId)</span>
+                </div>
+                <div class="col ml-4">
+                    <input id="category-filter-input" type="text"/>
+                </div>
+            </div>
+        <div class="row ml-4 timeline-filter-options d-none">
+            <div class="col-12">
+                <div class="space-20"></div>
+                <span id="context-filter-span">@await LocaleManager.GetTranslation("Context Filter:", PageNames.Timeline, Model.LanguageId)</span>
+            </div>
+            <div class="col ml-4">
+                <input id="context-filter-input" type="text"/>
+            </div>
+        </div>
             <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">

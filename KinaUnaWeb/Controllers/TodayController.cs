@@ -25,14 +25,16 @@ namespace KinaUnaWeb.Controllers
         /// <param name="day">Integer for the start date day.</param>
         /// <param name="period">Filter the results by TimeLineItem type.</param>
         /// <param name="tagFilter"></param>
+        /// <param name="categoryFilter"></param>
+        /// <param name="contextFilter"></param>
         /// <param name="sortOrder"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public async Task<IActionResult> OnThisDay(int progenyId = 0, int items = 10, int skip = 0, int year = 0, int month = 0, int day = 0, int period = 4, string tagFilter = "", int sortOrder = 1)
+        public async Task<IActionResult> OnThisDay(int progenyId = 0, int items = 10, int skip = 0, int year = 0, int month = 0, int day = 0, int period = 4, string tagFilter = "", string categoryFilter = "", string contextFilter = "", int sortOrder = 1)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
             OnThisDayViewModel model = new(baseModel);
-            model.SetRequestParameters(skip, items, (OnThisDayPeriod)period, year, month, day, tagFilter, sortOrder);
+            model.SetRequestParameters(skip, items, (OnThisDayPeriod)period, year, month, day, tagFilter, categoryFilter, contextFilter, sortOrder);
 
             return View(model);
         }

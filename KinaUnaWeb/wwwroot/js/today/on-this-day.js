@@ -1,6 +1,6 @@
 import * as LocaleHelper from '../localization-v8.js';
 import { TimeLineItemViewModel, OnThisDayRequest } from '../page-models-v8.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setTagsAutoSuggestList } from '../data-tools-v8.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setTagsAutoSuggestList, setCategoriesAutoSuggestList, setContextAutoSuggestList } from '../data-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
@@ -131,6 +131,14 @@ function updateSettingsNotificationDiv() {
     const tagFilterSpan = document.querySelector('#tag-filter-span');
     if (onThisDayParameters.tagFilter !== '') {
         onThisDaySettingsNotificationText += '<br/>' + tagFilterSpan?.innerHTML + onThisDayParameters.tagFilter;
+    }
+    const categoryFilterSpan = document.querySelector('#category-filter-span');
+    if (onThisDayParameters.categoryFilter !== '') {
+        onThisDaySettingsNotificationText += '<br/>' + categoryFilterSpan?.innerHTML + onThisDayParameters.categoryFilter;
+    }
+    const contextFilterSpan = document.querySelector('#context-filter-span');
+    if (onThisDayParameters.contextFilter !== '') {
+        onThisDaySettingsNotificationText += '<br/>' + contextFilterSpan?.innerHTML + onThisDayParameters.contextFilter;
     }
     if (onThisDaySettingsNotificationDiv !== null && onThisDaySettingsNotificationText !== undefined) {
         onThisDaySettingsNotificationDiv.innerHTML = onThisDaySettingsNotificationText;
@@ -313,6 +321,14 @@ async function saveOnThisDayPageSettings() {
     if (tagFilterInput !== null) {
         onThisDayParameters.tagFilter = tagFilterInput.value;
     }
+    const categoryFilterInput = document.querySelector('#category-filter-input');
+    if (categoryFilterInput !== null) {
+        onThisDayParameters.categoryFilter = categoryFilterInput.value;
+    }
+    const contextFilterInput = document.querySelector('#context-filter-input');
+    if (contextFilterInput !== null) {
+        onThisDayParameters.contextFilter = contextFilterInput.value;
+    }
     SettingsHelper.savePageSettings(onThisDayPageSettingsStorageKey, onThisDayParameters);
     SettingsHelper.toggleShowPageSettings();
     clearTimeLineElements();
@@ -426,6 +442,8 @@ async function initialSettingsPanelSetup() {
         allButton.addEventListener('click', setTimeLineTypeFilterToAll);
     }
     await setTagsAutoSuggestList(getCurrentProgenyId(), 'tag-filter-input', true);
+    await setCategoriesAutoSuggestList(getCurrentProgenyId(), 'category-filter-input', true);
+    await setContextAutoSuggestList(getCurrentProgenyId(), 'context-filter-input', true);
     return new Promise(function (resolve, reject) {
         resolve();
     });

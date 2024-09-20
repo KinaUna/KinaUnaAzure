@@ -295,6 +295,16 @@ namespace KinaUnaProgenyApi.Services
                 onThisDayResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
             }
 
+            if(!string.IsNullOrEmpty(onThisDayRequest.CategoryFilter))
+            {
+                onThisDayResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithCategories(onThisDayResponse.TimeLineItems, onThisDayRequest.CategoryFilter);
+            }
+
+            if (!string.IsNullOrEmpty(onThisDayRequest.ContextFilter))
+            {
+                onThisDayResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithContexts(onThisDayResponse.TimeLineItems, onThisDayRequest.ContextFilter);
+            }
+
             onThisDayResponse.TimeLineItems = [.. onThisDayResponse.TimeLineItems.OrderByDescending(t => t.ProgenyTime)];
             if (onThisDayRequest.SortOrder == 0)
             {
