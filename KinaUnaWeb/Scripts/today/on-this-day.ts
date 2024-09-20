@@ -472,6 +472,7 @@ async function initialSettingsPanelSetup(): Promise<void> {
         sortAscendingSettingsButton.addEventListener('click', sortTimelineAscending);
         sortDescendingSettingsButton.addEventListener('click', sortTimelineDescending);
     }
+
     // Event listeners for period buttons.
     const periodButtons = document.querySelectorAll<HTMLButtonElement>('.on-this-day-period-button');
     periodButtons.forEach(function (button: HTMLButtonElement) {

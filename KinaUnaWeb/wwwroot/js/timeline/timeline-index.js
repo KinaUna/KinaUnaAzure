@@ -1,12 +1,12 @@
 import * as LocaleHelper from '../localization-v8.js';
-import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v8.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
+import { TimeLineItemViewModel, TimelineRequest } from '../page-models-v8.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setCategoriesAutoSuggestList, setContextAutoSuggestList, setTagsAutoSuggestList } from '../data-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
 const timelinePageSettingsStorageKey = 'timeline_page_parameters';
 let timelineItemsList = [];
-let timeLineParameters = new TimelineParameters();
+let timeLineParameters = new TimelineRequest();
 let timeLineProgenyId;
 let languageId = 1;
 let moreTimelineItemsButton;
@@ -43,7 +43,7 @@ async function getTimelineList(parameters, updateHistory = true) {
     parameters.skip = timelineItemsList.length;
     timeLineParameters.skip = parameters.skip;
     setBrowserUrl(parameters, true);
-    await fetch('/Timeline/GetTimelineList', {
+    await fetch('/Timeline/GetTimelineData', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -54,7 +54,7 @@ async function getTimelineList(parameters, updateHistory = true) {
         if (getTimelineListResult != null) {
             updateSettingsNotificationDiv();
             const newTimelineItemsList = (await getTimelineListResult.json());
-            if (newTimelineItemsList.timelineItems.length > 0) {
+            if (newTimelineItemsList.timeLineItems.length > 0) {
                 await processTimelineList(newTimelineItemsList);
                 if (updateHistory) {
                     setBrowserUrl(parameters, true);
@@ -75,29 +75,17 @@ async function getTimelineList(parameters, updateHistory = true) {
  * If there are no more remaining items the load more button is hidden.
  * @param newTimelineItemsList The TimelineList object with a list of items to add and data about remaining items.
  */
-async function processTimelineList(newTimelineItemsList) {
-    if (firstRun && timeLineParameters.firstItemYear !== newTimelineItemsList.firstItemYear) {
-        timeLineParameters.firstItemYear = newTimelineItemsList.firstItemYear;
-        if (timeLineParameters.sortBy === 0) {
-            timeLineParameters.year = newTimelineItemsList.firstItemYear;
-            timeLineParameters.month = 1;
-            timeLineParameters.day = 1;
-            updateStartDatePicker(new Date(timeLineParameters.year, timeLineParameters.month - 1, timeLineParameters.day));
-            return new Promise(function (resolve, reject) {
-                resolve();
-            });
-        }
+async function processTimelineList(timelineResponse) {
+    const onThisDayPostsParentDiv = document.querySelector('#latest-posts-parent-div');
+    if (onThisDayPostsParentDiv !== null) {
+        onThisDayPostsParentDiv.classList.remove('d-none');
     }
-    const latestPostsParentDiv = document.querySelector('#latest-posts-parent-div');
-    if (latestPostsParentDiv !== null) {
-        latestPostsParentDiv.classList.remove('d-none');
-    }
-    for await (const timelineItemToAdd of newTimelineItemsList.timelineItems) {
+    for await (const timelineItemToAdd of timelineResponse.timeLineItems) {
         timelineItemsList.push(timelineItemToAdd);
         await renderTimelineItem(timelineItemToAdd);
     }
     ;
-    if (newTimelineItemsList.remainingItemsCount > 0 && moreTimelineItemsButton !== null) {
+    if (timelineResponse.remainingItemsCount > 0 && moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.classList.remove('d-none');
     }
     return new Promise(function (resolve, reject) {
@@ -138,12 +126,15 @@ async function renderTimelineItem(timelineItem) {
 function setBrowserUrl(parameters, replaceState) {
     const url = new URL(window.location.href);
     url.searchParams.set('childId', parameters.progenyId.toString());
-    url.searchParams.set('sortBy', parameters.sortBy.toString());
-    url.searchParams.set('items', parameters.count.toString());
+    url.searchParams.set('sortOrder', parameters.sortOrder.toString());
+    url.searchParams.set('items', parameters.numberOfItems.toString());
     url.searchParams.set('skip', timelineItemsList.length.toString());
     url.searchParams.set('year', parameters.year.toString());
     url.searchParams.set('month', parameters.month.toString());
     url.searchParams.set('day', parameters.day.toString());
+    url.searchParams.set('tagFilter', parameters.tagFilter.toString());
+    url.searchParams.set('categoryFilter', parameters.categoryFilter.toString());
+    url.searchParams.set('contextFilter', parameters.contextFilter.toString());
     if (replaceState) {
         window.history.replaceState({}, '', url);
     }
@@ -158,17 +149,17 @@ async function loadPageFromHistory() {
     const url = new URL(window.location.href);
     if (timeLineParameters !== null) {
         timeLineParameters.progenyId = url.searchParams.get('childId') ? parseInt(url.searchParams.get('childId')) : 0;
-        timeLineParameters.sortBy = url.searchParams.get('sortBy') ? parseInt(url.searchParams.get('sortBy')) : 1;
+        timeLineParameters.sortOrder = url.searchParams.get('sortOrder') ? parseInt(url.searchParams.get('sortOrder')) : 1;
         let initialCount = url.searchParams.get('items') ? parseInt(url.searchParams.get('items')) : 10;
         let skipValue = url.searchParams.get('skip') ? parseInt(url.searchParams.get('skip')) : 0;
-        timeLineParameters.count = skipValue;
+        timeLineParameters.numberOfItems = skipValue;
         timeLineParameters.skip = 0;
         timeLineParameters.year = url.searchParams.get('year') ? parseInt(url.searchParams.get('year')) : 0;
         timeLineParameters.month = url.searchParams.get('month') ? parseInt(url.searchParams.get('month')) : 0;
         timeLineParameters.day = url.searchParams.get('day') ? parseInt(url.searchParams.get('day')) : 0;
         firstRun = false;
         await getTimelineList(timeLineParameters, false);
-        timeLineParameters.count = initialCount;
+        timeLineParameters.numberOfItems = initialCount;
     }
     return new Promise(function (resolve, reject) {
         resolve();
@@ -178,7 +169,7 @@ async function loadPageFromHistory() {
 */
 function updateSettingsNotificationDiv() {
     let timelineSettingsNotificationText;
-    if (timeLineParameters.sortBy === 0) {
+    if (timeLineParameters.sortOrder === 0) {
         timelineSettingsNotificationText = sortAscendingSettingsButton?.innerHTML;
     }
     else {
@@ -186,6 +177,18 @@ function updateSettingsNotificationDiv() {
     }
     timelineSettingsNotificationText += '<br/>' + startLabelDiv?.innerHTML;
     timelineSettingsNotificationText += timelineStartDateTimePicker.val();
+    const tagFilterSpan = document.querySelector('#tag-filter-span');
+    if (timeLineParameters.tagFilter !== '') {
+        timelineSettingsNotificationText += '<br/>' + tagFilterSpan?.innerHTML + timeLineParameters.tagFilter;
+    }
+    const categoryFilterSpan = document.querySelector('#category-filter-span');
+    if (timeLineParameters.categoryFilter !== '') {
+        timelineSettingsNotificationText += '<br/>' + categoryFilterSpan?.innerHTML + timeLineParameters.categoryFilter;
+    }
+    const contextFilterSpan = document.querySelector('#context-filter-span');
+    if (timeLineParameters.contextFilter !== '') {
+        timelineSettingsNotificationText += '<br/>' + contextFilterSpan?.innerHTML + timeLineParameters.contextFilter;
+    }
     if (timelineSettingsNotificationDiv !== null && timelineSettingsNotificationText !== undefined) {
         timelineSettingsNotificationDiv.innerHTML = timelineSettingsNotificationText;
     }
@@ -233,7 +236,7 @@ function updateStartDatePicker(date) {
 async function sortTimelineAscending() {
     sortAscendingSettingsButton?.classList.add('active');
     sortDescendingSettingsButton?.classList.remove('active');
-    timeLineParameters.sortBy = 0;
+    timeLineParameters.sortOrder = 0;
     let currentDate = new Date();
     if (timeLineParameters.year === currentDate.getFullYear() && timeLineParameters.month - 1 === currentDate.getMonth() && timeLineParameters.day === currentDate.getDate()) {
         timeLineParameters.year = timeLineParameters.firstItemYear;
@@ -253,7 +256,7 @@ async function sortTimelineAscending() {
 async function sortTimelineDescending() {
     sortDescendingSettingsButton?.classList.add('active');
     sortAscendingSettingsButton?.classList.remove('active');
-    timeLineParameters.sortBy = 1;
+    timeLineParameters.sortOrder = 1;
     let currentDate = new Date();
     if (timeLineParameters.year === timeLineParameters.firstItemYear && timeLineParameters.month === 1 && timeLineParameters.day === 1) {
         timeLineParameters.year = currentDate.getFullYear();
@@ -266,15 +269,92 @@ async function sortTimelineDescending() {
     });
 }
 /**
+ * Toggles the active state of the tag filter button and updates the tag filter in the parameters.
+ */
+function toggleShowFilters() {
+    const filtersElements = document.querySelectorAll('.timeline-filter-options');
+    const toggleShowFiltersChevron = document.getElementById('show-filters-chevron');
+    filtersElements.forEach(function (element) {
+        if (element.classList.contains('d-none')) {
+            element.classList.remove('d-none');
+        }
+        else {
+            element.classList.add('d-none');
+        }
+    });
+    if (toggleShowFiltersChevron !== null) {
+        if (toggleShowFiltersChevron.classList.contains('chevron-right-rotate-down')) {
+            toggleShowFiltersChevron.classList.remove('chevron-right-rotate-down');
+        }
+        else {
+            toggleShowFiltersChevron.classList.add('chevron-right-rotate-down');
+        }
+    }
+}
+/**
+ * Adds or removes the TimeLineType in the onThisDayParameters.timeLineTypeFilter.
+ * @param type The TimeLineType to toggle.
+ */
+function toggleTimeLineType(type) {
+    const index = timeLineParameters.timeLineTypeFilter.indexOf(type);
+    if (index > -1) {
+        timeLineParameters.timeLineTypeFilter.splice(index, 1);
+    }
+    else {
+        timeLineParameters.timeLineTypeFilter.push(type);
+    }
+    updateTimeLineTypeButtons();
+}
+/**
+ * Updates the TimeLineType buttons to show the currently selected types as active.
+ */
+function updateTimeLineTypeButtons() {
+    const allButton = document.querySelector('#toggle-all-time-line-types-button');
+    if (allButton !== null) {
+        if (timeLineParameters.timeLineTypeFilter.length === 0) {
+            allButton.classList.add('active');
+        }
+        else {
+            allButton?.classList.remove('active');
+        }
+    }
+    const typeButtons = document.querySelectorAll('.timeline-type-filter-button');
+    typeButtons.forEach(function (button) {
+        button.classList.remove('active');
+        if (timeLineParameters.timeLineTypeFilter.includes(parseInt(button.dataset.type ?? '-1'))) {
+            button.classList.add('active');
+        }
+    });
+}
+/**
+ * Sets the TimeLineTypeFilter to empty, which means all types are included.
+ */
+function setTimeLineTypeFilterToAll() {
+    timeLineParameters.timeLineTypeFilter = [];
+    updateTimeLineTypeButtons();
+}
+/**
  * Saves the current page parameters to local storage and reloads the timeline items list.
  */
 async function saveTimelinePageSettings() {
     const numberOfItemsToGetSelect = document.querySelector('#items-per-page-select');
     if (numberOfItemsToGetSelect !== null) {
-        timeLineParameters.count = parseInt(numberOfItemsToGetSelect.value);
+        timeLineParameters.numberOfItems = parseInt(numberOfItemsToGetSelect.value);
     }
     else {
-        timeLineParameters.count = 10;
+        timeLineParameters.numberOfItems = 10;
+    }
+    const tagFilterInput = document.querySelector('#tag-filter-input');
+    if (tagFilterInput !== null) {
+        timeLineParameters.tagFilter = tagFilterInput.value;
+    }
+    const categoryFilterInput = document.querySelector('#category-filter-input');
+    if (categoryFilterInput !== null) {
+        timeLineParameters.categoryFilter = categoryFilterInput.value;
+    }
+    const contextFilterInput = document.querySelector('#context-filter-input');
+    if (contextFilterInput !== null) {
+        timeLineParameters.contextFilter = contextFilterInput.value;
     }
     SettingsHelper.savePageSettings(timelinePageSettingsStorageKey, timeLineParameters);
     SettingsHelper.toggleShowPageSettings();
@@ -294,19 +374,19 @@ async function loadTimelinePageSettings() {
     const pageSettingsFromStorage = SettingsHelper.getPageSettings(timelinePageSettingsStorageKey);
     if (pageSettingsFromStorage) {
         if (pageSettingsFromStorage.progenyId === timeLineProgenyId) {
-            timeLineParameters.firstItemYear = pageSettingsFromStorage.firstItemYear;
+            timeLineParameters.firstItemYear = pageSettingsFromStorage.firstItemYear ?? 1900;
         }
-        timeLineParameters.sortBy = pageSettingsFromStorage.sortBy;
-        if (timeLineParameters.sortBy === 0) {
+        timeLineParameters.sortOrder = pageSettingsFromStorage.sortOrder ?? 1;
+        if (timeLineParameters.sortOrder === 0) {
             sortTimelineAscending();
         }
         else {
             sortTimelineDescending();
         }
-        timeLineParameters.count = pageSettingsFromStorage.count;
+        timeLineParameters.numberOfItems = pageSettingsFromStorage.numberOfItems ?? 10;
         const selectItemsPerPageElement = document.querySelector('#items-per-page-select');
         if (selectItemsPerPageElement !== null) {
-            selectItemsPerPageElement.value = timeLineParameters.count.toString();
+            selectItemsPerPageElement.value = timeLineParameters.numberOfItems?.toString();
             $(".selectpicker").selectpicker('refresh');
         }
     }
@@ -325,11 +405,11 @@ function getParametersFromPageProperties() {
             const parameters = JSON.parse(pageParameters);
             if (parameters !== null) {
                 timeLineParameters.progenyId = parameters.progenyId;
-                timeLineParameters.sortBy = parameters.sortBy;
-                timeLineParameters.year = parameters.year;
-                timeLineParameters.month = parameters.month;
-                timeLineParameters.day = parameters.day;
-                timeLineParameters.firstItemYear = parameters.firstItemYear;
+                timeLineParameters.sortOrder = parameters.sortBy ?? 1;
+                timeLineParameters.year = parameters.year ?? 0;
+                timeLineParameters.month = parameters.month ?? 0;
+                timeLineParameters.day = parameters.day ?? 0;
+                timeLineParameters.firstItemYear = parameters.firstItemYear ?? 1900;
             }
         }
     }
@@ -360,6 +440,28 @@ async function initialSettingsPanelSetup() {
         sortAscendingSettingsButton.addEventListener('click', sortTimelineAscending);
         sortDescendingSettingsButton.addEventListener('click', sortTimelineDescending);
     }
+    // Event listener for the show filters button.
+    const toggleShowFiltersButton = document.querySelector('#timeline-toggle-filters-button');
+    if (toggleShowFiltersButton !== null) {
+        toggleShowFiltersButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            toggleShowFilters();
+        });
+    }
+    // Event listeners for TimeLineType buttons.
+    const typeButtons = document.querySelectorAll('.timeline-type-filter-button');
+    typeButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            toggleTimeLineType(parseInt(button.dataset.type ?? '-1'));
+        });
+    });
+    const allButton = document.querySelector('#toggle-all-time-line-types-button');
+    if (allButton !== null) {
+        allButton.addEventListener('click', setTimeLineTypeFilterToAll);
+    }
+    await setTagsAutoSuggestList(getCurrentProgenyId(), 'tag-filter-input', true);
+    await setCategoriesAutoSuggestList(getCurrentProgenyId(), 'category-filter-input', true);
+    await setContextAutoSuggestList(getCurrentProgenyId(), 'context-filter-input', true);
     return new Promise(function (resolve, reject) {
         resolve();
     });

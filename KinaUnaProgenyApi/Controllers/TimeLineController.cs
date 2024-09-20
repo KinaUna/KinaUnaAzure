@@ -26,6 +26,36 @@ namespace KinaUnaProgenyApi.Controllers
     public class TimeLineController(IProgenyService progenyService, IUserAccessService userAccessService, ITimelineService timelineService, IUserInfoService userInfoService) : ControllerBase
     {
         /// <summary>
+        /// Gets a list of TimeLineItems for a Progeny,
+        /// Filtering by TimeLineItem type, category, tags is optional.
+        /// </summary>
+        /// <param name="timelineRequest"></param>
+        /// <returns>TimelineResponse object.</returns>
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> GetTimeLineRequestData([FromBody] TimelineRequest timelineRequest)
+        {
+            Progeny progeny = await progenyService.GetProgeny(timelineRequest.ProgenyId);
+            if (progeny == null) return Ok(new TimelineResponse());
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(timelineRequest.ProgenyId, userEmail);
+            if (userAccess == null) return Ok(new OnThisDayResponse());
+            UserInfo currentUser = await userInfoService.GetUserInfoByEmail(userEmail);
+            timelineRequest.AccessLevel = userAccess.AccessLevel;
+            if (timelineRequest.SortOrder == 1)
+            {
+                DateTime updateTime = new(timelineRequest.TimelineStartDateTime.Year, timelineRequest.TimelineStartDateTime.Month, timelineRequest.TimelineStartDateTime.Day, 23, 59, 59);
+                timelineRequest.TimelineStartDateTime = updateTime;
+            }
+
+            TimelineResponse timelineResponse = await timelineService.GetTimelineData(timelineRequest, currentUser.Timezone);
+
+            return Ok(timelineResponse);
+        }
+
+        /// <summary>
         /// Gets a list of all TimeLineItems for a Progeny with the given ProgenyId that a user with a given access level can access.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get TimeLineItems for.</param>

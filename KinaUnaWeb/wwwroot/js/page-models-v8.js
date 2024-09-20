@@ -274,6 +274,31 @@ export class TimelineParameters {
         this.month = 0;
         this.day = 0;
         this.firstItemYear = 1900;
+        this.tagFilter = '';
+    }
+}
+export class TimelineRequest {
+    constructor() {
+        this.progenyId = 0;
+        this.accessLevel = 5;
+        this.skip = 0;
+        this.numberOfItems = 5;
+        this.year = 0;
+        this.month = 0;
+        this.day = 0;
+        this.tagFilter = '';
+        this.categoryFilter = '';
+        this.contextFilter = '';
+        this.timeLineTypeFilter = [];
+        this.sortOrder = 1;
+        this.firstItemYear = 1900;
+    }
+}
+export class TimelineResponse {
+    constructor() {
+        this.timeLineItems = [];
+        this.remainingItemsCount = 0;
+        this.request = new TimelineRequest();
     }
 }
 export class TimeLineItemViewModel {

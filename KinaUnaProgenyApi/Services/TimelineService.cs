@@ -322,5 +322,72 @@ namespace KinaUnaProgenyApi.Services
 
             return onThisDayResponse;
         }
+
+        /// <summary>
+        /// Gets a TimelineResponse for displaying TimeLineItems on the Timeline page.
+        /// </summary>
+        /// <param name="timelineRequest">The request parameters.</param>
+        /// <param name="timezone">The user's timezone.</param>
+        /// <returns>TimelineResponse with the filtered list of Timeline items.</returns>
+        public async Task<TimelineResponse> GetTimelineData(TimelineRequest timelineRequest, string timezone)
+        {
+            TimelineResponse timelineResponse = new()
+            {
+                Request = timelineRequest
+            };
+
+            List<TimeLineItem> allTimeLineItems = await GetTimeLineList(timelineRequest.ProgenyId);
+            allTimeLineItems = allTimeLineItems.Where(t => t.AccessLevel >= timelineRequest.AccessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
+            if (allTimeLineItems.Count == 0)
+            {
+                timelineResponse.TimeLineItems = [];
+                timelineResponse.RemainingItemsCount = 0;
+                return timelineResponse;
+            }
+
+            timelineResponse.Request.FirstItemYear = allTimeLineItems.Min(t => t.ProgenyTime.Year);
+            timelineResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimeLineItems, timelineRequest.TimeLineTypeFilter);
+
+            foreach (TimeLineItem timeLineItem in timelineResponse.TimeLineItems)
+            {
+                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(timezone));
+            }
+
+            
+            // Todo: Implement Tags for TimeLineItems.
+            // onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
+
+            if (!string.IsNullOrEmpty(timelineRequest.TagFilter))
+            {
+                timelineResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithTags(timelineResponse.TimeLineItems, timelineRequest.TagFilter);
+            }
+
+            if (!string.IsNullOrEmpty(timelineRequest.CategoryFilter))
+            {
+                timelineResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithCategories(timelineResponse.TimeLineItems, timelineRequest.CategoryFilter);
+            }
+
+            if (!string.IsNullOrEmpty(timelineRequest.ContextFilter))
+            {
+                timelineResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithContexts(timelineResponse.TimeLineItems, timelineRequest.ContextFilter);
+            }
+
+            timelineResponse.TimeLineItems = [.. timelineResponse.TimeLineItems.OrderByDescending(t => t.ProgenyTime)];
+            if (timelineRequest.SortOrder == 0)
+            {
+                timelineResponse.TimeLineItems.Reverse();
+            }
+
+            int filteredItemsCount = timelineResponse.TimeLineItems.Count;
+            timelineResponse.TimeLineItems = timelineResponse.TimeLineItems.Skip(timelineRequest.Skip).Take(timelineRequest.NumberOfItems).ToList();
+            timelineResponse.RemainingItemsCount = filteredItemsCount - (timelineRequest.Skip + timelineRequest.NumberOfItems);
+
+            if (timelineResponse.RemainingItemsCount < 0)
+            {
+                timelineResponse.RemainingItemsCount = 0;
+            }
+
+            return timelineResponse;
+        }
     }
 }

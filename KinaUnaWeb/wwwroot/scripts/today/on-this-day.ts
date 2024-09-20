@@ -1,6 +1,6 @@
 import * as LocaleHelper from '../localization-v8.js';
 import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList, OnThisDayRequest, OnThisDayResponse, OnThisDayPeriod, TimeLineType } from '../page-models-v8.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setTagsAutoSuggestList } from '../data-tools-v8.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setTagsAutoSuggestList, setCategoriesAutoSuggestList, setContextAutoSuggestList } from '../data-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
@@ -472,6 +472,7 @@ async function initialSettingsPanelSetup(): Promise<void> {
         sortAscendingSettingsButton.addEventListener('click', sortTimelineAscending);
         sortDescendingSettingsButton.addEventListener('click', sortTimelineDescending);
     }
+
     // Event listeners for period buttons.
     const periodButtons = document.querySelectorAll<HTMLButtonElement>('.on-this-day-period-button');
     periodButtons.forEach(function (button: HTMLButtonElement) {
@@ -503,8 +504,8 @@ async function initialSettingsPanelSetup(): Promise<void> {
     }
 
     await setTagsAutoSuggestList(getCurrentProgenyId(), 'tag-filter-input', true);
-    await setTagsAutoSuggestList(getCurrentProgenyId(), 'category-filter-input', true);
-    await setTagsAutoSuggestList(getCurrentProgenyId(), 'context-filter-input', true);
+    await setCategoriesAutoSuggestList(getCurrentProgenyId(), 'category-filter-input', true);
+    await setContextAutoSuggestList(getCurrentProgenyId(), 'context-filter-input', true);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

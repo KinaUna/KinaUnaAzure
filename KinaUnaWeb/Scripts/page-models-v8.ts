@@ -270,6 +270,29 @@ export class TimelineParameters {
     month: number = 0;
     day: number = 0;
     firstItemYear: number = 1900;
+    tagFilter: string = '';
+}
+
+export class TimelineRequest {
+    progenyId: number = 0;
+    accessLevel: number = 5;
+    skip: number = 0;
+    numberOfItems: number = 5;
+    year: number = 0;
+    month: number = 0;
+    day: number = 0;
+    tagFilter: string = '';
+    categoryFilter: string = '';
+    contextFilter: string = '';
+    timeLineTypeFilter: TimeLineType[] = [];
+    sortOrder: number = 1;
+    firstItemYear: number = 1900;
+}
+
+export class TimelineResponse {
+    timeLineItems: TimelineItem[] = [];
+    remainingItemsCount: number = 0;
+    request: TimelineRequest = new TimelineRequest();
 }
 
 export class TimeLineItemViewModel {

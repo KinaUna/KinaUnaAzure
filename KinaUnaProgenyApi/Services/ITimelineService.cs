@@ -59,5 +59,6 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="timezone">The timezone to use for the dates.</param>
         /// <returns>OnThisDayResponse object.</returns>
         Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest, string timezone);
+        Task<TimelineResponse> GetTimelineData(TimelineRequest timelineRequest, string timezone);
     }
 }

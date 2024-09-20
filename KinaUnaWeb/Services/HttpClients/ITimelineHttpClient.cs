@@ -54,5 +54,12 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="onThisDayRequest">OnThisDayRequest object with the parameters for the OnThisDay Page.</param>
         /// <returns>OnThisDayResponse object.</returns>
         Task<OnThisDayResponse> GetOnThisDayTimeLineItems(OnThisDayRequest onThisDayRequest);
+
+        /// <summary>
+        /// Gets data for the TimeLine page.
+        /// </summary>
+        /// <param name="timelineRequest">TimelineRequest object with the parameters for the Timeline page.</param>
+        /// <returns>TimelineResponse object.</returns>
+        Task<TimelineResponse> GetTimeLineData(TimelineRequest timelineRequest);
     }
 }
