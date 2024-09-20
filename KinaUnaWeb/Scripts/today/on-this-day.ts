@@ -1,6 +1,6 @@
 ﻿import * as LocaleHelper from '../localization-v8.js';
 import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList, OnThisDayRequest, OnThisDayResponse, OnThisDayPeriod, TimeLineType } from '../page-models-v8.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setTagsAutoSuggestList } from '../data-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
@@ -144,10 +144,17 @@ function updateSettingsNotificationDiv(): void {
             onThisDaySettingsNotificationText += button.innerHTML;
         }
     });
-    
+
+    const tagFilterSpan = document.querySelector<HTMLSpanElement>('#tag-filter-span')
+    if (onThisDayParameters.tagFilter !== '') {
+        onThisDaySettingsNotificationText += '<br/>' + tagFilterSpan?.innerHTML + onThisDayParameters.tagFilter;
+    }
+
     if (onThisDaySettingsNotificationDiv !== null && onThisDaySettingsNotificationText !== undefined) {
         onThisDaySettingsNotificationDiv.innerHTML = onThisDaySettingsNotificationText;
     }
+
+    
 
 }
 
@@ -346,6 +353,10 @@ async function saveOnThisDayPageSettings(): Promise<void> {
         onThisDayParameters.numberOfItems = 10;
     }
 
+    const tagFilterInput = document.querySelector<HTMLInputElement>('#tag-filter-input');
+    if (tagFilterInput !== null) {
+        onThisDayParameters.tagFilter = tagFilterInput.value;
+    }
     SettingsHelper.savePageSettings<OnThisDayRequest>(onThisDayPageSettingsStorageKey, onThisDayParameters);
     SettingsHelper.toggleShowPageSettings();
     clearTimeLineElements();
@@ -353,6 +364,7 @@ async function saveOnThisDayPageSettings(): Promise<void> {
     if (timelineItemsList.length === 0) {
         await getOnThisDayData(onThisDayParameters);
     }
+    
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -471,6 +483,8 @@ async function initialSettingsPanelSetup(): Promise<void> {
     if (allButton !== null) {
         allButton.addEventListener('click', setTimeLineTypeFilterToAll);
     }
+
+    await setTagsAutoSuggestList(getCurrentProgenyId(), 'tag-filter-input', true);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

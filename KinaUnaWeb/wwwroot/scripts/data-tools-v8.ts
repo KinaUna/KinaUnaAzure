@@ -108,7 +108,7 @@ export async function getTagsList(progenyId: number): Promise<AutoSuggestList> {
  * @param progenyId The Id of the Progeny to set tags for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setTagsAutoSuggestList(progenyId: number, elementId: string = 'tag-list'): Promise<void> {
+export async function setTagsAutoSuggestList(progenyId: number, elementId: string = 'tag-list', whiteList: boolean = false, tagLimit: number = 0): Promise<void> {
     let tagListElement = document.getElementById(elementId);
     if (tagListElement !== null) {
         const tagsList = await getTagsList(progenyId);
@@ -116,7 +116,9 @@ export async function setTagsAutoSuggestList(progenyId: number, elementId: strin
         ($('#' + elementId) as any).amsifySuggestags({
             suggestions: tagsList.suggestions,
             selectOnHover: false,
-            printValues: false
+            printValues: false,
+            whiteList: whiteList,
+            tagLimit: tagLimit
         });
 
         const suggestInputElement = tagListElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');

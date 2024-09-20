@@ -17,13 +17,15 @@ namespace KinaUnaProgenyApi.Services
     public class TimelineService : ITimelineService
     {
         private readonly ProgenyDbContext _context;
+        private readonly ITimelineFilteringService _timelineFilteringService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public TimelineService(ProgenyDbContext context, IDistributedCache cache)
+        public TimelineService(ProgenyDbContext context, ITimelineFilteringService timelineFilteringService, IDistributedCache cache)
         {
             _context = context;
+            _timelineFilteringService = timelineFilteringService;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -277,9 +279,7 @@ namespace KinaUnaProgenyApi.Services
 
             onThisDayResponse.Request.FirstItemYear = allTimeLineItems.Min(t => t.ProgenyTime.Year);
             onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimeLineItems, onThisDayRequest.TimeLineTypeFilter);
-
-            // Todo: Implement Tags for TimeLineItems.
-            // onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
+            
             foreach (TimeLineItem timeLineItem in onThisDayResponse.TimeLineItems)
             {
                 timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(timezone));
@@ -287,22 +287,30 @@ namespace KinaUnaProgenyApi.Services
 
             onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(onThisDayResponse.TimeLineItems, onThisDayRequest);
 
+            // Todo: Implement Tags for TimeLineItems.
+            // onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
+
+            if (!string.IsNullOrEmpty(onThisDayRequest.TagFilter))
+            {
+                onThisDayResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
+            }
+
             onThisDayResponse.TimeLineItems = [.. onThisDayResponse.TimeLineItems.OrderByDescending(t => t.ProgenyTime)];
             if (onThisDayRequest.SortOrder == 0)
             {
                 onThisDayResponse.TimeLineItems.Reverse();
             }
 
+            int filteredItemsCount = onThisDayResponse.TimeLineItems.Count;
             onThisDayResponse.TimeLineItems = onThisDayResponse.TimeLineItems.Skip(onThisDayRequest.Skip).Take(onThisDayRequest.NumberOfItems).ToList();
-            onThisDayResponse.RemainingItemsCount = allTimeLineItems.Count - (onThisDayRequest.Skip + onThisDayRequest.NumberOfItems);
-            
-            if(onThisDayResponse.RemainingItemsCount < 0)
+            onThisDayResponse.RemainingItemsCount = filteredItemsCount - (onThisDayRequest.Skip + onThisDayRequest.NumberOfItems);
+
+            if (onThisDayResponse.RemainingItemsCount < 0)
             {
                 onThisDayResponse.RemainingItemsCount = 0;
             }
 
             return onThisDayResponse;
         }
-        
     }
 }

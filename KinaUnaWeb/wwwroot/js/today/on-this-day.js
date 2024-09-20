@@ -1,6 +1,6 @@
 import * as LocaleHelper from '../localization-v8.js';
 import { TimeLineItemViewModel, OnThisDayRequest } from '../page-models-v8.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setTagsAutoSuggestList } from '../data-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
@@ -128,6 +128,10 @@ function updateSettingsNotificationDiv() {
             onThisDaySettingsNotificationText += button.innerHTML;
         }
     });
+    const tagFilterSpan = document.querySelector('#tag-filter-span');
+    if (onThisDayParameters.tagFilter !== '') {
+        onThisDaySettingsNotificationText += '<br/>' + tagFilterSpan?.innerHTML + onThisDayParameters.tagFilter;
+    }
     if (onThisDaySettingsNotificationDiv !== null && onThisDaySettingsNotificationText !== undefined) {
         onThisDaySettingsNotificationDiv.innerHTML = onThisDaySettingsNotificationText;
     }
@@ -305,6 +309,10 @@ async function saveOnThisDayPageSettings() {
     else {
         onThisDayParameters.numberOfItems = 10;
     }
+    const tagFilterInput = document.querySelector('#tag-filter-input');
+    if (tagFilterInput !== null) {
+        onThisDayParameters.tagFilter = tagFilterInput.value;
+    }
     SettingsHelper.savePageSettings(onThisDayPageSettingsStorageKey, onThisDayParameters);
     SettingsHelper.toggleShowPageSettings();
     clearTimeLineElements();
@@ -417,6 +425,7 @@ async function initialSettingsPanelSetup() {
     if (allButton !== null) {
         allButton.addEventListener('click', setTimeLineTypeFilterToAll);
     }
+    await setTagsAutoSuggestList(getCurrentProgenyId(), 'tag-filter-input', true);
     return new Promise(function (resolve, reject) {
         resolve();
     });

@@ -1,6 +1,6 @@
 import * as LocaleHelper from '../localization-v8.js';
 import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList, OnThisDayRequest, OnThisDayResponse, OnThisDayPeriod, TimeLineType } from '../page-models-v8.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setTagsAutoSuggestList } from '../data-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
@@ -144,10 +144,17 @@ function updateSettingsNotificationDiv(): void {
             onThisDaySettingsNotificationText += button.innerHTML;
         }
     });
-    
+
+    const tagFilterSpan = document.querySelector<HTMLSpanElement>('#tag-filter-span')
+    if (onThisDayParameters.tagFilter !== '') {
+        onThisDaySettingsNotificationText += '<br/>' + tagFilterSpan?.innerHTML + onThisDayParameters.tagFilter;
+    }
+
     if (onThisDaySettingsNotificationDiv !== null && onThisDaySettingsNotificationText !== undefined) {
         onThisDaySettingsNotificationDiv.innerHTML = onThisDaySettingsNotificationText;
     }
+
+    
 
 }
 
@@ -266,6 +273,7 @@ function updatePeriodButtons(): void {
 
 function toggleShowFilters(): void {
     const filtersElements = document.querySelectorAll<HTMLDivElement>('.timeline-filter-options');
+    const toggleShowFiltersChevron = document.getElementById('show-filters-chevron');
     filtersElements.forEach(function (element: HTMLDivElement) {
         if (element.classList.contains('d-none')) {
             element.classList.remove('d-none');
@@ -274,6 +282,15 @@ function toggleShowFilters(): void {
             element.classList.add('d-none');
         }
     });
+
+    if (toggleShowFiltersChevron !== null) {
+        if (toggleShowFiltersChevron.classList.contains('chevron-right-rotate-down')) {
+            toggleShowFiltersChevron.classList.remove('chevron-right-rotate-down');
+        }
+        else {
+            toggleShowFiltersChevron.classList.add('chevron-right-rotate-down');
+        }
+    }
 }
 /**
  * Adds or removes the TimeLineType in the onThisDayParameters.timeLineTypeFilter.
@@ -336,6 +353,10 @@ async function saveOnThisDayPageSettings(): Promise<void> {
         onThisDayParameters.numberOfItems = 10;
     }
 
+    const tagFilterInput = document.querySelector<HTMLInputElement>('#tag-filter-input');
+    if (tagFilterInput !== null) {
+        onThisDayParameters.tagFilter = tagFilterInput.value;
+    }
     SettingsHelper.savePageSettings<OnThisDayRequest>(onThisDayPageSettingsStorageKey, onThisDayParameters);
     SettingsHelper.toggleShowPageSettings();
     clearTimeLineElements();
@@ -343,6 +364,7 @@ async function saveOnThisDayPageSettings(): Promise<void> {
     if (timelineItemsList.length === 0) {
         await getOnThisDayData(onThisDayParameters);
     }
+    
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -443,7 +465,10 @@ async function initialSettingsPanelSetup(): Promise<void> {
     // Event listener for the show filters button.
     const toggleShowFiltersButton = document.querySelector<HTMLButtonElement>('#timeline-toggle-filters-button');
     if (toggleShowFiltersButton !== null) {
-        toggleShowFiltersButton.addEventListener('click', toggleShowFilters);
+        toggleShowFiltersButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            toggleShowFilters();
+        });
     }
 
     // Event listeners for TimeLineType buttons.
@@ -458,6 +483,8 @@ async function initialSettingsPanelSetup(): Promise<void> {
     if (allButton !== null) {
         allButton.addEventListener('click', setTimeLineTypeFilterToAll);
     }
+
+    await setTagsAutoSuggestList(getCurrentProgenyId(), 'tag-filter-input', true);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

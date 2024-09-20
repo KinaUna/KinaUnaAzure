@@ -224,6 +224,15 @@
                     </div>
                 </div>
             </div>
+            <div class="row ml-4 timeline-filter-options d-none">
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    <span id="tag-filter-span">@await LocaleManager.GetTranslation("Tag Filter:", PageNames.Timeline, Model.LanguageId)</span>
+                </div>
+                <div class="col ml-4">
+                    <input id="tag-filter-input" type="text"/>
+                </div>
+            </div>
             <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">

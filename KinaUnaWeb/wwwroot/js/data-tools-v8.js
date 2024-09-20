@@ -91,14 +91,16 @@ export async function getTagsList(progenyId) {
  * @param progenyId The Id of the Progeny to set tags for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setTagsAutoSuggestList(progenyId, elementId = 'tag-list') {
+export async function setTagsAutoSuggestList(progenyId, elementId = 'tag-list', whiteList = false, tagLimit = 0) {
     let tagListElement = document.getElementById(elementId);
     if (tagListElement !== null) {
         const tagsList = await getTagsList(progenyId);
         $('#' + elementId).amsifySuggestags({
             suggestions: tagsList.suggestions,
             selectOnHover: false,
-            printValues: false
+            printValues: false,
+            whiteList: whiteList,
+            tagLimit: tagLimit
         });
         const suggestInputElement = tagListElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {

@@ -9,29 +9,6 @@ namespace KinaUnaProgenyApi.Helpers
     public static class OnThisDayItemsFilters
     {
         /// <summary>
-        /// Filters a list of TimeLineItems by Tag(s). NOT IMPLEMENTED YET.
-        /// </summary>
-        /// <param name="timeLineItems"></param>
-        /// <param name="tagFilter"></param>
-        /// <returns></returns>
-        public static List<TimeLineItem> FilterOnThisDayItemsByTags(List<TimeLineItem> timeLineItems, string tagFilter)
-        {
-            if (string.IsNullOrEmpty(tagFilter)) return timeLineItems;
-
-            List<TimeLineItem> filteredTimeLineItems = [];
-            foreach (TimeLineItem timeLineItem in timeLineItems)
-            {
-                // Todo: Implement Tags for TimeLineItems.
-                //if (timeLineItem.Tags.Contains(tagFilter))
-                //{
-                //    filteredTimeLineItems.Add(timeLineItem);
-                //}
-            }
-            return filteredTimeLineItems;
-
-        }
-
-        /// <summary>
         /// Filters a list of TimeLineItems by TimeLineType(s).
         /// </summary>
         /// <param name="timeLineItems">The list of TimeLineItems to filter.</param>

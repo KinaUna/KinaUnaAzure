@@ -63,6 +63,7 @@ namespace KinaUnaProgenyApi
             services.AddScoped<ICommentsService, CommentsService>();
             services.AddScoped<IPushMessageSender, PushMessageSender>();
             services.AddScoped<IWebNotificationsService, WebNotificationsService>();
+            services.AddScoped<ITimelineFilteringService, TimelineFilteringService>();
 
             services.AddControllers().AddNewtonsoftJson();
 

@@ -7,13 +7,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace KinaUnaProgenyApi.Tests.Services
 {
     public class TimeLineServiceTests
     {
         private readonly DateTime _sampleDateTime = new(2020, 1, 1, 10, 0, 0, DateTimeKind.Utc);
-
+        private readonly Mock<ITimelineFilteringService> _timelineFilteringServiceMock = new();
         [Fact]
         public async Task GetTimeLineItem_Should_Return_TimeLineItem_Object_When_Id_Is_Valid()
         {
@@ -48,7 +49,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, memoryCache);
+            
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
 
             TimeLineItem resultTimeLineItem1 = await timelineService.GetTimeLineItem(1);
             TimeLineItem resultTimeLineItem2 = await timelineService.GetTimeLineItem(1); // Uses cache
@@ -90,7 +92,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
 
             TimeLineItem resultTimeLineItem1 = await timelineService.GetTimeLineItem(2);
             TimeLineItem resultTimeLineItem2 = await timelineService.GetTimeLineItem(2); // Using cache
@@ -121,7 +123,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, memoryCache);
+            // Mock TimelineFilteringService
+            
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
 
             TimeLineItem timeLineItemToAdd = new()
             {
@@ -195,7 +199,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
 
             TimeLineItem timeLineItemToUpdate = await timelineService.GetTimeLineItem(1);
             timeLineItemToUpdate.AccessLevel = 5;
@@ -261,7 +265,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
 
             int timeLineItemItemsCountBeforeDelete = context.TimeLineDb.Count();
             TimeLineItem timeLineItemToDelete = await timelineService.GetTimeLineItem(1);
@@ -309,7 +313,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
 
             List<TimeLineItem> timeLineItemsList = await timelineService.GetTimeLineList(1);
             List<TimeLineItem> timeLineItemsList2 = await timelineService.GetTimeLineList(1); // Test cached result.
@@ -360,7 +364,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
 
             List<TimeLineItem> timeLineItemsList = await timelineService.GetTimeLineList(2);
             List<TimeLineItem> timeLineItemsList2 = await timelineService.GetTimeLineList(2); // Test cached result.
@@ -408,7 +412,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
 
             OnThisDayRequest onThisDayRequest = new()
             {
@@ -474,10 +478,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(timeLineItem2);
             context.Add(timeLineItem3);
             await context.SaveChangesAsync();
-
+            
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
 
             OnThisDayRequest onThisDayRequest = new()
             {
