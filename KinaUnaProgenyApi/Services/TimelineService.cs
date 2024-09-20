@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -14,16 +17,18 @@ namespace KinaUnaProgenyApi.Services
     public class TimelineService : ITimelineService
     {
         private readonly ProgenyDbContext _context;
+        private readonly ITimelineFilteringService _timelineFilteringService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public TimelineService(ProgenyDbContext context, IDistributedCache cache)
+        public TimelineService(ProgenyDbContext context, ITimelineFilteringService timelineFilteringService, IDistributedCache cache)
         {
             _context = context;
+            _timelineFilteringService = timelineFilteringService;
             _cache = cache;
-            _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
-            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
+            _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
+            _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
         /// <summary>
@@ -250,5 +255,72 @@ namespace KinaUnaProgenyApi.Services
             return timeLineList;
         }
 
+        /// <summary>
+        /// Creates a OnThisDayResponse for displaying TimeLineItems on the OnThisDay page.
+        /// </summary>
+        /// <param name="onThisDayRequest">The OnThisDayRequest object with the parameters.</param>
+        /// <param name="timezone">The timezone to use for the dates.</param>
+        /// <returns>OnThisDayResponse object.</returns>
+        public async Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest, string timezone)
+        {
+            OnThisDayResponse onThisDayResponse = new()
+            {
+                Request = onThisDayRequest
+            };
+
+            List<TimeLineItem> allTimeLineItems = await GetTimeLineList(onThisDayRequest.ProgenyId);
+            allTimeLineItems = allTimeLineItems.Where(t => t.AccessLevel >= onThisDayRequest.AccessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
+            if (allTimeLineItems.Count == 0)
+            {
+                onThisDayResponse.TimeLineItems = [];
+                onThisDayResponse.RemainingItemsCount = 0;
+                return onThisDayResponse;
+            }
+
+            onThisDayResponse.Request.FirstItemYear = allTimeLineItems.Min(t => t.ProgenyTime.Year);
+            onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimeLineItems, onThisDayRequest.TimeLineTypeFilter);
+            
+            foreach (TimeLineItem timeLineItem in onThisDayResponse.TimeLineItems)
+            {
+                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(timezone));
+            }
+
+            onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(onThisDayResponse.TimeLineItems, onThisDayRequest);
+
+            // Todo: Implement Tags for TimeLineItems.
+            // onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
+
+            if (!string.IsNullOrEmpty(onThisDayRequest.TagFilter))
+            {
+                onThisDayResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
+            }
+
+            if(!string.IsNullOrEmpty(onThisDayRequest.CategoryFilter))
+            {
+                onThisDayResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithCategories(onThisDayResponse.TimeLineItems, onThisDayRequest.CategoryFilter);
+            }
+
+            if (!string.IsNullOrEmpty(onThisDayRequest.ContextFilter))
+            {
+                onThisDayResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithContexts(onThisDayResponse.TimeLineItems, onThisDayRequest.ContextFilter);
+            }
+
+            onThisDayResponse.TimeLineItems = [.. onThisDayResponse.TimeLineItems.OrderByDescending(t => t.ProgenyTime)];
+            if (onThisDayRequest.SortOrder == 0)
+            {
+                onThisDayResponse.TimeLineItems.Reverse();
+            }
+
+            int filteredItemsCount = onThisDayResponse.TimeLineItems.Count;
+            onThisDayResponse.TimeLineItems = onThisDayResponse.TimeLineItems.Skip(onThisDayRequest.Skip).Take(onThisDayRequest.NumberOfItems).ToList();
+            onThisDayResponse.RemainingItemsCount = filteredItemsCount - (onThisDayRequest.Skip + onThisDayRequest.NumberOfItems);
+
+            if (onThisDayResponse.RemainingItemsCount < 0)
+            {
+                onThisDayResponse.RemainingItemsCount = 0;
+            }
+
+            return onThisDayResponse;
+        }
     }
 }

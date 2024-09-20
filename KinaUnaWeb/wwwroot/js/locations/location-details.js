@@ -1,5 +1,5 @@
-import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display.js';
-import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v6.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
+import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
  * Adds event listeners to all elements with the data-location-id attribute.
  * When clicked, the DisplayLocationItem function is called.

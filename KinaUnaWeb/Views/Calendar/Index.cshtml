@@ -18,15 +18,15 @@
                         <e-field-location name="Location"></e-field-location>
                         <e-field-description name="Notes"></e-field-description>
                         <e-field-isallday name="AllDay"></e-field-isallday>
-                        <e-field-starttime name="Start"></e-field-starttime>
-                        <e-field-endtime name="End"></e-field-endtime>
+                        <e-field-starttime name="StartTime"></e-field-starttime>
+                        <e-field-endtime name="EndTime"></e-field-endtime>
                     </e-eventsettings-fields>
                 </e-schedule-eventsettings>
             </ejs-schedule>
         </div>
     </div>
 </div>
-@await Html.PartialAsync("_SchedulerTranslationsPartial", Model.LanguageId);
+@await Html.PartialAsync("_SchedulerTranslationsPartial", Model.LanguageId)
 <script>
     var syncfusionReference = ej;
     var isCurrentUserProgenyAdmin = @Model.IsCurrentUserProgenyAdmin.ToString().ToLower();

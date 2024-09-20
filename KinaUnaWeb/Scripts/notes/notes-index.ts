@@ -1,5 +1,5 @@
-﻿import { addTimelineItemEventListener } from '../item-details/items-display.js';
-import * as pageModels from '../page-models-v6.js';
+﻿import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import * as pageModels from '../page-models-v8.js';
 
 const notesPageSettingsStorageKey = 'notes_page_parameters'; 
 let notesPageParameters = new pageModels.NotesPageParameters();

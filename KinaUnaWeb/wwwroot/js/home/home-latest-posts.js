@@ -1,7 +1,7 @@
-import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v6.js';
-import { getCurrentProgenyId } from '../data-tools-v7.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
-import { addTimelineItemEventListener } from '../item-details/items-display.js';
+import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v8.js';
+import { getCurrentProgenyId } from '../data-tools-v8.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
+import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
 let timelineItemsList = [];
 const timeLineParameters = new TimelineParameters();
 let latestPostsProgenyId;

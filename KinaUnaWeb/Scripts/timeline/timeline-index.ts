@@ -1,9 +1,9 @@
-﻿import * as LocaleHelper from '../localization-v6.js';
-import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v6.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v7.js';
-import * as SettingsHelper from '../settings-tools-v6.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
-import { addTimelineItemEventListener } from '../item-details/items-display.js';
+﻿import * as LocaleHelper from '../localization-v8.js';
+import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v8.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
+import * as SettingsHelper from '../settings-tools-v8.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
+import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
 
 const timelinePageSettingsStorageKey = 'timeline_page_parameters';
 let timelineItemsList: TimelineItem[] = []

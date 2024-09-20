@@ -1,9 +1,9 @@
-import * as LocaleHelper from '../localization-v6.js';
-import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v7.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v6.js';
-import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display.js';
+import * as LocaleHelper from '../localization-v8.js';
+import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v8.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
-import { PicturesPageParameters } from '../page-models-v6.js';
+import { PicturesPageParameters } from '../page-models-v8.js';
 let pictureDetailsTouchStartX = 0;
 let pictureDetailsTouchStartY = 0;
 let pictureDetailsTouchEndX = 0;

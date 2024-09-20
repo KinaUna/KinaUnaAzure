@@ -1,5 +1,5 @@
-﻿import * as LocaleHelper from '../localization-v6.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+﻿import * as LocaleHelper from '../localization-v8.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 
 declare var syncfusionReference: any;
 declare var isCurrentUserProgenyAdmin: boolean;

@@ -64,7 +64,7 @@ namespace KinaUnaWeb.Controllers
 
             return View(model);
         }
-
+        
         /// <summary>
         /// HttpPost method for fetching a list of TimeLineItems.
         /// </summary>
