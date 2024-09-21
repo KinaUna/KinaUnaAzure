@@ -151,5 +151,19 @@ namespace KinaUnaWeb.Services.HttpClients
             OnThisDayResponse onThisDayResponseObject = JsonConvert.DeserializeObject<OnThisDayResponse>(onThisDayResponseAsString);
             return onThisDayResponseObject ?? new OnThisDayResponse();
         }
+
+        public async Task<TimelineResponse> GetTimeLineData(TimelineRequest timelineRequest)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string timelineDataApiPath = "/api/Timeline/GetTimeLineRequestData";
+            HttpResponseMessage timelineResponseMessage = await _httpClient.PostAsync(timelineDataApiPath, new StringContent(JsonConvert.SerializeObject(timelineRequest), System.Text.Encoding.UTF8, "application/json"));
+            if (!timelineResponseMessage.IsSuccessStatusCode) return new TimelineResponse();
+
+            string timelineResponseAsString = await timelineResponseMessage.Content.ReadAsStringAsync();
+            TimelineResponse timelineResponse = JsonConvert.DeserializeObject<TimelineResponse>(timelineResponseAsString);
+            return timelineResponse ?? new TimelineResponse();
+        }
     }
 }

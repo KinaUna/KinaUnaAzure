@@ -42,5 +42,6 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="progenyId">The ProgenyId of the Progeny to get Skills for.</param>
         /// <returns>List of Skill objects.</returns>
         Task<List<Skill>> GetSkillsList(int progenyId);
+        Task<List<Skill>> GetSkillsWithCategory(int progenyId, string category);
     }
 }

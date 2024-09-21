@@ -58,5 +58,7 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
         /// <returns>List of Contacts.</returns>
         Task<List<Contact>> GetContactsList(int progenyId);
+        Task<List<Contact>> GetContactsWithTag(int progenyId, string tag);
+        Task<List<Contact>> GetContactsWithContext(int progenyId, string context);
     }
 }

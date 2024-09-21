@@ -10,6 +10,7 @@ using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Timeline;
 using KinaUnaWeb.Services.HttpClients;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -20,51 +21,47 @@ namespace KinaUnaWeb.Controllers
         /// Page for showing the Timeline.
         /// </summary>
         /// <param name="childId">The Id of the Progeny to show the timeline for.</param>
-        /// <param name="sortBy">Sort order. 0 = oldest first, 1 = newest first.</param>
+        /// <param name="sortOrder">Sort order. 0 = oldest first, 1 = newest first.</param>
         /// <param name="items">Number of TimeLineItems to get.</param>
         /// <param name="skip">Number of TimeLineItems to skip.</param>
         /// <param name="year">Start year.</param>
         /// <param name="month">Start month.</param>
         /// <param name="day">Start day.</param>
+        /// <param name="tagFilter">Filter by tag.</param>
+        /// <param name="categoryFilter">Filter by category.</param>
+        /// <param name="contextFilter">Filter by context.</param>
         /// <returns>View with TimeLineViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, int items = 10, int skip = 0, int year=0, int month=0, int day=0)
+        public async Task<IActionResult> Index(int childId = 0, int sortOrder = 1, int items = 10, int skip = 0, int year=0, int month=0, int day=0, string tagFilter = "", string categoryFilter = "", string contextFilter = "")
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            TimeLineViewModel model = new(baseModel)
-            {
-                SortBy = sortBy,
-                Items = items,
-                Skip = skip,
-                Year = year,
-                Month = month,
-                Day = day
-            };
 
-            if (year != 0)
-            {
-                model.SetParametersFromProperties();
-                return View(model);
-            }
+            TimelineRequestViewModel model = new(baseModel);
+            model.SetRequestParameters(skip, items, year, month, day, tagFilter, categoryFilter, contextFilter, sortOrder);
             
-            if (sortBy == 1)
-            {
-                model.Year = DateTime.Now.Year;
-                model.Month = DateTime.Now.Month;
-                model.Day = DateTime.Now.Day;
-            }
-            else
-            {
-                model.Year = 1900;
-                model.Month = 1;
-                model.Day = 1;
-            }
-
-            model.SetParametersFromProperties();
-
             return View(model);
         }
-        
+
+        /// <summary>
+        /// HttpPost method for fetching a TimelineResponse, with a list of TimeLineItems.
+        /// </summary>
+        /// <param name="parameters">TimelineRequest object, with the parameters for getting the list of TimeLineItems.</param>
+        /// <returns>Json of TimelineResponse object.</returns>
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> GetTimelineData([FromBody] TimelineRequest parameters)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parameters.ProgenyId);
+            TimelineRequestViewModel model = new(baseModel)
+            {
+                TimelineRequest = parameters
+            };
+
+            model.TimelineRequest.AccessLevel = baseModel.CurrentAccessLevel;
+
+            return Json(await timelineHttpClient.GetTimeLineData(model.TimelineRequest));
+        }
+
         /// <summary>
         /// HttpPost method for fetching a list of TimeLineItems.
         /// </summary>

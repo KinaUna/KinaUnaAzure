@@ -1,13 +1,13 @@
 import * as LocaleHelper from '../localization-v8.js';
-import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v8.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
+import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList, TimelineResponse, TimelineRequest, TimeLineType } from '../page-models-v8.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setCategoriesAutoSuggestList, setContextAutoSuggestList, setTagsAutoSuggestList } from '../data-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
 
 const timelinePageSettingsStorageKey = 'timeline_page_parameters';
 let timelineItemsList: TimelineItem[] = []
-let timeLineParameters: TimelineParameters = new TimelineParameters();
+let timeLineParameters: TimelineRequest = new TimelineRequest();
 let timeLineProgenyId: number;
 let languageId = 1;
 let moreTimelineItemsButton: HTMLButtonElement | null;
@@ -41,7 +41,7 @@ function stopLoadingSpinner(): void {
  * @param parameters  The parameters to use for retrieving the timeline items.
  * @param updateHistory If updateHistory is true the browser history is updated to reflect the current page. If false it is assumed the page was loaded from history or reload, and is already in the history stack.
  */
-async function getTimelineList(parameters: TimelineParameters, updateHistory: Boolean = true): Promise<void> {
+async function getTimelineList(parameters: TimelineRequest, updateHistory: Boolean = true): Promise<void> {
     startLoadingSpinner();
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.classList.add('d-none');
@@ -50,7 +50,7 @@ async function getTimelineList(parameters: TimelineParameters, updateHistory: Bo
     parameters.skip = timelineItemsList.length;
     timeLineParameters.skip = parameters.skip;
     setBrowserUrl(parameters, true);
-    await fetch('/Timeline/GetTimelineList', {
+    await fetch('/Timeline/GetTimelineData', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -60,8 +60,8 @@ async function getTimelineList(parameters: TimelineParameters, updateHistory: Bo
     }).then(async function (getTimelineListResult) {
         if (getTimelineListResult != null) {
             updateSettingsNotificationDiv();
-            const newTimelineItemsList = (await getTimelineListResult.json()) as TimelineList;
-            if (newTimelineItemsList.timelineItems.length > 0) {
+            const newTimelineItemsList = (await getTimelineListResult.json()) as TimelineResponse;
+            if (newTimelineItemsList.timeLineItems.length > 0) {
 
                 await processTimelineList(newTimelineItemsList);
 
@@ -86,30 +86,17 @@ async function getTimelineList(parameters: TimelineParameters, updateHistory: Bo
  * If there are no more remaining items the load more button is hidden.
  * @param newTimelineItemsList The TimelineList object with a list of items to add and data about remaining items.
  */
-async function processTimelineList(newTimelineItemsList: TimelineList): Promise<void> {
-    if (firstRun && timeLineParameters.firstItemYear !== newTimelineItemsList.firstItemYear) {
-        timeLineParameters.firstItemYear = newTimelineItemsList.firstItemYear;
-
-        if (timeLineParameters.sortBy === 0) {
-            timeLineParameters.year = newTimelineItemsList.firstItemYear;
-            timeLineParameters.month = 1;
-            timeLineParameters.day = 1;
-            updateStartDatePicker(new Date(timeLineParameters.year, timeLineParameters.month - 1, timeLineParameters.day));
-            return new Promise<void>(function (resolve, reject) {
-                resolve();
-            });
-        }
+async function processTimelineList(timelineResponse: TimelineResponse): Promise<void> {
+    const onThisDayPostsParentDiv = document.querySelector<HTMLDivElement>('#latest-posts-parent-div');
+    if (onThisDayPostsParentDiv !== null) {
+        onThisDayPostsParentDiv.classList.remove('d-none');
     }
-
-    const latestPostsParentDiv = document.querySelector<HTMLDivElement>('#latest-posts-parent-div');
-    if (latestPostsParentDiv !== null) {
-        latestPostsParentDiv.classList.remove('d-none');
-    }
-    for await (const timelineItemToAdd of newTimelineItemsList.timelineItems) {
+    for await (const timelineItemToAdd of timelineResponse.timeLineItems) {
         timelineItemsList.push(timelineItemToAdd);
         await renderTimelineItem(timelineItemToAdd);
     };
-    if (newTimelineItemsList.remainingItemsCount > 0 && moreTimelineItemsButton !== null) {
+
+    if (timelineResponse.remainingItemsCount > 0 && moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.classList.remove('d-none');
     }
 
@@ -142,8 +129,6 @@ async function renderTimelineItem(timelineItem: TimelineItem): Promise<void> {
             timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
             addTimelineItemEventListener(timelineItem);
         }
-
-
     }
 
     return new Promise<void>(function (resolve, reject) {
@@ -155,15 +140,18 @@ async function renderTimelineItem(timelineItem: TimelineItem): Promise<void> {
  * @param parameters The PicturesPageParameters currently in use.
  * @param replaceState If true, the current url will replace the url in the active one in history, if false the url will be added to the history.
  */
-function setBrowserUrl(parameters: TimelineParameters, replaceState: boolean): void {
+function setBrowserUrl(parameters: TimelineRequest, replaceState: boolean): void {
     const url = new URL(window.location.href);
     url.searchParams.set('childId', parameters.progenyId.toString());
-    url.searchParams.set('sortBy', parameters.sortBy.toString());
-    url.searchParams.set('items', parameters.count.toString());
+    url.searchParams.set('sortOrder', parameters.sortOrder.toString());
+    url.searchParams.set('items', parameters.numberOfItems.toString());
     url.searchParams.set('skip', timelineItemsList.length.toString());
     url.searchParams.set('year', parameters.year.toString());
     url.searchParams.set('month', parameters.month.toString());
     url.searchParams.set('day', parameters.day.toString());
+    url.searchParams.set('tagFilter', parameters.tagFilter.toString());
+    url.searchParams.set('categoryFilter', parameters.categoryFilter.toString());
+    url.searchParams.set('contextFilter', parameters.contextFilter.toString());
     if (replaceState) {
         window.history.replaceState({}, '', url);
     }
@@ -180,10 +168,10 @@ async function loadPageFromHistory(): Promise<void> {
 
     if (timeLineParameters !== null) {
         timeLineParameters.progenyId = url.searchParams.get('childId') ? parseInt(url.searchParams.get('childId') as string) : 0;
-        timeLineParameters.sortBy = url.searchParams.get('sortBy') ? parseInt(url.searchParams.get('sortBy') as string) : 1;
+        timeLineParameters.sortOrder = url.searchParams.get('sortOrder') ? parseInt(url.searchParams.get('sortOrder') as string) : 1;
         let initialCount: number = url.searchParams.get('items') ? parseInt(url.searchParams.get('items') as string) : 10;
         let skipValue: number = url.searchParams.get('skip') ? parseInt(url.searchParams.get('skip') as string) : 0;
-        timeLineParameters.count = skipValue;
+        timeLineParameters.numberOfItems = skipValue;
         timeLineParameters.skip = 0;
         timeLineParameters.year = url.searchParams.get('year') ? parseInt(url.searchParams.get('year') as string) : 0;
         timeLineParameters.month = url.searchParams.get('month') ? parseInt(url.searchParams.get('month') as string) : 0;
@@ -191,7 +179,7 @@ async function loadPageFromHistory(): Promise<void> {
         
         firstRun = false;
         await getTimelineList(timeLineParameters, false);
-        timeLineParameters.count = initialCount;
+        timeLineParameters.numberOfItems = initialCount;
     }
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -202,7 +190,7 @@ async function loadPageFromHistory(): Promise<void> {
 */
 function updateSettingsNotificationDiv(): void {
     let timelineSettingsNotificationText: string | undefined;
-    if (timeLineParameters.sortBy === 0) {
+    if (timeLineParameters.sortOrder === 0) {
         timelineSettingsNotificationText = sortAscendingSettingsButton?.innerHTML;
     }
     else {
@@ -210,6 +198,22 @@ function updateSettingsNotificationDiv(): void {
     }
     timelineSettingsNotificationText += '<br/>' + startLabelDiv?.innerHTML;
     timelineSettingsNotificationText += timelineStartDateTimePicker.val();
+
+    const tagFilterSpan = document.querySelector<HTMLSpanElement>('#tag-filter-span')
+    if (timeLineParameters.tagFilter !== '') {
+        timelineSettingsNotificationText += '<br/>' + tagFilterSpan?.innerHTML + timeLineParameters.tagFilter;
+    }
+
+    const categoryFilterSpan = document.querySelector<HTMLSpanElement>('#category-filter-span')
+    if (timeLineParameters.categoryFilter !== '') {
+        timelineSettingsNotificationText += '<br/>' + categoryFilterSpan?.innerHTML + timeLineParameters.categoryFilter;
+    }
+
+    const contextFilterSpan = document.querySelector<HTMLSpanElement>('#context-filter-span')
+    if (timeLineParameters.contextFilter !== '') {
+        timelineSettingsNotificationText += '<br/>' + contextFilterSpan?.innerHTML + timeLineParameters.contextFilter;
+    }
+       
 
     if (timelineSettingsNotificationDiv !== null && timelineSettingsNotificationText !== undefined) {
         timelineSettingsNotificationDiv.innerHTML = timelineSettingsNotificationText;
@@ -266,7 +270,7 @@ function updateStartDatePicker(date: Date): void {
 async function sortTimelineAscending(): Promise<void> {
     sortAscendingSettingsButton?.classList.add('active');
     sortDescendingSettingsButton?.classList.remove('active');
-    timeLineParameters.sortBy = 0;
+    timeLineParameters.sortOrder = 0;
     let currentDate = new Date();
     if (timeLineParameters.year === currentDate.getFullYear() && timeLineParameters.month -1 === currentDate.getMonth() && timeLineParameters.day === currentDate.getDate()) {
         timeLineParameters.year = timeLineParameters.firstItemYear;
@@ -289,7 +293,7 @@ async function sortTimelineAscending(): Promise<void> {
 async function sortTimelineDescending(): Promise<void> {
     sortDescendingSettingsButton?.classList.add('active');
     sortAscendingSettingsButton?.classList.remove('active');
-    timeLineParameters.sortBy = 1;
+    timeLineParameters.sortOrder = 1;
     let currentDate = new Date();
     if (timeLineParameters.year === timeLineParameters.firstItemYear && timeLineParameters.month === 1 && timeLineParameters.day === 1) {
         timeLineParameters.year = currentDate.getFullYear();
@@ -305,18 +309,105 @@ async function sortTimelineDescending(): Promise<void> {
 }
 
 /**
+ * Toggles the active state of the tag filter button and updates the tag filter in the parameters.
+ */
+function toggleShowFilters(): void {
+    const filtersElements = document.querySelectorAll<HTMLDivElement>('.timeline-filter-options');
+    const toggleShowFiltersChevron = document.getElementById('show-filters-chevron');
+    filtersElements.forEach(function (element: HTMLDivElement) {
+        if (element.classList.contains('d-none')) {
+            element.classList.remove('d-none');
+        }
+        else {
+            element.classList.add('d-none');
+        }
+    });
+
+    if (toggleShowFiltersChevron !== null) {
+        if (toggleShowFiltersChevron.classList.contains('chevron-right-rotate-down')) {
+            toggleShowFiltersChevron.classList.remove('chevron-right-rotate-down');
+        }
+        else {
+            toggleShowFiltersChevron.classList.add('chevron-right-rotate-down');
+        }
+    }
+}
+/**
+ * Adds or removes the TimeLineType in the onThisDayParameters.timeLineTypeFilter.
+ * @param type The TimeLineType to toggle.
+ */
+function toggleTimeLineType(type: TimeLineType): void {
+    const index = timeLineParameters.timeLineTypeFilter.indexOf(type);
+    if (index > -1) {
+        timeLineParameters.timeLineTypeFilter.splice(index, 1);
+    }
+    else {
+        timeLineParameters.timeLineTypeFilter.push(type);
+    }
+
+    updateTimeLineTypeButtons();
+}
+
+/**
+ * Updates the TimeLineType buttons to show the currently selected types as active.
+ */
+function updateTimeLineTypeButtons(): void {
+    const allButton = document.querySelector<HTMLButtonElement>('#toggle-all-time-line-types-button');
+    if (allButton !== null) {
+
+        if (timeLineParameters.timeLineTypeFilter.length === 0) {
+            allButton.classList.add('active');
+        }
+        else {
+            allButton?.classList.remove('active');
+        }
+    }
+
+    const typeButtons = document.querySelectorAll<HTMLButtonElement>('.timeline-type-filter-button');
+    typeButtons.forEach(function (button: HTMLButtonElement) {
+        button.classList.remove('active');
+        if (timeLineParameters.timeLineTypeFilter.includes(parseInt(button.dataset.type ?? '-1'))) {
+            button.classList.add('active');
+        }
+    });
+}
+
+/**
+ * Sets the TimeLineTypeFilter to empty, which means all types are included.
+ */
+function setTimeLineTypeFilterToAll(): void {
+    timeLineParameters.timeLineTypeFilter = [];
+    updateTimeLineTypeButtons();
+}
+
+/**
  * Saves the current page parameters to local storage and reloads the timeline items list.
  */
 async function saveTimelinePageSettings(): Promise<void> {
     const numberOfItemsToGetSelect = document.querySelector<HTMLSelectElement>('#items-per-page-select');
     if (numberOfItemsToGetSelect !== null) {
-        timeLineParameters.count = parseInt(numberOfItemsToGetSelect.value);
+        timeLineParameters.numberOfItems = parseInt(numberOfItemsToGetSelect.value);
     }
     else {
-        timeLineParameters.count = 10;
+        timeLineParameters.numberOfItems = 10;
     }
 
-    SettingsHelper.savePageSettings<TimelineParameters>(timelinePageSettingsStorageKey, timeLineParameters);
+    const tagFilterInput = document.querySelector<HTMLInputElement>('#tag-filter-input');
+    if (tagFilterInput !== null) {
+        timeLineParameters.tagFilter = tagFilterInput.value;
+    }
+
+    const categoryFilterInput = document.querySelector<HTMLInputElement>('#category-filter-input');
+    if (categoryFilterInput !== null) {
+        timeLineParameters.categoryFilter = categoryFilterInput.value;
+    }
+
+    const contextFilterInput = document.querySelector<HTMLInputElement>('#context-filter-input');
+    if (contextFilterInput !== null) {
+        timeLineParameters.contextFilter = contextFilterInput.value;
+    }
+
+    SettingsHelper.savePageSettings<TimelineRequest>(timelinePageSettingsStorageKey, timeLineParameters);
     SettingsHelper.toggleShowPageSettings();
     clearTimeLineElements();
     await getTimelineList(timeLineParameters);
@@ -333,23 +424,25 @@ async function saveTimelinePageSettings(): Promise<void> {
  * Retrieves timelineParameters saved in local storage.
  */
 async function loadTimelinePageSettings(): Promise<void> {
-    const pageSettingsFromStorage = SettingsHelper.getPageSettings<TimelineParameters>(timelinePageSettingsStorageKey);
+    const pageSettingsFromStorage = SettingsHelper.getPageSettings<TimelineRequest>(timelinePageSettingsStorageKey);
     if (pageSettingsFromStorage) {
         if (pageSettingsFromStorage.progenyId === timeLineProgenyId) {
-            timeLineParameters.firstItemYear = pageSettingsFromStorage.firstItemYear;
-        }        
-        timeLineParameters.sortBy = pageSettingsFromStorage.sortBy;
-        if (timeLineParameters.sortBy === 0) {
+            timeLineParameters.firstItemYear = pageSettingsFromStorage.firstItemYear ?? 1900;
+        }
+
+        timeLineParameters.sortOrder = pageSettingsFromStorage.sortOrder ?? 1;
+        
+        if (timeLineParameters.sortOrder === 0) {
             sortTimelineAscending();
         }
         else {
             sortTimelineDescending();
         }
 
-        timeLineParameters.count = pageSettingsFromStorage.count;
+        timeLineParameters.numberOfItems = pageSettingsFromStorage.numberOfItems ?? 10;
         const selectItemsPerPageElement = document.querySelector<HTMLSelectElement>('#items-per-page-select');
         if (selectItemsPerPageElement !== null) {
-            selectItemsPerPageElement.value = timeLineParameters.count.toString();
+            selectItemsPerPageElement.value = timeLineParameters.numberOfItems?.toString();
             ($(".selectpicker") as any).selectpicker('refresh');
         }
     }
@@ -370,11 +463,11 @@ function getParametersFromPageProperties(): void {
             const parameters = JSON.parse(pageParameters);
             if (parameters !== null) {
                 timeLineParameters.progenyId = parameters.progenyId;
-                timeLineParameters.sortBy = parameters.sortBy;
-                timeLineParameters.year = parameters.year;
-                timeLineParameters.month = parameters.month;
-                timeLineParameters.day = parameters.day;
-                timeLineParameters.firstItemYear = parameters.firstItemYear;
+                timeLineParameters.sortOrder = parameters.sortBy ?? 1;
+                timeLineParameters.year = parameters.year ?? 0;
+                timeLineParameters.month = parameters.month ?? 0;
+                timeLineParameters.day = parameters.day ?? 0;
+                timeLineParameters.firstItemYear = parameters.firstItemYear ?? 1900;
             }
         }
     }
@@ -409,6 +502,33 @@ async function initialSettingsPanelSetup(): Promise<void> {
         sortAscendingSettingsButton.addEventListener('click', sortTimelineAscending);
         sortDescendingSettingsButton.addEventListener('click', sortTimelineDescending);
     }
+
+    // Event listener for the show filters button.
+    const toggleShowFiltersButton = document.querySelector<HTMLButtonElement>('#timeline-toggle-filters-button');
+    if (toggleShowFiltersButton !== null) {
+        toggleShowFiltersButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            toggleShowFilters();
+        });
+    }
+
+    // Event listeners for TimeLineType buttons.
+    const typeButtons = document.querySelectorAll<HTMLButtonElement>('.timeline-type-filter-button');
+    typeButtons.forEach(function (button: HTMLButtonElement) {
+        button.addEventListener('click', function () {
+            toggleTimeLineType(parseInt(button.dataset.type ?? '-1'));
+        });
+    });
+
+    const allButton = document.querySelector<HTMLButtonElement>('#toggle-all-time-line-types-button');
+    if (allButton !== null) {
+        allButton.addEventListener('click', setTimeLineTypeFilterToAll);
+    }
+
+    await setTagsAutoSuggestList(getCurrentProgenyId(), 'tag-filter-input', true);
+    await setCategoriesAutoSuggestList(getCurrentProgenyId(), 'category-filter-input', true);
+    await setContextAutoSuggestList(getCurrentProgenyId(), 'context-filter-input', true);
+
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

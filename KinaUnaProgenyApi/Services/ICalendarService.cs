@@ -43,5 +43,6 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="progenyId">The ProgenyId of the Progeny to get all CalendarItems for.</param>
         /// <returns>List of CalendarItems.</returns>
         Task<List<CalendarItem>> GetCalendarList(int progenyId);
+        Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context);
     }
 }

@@ -1,19 +1,18 @@
 ﻿using System;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 
 namespace KinaUnaProgenyApi.Services
 {
     /// <summary>
     /// Filters TimeLineItems based on tags, categories, contexts and keywords.
     /// </summary>
-    /// <param name="progenyContext"></param>
-    /// <param name="mediaContext"></param>
-    public class TimelineFilteringService(ProgenyDbContext progenyContext, MediaDbContext mediaContext) : ITimelineFilteringService
+    public class TimelineFilteringService(IPicturesService picturesService, IVideosService videosService, IFriendService friendService,
+        IContactService contactService, ILocationService locationService, ISkillService skillService, INoteService noteService,
+        ICalendarService calendarService, IVocabularyService vocabularyService, IVaccinationService vaccinationService) : ITimelineFilteringService
     {
         /// <summary>
         /// Filters TimeLineItems based on tags.
@@ -24,84 +23,43 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<TimeLineItem>> GetTimeLineItemsWithTags(List<TimeLineItem> timeLineItems, string tags)
         {
             if (string.IsNullOrEmpty(tags)) return timeLineItems;
+            
+            List<TimeLineItem> filteredTimeLineItems = [];
 
             List<string> tagsList = [.. tags.Split(',')];
             tagsList = tagsList.Select(t => t.Trim()).ToList();
 
-            List<TimeLineItem> filteredTimeLineItems = [];
-            foreach (TimeLineItem timeLineItem in timeLineItems)
+            int progenyId = timeLineItems.FirstOrDefault()?.ProgenyId ?? Constants.DefaultChildId;
+
+            foreach (string tag in tagsList)
             {
-                if (timeLineItem.ItemType == (int)KinaUnaTypes.TimeLineType.Photo)
-                {
-                    bool pictureIdValid = int.TryParse(timeLineItem.ItemId, out int pictureId);
-                    if (!pictureIdValid) continue;
-                    Picture picture = await mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == pictureId);
-                    if (picture == null || picture.Tags == null) continue;
-                    foreach (string tag in tagsList)
-                    {
-                        if (!picture.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase)) continue;
-                        filteredTimeLineItems.Add(timeLineItem);
-                        break;
-                    }
-                }
+                List<Picture> allPictureItems = await picturesService.GetPicturesWithTag(progenyId, tag);
+                List<TimeLineItem> allTimeLinePictureItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Photo).ToList();
+                List<TimeLineItem> allTimeLinePictureItemsInTimeLineItems = allTimeLinePictureItems.Where(t => allPictureItems.Any(p => p.PictureId == int.Parse(t.ItemId))).ToList();
+                filteredTimeLineItems.AddRange(allTimeLinePictureItemsInTimeLineItems);
 
-                if (timeLineItem.ItemType == (int)KinaUnaTypes.TimeLineType.Video)
-                {
-                    bool videoIdValid = int.TryParse(timeLineItem.ItemId, out int videoId);
-                    if (!videoIdValid) continue;
-                    Video video = await mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == videoId);
-                    if (video == null || video.Tags == null) continue;
-                    foreach (string tag in tagsList)
-                    {
-                        if (!video.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase)) continue;
-                        filteredTimeLineItems.Add(timeLineItem);
-                        break;
-                    }
-                }
+                List<Video> allVideoItems = await videosService.GetVideosWithTag(progenyId, tag);
+                List<TimeLineItem> allTimeLineVideoItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Video).ToList();
+                List<TimeLineItem> allTimeLineVideoItemsInTimeLineItems = allTimeLineVideoItems.Where(t => allVideoItems.Any(v => v.VideoId == int.Parse(t.ItemId))).ToList();
+                filteredTimeLineItems.AddRange(allTimeLineVideoItemsInTimeLineItems);
 
-                if (timeLineItem.ItemType == (int)KinaUnaTypes.TimeLineType.Friend)
-                {
-                    bool friendIdValid = int.TryParse(timeLineItem.ItemId, out int friendId);
-                    if (!friendIdValid) continue;
-                    Friend friend = await progenyContext.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == friendId);
-                    if (friend == null || friend.Tags == null) continue;
-                    foreach (string tag in tagsList)
-                    {
-                        if (!friend.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase)) continue;
-                        filteredTimeLineItems.Add(timeLineItem);
-                        break;
-                    }
-                }
+                List<Friend> allFriendItems = await friendService.GetFriendsWithTag(progenyId, tag);
+                List<TimeLineItem> allTimeLineFriendItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Friend).ToList();
+                List<TimeLineItem> allTimeLineFriendItemsInTimeLineItems = allTimeLineFriendItems.Where(t => allFriendItems.Any(f => f.FriendId == int.Parse(t.ItemId))).ToList();
+                filteredTimeLineItems.AddRange(allTimeLineFriendItemsInTimeLineItems);
 
-                if (timeLineItem.ItemType == (int)KinaUnaTypes.TimeLineType.Contact)
-                {
-                    bool contactIdValid = int.TryParse(timeLineItem.ItemId, out int contactId);
-                    if (!contactIdValid) continue;
-                    Contact contact = await progenyContext.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == contactId);
-                    if (contact == null || contact.Tags == null) continue;
-                    foreach (string tag in tagsList)
-                    {
-                        if (!contact.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase)) continue;
-                        filteredTimeLineItems.Add(timeLineItem);
-                        break;
-                    }
-                }
+                List<Contact> allContactItems = await contactService.GetContactsWithTag(progenyId, tag);
+                List<TimeLineItem> allTimeLineContactItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact).ToList();
+                List<TimeLineItem> allTimeLineContactItemsInTimeLineItems = allTimeLineContactItems.Where(t => allContactItems.Any(c => c.ContactId == int.Parse(t.ItemId))).ToList();
+                filteredTimeLineItems.AddRange(allTimeLineContactItemsInTimeLineItems);
 
-                if (timeLineItem.ItemType == (int)KinaUnaTypes.TimeLineType.Location)
-                {
-                    bool locationIdValid = int.TryParse(timeLineItem.ItemId, out int locationId);
-                    if (!locationIdValid) continue;
-                    Location location = await progenyContext.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == locationId);
-                    if (location == null || location.Tags == null) continue;
-                    foreach (string tag in tagsList)
-                    {
-                        if (!location.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase)) continue;
-                        filteredTimeLineItems.Add(timeLineItem);
-                        break;
-                    }
-                }
+                List<Location> allLocationItems = await locationService.GetLocationsWithTag(progenyId, tag);
+                List<TimeLineItem> allTimeLineLocationItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Location).ToList();
+                List<TimeLineItem> allTimeLineLocationItemsInTimeLineItems = allTimeLineLocationItems.Where(t => allLocationItems.Any(l => l.LocationId == int.Parse(t.ItemId))).ToList();
+                filteredTimeLineItems.AddRange(allTimeLineLocationItemsInTimeLineItems);
+
             }
-
+            
             return filteredTimeLineItems;
         }
 
@@ -119,37 +77,21 @@ namespace KinaUnaProgenyApi.Services
             categoriesList = categoriesList.Select(t => t.Trim()).ToList();
 
             List<TimeLineItem> filteredTimeLineItems = [];
-            foreach (TimeLineItem timeLineItem in timeLineItems)
-            {
-                if (timeLineItem.ItemType == (int)KinaUnaTypes.TimeLineType.Skill)
-                {
-                    bool skillIdValid = int.TryParse(timeLineItem.ItemId, out int skillId);
-                    if (!skillIdValid) continue;
-                    Skill skill = await progenyContext.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == skillId);
-                    if (skill == null || skill.Category == null) continue;
-                    foreach (string category in categoriesList)
-                    {
-                        if (!skill.Category.Contains(category, StringComparison.CurrentCultureIgnoreCase)) continue;
-                        filteredTimeLineItems.Add(timeLineItem);
-                        break;
-                    }
-                }
-                
-                if (timeLineItem.ItemType == (int)KinaUnaTypes.TimeLineType.Note)
-                {
-                    bool noteIdValid = int.TryParse(timeLineItem.ItemId, out int noteId);
-                    if (!noteIdValid) continue;
-                    Note note = await progenyContext.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == noteId);
-                    if (note == null || note.Category == null) continue;
-                    foreach (string category in categoriesList)
-                    {
-                        if (!note.Category.Contains(category, StringComparison.CurrentCultureIgnoreCase)) continue;
-                        filteredTimeLineItems.Add(timeLineItem);
-                        break;
-                    }
-                }
-            }
 
+            int progenyId = timeLineItems.FirstOrDefault()?.ProgenyId ?? Constants.DefaultChildId;
+            foreach (string category in categoriesList)
+            {
+                List<Skill> allSkillItems = await skillService.GetSkillsWithCategory(progenyId, category);
+                List<TimeLineItem> allTimeLineSkillItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Skill).ToList();
+                List<TimeLineItem> allTimeLineSkillItemsInTimeLineItems = allTimeLineSkillItems.Where(t => allSkillItems.Any(s => s.SkillId == int.Parse(t.ItemId))).ToList();
+                filteredTimeLineItems.AddRange(allTimeLineSkillItemsInTimeLineItems);
+
+                List<Note> allNoteItems = await noteService.GetNotesWithCategory(progenyId, category);
+                List<TimeLineItem> allTimeLineNoteItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Note).ToList();
+                List<TimeLineItem> allTimeLineNoteItemsInTimeLineItems = allTimeLineNoteItems.Where(t => allNoteItems.Any(n => n.NoteId == int.Parse(t.ItemId))).ToList();
+                filteredTimeLineItems.AddRange(allTimeLineNoteItemsInTimeLineItems);
+            }
+            
             return filteredTimeLineItems;
         }
 
@@ -167,51 +109,27 @@ namespace KinaUnaProgenyApi.Services
             contextsList = contextsList.Select(t => t.Trim()).ToList();
 
             List<TimeLineItem> filteredTimeLineItems = [];
-            foreach (TimeLineItem timeLineItem in timeLineItems)
-            {
-                if (timeLineItem.ItemType == (int)KinaUnaTypes.TimeLineType.Calendar)
-                {
-                    bool calendarIdValid = int.TryParse(timeLineItem.ItemId, out int calendarId);
-                    if (!calendarIdValid) continue;
-                    CalendarItem calendarItem = await progenyContext.CalendarDb.AsNoTracking().SingleOrDefaultAsync(c => c.EventId == calendarId);
-                    if (calendarItem == null || calendarItem.Context == null) continue;
-                    foreach (string context in contextsList)
-                    {
-                        if (!calendarItem.Context.Contains(context, StringComparison.CurrentCultureIgnoreCase)) continue;
-                        filteredTimeLineItems.Add(timeLineItem);
-                        break;
-                    }
-                }
-                
-                if (timeLineItem.ItemType == (int)KinaUnaTypes.TimeLineType.Friend)
-                {
-                    bool friendIdValid = int.TryParse(timeLineItem.ItemId, out int friendId);
-                    if (!friendIdValid) continue;
-                    Friend friend = await progenyContext.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == friendId);
-                    if (friend == null || friend.Context == null) continue;
-                    foreach (string context in contextsList)
-                    {
-                        if (!friend.Context.Contains(context, StringComparison.CurrentCultureIgnoreCase)) continue;
-                        filteredTimeLineItems.Add(timeLineItem);
-                        break;
-                    }
-                }
-                
-                if (timeLineItem.ItemType == (int)KinaUnaTypes.TimeLineType.Contact)
-                {
-                    bool contactIdValid = int.TryParse(timeLineItem.ItemId, out int contactId);
-                    if (!contactIdValid) continue;
-                    Contact contact = await progenyContext.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == contactId);
-                    if (contact == null || contact.Context == null) continue;
-                    foreach (string context in contextsList)
-                    {
-                        if (!contact.Context.Contains(context, StringComparison.CurrentCultureIgnoreCase)) continue;
-                        filteredTimeLineItems.Add(timeLineItem);
-                        break;
-                    }
-                }
-            }
 
+            int progenyId = timeLineItems.FirstOrDefault()?.ProgenyId ?? Constants.DefaultChildId;
+
+            foreach (string context in contextsList)
+            {
+                List<CalendarItem> allCalendarItems = await calendarService.GetCalendarItemsWithContext(progenyId, context);
+                List<TimeLineItem> allTimeLineCalendarItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Calendar).ToList();
+                List<TimeLineItem> allTimeLineCalendarItemsInTimeLineItems = allTimeLineCalendarItems.Where(t => allCalendarItems.Any(c => c.EventId == int.Parse(t.ItemId))).ToList();
+                filteredTimeLineItems.AddRange(allTimeLineCalendarItemsInTimeLineItems);
+
+                List<Friend> allFriendItems = await friendService.GetFriendsWithContext(progenyId, context);
+                List<TimeLineItem> allTimeLineFriendItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Friend).ToList();
+                List<TimeLineItem> allTimeLineFriendItemsInTimeLineItems = allTimeLineFriendItems.Where(t => allFriendItems.Any(f => f.FriendId == int.Parse(t.ItemId))).ToList();
+                filteredTimeLineItems.AddRange(allTimeLineFriendItemsInTimeLineItems);
+
+                List<Contact> allContactItems = await contactService.GetContactsWithContext(progenyId, context);
+                List<TimeLineItem> allTimeLineContactItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact).ToList();
+                List<TimeLineItem> allTimeLineContactItemsInTimeLineItems = allTimeLineContactItems.Where(t => allContactItems.Any(c => c.ContactId == int.Parse(t.ItemId))).ToList();
+                filteredTimeLineItems.AddRange(allTimeLineContactItemsInTimeLineItems);
+            }
+            
             return filteredTimeLineItems;
         }
 
@@ -234,7 +152,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     bool pictureIdValid = int.TryParse(timeLineItem.ItemId, out int pictureId);
                     if (!pictureIdValid) continue;
-                    Picture picture = await mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == pictureId);
+                    Picture picture = await picturesService.GetPicture(pictureId);
                     if (picture == null) continue;
                     foreach (string keyword in keywordsList)
                     {
@@ -251,7 +169,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     bool videoIdValid = int.TryParse(timeLineItem.ItemId, out int videoId);
                     if (!videoIdValid) continue;
-                    Video video = await mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == videoId);
+                    Video video = await videosService.GetVideo(videoId);
                     if (video == null) continue;
                     foreach (string keyword in keywordsList)
                     {
@@ -268,7 +186,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     bool calendarIdValid = int.TryParse(timeLineItem.ItemId, out int calendarId);
                     if (!calendarIdValid) continue;
-                    CalendarItem calendarItem = await progenyContext.CalendarDb.AsNoTracking().SingleOrDefaultAsync(c => c.EventId == calendarId);
+                    CalendarItem calendarItem = await calendarService.GetCalendarItem(calendarId);
                     if (calendarItem == null) continue;
                     foreach (string keyword in keywordsList)
                     {
@@ -285,7 +203,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     bool wordIdValid = int.TryParse(timeLineItem.ItemId, out int wordId);
                     if (!wordIdValid) continue;
-                    VocabularyItem vocabularyItem = await progenyContext.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(v => v.WordId == wordId);
+                    VocabularyItem vocabularyItem = await vocabularyService.GetVocabularyItem(wordId);
                     if (vocabularyItem == null) continue;
                     foreach (string keyword in keywordsList)
                     {
@@ -302,7 +220,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     bool skillIdValid = int.TryParse(timeLineItem.ItemId, out int skillId);
                     if (!skillIdValid) continue;
-                    Skill skill = await progenyContext.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == skillId);
+                    Skill skill = await skillService.GetSkill(skillId);
                     if (skill == null) continue;
                     foreach (string keyword in keywordsList)
                     {
@@ -319,7 +237,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     bool friendIdValid = int.TryParse(timeLineItem.ItemId, out int friendId);
                     if (!friendIdValid) continue;
-                    Friend friend = await progenyContext.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == friendId);
+                    Friend friend = await friendService.GetFriend(friendId);
                     if (friend == null) continue;
                     foreach (string keyword in keywordsList)
                     {
@@ -346,7 +264,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     bool noteIdValid = int.TryParse(timeLineItem.ItemId, out int noteId);
                     if (!noteIdValid) continue;
-                    Note note = await progenyContext.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == noteId);
+                    Note note = await noteService.GetNote(noteId);
                     if (note == null) continue;
                     foreach (string keyword in keywordsList)
                     {
@@ -364,7 +282,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     bool contactIdValid = int.TryParse(timeLineItem.ItemId, out int contactId);
                     if (!contactIdValid) continue;
-                    Contact contact = await progenyContext.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == contactId);
+                    Contact contact = await contactService.GetContact(contactId);
                     if (contact == null) continue;
                     foreach (string keyword in keywordsList)
                     {
@@ -381,7 +299,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     bool vaccinationIdValid = int.TryParse(timeLineItem.ItemId, out int vaccinationId);
                     if (!vaccinationIdValid) continue;
-                    Vaccination vaccination = await progenyContext.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == vaccinationId);
+                    Vaccination vaccination = await vaccinationService.GetVaccination(vaccinationId);
                     if (vaccination == null) continue;
                     foreach (string keyword in keywordsList)
                     {
@@ -397,7 +315,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     bool locationIdValid = int.TryParse(timeLineItem.ItemId, out int locationId);
                     if (!locationIdValid) continue;
-                    Location location = await progenyContext.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == locationId);
+                    Location location = await locationService.GetLocation(locationId);
                     if (location == null) continue;
                     foreach (string keyword in keywordsList)
                     {

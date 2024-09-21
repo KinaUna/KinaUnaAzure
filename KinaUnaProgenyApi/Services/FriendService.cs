@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -24,8 +25,8 @@ namespace KinaUnaProgenyApi.Services
             _context = context;
             _imageStore = imageStore;
             _cache = cache;
-            _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
-            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
+            _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
+            _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
         /// <summary>
@@ -222,6 +223,27 @@ namespace KinaUnaProgenyApi.Services
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
 
             return friendsList;
+        }
+
+        public async Task<List<Friend>> GetFriendsWithTag(int progenyId, string tag)
+        {
+            List<Friend> allItems = await GetFriendsList(progenyId);
+            if (!string.IsNullOrEmpty(tag))
+            {
+                allItems = [.. allItems.Where(f => f.Tags != null && f.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];
+            }
+
+            return allItems;
+        }
+
+        public async Task<List<Friend>> GetFriendsWithContext(int progenyId, string context)
+        {
+            List<Friend> allItems = await GetFriendsList(progenyId);
+            if (!string.IsNullOrEmpty(context))
+            {
+                allItems = [.. allItems.Where(f => f.Context != null && f.Context.Contains(context, StringComparison.CurrentCultureIgnoreCase))];
+            }
+            return allItems;
         }
     }
 }

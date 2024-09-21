@@ -41,5 +41,6 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Notes for.</param>
         /// <returns>List of Note objects.</returns>
         Task<List<Note>> GetNotesList(int progenyId);
+        Task<List<Note>> GetNotesWithCategory(int progenyId, string category);
     }
 }

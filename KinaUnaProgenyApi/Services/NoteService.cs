@@ -197,5 +197,15 @@ namespace KinaUnaProgenyApi.Services
 
             return notesList;
         }
+
+        public async Task<List<Note>> GetNotesWithCategory(int progenyId, string category)
+        {
+            List<Note> allItems = await GetNotesList(progenyId);
+            if (!string.IsNullOrEmpty(category))
+            {
+                allItems = [.. allItems.Where(n => n.Category != null && n.Category.Contains(category, StringComparison.CurrentCultureIgnoreCase))];
+            }
+            return allItems;
+        }
     }
 }

@@ -553,6 +553,16 @@ namespace KinaUnaProgenyApi.Services
             return picturesList;
         }
 
+        public async Task<List<Picture>> GetPicturesWithTag(int progenyId, string tag)
+        {
+            List<Picture> allItems = await GetPicturesList(progenyId);
+            if (!string.IsNullOrEmpty(tag))
+            {
+                allItems = [.. allItems.Where(p => p.Tags != null && p.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];
+            }
+            return allItems;
+        }
+
         /// <summary>
         /// Gets a list of all Pictures for a Progeny from the cache.
         /// </summary>

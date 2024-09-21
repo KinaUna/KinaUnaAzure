@@ -81,15 +81,8 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             // Todo: Refactor this to use a separate method in the service.
-            List<Picture> allItems = await picturesService.GetPicturesList(progenyId);
-            if (!string.IsNullOrEmpty(tagFilter))
-            {
-                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
-            }
-            else
-            {
-                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime)];
-            }
+            List<Picture> allItems = await picturesService.GetPicturesWithTag(progenyId, tagFilter);
+            allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime)];
 
             if (sortBy == 1)
             {

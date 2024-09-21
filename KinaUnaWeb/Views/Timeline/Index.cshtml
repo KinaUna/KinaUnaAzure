@@ -1,6 +1,6 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
-@model KinaUnaWeb.Models.ItemViewModels.TimeLineViewModel
+@model KinaUnaWeb.Models.ItemViewModels.TimelineRequestViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Timeline", PageNames.Timeline, Model.LanguageId);
@@ -10,8 +10,8 @@
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     const string longDateTimeFormatMoment = "DD-MMMM-YYYY";
-    DateTime startDateTime = new(Model.Year, Model.Month, Model.Day);
-    string pageParameters = Json.Serialize(Model.Parameters).ToString();
+    DateTime startDateTime = new(Model.TimelineRequest.TimelineStartDateTime.Year, Model.TimelineRequest.TimelineStartDateTime.Month, Model.TimelineRequest.TimelineStartDateTime.Day);
+    string pageParameters = Json.Serialize(Model.TimelineRequest).ToString();
 }
 
 @section Scripts{
@@ -107,6 +107,118 @@
                             <option value="100">100</option>
                         </select>
                     </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    <a id="timeline-toggle-filters-button" class="btn-settings-panel" href="#">
+                        @await LocaleManager.GetTranslation("Filters", PageNames.Timeline, Model.LanguageId)
+                        <i id="show-filters-chevron" class="material-icons sidebar-icon chevron-right">chevron_right</i>
+                    </a>
+
+                </div>
+            </div>
+            <div class="row ml-4 timeline-filter-options d-none">
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    @await LocaleManager.GetTranslation("Types:", PageNames.Timeline, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button id="toggle-all-time-line-types-button" class="btn btn-outline-info active">
+                                @await LocaleManager.GetTranslation("All", PageNames.Timeline, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="1">
+                                @await LocaleManager.GetTranslation("Photos", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="2">
+                                @await LocaleManager.GetTranslation("Videos", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="3">
+                                @await LocaleManager.GetTranslation("Calendar", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="4">
+                                @await LocaleManager.GetTranslation("Vocabulary", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="5">
+                                @await LocaleManager.GetTranslation("Skillz", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="6">
+                                @await LocaleManager.GetTranslation("Friends", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="7">
+                                @await LocaleManager.GetTranslation("Measurements", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="8">
+                                @await LocaleManager.GetTranslation("Sleep", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="9">
+                                @await LocaleManager.GetTranslation("Notes", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="10">
+                                @await LocaleManager.GetTranslation("Contacts", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="11">
+                                @await LocaleManager.GetTranslation("Vaccinations", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="12">
+                                @await LocaleManager.GetTranslation("Locations", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row ml-4 timeline-filter-options d-none">
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    <span id="tag-filter-span">@await LocaleManager.GetTranslation("Tag Filter:", PageNames.Timeline, Model.LanguageId)</span>
+                </div>
+                <div class="col ml-4">
+                    <input id="tag-filter-input" type="text" />
+                </div>
+            </div>
+            <div class="row ml-4 timeline-filter-options d-none">
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    <span id="category-filter-span">@await LocaleManager.GetTranslation("Category Filter:", PageNames.Timeline, Model.LanguageId)</span>
+                </div>
+                <div class="col ml-4">
+                    <input id="category-filter-input" type="text" />
+                </div>
+            </div>
+            <div class="row ml-4 timeline-filter-options d-none">
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    <span id="context-filter-span">@await LocaleManager.GetTranslation("Context Filter:", PageNames.Timeline, Model.LanguageId)</span>
+                </div>
+                <div class="col ml-4">
+                    <input id="context-filter-input" type="text" />
                 </div>
             </div>
             <div class="space-20"></div>

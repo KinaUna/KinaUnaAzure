@@ -72,5 +72,6 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="id">The AddressId of the Address to delete.</param>
         /// <returns></returns>
         Task RemoveAddressItem(int id);
+        Task<List<Location>> GetLocationsWithTag(int progenyId, string tag);
     }
 }
