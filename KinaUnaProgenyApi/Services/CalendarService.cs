@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -22,8 +23,8 @@ namespace KinaUnaProgenyApi.Services
         {
             _context = context;
             _cache = cache;
-            _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
-            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(1, 0, 0, 0)); // Expire after a week.
+            _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
+            _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0)); // Expire after a week.
         }
 
         /// <summary>
@@ -196,5 +197,15 @@ namespace KinaUnaProgenyApi.Services
             return calendarList;
         }
 
+        public async Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context)
+        {
+            List<CalendarItem> allItems = await GetCalendarList(progenyId);
+            if (!string.IsNullOrEmpty(context))
+            {
+                allItems = [.. allItems.Where(c => c.Context != null && c.Context.Contains(context, StringComparison.CurrentCultureIgnoreCase))];
+            }
+
+            return allItems;
+        }
     }
 }

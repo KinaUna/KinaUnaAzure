@@ -66,6 +66,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Video objects.</returns>
         Task<List<Video>> GetVideosList(int progenyId);
 
+        Task<List<Video>> GetVideosWithTag(int progenyId, string tag);
+
         /// <summary>
         /// Gets a list of all Videos for a Progeny from the database and adds it to the cache.
         /// </summary>

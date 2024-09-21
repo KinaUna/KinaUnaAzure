@@ -278,31 +278,44 @@ namespace KinaUnaProgenyApi.Services
             }
 
             onThisDayResponse.Request.FirstItemYear = allTimeLineItems.Min(t => t.ProgenyTime.Year);
-            onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimeLineItems, onThisDayRequest.TimeLineTypeFilter);
+            allTimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimeLineItems, onThisDayRequest.TimeLineTypeFilter);
             
             foreach (TimeLineItem timeLineItem in onThisDayResponse.TimeLineItems)
             {
                 timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(timezone));
             }
 
-            onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(onThisDayResponse.TimeLineItems, onThisDayRequest);
+            allTimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(allTimeLineItems, onThisDayRequest);
 
             // Todo: Implement Tags for TimeLineItems.
             // onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
 
+            bool anyFilter = false;
             if (!string.IsNullOrEmpty(onThisDayRequest.TagFilter))
             {
-                onThisDayResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
+                anyFilter = true;
+                onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(allTimeLineItems, onThisDayRequest.TagFilter));
             }
 
-            if(!string.IsNullOrEmpty(onThisDayRequest.CategoryFilter))
+            if (!string.IsNullOrEmpty(onThisDayRequest.CategoryFilter))
             {
-                onThisDayResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithCategories(onThisDayResponse.TimeLineItems, onThisDayRequest.CategoryFilter);
+                anyFilter = true;
+                onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(allTimeLineItems, onThisDayRequest.CategoryFilter));
             }
 
             if (!string.IsNullOrEmpty(onThisDayRequest.ContextFilter))
             {
-                onThisDayResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithContexts(onThisDayResponse.TimeLineItems, onThisDayRequest.ContextFilter);
+                anyFilter = true;
+                onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(allTimeLineItems, onThisDayRequest.ContextFilter));
+            }
+
+            if (anyFilter)
+            {
+                onThisDayResponse.TimeLineItems = onThisDayResponse.TimeLineItems.Distinct().ToList();
+            }
+            else
+            {
+                onThisDayResponse.TimeLineItems = allTimeLineItems;
             }
 
             onThisDayResponse.TimeLineItems = [.. onThisDayResponse.TimeLineItems.OrderByDescending(t => t.ProgenyTime)];
@@ -346,30 +359,43 @@ namespace KinaUnaProgenyApi.Services
             }
 
             timelineResponse.Request.FirstItemYear = allTimeLineItems.Min(t => t.ProgenyTime.Year);
-            timelineResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimeLineItems, timelineRequest.TimeLineTypeFilter);
+            allTimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimeLineItems, timelineRequest.TimeLineTypeFilter);
 
-            foreach (TimeLineItem timeLineItem in timelineResponse.TimeLineItems)
+            foreach (TimeLineItem timeLineItem in allTimeLineItems)
             {
                 timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(timezone));
             }
 
-            
+
             // Todo: Implement Tags for TimeLineItems.
             // onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
 
+            bool anyFilter = false;
             if (!string.IsNullOrEmpty(timelineRequest.TagFilter))
             {
-                timelineResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithTags(timelineResponse.TimeLineItems, timelineRequest.TagFilter);
+                anyFilter = true;
+                timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(allTimeLineItems, timelineRequest.TagFilter));
             }
 
             if (!string.IsNullOrEmpty(timelineRequest.CategoryFilter))
             {
-                timelineResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithCategories(timelineResponse.TimeLineItems, timelineRequest.CategoryFilter);
+                anyFilter = true;
+                timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(allTimeLineItems, timelineRequest.CategoryFilter));
             }
 
             if (!string.IsNullOrEmpty(timelineRequest.ContextFilter))
             {
-                timelineResponse.TimeLineItems = await _timelineFilteringService.GetTimeLineItemsWithContexts(timelineResponse.TimeLineItems, timelineRequest.ContextFilter);
+                anyFilter = true;
+                timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(allTimeLineItems, timelineRequest.ContextFilter));
+            }
+
+            if (anyFilter)
+            {
+                timelineResponse.TimeLineItems = timelineResponse.TimeLineItems.Distinct().ToList();
+            }
+            else
+            {
+                timelineResponse.TimeLineItems = allTimeLineItems;
             }
 
             timelineResponse.TimeLineItems = [.. timelineResponse.TimeLineItems.OrderByDescending(t => t.ProgenyTime)];

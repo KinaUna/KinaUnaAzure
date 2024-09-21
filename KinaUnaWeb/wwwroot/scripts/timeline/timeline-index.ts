@@ -427,9 +427,11 @@ async function loadTimelinePageSettings(): Promise<void> {
     const pageSettingsFromStorage = SettingsHelper.getPageSettings<TimelineRequest>(timelinePageSettingsStorageKey);
     if (pageSettingsFromStorage) {
         if (pageSettingsFromStorage.progenyId === timeLineProgenyId) {
-            timeLineParameters.firstItemYear = pageSettingsFromStorage.firstItemYear;
+            timeLineParameters.firstItemYear = pageSettingsFromStorage.firstItemYear ?? 1900;
         }
-        timeLineParameters.sortOrder = pageSettingsFromStorage.sortOrder;
+
+        timeLineParameters.sortOrder = pageSettingsFromStorage.sortOrder ?? 1;
+        
         if (timeLineParameters.sortOrder === 0) {
             sortTimelineAscending();
         }
@@ -437,10 +439,10 @@ async function loadTimelinePageSettings(): Promise<void> {
             sortTimelineDescending();
         }
 
-        timeLineParameters.numberOfItems = pageSettingsFromStorage.numberOfItems;
+        timeLineParameters.numberOfItems = pageSettingsFromStorage.numberOfItems ?? 10;
         const selectItemsPerPageElement = document.querySelector<HTMLSelectElement>('#items-per-page-select');
         if (selectItemsPerPageElement !== null) {
-            selectItemsPerPageElement.value = timeLineParameters.numberOfItems.toString();
+            selectItemsPerPageElement.value = timeLineParameters.numberOfItems?.toString();
             ($(".selectpicker") as any).selectpicker('refresh');
         }
     }
@@ -461,11 +463,11 @@ function getParametersFromPageProperties(): void {
             const parameters = JSON.parse(pageParameters);
             if (parameters !== null) {
                 timeLineParameters.progenyId = parameters.progenyId;
-                timeLineParameters.sortOrder = parameters.sortBy;
-                timeLineParameters.year = parameters.year;
-                timeLineParameters.month = parameters.month;
-                timeLineParameters.day = parameters.day;
-                timeLineParameters.firstItemYear = parameters.firstItemYear;
+                timeLineParameters.sortOrder = parameters.sortBy ?? 1;
+                timeLineParameters.year = parameters.year ?? 0;
+                timeLineParameters.month = parameters.month ?? 0;
+                timeLineParameters.day = parameters.day ?? 0;
+                timeLineParameters.firstItemYear = parameters.firstItemYear ?? 1900;
             }
         }
     }

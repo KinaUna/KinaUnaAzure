@@ -108,6 +108,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Picture objects.</returns>
         Task<List<Picture>> SetPicturesListInCache(int progenyId);
 
+        Task<List<Picture>> GetPicturesWithTag(int progenyId, string tag);
+
         /// <summary>
         /// Extracts the file extension of an image file in a blob container and saves to a new file with the file extension.
         /// </summary>

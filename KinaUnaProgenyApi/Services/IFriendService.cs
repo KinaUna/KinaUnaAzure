@@ -58,5 +58,7 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list of Friends for.</param>
         /// <returns>List of Friends.</returns>
         Task<List<Friend>> GetFriendsList(int progenyId);
+        Task<List<Friend>> GetFriendsWithTag(int progenyId, string tag);
+        Task<List<Friend>> GetFriendsWithContext(int progenyId, string context);
     }
 }
