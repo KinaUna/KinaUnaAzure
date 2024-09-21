@@ -58,6 +58,15 @@ export class FriendsPageResponse {
         this.tagsList = [];
     }
 }
+export class LocationItem {
+    constructor() {
+        this.locationId = 0;
+        this.progenyId = 0;
+        this.name = '';
+        this.latitude = 0;
+        this.longitude = 0;
+    }
+}
 export class LocationItemParameters {
     constructor() {
         this.locationId = 0;

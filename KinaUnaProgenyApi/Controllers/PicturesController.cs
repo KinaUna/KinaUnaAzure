@@ -1162,6 +1162,38 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        [Route("[action]/{progenyId:int}")]
+        [HttpGet]
+        public async Task<IActionResult> GetPictureLocations(int progenyId)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+
+            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
+            List<Location> pictureLocation = await picturesService.GetPicturesLocations(progenyId);
+            return Ok(pictureLocation);
+        }
+
+        [Route("[action]")]
+        [HttpPost]
+        public async Task<IActionResult> GetPicturesNearLocation([FromBody] Location location)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(location.ProgenyId, userEmail);
+
+            if (userAccess == null && location.ProgenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
+            List<Picture> pictures = await picturesService.GetPicturesNearLocation(location);
+            return Ok(pictures);
+        }
+
         /// <summary>
         /// Gets a list of string with all locations from Picture and Video entities for a given ProgenyId and AccessLevel.
         /// </summary>

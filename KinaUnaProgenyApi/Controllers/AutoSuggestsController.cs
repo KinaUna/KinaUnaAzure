@@ -196,12 +196,12 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (string.IsNullOrEmpty(picture.Location)) continue;
 
-                List<string> tagsList = [.. picture.Location.Split(',')];
-                foreach (string tagString in tagsList)
+                List<string> locationsList = [.. picture.Location.Split(',')];
+                foreach (string locationString in locationsList)
                 {
-                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                    if (!string.IsNullOrEmpty(locationString) && !autoSuggestList.Contains(locationString.Trim()))
                     {
-                        autoSuggestList.Add(tagString.Trim());
+                        autoSuggestList.Add(locationString.Trim());
                     }
                 }
             }
@@ -212,12 +212,12 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (string.IsNullOrEmpty(video.Location)) continue;
 
-                List<string> tagsList = [.. video.Location.Split(',')];
-                foreach (string tagString in tagsList)
+                List<string> locationsList = [.. video.Location.Split(',')];
+                foreach (string locationString in locationsList)
                 {
-                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                    if (!string.IsNullOrEmpty(locationString) && !autoSuggestList.Contains(locationString.Trim()))
                     {
-                        autoSuggestList.Add(tagString.Trim());
+                        autoSuggestList.Add(locationString.Trim());
                     }
                 }
             }
@@ -228,12 +228,12 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (string.IsNullOrEmpty(calendarItem.Location)) continue;
 
-                List<string> tagsList = [.. calendarItem.Location.Split(',')];
-                foreach (string tagString in tagsList)
+                List<string> locationsList = [.. calendarItem.Location.Split(',')];
+                foreach (string locationString in locationsList)
                 {
-                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                    if (!string.IsNullOrEmpty(locationString) && !autoSuggestList.Contains(locationString.Trim()))
                     {
-                        autoSuggestList.Add(tagString.Trim());
+                        autoSuggestList.Add(locationString.Trim());
                     }
                 }
             }
@@ -244,12 +244,12 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (string.IsNullOrEmpty(locationItem.Name)) continue;
 
-                List<string> tagsList = [.. locationItem.Name.Split(',')];
-                foreach (string tagString in tagsList)
+                List<string> locationsList = [.. locationItem.Name.Split(',')];
+                foreach (string locationString in locationsList)
                 {
-                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                    if (!string.IsNullOrEmpty(locationString) && !autoSuggestList.Contains(locationString.Trim()))
                     {
-                        autoSuggestList.Add(tagString.Trim());
+                        autoSuggestList.Add(locationString.Trim());
                     }
                 }
             }

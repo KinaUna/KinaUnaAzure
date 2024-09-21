@@ -208,7 +208,7 @@
             string markerCode = "";
             string setData = "";
         }
-        @if (Model.LocationsList != null)
+        @if (Model.LocationsList != null && Model.LocationsList.Any())
         {
             foreach (Location lineLoc in Model.LocationsList)
             {
@@ -221,10 +221,10 @@
                 setData = setData + sMarker;
 
             }
-        }
-        @{
+
             locGroup = locGroup.Trim().TrimEnd(',') + "]";
         }
+        
         @Html.Raw(markerCode)
         @Html.Raw(setData);
         group.addObjects(@locGroup);

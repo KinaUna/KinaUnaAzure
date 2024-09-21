@@ -98,6 +98,20 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<PictureViewModel> GetPictureViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "");
 
         /// <summary>
+        /// Gets a list of Locations that are obtained from Pictures.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny to get Picture locations for.</param>
+        /// <returns>List of Location objects.</returns>
+        Task<List<Location>> GetPictureLocations(int progenyId);
+
+        /// <summary>
+        /// Gets a list of Pictures that are near a given Location.
+        /// </summary>
+        /// <param name="location">The Location</param>
+        /// <returns>List of Picture objects.</returns>
+        Task<List<Picture>> GetPicturesNearLocation(Location location);
+
+        /// <summary>
         /// Gets the video with the given VideoId, with the VideoTime converted to the given time zone.
         /// </summary>
         /// <param name="videoId">The VideoId of the video to get.</param>

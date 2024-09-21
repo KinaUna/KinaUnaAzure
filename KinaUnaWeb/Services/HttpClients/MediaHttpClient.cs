@@ -343,6 +343,34 @@ namespace KinaUnaWeb.Services.HttpClients
             return pictureViewModel;
         }
 
+        public async Task<List<Location>> GetPictureLocations(int progenyId)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string picturesApiPath = "/api/Pictures/GetPictureLocations/" + progenyId;
+            HttpResponseMessage picturesResponse = await _httpClient.GetAsync(picturesApiPath);
+            if (!picturesResponse.IsSuccessStatusCode) return [];
+
+            string locationsListAsString = await picturesResponse.Content.ReadAsStringAsync();
+            List<Location> resultLocationList = JsonConvert.DeserializeObject<List<Location>>(locationsListAsString);
+            return resultLocationList;
+        }
+
+        public async Task<List<Picture>> GetPicturesNearLocation(Location location)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string locationApiPath = "/api/Pictures/GetPicturesNearLocation/";
+            HttpResponseMessage picturesResponse = await _httpClient.PostAsync(locationApiPath, new StringContent(JsonConvert.SerializeObject(location), Encoding.UTF8, "application/json"));
+            if (!picturesResponse.IsSuccessStatusCode) return [];
+
+            string picturesListAsString = await picturesResponse.Content.ReadAsStringAsync();
+            List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(picturesListAsString);
+            return resultPictureList;
+        }
+
         /// <summary>
         /// Gets a VideoPageViewModel for a progeny that a user has access to.
         /// </summary>

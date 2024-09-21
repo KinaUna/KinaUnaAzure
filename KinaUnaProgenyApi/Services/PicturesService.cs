@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using Location = KinaUna.Data.Models.Location;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -553,6 +554,12 @@ namespace KinaUnaProgenyApi.Services
             return picturesList;
         }
 
+        /// <summary>
+        /// Gets a list of all Pictures containing a specific tag for a Progeny.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get pictures for.</param>
+        /// <param name="tag">String with the tag.</param>
+        /// <returns>List of Picture objects.</returns>
         public async Task<List<Picture>> GetPicturesWithTag(int progenyId, string tag)
         {
             List<Picture> allItems = await GetPicturesList(progenyId);
@@ -561,6 +568,63 @@ namespace KinaUnaProgenyApi.Services
                 allItems = [.. allItems.Where(p => p.Tags != null && p.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];
             }
             return allItems;
+        }
+
+        // Todo: add unit tests for these methods.
+        /// <summary>
+        /// Gets a list of distinct Locations for a Progeny's pictures.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny to get picture locations for.</param>
+        /// <param name="precision">The number of digits for floating point precision, to group picture locations by.</param>
+        /// <returns></returns>
+        public async Task<List<Location>> GetPicturesLocations(int progenyId, int precision = 4)
+        {
+            List<Picture> allPictures = await GetPicturesList(progenyId);
+            allPictures = [.. allPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
+
+
+            List<Location> locations = new();
+            foreach (Picture picture in allPictures)
+            {
+                double.TryParse(picture.Latitude, out double latitude);
+                double.TryParse(picture.Longtitude, out double longitude);
+                Location location = new()
+                {
+                    Latitude = Math.Round(latitude, precision),
+                    Longitude = Math.Round(longitude, precision),
+                    ProgenyId = picture.ProgenyId
+                };
+                locations.Add(location);
+            }
+
+            return locations.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Gets a list of Pictures near a specific Location.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        /// <param name="distanceInMeters">The distance in meters to search for pictures.</param>
+        /// <returns>List of Picture objects.</returns>
+        public async Task<List<Picture>> GetPicturesNearLocation(Location location, int distanceInMeters = 100)
+        {
+            List<Picture> allPictures = await GetPicturesList(location.ProgenyId);
+            allPictures = [.. allPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
+
+            List<Picture> nearPictures = new();
+            foreach (Picture picture in allPictures)
+            {
+                double.TryParse(picture.Latitude, out double latitude);
+                double.TryParse(picture.Longtitude, out double longitude);
+                
+                double distance = location.Distance(latitude, longitude);
+                if (distance < distanceInMeters)
+                {
+                    nearPictures.Add(picture);
+                }
+            }
+
+            return nearPictures;
         }
 
         /// <summary>

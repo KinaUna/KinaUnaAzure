@@ -73,6 +73,14 @@ export class FriendsPageResponse implements BaseItemsPageResponseModel {
     tagsList: string[] = [];
 }
 
+export class LocationItem {
+    locationId: number = 0;
+    progenyId: number = 0;
+    name: string = '';
+    latitude: number = 0;
+    longitude: number = 0;
+}
+
 export class LocationItemParameters implements BaseItemParameters {
     locationId: number = 0;
     languageId: number = 0;

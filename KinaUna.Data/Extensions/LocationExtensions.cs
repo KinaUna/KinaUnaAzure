@@ -1,4 +1,5 @@
-﻿using Location = KinaUna.Data.Models.Location;
+﻿using System;
+using Location = KinaUna.Data.Models.Location;
 
 namespace KinaUna.Data.Extensions
 {
@@ -59,6 +60,25 @@ namespace KinaUna.Data.Extensions
             currentLocation.State = otherLocation.State;
             currentLocation.StreetName = otherLocation.StreetName;
             currentLocation.Tags = otherLocation.Tags;
+        }
+
+        /// <summary>
+        /// Calculates the distance between two Location objects in meters.
+        /// </summary>
+        /// <param name="location"></param>
+        /// <param name="latitude"></param>
+        /// <param name="longitude"></param>
+        /// <returns>Double with the distance in meters.</returns>
+        public static double Distance(this Location location, double latitude, double longitude)
+        {
+            // Source: https://stackoverflow.com/questions/6366408/calculating-distance-between-two-latitude-and-longitude-geocoordinates
+            double d1 = latitude * (Math.PI / 180.0);
+            double num1 = longitude * (Math.PI / 180.0);
+            double d2 = location.Latitude * (Math.PI / 180.0);
+            double num2 = location.Longitude * (Math.PI / 180.0) - num1;
+            double d3 = Math.Pow(Math.Sin((d2 - d1) / 2.0), 2.0) + Math.Cos(d1) * Math.Cos(d2) * Math.Pow(Math.Sin(num2 / 2.0), 2.0);
+
+            return 6376500.0 * (2.0 * Math.Atan2(Math.Sqrt(d3), Math.Sqrt(1.0 - d3)));
         }
     }
 }
