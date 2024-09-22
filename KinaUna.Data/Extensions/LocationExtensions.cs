@@ -71,14 +71,53 @@ namespace KinaUna.Data.Extensions
         /// <returns>Double with the distance in meters.</returns>
         public static double Distance(this Location location, double latitude, double longitude)
         {
-            // Source: https://stackoverflow.com/questions/6366408/calculating-distance-between-two-latitude-and-longitude-geocoordinates
-            double d1 = latitude * (Math.PI / 180.0);
-            double num1 = longitude * (Math.PI / 180.0);
-            double d2 = location.Latitude * (Math.PI / 180.0);
-            double num2 = location.Longitude * (Math.PI / 180.0) - num1;
-            double d3 = Math.Pow(Math.Sin((d2 - d1) / 2.0), 2.0) + Math.Cos(d1) * Math.Cos(d2) * Math.Pow(Math.Sin(num2 / 2.0), 2.0);
+            double result = Distance(location.Latitude, latitude, location.Longitude, longitude);
+            return result;
+        }
 
-            return 6376500.0 * (2.0 * Math.Atan2(Math.Sqrt(d3), Math.Sqrt(1.0 - d3)));
+
+        //Source: https://learn.microsoft.com/en-us/answers/questions/1345224/calculate-distance-between-two-coordinates-lat1-lo
+        private static double ToRadians(double angleIn10thofaDegree)
+        {
+            // Angle in 10th
+            // of a degree
+            return (angleIn10thofaDegree *
+                    Math.PI) / 180;
+        }
+
+        // Source: https://learn.microsoft.com/en-us/answers/questions/1345224/calculate-distance-between-two-coordinates-lat1-lo
+        private static double Distance(double lat1,
+            double lat2,
+            double lon1,
+            double lon2)
+        {
+
+            // The math module contains
+            // a function named toRadians
+            // which converts from degrees
+            // to radians.
+            lon1 = ToRadians(lon1);
+            lon2 = ToRadians(lon2);
+            lat1 = ToRadians(lat1);
+            lat2 = ToRadians(lat2);
+
+            // Haversine formula
+            double dlon = lon2 - lon1;
+            double dlat = lat2 - lat1;
+            double a = Math.Pow(Math.Sin(dlat / 2), 2) +
+                       Math.Cos(lat1) * Math.Cos(lat2) *
+                       Math.Pow(Math.Sin(dlon / 2), 2);
+
+            double c = 2 * Math.Asin(Math.Sqrt(a));
+
+            // Radius of earth in
+            // kilometers. Use 3956
+            // for miles
+            double r = 6371;
+
+            // calculate the result
+            double result = c * r;
+            return result;
         }
     }
 }

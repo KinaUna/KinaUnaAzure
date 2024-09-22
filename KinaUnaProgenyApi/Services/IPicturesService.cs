@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 
 namespace KinaUnaProgenyApi.Services
@@ -119,18 +120,16 @@ namespace KinaUnaProgenyApi.Services
         /// <summary>
         /// Gets a list of distinct Locations for a Progeny's pictures.
         /// </summary>
-        /// <param name="progenyId">The Id of the Progeny to get picture locations for.</param>
-        /// <param name="precision">The number of digits for floating point precision, to group picture locations by.</param>
-        /// <returns></returns>
-        Task<List<Location>> GetPicturesLocations(int progenyId, int precision = 5);
+        /// <param name="picturesLocationsRequest">PicturesLocationsRequest with the distance, in kilometers, to group picture locations by.</param>
+        /// <returns>PicturesLocationsResponse</returns>
+        Task<PicturesLocationsResponse> GetPicturesLocations(PicturesLocationsRequest picturesLocationsRequest);
 
         /// <summary>
         /// Gets a list of Pictures near a specific Location.
         /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="distanceInMeters">The distance in meters to search for pictures.</param>
-        /// <returns>List of Picture objects.</returns>
-        Task<List<Picture>> GetPicturesNearLocation(Location location, int distanceInMeters = 100);
+        /// <param name="nearByPhotosRequest">NearByPhotosRequest object with the location data.</param>
+        /// <returns>NearByPhotosResponse, with the list of Picture objects.</returns>
+        Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest);
 
         /// <summary>
         /// Extracts the file extension of an image file in a blob container and saves to a new file with the file extension.

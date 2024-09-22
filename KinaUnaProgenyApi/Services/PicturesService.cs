@@ -9,6 +9,7 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Extensions.ThirdPartyElements;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -574,12 +575,11 @@ namespace KinaUnaProgenyApi.Services
         /// <summary>
         /// Gets a list of distinct Locations for a Progeny's pictures.
         /// </summary>
-        /// <param name="progenyId">The Id of the Progeny to get picture locations for.</param>
-        /// <param name="precision">The number of digits for floating point precision, to group picture locations by.</param>
-        /// <returns></returns>
-        public async Task<List<Location>> GetPicturesLocations(int progenyId, int precision = 4)
+        /// <param name="picturesLocationsRequest">PicturesLocationsRequest with the distance, in kilometers, to group picture locations by.</param>
+        /// <returns>PicturesLocationsResponse</returns>
+        public async Task<PicturesLocationsResponse> GetPicturesLocations(PicturesLocationsRequest picturesLocationsRequest)
         {
-            List<Picture> allPictures = await GetPicturesList(progenyId);
+            List<Picture> allPictures = await GetPicturesList(picturesLocationsRequest.ProgenyId);
             allPictures = [.. allPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
 
 
@@ -590,25 +590,37 @@ namespace KinaUnaProgenyApi.Services
                 double.TryParse(picture.Longtitude, out double longitude);
                 Location location = new()
                 {
-                    Latitude = Math.Round(latitude, precision),
-                    Longitude = Math.Round(longitude, precision),
+                    Latitude = latitude,
+                    Longitude = longitude,
                     ProgenyId = picture.ProgenyId
                 };
+                if (locations.Any(l => l.Distance(location.Latitude, location.Longitude) < picturesLocationsRequest.Distance))
+                {
+                    continue;
+                }
                 locations.Add(location);
             }
 
-            return locations.Distinct().ToList();
+            PicturesLocationsResponse picturesLocationsResponse = new()
+            {
+                ProgenyId = picturesLocationsRequest.ProgenyId,
+                LocationsList = locations,
+                NumberOfLocations = locations.Count
+            };
+
+            return picturesLocationsResponse;
         }
 
         /// <summary>
         /// Gets a list of Pictures near a specific Location.
         /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="distanceInMeters">The distance in meters to search for pictures.</param>
-        /// <returns>List of Picture objects.</returns>
-        public async Task<List<Picture>> GetPicturesNearLocation(Location location, int distanceInMeters = 100)
+        /// <param name="nearByPhotosRequest">NearByPhotosRequest object with the location data.</param>
+        /// <returns>NearByPhotosResponse, with the list of Picture objects.</returns>
+        public async Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest)
         {
-            List<Picture> allPictures = await GetPicturesList(location.ProgenyId);
+            // Todo: Add unit tests for this method.
+            // Todo: Add sort order parameter.
+            List<Picture> allPictures = await GetPicturesList(nearByPhotosRequest.ProgenyId);
             allPictures = [.. allPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
 
             List<Picture> nearPictures = new();
@@ -617,14 +629,28 @@ namespace KinaUnaProgenyApi.Services
                 double.TryParse(picture.Latitude, out double latitude);
                 double.TryParse(picture.Longtitude, out double longitude);
                 
-                double distance = location.Distance(latitude, longitude);
-                if (distance < distanceInMeters)
+                double distance = nearByPhotosRequest.LocationItem.Distance(latitude, longitude);
+                if (distance < nearByPhotosRequest.Distance)
                 {
                     nearPictures.Add(picture);
                 }
             }
 
-            return nearPictures;
+            nearPictures = nearPictures.OrderBy(p => p.PictureTime).ToList();
+            if (nearByPhotosRequest.SortOrder == 1)
+            {
+                nearPictures = nearPictures.OrderByDescending(p => p.PictureTime).ToList();
+            }
+
+            NearByPhotosResponse nearByPhotosResponse = new()
+            {
+                ProgenyId = nearByPhotosRequest.ProgenyId,
+                LocationItem = nearByPhotosRequest.LocationItem,
+                PicturesList = nearPictures,
+                NumberOfPictures = nearPictures.Count
+            };
+
+            return nearByPhotosResponse;
         }
 
         /// <summary>

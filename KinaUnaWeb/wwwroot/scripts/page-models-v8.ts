@@ -108,6 +108,31 @@ export class LocationsPageResponse implements BaseItemsPageResponseModel {
     tagsList: string[] = [];
 }
 
+export class NearByPhotosRequest {
+    progenyId: number = 0;
+    locationItem: LocationItem = new LocationItem();
+    distance: number = 0.25;
+    sortOrder : number = 1;
+}
+
+export class NearByPhotosResponse {
+    progenyId: number = 0;
+    locationItem: LocationItem = new LocationItem();
+    picturesList: Picture[] = [];
+    numberOfPictures: number = 0;
+}
+
+export class PicturesLocationsRequest {
+    progenyId: number = 0;
+    distance: number = 0.25;
+}
+
+export class PicturesLocationsResponse {
+    progenyId: number = 0;
+    locationsList: LocationItem[] = [];
+    numberOfLocations: number = 0;
+}
+
 export class NoteItemParameters implements BaseItemParameters {
     noteId: number = 0;
     languageId: number = 0;

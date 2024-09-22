@@ -5,6 +5,9 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId);
+    string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Timeline, Model.LanguageId);
+    string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Timeline, Model.LanguageId);
+    string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
     string pageParameters = Json.Serialize(Model.LocationsPageParameters).ToString();
 }
@@ -20,6 +23,7 @@
 }
 
 <div id="locations-page-parameters" class="d-none" data-locations-page-parameters="@pageParameters"></div>
+<div id="here-maps-api-key-div" class="d-none" data-here-maps-api-key="@Model.HereMapsApiKey"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="btn-group" style="float: right;">
         <a asp-controller="Locations" asp-action="Index" class="btn btn-info leave-page">
@@ -66,31 +70,94 @@
         </div>
     </div>
 </div>
+<div class="d-none">
+    <div id="page-settings-content-div" class="bg-dark page-settings-content">
+        <div class="row">
+            <div class="col-auto ml-auto">
+                <button id="close-page-settings-button" class="ml-auto btn btn-link btn-link-yellow p-2">
+                    <i class="material-icons icon-top-4">close</i>
+                </button>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="row">
+                <div class="col h5">
+                    @await LocaleManager.GetTranslation("Page settings", PageNames.Layout, Model.LanguageId)
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @sortString
+                </div>
+                <div class="col-auto ml-4">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button id="setting-sort-descending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">history</i> @newestFirstString</button>
+                        </div>
+                        <div class="col">
+                            <button id="setting-sort-ascending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">update</i> @oldestFirstString</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Group locations distance:", PageNames.Locations, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row" style="font-size: small; margin-top: 5px;">
+                        <select id="locations-distance-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
+                            <option value="0.025">25m</option>
+                            <option value="0.05">50m</option>
+                            <option value="0.1">100m</option>
+                            <option value="0.25" selected="selected">250m</option>
+                            <option value="0.5">500m</option>
+                            <option value="1.0">1km</option>
+                            <option value="2.0">2km</option>
+                            <option value="5.0">5km</option>
+                            <option value="10.0">10km</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Number of items to get:", PageNames.Timeline, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row" style="font-size: small; margin-top: 5px;">
+                        <select id="items-per-page-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
+                            <option value="5">5</option>
+                            <option value="10" selected="selected">10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    <button id="photo-locations-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div id="show-page-settings-button-div" style="position: absolute; top: 60px; right: 0;">
+        <button id="page-settings-button" class="btn btn-link btn-link-yellow bg-dark p-3 m-2" style="border-radius: 33%">
+            <span><i class="material-icons icon-top-4">settings</i></span>
+        </button>
+    </div>
+</div>
 @if (allowHereMaps)
 {
-    <script>
-        let pixelRatio = window.devicePixelRatio || 1;
-        let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
-        
-        let platform = new H.service.Platform({
-            'apikey': '@Model.HereMapsApiKey',
-            'useHTTPS': true
-        });
-
-        let maptypes = platform.createDefaultLayers({
-            tileSize: pixelRatio === 1 ? 256 : 512,
-            ppi: pixelRatio === 1 ? undefined : 320
-        });
-
-        let map = new H.Map(document.getElementById('photo-locations-map-container-div'),
-            maptypes.vector.normal.map,
-            {
-                zoom: 3,
-                pixelRatio: pixelRatio
-            });
-
-        let ui = H.ui.UI.createDefault(map, maptypes);
-        let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-    </script>
     <script src="/js/locations/photo-locations.js" type="module" asp-append-version="true"></script>
 }

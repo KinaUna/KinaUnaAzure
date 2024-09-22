@@ -2,6 +2,7 @@
 using KinaUnaWeb.Models.ItemViewModels;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -100,16 +101,16 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <summary>
         /// Gets a list of Locations that are obtained from Pictures.
         /// </summary>
-        /// <param name="progenyId">The Id of the Progeny to get Picture locations for.</param>
-        /// <returns>List of Location objects.</returns>
-        Task<List<Location>> GetPictureLocations(int progenyId);
+        /// <param name="picturesLocationsRequest">PicturesLocationsRequest with the Id of the Progeny to get Picture locations for and the distance in kilometers to group them by.</param>
+        /// <returns>PicturesLocationsResponse with the list of Location objects.</returns>
+        Task<PicturesLocationsResponse> GetPictureLocations(PicturesLocationsRequest picturesLocationsRequest);
 
         /// <summary>
         /// Gets a list of Pictures that are near a given Location.
         /// </summary>
-        /// <param name="location">The Location</param>
-        /// <returns>List of Picture objects.</returns>
-        Task<List<Picture>> GetPicturesNearLocation(Location location);
+        /// <param name="nearByPhotosRequest">NearByPhotosRequest with the Location, Progeny Id, distance in kilometers to group by.</param>
+        /// <returns>NearByPhotosResponse object with the list of pictures.</returns>
+        Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest);
 
         /// <summary>
         /// Gets the video with the given VideoId, with the VideoTime converted to the given time zone.

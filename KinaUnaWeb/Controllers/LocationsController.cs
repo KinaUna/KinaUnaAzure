@@ -211,9 +211,10 @@ namespace KinaUnaWeb.Controllers
         /// </summary>
         /// <param name="childId">The Id of the Progeny to show photo locations for.</param>
         /// <param name="tagFilter">Filter result to include only locations where the tagFilter is in the Tags list. Empty string includes all locations.</param>
+        /// <param name="sortOrder">Sort order, 0 = ascending, 1 descending.</param>
         /// <returns>View with LocationViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> PhotoLocations(int childId = 0, string tagFilter = "")
+        public async Task<IActionResult> PhotoLocations(int childId = 0, string tagFilter = "", int sortOrder = 1)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             LocationViewModel model = new(baseModel)
@@ -226,7 +227,8 @@ namespace KinaUnaWeb.Controllers
             {
                 LanguageId = model.LanguageId,
                 ProgenyId = model.CurrentProgenyId,
-                TagFilter = tagFilter
+                TagFilter = tagFilter,
+                Sort = sortOrder
             };
 
             return View(model);

@@ -97,6 +97,35 @@ export class LocationsPageResponse {
         this.tagsList = [];
     }
 }
+export class NearByPhotosRequest {
+    constructor() {
+        this.progenyId = 0;
+        this.locationItem = new LocationItem();
+        this.distance = 0.25;
+        this.sortOrder = 1;
+    }
+}
+export class NearByPhotosResponse {
+    constructor() {
+        this.progenyId = 0;
+        this.locationItem = new LocationItem();
+        this.picturesList = [];
+        this.numberOfPictures = 0;
+    }
+}
+export class PicturesLocationsRequest {
+    constructor() {
+        this.progenyId = 0;
+        this.distance = 0.25;
+    }
+}
+export class PicturesLocationsResponse {
+    constructor() {
+        this.progenyId = 0;
+        this.locationsList = [];
+        this.numberOfLocations = 0;
+    }
+}
 export class NoteItemParameters {
     constructor() {
         this.noteId = 0;

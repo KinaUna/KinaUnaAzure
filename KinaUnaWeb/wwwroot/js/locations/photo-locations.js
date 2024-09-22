@@ -1,14 +1,25 @@
 import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { LocationItem, LocationsPageParameters, TimeLineItemViewModel, TimelineItem } from '../page-models-v8.js';
+import { LocationItem, LocationsPageParameters, NearByPhotosRequest, PicturesLocationsRequest, TimeLineItemViewModel, TimelineItem } from '../page-models-v8.js';
+import { setupHereMapsPhotoLocations } from './location-tools.js';
+import * as SettingsHelper from '../settings-tools-v8.js';
 let locationsPageParameters = new LocationsPageParameters();
-let locationsList = [];
+let picturesLocationsRequest = new PicturesLocationsRequest();
+let nearByPhotosRequest = new NearByPhotosRequest();
+let distanceForLocationSearch = 0.1;
+let distanceForPhotoSearch = 0.125;
 let picturesList = [];
 let picturesShown = 0;
 let photoLocationsProgenyId;
 let languageId = 1;
 let selectedLocation;
+let firstRun = true;
+let map;
+let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
+let group = new H.map.Group();
+const sortAscendingSettingsButton = document.querySelector('#setting-sort-ascending-button');
+const sortDescendingSettingsButton = document.querySelector('#setting-sort-descending-button');
 /** Shows the loading spinner in the loading-timeline-items-div.
  */
 function startLoadingSpinner() {
@@ -21,18 +32,23 @@ function stopLoadingSpinner() {
 }
 async function getPicturesLocationsList() {
     startLoadingSpinner();
+    picturesLocationsRequest.progenyId = photoLocationsProgenyId;
+    picturesLocationsRequest.distance = distanceForLocationSearch;
+    if (group) {
+        group.removeAll();
+    }
     await fetch('/Pictures/GetPicturesLocations/', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(locationsPageParameters)
+        body: JSON.stringify(picturesLocationsRequest)
     }).then(async function (getLocationsListResult) {
         if (getLocationsListResult != null) {
             const newLocationsList = (await getLocationsListResult.json());
-            if (newLocationsList.length > 0) {
-                await processLocationsList(newLocationsList);
+            if (newLocationsList.locationsList.length > 0) {
+                await processLocationsList(newLocationsList.locationsList);
             }
         }
     }).catch(function (error) {
@@ -44,19 +60,27 @@ async function getPicturesLocationsList() {
     });
 }
 async function processLocationsList(locationsList) {
-    let group = new H.map.Group();
+    if (map === null)
+        return;
+    group = new H.map.Group();
     for (const locationItem of locationsList) {
         let marker = new H.map.Marker({ lat: locationItem.latitude, lng: locationItem.longitude }, { icon: defaultIcon });
-        map.addObject(marker);
         group.addObject(marker);
     }
     map.addObject(group);
-    map.getViewModel().setLookAtData({ bounds: group.getBoundingBox() });
+    if (firstRun) {
+        firstRun = false;
+        map.getViewModel().setLookAtData({ bounds: group.getBoundingBox() });
+    }
     return new Promise(function (resolve, reject) {
         resolve();
     });
 }
 async function getPicturesNearLocation(locationItem) {
+    nearByPhotosRequest.locationItem = locationItem;
+    nearByPhotosRequest.progenyId = photoLocationsProgenyId;
+    nearByPhotosRequest.distance = distanceForPhotoSearch;
+    nearByPhotosRequest.sortOrder = locationsPageParameters.sort;
     picturesShown = 0;
     await fetch('/Pictures/GetPicturesNearLocation/', {
         method: 'POST',
@@ -64,12 +88,12 @@ async function getPicturesNearLocation(locationItem) {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(locationItem)
+        body: JSON.stringify(nearByPhotosRequest)
     }).then(async function (getPicturesListResult) {
         if (getPicturesListResult != null) {
             const picturesListResult = (await getPicturesListResult.json());
-            picturesList = picturesListResult;
-            if (picturesListResult.length > 0) {
+            picturesList = picturesListResult.picturesList;
+            if (picturesListResult.picturesList.length > 0) {
                 await processPicturesNearLocation();
             }
         }
@@ -82,16 +106,16 @@ async function getPicturesNearLocation(locationItem) {
 }
 async function processPicturesNearLocation() {
     startLoadingSpinner();
-    const onThisDayPostsParentDiv = document.querySelector('#photo-items-parent-div');
-    if (onThisDayPostsParentDiv !== null) {
-        onThisDayPostsParentDiv.classList.remove('d-none');
+    const photoItemsParentDiv = document.querySelector('#photo-items-parent-div');
+    if (photoItemsParentDiv !== null) {
+        photoItemsParentDiv.classList.remove('d-none');
     }
     const morePicturesButton = document.getElementById('more-pictures-button');
     if (morePicturesButton !== null) {
         morePicturesButton.classList.add('d-none');
     }
     let count = 0;
-    const endCount = picturesShown + 10;
+    const endCount = picturesShown + locationsPageParameters.itemsPerPage;
     for await (const timelineItemToAdd of picturesList) {
         if (count >= picturesShown && count < endCount) {
             const pictureTimelineItem = new TimelineItem();
@@ -151,7 +175,13 @@ function getLocationsPageParameters() {
     }
 }
 function setUpMap() {
+    if (map === null)
+        return;
     map.addEventListener('tap', async function (evt) {
+        if (map !== null && evt.currentPointer != null) {
+            let coord = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
+            map.setCenter(coord, true);
+        }
         // Clear pictures div
         const photosDiv = document.getElementById('photo-items-div');
         if (photosDiv !== null) {
@@ -165,16 +195,46 @@ function setUpMap() {
             selectedLocation = locationTapped;
             await getPicturesNearLocation(locationTapped);
         }
-        if (evt.currentPointer != null) {
-            let coord = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
-            map.setCenter(coord, true);
-        }
     });
 }
+function sortPicturesAscending() {
+    locationsPageParameters.sort = 0;
+}
+function sortPicturesDescending() {
+    locationsPageParameters.sort = 1;
+}
+async function savePhotoLocationsPageSettings() {
+    const numberOfItemsToGetSelect = document.querySelector('#items-per-page-select');
+    if (numberOfItemsToGetSelect !== null) {
+        locationsPageParameters.itemsPerPage = parseInt(numberOfItemsToGetSelect.value);
+    }
+    else {
+        locationsPageParameters.itemsPerPage = 10;
+    }
+    const locationsDistanceSelect = document.querySelector('#locations-distance-select');
+    if (locationsDistanceSelect !== null) {
+        distanceForLocationSearch = parseFloat(locationsDistanceSelect.value);
+    }
+    else {
+        distanceForLocationSearch = 0.25;
+    }
+    distanceForPhotoSearch = distanceForLocationSearch * 1.1;
+    await getPicturesLocationsList();
+}
 document.addEventListener('DOMContentLoaded', async function () {
-    setUpMap();
     photoLocationsProgenyId = getCurrentProgenyId();
     getLocationsPageParameters();
+    map = setupHereMapsPhotoLocations(locationsPageParameters.languageId);
+    setUpMap();
+    const photoLocationsSaveSettingsButton = document.querySelector('#photo-locations-page-save-settings-button');
+    if (photoLocationsSaveSettingsButton !== null) {
+        photoLocationsSaveSettingsButton.addEventListener('click', savePhotoLocationsPageSettings);
+    }
+    if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.addEventListener('click', sortPicturesAscending);
+        sortDescendingSettingsButton.addEventListener('click', sortPicturesDescending);
+    }
+    SettingsHelper.initPageSettings();
     await getPicturesLocationsList();
     const morePicturesButton = document.getElementById('more-pictures-button');
     if (morePicturesButton !== null) {

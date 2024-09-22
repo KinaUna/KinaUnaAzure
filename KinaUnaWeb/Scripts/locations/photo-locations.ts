@@ -1,18 +1,26 @@
 ﻿import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { LocationItem, LocationsPageParameters, Picture, TimeLineItemViewModel, TimelineItem } from '../page-models-v8.js';
-import { setUpMapClickToShowLocationListener } from './location-tools.js';
+import { LocationItem, LocationsPageParameters, NearByPhotosRequest, NearByPhotosResponse, Picture, PicturesLocationsRequest, PicturesLocationsResponse, TimeLineItemViewModel, TimelineItem } from '../page-models-v8.js';
+import { setUpMapClickToShowLocationListener, setupHereMaps, setupHereMapsPhotoLocations } from './location-tools.js';
+import * as SettingsHelper from '../settings-tools-v8.js';
 
 let locationsPageParameters = new LocationsPageParameters();
-let locationsList: LocationItem[] = [];
+let picturesLocationsRequest: PicturesLocationsRequest = new PicturesLocationsRequest();
+let nearByPhotosRequest: NearByPhotosRequest = new NearByPhotosRequest();
+let distanceForLocationSearch: number = 0.1;
+let distanceForPhotoSearch: number = 0.125;
 let picturesList: Picture[] = [];
 let picturesShown: number = 0;
 let photoLocationsProgenyId: number;
 let languageId = 1;
 let selectedLocation: LocationItem;
-declare let map: H.Map;
-declare let defaultIcon: H.map.Icon;
+let firstRun: boolean = true;
+let map: H.Map | null;
+let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
+let group: H.map.Group = new H.map.Group();
+const sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#setting-sort-ascending-button');
+const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#setting-sort-descending-button');
 
 /** Shows the loading spinner in the loading-timeline-items-div.
  */
@@ -29,18 +37,24 @@ function stopLoadingSpinner(): void {
 async function getPicturesLocationsList(): Promise<void> {
     startLoadingSpinner();
 
+    picturesLocationsRequest.progenyId = photoLocationsProgenyId;
+    picturesLocationsRequest.distance = distanceForLocationSearch;
+    if (group)
+    {
+        group.removeAll();
+    }
     await fetch('/Pictures/GetPicturesLocations/', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(locationsPageParameters)
+        body: JSON.stringify(picturesLocationsRequest)
     }).then(async function (getLocationsListResult) {
         if (getLocationsListResult != null) {
-            const newLocationsList = (await getLocationsListResult.json()) as LocationItem[];
-            if (newLocationsList.length > 0) {
-                await processLocationsList(newLocationsList);
+            const newLocationsList = (await getLocationsListResult.json()) as PicturesLocationsResponse;
+            if (newLocationsList.locationsList.length > 0) {
+                await processLocationsList(newLocationsList.locationsList);
             }
         }
     }).catch(function (error) {
@@ -55,23 +69,31 @@ async function getPicturesLocationsList(): Promise<void> {
 }
 
 async function processLocationsList(locationsList: LocationItem[]): Promise<void> {
-    let group = new H.map.Group();
+    if (map === null) return;
+
+    group = new H.map.Group();
 
     for (const locationItem of locationsList) {
         let marker = new H.map.Marker({ lat: locationItem.latitude, lng: locationItem.longitude }, { icon: defaultIcon });
-        map.addObject(marker);
         group.addObject(marker);
     }
 
     map.addObject(group);
-    map.getViewModel().setLookAtData({ bounds: group.getBoundingBox() });
-
+    if (firstRun) {
+        firstRun = false;
+        map.getViewModel().setLookAtData({ bounds: group.getBoundingBox() });
+    }
+    
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
 async function getPicturesNearLocation(locationItem: LocationItem): Promise<void> {
+    nearByPhotosRequest.locationItem = locationItem;
+    nearByPhotosRequest.progenyId = photoLocationsProgenyId;
+    nearByPhotosRequest.distance = distanceForPhotoSearch;
+    nearByPhotosRequest.sortOrder = locationsPageParameters.sort;
     picturesShown = 0;
     await fetch('/Pictures/GetPicturesNearLocation/', {
         method: 'POST',
@@ -79,12 +101,12 @@ async function getPicturesNearLocation(locationItem: LocationItem): Promise<void
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(locationItem)
+        body: JSON.stringify(nearByPhotosRequest)
     }).then(async function (getPicturesListResult) {
         if (getPicturesListResult != null) {
-            const picturesListResult = (await getPicturesListResult.json()) as Picture[];
-            picturesList = picturesListResult;
-            if (picturesListResult.length > 0) {
+            const picturesListResult = (await getPicturesListResult.json()) as NearByPhotosResponse;
+            picturesList = picturesListResult.picturesList;
+            if (picturesListResult.picturesList.length > 0) {
                 await processPicturesNearLocation();
             }
         }
@@ -100,9 +122,9 @@ async function getPicturesNearLocation(locationItem: LocationItem): Promise<void
 
 async function processPicturesNearLocation(): Promise<void> {
     startLoadingSpinner();
-    const onThisDayPostsParentDiv = document.querySelector<HTMLDivElement>('#photo-items-parent-div');
-    if (onThisDayPostsParentDiv !== null) {
-        onThisDayPostsParentDiv.classList.remove('d-none');
+    const photoItemsParentDiv = document.querySelector<HTMLDivElement>('#photo-items-parent-div');
+    if (photoItemsParentDiv !== null) {
+        photoItemsParentDiv.classList.remove('d-none');
     }
 
     const morePicturesButton = document.getElementById('more-pictures-button');
@@ -111,7 +133,7 @@ async function processPicturesNearLocation(): Promise<void> {
     }
     
     let count: number = 0;
-    const endCount: number = picturesShown + 10;
+    const endCount: number = picturesShown + locationsPageParameters.itemsPerPage;
     for await (const timelineItemToAdd of picturesList) {
         if (count >= picturesShown && count < endCount) {
             const pictureTimelineItem = new TimelineItem();
@@ -119,11 +141,9 @@ async function processPicturesNearLocation(): Promise<void> {
             pictureTimelineItem.itemType = 1;
             pictureTimelineItem.progenyId = photoLocationsProgenyId;
             await renderTimelineItem(pictureTimelineItem);
-            picturesShown++;
-            
+            picturesShown++;            
         }
-        count++;
-        
+        count++;       
     };
 
     stopLoadingSpinner();
@@ -183,8 +203,13 @@ function getLocationsPageParameters(): void {
 }
 
 function setUpMap() {
+    if (map === null) return;
     map.addEventListener('tap',
         async function (evt: any) {
+            if (map !== null && evt.currentPointer != null) {
+                let coord = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
+                map.setCenter(coord, true);
+            }
             // Clear pictures div
             const photosDiv = document.getElementById('photo-items-div');
             if (photosDiv !== null) {
@@ -201,18 +226,55 @@ function setUpMap() {
 
                 await getPicturesNearLocation(locationTapped);
             }
-            if (evt.currentPointer != null) {
-                let coord = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
-                map.setCenter(coord, true);
-            }
-
         });
 }
 
+function sortPicturesAscending() {
+    locationsPageParameters.sort = 0;
+}
+
+function sortPicturesDescending() {
+    locationsPageParameters.sort = 1;
+}
+
+async function savePhotoLocationsPageSettings() {
+    const numberOfItemsToGetSelect = document.querySelector<HTMLSelectElement>('#items-per-page-select');
+    if (numberOfItemsToGetSelect !== null) {
+        locationsPageParameters.itemsPerPage = parseInt(numberOfItemsToGetSelect.value);
+    }
+    else {
+        locationsPageParameters.itemsPerPage = 10;
+    }
+
+    const locationsDistanceSelect = document.querySelector<HTMLSelectElement>('#locations-distance-select');
+    if (locationsDistanceSelect !== null) {
+        distanceForLocationSearch = parseFloat(locationsDistanceSelect.value);
+    }
+    else {
+        distanceForLocationSearch = 0.25;        
+    }
+
+    distanceForPhotoSearch = distanceForLocationSearch * 1.1;
+
+    await getPicturesLocationsList();
+}
+
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
-    setUpMap();
     photoLocationsProgenyId = getCurrentProgenyId();
     getLocationsPageParameters();
+    map = setupHereMapsPhotoLocations(locationsPageParameters.languageId);
+    setUpMap();
+    const photoLocationsSaveSettingsButton = document.querySelector<HTMLButtonElement>('#photo-locations-page-save-settings-button');
+    if (photoLocationsSaveSettingsButton !== null) {
+        photoLocationsSaveSettingsButton.addEventListener('click', savePhotoLocationsPageSettings);
+    }
+
+    if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.addEventListener('click', sortPicturesAscending);
+        sortDescendingSettingsButton.addEventListener('click', sortPicturesDescending);
+    }
+    SettingsHelper.initPageSettings();
+
     await getPicturesLocationsList();
 
     const morePicturesButton = document.getElementById('more-pictures-button');

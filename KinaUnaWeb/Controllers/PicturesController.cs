@@ -13,7 +13,7 @@ using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Linq;
-using KinaUnaWeb.Models.TypeScriptModels.Locations;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models.TypeScriptModels.Pictures;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.Extensions.Configuration;
@@ -658,19 +658,19 @@ namespace KinaUnaWeb.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> GetPicturesLocations([FromBody] LocationsPageParameters locationsPageParameters)
+        public async Task<IActionResult> GetPicturesLocations([FromBody] PicturesLocationsRequest picturesLocationsRequest)
         {
-            List<Location> locations = await mediaHttpClient.GetPictureLocations(locationsPageParameters.ProgenyId);
+            PicturesLocationsResponse picturesLocationsResponse = await mediaHttpClient.GetPictureLocations(picturesLocationsRequest);
 
-            return Json(locations);
+            return Json(picturesLocationsResponse);
         }
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> GetPicturesNearLocation([FromBody] Location location)
+        public async Task<IActionResult> GetPicturesNearLocation([FromBody] NearByPhotosRequest request)
         {
-            List<Picture> pictures = await mediaHttpClient.GetPicturesNearLocation(location);
-            return Json(pictures);
+            NearByPhotosResponse nearByPhotosResponse = await mediaHttpClient.GetPicturesNearLocation(request);
+            return Json(nearByPhotosResponse);
         }
     }
 }
