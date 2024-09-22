@@ -4,11 +4,11 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation
 import { LocationItem, LocationsPageParameters, NearByPhotosRequest, PicturesLocationsRequest, TimeLineItemViewModel, TimelineItem } from '../page-models-v8.js';
 import { setupHereMapsPhotoLocations } from './location-tools.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
+const photoLocationsPageSettingsStorageKey = 'photo_locations_page_parameters';
+const nearByPhotosSettingsStorageKey = 'near_by_photos_parameters';
 let locationsPageParameters = new LocationsPageParameters();
 let picturesLocationsRequest = new PicturesLocationsRequest();
 let nearByPhotosRequest = new NearByPhotosRequest();
-let distanceForLocationSearch = 0.1;
-let distanceForPhotoSearch = 0.125;
 let picturesList = [];
 let picturesShown = 0;
 let photoLocationsProgenyId;
@@ -33,7 +33,6 @@ function stopLoadingSpinner() {
 async function getPicturesLocationsList() {
     startLoadingSpinner();
     picturesLocationsRequest.progenyId = photoLocationsProgenyId;
-    picturesLocationsRequest.distance = distanceForLocationSearch;
     if (group) {
         group.removeAll();
     }
@@ -79,8 +78,6 @@ async function processLocationsList(locationsList) {
 async function getPicturesNearLocation(locationItem) {
     nearByPhotosRequest.locationItem = locationItem;
     nearByPhotosRequest.progenyId = photoLocationsProgenyId;
-    nearByPhotosRequest.distance = distanceForPhotoSearch;
-    nearByPhotosRequest.sortOrder = locationsPageParameters.sort;
     picturesShown = 0;
     await fetch('/Pictures/GetPicturesNearLocation/', {
         method: 'POST',
@@ -115,7 +112,7 @@ async function processPicturesNearLocation() {
         morePicturesButton.classList.add('d-none');
     }
     let count = 0;
-    const endCount = picturesShown + locationsPageParameters.itemsPerPage;
+    const endCount = picturesShown + nearByPhotosRequest.numberOfPictures;
     for await (const timelineItemToAdd of picturesList) {
         if (count >= picturesShown && count < endCount) {
             const pictureTimelineItem = new TimelineItem();
@@ -171,6 +168,10 @@ function getLocationsPageParameters() {
         const locationsPageParametersJson = pageParametersDiv.getAttribute('data-locations-page-parameters');
         if (locationsPageParametersJson !== null) {
             locationsPageParameters = JSON.parse(locationsPageParametersJson);
+            languageId = locationsPageParameters.languageId;
+            nearByPhotosRequest.sortOrder = locationsPageParameters.sort;
+            nearByPhotosRequest.numberOfPictures = locationsPageParameters.itemsPerPage;
+            nearByPhotosRequest.sortOrder = locationsPageParameters.sort;
         }
     }
 }
@@ -198,32 +199,71 @@ function setUpMap() {
     });
 }
 function sortPicturesAscending() {
-    locationsPageParameters.sort = 0;
+    nearByPhotosRequest.sortOrder = 0;
+    sortAscendingSettingsButton?.classList.add('active');
+    sortDescendingSettingsButton?.classList.remove('active');
 }
 function sortPicturesDescending() {
-    locationsPageParameters.sort = 1;
+    nearByPhotosRequest.sortOrder = 1;
+    sortDescendingSettingsButton?.classList.add('active');
+    sortAscendingSettingsButton?.classList.remove('active');
 }
 async function savePhotoLocationsPageSettings() {
     const numberOfItemsToGetSelect = document.querySelector('#items-per-page-select');
     if (numberOfItemsToGetSelect !== null) {
-        locationsPageParameters.itemsPerPage = parseInt(numberOfItemsToGetSelect.value);
+        nearByPhotosRequest.numberOfPictures = parseInt(numberOfItemsToGetSelect.value);
     }
     else {
-        locationsPageParameters.itemsPerPage = 10;
+        nearByPhotosRequest.numberOfPictures = 10;
     }
     const locationsDistanceSelect = document.querySelector('#locations-distance-select');
     if (locationsDistanceSelect !== null) {
-        distanceForLocationSearch = parseFloat(locationsDistanceSelect.value);
+        picturesLocationsRequest.distance = parseInt(locationsDistanceSelect.value) / 1000;
     }
     else {
-        distanceForLocationSearch = 0.25;
+        picturesLocationsRequest.distance = 0.25;
     }
-    distanceForPhotoSearch = distanceForLocationSearch * 1.1;
+    nearByPhotosRequest.distance = picturesLocationsRequest.distance;
+    SettingsHelper.savePageSettings(photoLocationsPageSettingsStorageKey, picturesLocationsRequest);
+    SettingsHelper.savePageSettings(nearByPhotosSettingsStorageKey, nearByPhotosRequest);
+    SettingsHelper.toggleShowPageSettings();
+    nearByPhotosRequest.distance = picturesLocationsRequest.distance * 1.1; // Add 10% to the distance for the near by photos, to ensure all areas are covered.
     await getPicturesLocationsList();
+}
+function loadPhotoLocationsPageSettings() {
+    const savedSettings = SettingsHelper.getPageSettings(photoLocationsPageSettingsStorageKey);
+    if (savedSettings !== null) {
+        picturesLocationsRequest.distance = savedSettings.distance ?? 0.25;
+    }
+    const savedNearByPhotosSettings = SettingsHelper.getPageSettings(nearByPhotosSettingsStorageKey);
+    if (savedNearByPhotosSettings !== null) {
+        nearByPhotosRequest.distance = savedNearByPhotosSettings.distance ?? 0.25;
+        nearByPhotosRequest.sortOrder = savedNearByPhotosSettings.sortOrder ?? 1;
+        nearByPhotosRequest.numberOfPictures = savedNearByPhotosSettings.numberOfPictures ?? 10;
+    }
+    if (nearByPhotosRequest.sortOrder == 0) {
+        sortPicturesAscending();
+    }
+    else {
+        sortPicturesDescending();
+    }
+    // update items per page select
+    const selectItemsPerPageElement = document.querySelector('#items-per-page-select');
+    if (selectItemsPerPageElement !== null) {
+        selectItemsPerPageElement.value = nearByPhotosRequest.numberOfPictures?.toString();
+        $(".selectpicker").selectpicker('refresh');
+    }
+    // update distance select
+    const distanceSelectInput = document.querySelector('#locations-distance-select');
+    if (distanceSelectInput !== null) {
+        distanceSelectInput.value = (nearByPhotosRequest.distance * 1000).toString();
+        $(".selectpicker").selectpicker('refresh');
+    }
 }
 document.addEventListener('DOMContentLoaded', async function () {
     photoLocationsProgenyId = getCurrentProgenyId();
     getLocationsPageParameters();
+    loadPhotoLocationsPageSettings();
     map = setupHereMapsPhotoLocations(locationsPageParameters.languageId);
     setUpMap();
     const photoLocationsSaveSettingsButton = document.querySelector('#photo-locations-page-save-settings-button');

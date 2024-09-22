@@ -112,7 +112,8 @@ export class NearByPhotosRequest {
     progenyId: number = 0;
     locationItem: LocationItem = new LocationItem();
     distance: number = 0.25;
-    sortOrder : number = 1;
+    sortOrder: number = 1;
+    numberOfPictures: number = 10;
 }
 
 export class NearByPhotosResponse {
@@ -124,7 +125,7 @@ export class NearByPhotosResponse {
 
 export class PicturesLocationsRequest {
     progenyId: number = 0;
-    distance: number = 0.25;
+    distance: number = 0.1;
 }
 
 export class PicturesLocationsResponse {
