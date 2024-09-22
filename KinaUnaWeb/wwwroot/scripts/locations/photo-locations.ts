@@ -225,6 +225,11 @@ function setUpMap() {
                 locationTapped.progenyId = photoLocationsProgenyId;
 
                 selectedLocation = locationTapped;
+                // scroll to photosDiv
+                const photoItemsParentDiv = document.querySelector<HTMLDivElement>('#photo-items-parent-div');
+                if (photoItemsParentDiv !== null) {
+                    photoItemsParentDiv.scrollIntoView({ behavior: 'smooth' });
+                }
 
                 await getPicturesNearLocation(locationTapped);
             }
@@ -299,7 +304,6 @@ function loadPhotoLocationsPageSettings() {
     // update distance select
     const distanceSelectInput = document.querySelector<HTMLSelectElement>('#locations-distance-select');
     if (distanceSelectInput !== null) {
-        console.log('nearByPhotosRequest: ' + nearByPhotosRequest.distance.toString());
         distanceSelectInput.value = (nearByPhotosRequest.distance * 1000).toString();
         ($(".selectpicker") as any).selectpicker('refresh');
     }

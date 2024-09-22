@@ -34,7 +34,7 @@
     <div class="row" style="clear: both; margin-top: 25px;">
         @if (allowHereMaps)
         {
-            <div style="width: 100%; height: 560px; max-height: 60vh; margin-left: 20px; margin-right: 20px;" id="photo-locations-map-container-div"></div>
+            <div style="width: 100%; height: 75vh; margin-left: 20px; margin-right: 20px;" id="photo-locations-map-container-div"></div>
         }
         else
         {
@@ -49,7 +49,7 @@
             </div>
         }
         <div class="space-20"></div>
-        <div id="pictureDiv" style="width: 100%; margin-left: 20px; margin-right: 20px;">
+        <div id="pictureDiv" class="d-none" style="width: 100%; margin-left: 20px; margin-right: 20px;">
             <div class="card bg-primary" style="margin-top: 0; margin-bottom: 10px;">
                 <div class="card-body" style="background: #326ebe; background: rgba(50, 110, 190, 0.8)">
                     <div class="info-title"><span style="font-size: 24px; color: white; margin-right: 15px;" class="far fa-images"></span><strong class="text-warning"> @await LocaleManager.GetTranslation("Click a marker on the map", PageNames.Locations, Model.LanguageId)</strong></div>

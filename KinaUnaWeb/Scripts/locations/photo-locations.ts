@@ -225,6 +225,11 @@ function setUpMap() {
                 locationTapped.progenyId = photoLocationsProgenyId;
 
                 selectedLocation = locationTapped;
+                // scroll to photosDiv
+                const photoItemsParentDiv = document.querySelector<HTMLDivElement>('#photo-items-parent-div');
+                if (photoItemsParentDiv !== null) {
+                    photoItemsParentDiv.scrollIntoView({ behavior: 'smooth' });
+                }
 
                 await getPicturesNearLocation(locationTapped);
             }

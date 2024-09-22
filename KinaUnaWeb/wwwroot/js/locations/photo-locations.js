@@ -194,6 +194,11 @@ function setUpMap() {
             locationTapped.longitude = evt.target.hm.lng;
             locationTapped.progenyId = photoLocationsProgenyId;
             selectedLocation = locationTapped;
+            // scroll to photosDiv
+            const photoItemsParentDiv = document.querySelector('#photo-items-parent-div');
+            if (photoItemsParentDiv !== null) {
+                photoItemsParentDiv.scrollIntoView({ behavior: 'smooth' });
+            }
             await getPicturesNearLocation(locationTapped);
         }
     });
