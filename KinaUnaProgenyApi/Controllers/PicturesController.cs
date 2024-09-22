@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models.ViewModels;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -1160,6 +1161,38 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             return Ok(result);
+        }
+
+        [Route("[action]")]
+        [HttpPost]
+        public async Task<IActionResult> GetPictureLocations(PicturesLocationsRequest picturesLocationsRequest)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(picturesLocationsRequest.ProgenyId, userEmail);
+
+            if (userAccess == null && picturesLocationsRequest.ProgenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
+            PicturesLocationsResponse pictureLocation = await picturesService.GetPicturesLocations(picturesLocationsRequest);
+            return Ok(pictureLocation);
+        }
+
+        [Route("[action]")]
+        [HttpPost]
+        public async Task<IActionResult> GetPicturesNearLocation([FromBody] NearByPhotosRequest nearByPhotosRequest)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(nearByPhotosRequest.ProgenyId, userEmail);
+
+            if (userAccess == null && nearByPhotosRequest.ProgenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
+            NearByPhotosResponse nearByPhotosResponse = await picturesService.GetPicturesNearLocation(nearByPhotosRequest);
+            return Ok(nearByPhotosResponse);
         }
 
         /// <summary>

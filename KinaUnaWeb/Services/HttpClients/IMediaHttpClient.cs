@@ -2,6 +2,7 @@
 using KinaUnaWeb.Models.ItemViewModels;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -96,6 +97,20 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="tagFilter">Only include Pictures tagged with this string. If null or empty include all Pictures.</param>
         /// <returns>PictureVieModel.</returns>
         Task<PictureViewModel> GetPictureViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "");
+
+        /// <summary>
+        /// Gets a list of Locations that are obtained from Pictures.
+        /// </summary>
+        /// <param name="picturesLocationsRequest">PicturesLocationsRequest with the Id of the Progeny to get Picture locations for and the distance in kilometers to group them by.</param>
+        /// <returns>PicturesLocationsResponse with the list of Location objects.</returns>
+        Task<PicturesLocationsResponse> GetPictureLocations(PicturesLocationsRequest picturesLocationsRequest);
+
+        /// <summary>
+        /// Gets a list of Pictures that are near a given Location.
+        /// </summary>
+        /// <param name="nearByPhotosRequest">NearByPhotosRequest with the Location, Progeny Id, distance in kilometers to group by.</param>
+        /// <returns>NearByPhotosResponse object with the list of pictures.</returns>
+        Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest);
 
         /// <summary>
         /// Gets the video with the given VideoId, with the VideoTime converted to the given time zone.

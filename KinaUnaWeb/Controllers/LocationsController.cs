@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
@@ -18,7 +17,6 @@ namespace KinaUnaWeb.Controllers
 {
     public class LocationsController(
         IProgenyHttpClient progenyHttpClient,
-        IMediaHttpClient mediaHttpClient,
         ILocationsHttpClient locationsHttpClient,
         IViewModelSetupService viewModelSetupService,
         IConfiguration configuration)
@@ -213,9 +211,10 @@ namespace KinaUnaWeb.Controllers
         /// </summary>
         /// <param name="childId">The Id of the Progeny to show photo locations for.</param>
         /// <param name="tagFilter">Filter result to include only locations where the tagFilter is in the Tags list. Empty string includes all locations.</param>
+        /// <param name="sortOrder">Sort order, 0 = ascending, 1 descending.</param>
         /// <returns>View with LocationViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> PhotoLocations(int childId = 0, string tagFilter = "")
+        public async Task<IActionResult> PhotoLocations(int childId = 0, string tagFilter = "", int sortOrder = 1)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             LocationViewModel model = new(baseModel)
@@ -224,71 +223,13 @@ namespace KinaUnaWeb.Controllers
                 HereMapsApiKey = _hereMapsApiKey
             };
 
-            List<string> tagsList = [];
-            
-            List<Picture> pictures = await mediaHttpClient.GetPictureList(model.CurrentProgenyId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
-            
-            if (string.IsNullOrEmpty(tagFilter))
+            model.LocationsPageParameters = new LocationsPageParameters
             {
-                pictures = pictures.FindAll(p => !string.IsNullOrEmpty(p.Longtitude));
-            }
-            else
-            {
-                pictures = pictures.FindAll(p =>
-                    !string.IsNullOrEmpty(p.Longtitude) && p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase));
-            }
-            pictures = [.. pictures.OrderBy(p => p.PictureTime)];
-
-            List<Picture> locPictures = [];
-            foreach (Picture pic in pictures)
-            {
-                Location picLoc = new();
-                bool validCoords = true;
-                if (double.TryParse(pic.Latitude, NumberStyles.AllowDecimalPoint, new CultureInfo("en-US"), out double lat))
-                {
-                    picLoc.Latitude = lat;
-                }
-                else
-                {
-                    validCoords = false;
-                }
-
-                if (double.TryParse(pic.Longtitude, NumberStyles.AllowDecimalPoint, new CultureInfo("en-US"), out double lon))
-                {
-                    picLoc.Longitude = lon;
-                }
-                else
-                {
-                    validCoords = false;
-                }
-
-                if (!validCoords || (pic.AccessLevel != (int)AccessLevel.Public && pic.AccessLevel < model.CurrentAccessLevel)) continue;
-
-                picLoc.LocationId = pic.PictureId;
-                model.LocationsList.Add(picLoc);
-                locPictures.Add(pic);
-            }
-
-            if (model.LocationsList.Count != 0)
-            {
-                foreach (Picture locPic in locPictures)
-                {
-                    if (string.IsNullOrEmpty(locPic.Tags)) continue;
-
-                    List<string> locTags = [.. locPic.Tags.Split(',')];
-                    foreach (string tagstring in locTags)
-                    {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
-                    }
-                }
-            }
-            
-            model.SetTagList(tagsList);
-            model.SetTags(tagsList);
-            model.TagFilter = tagFilter;
+                LanguageId = model.LanguageId,
+                ProgenyId = model.CurrentProgenyId,
+                TagFilter = tagFilter,
+                Sort = sortOrder
+            };
 
             return View(model);
         }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using IdentityModel.Client;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models.ItemViewModels;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -341,6 +342,34 @@ namespace KinaUnaWeb.Services.HttpClients
             PictureViewModel pictureViewModel = JsonConvert.DeserializeObject<PictureViewModel>(picturesViewModelAsString);
             
             return pictureViewModel;
+        }
+
+        public async Task<PicturesLocationsResponse> GetPictureLocations(PicturesLocationsRequest picturesLocationsRequest)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string picturesApiPath = "/api/Pictures/GetPictureLocations/";
+            HttpResponseMessage picturesResponse = await _httpClient.PostAsync(picturesApiPath, new StringContent(JsonConvert.SerializeObject(picturesLocationsRequest), Encoding.UTF8, "application/json"));
+            if (!picturesResponse.IsSuccessStatusCode) return new PicturesLocationsResponse();
+
+            string picturesLocationsResponseAsString = await picturesResponse.Content.ReadAsStringAsync();
+            PicturesLocationsResponse resultPicturesLocationResponse = JsonConvert.DeserializeObject<PicturesLocationsResponse>(picturesLocationsResponseAsString);
+            return resultPicturesLocationResponse;
+        }
+
+        public async Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string locationApiPath = "/api/Pictures/GetPicturesNearLocation/";
+            HttpResponseMessage picturesResponse = await _httpClient.PostAsync(locationApiPath, new StringContent(JsonConvert.SerializeObject(nearByPhotosRequest), Encoding.UTF8, "application/json"));
+            if (!picturesResponse.IsSuccessStatusCode) return new NearByPhotosResponse();
+
+            string nearByPhotosResponseAsString = await picturesResponse.Content.ReadAsStringAsync();
+            NearByPhotosResponse resultNearbyPhotosResponse = JsonConvert.DeserializeObject<NearByPhotosResponse>(nearByPhotosResponseAsString);
+            return resultNearbyPhotosResponse;
         }
 
         /// <summary>

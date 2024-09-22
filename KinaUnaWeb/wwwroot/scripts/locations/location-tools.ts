@@ -94,3 +94,48 @@ export function setUpMapClickToShowLocationListener(map: H.Map) {
             
         });
 }
+
+/**
+ * Setup the Here Maps API for the location page.
+ * @param {number} languageId The id of the current language.
+ */
+export function setupHereMapsPhotoLocations(languageId: number): H.Map | null {
+    const mapContainerDiv = document.getElementById('photo-locations-map-container-div');
+    const hereMapsApiKeyDiv = document.getElementById('here-maps-api-key-div');
+
+    if (mapContainerDiv === null || hereMapsApiKeyDiv === null) {
+        return null;
+    }
+    const hereMapsApiKey = hereMapsApiKeyDiv.getAttribute('data-here-maps-api-key');
+
+    if (hereMapsApiKey === null) {
+        return null;
+    }
+    
+    let pixelRatio = window.devicePixelRatio || 1;
+    let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
+    let platform = new H.service.Platform({
+        'apikey': hereMapsApiKey,
+        'useHTTPS': true
+    });
+
+    let maptypes = platform.createDefaultLayers({
+        tileSize: pixelRatio === 1 ? 256 : 512,
+        ppi: pixelRatio === 1 ? undefined : 320
+    });
+
+    let map = new H.Map(mapContainerDiv,
+        maptypes.vector.normal.map,
+        {
+            pixelRatio: pixelRatio
+        });
+    let uiLang = 'en-US';
+    if (languageId === 2) {
+        uiLang = 'de-DE'; // No other languages used by KinaUna are supported by Here Maps.
+    }
+
+    let ui = H.ui.UI.createDefault(map, maptypes);
+    let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+
+    return map;
+}

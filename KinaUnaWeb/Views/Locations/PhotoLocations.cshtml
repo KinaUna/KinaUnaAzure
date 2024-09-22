@@ -1,12 +1,15 @@
-﻿@using System.Globalization
-@using KinaUna.Data
+﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId);
+    string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Timeline, Model.LanguageId);
+    string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Timeline, Model.LanguageId);
+    string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
+    string pageParameters = Json.Serialize(Model.LocationsPageParameters).ToString();
 }
 @section Scripts{
     @if (allowHereMaps)
@@ -19,260 +22,142 @@
     }
 }
 
+<div id="locations-page-parameters" class="d-none" data-locations-page-parameters="@pageParameters"></div>
+<div id="here-maps-api-key-div" class="d-none" data-here-maps-api-key="@Model.HereMapsApiKey"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    @if (!string.IsNullOrEmpty(Model.TagFilter))
-    {
-        <br />
-        <div style="float: right;">Tag filter: <span class="btn tag-item">@Model.TagFilter</span> <a class="btn btn-info btn-sm leave-page" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
-    }
-    @if (Model.IsCurrentUserProgenyAdmin)
-    {
-        <div class="btn-group" style="float: right;">
-            <a asp-controller="Locations" asp-action="AddLocation" class="btn btn-success btn-round leave-page">
-                <i class="fas fa-plus"></i> Add Location
-            </a>
-        </div>
-    }
-    @if (Model.LocationsList == null)
-    {
-        <h2>@ViewData["Title"]</h2>
-        <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Locations, Model.LanguageId)</div>
-    }
-    else
-    {
-        <div class="btn-group" style="float: right;">
-            <a asp-controller="Locations" asp-action="Index" class="btn btn-info leave-page">
-                <i class="fas fa-map-marked-alt"></i> @await LocaleManager.GetTranslation("Back to locations", PageNames.Locations, Model.LanguageId)
-            </a>
-        </div>
-        <h2>@ViewData["Title"]</h2>
-        <div class="row" style="clear: both; margin-top: 25px;">
-            @if (allowHereMaps)
-            {
-                <div style="width: 100%; height: 560px; max-height: 60vh; margin-left: 20px; margin-right: 20px;" id="photo-locations-map-container-div"></div>
-            }
-            else
-            {
-                <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
-                    <div class="space-20"></div>
-                    <div>@await LocaleManager.GetTranslation("Cookie consent for Here maps has not been granted. To use maps enable cookies for Here Maps.", PageNames.Locations, Model.LanguageId)</div>
-                    <div class="space-20"></div>
-                    @if (Context.Request.ConsentCookieSet())
-                    {
-                        @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
-                    }
+    <div class="btn-group" style="float: right;">
+        <a asp-controller="Locations" asp-action="Index" class="btn btn-info leave-page">
+            <i class="fas fa-map-marked-alt"></i> @await LocaleManager.GetTranslation("Back to locations", PageNames.Locations, Model.LanguageId)
+        </a>
+    </div>
+    <h2>@ViewData["Title"]</h2>
+    <div class="row" style="clear: both; margin-top: 25px;">
+        @if (allowHereMaps)
+        {
+            <div style="width: 100%; height: 75vh; margin-left: 20px; margin-right: 20px;" id="photo-locations-map-container-div"></div>
+        }
+        else
+        {
+            <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
+                <div class="space-20"></div>
+                <div>@await LocaleManager.GetTranslation("Cookie consent for Here maps has not been granted. To use maps enable cookies for Here Maps.", PageNames.Locations, Model.LanguageId)</div>
+                <div class="space-20"></div>
+                @if (Context.Request.ConsentCookieSet())
+                {
+                    @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
+                }
+            </div>
+        }
+        <div class="space-20"></div>
+        <div id="pictureDiv" class="d-none" style="width: 100%; margin-left: 20px; margin-right: 20px;">
+            <div class="card bg-primary" style="margin-top: 0; margin-bottom: 10px;">
+                <div class="card-body" style="background: #326ebe; background: rgba(50, 110, 190, 0.8)">
+                    <div class="info-title"><span style="font-size: 24px; color: white; margin-right: 15px;" class="far fa-images"></span><strong class="text-warning"> @await LocaleManager.GetTranslation("Click a marker on the map", PageNames.Locations, Model.LanguageId)</strong></div>
                 </div>
-            }
+            </div>
+        </div>
+        <div class="ml-md-auto mr-md-auto col" style="max-width: 600px;">
+            <div id="photo-items-parent-div" class="d-none">
+                <div id="photo-items-div">
+                </div>
+                <div style="height: 150px;">
+                    <button id="more-pictures-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+                    <div id="loading-photos-div" class="w-100">
+                        <div class="space-50"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="d-none">
+    <div id="page-settings-content-div" class="bg-dark page-settings-content">
+        <div class="row">
+            <div class="col-auto ml-auto">
+                <button id="close-page-settings-button" class="ml-auto btn btn-link btn-link-yellow p-2">
+                    <i class="material-icons icon-top-4">close</i>
+                </button>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="row">
+                <div class="col h5">
+                    @await LocaleManager.GetTranslation("Page settings", PageNames.Layout, Model.LanguageId)
+                </div>
+            </div>
             <div class="space-20"></div>
-            <div id="pictureDiv" style="width: 100%; min-height: 375px; margin-left: 20px; margin-right: 20px;">
-                <div class="card bg-primary" style="margin-top: 0; margin-bottom: 10px;">
-                    <div class="card-body" style="background: #326ebe; background: rgba(50, 110, 190, 0.8)">
-                        <div class="info-title"><span style="font-size: 24px; color: white; margin-right: 15px;" class="far fa-images"></span><strong class="text-warning"> @await LocaleManager.GetTranslation("Click a marker on the map", PageNames.Locations, Model.LanguageId)</strong></div>
-                        <div align="center" class="img-rounded" style="overflow: hidden; max-width: 60vw; margin: 2px; margin-left: 46px; padding: 1px; width: 270px; height: 270px; background-color: #000000; text-align: center; line-height: 271px; display: inline-block; position: relative;">
-                            <img src="@Constants.WebAppUrl/images/kinaunalogo192x192.png" style="max-height: 260px; max-width: 260px;">
-
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @sortString
+                </div>
+                <div class="col-auto ml-4">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button id="setting-sort-descending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">history</i> @newestFirstString</button>
+                        </div>
+                        <div class="col">
+                            <button id="setting-sort-ascending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">update</i> @oldestFirstString</button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div id="nearbyDiv" style="width: 100%; margin-left: 20px; margin-right: 20px;">
-                <div id="innerNearbyDiv"></div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Group locations distance:", PageNames.Locations, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row" style="font-size: small; margin-top: 5px;">
+                        <select id="locations-distance-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
+                            <option value="25">25m</option>
+                            <option value="50">50m</option>
+                            <option value="100">100m</option>
+                            <option value="250" selected="selected">250m</option>
+                            <option value="500">500m</option>
+                            <option value="1000">1km</option>
+                            <option value="2000">2km</option>
+                            <option value="3000">5km</option>
+                            <option value="10000">10km</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div id="morePicturesButton" style="display: none; width: 100%; margin-left: 20px; margin-right: 20px;"><button id="moreButton" type="button" class="btn btn-default" onclick="getMoreNearbyPictures()">@await LocaleManager.GetTranslation("Show next 5 nearby photos", PageNames.Locations, Model.LanguageId)</button></div>
-            <div style="margin-left: 20px; margin-right: 20px;">
-                @{
-                    if (!string.IsNullOrEmpty(Model.Tags))
-                    {
-                        string[] tagsList = Model.Tags.Split(',');
-                        foreach (string tagString in tagsList)
-                        {
-                            <a asp-action="PhotoLocations" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leave-page">@tagString</a>
-                        }
-                    }
-                }
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Number of items to get:", PageNames.Timeline, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row" style="font-size: small; margin-top: 5px;">
+                        <select id="items-per-page-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
+                            <option value="5">5</option>
+                            <option value="10" selected="selected">10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    <button id="photo-locations-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                </div>
+
             </div>
         </div>
-    }
+    </div>
+    <div id="show-page-settings-button-div" style="position: absolute; top: 60px; right: 0;">
+        <button id="page-settings-button" class="btn btn-link btn-link-yellow bg-dark p-3 m-2" style="border-radius: 33%">
+            <span><i class="material-icons icon-top-4">settings</i></span>
+        </button>
+    </div>
 </div>
 @if (allowHereMaps)
 {
-    <script>
-        let pixelRatio = window.devicePixelRatio || 1;
-        let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
-        let prevSelectedMarker;
-        let nearbyList = [];
-        let lastNearby = 0;
-
-        function getNearbyPicture(marker) {
-            nearbyList.push(marker);
-            if (lastNearby < 5) {
-                var tData = { typeId: 1, itemId: marker.getData() };
-                $.ajax({
-                    type: "GET",
-                    url: "/TimeLine/GetTimeLineItem",
-                    data: tData,
-                    datatype: "html",
-                    async: true,
-                    success: function (data) {
-                        $('#innerNearbyDiv').append('<div class="addedDiv" style="display:none;">' + data + '</div>');
-                        $('div.addedDiv').slideDown("slow");
-                    },
-                    error: function (jqXhr, textStatus, errorThrown) {
-                        console.log(textStatus, errorThrown);
-                    }
-                });
-                lastNearby++;
-            }
-            $('#nearbyDiv').html('<div id="innerNearbyDiv" class><br/>' + nearbyList.length + ' other pictures within 50 meter:<br/></div>');
-            if (lastNearby < nearbyList.length) {
-                $('#morePicturesButton').show();
-
-                if (lastNearby < nearbyList.length - 5) {
-                    let numItems = nearbyList.length - lastNearby;
-                    $('#moreButton').prop('value', 'Show next ' + numItems + ' nearby pictures');
-                }
-            }
-            else {
-                $('#morePicturesButton').hide();
-            }
-        }
-
-        function getMoreNearbyPictures() {
-            for (let i = 0; i < 5; i++) {
-                lastNearby++;
-                if (lastNearby < nearbyList.length) {
-                    var tData = { typeId: 1, itemId: nearbyList[lastNearby].getData() };
-                    $.ajax({
-                        type: "GET",
-                        url: "/TimeLine/GetTimeLineItem",
-                        data: tData,
-                        datatype: "html",
-                        async: true,
-                        success: function (data) {
-                            $('#innerNearbyDiv').append('<div class="addedDiv" style="display:none;">' + data + '</div>');
-                            $('div.addedDiv').slideDown("slow");
-                        },
-                        error: function (jqXhr, textStatus, errorThrown) {
-                            console.log(textStatus, errorThrown);
-                        }
-                    });
-                }
-            }
-            if (lastNearby === nearbyList.length) {
-                $('#morePicturesButton').hide();
-            }
-        }
-        function setUpClickListener(map) {
-            map.addEventListener('tap',
-                function (evt) {
-                    let coord = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
-                    map.setCenter(coord, true);
-                    if (evt.target instanceof H.map.Marker) {
-                        let markerPos;
-                        let tData = { typeId: 1, itemId: evt.target.getData() };
-                        $.ajax({
-                            type: "GET",
-                            url: "/TimeLine/GetTimeLineItem",
-                            data: tData,
-                            datatype: "html",
-                            async: true,
-                            success: function (data) {
-                                if (prevSelectedMarker instanceof mapsjs.map.Marker) {
-                                    prevSelectedMarker.setIcon(defaultIcon);
-                                }
-                                let selectedIcon = new H.map.Icon("/images/redmarker.svg", { size: { w: iconWidth, h: iconHeight } });
-                                evt.target.setIcon(selectedIcon);
-                                prevSelectedMarker = evt.target;
-                                markerPos = evt.target.getPosition();
-                                map.setCenter(markerPos);
-                                $('#nearbyDiv').html('<div id="innerNearbyDiv"></div>');
-                                $('#morePicturesButton').hide();
-                                $('#pictureDiv').html(data);
-                                $('html, body').animate({
-                                    'scrollTop': $('#pictureDiv').offset().top - 110
-                                }, 500);
-                                lastNearby = 0;
-                                nearbyList = [];
-                                let mapObjects = map.getObjects();
-                                let objectsLen = mapObjects.length;
-                                for (let i = 0; i < objectsLen; i++) {
-                                    if (mapObjects[i] instanceof mapsjs.map.Marker) {
-                                        if (mapObjects[i].getData() !== evt.target.getData()) {
-                                            let markerDist = mapObjects[i].getPosition().distance(markerPos);
-                                            if (markerDist < 50) {
-                                                getNearbyPicture(mapObjects[i]);
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            error: function (jqXhr, textStatus, errorThrown) {
-                                console.log(textStatus, errorThrown);
-                            }
-                        });
-                    }
-                });
-        }
-
-        let platform = new H.service.Platform({
-            'apikey': '@Model.HereMapsApiKey',
-            'useHTTPS': true
-        });
-
-        let maptypes = platform.createDefaultLayers({
-            tileSize: pixelRatio === 1 ? 256 : 512,
-            ppi: pixelRatio === 1 ? undefined : 320
-        });
-
-        let map = new H.Map(document.getElementById('photo-locations-map-container-div'),
-            maptypes.vector.normal.map,
-            {
-                zoom: 3,
-                center: { lng: @Model.LocationItem.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lat: @Model.LocationItem.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') },
-                pixelRatio: pixelRatio
-            });
-
-        let ui = H.ui.UI.createDefault(map, maptypes);
-        let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-
-        setUpClickListener(map);
-
-        let group = new H.map.Group();
-        @{
-            string locGroup = "[";
-            string polyCode = "";
-            string markerCode = "";
-            string setData = "";
-        }
-        @if (Model.LocationsList != null)
-        {
-            foreach (Location lineLoc in Model.LocationsList)
-            {
-                string pPoint = "lineString.pushPoint({lat:" + lineLoc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng:" + lineLoc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "});";
-                string pMarker = "let marker" + lineLoc.LocationId + " = new H.map.Marker({lat:" + lineLoc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng:" + lineLoc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "}, {icon: defaultIcon});";
-                locGroup = locGroup + "marker" + lineLoc.LocationId + ", ";
-                string sMarker = "marker" + lineLoc.LocationId + ".setData(" + lineLoc.LocationId + ");";
-                polyCode = polyCode + pPoint;
-                markerCode = markerCode + pMarker;
-                setData = setData + sMarker;
-
-            }
-        }
-        @{
-            locGroup = locGroup.Trim().TrimEnd(',') + "]";
-        }
-        @Html.Raw(markerCode)
-        @Html.Raw(setData);
-        group.addObjects(@locGroup);
-        map.addObject(group);
-        function addPolylineToMap(map) {
-            let lineString = new H.geo.LineString();
-        @Html.Raw(polyCode)
-                map.addObject(new H.map.Polyline(
-                    lineString, { style: { lineWidth: 4 } }
-                ));
-        }
-        addPolylineToMap(map);
-        map.getViewModel().setLookAtData({ bounds: group.getBoundingBox() });
-    </script>
+    <script src="/js/locations/photo-locations.js" type="module" asp-append-version="true"></script>
 }

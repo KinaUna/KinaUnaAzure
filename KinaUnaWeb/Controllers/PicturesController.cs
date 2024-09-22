@@ -13,6 +13,7 @@ using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Linq;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models.TypeScriptModels.Pictures;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.Extensions.Configuration;
@@ -653,6 +654,23 @@ namespace KinaUnaWeb.Controllers
             model.PictureNumber = pictureViewModel.PictureNumber;
             model.Picture.PictureNumber = pictureViewModel.PictureNumber;
             return PartialView("_GetPictureElementPartial", model);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> GetPicturesLocations([FromBody] PicturesLocationsRequest picturesLocationsRequest)
+        {
+            PicturesLocationsResponse picturesLocationsResponse = await mediaHttpClient.GetPictureLocations(picturesLocationsRequest);
+
+            return Json(picturesLocationsResponse);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> GetPicturesNearLocation([FromBody] NearByPhotosRequest request)
+        {
+            NearByPhotosResponse nearByPhotosResponse = await mediaHttpClient.GetPicturesNearLocation(request);
+            return Json(nearByPhotosResponse);
         }
     }
 }

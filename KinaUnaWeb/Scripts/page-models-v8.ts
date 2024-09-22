@@ -73,6 +73,14 @@ export class FriendsPageResponse implements BaseItemsPageResponseModel {
     tagsList: string[] = [];
 }
 
+export class LocationItem {
+    locationId: number = 0;
+    progenyId: number = 0;
+    name: string = '';
+    latitude: number = 0;
+    longitude: number = 0;
+}
+
 export class LocationItemParameters implements BaseItemParameters {
     locationId: number = 0;
     languageId: number = 0;
@@ -98,6 +106,32 @@ export class LocationsPageResponse implements BaseItemsPageResponseModel {
     totalItems: number = 0;
     locationsList: number[] = [];
     tagsList: string[] = [];
+}
+
+export class NearByPhotosRequest {
+    progenyId: number = 0;
+    locationItem: LocationItem = new LocationItem();
+    distance: number = 0.25;
+    sortOrder: number = 1;
+    numberOfPictures: number = 10;
+}
+
+export class NearByPhotosResponse {
+    progenyId: number = 0;
+    locationItem: LocationItem = new LocationItem();
+    picturesList: Picture[] = [];
+    numberOfPictures: number = 0;
+}
+
+export class PicturesLocationsRequest {
+    progenyId: number = 0;
+    distance: number = 0.1;
+}
+
+export class PicturesLocationsResponse {
+    progenyId: number = 0;
+    locationsList: LocationItem[] = [];
+    numberOfLocations: number = 0;
 }
 
 export class NoteItemParameters implements BaseItemParameters {
