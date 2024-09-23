@@ -15,12 +15,13 @@ public class TimedSchedulerService(ITasksHttpClient tasksHttpClient, ILogger<Tim
 {
     private int _executionCount;
     private Timer? _timer;
+    private DateTime startTime = DateTime.UtcNow;
 
     public Task StartAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Timed Hosted Service running.");
 
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
 
         return Task.CompletedTask;
     }
@@ -32,17 +33,24 @@ public class TimedSchedulerService(ITasksHttpClient tasksHttpClient, ILogger<Tim
 
     private async Task DoWorkAsync()
     {
+        if(DateTime.UtcNow - startTime < TimeSpan.FromMinutes(1)) return; // Wait before starting tasks. To allow other services to start.
+        
         int count = Interlocked.Increment(ref _executionCount);
+        if(count == 1)
+        {
+            // Reset tasks.
+            await tasksHttpClient.ResetTasks();
+        }
+
+
         // Get a list of tasks to perform.
-        List<KinaUnaBackgroundTask> tasks = await tasksHttpClient.GetTasks(); // Todo: Get tasks from API/database.
+        List<KinaUnaBackgroundTask> tasks = await tasksHttpClient.GetTasks();
         // For each task, check if the task is due to be performed.
         foreach (KinaUnaBackgroundTask task in tasks)
         {
-            if (DateTime.UtcNow - task.LastRun > task.Interval)
-            {
-                if (task.IsRunning) continue; 
-                await tasksHttpClient.ExecuteTask(task.ApiEndpoint);
-            }
+            if (DateTime.UtcNow - task.LastRun <= task.Interval) continue;
+            if (task.IsRunning || !task.IsEnabled) continue;
+            await tasksHttpClient.ExecuteTask(task);
         }
 
         logger.LogInformation("Timed Hosted Service is working. Count: {Count}", count);

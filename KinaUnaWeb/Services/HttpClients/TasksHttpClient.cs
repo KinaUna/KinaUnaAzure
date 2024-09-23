@@ -33,7 +33,7 @@ public class TasksHttpClient : ITasksHttpClient
         string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
         _httpClient.SetBearerToken(accessToken);
 
-        const string tasksApiPath = "/api/BackgroundTasks/";
+        const string tasksApiPath = "/api/BackgroundTasks/GetTasks/";
         HttpResponseMessage tasksResponseMessage = await _httpClient.GetAsync(tasksApiPath);
         if (!tasksResponseMessage.IsSuccessStatusCode) return new List<KinaUnaBackgroundTask>();
 
@@ -42,18 +42,42 @@ public class TasksHttpClient : ITasksHttpClient
         return JsonConvert.DeserializeObject<List<KinaUnaBackgroundTask>>(tasksListAsString);
     }
 
-    public async Task<KinaUnaBackgroundTask> ExecuteTask(string apiEndpoint)
+    public async Task<List<KinaUnaBackgroundTask>> ResetTasks()
     {
         string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
         _httpClient.SetBearerToken(accessToken);
 
-        string tasksApiPath = "/api/BackgroundTasks/" + apiEndpoint;
+        const string tasksApiPath = "/api/BackgroundTasks/ResetTasks/";
         HttpResponseMessage tasksResponseMessage = await _httpClient.GetAsync(tasksApiPath);
-        if (!tasksResponseMessage.IsSuccessStatusCode) return new KinaUnaBackgroundTask();
+        if (!tasksResponseMessage.IsSuccessStatusCode) return new List<KinaUnaBackgroundTask>();
 
-        string tasksAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
+        string tasksListAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
 
-        return JsonConvert.DeserializeObject<KinaUnaBackgroundTask>(tasksAsString);
+        return JsonConvert.DeserializeObject<List<KinaUnaBackgroundTask>>(tasksListAsString);
+    }
+
+    public async Task<KinaUnaBackgroundTask> ExecuteTask(KinaUnaBackgroundTask task)
+    {
+        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
+        _httpClient.SetBearerToken(accessToken);
+
+        string tasksApiPath = "/api/RunTasks/" + task.ApiEndpoint;
+
+        try
+        {
+            HttpResponseMessage tasksResponseMessage = await _httpClient.PostAsync(tasksApiPath, new StringContent(JsonConvert.SerializeObject(task), System.Text.Encoding.UTF8, "application/json"));
+            if (!tasksResponseMessage.IsSuccessStatusCode) return new KinaUnaBackgroundTask();
+
+            string tasksAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<KinaUnaBackgroundTask>(tasksAsString);
+        }
+        catch (Exception)
+        {
+            // Ignore timeouts, the process could be long-running.
+            // Todo: Error handling, delete BackgroundTask with obsolete ApiEndpoint.
+            return new KinaUnaBackgroundTask();
+        }
     }
 
     public async Task<KinaUnaBackgroundTask> AddTask(KinaUnaBackgroundTask task)

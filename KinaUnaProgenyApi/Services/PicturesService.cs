@@ -108,46 +108,55 @@ namespace KinaUnaProgenyApi.Services
             string originalPictureLink = picture.PictureLink;
             string originalPictureLink600 = picture.PictureLink600;
             string originalPictureLink1200 = picture.PictureLink1200;
-
-            MemoryStream memoryStream = await _imageStore.GetStream(picture.PictureLink);
-            memoryStream.Position = 0;
-
-            using (MagickImage image = new(memoryStream))
+            try
             {
-                using MemoryStream memStream = new();
-                await image.WriteAsync(memStream);
-                memStream.Position = 0;
-                picture.PictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, image.FileExtensionString());
+                MemoryStream memoryStream = await _imageStore.GetStream(picture.PictureLink);
+                memoryStream.Position = 0;
+
+                using (MagickImage image = new(memoryStream))
+                {
+                    using MemoryStream memStream = new();
+                    await image.WriteAsync(memStream);
+                    memStream.Position = 0;
+                    picture.PictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, image.FileExtensionString());
+                }
+
+                MemoryStream memoryStream600 = await _imageStore.GetStream(picture.PictureLink600);
+                memoryStream600.Position = 0;
+
+                using (MagickImage image600 = new(memoryStream600))
+                {
+                    using MemoryStream memStream600 = new();
+                    await image600.WriteAsync(memStream600);
+                    memStream600.Position = 0;
+                    picture.PictureLink600 = await _imageStore.SaveImage(memStream600, BlobContainers.Pictures, image600.FileExtensionString());
+                }
+
+                MemoryStream memoryStream1200 = await _imageStore.GetStream(picture.PictureLink1200);
+                memoryStream1200.Position = 0;
+
+                using (MagickImage image1200 = new(memoryStream1200))
+                {
+                    using MemoryStream memStream1200 = new();
+                    await image1200.WriteAsync(memStream1200);
+                    memStream1200.Position = 0;
+                    picture.PictureLink1200 = await _imageStore.SaveImage(memStream1200, BlobContainers.Pictures, image1200.FileExtensionString());
+                }
+
+                picture = await UpdatePicture(picture);
+                _ = await _imageStore.DeleteImage(originalPictureLink, BlobContainers.Pictures);
+                _ = await _imageStore.DeleteImage(originalPictureLink600, BlobContainers.Pictures);
+                _ = await _imageStore.DeleteImage(originalPictureLink1200, BlobContainers.Pictures);
+
+                return picture;
             }
-
-            MemoryStream memoryStream600 = await _imageStore.GetStream(picture.PictureLink600);
-            memoryStream600.Position = 0;
-
-            using (MagickImage image600 = new(memoryStream600))
+            catch (Exception)
             {
-                using MemoryStream memStream600 = new();
-                await image600.WriteAsync(memStream600);
-                memStream600.Position = 0;
-                picture.PictureLink600 = await _imageStore.SaveImage(memStream600, BlobContainers.Pictures, image600.FileExtensionString());
+                picture.PictureLink = originalPictureLink;
+                picture.PictureLink600 = originalPictureLink600;
+                picture.PictureLink1200 = originalPictureLink1200;
+                return picture;
             }
-
-            MemoryStream memoryStream1200 = await _imageStore.GetStream(picture.PictureLink1200);
-            memoryStream1200.Position = 0;
-
-            using (MagickImage image1200 = new(memoryStream1200))
-            {
-                using MemoryStream memStream1200 = new();
-                await image1200.WriteAsync(memStream1200);
-                memStream1200.Position = 0;
-                picture.PictureLink1200 = await _imageStore.SaveImage(memStream1200, BlobContainers.Pictures, image1200.FileExtensionString());
-            }
-
-            picture = await UpdatePicture(picture);
-            _ = await _imageStore.DeleteImage(originalPictureLink, BlobContainers.Pictures);
-            _ = await _imageStore.DeleteImage(originalPictureLink600, BlobContainers.Pictures);
-            _ = await _imageStore.DeleteImage(originalPictureLink1200, BlobContainers.Pictures);
-
-            return picture;
         }
 
         /// <summary>
@@ -694,6 +703,20 @@ namespace KinaUnaProgenyApi.Services
             {
                 picture.RemoveNullStrings();
                 _ = await UpdatePicture(picture);
+            }
+        }
+
+        public async Task CheckPicturesForExtensions()
+        {
+            List<Picture> allPicturesList = await _mediaContext.PicturesDb.ToListAsync();
+            foreach (Picture picture in allPicturesList)
+            {
+                if(string.IsNullOrEmpty(picture.PictureLink) || string.IsNullOrEmpty(picture.PictureLink600) || string.IsNullOrEmpty(picture.PictureLink1200)) continue;
+
+                if (!picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !picture.PictureLink.Contains('.'))
+                {
+                    _ = await UpdatePictureLinkWithExtension(picture);
+                }
             }
         }
     }

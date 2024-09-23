@@ -64,7 +64,8 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IPushMessageSender, PushMessageSender>();
             services.AddScoped<IWebNotificationsService, WebNotificationsService>();
             services.AddScoped<ITimelineFilteringService, TimelineFilteringService>();
-
+            services.AddScoped<IBackgroundTasksService, BackgroundTasksService>();
+            services.AddScoped<IRunTaskService, RunTaskService>();
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
