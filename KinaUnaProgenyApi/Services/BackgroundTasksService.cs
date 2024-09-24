@@ -13,21 +13,21 @@ public class BackgroundTasksService(ProgenyDbContext context) : IBackgroundTasks
     {
         List<KinaUnaBackgroundTask> tasks = await context.BackgroundTasksDb.AsNoTracking().ToListAsync();
 
-        if (tasks.Count == 0)
+        if (tasks.Count != 0) return tasks;
+        KinaUnaBackgroundTask task = new KinaUnaBackgroundTask
         {
-            KinaUnaBackgroundTask task = new KinaUnaBackgroundTask();
-            task.TaskName = "Check Picture Extensions";
-            task.TaskDescription = "Checks all pictures for file extensions, if a picture has no extension it will be added and the picture updated.";
-            task.ApiEndpoint = "CheckPictureExtensions";
-            task.LastRun = new DateTime(2000, 1, 1);
-            task.Interval = new TimeSpan(6, 0, 0);
-            task.IsRunning = false;
-            task.IsEnabled = true;
-            _ = context.BackgroundTasksDb.Add(task);
-            _ = await context.SaveChangesAsync();
+            TaskName = "Check Picture Extensions",
+            TaskDescription = "Checks all pictures for file extensions, if a picture has no extension it will be added and the picture updated.",
+            ApiEndpoint = "CheckPictureExtensions",
+            LastRun = new DateTime(2000, 1, 1),
+            Interval = new TimeSpan(6, 0, 0),
+            IsRunning = false,
+            IsEnabled = true
+        };
+        _ = context.BackgroundTasksDb.Add(task);
+        _ = await context.SaveChangesAsync();
             
-            tasks.Add(task);
-        }
+        tasks.Add(task);
         return tasks;
     }
 
@@ -57,16 +57,15 @@ public class BackgroundTasksService(ProgenyDbContext context) : IBackgroundTasks
     public async Task<KinaUnaBackgroundTask> UpdateTask(KinaUnaBackgroundTask task)
     {
         KinaUnaBackgroundTask existingTask = await context.BackgroundTasksDb.FirstOrDefaultAsync(t => t.TaskId == task.TaskId);
-        if (existingTask != null)
-        {
-            existingTask.TaskName = task.TaskName;
-            existingTask.TaskDescription = task.TaskDescription;
-            existingTask.ApiEndpoint = task.ApiEndpoint;
-            existingTask.LastRun = task.LastRun;
-            existingTask.Interval = task.Interval;
-            existingTask.IsRunning = task.IsRunning;
-            _ = context.SaveChangesAsync();
-        }
+        if (existingTask == null) return task;
+
+        existingTask.TaskName = task.TaskName;
+        existingTask.TaskDescription = task.TaskDescription;
+        existingTask.ApiEndpoint = task.ApiEndpoint;
+        existingTask.LastRun = task.LastRun;
+        existingTask.Interval = task.Interval;
+        existingTask.IsRunning = task.IsRunning;
+        _ = context.SaveChangesAsync();
         return task;
     }
 
