@@ -46,14 +46,19 @@ public class TimedSchedulerService(ITasksHttpClient tasksHttpClient, ILogger<Tim
         // Get a list of tasks to perform.
         List<KinaUnaBackgroundTask> tasks = await tasksHttpClient.GetTasks();
         // For each task, check if the task is due to be performed.
+        int tasksStarted = 0;
         foreach (KinaUnaBackgroundTask task in tasks)
         {
             if (DateTime.UtcNow - task.LastRun <= task.Interval) continue;
             if (task.IsRunning || !task.IsEnabled) continue;
             await tasksHttpClient.ExecuteTask(task);
+            tasksStarted++;
         }
 
         logger.LogInformation("Timed Hosted Service is working. Count: {Count}", count);
+        logger.LogInformation("TimedSchedulerService tasks count: {TaskCount}", tasks.Count);
+        logger.LogInformation("TimedSchedulerService tasks started count: {TasksStartedCount}", tasksStarted);
+
     }
 
     public Task StopAsync(CancellationToken stoppingToken)
