@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
-using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.ScheduledTasks;
 
 namespace KinaUnaProgenyApi.Controllers;
 

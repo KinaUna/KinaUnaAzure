@@ -7,6 +7,7 @@ using KinaUna.Data;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
+using KinaUna.Data.Models;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -157,6 +158,13 @@ namespace KinaUnaProgenyApi.Services
             }
 
             return updatedText;
+        }
+
+        public async Task<bool> ImageExists(string imageId, string containerName = BlobContainers.Pictures)
+        {
+            BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
+            BlobClient blob = container.GetBlobClient(imageId);
+            return await blob.ExistsAsync();
         }
     }
 }

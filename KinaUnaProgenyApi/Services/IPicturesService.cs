@@ -140,5 +140,7 @@ namespace KinaUnaProgenyApi.Services
         Task<string> UpdateItemPictureExtension(string itemPictureGuid, string container);
 
         Task CheckPicturesForExtensions();
+        Task CheckPictureLinks();
+        Task CheckPicturePropertiesForNull();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using KinaUna.Data.Models;
 
 namespace KinaUnaProgenyApi.Services;
 
@@ -46,4 +47,12 @@ public interface IImageStore
     /// <param name="originalText">string: The text to update links for.</param>
     /// <returns>string: The text with updated links.</returns>
     string UpdateBlobLinks(string originalText);
+
+    /// <summary>
+    /// Checks if an image exists in a storage container.
+    /// </summary>
+    /// <param name="imageId"></param>
+    /// <param name="containerName"></param>
+    /// <returns></returns>
+    Task<bool> ImageExists(string imageId, string containerName = BlobContainers.Pictures);
 }

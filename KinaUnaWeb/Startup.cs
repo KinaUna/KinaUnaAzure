@@ -49,13 +49,7 @@ namespace KinaUnaWeb
                 options.MinimumSameSitePolicy = SameSiteMode.Lax;
                 options.Secure = CookieSecurePolicy.Always;
             });
-
-            services.Configure<HostOptions>(options =>
-            {
-                options.ServicesStartConcurrently = true;
-                options.ServicesStopConcurrently = false;
-            });
-
+            
             string storageConnectionString = Configuration["BlobStorageConnectionString"];
             new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
 
@@ -102,8 +96,7 @@ namespace KinaUnaWeb
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
             services.AddTransient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddDistributedMemoryCache();
-            services.AddHostedService<TimedSchedulerService>();
-
+            
             string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer"); 
             string mediaServerUrl = Configuration.GetValue<string>("MediaApiServer");
 

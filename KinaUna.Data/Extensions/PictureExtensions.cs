@@ -79,11 +79,11 @@ namespace KinaUna.Data.Extensions
             currentPicture.PictureLink = otherPicture.PictureLink;
             currentPicture.PictureLink600 = otherPicture.PictureLink600;
             currentPicture.PictureLink1200 = otherPicture.PictureLink1200;
-            currentPicture.Tags = otherPicture.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
-            currentPicture.Location = otherPicture.Location.TrimEnd(',', ' ');
-            currentPicture.Longtitude = otherPicture.Longtitude.Replace(',', '.');
-            currentPicture.Latitude = otherPicture.Latitude.Replace(',', '.');
-            currentPicture.Altitude = otherPicture.Altitude.Replace(',', '.');
+            currentPicture.Tags = otherPicture.Tags?.TrimEnd(',', ' ').TrimStart(',', ' ') ?? "";
+            currentPicture.Location = otherPicture.Location?.TrimEnd(',', ' ') ?? "";
+            currentPicture.Longtitude = otherPicture.Longtitude?.Replace(',', '.') ?? "";
+            currentPicture.Latitude = otherPicture.Latitude?.Replace(',', '.') ?? "";
+            currentPicture.Altitude = otherPicture.Altitude?.Replace(',', '.') ?? "";
         }
 
         /// <summary>
@@ -114,25 +114,45 @@ namespace KinaUna.Data.Extensions
             {
                 currentPicture.Tags = otherPicture.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
             }
+            else
+            {
+                currentPicture.Tags = "";
+            }
 
             if (!string.IsNullOrEmpty(otherPicture.Location))
             {
                 currentPicture.Location = otherPicture.Location;
+            }
+            else
+            {
+                currentPicture.Location = "";
             }
 
             if (!string.IsNullOrEmpty(otherPicture.Longtitude))
             {
                 currentPicture.Longtitude = otherPicture.Longtitude.Replace(',', '.');
             }
+            else
+            {
+                currentPicture.Longtitude = "";
+            }
 
             if (!string.IsNullOrEmpty(otherPicture.Latitude))
             {
                 currentPicture.Latitude = otherPicture.Latitude.Replace(',', '.');
             }
+            else
+            {
+                currentPicture.Latitude = "";
+            }
 
             if (!string.IsNullOrEmpty(otherPicture.Altitude))
             {
                 currentPicture.Altitude = otherPicture.Altitude.Replace(',', '.');
+            }
+            else
+            {
+                currentPicture.Altitude = "";
             }
         }
 

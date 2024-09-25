@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
-using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.ScheduledTasks;
 
 namespace KinaUnaProgenyApi.Controllers;
 
@@ -12,7 +12,7 @@ namespace KinaUnaProgenyApi.Controllers;
 [Produces("application/json")]
 [Route("api/[controller]")]
 [ApiController]
-public class RunTasksController(IBackgroundTasksService backgroundTasksService, IRunTaskService runTaskService) : ControllerBase
+public class RunTasksController(IBackgroundTasksService backgroundTasksService, ITaskRunnerService taskRunnerService) : ControllerBase
 {
     [HttpPost]
     [Route("[action]")]
@@ -30,7 +30,30 @@ public class RunTasksController(IBackgroundTasksService backgroundTasksService, 
 
         if (existingTask.IsRunning) return Ok(task);
 
-        await runTaskService.CheckPictureExtensions(task);
+        await taskRunnerService.CheckPictureExtensions(task);
+        
+        return Ok(task);
+    }
+
+    [HttpPost]
+    [Route("[action]")]
+    public async Task<IActionResult> CheckPictureLinks([FromBody] KinaUnaBackgroundTask task)
+    {
+        if (task == null)
+        {
+            return BadRequest("Task not found.");
+        }
+
+        KinaUnaBackgroundTask existingTask = await backgroundTasksService.GetTask(task.TaskId);
+        if (existingTask == null)
+        {
+            return BadRequest("Task not found.");
+        }
+
+        if (existingTask.IsRunning) return Ok(task);
+
+        await taskRunnerService.CheckPictureLinks(task);
+        
 
         return Ok(task);
     }

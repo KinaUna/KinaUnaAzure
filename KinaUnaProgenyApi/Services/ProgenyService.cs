@@ -180,6 +180,11 @@ namespace KinaUnaProgenyApi.Services
         public async Task<string> ResizeImage(string imageId)
         {
             MemoryStream memoryStream = await _imageStore.GetStream(imageId, BlobContainers.Progeny);
+            if (memoryStream == null)
+            {
+                return imageId;
+            }
+
             memoryStream.Position = 0;
             const int maxWidthAndHeight = 250;
             using MagickImage image = new(memoryStream);

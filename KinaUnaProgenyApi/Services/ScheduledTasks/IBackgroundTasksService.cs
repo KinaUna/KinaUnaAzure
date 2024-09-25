@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 
-namespace KinaUnaProgenyApi.Services;
+namespace KinaUnaProgenyApi.Services.ScheduledTasks;
 
 public interface IBackgroundTasksService
 {
@@ -11,4 +11,5 @@ public interface IBackgroundTasksService
     Task<KinaUnaBackgroundTask> AddTask(KinaUnaBackgroundTask task);
     Task<KinaUnaBackgroundTask> UpdateTask(KinaUnaBackgroundTask task);
     Task<bool> DeleteTask(int taskId);
+    Task ResetTasks();
 }
