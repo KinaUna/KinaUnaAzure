@@ -46,7 +46,26 @@ namespace KinaUnaProgenyApi.Controllers
             if (accessList.Count == 0) return NotFound();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            bool allowedAccess = await IsUserInUserAccessList(accessList, userEmail);
 
+            if (!allowedAccess && id != Constants.DefaultChildId) // DefaultChild is always allowed.
+            {
+                return Unauthorized();
+            }
+
+            return Ok(accessList);
+
+            
+        }
+
+        /// <summary>
+        /// Checks if a user with a given email is in a list of UserAccesses.
+        /// </summary>
+        /// <param name="accessList">The list of UserAccesses.</param>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <returns>Boolean, true if the user has any kind of access.</returns>
+        private async Task<bool> IsUserInUserAccessList(List<UserAccess> accessList, string userEmail)
+        {
             bool allowedAccess = false;
             foreach (UserAccess ua in accessList)
             {
@@ -67,16 +86,10 @@ namespace KinaUnaProgenyApi.Controllers
                     ua.User.FirstName = ua.User.MiddleName = ua.User.LastName = "";
                     ua.User.UserEmail = ua.UserId;
                 }
-                
+
             }
 
-            if (!allowedAccess && id != Constants.DefaultChildId) // DefaultChild is always allowed.
-            {
-                return Unauthorized();
-            }
-
-            return Ok(accessList);
-
+            return allowedAccess;
         }
 
         /// <summary>
@@ -92,6 +105,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess result = await userAccessService.GetUserAccess(id);
             result.Progeny = await progenyService.GetProgeny(result.ProgenyId);
 
+            // Only allow access if the user is an admin for the Progeny or if the UserAccess entity is for the user requesting it.
             if (result.Progeny.IsInAdminList(User.GetEmail()) || result.UserId.Equals(userEmail, System.StringComparison.CurrentCultureIgnoreCase))
             {
                 return Ok(result);
