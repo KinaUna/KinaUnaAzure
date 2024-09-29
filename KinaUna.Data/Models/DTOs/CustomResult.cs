@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using Microsoft.Extensions.Logging;
 
 namespace KinaUna.Data.Models.DTOs;
@@ -56,8 +57,8 @@ public class CustomResult<T>
         return new CustomResult<T>(error);
     }
 
-    public static CustomResult<Exception> ExceptionCaughtFailure(Exception e, ILogger? logger = null)
+    public static CustomResult<T> ExceptionCaughtFailure(Exception e, ILogger? logger = null)
     {
-        return CustomResult<Exception>.Failure(CustomError.ExceptionError(e.Message, logger));
+        return CustomResult<T>.Failure(CustomError.ExceptionError(e.Message, logger));
     }
 }

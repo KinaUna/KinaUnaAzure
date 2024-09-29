@@ -1,4 +1,5 @@
 ﻿
+#nullable enable
 using Microsoft.Extensions.Logging;
 
 namespace KinaUna.Data.Models.DTOs;
