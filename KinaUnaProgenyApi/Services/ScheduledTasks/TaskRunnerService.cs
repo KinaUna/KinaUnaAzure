@@ -12,9 +12,10 @@ public class TaskRunnerService(IBackgroundTasksService backgroundTasksService, I
 {
     public async Task<CustomResult<KinaUnaBackgroundTask>> CheckPictureExtensions(KinaUnaBackgroundTask task)
     {
-        task = await UpdateTaskBeforeRun(task);
+        _ = await UpdateTaskBeforeRun(task);
         try
         {
+            // Create a new scope to get the required service, and inject the service into the scope.
             await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
             IPicturesService picturesService = scope.ServiceProvider.GetRequiredService<IPicturesService>();
 
@@ -31,9 +32,10 @@ public class TaskRunnerService(IBackgroundTasksService backgroundTasksService, I
 
     public async Task<CustomResult<KinaUnaBackgroundTask>> CheckPictureLinks(KinaUnaBackgroundTask task)
     {
-        task = await UpdateTaskBeforeRun(task);
+        _ = await UpdateTaskBeforeRun(task);
         try
         {
+            // Create a new scope to get the required service, and inject the service into the scope.
             await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
             IPicturesService picturesService = scope.ServiceProvider.GetRequiredService<IPicturesService>();
 
@@ -50,9 +52,10 @@ public class TaskRunnerService(IBackgroundTasksService backgroundTasksService, I
 
     public async Task<CustomResult<KinaUnaBackgroundTask>> CheckPicturePropertiesForNull(KinaUnaBackgroundTask task)
     {
-        task = await UpdateTaskBeforeRun(task);
+        _ = await UpdateTaskBeforeRun(task);
         try
         {
+            // Create a new scope to get the required service, and inject the service into the scope.
             await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
             IPicturesService picturesService = scope.ServiceProvider.GetRequiredService<IPicturesService>();
 
@@ -72,13 +75,12 @@ public class TaskRunnerService(IBackgroundTasksService backgroundTasksService, I
     /// </summary>
     /// <param name="backgroundTask">The Repeating task to update.</param>
     /// <returns>The updated RepeatingTask.</returns>
-    private async Task<KinaUnaBackgroundTask> UpdateTaskBeforeRun(KinaUnaBackgroundTask backgroundTask)
+    private async Task<CustomResult<KinaUnaBackgroundTask>> UpdateTaskBeforeRun(KinaUnaBackgroundTask backgroundTask)
     {
         KinaUnaBackgroundTask? taskToRun = await backgroundTasksService.GetTask(backgroundTask.TaskId);
         if (taskToRun == null)
         {
-            logger.LogError("UpdateTaskBeforeRun: Task with id {TaskId} not found", backgroundTask.TaskId);
-            return backgroundTask;
+            return CustomResult<KinaUnaBackgroundTask>.Failure(CustomError.NotFoundError($"UpdateTaskBeforeRun: Task with id {backgroundTask.TaskId} not found", logger));
         }
 
         backgroundTask.IsRunning = true;
@@ -91,13 +93,12 @@ public class TaskRunnerService(IBackgroundTasksService backgroundTasksService, I
     /// </summary>
     /// <param name="backgroundTask">The Repeating task to update.</param>
     /// <returns>The updated RepeatingTask.</returns>
-    private async Task<KinaUnaBackgroundTask> UpdateTaskAfterRun(KinaUnaBackgroundTask backgroundTask)
+    private async Task<CustomResult<KinaUnaBackgroundTask>> UpdateTaskAfterRun(KinaUnaBackgroundTask backgroundTask)
     {
         KinaUnaBackgroundTask? taskToRun = await backgroundTasksService.GetTask(backgroundTask.TaskId);
         if (taskToRun == null)
         {
-            logger.LogError("UpdateTaskAfterRun: Task with id {TaskId} not found", backgroundTask.TaskId);
-            return backgroundTask;
+            return CustomResult<KinaUnaBackgroundTask>.Failure(CustomError.NotFoundError($"UpdateTaskAfterRun: Task with id {backgroundTask.TaskId} not found", logger));
         }
 
         backgroundTask.IsRunning = false;
