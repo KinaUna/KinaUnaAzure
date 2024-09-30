@@ -4,6 +4,7 @@ using IdentityServer4.AccessTokenValidation;
 using KinaUna.Data.Contexts;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,8 @@ namespace KinaUnaProgenyApi
 
         public void ConfigureServices(IServiceCollection services)
         {
+            TelemetryDebugWriter.IsTracingDisabled = true;
+
             string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
             string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
             string authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];

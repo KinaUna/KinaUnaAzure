@@ -37,7 +37,7 @@ public class TimedSchedulerService(IBackgroundTasksService backgroundTasksServic
 
                 int count = Interlocked.Increment(ref _executionCount);
                 int tasksStarted = 0;
-
+                int tasksRunning = 0;
                 // Get a list of tasks to perform.
                 CustomResult<List<KinaUnaBackgroundTask>> getTasksResult = await backgroundTasksService.GetTasks();
                 if (getTasksResult.IsSuccess)
@@ -46,17 +46,25 @@ public class TimedSchedulerService(IBackgroundTasksService backgroundTasksServic
                     
                     foreach (KinaUnaBackgroundTask task in getTasksResult.Value)
                     {
+                        if (!task.IsEnabled) continue;
+                        if (task.IsRunning)
+                        {
+                            tasksRunning++;
+                            continue;
+                        }
+
                         if (DateTime.UtcNow - task.LastRun <= task.Interval) continue;
-                        if (task.IsRunning || !task.IsEnabled) continue;
+
                         repeatingTasksService.RunRepeatingTask(task);
                         tasksStarted++;
+                        tasksRunning++;
                     }
                 }
                 
-
                 logger.LogInformation("Timed Hosted Service is working. Count: {Count}", count);
-                logger.LogInformation("TimedSchedulerService tasks count: {TaskCount}", getTasksResult.Value.Count);
                 logger.LogInformation("TimedSchedulerService tasks started count: {TasksStartedCount}", tasksStarted);
+                logger.LogInformation("TimedSchedulerService tasks running count: {TasksRunningCount}", tasksRunning);
+                logger.LogInformation("TimedSchedulerService tasks count: {TaskCount}", getTasksResult.Value.Count);
 
             }
             catch (Exception ex)
