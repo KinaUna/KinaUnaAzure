@@ -24,7 +24,7 @@ public class CustomError
 
 
     public static readonly CustomError None = new(string.Empty, string.Empty);
-    public static CustomError ValidationError(string message) => new(ValidationErrorCode, message);
+    public static CustomError ValidationError(string message, ILogger? logger = null) => new(ValidationErrorCode, message, logger);
     public static CustomError HttpRequestError(string message, ILogger? logger = null) => new(HttpRequestErrorCode, message, logger);
     public static CustomError NotFoundError(string message, ILogger? logger = null) => new(NotFoundErrorCode, message, logger);
     public static CustomError ExceptionError(string message, ILogger? logger = null) => new(ExceptionErrorCode, message, logger);

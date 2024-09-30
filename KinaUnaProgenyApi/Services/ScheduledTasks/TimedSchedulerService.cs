@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -35,21 +36,26 @@ public class TimedSchedulerService(IBackgroundTasksService backgroundTasksServic
                 }
 
                 int count = Interlocked.Increment(ref _executionCount);
+                int tasksStarted = 0;
 
                 // Get a list of tasks to perform.
-                List<KinaUnaBackgroundTask> tasks = await backgroundTasksService.GetTasks();
-                // For each task, check if the task is due to be performed.
-                int tasksStarted = 0;
-                foreach (KinaUnaBackgroundTask task in tasks)
+                CustomResult<List<KinaUnaBackgroundTask>> getTasksResult = await backgroundTasksService.GetTasks();
+                if (getTasksResult.IsSuccess)
                 {
-                    if (DateTime.UtcNow - task.LastRun <= task.Interval) continue;
-                    if (task.IsRunning || !task.IsEnabled) continue;
-                    repeatingTasksService.RunRepeatingTask(task);
-                    tasksStarted++;
+                    // For each task, check if the task is due to be performed.
+                    
+                    foreach (KinaUnaBackgroundTask task in getTasksResult.Value)
+                    {
+                        if (DateTime.UtcNow - task.LastRun <= task.Interval) continue;
+                        if (task.IsRunning || !task.IsEnabled) continue;
+                        repeatingTasksService.RunRepeatingTask(task);
+                        tasksStarted++;
+                    }
                 }
+                
 
                 logger.LogInformation("Timed Hosted Service is working. Count: {Count}", count);
-                logger.LogInformation("TimedSchedulerService tasks count: {TaskCount}", tasks.Count);
+                logger.LogInformation("TimedSchedulerService tasks count: {TaskCount}", getTasksResult.Value.Count);
                 logger.LogInformation("TimedSchedulerService tasks started count: {TasksStartedCount}", tasksStarted);
 
             }

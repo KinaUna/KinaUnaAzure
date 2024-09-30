@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Helpers;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
 
 namespace KinaUnaProgenyApi.Controllers;
@@ -17,9 +19,14 @@ public class BackgroundTasksController(IBackgroundTasksService backgroundTasksSe
     [Route("[action]")]
     public async Task<IActionResult> GetTasks()
     {
-        List<KinaUnaBackgroundTask> tasks = await backgroundTasksService.GetTasks();
+        CustomResult<List<KinaUnaBackgroundTask>> getTasksResult = await backgroundTasksService.GetTasks();
 
-        return Ok(tasks);
+        if (getTasksResult.IsFailure)
+        {
+            return NotFound(getTasksResult.Error?.Message);
+        }
+
+        return Ok(getTasksResult.Value);
 
     }
 
@@ -27,31 +34,30 @@ public class BackgroundTasksController(IBackgroundTasksService backgroundTasksSe
     [Route("[action]")]
     public async Task<IActionResult> ResetAllTasks()
     {
-        List<KinaUnaBackgroundTask> tasks = await backgroundTasksService.GetTasks();
-        foreach (KinaUnaBackgroundTask task in tasks)
+        CustomResult<List<KinaUnaBackgroundTask>> resetTasksResult = await backgroundTasksService.ResetTasks();
+
+        if (resetTasksResult.IsFailure)
         {
-            task.IsRunning = false;
-            _ = await backgroundTasksService.UpdateTask(task);
+            return NotFound(resetTasksResult.Error?.Message);
         }
 
-        return Ok(tasks);
+        return Ok(resetTasksResult.Value);
     }
 
     [HttpPost]
     public async Task<IActionResult> AddTask([FromBody] KinaUnaBackgroundTask task)
     {
-        if (task == null) {
-            return BadRequest("Task not found.");
+        if (task == null || !task.ValidateBackgroundTask()) {
+            return BadRequest("Task invalid.");
         }
-
-        KinaUnaBackgroundTask existingTask = await backgroundTasksService.GetTask(task.TaskId);
-        if (existingTask != null)
+        
+        CustomResult<KinaUnaBackgroundTask> addTaskResult = await backgroundTasksService.AddTask(task);
+        if (addTaskResult.IsFailure)
         {
-            return Conflict("Task already exists.");
+            return BadRequest(addTaskResult.Error?.Message);
         }
 
-        KinaUnaBackgroundTask newTask = await backgroundTasksService.AddTask(task);
-        return Ok(newTask ?? task);
+        return Ok(addTaskResult.Value);
     }
 
     [HttpPut("{id:int}")]
@@ -62,30 +68,35 @@ public class BackgroundTasksController(IBackgroundTasksService backgroundTasksSe
             return BadRequest("Task not found.");
         }
 
-        KinaUnaBackgroundTask existingTask = await backgroundTasksService.GetTask(task.TaskId);
-        if (existingTask == null)
+        CustomResult<KinaUnaBackgroundTask> existingTaskResult = await backgroundTasksService.GetTask(task.TaskId);
+        if (existingTaskResult.IsFailure)
         {
-            return NotFound("Task not found.");
+            return NotFound(existingTaskResult.Error?.Message);
         }
 
-        KinaUnaBackgroundTask updatedTask = await backgroundTasksService.UpdateTask(task);
+        CustomResult<KinaUnaBackgroundTask> updateTaskResult = await backgroundTasksService.UpdateTask(task);
         
-        return Ok(updatedTask ?? new KinaUnaBackgroundTask());
+        if (updateTaskResult.IsFailure)
+        {
+            return BadRequest(updateTaskResult.Error?.Message);
+        }
+
+        return Ok(updateTaskResult.Value);
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteTask(int taskId)
     {
-        KinaUnaBackgroundTask existingTask = await backgroundTasksService.GetTask(taskId);
-        if (existingTask == null)
+        CustomResult<KinaUnaBackgroundTask> existingTask = await backgroundTasksService.GetTask(taskId);
+        if (existingTask.IsFailure)
         {
-            return NotFound("Task not found.");
+            return NotFound(existingTask.Error?.Message);
         }
 
-        bool result = await backgroundTasksService.DeleteTask(taskId);
-        if (!result)
+        CustomResult<KinaUnaBackgroundTask> result = await backgroundTasksService.DeleteTask(taskId);
+        if (!result.IsFailure)
         {
-            return BadRequest("Task could not be deleted.");
+            return BadRequest(result.Error?.Message);
         }
 
         return Ok(true);

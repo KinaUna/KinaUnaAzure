@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace KinaUnaProgenyApi.Services.ScheduledTasks;
 
-public class BackgroundTasksService(IServiceScopeFactory serviceScopeFactory) : IBackgroundTasksService
+public class BackgroundTasksService(IServiceScopeFactory serviceScopeFactory, ILogger<BackgroundTasksService> logger) : IBackgroundTasksService
 {
-    public async Task<List<KinaUnaBackgroundTask>> GetTasks()
+    public async Task<CustomResult<List<KinaUnaBackgroundTask>>> GetTasks()
     {
         await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
         ProgenyDbContext context = scope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
@@ -34,16 +36,20 @@ public class BackgroundTasksService(IServiceScopeFactory serviceScopeFactory) : 
         return tasks;
     }
 
-    public async Task<KinaUnaBackgroundTask> GetTask(int taskId)
+    public async Task<CustomResult<KinaUnaBackgroundTask>> GetTask(int taskId)
     {
         await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
         ProgenyDbContext context = scope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
         KinaUnaBackgroundTask task = await context.BackgroundTasksDb.AsNoTracking().FirstOrDefaultAsync(t => t.TaskId == taskId);
+        if (task == null)
+        {
+            return CustomResult<KinaUnaBackgroundTask>.Failure(CustomError.NotFoundError($"GetTask: Task with id {taskId} not found.", logger));
+        }
 
         return task;
     }
 
-    public async Task<KinaUnaBackgroundTask> AddTask(KinaUnaBackgroundTask task)
+    public async Task<CustomResult<KinaUnaBackgroundTask>> AddTask(KinaUnaBackgroundTask task)
     {
         await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
         ProgenyDbContext context = scope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
@@ -55,18 +61,18 @@ public class BackgroundTasksService(IServiceScopeFactory serviceScopeFactory) : 
         }
         else
         {
-            task = existingTask;
+            return CustomResult<KinaUnaBackgroundTask>.Failure(CustomError.ValidationError("AddTask: Task already exists.", logger));
         }
 
         return task;
     }
 
-    public async Task<KinaUnaBackgroundTask> UpdateTask(KinaUnaBackgroundTask task)
+    public async Task<CustomResult<KinaUnaBackgroundTask>> UpdateTask(KinaUnaBackgroundTask task)
     {
         await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
         ProgenyDbContext context = scope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
         KinaUnaBackgroundTask existingTask = await context.BackgroundTasksDb.FirstOrDefaultAsync(t => t.TaskId == task.TaskId);
-        if (existingTask == null) return task;
+        if (existingTask == null) return CustomResult<KinaUnaBackgroundTask>.Failure(CustomError.NotFoundError($"UpdateTask: Task with id {task.TaskId} not found", logger));
 
         existingTask.TaskName = task.TaskName;
         existingTask.TaskDescription = task.TaskDescription;
@@ -78,22 +84,23 @@ public class BackgroundTasksService(IServiceScopeFactory serviceScopeFactory) : 
 
         context.Update(existingTask);
         _ = context.SaveChangesAsync();
+
         return task;
     }
 
-    public async Task<bool> DeleteTask(int taskId)
+    public async Task<CustomResult<KinaUnaBackgroundTask>> DeleteTask(int taskId)
     {
         await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
         ProgenyDbContext context = scope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
         KinaUnaBackgroundTask task = await context.BackgroundTasksDb.FirstOrDefaultAsync(t => t.TaskId == taskId);
-        if (task == null) return false;
+        if (task == null) return CustomResult<KinaUnaBackgroundTask>.Failure(CustomError.NotFoundError($"DeleteTask: Task with id {taskId} not found", logger));
         context.BackgroundTasksDb.Remove(task);
         _ = await context.SaveChangesAsync();
 
-        return true;
+        return task;
     }
 
-    public async Task ResetTasks()
+    public async Task<CustomResult<List<KinaUnaBackgroundTask>>> ResetTasks()
     {
         await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
         ProgenyDbContext context = scope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
@@ -103,5 +110,7 @@ public class BackgroundTasksService(IServiceScopeFactory serviceScopeFactory) : 
             task.IsRunning = false;
             _ = await UpdateTask(task);
         }
+
+        return tasks;
     }
 }

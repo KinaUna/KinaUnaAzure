@@ -77,8 +77,8 @@ public class TaskRunnerService(IBackgroundTasksService backgroundTasksService, I
     /// <returns>The updated RepeatingTask.</returns>
     private async Task<CustomResult<KinaUnaBackgroundTask>> UpdateTaskBeforeRun(KinaUnaBackgroundTask backgroundTask)
     {
-        KinaUnaBackgroundTask? taskToRun = await backgroundTasksService.GetTask(backgroundTask.TaskId);
-        if (taskToRun == null)
+        CustomResult<KinaUnaBackgroundTask> taskToRun = await backgroundTasksService.GetTask(backgroundTask.TaskId);
+        if (taskToRun.IsFailure)
         {
             return CustomResult<KinaUnaBackgroundTask>.Failure(CustomError.NotFoundError($"UpdateTaskBeforeRun: Task with id {backgroundTask.TaskId} not found", logger));
         }
@@ -95,8 +95,8 @@ public class TaskRunnerService(IBackgroundTasksService backgroundTasksService, I
     /// <returns>The updated RepeatingTask.</returns>
     private async Task<CustomResult<KinaUnaBackgroundTask>> UpdateTaskAfterRun(KinaUnaBackgroundTask backgroundTask)
     {
-        KinaUnaBackgroundTask? taskToRun = await backgroundTasksService.GetTask(backgroundTask.TaskId);
-        if (taskToRun == null)
+        CustomResult<KinaUnaBackgroundTask> taskToRun = await backgroundTasksService.GetTask(backgroundTask.TaskId);
+        if (taskToRun.IsFailure)
         {
             return CustomResult<KinaUnaBackgroundTask>.Failure(CustomError.NotFoundError($"UpdateTaskAfterRun: Task with id {backgroundTask.TaskId} not found", logger));
         }
