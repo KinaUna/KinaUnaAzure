@@ -12,5 +12,6 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<List<KinaUnaBackgroundTask>> GetTasks();
         Task<List<KinaUnaBackgroundTask>> ResetTasks();
         Task<KinaUnaBackgroundTask> UpdateTask(KinaUnaBackgroundTask task);
+        Task<List<string>> GetCommands();
     }
 }

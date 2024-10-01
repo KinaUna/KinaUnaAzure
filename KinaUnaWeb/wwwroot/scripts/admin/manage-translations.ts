@@ -238,6 +238,7 @@ function addTranslationItemToTable(translationItem: pageModels.TextTranslation, 
     rowToInsert.appendChild(languageColumn);
     rowToInsert.appendChild(translationColumn);
 
+    // Only add the delete column for the first translation in the set.
     if (translationSetCount == 0) {
         let translationDeleteColumn = createDeleteColumn(translationItem.id);
         

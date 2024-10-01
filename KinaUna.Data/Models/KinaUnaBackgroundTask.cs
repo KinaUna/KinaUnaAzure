@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models;
 
@@ -15,4 +16,12 @@ public class KinaUnaBackgroundTask
     public TimeSpan Interval { get; set; } = TimeSpan.FromDays(1);
     public bool IsRunning { get; set; }
     public bool IsEnabled { get; set; }
+
+    [NotMapped]
+    public int IntervalMinutes
+    {
+        get => (int)Interval.TotalMinutes;
+
+        set => Interval = TimeSpan.FromMinutes(value);
+    }
 }

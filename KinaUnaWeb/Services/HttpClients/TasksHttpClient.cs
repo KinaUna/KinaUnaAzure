@@ -30,7 +30,7 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<List<KinaUnaBackgroundTask>> GetTasks()
     {
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
+        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
         _httpClient.SetBearerToken(accessToken);
 
         const string tasksApiPath = "/api/BackgroundTasks/GetTasks/";
@@ -44,7 +44,7 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<List<KinaUnaBackgroundTask>> ResetTasks()
     {
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
+        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
         _httpClient.SetBearerToken(accessToken);
 
         const string tasksApiPath = "/api/BackgroundTasks/ResetAllTasks/";
@@ -58,7 +58,7 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<KinaUnaBackgroundTask> ExecuteTask(KinaUnaBackgroundTask task)
     {
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
+        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
         _httpClient.SetBearerToken(accessToken);
 
         string tasksApiPath = "/api/RunTasks/" + task.ApiEndpoint;
@@ -82,7 +82,7 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<KinaUnaBackgroundTask> AddTask(KinaUnaBackgroundTask task)
     {
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
+        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
         _httpClient.SetBearerToken(accessToken);
 
         string tasksApiPath = "/api/BackgroundTasks/";
@@ -95,7 +95,7 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<KinaUnaBackgroundTask> UpdateTask(KinaUnaBackgroundTask task)
     {
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
+        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
         _httpClient.SetBearerToken(accessToken);
 
         string tasksApiPath = "/api/BackgroundTasks/" + task.TaskId;
@@ -108,11 +108,26 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<bool> DeleteTask(int taskId)
     {
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
+        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
         _httpClient.SetBearerToken(accessToken);
 
         string tasksApiPath = "/api/BackgroundTasks/" + taskId;
         HttpResponseMessage tasksResponseMessage = await _httpClient.DeleteAsync(tasksApiPath);
         return tasksResponseMessage.IsSuccessStatusCode;
+    }
+
+    public async Task<List<string>> GetCommands()
+    {
+        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+        _httpClient.SetBearerToken(accessToken);
+
+        string tasksApiPath = "/api/BackgroundTasks/GetCommands/";
+
+        HttpResponseMessage tasksResponseMessage = await _httpClient.GetAsync(tasksApiPath);
+        if (!tasksResponseMessage.IsSuccessStatusCode) return new List<string>();
+
+        string tasksAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
+
+        return JsonConvert.DeserializeObject<List<string>>(tasksAsString);
     }
 }

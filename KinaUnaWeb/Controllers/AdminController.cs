@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Models.AdminViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -40,7 +41,8 @@ namespace KinaUnaWeb.Controllers
         ITranslationsHttpClient translationsHttpClient,
         IPageTextsHttpClient pageTextsHttpClient,
         ImageStore imageStore,
-        IWebNotificationsService webNotificationsService)
+        IWebNotificationsService webNotificationsService,
+        ITasksHttpClient tasksHttpClient)
         : Controller
     {
         /// <summary>
@@ -646,6 +648,158 @@ namespace KinaUnaWeb.Controllers
 
             return View(notification);
         }
-        
+
+        /// <summary>
+        /// Page for managing scheduled background tasks. Only available to KinaUna Admins.
+        /// </summary>
+        /// <returns>View</returns>
+        public async Task<IActionResult> ScheduledTasks()
+        {
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
+            
+            return View();
+        }
+
+        /// <summary>
+        /// HttpPost API endpoint for loading scheduled background tasks. Only available to KinaUna Admins.
+        /// </summary>
+        /// <returns>Json of List with BackgroundTaskDto objects.</returns>
+        [Authorize]
+        [Produces("application/json")]
+        [HttpPost]
+        public async Task<IActionResult> LoadScheduledTasks()
+        {
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            List<KinaUnaBackgroundTask> tasks = await tasksHttpClient.GetTasks();
+            List<BackgroundTaskDto> taskDtos = [];
+            foreach (KinaUnaBackgroundTask task in tasks)
+            {
+                BackgroundTaskDto taskDto = task;
+                taskDtos.Add(taskDto);
+            }
+
+            return Json(taskDtos);
+        }
+
+        /// <summary>
+        /// HttpPost API endpoint for adding a scheduled background task. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="task">The BackgroundTaskDto to add.</param>
+        /// <returns>Json with the added task.</returns>
+        [Authorize]
+        [Produces("application/json")]
+        [HttpPost]
+        public async Task<IActionResult> AddScheduledTask([FromBody] BackgroundTaskDto task)
+        {
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            
+            CustomResult<BackgroundTaskDto> validatedTask = await ValidateBackGroundTask(task);
+
+            if (!validatedTask.IsSuccess) return BadRequest(validatedTask.Error?.Message);
+
+            BackgroundTaskDto newTask = await tasksHttpClient.AddTask(validatedTask.Value);
+            return Json(newTask);
+        }
+
+        /// <summary>
+        /// HttpPost API endpoint for updating a scheduled background task. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="task">The BackgroundTaskDto to update</param>
+        /// <returns>Json of the updated BackgroundTaskDto.</returns>
+        [Authorize]
+        [Produces("application/json")]
+        [HttpPost]
+        public async Task<IActionResult> UpdateScheduledTask([FromBody] BackgroundTaskDto task)
+        {
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            CustomResult<BackgroundTaskDto> validatedTask = await ValidateBackGroundTask(task);
+
+            if (!validatedTask.IsSuccess) return BadRequest(validatedTask.Error?.Message);
+
+            BackgroundTaskDto updatedTask = await tasksHttpClient.UpdateTask(validatedTask.Value);
+            return Json(updatedTask);
+        }
+
+        /// <summary>
+        /// HttpPost API endpoint for deleting a scheduled background task. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="taskId">The TaskId of the BackgroundTaskDto to delete.</param>
+        /// <returns>Json of bool.</returns>
+        [Authorize]
+        [Produces("application/json")]
+        [HttpPost]
+        public async Task<IActionResult> DeleteScheduledTask([FromBody] int taskId)
+        {
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            bool result = await tasksHttpClient.DeleteTask(taskId);
+
+            return Json(result);
+        }
+
+        /// <summary>
+        /// HttpPost API endpoint for getting a list of available commands for scheduled background tasks. Only available to KinaUna Admins.
+        /// </summary>
+        /// <returns>Json of List of strings</returns>
+        [Authorize]
+        [Produces("application/json")]
+        [HttpPost]
+        public async Task<IActionResult> GetCommands()
+        {
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            List<string> commandsList = await tasksHttpClient.GetCommands();
+
+            return Json(commandsList);
+        }
+
+        /// <summary>
+        /// Helper method for validating a BackgroundTaskDto object.
+        /// </summary>
+        /// <param name="task">BackgroundTaskDto to validate.</param>
+        /// <returns>CustomResult with the validated BackgroundTaskDto as Value, or Error.</returns>
+        private async Task<CustomResult<BackgroundTaskDto>> ValidateBackGroundTask(BackgroundTaskDto task)
+        {
+            if (task == null)
+            {
+                return CustomError.ValidationError("Task is null.");
+            }
+
+            if (task.Interval == 0)
+            {
+                task.Interval = 24 * 60; // Default to once a day.
+            }
+
+            List<string> commandsList = await tasksHttpClient.GetCommands();
+            if (!commandsList.Contains(task.Command))
+            {
+                return CustomError.ValidationError("Invalid command.");
+            }
+
+            return task;
+        }
     }
 }
