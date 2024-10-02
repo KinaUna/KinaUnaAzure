@@ -544,6 +544,14 @@ async function saveTask(taskId: number): Promise<void> {
  * @returns
  */
 async function deleteTask(taskId: number): Promise<void> {
+    // Confirm you want to delete
+    let confirmDelete = confirm('Are you sure you want to delete the task with the id:' + taskId);
+    if (!confirmDelete) {
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+
     startFullPageSpinner();
 
     await fetch('/Admin/DeleteScheduledTask', {
