@@ -152,6 +152,11 @@ namespace KinaUnaProgenyApi.Services
             Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
             if (progeny != null)
             {
+                if (string.IsNullOrEmpty(progeny.PictureLink))
+                {
+                    progeny.PictureLink = Constants.ProfilePictureUrl;
+                }
+
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
             }
             else

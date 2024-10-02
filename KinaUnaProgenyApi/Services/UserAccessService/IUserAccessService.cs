@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 
-namespace KinaUnaProgenyApi.Services
+namespace KinaUnaProgenyApi.Services.UserAccessService
 {
     public interface IUserAccessService
     {
@@ -85,5 +85,13 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="userEmail">The user's email address.</param>
         /// <returns>UserAccess with the given ProgenyId and email. Null if the UserAccess doesn't exist.</returns>
         Task<UserAccess> GetProgenyUserAccessForUser(int progenyId, string userEmail);
+
+        /// <summary>
+        /// Checks if a user with a given email is in a list of UserAccesses.
+        /// </summary>
+        /// <param name="accessList">The list of UserAccesses.</param>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <returns>Boolean, true if the user has any kind of access.</returns>
+        bool IsUserInUserAccessList(List<UserAccess> accessList, string userEmail);
     }
 }

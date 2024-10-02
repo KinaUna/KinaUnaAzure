@@ -4,6 +4,7 @@ using IdentityServer4.AccessTokenValidation;
 using KinaUna.Data.Contexts;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
+using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

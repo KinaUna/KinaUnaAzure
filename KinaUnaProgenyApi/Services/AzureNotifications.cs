@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.Azure.NotificationHubs;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;

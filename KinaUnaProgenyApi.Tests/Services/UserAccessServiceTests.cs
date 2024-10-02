@@ -1,7 +1,7 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
-using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;

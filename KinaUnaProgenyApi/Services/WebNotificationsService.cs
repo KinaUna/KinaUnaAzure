@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaProgenyApi.Services.UserAccessService;
 
 namespace KinaUnaProgenyApi.Services
 {

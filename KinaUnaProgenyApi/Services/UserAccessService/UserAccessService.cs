@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 
-namespace KinaUnaProgenyApi.Services
+namespace KinaUnaProgenyApi.Services.UserAccessService
 {
     public class UserAccessService : IUserAccessService
     {
@@ -66,7 +66,7 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="email">The user's email address.</param>
         /// <returns>List of Progeny objects.</returns>
-        public async Task<List<Progeny>> SetProgenyUserIsAdminInCache(string email)
+        private async Task<List<Progeny>> SetProgenyUserIsAdminInCache(string email)
         {
             List<Progeny> progenyList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Admins.Contains(email)).ToListAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenywhereadmin" + email, JsonConvert.SerializeObject(progenyList), _cacheOptionsSliding);
@@ -113,7 +113,7 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set the list for.</param>
         /// <returns>List of UserAccess objects.</returns>
-        public async Task<List<UserAccess>> SetProgenyUserAccessListInCache(int progenyId)
+        private async Task<List<UserAccess>> SetProgenyUserAccessListInCache(int progenyId)
         {
             List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == progenyId).ToListAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "accessList" + progenyId, JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
@@ -175,7 +175,7 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="email">The user's email address.</param>
         /// <returns>List of UserAccess objects.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison seems to break Db queries.")]
-        public async Task<List<UserAccess>> SetUsersUserAccessListInCache(string email)
+        private async Task<List<UserAccess>> SetUsersUserAccessListInCache(string email)
         {
             List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == email.ToUpper()).ToListAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "usersaccesslist" + email.ToUpper(), JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
@@ -223,7 +223,7 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="id">The AccessId of the UserAccess item to get and set.</param>
         /// <returns>The UserAccess with the given AccessId. Null if the UserAccess item doesn't exist.</returns>
-        public async Task<UserAccess> SetUserAccessInCache(int id)
+        private async Task<UserAccess> SetUserAccessInCache(int id)
         {
             UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.AccessId == id);
             if (userAccess != null)
@@ -380,7 +380,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 return null;
             }
- 
+
             UserAccess userAccess = JsonConvert.DeserializeObject<UserAccess>(cachedUserAccess);
             return userAccess;
         }
@@ -427,6 +427,26 @@ namespace KinaUnaProgenyApi.Services
         private async Task SetProgenyInCache(Progeny progeny)
         {
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + progeny.Id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
+        }
+
+        /// <summary>
+        /// Checks if a user with a given email is in a list of UserAccesses.
+        /// </summary>
+        /// <param name="accessList">The list of UserAccesses.</param>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <returns>Boolean, true if the user has any kind of access.</returns>
+        public bool IsUserInUserAccessList(List<UserAccess> accessList, string userEmail)
+        {
+            bool allowedAccess = false;
+            foreach (UserAccess ua in accessList)
+            {
+                if (ua.UserId.Equals(userEmail, System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    allowedAccess = true;
+                }
+            }
+
+            return allowedAccess;
         }
     }
 }

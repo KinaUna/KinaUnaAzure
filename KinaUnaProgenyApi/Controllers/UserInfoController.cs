@@ -9,6 +9,7 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.UserAccessService;
 
 namespace KinaUnaProgenyApi.Controllers
 {
