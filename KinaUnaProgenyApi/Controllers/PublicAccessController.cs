@@ -9,6 +9,7 @@ using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Models.ViewModels;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -102,8 +103,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> Access(int id)
         {
-            CustomResult<List<UserAccess>> accessListResult = await userAccessService.GetProgenyUserAccessList(Constants.DefaultChildId, Constants.DefaultUserEmail);
-
+            CustomResult<List<UserAccess>> accessListResult = await userAccessService.GetProgenyUserAccessList(Constants.DefaultChildId, Constants.SystemAccountEmail);
             if (accessListResult.IsFailure) return accessListResult.ToActionResult();
 
             foreach (UserAccess ua in accessListResult.Value)
@@ -118,7 +118,8 @@ namespace KinaUnaProgenyApi.Controllers
 
             }
 
-            return accessListResult.ToActionResult();
+            return Ok(accessListResult);
+
         }
 
         /// <summary>
@@ -149,7 +150,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
             List<CalendarItem> model = await calendarService.GetCalendarList(Constants.DefaultChildId, 5);
-            model = [.. model.Where(e => e.EndTime > DateTime.UtcNow).OrderBy(e => e.StartTime)];
+            model = [.. model.Where(e => e.EndTime > DateTime.UtcNow && e.AccessLevel >= 5).OrderBy(e => e.StartTime)];
             model = model.Take(5).ToList();
 
             return Ok(model);
@@ -215,7 +216,8 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyCalendarMobile(int id, int accessLevel = 5)
         {
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(Constants.DefaultChildId, (int)AccessLevel.Public);
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(Constants.DefaultChildId, 5);
+            calendarList = calendarList.Where(c => c.AccessLevel >= 5).ToList();
             if (calendarList.Count != 0)
             {
                 return Ok(calendarList);
