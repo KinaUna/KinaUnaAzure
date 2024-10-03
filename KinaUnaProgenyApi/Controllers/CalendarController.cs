@@ -52,14 +52,9 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess == null && id != Constants.DefaultChildId) return NotFound();
 
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id);
-            calendarList = calendarList.Where(c => c.AccessLevel >= accessLevel).ToList();
-            if (calendarList.Count != 0)
-            {
-                return Ok(calendarList);
-            }
-
-            return NotFound();
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, accessLevel);
+            
+            return Ok(calendarList);
         }
 
         /// <summary>
@@ -77,19 +72,17 @@ namespace KinaUnaProgenyApi.Controllers
         {
             bool startParsed = DateTime.TryParseExact(start, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime startDate);
             bool endParsed = DateTime.TryParseExact(end, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime endDate);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
+            
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail; 
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess == null && (id != Constants.DefaultChildId || !startParsed || !endParsed)) return NotFound();
 
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id);
-            calendarList = calendarList.Where(c => userAccess != null && c.AccessLevel >= userAccess.AccessLevel && c.EndTime > startDate && c.StartTime < endDate).ToList();
-            if (calendarList.Count != 0)
-            {
-                return Ok(calendarList);
-            }
+            if (userAccess == null) return NotFound();
 
-            return NotFound();
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, userAccess.AccessLevel);
+            calendarList = calendarList.Where(c => c.EndTime > startDate && c.StartTime < endDate).ToList();
+
+            return Ok(calendarList);
         }
 
         /// <summary>
@@ -146,19 +139,21 @@ namespace KinaUnaProgenyApi.Controllers
 
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            TimeLineItem timeLineItem = new();
-
-            timeLineItem.CopyCalendarItemPropertiesForAdd(calendarItem, userInfo.UserId);
-
+            TimeLineItem timeLineItem = calendarItem.ToNewTimeLineItem();
             _ = await timelineService.AddTimeLineItem(timeLineItem);
 
+            await NotifyCalendarItemAdded(progeny, userInfo, timeLineItem, calendarItem);
+
+            return Ok(calendarItem);
+        }
+
+        private async Task NotifyCalendarItemAdded(Progeny progeny, UserInfo userInfo, TimeLineItem timeLineItem, CalendarItem calendarItem )
+        {
             string notificationTitle = "Calendar item added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new calendar item for " + progeny.NickName;
             await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
 
             await webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
-
-            return Ok(calendarItem);
         }
 
         /// <summary>
@@ -273,13 +268,17 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
             if (userAccess == null && progenyId != Constants.DefaultChildId) return NotFound();
 
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(progenyId);
-            calendarList = calendarList.Where(c => userAccess != null && c.EndTime > DateTime.UtcNow && c.AccessLevel >= userAccess.AccessLevel).ToList();
-            calendarList = [.. calendarList.OrderBy(e => e.StartTime)];
-            calendarList = calendarList.Take(Constants.DefaultUpcomingCalendarItemsCount).ToList();
+            if (userAccess != null)
+            {
+                List<CalendarItem> calendarList = await calendarService.GetCalendarList(progenyId, userAccess.AccessLevel);
+                calendarList = calendarList.Where(c => c.EndTime > DateTime.UtcNow).ToList();
+                calendarList = [.. calendarList.OrderBy(e => e.StartTime)];
+                calendarList = calendarList.Take(Constants.DefaultUpcomingCalendarItemsCount).ToList();
 
-            return Ok(calendarList);
+                return Ok(calendarList);
+            }
 
+            return Ok(new List<CalendarItem>());
         }
 
         /// <summary>
@@ -319,15 +318,9 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null) return Unauthorized();
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id);
-            calendarList = calendarList.Where(c => c.AccessLevel >= userAccess.AccessLevel).ToList();
-            if (calendarList.Count != 0)
-            {
-                return Ok(calendarList);
-            }
-
-            return NotFound();
-
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, accessLevel);
+            
+            return Ok(calendarList);
         }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.Azure.NotificationHubs;
 using Microsoft.Extensions.Configuration;
@@ -40,8 +42,8 @@ namespace KinaUnaProgenyApi.Services
 
             string alert = "{\"aps\":{\"alert\":\"" + message + "\"},\"message\":\"" + message + "\",\"notData\":\"" + timeLineItem.TimeLineId + "\", \"content-available\":1}";
 
-            List<UserAccess> userList = await userAccessService.GetProgenyUserAccessList(timeLineItem.ProgenyId);
-            foreach (UserAccess userAcces in userList)
+            CustomResult<List<UserAccess>> userAccessListResult = await userAccessService.GetProgenyUserAccessList(timeLineItem.ProgenyId, Constants.SystemAccountEmail );
+            foreach (UserAccess userAcces in userAccessListResult.Value)
             {
                 if (userAcces.AccessLevel > timeLineItem.AccessLevel) continue;
 

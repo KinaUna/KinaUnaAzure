@@ -155,14 +155,17 @@ namespace KinaUnaProgenyApi.Services
         /// If the list isn't found in the cache, gets it from the database and sets it in the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all CalendarItems for.</param>
+        /// <param name="accessLevel">The required access level to view the event.</param>
         /// <returns>List of CalendarItems.</returns>
-        public async Task<List<CalendarItem>> GetCalendarList(int progenyId)
+        public async Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel)
         {
             List<CalendarItem> calendarList = await GetCalendarListFromCache(progenyId);
             if (calendarList == null || calendarList.Count == 0)
             {
                 calendarList = await SetCalendarListInCache(progenyId);
             }
+
+            calendarList = calendarList.Where(c => c.AccessLevel >= accessLevel).ToList();
 
             return calendarList;
         }
@@ -197,9 +200,9 @@ namespace KinaUnaProgenyApi.Services
             return calendarList;
         }
 
-        public async Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context)
+        public async Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context, int accessLevel)
         {
-            List<CalendarItem> allItems = await GetCalendarList(progenyId);
+            List<CalendarItem> allItems = await GetCalendarList(progenyId, accessLevel);
             if (!string.IsNullOrEmpty(context))
             {
                 allItems = [.. allItems.Where(c => c.Context != null && c.Context.Contains(context, StringComparison.CurrentCultureIgnoreCase))];

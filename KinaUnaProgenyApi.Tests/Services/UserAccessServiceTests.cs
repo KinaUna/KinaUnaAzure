@@ -1,6 +1,7 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -127,14 +128,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             UserAccessService userAccessService = new(context, memoryCache);
 
-            List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(1);
-            List<UserAccess> accessList2 = await userAccessService.GetProgenyUserAccessList(1); // Test cached results.
-            UserAccess firstUserAccess = accessList.First();
+            CustomResult<List<UserAccess>> accessList = await userAccessService.GetProgenyUserAccessList(1, Constants.SystemAccountEmail);
+            CustomResult<List<UserAccess>> accessList2 = await userAccessService.GetProgenyUserAccessList(1, Constants.SystemAccountEmail); // Test cached results.
+            UserAccess firstUserAccess = accessList.Value.First();
 
             Assert.NotNull(accessList);
-            Assert.Equal(2, accessList.Count);
+            Assert.Equal(2, accessList.Value.Count);
             Assert.NotNull(accessList2);
-            Assert.Equal(2, accessList2.Count);
+            Assert.Equal(2, accessList2.Value.Count);
             Assert.NotNull(firstUserAccess);
             Assert.IsType<UserAccess>(firstUserAccess);
 
@@ -168,13 +169,13 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             UserAccessService userAccessService = new(context, memoryCache);
 
-            List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(2);
-            List<UserAccess> accessList2 = await userAccessService.GetProgenyUserAccessList(2); // Test cached results.
+            CustomResult<List<UserAccess>> accessList = await userAccessService.GetProgenyUserAccessList(2, Constants.SystemAccountEmail);
+            CustomResult<List<UserAccess>> accessList2 = await userAccessService.GetProgenyUserAccessList(2, Constants.SystemAccountEmail); // Test cached results.
             
             Assert.NotNull(accessList);
-            Assert.Empty( accessList);
+            Assert.Empty( accessList.Value);
             Assert.NotNull(accessList2);
-            Assert.Empty(accessList2);
+            Assert.Empty(accessList2.Value);
 
         }
 

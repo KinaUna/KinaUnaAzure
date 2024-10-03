@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaProgenyApi.Services.UserAccessService
 {
@@ -20,8 +21,9 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list of UserAccesses for.</param>
+        /// <param name="currentUserEmail">The email address of the current user, to validate if the user should be allowed access. Constants.SystemAccountEmail overrides access checks.</param>
         /// <returns>List of UserAccess objects.</returns>
-        Task<List<UserAccess>> GetProgenyUserAccessList(int progenyId);
+        Task<CustomResult<List<UserAccess>>> GetProgenyUserAccessList(int progenyId, string currentUserEmail);
 
         /// <summary>
         /// Gets the list of all UserAccess entities that exist for a user.

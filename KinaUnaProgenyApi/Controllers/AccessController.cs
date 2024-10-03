@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
 using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
-using Newtonsoft.Json.Linq;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -43,19 +43,10 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id)
         {
-            List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(id);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            CustomResult<List<UserAccess>> accessListResult = await userAccessService.GetProgenyUserAccessList(id, userEmail);
             
-            bool allowedAccess = userAccessService.IsUserInUserAccessList(accessList, userEmail);
-
-            if (!allowedAccess && id != Constants.DefaultChildId) // DefaultChild is always allowed.
-            {
-                return Unauthorized();
-            }
-
-            return Ok(accessList);
-
-            
+            return accessListResult.ToActionResult();
         }
         
         /// <summary>

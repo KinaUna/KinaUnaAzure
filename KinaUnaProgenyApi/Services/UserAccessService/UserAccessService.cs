@@ -5,6 +5,7 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -78,14 +79,22 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list of UserAccesses for.</param>
+        /// <param name="currentUserEmail">The email address of the current user, to validate if the user should be allowed access. Constants.SystemAccountEmail overrides access checks.</param>
         /// <returns>List of UserAccess objects.</returns>
-        public async Task<List<UserAccess>> GetProgenyUserAccessList(int progenyId)
+        public async Task<CustomResult<List<UserAccess>>> GetProgenyUserAccessList(int progenyId, string currentUserEmail)
         {
             List<UserAccess> accessList = await GetProgenyUserAccessListFromCache(progenyId);
 
             if (accessList == null || accessList.Count == 0)
             {
                 accessList = await SetProgenyUserAccessListInCache(progenyId);
+            }
+
+            bool allowedAccess = IsUserInUserAccessList(accessList, currentUserEmail);
+
+            if (!allowedAccess && progenyId != Constants.DefaultChildId) // DefaultChild is always allowed.
+            {
+                return CustomError.UnauthorizedError("GetProgenyUserAccessList: User is not authorized to access this progeny.");
             }
 
             return accessList;
@@ -433,11 +442,13 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         /// Checks if a user with a given email is in a list of UserAccesses.
         /// </summary>
         /// <param name="accessList">The list of UserAccesses.</param>
-        /// <param name="userEmail">The user's email address.</param>
+        /// <param name="userEmail">The user's email address. Constants.SystemAccountEmail overrides access checks.</param>
         /// <returns>Boolean, true if the user has any kind of access.</returns>
         public bool IsUserInUserAccessList(List<UserAccess> accessList, string userEmail)
         {
             bool allowedAccess = false;
+            if(userEmail == Constants.SystemAccountEmail) return true;
+
             foreach (UserAccess ua in accessList)
             {
                 if (ua.UserId.Equals(userEmail, System.StringComparison.CurrentCultureIgnoreCase))

@@ -30,8 +30,9 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="timeLineItems">The list of items to filter.</param>
         /// <param name="contexts">Comma separated list of contexts</param>
+        /// <param name="accessLevel">The required access level to view the items.</param>
         /// <returns>List of TimeLineItems that contain any of the contexts.</returns>
-        Task<List<TimeLineItem>> GetTimeLineItemsWithContexts(List<TimeLineItem> timeLineItems, string contexts);
+        Task<List<TimeLineItem>> GetTimeLineItemsWithContexts(List<TimeLineItem> timeLineItems, string contexts, int accessLevel);
 
         /// <summary>
         /// Filters TimeLineItems based on keywords.

@@ -50,31 +50,7 @@ namespace KinaUna.Data.Extensions
             return true;
 
         }
-
-        /// <summary>
-        /// Copies the properties needed for adding a timeline item when a calendar item has been added.
-        /// </summary>
-        /// <param name="currentTimeLineItem"></param>
-        /// <param name="calendarItem"></param>
-        /// <param name="userEmail"></param>
-        public static void CopyCalendarItemPropertiesForAdd(this TimeLineItem currentTimeLineItem, CalendarItem calendarItem, string userEmail)
-        {
-            currentTimeLineItem.ProgenyId = calendarItem.ProgenyId;
-            currentTimeLineItem.AccessLevel = calendarItem.AccessLevel;
-            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Calendar;
-            currentTimeLineItem.ItemId = calendarItem.EventId.ToString();
-            currentTimeLineItem.CreatedBy = userEmail;
-            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
-            if (calendarItem.StartTime != null)
-            {
-                currentTimeLineItem.ProgenyTime = calendarItem.StartTime.Value;
-            }
-            else
-            {
-                currentTimeLineItem.ProgenyTime = DateTime.UtcNow;
-            }
-        }
-
+        
         /// <summary>
         /// Copies the properties needed for updating the timeline item when user access has been added.
         /// This should not be used to add a timeline item to the database, but for notifications only.

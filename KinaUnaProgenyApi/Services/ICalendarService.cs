@@ -41,8 +41,17 @@ namespace KinaUnaProgenyApi.Services
         /// If the list isn't found in the cache, gets it from the database and sets it in the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all CalendarItems for.</param>
+        /// <param name="accessLevel">The required access level to view the event.</param>
         /// <returns>List of CalendarItems.</returns>
-        Task<List<CalendarItem>> GetCalendarList(int progenyId);
-        Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context);
+        Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel);
+
+        /// <summary>
+        /// Gets a list of CalendarItems for a Progeny with a specific context.
+        /// </summary>
+        /// <param name="progenyId">The id of the Progeny.</param>
+        /// <param name="context">String with the context to look for, any item containing the string in the context property, not case-sensitive.</param>
+        /// <param name="accessLevel">The required access level to view the event.</param>
+        /// <returns>List of CalendarItems.</returns>
+        Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context, int accessLevel);
     }
 }

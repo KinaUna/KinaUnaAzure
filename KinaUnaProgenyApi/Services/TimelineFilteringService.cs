@@ -100,8 +100,9 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="timeLineItems">The list of items to filter.</param>
         /// <param name="contexts">Comma separated list of contexts</param>
+        /// <param name="accessLevel">The required access level to view the items.</param>
         /// <returns>List of TimeLineItems that contain any of the contexts.</returns>
-        public async Task<List<TimeLineItem>> GetTimeLineItemsWithContexts(List<TimeLineItem> timeLineItems, string contexts)
+        public async Task<List<TimeLineItem>> GetTimeLineItemsWithContexts(List<TimeLineItem> timeLineItems, string contexts, int accessLevel)
         {
             if (string.IsNullOrEmpty(contexts)) return timeLineItems;
 
@@ -114,7 +115,7 @@ namespace KinaUnaProgenyApi.Services
 
             foreach (string context in contextsList)
             {
-                List<CalendarItem> allCalendarItems = await calendarService.GetCalendarItemsWithContext(progenyId, context);
+                List<CalendarItem> allCalendarItems = await calendarService.GetCalendarItemsWithContext(progenyId, context, accessLevel);
                 List<TimeLineItem> allTimeLineCalendarItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Calendar).ToList();
                 List<TimeLineItem> allTimeLineCalendarItemsInTimeLineItems = allTimeLineCalendarItems.Where(t => allCalendarItems.Any(c => c.EventId == int.Parse(t.ItemId))).ToList();
                 filteredTimeLineItems.AddRange(allTimeLineCalendarItemsInTimeLineItems);

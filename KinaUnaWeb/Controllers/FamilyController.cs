@@ -17,7 +17,7 @@ namespace KinaUnaWeb.Controllers
     /// <param name="progenyHttpClient"></param>
     /// <param name="userAccessHttpClient"></param>
     /// <param name="viewModelSetupService"></param>
-    public class FamilyController(IProgenyHttpClient progenyHttpClient, IUserAccessHttpClient userAccessHttpClient, IViewModelSetupService viewModelSetupService)
+    public class FamilyController(IProgenyHttpClient progenyHttpClient, IUserAccessHttpClient userAccessHttpClient, IUserInfosHttpClient userInfosHttpClient, IViewModelSetupService viewModelSetupService)
         : Controller
     {
         /// <summary>
@@ -43,6 +43,12 @@ namespace KinaUnaWeb.Controllers
                         progeny.BirthDay = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(progeny.BirthDay.Value,progeny.TimeZone,model.CurrentUser.Timezone);
                     }
                     List<UserAccess> userAccesses = await userAccessHttpClient.GetProgenyAccessList(progeny.Id);
+                    foreach (UserAccess userAccess in userAccesses)
+                    {
+                        userAccess.Progeny = await progenyHttpClient.GetProgeny(userAccess.ProgenyId);
+                        userAccess.User = await userInfosHttpClient.GetUserInfo(userAccess.UserId);
+                    }
+
                     model.Family.AccessList.AddRange(userAccesses);
                 }
             }
