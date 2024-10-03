@@ -330,8 +330,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CalendarService calendarService = new(context, memoryCache);
 
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(1);
-            List<CalendarItem> calendarList2 = await calendarService.GetCalendarList(1); // Test cached result.
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(1, 0);
+            List<CalendarItem> calendarList2 = await calendarService.GetCalendarList(1, 0); // Test cached result.
             CalendarItem firstCalendarItem = calendarList.First();
 
             Assert.NotNull(calendarList);
@@ -384,8 +384,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CalendarService calendarService = new(context, memoryCache);
 
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(2);
-            List<CalendarItem> calendarList2 = await calendarService.GetCalendarList(2); // Test cached result.
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(2, 0);
+            List<CalendarItem> calendarList2 = await calendarService.GetCalendarList(2, 0); // Test cached result.
 
             Assert.NotNull(calendarList);
             Assert.IsType<List<CalendarItem>>(calendarList);

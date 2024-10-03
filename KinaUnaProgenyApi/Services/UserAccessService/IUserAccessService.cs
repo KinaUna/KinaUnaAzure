@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 
-namespace KinaUnaProgenyApi.Services
+namespace KinaUnaProgenyApi.Services.UserAccessService
 {
     public interface IUserAccessService
     {
@@ -20,8 +21,9 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list of UserAccesses for.</param>
+        /// <param name="currentUserEmail">The email address of the current user, to validate if the user should be allowed access. Constants.SystemAccountEmail overrides access checks.</param>
         /// <returns>List of UserAccess objects.</returns>
-        Task<List<UserAccess>> GetProgenyUserAccessList(int progenyId);
+        Task<CustomResult<List<UserAccess>>> GetProgenyUserAccessList(int progenyId, string currentUserEmail);
 
         /// <summary>
         /// Gets the list of all UserAccess entities that exist for a user.
@@ -85,5 +87,13 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="userEmail">The user's email address.</param>
         /// <returns>UserAccess with the given ProgenyId and email. Null if the UserAccess doesn't exist.</returns>
         Task<UserAccess> GetProgenyUserAccessForUser(int progenyId, string userEmail);
+
+        /// <summary>
+        /// Checks if a user with a given email is in a list of UserAccesses.
+        /// </summary>
+        /// <param name="accessList">The list of UserAccesses.</param>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <returns>Boolean, true if the user has any kind of access.</returns>
+        bool IsUserInUserAccessList(List<UserAccess> accessList, string userEmail);
     }
 }

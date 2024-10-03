@@ -5,6 +5,7 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -134,8 +135,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id);
-            allCalendarItems = allCalendarItems.Where(p => p.AccessLevel >= accessLevel).ToList();
+            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id, accessLevel);
             foreach (CalendarItem calendarItem in allCalendarItems)
             {
                 if (string.IsNullOrEmpty(calendarItem.Context)) continue;
@@ -222,8 +222,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id);
-            allCalendarItems = allCalendarItems.Where(p => p.AccessLevel >= accessLevel).ToList();
+            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id, accessLevel);
             foreach (CalendarItem calendarItem in allCalendarItems)
             {
                 if (string.IsNullOrEmpty(calendarItem.Location)) continue;

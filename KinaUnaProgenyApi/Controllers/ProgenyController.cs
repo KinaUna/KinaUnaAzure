@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -254,17 +256,17 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
             
-            List<UserAccess> userAccessList = await userAccessService.GetProgenyUserAccessList(progeny.Id);
+            CustomResult<List<UserAccess>> userAccessListResult = await userAccessService.GetProgenyUserAccessList(progeny.Id, userEmail);
+            if (!userAccessListResult.IsSuccess) return userAccessListResult.ToActionResult();
 
-            if (userAccessList.Count != 0)
+            foreach (UserAccess ua in userAccessListResult.Value)
             {
-                foreach (UserAccess ua in userAccessList)
-                {
-                    await userAccessService.RemoveUserAccess(ua.AccessId, ua.ProgenyId, ua.UserId);
-                }
+                await userAccessService.RemoveUserAccess(ua.AccessId, ua.ProgenyId, ua.UserId);
             }
 
             await progenyService.DeleteProgeny(progeny);
+
+
             return NoContent();
 
         }

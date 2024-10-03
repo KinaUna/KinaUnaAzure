@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Services.UserAccessService;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -27,9 +29,11 @@ namespace KinaUnaProgenyApi.Services
         /// <returns></returns>
         public async Task SendCalendarNotification(CalendarItem eventItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(eventItem.ProgenyId);
+            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(eventItem.ProgenyId, Constants.SystemAccountEmail);
 
-            foreach (UserAccess userAccess in usersToNotify)
+            if (usersToNotifyResult.IsFailure) return;
+
+            foreach (UserAccess userAccess in usersToNotifyResult.Value)
             {
                 if (userAccess.AccessLevel > eventItem.AccessLevel) continue;
 
@@ -77,9 +81,11 @@ namespace KinaUnaProgenyApi.Services
         /// <returns></returns>
         public async Task SendContactNotification(Contact contactItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(contactItem.ProgenyId);
+            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(contactItem.ProgenyId, Constants.SystemAccountEmail);
 
-            foreach (UserAccess userAccess in usersToNotify)
+            if(usersToNotifyResult.IsFailure) return;
+
+            foreach (UserAccess userAccess in usersToNotifyResult.Value)
             {
                 if (userAccess.AccessLevel > contactItem.AccessLevel) continue;
 
@@ -114,9 +120,9 @@ namespace KinaUnaProgenyApi.Services
         /// <returns></returns>
         public async Task SendFriendNotification(Friend friendItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(friendItem.ProgenyId);
+            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(friendItem.ProgenyId, Constants.SystemAccountEmail);
 
-            foreach (UserAccess userAccess in usersToNotify)
+            foreach (UserAccess userAccess in usersToNotifyResult.Value)
             {
                 if (userAccess.AccessLevel > friendItem.AccessLevel) continue;
 
@@ -152,9 +158,11 @@ namespace KinaUnaProgenyApi.Services
         /// <returns></returns>
         public async Task SendLocationNotification(Location locationItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(locationItem.ProgenyId);
+            CustomResult<List<UserAccess>> usersToNotifResult = await userAccessService.GetProgenyUserAccessList(locationItem.ProgenyId, Constants.SystemAccountEmail);
 
-            foreach (UserAccess userAccess in usersToNotif)
+            if (usersToNotifResult.IsFailure) return;
+
+            foreach (UserAccess userAccess in usersToNotifResult.Value)
             {
                 if (userAccess.AccessLevel > locationItem.AccessLevel) continue;
 
@@ -195,9 +203,11 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendMeasurementNotification(Measurement measurementItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(measurementItem.ProgenyId);
+            CustomResult<List<UserAccess>> usersToNotifResult = await userAccessService.GetProgenyUserAccessList(measurementItem.ProgenyId, Constants.SystemAccountEmail);
 
-            foreach (UserAccess userAccess in usersToNotif)
+            if (usersToNotifResult == null) return;
+
+            foreach (UserAccess userAccess in usersToNotifResult.Value)
             {
                 if (userAccess.AccessLevel > measurementItem.AccessLevel) continue;
 
@@ -231,9 +241,11 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendNoteNotification(Note noteItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(noteItem.ProgenyId);
+            CustomResult<List<UserAccess>> usersToNotifResult = await userAccessService.GetProgenyUserAccessList(noteItem.ProgenyId, Constants.SystemAccountEmail);
 
-            foreach (UserAccess userAccess in usersToNotif)
+            if (usersToNotifResult == null) return;
+
+            foreach (UserAccess userAccess in usersToNotifResult.Value)
             {
                 if (userAccess.AccessLevel > noteItem.AccessLevel) continue;
 
@@ -267,9 +279,11 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendPictureNotification(Picture pictureItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(pictureItem.ProgenyId);
+            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(pictureItem.ProgenyId, Constants.SystemAccountEmail);
 
-            foreach (UserAccess userAccess in usersToNotify)
+            if (usersToNotifyResult == null) return;
+
+            foreach (UserAccess userAccess in usersToNotifyResult.Value)
             {
                 if (userAccess.AccessLevel > pictureItem.AccessLevel) continue;
 
@@ -314,9 +328,11 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendVideoNotification(Video videoItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(videoItem.ProgenyId);
+            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(videoItem.ProgenyId, Constants.SystemAccountEmail);
 
-            foreach (UserAccess userAccess in usersToNotify)
+            if (usersToNotifyResult == null) return;
+
+            foreach (UserAccess userAccess in usersToNotifyResult.Value)
             {
                 if (userAccess.AccessLevel > videoItem.AccessLevel) continue;
 
@@ -361,9 +377,11 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendSkillNotification(Skill skillItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(skillItem.ProgenyId);
+            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(skillItem.ProgenyId, Constants.SystemAccountEmail);
 
-            foreach (UserAccess userAccess in usersToNotify)
+            if (usersToNotifyResult == null) return;
+
+            foreach (UserAccess userAccess in usersToNotifyResult.Value)
             {
                 if (userAccess.AccessLevel > skillItem.AccessLevel) continue;
 
@@ -402,9 +420,11 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="message">The message body of the notification.</param>
         public async Task SendCommentNotification(Comment commentItem, UserInfo currentUser, string title, string message)
         {
-            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(commentItem.Progeny.Id);
+            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(commentItem.Progeny.Id, Constants.SystemAccountEmail);
 
-            foreach (UserAccess userAccess in usersToNotify)
+            if (usersToNotifyResult == null) return;
+
+            foreach (UserAccess userAccess in usersToNotifyResult.Value)
             {
                 if (userAccess.AccessLevel > commentItem.Progeny.Id) continue;
 
@@ -450,8 +470,11 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendSleepNotification(Sleep sleepItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(sleepItem.ProgenyId);
-            foreach (UserAccess userAccess in usersToNotify)
+            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(sleepItem.ProgenyId, Constants.SystemAccountEmail);
+
+            if (usersToNotifyResult == null) return;
+
+            foreach (UserAccess userAccess in usersToNotifyResult.Value)
             {
                 if (userAccess.AccessLevel > sleepItem.AccessLevel) continue;
 
@@ -488,8 +511,11 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendVaccinationNotification(Vaccination vaccinationItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(vaccinationItem.ProgenyId);
-            foreach (UserAccess userAccess in usersToNotify)
+            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(vaccinationItem.ProgenyId, Constants.SystemAccountEmail);
+
+            if (usersToNotifyResult == null) return;
+
+            foreach (UserAccess userAccess in usersToNotifyResult.Value)
             {
                 if (userAccess.AccessLevel > vaccinationItem.AccessLevel) continue;
 
@@ -523,8 +549,11 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendVocabularyNotification(VocabularyItem vocabularyItem, UserInfo userInfo, string title)
         {
-            List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(vocabularyItem.ProgenyId);
-            foreach (UserAccess userAccess in usersToNotif)
+            CustomResult<List<UserAccess>> usersToNotifResult = await userAccessService.GetProgenyUserAccessList(vocabularyItem.ProgenyId, Constants.SystemAccountEmail);
+
+            if (usersToNotifResult == null) return;
+
+            foreach (UserAccess userAccess in usersToNotifResult.Value)
             {
                 if (userAccess.AccessLevel > vocabularyItem.AccessLevel) continue;
 
@@ -566,8 +595,11 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendUserAccessNotification(UserAccess userAccessItem, UserInfo userInfo, string title)
         {
-            List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(userAccessItem.ProgenyId);
-            foreach (UserAccess userAccess in usersToNotif)
+            CustomResult<List<UserAccess>> usersToNotifResult = await userAccessService.GetProgenyUserAccessList(userAccessItem.ProgenyId, Constants.SystemAccountEmail);
+
+            if (usersToNotifResult == null) return;
+
+            foreach (UserAccess userAccess in usersToNotifResult.Value)
             {
                 if (userAccess.AccessLevel != 0) continue;
 

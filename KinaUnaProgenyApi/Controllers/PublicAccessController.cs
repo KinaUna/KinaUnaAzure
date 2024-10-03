@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Models.ViewModels;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -99,25 +102,23 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> Access(int id)
         {
-            List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(Constants.DefaultChildId);
-            if (accessList.Count != 0)
-            {
-                foreach (UserAccess ua in accessList)
-                {
-                    ua.Progeny = await progenyService.GetProgeny(ua.ProgenyId);
-                    ua.User = new UserInfo();
-                    UserInfo userinfo = await userInfoService.GetUserInfoByEmail(ua.UserId);
-                    if (userinfo != null)
-                    {
-                        ua.User = userinfo;
-                    }
+            CustomResult<List<UserAccess>> accessListResult = await userAccessService.GetProgenyUserAccessList(Constants.DefaultChildId, Constants.DefaultUserEmail);
 
+            if (accessListResult.IsFailure) return accessListResult.ToActionResult();
+
+            foreach (UserAccess ua in accessListResult.Value)
+            {
+                ua.Progeny = await progenyService.GetProgeny(ua.ProgenyId);
+                ua.User = new UserInfo();
+                UserInfo userinfo = await userInfoService.GetUserInfoByEmail(ua.UserId);
+                if (userinfo != null)
+                {
+                    ua.User = userinfo;
                 }
-                return Ok(accessList);
+
             }
 
-            return NotFound();
-
+            return accessListResult.ToActionResult();
         }
 
         /// <summary>
@@ -147,8 +148,8 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
-            List<CalendarItem> model = await calendarService.GetCalendarList(Constants.DefaultChildId);
-            model = [.. model.Where(e => e.EndTime > DateTime.UtcNow && e.AccessLevel >= 5).OrderBy(e => e.StartTime)];
+            List<CalendarItem> model = await calendarService.GetCalendarList(Constants.DefaultChildId, 5);
+            model = [.. model.Where(e => e.EndTime > DateTime.UtcNow).OrderBy(e => e.StartTime)];
             model = model.Take(5).ToList();
 
             return Ok(model);
@@ -214,8 +215,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyCalendarMobile(int id, int accessLevel = 5)
         {
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(Constants.DefaultChildId);
-            calendarList = calendarList.Where(c => c.AccessLevel >= 5).ToList();
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(Constants.DefaultChildId, (int)AccessLevel.Public);
             if (calendarList.Count != 0)
             {
                 return Ok(calendarList);

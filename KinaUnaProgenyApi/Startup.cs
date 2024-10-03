@@ -3,6 +3,9 @@ using System.Reflection;
 using IdentityServer4.AccessTokenValidation;
 using KinaUna.Data.Contexts;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.ScheduledTasks;
+using KinaUnaProgenyApi.Services.UserAccessService;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +21,8 @@ namespace KinaUnaProgenyApi
 
         public void ConfigureServices(IServiceCollection services)
         {
+            TelemetryDebugWriter.IsTracingDisabled = true;
+
             string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
             string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
             string authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];
@@ -36,7 +41,13 @@ namespace KinaUnaProgenyApi
                         //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
-            
+
+            services.Configure<HostOptions>(options =>
+            {
+                options.ServicesStartConcurrently = true;
+                options.ServicesStopConcurrently = false;
+            });
+
             services.AddDistributedMemoryCache();
             services.AddScoped<IImageStore, ImageStore>();
             services.AddScoped<IAzureNotifications, AzureNotifications>();
@@ -64,7 +75,10 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IPushMessageSender, PushMessageSender>();
             services.AddScoped<IWebNotificationsService, WebNotificationsService>();
             services.AddScoped<ITimelineFilteringService, TimelineFilteringService>();
-
+            services.AddSingleton<IBackgroundTasksService, BackgroundTasksService>();
+            services.AddSingleton<IRepeatingTasksService, RepeatingTasksService>();
+            services.AddSingleton<ITaskRunnerService, TaskRunnerService>();
+            services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)

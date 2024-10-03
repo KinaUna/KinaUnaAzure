@@ -1,0 +1,25 @@
+﻿@{ 
+    ViewData["Title"] = "Scheduled Tasks";
+}
+
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="space-20"></div>
+    <div class="add-item-container-wide">
+        <div class="space-20"></div>
+        <h2>@ViewData["Title"]</h2>
+        <div class="space-20"></div>
+        <div id="tasks-list-table" class="table-responsive">
+            <table>
+                <tr id="tasks-list-table-header">
+                    <th style="min-width: 30px;">ID</th>
+                    <th style="min-width: 30px;"></th>
+                    <th style="min-width: 200px;"></th>
+                    <th style="min-width: 200px;"></th>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+
+</div>
+<script src="/js/admin/scheduled-tasks.js" type="module" asp-append-version="true"></script>

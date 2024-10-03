@@ -28,5 +28,6 @@ namespace KinaUna.Data.Contexts
         public DbSet<KinaUnaTextNumber> KinaUnaTextNumbers { get; init; }
         public DbSet<WebNotification> WebNotificationsDb { get; init; }
         public DbSet<PushDevices> PushDevices { get; init; }
+        public DbSet<KinaUnaBackgroundTask> BackgroundTasksDb { get; init; }
     }
 }

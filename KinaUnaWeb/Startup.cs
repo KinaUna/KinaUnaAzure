@@ -49,7 +49,7 @@ namespace KinaUnaWeb
                 options.MinimumSameSitePolicy = SameSiteMode.Lax;
                 options.Secure = CookieSecurePolicy.Always;
             });
-
+            
             string storageConnectionString = Configuration["BlobStorageConnectionString"];
             new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
 
@@ -69,8 +69,6 @@ namespace KinaUnaWeb
             services.AddHttpClient<IMediaHttpClient, MediaHttpClient>();
             services.AddTransient<IIdentityParser<ApplicationUser>, IdentityParser>();
             services.AddSingleton<ImageStore>();
-            services.AddHostedService<QueuedHostedService>();
-            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IPushMessageSender, PushMessageSender>();
             services.AddTransient<IWebNotificationsService, WebNotificationsService>();
@@ -93,13 +91,13 @@ namespace KinaUnaWeb
             services.AddHttpClient<ILanguagesHttpClient, LanguagesHttpClient>();
             services.AddHttpClient<ITranslationsHttpClient, TranslationsHttpClient>();
             services.AddHttpClient<IPageTextsHttpClient, PageTextsHttpClient>();
+            services.AddHttpClient<ITasksHttpClient, TasksHttpClient>();
             services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
             services.AddTransient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddDistributedMemoryCache();
-
-            string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer");
-
+            
+            string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer"); 
             string mediaServerUrl = Configuration.GetValue<string>("MediaApiServer");
 
             services.Configure<AuthConfigurations>(config => { config.StsServer = authorityServerUrl; config.ProtectedApiUrl = progenyServerUrl + " " + mediaServerUrl;});

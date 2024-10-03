@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Models;
+﻿using System;
+using KinaUna.Data.Models;
 
 namespace KinaUna.Data.Extensions
 {
@@ -47,6 +48,28 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.Title = otherCalendarItem.Title;
             currentCalendarItem.StartTime = otherCalendarItem.StartTime;
             currentCalendarItem.EndTime = otherCalendarItem.EndTime;
+        }
+
+        /// <summary>
+        /// Creates a new TimeLineItem from a CalendarItem.
+        /// For use when a new CalendarItem is added.
+        /// </summary>
+        /// <param name="calendarItem"></param>
+        /// <returns></returns>
+        public static TimeLineItem ToNewTimeLineItem(this CalendarItem calendarItem)
+        {
+            TimeLineItem timeLineItem = new()
+            {
+                ItemId = calendarItem.EventId.ToString(),
+                ProgenyId = calendarItem.ProgenyId,
+                AccessLevel = calendarItem.AccessLevel,
+                ItemType = (int)KinaUnaTypes.TimeLineType.Calendar,
+                CreatedBy = calendarItem.Author,
+                CreatedTime = DateTime.UtcNow,
+                ProgenyTime = calendarItem.StartTime ?? DateTime.UtcNow
+            };
+
+            return timeLineItem;
         }
     }
 }

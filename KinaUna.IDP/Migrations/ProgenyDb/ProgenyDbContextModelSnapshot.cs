@@ -17,7 +17,7 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -219,6 +219,43 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.HasKey("FriendId");
 
                     b.ToTable("FriendsDb");
+                });
+
+            modelBuilder.Entity("KinaUna.Data.Models.KinaUnaBackgroundTask", b =>
+                {
+                    b.Property<int>("TaskId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskId"));
+
+                    b.Property<string>("ApiEndpoint")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<TimeSpan>("Interval")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRunning")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastRun")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Parameters")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TaskDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TaskName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("TaskId");
+
+                    b.ToTable("BackgroundTasksDb");
                 });
 
             modelBuilder.Entity("KinaUna.Data.Models.KinaUnaLanguage", b =>

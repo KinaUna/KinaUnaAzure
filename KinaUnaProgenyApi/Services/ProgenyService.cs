@@ -152,6 +152,11 @@ namespace KinaUnaProgenyApi.Services
             Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
             if (progeny != null)
             {
+                if (string.IsNullOrEmpty(progeny.PictureLink))
+                {
+                    progeny.PictureLink = Constants.ProfilePictureUrl;
+                }
+
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
             }
             else
@@ -180,6 +185,11 @@ namespace KinaUnaProgenyApi.Services
         public async Task<string> ResizeImage(string imageId)
         {
             MemoryStream memoryStream = await _imageStore.GetStream(imageId, BlobContainers.Progeny);
+            if (memoryStream == null)
+            {
+                return imageId;
+            }
+
             memoryStream.Position = 0;
             const int maxWidthAndHeight = 250;
             using MagickImage image = new(memoryStream);

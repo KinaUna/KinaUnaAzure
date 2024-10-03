@@ -138,5 +138,9 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="container">The storage container of the file.</param>
         /// <returns>The new filename with extension.</returns>
         Task<string> UpdateItemPictureExtension(string itemPictureGuid, string container);
+
+        Task CheckPicturesForExtensions();
+        Task CheckPictureLinks();
+        Task CheckPicturePropertiesForNull();
     }
 }

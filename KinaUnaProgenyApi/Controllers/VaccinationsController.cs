@@ -5,6 +5,7 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

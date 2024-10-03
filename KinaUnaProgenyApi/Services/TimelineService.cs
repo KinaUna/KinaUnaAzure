@@ -306,7 +306,7 @@ namespace KinaUnaProgenyApi.Services
             if (!string.IsNullOrEmpty(onThisDayRequest.ContextFilter))
             {
                 anyFilter = true;
-                onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(allTimeLineItems, onThisDayRequest.ContextFilter));
+                onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(allTimeLineItems, onThisDayRequest.ContextFilter, onThisDayRequest.AccessLevel));
             }
 
             if (anyFilter)
@@ -386,7 +386,7 @@ namespace KinaUnaProgenyApi.Services
             if (!string.IsNullOrEmpty(timelineRequest.ContextFilter))
             {
                 anyFilter = true;
-                timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(allTimeLineItems, timelineRequest.ContextFilter));
+                timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(allTimeLineItems, timelineRequest.ContextFilter, timelineRequest.AccessLevel));
             }
 
             if (anyFilter)
