@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services.CalendarServices
 {
-    public class CalendarRemindersService(ProgenyDbContext context) : ICalendarRemindersService
+    public class CalendarRemindersService(ProgenyDbContext context, IEmailSender emailSender) : ICalendarRemindersService
     {
         public async Task<List<CalendarReminder>> GetAllCalendarReminders()
         {
@@ -113,6 +114,38 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             List<CalendarReminder> expiredReminders = await context.CalendarRemindersDb.AsNoTracking().Where(c => c.NotifyTime < DateTime.UtcNow && !c.Notified).ToListAsync();
 
             return expiredReminders;
+        }
+
+        public async Task SendCalendarReminder(int id)
+        {
+            CalendarReminder calendarReminder = await context.CalendarRemindersDb.SingleOrDefaultAsync(c => c.CalendarReminderId == id);
+            if (calendarReminder == null) return;
+
+            CalendarItem calendarItem = await context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(c => c.EventId == calendarReminder.EventId);
+            if (calendarItem == null) return;
+
+            calendarItem.StartString = calendarItem.StartTime?.ToString("dd-MM-yyyy HH:mm") ?? "Error: Start time undefined."; // Todo: Localize/User defined format.
+            calendarItem.EndString = calendarItem.EndTime?.ToString("dd-MM-yyyy HH:mm") ?? "Error: End time undefined."; // Todo: Localize/User defined format.
+            UserInfo reminderUserInfo = await context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == calendarReminder.UserId);
+            if (reminderUserInfo == null) return;
+
+            Progeny calendarItemProgeny = await context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == calendarItem.ProgenyId);
+
+            string reminderTitle = $"{calendarItemProgeny.NickName}: {calendarItem.Title} - KinaUna Reminder"; // Todo: Localize.
+            string reminderBody = $"<div>Event reminder for: {calendarItemProgeny.NickName}</div>"; // Todo: Localize and use template.
+            reminderBody += $"<div>Title: {calendarItem.Title}</div>";
+            reminderBody += $"<div>Start: {calendarItem.StartString}</div>"; // Todo: Localize and use template.
+            reminderBody += $"<div>End: {calendarItem.EndString}</div>";
+            reminderBody += $"<div>Location: {calendarItem.Location}</div>";
+            reminderBody += $"<div>Context: {calendarItem.Context}</div>";
+            reminderBody += $"<div>Notes: {calendarItem.Notes}</div>";
+            reminderBody += $"<div>Link: <a href=\"https://web.kinauna.com/Calendar/ViewEvent/{calendarItem.EventId}\">{calendarItemProgeny.NickName} : Calendar</a></div>";
+
+            await emailSender.SendEmailAsync(reminderUserInfo.UserEmail, reminderTitle, reminderBody);
+
+            calendarReminder.Notified = true;
+
+            await UpdateCalendarReminder(calendarReminder, reminderUserInfo);
         }
     }
 }

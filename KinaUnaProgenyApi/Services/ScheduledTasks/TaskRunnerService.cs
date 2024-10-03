@@ -1,8 +1,10 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Services.CalendarServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -104,5 +106,31 @@ public class TaskRunnerService(IBackgroundTasksService backgroundTasksService, I
         backgroundTask.IsRunning = false;
         backgroundTask.LastRun = DateTime.UtcNow;
         return await backgroundTasksService.UpdateTask(backgroundTask) ?? backgroundTask;
+    }
+
+    public async Task<CustomResult<KinaUnaBackgroundTask>> SendCalendarReminders(KinaUnaBackgroundTask task)
+    {
+        _ = await UpdateTaskBeforeRun(task);
+        try
+        {
+            // Create a new scope to get the required service, and inject the service into the scope.
+            await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
+            ICalendarRemindersService calendarRemindersService = scope.ServiceProvider.GetRequiredService<ICalendarRemindersService>();
+
+            List<CalendarReminder> unsentReminders = await calendarRemindersService.GetExpiredCalendarReminders();
+
+            foreach (CalendarReminder calendarReminder in unsentReminders)
+            {
+                await calendarRemindersService.SendCalendarReminder(calendarReminder.CalendarReminderId);
+            }
+
+        }
+        catch (Exception e)
+        {
+            _ = await UpdateTaskAfterRun(task);
+            return CustomResult<KinaUnaBackgroundTask>.ExceptionCaughtFailure(e, logger);
+        }
+
+        return await UpdateTaskAfterRun(task);
     }
 }
