@@ -12,6 +12,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         Task<List<CalendarReminder>> GetAllCalendarReminders();
         Task<CustomResult<CalendarReminder>> GetCalendarReminder(int id, UserInfo userInfo);
         Task<CustomResult<List<CalendarReminder>>> GetCalendarRemindersForUser(CalendarRemindersForUserRequest request, UserInfo userInfo);
+        Task<CustomResult<List<CalendarReminder>>> GetCalendarRemindersForEvent(int eventId, UserInfo userInfo);
         Task<List<CalendarReminder>> GetExpiredCalendarReminders();
         Task<CustomResult<CalendarReminder>> UpdateCalendarReminder(CalendarReminder calendarReminder, UserInfo userInfo);
         Task SendCalendarReminder(int id);

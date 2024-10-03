@@ -109,6 +109,18 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             return calendarReminders;
         }
 
+        public async Task<CustomResult<List<CalendarReminder>>> GetCalendarRemindersForEvent(int eventId, UserInfo userInfo)
+        {
+
+            List<CalendarReminder> calendarReminders = await context.CalendarRemindersDb.AsNoTracking().Where(c => c.EventId == eventId).ToListAsync();
+            if(userInfo.UserId != calendarReminders[0].UserId && !userInfo.IsKinaUnaAdmin)
+            {
+                return CustomError.UnauthorizedError("CalendarReminderService, GetCalendarRemindersForEvent: User is not authorized to access this CalendarReminder item.");
+            }
+
+            return calendarReminders;
+        }
+
         public async Task<List<CalendarReminder>> GetExpiredCalendarReminders()
         {
             List<CalendarReminder> expiredReminders = await context.CalendarRemindersDb.AsNoTracking().Where(c => c.NotifyTime < DateTime.UtcNow && !c.Notified).ToListAsync();

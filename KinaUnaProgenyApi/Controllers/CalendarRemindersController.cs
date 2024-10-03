@@ -27,7 +27,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(await calendarRemindersService.GetAllCalendarReminders());
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetCalendarReminder(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -60,18 +60,21 @@ namespace KinaUnaProgenyApi.Controllers
             return result.ToActionResult();
         }
 
-        [HttpDelete("[action]")]
-        public async Task<IActionResult> DeleteCalendarReminder([FromBody] CalendarReminder calendarReminder)
+        [HttpDelete("[action]/{id:int}")]
+        public async Task<IActionResult> DeleteCalendarReminder(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            CustomResult<CalendarReminder> result = await calendarRemindersService.DeleteCalendarReminder(calendarReminder, currentUserInfo);
+            CustomResult<CalendarReminder> calendarReminder = await calendarRemindersService.GetCalendarReminder(id, currentUserInfo);
+            if (calendarReminder.IsFailure) return calendarReminder.ToActionResult();
+
+            CustomResult<CalendarReminder> result = await calendarRemindersService.DeleteCalendarReminder(calendarReminder.Value, currentUserInfo);
 
             return result.ToActionResult();
         }
 
-        [HttpPost("[action]/{userId}")]
+        [HttpPost("[action]")]
         public async Task<IActionResult> GetCalendarRemindersForUser([FromBody] CalendarRemindersForUserRequest request)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -82,6 +85,16 @@ namespace KinaUnaProgenyApi.Controllers
             return result.ToActionResult();
         }
 
+        [HttpGet("[action]/{eventId:int}")]
+        public async Task<IActionResult> GetCalendarRemindersForEvent(int eventId)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+
+            CustomResult<List<CalendarReminder>> result = await calendarRemindersService.GetCalendarRemindersForEvent(eventId, currentUserInfo);
+
+            return result.ToActionResult();
+        }
 
     }
 }
