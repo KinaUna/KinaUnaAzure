@@ -67,7 +67,7 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IWebNotificationsService, WebNotificationsService>();
             services.AddScoped<ITimelineFilteringService, TimelineFilteringService>();
             services.AddScoped<ICalendarRemindersService, CalendarRemindersService>();
-
+            services.AddTransient<IEmailSender, EmailSender>();
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)

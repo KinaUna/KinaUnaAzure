@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services.CalendarServices
 {
-    public class CalendarRemindersService(ProgenyDbContext context, IEmailSender emailSender) : ICalendarRemindersService
+    public class CalendarRemindersService(ProgenyDbContext context, IEmailSender emailSender ) : ICalendarRemindersService
     {
         public async Task<List<CalendarReminder>> GetAllCalendarReminders()
         {
