@@ -85,13 +85,13 @@ namespace KinaUnaProgenyApi.Controllers
             return result.ToActionResult();
         }
 
-        [HttpGet("[action]/{eventId:int}")]
-        public async Task<IActionResult> GetCalendarRemindersForEvent(int eventId)
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetUsersCalendarRemindersForEvent([FromBody] CalendarRemindersForUserRequest request)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            CustomResult<List<CalendarReminder>> result = await calendarRemindersService.GetCalendarRemindersForEvent(eventId, currentUserInfo);
+            CustomResult<List<CalendarReminder>> result = await calendarRemindersService.GetUsersCalendarRemindersForEvent(request.EventId, request.UserId, currentUserInfo);
 
             return result.ToActionResult();
         }

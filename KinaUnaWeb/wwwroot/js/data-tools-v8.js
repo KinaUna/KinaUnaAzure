@@ -455,4 +455,17 @@ export function getFormattedDateString(date, timeFormat = '') {
     let timeString = moment(date).format(timeFormat);
     return timeString;
 }
+export function getDateFromFormattedString(dateString, timeFormat = '') {
+    if (timeFormat === '') {
+        timeFormat = getLongDateTimeFormatMoment();
+    }
+    let date = moment(dateString, timeFormat).toDate();
+    return date;
+}
+export function dateStringFormatConverter(originalDateString, inputFormat, outputFormat) {
+    let pickertime = moment(originalDateString, inputFormat);
+    let timeString = moment().format(outputFormat);
+    console.log(timeString);
+    return timeString;
+}
 //# sourceMappingURL=data-tools-v8.js.map

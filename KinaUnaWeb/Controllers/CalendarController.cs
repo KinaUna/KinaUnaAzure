@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.TypeScriptModels.Calendar;
 using KinaUnaWeb.Models.TypeScriptModels.Timeline;
 using KinaUnaWeb.Services.HttpClients;
 
@@ -19,7 +21,10 @@ namespace KinaUnaWeb.Controllers
     /// </summary>
     /// <param name="calendarsHttpClient"></param>
     /// <param name="viewModelSetupService"></param>
-    public class CalendarController(ICalendarsHttpClient calendarsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
+    public class CalendarController(ICalendarsHttpClient calendarsHttpClient,
+        ICalendarRemindersHttpClient calendarRemindersHttpClient,
+        IViewModelSetupService viewModelSetupService,
+        IUserInfosHttpClient userInfosHttpClient) : Controller
     {
         /// <summary>
         /// Calendar Index page.
@@ -63,6 +68,19 @@ namespace KinaUnaWeb.Controllers
             model.SetCalendarItem(eventItem);
             model.CalendarItem.Progeny = model.CurrentProgeny;
             model.CalendarItem.Progeny.PictureLink = model.CalendarItem.Progeny.GetProfilePictureUrl();
+            model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
+
+            List<CalendarReminder> calendarReminders = await calendarRemindersHttpClient.GetUsersCalendarRemindersForEvent(eventId, model.CurrentUser.UserId);
+            if (calendarReminders != null)
+            {
+                foreach (CalendarReminder calendarReminder in calendarReminders)
+                {
+                    calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeFromUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                }
+                model.CalendarReminders = calendarReminders;
+            }
+
+
 
             if (partialView)
             {
@@ -268,6 +286,69 @@ namespace KinaUnaWeb.Controllers
         public IActionResult SchedulerTranslations(int languageId)
         {
             return PartialView("_SchedulerTranslationsPartial", languageId);
+        }
+
+        
+        [HttpPost]
+        public async Task<IActionResult> AddReminder([FromBody]CalendarReminderRequest calendarReminderRequest)
+        {
+            UserInfo currentUser = await userInfosHttpClient.GetUserInfo(User.GetEmail());
+
+            CalendarReminder calendarReminder = new CalendarReminder();
+            calendarReminder.EventId = calendarReminderRequest.EventId;
+            calendarReminder.UserId = currentUser.UserId;
+
+            CalendarItem calendarItem = await calendarsHttpClient.GetCalendarItem(calendarReminderRequest.EventId);
+            if (calendarItem == null)
+            {
+                return BadRequest();
+            }
+
+            //if (calendarItem.AccessLevel < currentUser.AccessLevel)
+            //{
+            //    return Unauthorized();
+            //}
+
+            if (calendarReminderRequest.NotifyTimeOffsetType != 0 && calendarItem.StartTime.HasValue)
+            {
+                calendarReminder.NotifyTime = calendarItem.StartTime.Value.AddMinutes(-calendarReminderRequest.NotifyTimeOffsetType);
+            }
+            else
+            {
+                bool notifyTimeParsed = DateTime.TryParseExact(calendarReminderRequest.NotifyTimeString, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime notifyTime);
+                if (!notifyTimeParsed)
+                {
+                    return BadRequest();
+                }
+
+                calendarReminder.NotifyTime = notifyTime;
+            }
+            
+
+            calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeToUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUser.Timezone));
+
+            CalendarReminder newReminder = await calendarRemindersHttpClient.AddCalendarReminder(calendarReminder);
+            
+            return PartialView("_CalendarReminderItemPartial", newReminder);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteReminder([FromBody] CalendarReminderRequest calendarReminderRequest)
+        {
+            CalendarReminder existingCalendarReminder = await calendarRemindersHttpClient.GetCalendarReminder(calendarReminderRequest.CalendarReminderId);
+            UserInfo currentUser = await userInfosHttpClient.GetUserInfo(User.GetEmail());
+            if (existingCalendarReminder.UserId != currentUser.UserId)
+            {
+                return Unauthorized();
+            }
+
+            CalendarReminder result = await calendarRemindersHttpClient.DeleteCalendarReminder(existingCalendarReminder);
+            if (result != null)
+            {
+                return Ok();
+            }
+
+            return BadRequest();
         }
     }
 }

@@ -28,4 +28,11 @@ public interface IViewModelSetupService
     /// <param name="userInfo">The user's UserInfo data.</param>
     /// <returns>List of SelectListItem objects.</returns>
     Task<List<SelectListItem>> GetProgenySelectList(UserInfo userInfo);
+
+    /// <summary>
+    /// Generates a SelectListItem list of offset times for setting reminders.
+    /// </summary>
+    /// <param name="languageId">The user's language.</param>
+    /// <returns>List of SelectListItems.</returns>
+    Task<List<SelectListItem>> CreateReminderOffsetSelectListItems(int languageId);
 }

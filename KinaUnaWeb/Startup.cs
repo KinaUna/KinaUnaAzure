@@ -25,6 +25,7 @@ using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Azure.Storage.Blobs;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 
 namespace KinaUnaWeb
 {
@@ -42,6 +43,7 @@ namespace KinaUnaWeb
         
         public void ConfigureServices(IServiceCollection services)
         {
+            TelemetryDebugWriter.IsTracingDisabled = true;
 
             _ = services.Configure<CookiePolicyOptions>(options =>
             {

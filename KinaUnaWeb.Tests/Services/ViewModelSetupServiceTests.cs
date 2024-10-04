@@ -14,6 +14,7 @@ namespace KinaUnaWeb.Tests.Services
         private readonly Mock<IProgenyHttpClient> _progenyHttpClientMock = new();
         private readonly Mock<IUserInfosHttpClient> _userInfosHttpClientMock = new();
         private readonly Mock<IUserAccessHttpClient> _userAccessHttpClientMock = new();
+        private readonly Mock<ITranslationsHttpClient> _translationsHttpClientMock = new();
 
         [Fact]
         public async Task SetupViewModel_Should_Return_BaseItemsViewModel_When_Parameters_Are_Valid()
@@ -36,6 +37,7 @@ namespace KinaUnaWeb.Tests.Services
             _progenyHttpClientMock.Setup(p => p.GetProgeny(1)).ReturnsAsync(testProgeny);
 
 
+
             List<UserAccess> testAccessList = [];
             UserAccess testUserAccess = new()
             {
@@ -53,7 +55,7 @@ namespace KinaUnaWeb.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
 
-            ViewModelSetupService viewModelSetupService = new(_progenyHttpClientMock.Object, _userInfosHttpClientMock.Object, _userAccessHttpClientMock.Object, memoryCache);
+            ViewModelSetupService viewModelSetupService = new(_progenyHttpClientMock.Object, _userInfosHttpClientMock.Object, _translationsHttpClientMock.Object, _userAccessHttpClientMock.Object, memoryCache);
 
             BaseItemsViewModel baseItemsViewModel = await viewModelSetupService.SetupViewModel(1, testUserInfo.UserEmail, testProgeny.Id);
 

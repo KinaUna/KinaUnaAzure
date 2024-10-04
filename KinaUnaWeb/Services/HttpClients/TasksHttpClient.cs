@@ -33,7 +33,7 @@ public class TasksHttpClient : ITasksHttpClient
         string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
         _httpClient.SetBearerToken(accessToken);
 
-        const string tasksApiPath = "/api/BackgroundTasks/GetTasks/";
+        const string tasksApiPath = "/api/BackgroundTasks/GetTasks";
         HttpResponseMessage tasksResponseMessage = await _httpClient.GetAsync(tasksApiPath);
         if (!tasksResponseMessage.IsSuccessStatusCode) return new List<KinaUnaBackgroundTask>();
 

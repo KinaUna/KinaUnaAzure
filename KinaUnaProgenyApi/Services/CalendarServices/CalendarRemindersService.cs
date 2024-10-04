@@ -108,13 +108,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             return calendarReminders;
         }
 
-        public async Task<CustomResult<List<CalendarReminder>>> GetCalendarRemindersForEvent(int eventId, UserInfo userInfo)
+        public async Task<CustomResult<List<CalendarReminder>>> GetUsersCalendarRemindersForEvent(int eventId, string reminderUserId, UserInfo currentUserInfo)
         {
 
-            List<CalendarReminder> calendarReminders = await context.CalendarRemindersDb.AsNoTracking().Where(c => c.EventId == eventId).ToListAsync();
-            if(userInfo.UserId != calendarReminders[0].UserId && !userInfo.IsKinaUnaAdmin)
+            List<CalendarReminder> calendarReminders = await context.CalendarRemindersDb.AsNoTracking().Where(c => c.EventId == eventId && c.UserId == reminderUserId).ToListAsync();
+            if(currentUserInfo.UserId != calendarReminders[0].UserId && !currentUserInfo.IsKinaUnaAdmin)
             {
-                return CustomError.UnauthorizedError("CalendarReminderService, GetCalendarRemindersForEvent: User is not authorized to access this CalendarReminder item.");
+                return CustomError.UnauthorizedError("CalendarReminderService, GetUsersCalendarRemindersForEvent: User is not authorized to access this CalendarReminder item.");
             }
 
             return calendarReminders;
@@ -129,7 +129,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
         public async Task SendCalendarReminder(int id)
         {
-            CalendarReminder calendarReminder = await context.CalendarRemindersDb.SingleOrDefaultAsync(c => c.CalendarReminderId == id);
+            CalendarReminder calendarReminder = await context.CalendarRemindersDb.AsNoTracking().SingleOrDefaultAsync(c => c.CalendarReminderId == id);
             if (calendarReminder == null) return;
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(c => c.EventId == calendarReminder.EventId);
@@ -150,7 +150,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             reminderBody += $"<div>Location: {calendarItem.Location}</div>";
             reminderBody += $"<div>Context: {calendarItem.Context}</div>";
             reminderBody += $"<div>Notes: {calendarItem.Notes}</div>";
-            reminderBody += $"<div>Link: <a href=\"https://web.kinauna.com/Calendar/ViewEvent/{calendarItem.EventId}\">{calendarItemProgeny.NickName} : Calendar</a></div>";
+            reminderBody += $"<div>Link: <a href=\"https://web.kinauna.com/Calendar/ViewEvent?eventId={calendarItem.EventId}\">{calendarItemProgeny.NickName} : Calendar</a></div>";
 
             await emailSender.SendEmailAsync(reminderUserInfo.UserEmail, reminderTitle, reminderBody);
 

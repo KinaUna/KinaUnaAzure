@@ -1,0 +1,56 @@
+﻿@using System.Globalization
+@using KinaUna.Data
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
+    string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
+    string longDateTimeFormatMoment = "DD-MMMM-YYYY HH" + timeSeparator + "mm";
+    string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+}
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="longDateTimeFormatDiv" class="d-none" data-long-date-time-format="@longDateTimeFormat"></div>
+<div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="event-id-div" class="d-none" data-event-id="@Model.CalendarItem.EventId"></div>
+<input id="calendar-item-start-reference" type="hidden" value="@Model.CalendarItem.StartTime?.ToString("dd-MMMM-yyyy HH:mm"))" />
+<div id="reminders-section-div" class="col-12">
+    <div class="space-20"></div>
+    <div class="calendar-event-popup-label">
+        @await LocaleManager.GetTranslation("Reminders:", PageNames.Calendar, Model.LanguageId)
+    </div>
+    <div class="space-10"></div>
+    <div id="reminders-list-div" class="row">
+        @foreach (CalendarReminder calendarReminder in Model.CalendarReminders)
+        {
+            await Html.RenderPartialAsync("_CalendarReminderItemPartial", calendarReminder);
+        }
+    </div>
+</div>
+<div class="col-12">
+    <div class="space-100"></div>
+    <div class="row">
+        <div class="col-1">
+            <i class="fas fa-bell kinauna-icon-medium"></i>
+        </div>
+        <div class="col">
+            <select id="reminder-offset-select" class="selectpicker form-control-noline bg-transparent" data-style="btn-kinaunaselect" data-size="@Model.ReminderOffsetsList.Count" asp-items="@Model.ReminderOffsetsList"></select>
+        </div>
+        <div class="col-auto">
+            <button type="button" id="add-calendar-reminder-button" class="btn btn-secondary ml-auto mr-auto">@await LocaleManager.GetTranslation("Add Reminder", PageNames.Calendar, Model.LanguageId)</button>
+        </div>
+        <div id="custom-reminder-offset-div" class="col-12 d-none">
+            <div class="row">
+                <div class="col-1"></div>
+                <div class="col-auto">
+                    <input id="custom-offset-date-time-picker" asp-format="@longDateTimeFormat" type="datetime" class="form-control" data-zdp_readonly_element="false"
+                           value="@Model.CalendarItem.StartTime?.ToString(longDateTimeFormat)" />
+                </div>
+                <input id="custom-date-input" type="hidden" />
+            </div>
+            
+        </div>
+    </div>
+</div>
