@@ -529,7 +529,6 @@ export function getDateFromFormattedString(dateString: string, timeFormat: strin
 export function dateStringFormatConverter(originalDateString: string, inputFormat: string, outputFormat: string): string {
     let pickertime: any = moment(originalDateString, inputFormat);
     let timeString: string = moment().format(outputFormat);
-    console.log(timeString);
     return timeString;
 }
 

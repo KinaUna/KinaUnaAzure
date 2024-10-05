@@ -150,7 +150,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             reminderBody += $"<div>Location: {calendarItem.Location}</div>";
             reminderBody += $"<div>Context: {calendarItem.Context}</div>";
             reminderBody += $"<div>Notes: {calendarItem.Notes}</div>";
-            reminderBody += $"<div>Link: <a href=\"https://web.kinauna.com/Calendar/ViewEvent?eventId={calendarItem.EventId}\">{calendarItemProgeny.NickName} : Calendar</a></div>";
+            reminderBody += $"<div>Link: <a href=\"https://web.kinauna.com/Calendar?eventId={calendarItem.EventId}\">{calendarItemProgeny.NickName} : Calendar</a></div>";
 
             await emailSender.SendEmailAsync(reminderUserInfo.UserEmail, reminderTitle, reminderBody);
 

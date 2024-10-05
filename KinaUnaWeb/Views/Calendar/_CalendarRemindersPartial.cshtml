@@ -18,7 +18,7 @@
 <input id="calendar-item-start-reference" type="hidden" value="@Model.CalendarItem.StartTime?.ToString("dd-MMMM-yyyy HH:mm"))" />
 <div id="reminders-section-div" class="col-12">
     <div class="space-20"></div>
-    <div class="calendar-event-popup-label">
+    <div class="">
         @await LocaleManager.GetTranslation("Reminders:", PageNames.Calendar, Model.LanguageId)
     </div>
     <div class="space-10"></div>
@@ -30,10 +30,10 @@
     </div>
 </div>
 <div class="col-12">
-    <div class="space-100"></div>
+    <div class="space-20"></div>
     <div class="row">
         <div class="col-1">
-            <i class="fas fa-bell kinauna-icon-medium"></i>
+            <span class="material-icons kinauna-icon-medium">notification_add</span>
         </div>
         <div class="col">
             <select id="reminder-offset-select" class="selectpicker form-control-noline bg-transparent" data-style="btn-kinaunaselect" data-size="@Model.ReminderOffsetsList.Count" asp-items="@Model.ReminderOffsetsList"></select>

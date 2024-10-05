@@ -12,6 +12,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         
         public List<ScheduleView> ViewOptions { get; set; }
         
+        public int PopupEventId = 0;
+
         public CalendarListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);

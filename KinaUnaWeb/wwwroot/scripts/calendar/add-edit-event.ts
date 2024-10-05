@@ -1,5 +1,6 @@
 import * as LocaleHelper from '../localization-v8.js';
 import { setContextAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkStartBeforeEndTime, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools-v8.js';
+import { setupRemindersSection } from '../reminders/reminders.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
@@ -123,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     setupProgenySelectList();
     setupDateTimePickers();
-
+    setupRemindersSection();
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

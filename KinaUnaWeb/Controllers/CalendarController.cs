@@ -29,19 +29,19 @@ namespace KinaUnaWeb.Controllers
         /// <summary>
         /// Calendar Index page.
         /// </summary>
-        /// <param name="id">Optional EventId of a CalendarItem to show in a popup.</param>
+        /// <param name="eventId">Optional EventId of a CalendarItem to show in a popup.</param>
         /// <param name="childId">The Id of the Progeny to show the calendar for.</param>
         /// <returns>View with a CalendarListViewModel.</returns>
         [AllowAnonymous]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public async Task<IActionResult> Index(int? id, int childId = 0)
+        public async Task<IActionResult> Index(int? eventId, int childId = 0)
         {
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             CalendarListViewModel model = new(baseModel);
             
             model.SetEventsList(await calendarsHttpClient.GetCalendarList(model.CurrentProgenyId, model.CurrentAccessLevel));
-
+            model.PopupEventId = eventId ?? 0;
             return View(model);
         }
 
@@ -54,6 +54,11 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ViewEvent(int eventId, bool partialView = false)
         {
+            if (!partialView)
+            {
+                return RedirectToAction("Index", new{eventId});
+            }
+
             CalendarItem eventItem = await calendarsHttpClient.GetCalendarItem(eventId);
             
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId);
@@ -71,23 +76,15 @@ namespace KinaUnaWeb.Controllers
             model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
 
             List<CalendarReminder> calendarReminders = await calendarRemindersHttpClient.GetUsersCalendarRemindersForEvent(eventId, model.CurrentUser.UserId);
-            if (calendarReminders != null)
+            if (calendarReminders == null) return PartialView("_CalendarItemDetailsPartial", model);
+
+            foreach (CalendarReminder calendarReminder in calendarReminders)
             {
-                foreach (CalendarReminder calendarReminder in calendarReminders)
-                {
-                    calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeFromUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                }
-                model.CalendarReminders = calendarReminders;
+                calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeFromUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
+            model.CalendarReminders = calendarReminders;
 
-
-
-            if (partialView)
-            {
-                return PartialView("_CalendarItemDetailsPartial", model);
-            }
-
-            return View(model);
+            return PartialView("_CalendarItemDetailsPartial", model);
         }
 
         /// <summary>
@@ -136,9 +133,11 @@ namespace KinaUnaWeb.Controllers
 
             CalendarItem eventItem = model.CreateCalendarItem();
             
-            _ = await calendarsHttpClient.AddCalendarItem(eventItem);
+            eventItem = await calendarsHttpClient.AddCalendarItem(eventItem);
             
-            return RedirectToAction("Index", "Calendar");
+            int eventId = eventItem.EventId;
+
+            return RedirectToAction("Index", "Calendar", new{eventId});
         }
 
         /// <summary>
@@ -161,7 +160,19 @@ namespace KinaUnaWeb.Controllers
             }
             
             model.SetCalendarItem(eventItem);
-            
+
+            model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
+
+            List<CalendarReminder> calendarReminders = await calendarRemindersHttpClient.GetUsersCalendarRemindersForEvent(eventItem.EventId, model.CurrentUser.UserId);
+            if (calendarReminders == null) return View(model);
+
+            foreach (CalendarReminder calendarReminder in calendarReminders)
+            {
+                calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeFromUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            model.CalendarReminders = calendarReminders;
+
             return View(model);
         }
 
@@ -188,8 +199,9 @@ namespace KinaUnaWeb.Controllers
             CalendarItem editedEvent = model.CreateCalendarItem();
                 
             await calendarsHttpClient.UpdateCalendarItem(editedEvent);
+            int eventId = model.CalendarItem.EventId;
 
-            return RedirectToAction("Index", "Calendar");
+            return RedirectToAction("Index", "Calendar", new {eventId});
         }
 
         /// <summary>
