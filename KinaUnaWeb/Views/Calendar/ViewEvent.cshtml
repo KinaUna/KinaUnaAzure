@@ -4,6 +4,16 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Event", PageNames.Calendar, Model.LanguageId);
+    string startDateString = DateTime.Now.ToString("dd-MMM-yyyy HH:mm");
+    if (Model.CalendarItem.StartTime.HasValue)
+    {
+        startDateString = Model.CalendarItem.StartTime.Value.ToString("dd-MMM-yyyy HH:mm");
+    }
+    string endDateString = DateTime.Now.ToString("dd-MMM-yyyy HH:mm");
+    if (Model.CalendarItem.EndTime.HasValue)
+    {
+        endDateString = Model.CalendarItem.EndTime.Value.ToString("dd-MMM-yyyy HH:mm");
+    }
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <h2>@ViewData["Title"]</h2>
@@ -14,18 +24,12 @@
             <div class="space-20"></div>
             <div align="left">
                 <strong>@await LocaleManager.GetTranslation("Start:", PageNames.Calendar, Model.LanguageId)</strong>
-                @{
-                    System.Diagnostics.Debug.Assert(Model.CalendarItem.StartTime != null, "Model.StartTime != null");
-                }
-                @Model.CalendarItem.StartTime.Value.ToString("dd-MMM-yyyy HH:mm")
-            </div>
+                @startDateString
+                </div>
             <div class="space-20"></div>
             <div align="left">
                 <strong>@await LocaleManager.GetTranslation("End:", PageNames.Calendar, Model.LanguageId)</strong>
-                @{
-                    System.Diagnostics.Debug.Assert(Model.CalendarItem.EndTime != null, "Model.EndTime != null");
-                }
-                @Model.CalendarItem.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")
+                @endDateString
             </div>
             <div class="space-20"></div>
             <div align="left"><strong>@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, Model.LanguageId)</strong> @Model.CalendarItem.Location</div>
@@ -34,6 +38,10 @@
             <div class="space-20"></div>
             <div align="left"><strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, Model.LanguageId)</strong> @Model.CalendarItem.Notes</div>
             <div class="space-20"></div>
+            @if (Model.CalendarItem.StartTime.HasValue && Model.CalendarItem.StartTime.Value > TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(Model.CurrentUser.Timezone)))
+            {
+                await Html.RenderPartialAsync("_CalendarRemindersPartial", Model);
+            }
             @if (Model.IsCurrentUserProgenyAdmin)
             {
                 <div>

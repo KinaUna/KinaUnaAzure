@@ -47,7 +47,7 @@
             <div class="col-auto">
                 <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">event_note</i></span>
             </div>
-            <div class="col">
+            <div class="col mr-5">
                 <div class="row text-white h5">
 
                     @if (Model.CalendarItem.AllDay)
@@ -127,8 +127,13 @@
                             }
                         </div>
                     }
+                    @if (Model.CalendarItem.StartTime.Value > TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(Model.CurrentUser.Timezone)))
+                    {
+                        await Html.RenderPartialAsync("_CalendarRemindersPartial", Model);
+                    }
                 </div>
             </div>
+            
             @if (Model.IsCurrentUserProgenyAdmin)
             {
                 

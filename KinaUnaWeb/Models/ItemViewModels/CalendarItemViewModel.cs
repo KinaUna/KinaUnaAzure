@@ -11,23 +11,19 @@ namespace KinaUnaWeb.Models.ItemViewModels
     /// </summary>
     public class CalendarItemViewModel: BaseItemsViewModel
     {
-        public List<SelectListItem> ProgenyList { get; set; }
+        public List<SelectListItem> ProgenyList { get; set; } = [];
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
         public CalendarItem CalendarItem { get; set; } = new();
-
-        public CalendarItemViewModel()
-        {
-            ProgenyList = [];
-        }
-
+        public List<CalendarReminder> CalendarReminders { get; set; } = [];
+        public List<SelectListItem> ReminderOffsetsList { get; set; } = [];
+        
         public CalendarItemViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
-
-            ProgenyList = [];
         }
+
         /// <summary>
         /// Sets the CalendarItem property of this view model.
         /// Converts start and end times from UTC to the user's timezone.
@@ -52,6 +48,21 @@ namespace KinaUnaWeb.Models.ItemViewModels
             CalendarItem.Author = eventItem.Author;
 
             SetAccessLevelList();
+        }
+
+        /// <summary>
+        /// Sets the CalendarReminder property of this view model.
+        /// Converts NotifyTime from UTC to the user's timezone.
+        /// </summary>
+        /// <param name="calendarReminders">The list of CalendarReminder objects to set as the CalendarReminders property. NotifyTime should be in UTC timezone.</param>
+        public void SetCalendarReminders(List<CalendarReminder> calendarReminders)
+        {
+            foreach (CalendarReminder calendarReminder in calendarReminders)
+            {
+                calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeFromUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+            }
+
+            CalendarReminders = calendarReminders;
         }
 
         /// <summary>
@@ -127,6 +138,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
             eventItem.Author = CalendarItem.Author;
 
             return eventItem;
+        }
+
+        public void SetReminderOffsetList(List<SelectListItem> offsetItems)
+        {
+            ReminderOffsetsList = offsetItems;
         }
     }
 }

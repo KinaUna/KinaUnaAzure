@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 
-namespace KinaUnaProgenyApi.Services
+namespace KinaUnaProgenyApi.Services.CalendarServices
 {
     public class CalendarService : ICalendarService
     {

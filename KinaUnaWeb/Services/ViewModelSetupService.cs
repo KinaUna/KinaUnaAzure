@@ -20,14 +20,17 @@ namespace KinaUnaWeb.Services
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly ITranslationsHttpClient _translationsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         
-        public ViewModelSetupService(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient,IDistributedCache cache)
+        public ViewModelSetupService(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient,
+            ITranslationsHttpClient translationsHttpClient, IUserAccessHttpClient userAccessHttpClient,IDistributedCache cache)
         {
             _progenyHttpClient = progenyHttpClient;
             _userInfosHttpClient = userInfosHttpClient;
+            _translationsHttpClient = translationsHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 0, 30)); // Expire after 30 seconds.
@@ -104,6 +107,40 @@ namespace KinaUnaWeb.Services
             }
 
             return progenyList;
+        }
+
+        /// <summary>
+        /// Generates a SelectListItem list of offset times for setting reminders.
+        /// </summary>
+        /// <param name="languageId">The user's language.</param>
+        /// <returns>List of SelectListItems.</returns>
+        public async Task<List<SelectListItem>> CreateReminderOffsetSelectListItems(int languageId)
+        {
+            List<SelectListItem> reminderOffsetList = new();
+            string minutesBeforeText = await _translationsHttpClient.GetTranslation("minutes before", PageNames.Calendar, languageId);
+            string hourBeforeText = await _translationsHttpClient.GetTranslation("hour before", PageNames.Calendar, languageId);
+            string dayBeforeText = await _translationsHttpClient.GetTranslation("day before", PageNames.Calendar, languageId);
+            string customText = await _translationsHttpClient.GetTranslation("Custom...", PageNames.Calendar, languageId);
+
+            SelectListItem reminderOffset5Min = new SelectListItem { Value = "5", Text = $"5 {minutesBeforeText}" };
+            SelectListItem reminderOffset10Min = new SelectListItem { Value = "10", Text = $"10 {minutesBeforeText}" };
+            SelectListItem reminderOffset15Min = new SelectListItem { Value = "15", Text = $"15 {minutesBeforeText}" };
+            SelectListItem reminderOffset20Min = new SelectListItem { Value = "20", Text = $"20 {minutesBeforeText}" };
+            SelectListItem reminderOffset30Min = new SelectListItem { Value = "30", Text = $"30 {minutesBeforeText}", Selected = true};
+            SelectListItem reminderOffset1Hour = new SelectListItem { Value = "60", Text = $"1 {hourBeforeText}" };
+            SelectListItem reminderOffset1Day = new SelectListItem { Value = "1440", Text = $"1 {dayBeforeText}" };
+            SelectListItem reminderOffsetCustom = new SelectListItem { Value = "0", Text = customText };
+
+            reminderOffsetList.Add(reminderOffset5Min);
+            reminderOffsetList.Add(reminderOffset10Min);
+            reminderOffsetList.Add(reminderOffset15Min);
+            reminderOffsetList.Add(reminderOffset20Min);
+            reminderOffsetList.Add(reminderOffset30Min);
+            reminderOffsetList.Add(reminderOffset1Hour);
+            reminderOffsetList.Add(reminderOffset1Day);
+            reminderOffsetList.Add(reminderOffsetCustom);
+
+            return reminderOffsetList;
         }
     }
 }

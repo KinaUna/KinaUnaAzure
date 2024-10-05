@@ -430,4 +430,14 @@ export var OnThisDayPeriod;
     OnThisDayPeriod[OnThisDayPeriod["Quarter"] = 3] = "Quarter";
     OnThisDayPeriod[OnThisDayPeriod["Year"] = 4] = "Year";
 })(OnThisDayPeriod || (OnThisDayPeriod = {}));
+export class CalendarReminderRequest {
+    constructor() {
+        this.calendarReminderId = 0;
+        this.eventId = 0;
+        this.notifyTimeString = "";
+        this.notifyTimeOffsetType = 1;
+        this.userId = '';
+        this.notified = false;
+    }
+}
 //# sourceMappingURL=page-models-v8.js.map

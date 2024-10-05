@@ -395,3 +395,12 @@ export enum TimeLineType {
 export enum OnThisDayPeriod {
     Week = 1, Month = 2, Quarter = 3, Year = 4
 }
+
+export class CalendarReminderRequest {
+    calendarReminderId: number = 0;
+    eventId: number = 0;
+    notifyTimeString: string = "";
+    notifyTimeOffsetType: number = 1;
+    userId: string = '';
+    notified: boolean = false;
+}

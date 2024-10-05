@@ -102,6 +102,31 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.ToTable("CalendarDb");
                 });
 
+            modelBuilder.Entity("KinaUna.Data.Models.CalendarReminder", b =>
+                {
+                    b.Property<int>("CalendarReminderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CalendarReminderId"));
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Notified")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("NotifyTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CalendarReminderId");
+
+                    b.ToTable("CalendarRemindersDb");
+                });
+
             modelBuilder.Entity("KinaUna.Data.Models.Contact", b =>
                 {
                     b.Property<int>("ContactId")

@@ -518,3 +518,17 @@ export function getFormattedDateString(date: Date, timeFormat: string = ''): str
     return timeString;
 }
 
+export function getDateFromFormattedString(dateString: string, timeFormat: string = ''): Date {
+    if (timeFormat === '') {
+        timeFormat = getLongDateTimeFormatMoment();
+    }
+    let date: Date = moment(dateString, timeFormat).toDate();
+    return date;
+}
+
+export function dateStringFormatConverter(originalDateString: string, inputFormat: string, outputFormat: string): string {
+    let pickertime: any = moment.utc(originalDateString, inputFormat);
+    let timeString: string = pickertime.format(outputFormat);
+    return timeString;
+}
+

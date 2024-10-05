@@ -1,0 +1,10 @@
+﻿@model CalendarReminder
+<div class="col-12" data-reminder-id="@Model.CalendarReminderId">
+    <div class="row">
+        <div class="col-12">
+            <span class="material-icons kinauna-icon-medium mr-2">notifications_active</span>
+            <span class="font-weight-bold">@Model.NotifyTime.ToString("dd MMM yyyy HH:mm")</span>
+            <button type="button" class="btn btn-link" data-delete-reminder-id="@Model.CalendarReminderId"><i class="fas fa-trash-alt"></i></button>
+        </div>
+    </div>
+</div>

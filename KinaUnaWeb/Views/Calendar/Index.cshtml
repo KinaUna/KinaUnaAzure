@@ -4,12 +4,23 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Calendar", PageNames.Calendar, Model.LanguageId);
+    int popupDateYear = 0;
+    int popupDateMonth = 0;
+    int popupDateDay = 0;
+    CalendarItem popupItem = Model.EventsList.SingleOrDefault(c => c.EventId == Model.PopupEventId);
+    if (popupItem != null && popupItem.StartTime.HasValue)
+    {
+        popupDateYear = popupItem.StartTime.Value.Year;
+        popupDateMonth = popupItem.StartTime.Value.Month;
+        popupDateDay = popupItem.StartTime.Value.Day;
+    }
 }
 <div class="row">
     <div class="col-12">
         <h2>@ViewData["Title"]</h2>
         <div class="space-50"></div>
         <div id="calendar-current-culture-div" class="d-none" data-current-culture="@Model.LanguageIdForCldr()"></div>
+        <div id="popup-event-id-div" class="d-none" data-popup-event-id="@Model.PopupEventId" data-popup-event-date-year="@popupDateYear" data-popup-event-date-month="@popupDateMonth" data-popup-event-date-day="@popupDateDay"></div>
         <div class="" style="clear: both; height: 90vh; min-height: 600px; max-height: 1180px;">
             <ejs-schedule id="schedule" height="95%" width="100%" dateFormat="dd/MMM/yyyy" views="@Model.ViewOptions">
                 <e-schedule-eventsettings dataSource="@Model.EventsList">

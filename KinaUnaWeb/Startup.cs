@@ -25,6 +25,7 @@ using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Azure.Storage.Blobs;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 
 namespace KinaUnaWeb
 {
@@ -42,6 +43,7 @@ namespace KinaUnaWeb
         
         public void ConfigureServices(IServiceCollection services)
         {
+            TelemetryDebugWriter.IsTracingDisabled = true;
 
             _ = services.Configure<CookiePolicyOptions>(options =>
             {
@@ -92,6 +94,7 @@ namespace KinaUnaWeb
             services.AddHttpClient<ITranslationsHttpClient, TranslationsHttpClient>();
             services.AddHttpClient<IPageTextsHttpClient, PageTextsHttpClient>();
             services.AddHttpClient<ITasksHttpClient, TasksHttpClient>();
+            services.AddHttpClient<ICalendarRemindersHttpClient, CalendarRemindersHttpClient>();
             services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
             services.AddTransient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();

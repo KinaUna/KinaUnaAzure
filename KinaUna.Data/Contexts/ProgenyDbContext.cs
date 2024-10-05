@@ -29,5 +29,6 @@ namespace KinaUna.Data.Contexts
         public DbSet<WebNotification> WebNotificationsDb { get; init; }
         public DbSet<PushDevices> PushDevices { get; init; }
         public DbSet<KinaUnaBackgroundTask> BackgroundTasksDb { get; init; }
+        public DbSet<CalendarReminder> CalendarRemindersDb { get; init; }
     }
 }

@@ -1,5 +1,7 @@
+import { setupRemindersSection } from '../reminders/reminders.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
+import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
+
 
 /**
  * Adds event listeners to all elements with the data-calendar-event-id attribute.
@@ -21,10 +23,18 @@ export function addCalendarEventListeners(itemId: string): void {
  * Enable other scripts to call the DisplayEventItem function.
  * @param {string} eventId The id of the event to display.
  */
-export function popupEventItem(eventId: string): void {
-    DisplayEventItem(eventId);
+export async function popupEventItem(eventId: string): Promise<void> {
+    await DisplayEventItem(eventId);
 
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
+
+/**
+ * Retrieves the details of a calendar event and displays them in a popup.
+ * @param {string} eventId The id of the event to display.
+ */
 async function DisplayEventItem(eventId: string): Promise<void> {
     startFullPageSpinner();
     let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";
@@ -55,7 +65,8 @@ async function DisplayEventItem(eventId: string): Promise<void> {
                         });
                     });
                 }
-
+                
+                setupRemindersSection();
             }
         } else {
             console.error('Error getting event item. Status: ' + response.status + ', Message: ' + response.statusText);
@@ -64,4 +75,8 @@ async function DisplayEventItem(eventId: string): Promise<void> {
         console.error('Error getting event item. Error: ' + error);
     });
     stopFullPageSpinner();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }

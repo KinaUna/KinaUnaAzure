@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 
-namespace KinaUnaProgenyApi.Services
+namespace KinaUnaProgenyApi.Services.CalendarServices
 {
     public interface ICalendarService
     {

@@ -15,7 +15,8 @@ namespace KinaUnaProgenyApi.Controllers;
 [Produces("application/json")]
 [Route("api/[controller]")]
 [ApiController]
-public class RunTasksController(IBackgroundTasksService backgroundTasksService, ITaskRunnerService taskRunnerService, IUserInfoService userInfoService) : ControllerBase
+public class RunTasksController(IBackgroundTasksService backgroundTasksService, ITaskRunnerService taskRunnerService,
+    IUserInfoService userInfoService) : ControllerBase
 {
     [HttpPost]
     [Route("[action]")]
@@ -34,7 +35,7 @@ public class RunTasksController(IBackgroundTasksService backgroundTasksService, 
         CustomResult<KinaUnaBackgroundTask> existingTask = await backgroundTasksService.GetTask(task.TaskId);
         if (existingTask.IsFailure)
         {
-            return BadRequest("Task not found.");
+            return existingTask.ToActionResult();
         }
 
         if (existingTask.Value.IsRunning) return Ok(task);
@@ -62,7 +63,7 @@ public class RunTasksController(IBackgroundTasksService backgroundTasksService, 
         CustomResult<KinaUnaBackgroundTask> existingTask = await backgroundTasksService.GetTask(task.TaskId);
         if (existingTask.IsFailure)
         {
-            return BadRequest("Task not found.");
+            return existingTask.ToActionResult();
         }
 
         if (existingTask.Value.IsRunning) return Ok(task);
@@ -97,5 +98,33 @@ public class RunTasksController(IBackgroundTasksService backgroundTasksService, 
         }
 
         return Ok(taskList);
+    }
+
+    [HttpPost]
+    [Route("[action]")]
+    public async Task<IActionResult> SendCalendarReminders([FromBody] KinaUnaBackgroundTask task)
+    {
+        UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
+        if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+        {
+            return Unauthorized("User not admin.");
+        }
+
+        if (task == null)
+        {
+            return BadRequest("Task not found.");
+        }
+
+        CustomResult<KinaUnaBackgroundTask> existingTask = await backgroundTasksService.GetTask(task.TaskId);
+        if (existingTask.IsFailure)
+        {
+            return existingTask.ToActionResult();
+        }
+
+        if (existingTask.Value.IsRunning) return Ok(task);
+
+        await taskRunnerService.SendCalendarReminders(task);
+
+        return Ok(task);
     }
 }

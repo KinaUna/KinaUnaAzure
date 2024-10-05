@@ -1,3 +1,4 @@
+import { setupRemindersSection } from '../reminders/reminders.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
@@ -19,9 +20,16 @@ export function addCalendarEventListeners(itemId) {
  * Enable other scripts to call the DisplayEventItem function.
  * @param {string} eventId The id of the event to display.
  */
-export function popupEventItem(eventId) {
-    DisplayEventItem(eventId);
+export async function popupEventItem(eventId) {
+    await DisplayEventItem(eventId);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
+/**
+ * Retrieves the details of a calendar event and displays them in a popup.
+ * @param {string} eventId The id of the event to display.
+ */
 async function DisplayEventItem(eventId) {
     startFullPageSpinner();
     let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";
@@ -52,6 +60,7 @@ async function DisplayEventItem(eventId) {
                         });
                     });
                 }
+                setupRemindersSection();
             }
         }
         else {
@@ -61,5 +70,8 @@ async function DisplayEventItem(eventId) {
         console.error('Error getting event item. Error: ' + error);
     });
     stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 //# sourceMappingURL=calendar-details.js.map

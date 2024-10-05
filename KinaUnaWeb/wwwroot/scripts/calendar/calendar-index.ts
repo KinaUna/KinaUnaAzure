@@ -1,5 +1,6 @@
 import * as LocaleHelper from '../localization-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
+import { popupEventItem } from './calendar-details.js';
 
 declare var syncfusionReference: any;
 declare var isCurrentUserProgenyAdmin: boolean;
@@ -14,37 +15,13 @@ let currentCulture = 'en';
 async function DisplayEventItem(eventId: number): Promise<void> {
     startLoadingItemsSpinner('schedule');
 
-    let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";
-    await fetch(url, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-    }).then(async function (response) {
-        if (response.ok) {
-            const eventElementHtml = await response.text();
-            const eventDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
-            if (eventDetailsPopupDiv) {
-                eventDetailsPopupDiv.innerHTML = eventElementHtml;
-                eventDetailsPopupDiv.classList.remove('d-none');
-                let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
-                if (closeButtonsList) {
-                    closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
-                            eventDetailsPopupDiv.innerHTML = '';
-                            eventDetailsPopupDiv.classList.add('d-none');
-                        });
-                    });
-                }
-            }
-        } else {
-            console.error('Error getting event item. Status: ' + response.status + ', Message: ' + response.statusText);
-        }
-    }).catch(function (error) {
-        console.error('Error getting event item. Error: ' + error);
-    });
+    await popupEventItem(eventId.toString());
+
     stopLoadingItemsSpinner('schedule');
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -135,6 +112,29 @@ function addScheduleEventListeners(): void {
 }
 
 /**
+ * Shows the event details popup when the page is loaded, if the url query string contains an eventId.
+ */
+function showPopupAtLoad() {
+    const popupEventIdDiv = document.querySelector<HTMLDivElement>('#popup-event-id-div');
+    if (popupEventIdDiv !== null) {
+        if (popupEventIdDiv.dataset.popupEventId) {
+            let eventId = parseInt(popupEventIdDiv.dataset.popupEventId);
+            if (eventId > 0) {
+                if (popupEventIdDiv.dataset.popupEventDateYear && popupEventIdDiv.dataset.popupEventDateMonth && popupEventIdDiv.dataset.popupEventDateDay) {
+                    const popupEventYear = parseInt(popupEventIdDiv.dataset.popupEventDateYear);
+                    const popupEventMonth = parseInt(popupEventIdDiv.dataset.popupEventDateMonth) -1;
+                    const popupEventDay = parseInt(popupEventIdDiv.dataset.popupEventDateDay);
+                    let scheduleInstance = document.querySelector<any>('.e-schedule').ej2_instances[0];
+                    scheduleInstance.selectedDate = new Date(popupEventYear, popupEventMonth, popupEventDay);
+                }
+                
+                DisplayEventItem(eventId);
+
+            }
+        }
+    }
+}
+/**
  * Initializes page elements when it is loaded.
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
@@ -142,6 +142,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     addScheduleEventListeners();
     await loadLocale();
     setLocale();
+
+    showPopupAtLoad();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

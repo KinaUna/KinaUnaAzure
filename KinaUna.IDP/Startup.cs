@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 
 namespace KinaUna.IDP
 {
@@ -34,6 +35,8 @@ namespace KinaUna.IDP
 
         public void ConfigureServices(IServiceCollection services)
         {
+            TelemetryDebugWriter.IsTracingDisabled = true;
+
             _ = services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.

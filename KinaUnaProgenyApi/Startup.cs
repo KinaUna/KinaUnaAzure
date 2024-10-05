@@ -3,6 +3,7 @@ using System.Reflection;
 using IdentityServer4.AccessTokenValidation;
 using KinaUna.Data.Contexts;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
@@ -76,8 +77,10 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IWebNotificationsService, WebNotificationsService>();
             services.AddScoped<ITimelineFilteringService, TimelineFilteringService>();
             services.AddSingleton<IBackgroundTasksService, BackgroundTasksService>();
-            services.AddSingleton<IRepeatingTasksService, RepeatingTasksService>();
             services.AddSingleton<ITaskRunnerService, TaskRunnerService>();
+            services.AddSingleton<IRepeatingTasksService, RepeatingTasksService>();
+            services.AddScoped<ICalendarRemindersService, CalendarRemindersService>();
+            services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();
 
