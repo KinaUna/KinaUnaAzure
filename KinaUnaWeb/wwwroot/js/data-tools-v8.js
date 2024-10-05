@@ -465,7 +465,6 @@ export function getDateFromFormattedString(dateString, timeFormat = '') {
 export function dateStringFormatConverter(originalDateString, inputFormat, outputFormat) {
     let pickertime = moment(originalDateString, inputFormat);
     let timeString = moment().format(outputFormat);
-    console.log(timeString);
     return timeString;
 }
 //# sourceMappingURL=data-tools-v8.js.map

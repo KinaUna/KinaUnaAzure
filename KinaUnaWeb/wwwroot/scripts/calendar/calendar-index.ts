@@ -1,5 +1,6 @@
 import * as LocaleHelper from '../localization-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
+import { popupEventItem } from './calendar-details.js';
 
 declare var syncfusionReference: any;
 declare var isCurrentUserProgenyAdmin: boolean;
@@ -7,11 +8,16 @@ declare var isCurrentUserProgenyAdmin: boolean;
 let selectedEventId: number = 0;
 let currentCulture = 'en';
 
+async function DisplayEventItem(eventId: number): Promise<void> {
+    popupEventItem(eventId.toString());
+}
+
+
 /**
  * Retrieves the details of a calendar event and displays them in a popup.
  * @param {number} eventId The id of the event to display.
  */
-async function DisplayEventItem(eventId: number): Promise<void> {
+async function DisplayEventItem2(eventId: number): Promise<void> {
     startLoadingItemsSpinner('schedule');
 
     let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";

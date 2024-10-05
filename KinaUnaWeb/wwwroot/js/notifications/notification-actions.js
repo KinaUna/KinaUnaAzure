@@ -55,7 +55,7 @@ async function notificationItemClick(btn) {
             let notificationLinkSplit = notificationLinkWithoutPath.split('&');
             let eventId = notificationLinkSplit[0];
             if (eventId !== null) {
-                popupEventItem(eventId);
+                await popupEventItem(eventId);
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });

@@ -288,7 +288,11 @@ namespace KinaUnaWeb.Controllers
             return PartialView("_SchedulerTranslationsPartial", languageId);
         }
 
-        
+        /// <summary>
+        /// Adds a new CalendarReminder.
+        /// </summary>
+        /// <param name="calendarReminderRequest">CalendarReminderRequest with the properties of the reminder to add.</param>
+        /// <returns>HTML with the reminder element.</returns>
         [HttpPost]
         public async Task<IActionResult> AddReminder([FromBody]CalendarReminderRequest calendarReminderRequest)
         {
@@ -332,6 +336,11 @@ namespace KinaUnaWeb.Controllers
             return PartialView("_CalendarReminderItemPartial", newReminder);
         }
 
+        /// <summary>
+        /// Deletes a CalendarReminder.
+        /// </summary>
+        /// <param name="calendarReminderRequest">CalendarReminderRequest with the id of the reminder to delete.</param>
+        /// <returns>Ok response.</returns>
         [HttpPost]
         public async Task<IActionResult> DeleteReminder([FromBody] CalendarReminderRequest calendarReminderRequest)
         {

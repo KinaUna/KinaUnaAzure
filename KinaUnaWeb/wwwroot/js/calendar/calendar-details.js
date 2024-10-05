@@ -23,9 +23,16 @@ export function addCalendarEventListeners(itemId) {
  * Enable other scripts to call the DisplayEventItem function.
  * @param {string} eventId The id of the event to display.
  */
-export function popupEventItem(eventId) {
-    DisplayEventItem(eventId);
+export async function popupEventItem(eventId) {
+    await DisplayEventItem(eventId);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
+/**
+ * Retrieves the details of a calendar event and displays them in a popup.
+ * @param {string} eventId The id of the event to display.
+ */
 async function DisplayEventItem(eventId) {
     startFullPageSpinner();
     let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";
@@ -66,23 +73,29 @@ async function DisplayEventItem(eventId) {
         console.error('Error getting event item. Error: ' + error);
     });
     stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
+/**
+ * Sets up date time picker, select list and event listeners for reminders.
+ */
 function setupRemindersSection() {
     refreshReminderSelectPicker();
     setupOffSetDateTimePicker();
     // if any elements with data-calendar-reminder-id exists, add event listeners to them.
-    const reminderElements = document.querySelectorAll('[data-calendar-reminder-id]');
+    const deleteReminderElements = document.querySelectorAll('[data-delete-reminder-id]');
     const remindersDiv = document.querySelector('#reminders-list-div');
     const remindersSectionDiv = document.querySelector('#reminders-section-div');
-    if (reminderElements) {
+    if (deleteReminderElements) {
         if (remindersDiv && remindersSectionDiv) {
             remindersSectionDiv.classList.remove('d-none');
             remindersDiv.classList.remove('d-none');
         }
-        reminderElements.forEach((element) => {
-            if (element.dataset.calendarReminderId) {
+        deleteReminderElements.forEach((element) => {
+            if (element.dataset.deleteReminderId) {
                 element.addEventListener('click', function () {
-                    deleteReminder(element.dataset.calendarReminderId);
+                    deleteReminder(element.dataset.deleteReminderId);
                 });
             }
         });
@@ -96,6 +109,9 @@ function setupRemindersSection() {
         addReminderButton.addEventListener('click', addReminder);
     }
 }
+/**
+ * Refreshes the reminder select picker.
+ */
 function refreshReminderSelectPicker() {
     const reminderOffsetSelectElement = document.querySelector('#reminder-offset-select');
     if (reminderOffsetSelectElement !== null) {
@@ -103,6 +119,10 @@ function refreshReminderSelectPicker() {
         reminderOffsetSelectElement.addEventListener('change', reminderOffSetChanged);
     }
 }
+/**
+ * Event listener for the reminder offset select list.
+ * Shows or hides the custom reminder offset input field based on the selected value.
+ */
 function reminderOffSetChanged() {
     const reminderOffsetSelectElement = document.querySelector('#reminder-offset-select');
     const customReminderOffsetDiv = document.querySelector('#custom-reminder-offset-div');
@@ -148,6 +168,9 @@ async function setupOffSetDateTimePicker() {
         resolve();
     });
 }
+/**
+ * Validates the custom reminder offset date picker's value.
+ */
 function validateCustomOffsetDatePicker() {
     // Todo: check if picker value is before CalenderItem after now.
     const longDateTimeFormatMoment = getLongDateTimeFormatMoment();
@@ -158,11 +181,13 @@ function validateCustomOffsetDatePicker() {
     const customTimeZebraPicker = document.querySelector(reminderCustomOffsetDateTimePickerId);
     let currentDateString = customTimeZebraPicker?.value;
     if (currentDateString) {
-        console.log(currentDateString);
         customDateInput.value = dateStringFormatConverter(currentDateString, longDateTimeFormatMoment, 'DD/MM/YYYY HH:mm');
-        console.log(customDateInput.value);
     }
 }
+/**
+ * Adds a reminder to the calendar event for the current user.
+ * Gets the values from the reminder offset select list and the custom reminder offset input field.
+ */
 async function addReminder() {
     let reminderItem = new CalendarReminderRequest();
     const reminderOffsetSelectElement = document.querySelector('#reminder-offset-select');
@@ -204,7 +229,14 @@ async function addReminder() {
     }
     reminderItem.eventId = eventId;
     await saveReminder(reminderItem);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
+/**
+ * Saves a reminder for the calendar event for the current user.
+ * @param reminder The reminder to save.
+ */
 async function saveReminder(reminder) {
     startFullPageSpinner();
     await fetch('/Calendar/AddReminder', {
@@ -234,7 +266,14 @@ async function saveReminder(reminder) {
         console.error('Error adding reminder. Error: ' + error);
     });
     stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
+/**
+ * Deletes a reminder for the calendar event for the current user.
+ * @param reminderId The id of the reminder to delete.
+ */
 async function deleteReminder(reminderId) {
     if (!reminderId) {
         return;
@@ -252,8 +291,7 @@ async function deleteReminder(reminderId) {
         body: JSON.stringify(reminderToDelete)
     }).then(async function (response) {
         if (response.ok) {
-            const reminderElementHtml = await response.text();
-            const reminderElement = document.querySelector('[data-calendar-reminder-id="' + reminderId + '"]');
+            const reminderElement = document.querySelector('[data-reminder-id="' + reminderId + '"]');
             if (reminderElement) {
                 reminderElement.remove();
             }
@@ -265,5 +303,8 @@ async function deleteReminder(reminderId) {
         console.error('Error deleting reminder. Error: ' + error);
     });
     stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 //# sourceMappingURL=calendar-details.js.map

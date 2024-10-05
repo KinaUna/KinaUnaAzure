@@ -1,5 +1,6 @@
 import * as LocaleHelper from '../localization-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
+import { popupEventItem } from './calendar-details.js';
 let selectedEventId = 0;
 let currentCulture = 'en';
 /**
@@ -8,38 +9,11 @@ let currentCulture = 'en';
  */
 async function DisplayEventItem(eventId) {
     startLoadingItemsSpinner('schedule');
-    let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";
-    await fetch(url, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-    }).then(async function (response) {
-        if (response.ok) {
-            const eventElementHtml = await response.text();
-            const eventDetailsPopupDiv = document.querySelector('#item-details-div');
-            if (eventDetailsPopupDiv) {
-                eventDetailsPopupDiv.innerHTML = eventElementHtml;
-                eventDetailsPopupDiv.classList.remove('d-none');
-                let closeButtonsList = document.querySelectorAll('.item-details-close-button');
-                if (closeButtonsList) {
-                    closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
-                            eventDetailsPopupDiv.innerHTML = '';
-                            eventDetailsPopupDiv.classList.add('d-none');
-                        });
-                    });
-                }
-            }
-        }
-        else {
-            console.error('Error getting event item. Status: ' + response.status + ', Message: ' + response.statusText);
-        }
-    }).catch(function (error) {
-        console.error('Error getting event item. Error: ' + error);
-    });
+    await popupEventItem(eventId.toString());
     stopLoadingItemsSpinner('schedule');
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Event handler for the edit and delete buttons in the Syncfusion Schedule component.
