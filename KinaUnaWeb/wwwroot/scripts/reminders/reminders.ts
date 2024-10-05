@@ -1,6 +1,6 @@
-import { dateStringFormatConverter, getCurrentLanguageId, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setMomentLocale } from "../data-tools-v8";
-import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8";
-import { CalendarReminderRequest } from "../page-models-v8";
+import { dateStringFormatConverter, getCurrentLanguageId, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setMomentLocale } from "../data-tools-v8.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
+import { CalendarReminderRequest } from "../page-models-v8.js";
 import * as LocaleHelper from '../localization-v8.js';
 
 const reminderCustomOffsetDateTimePickerId = '#custom-offset-date-time-picker';
@@ -125,6 +125,7 @@ function validateCustomOffsetDatePicker() {
     const customTimeZebraPicker = document.querySelector<HTMLInputElement>(reminderCustomOffsetDateTimePickerId);
 
     let currentDateString = customTimeZebraPicker?.value;
+    console.log('Current date string: ' + currentDateString);
     if (currentDateString) {
         customDateInput.value = dateStringFormatConverter(currentDateString, longDateTimeFormatMoment, 'DD/MM/YYYY HH:mm');
     }

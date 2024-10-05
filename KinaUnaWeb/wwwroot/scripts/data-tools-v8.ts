@@ -527,8 +527,8 @@ export function getDateFromFormattedString(dateString: string, timeFormat: strin
 }
 
 export function dateStringFormatConverter(originalDateString: string, inputFormat: string, outputFormat: string): string {
-    let pickertime: any = moment(originalDateString, inputFormat);
-    let timeString: string = moment().format(outputFormat);
+    let pickertime: any = moment.utc(originalDateString, inputFormat);
+    let timeString: string = pickertime.format(outputFormat);
     return timeString;
 }
 

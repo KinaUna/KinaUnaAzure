@@ -344,7 +344,9 @@ namespace KinaUnaWeb.Controllers
             calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeToUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUser.Timezone));
 
             CalendarReminder newReminder = await calendarRemindersHttpClient.AddCalendarReminder(calendarReminder);
-            
+
+            newReminder.NotifyTime = TimeZoneInfo.ConvertTimeFromUtc(newReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUser.Timezone));
+
             return PartialView("_CalendarReminderItemPartial", newReminder);
         }
 

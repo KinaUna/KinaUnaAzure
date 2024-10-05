@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services.CalendarServices
 {
-    public class CalendarRemindersService(ProgenyDbContext context, IEmailSender emailSender ) : ICalendarRemindersService
+    public class CalendarRemindersService(ProgenyDbContext context, IEmailSender emailSender, IPushMessageSender pushMessageSender ) : ICalendarRemindersService
     {
         public async Task<List<CalendarReminder>> GetAllCalendarReminders()
         {
@@ -153,6 +153,8 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             reminderBody += $"<div>Link: <a href=\"https://web.kinauna.com/Calendar?eventId={calendarItem.EventId}\">{calendarItemProgeny.NickName} : Calendar</a></div>";
 
             await emailSender.SendEmailAsync(reminderUserInfo.UserEmail, reminderTitle, reminderBody);
+
+            await pushMessageSender.SendMessage(reminderUserInfo.UserId, reminderTitle, $"Event reminder for: {calendarItemProgeny.NickName}", $"https://web.kinauna.com/Calendar?eventId={calendarItem.EventId}", "kinaunacalendar" + calendarItemProgeny.Id);
 
             calendarReminder.Notified = true;
 

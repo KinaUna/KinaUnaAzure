@@ -463,8 +463,8 @@ export function getDateFromFormattedString(dateString, timeFormat = '') {
     return date;
 }
 export function dateStringFormatConverter(originalDateString, inputFormat, outputFormat) {
-    let pickertime = moment(originalDateString, inputFormat);
-    let timeString = moment().format(outputFormat);
+    let pickertime = moment.utc(originalDateString, inputFormat);
+    let timeString = pickertime.format(outputFormat);
     return timeString;
 }
 //# sourceMappingURL=data-tools-v8.js.map
