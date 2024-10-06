@@ -125,7 +125,6 @@ function validateCustomOffsetDatePicker() {
     const customTimeZebraPicker = document.querySelector<HTMLInputElement>(reminderCustomOffsetDateTimePickerId);
 
     let currentDateString = customTimeZebraPicker?.value;
-    console.log('Current date string: ' + currentDateString);
     if (currentDateString) {
         customDateInput.value = dateStringFormatConverter(currentDateString, longDateTimeFormatMoment, 'DD/MM/YYYY HH:mm');
     }

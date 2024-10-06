@@ -120,7 +120,7 @@ namespace KinaUnaWeb.Controllers
         /// <returns>Redirect to Calendar/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddEvent(CalendarItemViewModel model)
+        public async Task<IActionResult> AddEvent([FromForm] CalendarItemViewModel model)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
             model.SetBaseProperties(baseModel);
@@ -135,9 +135,7 @@ namespace KinaUnaWeb.Controllers
             
             eventItem = await calendarsHttpClient.AddCalendarItem(eventItem);
             
-            int eventId = eventItem.EventId;
-
-            return RedirectToAction("Index", "Calendar", new{eventId});
+            return RedirectToAction("Index", "Calendar", new{eventId = eventItem.EventId, childId = eventItem.ProgenyId});
         }
 
         /// <summary>
@@ -183,7 +181,7 @@ namespace KinaUnaWeb.Controllers
         /// <returns>Redirects to Calendar/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditEvent(CalendarItemViewModel model)
+        public async Task<IActionResult> EditEvent([FromForm] CalendarItemViewModel model)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CalendarItem.ProgenyId);
             model.SetBaseProperties(baseModel);
@@ -199,9 +197,8 @@ namespace KinaUnaWeb.Controllers
             CalendarItem editedEvent = model.CreateCalendarItem();
                 
             await calendarsHttpClient.UpdateCalendarItem(editedEvent);
-            int eventId = model.CalendarItem.EventId;
-
-            return RedirectToAction("Index", "Calendar", new {eventId});
+            
+            return RedirectToAction("Index", "Calendar", new { eventId = editedEvent.EventId, childId = editedEvent.ProgenyId });
         }
 
         /// <summary>

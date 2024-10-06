@@ -18,7 +18,15 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public CalendarItem CalendarItem { get; set; } = new();
         public List<CalendarReminder> CalendarReminders { get; set; } = [];
         public List<SelectListItem> ReminderOffsetsList { get; set; } = [];
-        
+
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
+        public CalendarItemViewModel()
+        {
+            
+        }
+
         public CalendarItemViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
