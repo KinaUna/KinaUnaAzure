@@ -9,8 +9,8 @@ export function addMeasurementItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-measurement-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayMeasurementItem(itemId);
+            element.addEventListener('click', async function () {
+                await displayMeasurementItem(itemId);
             });
         });
     }
@@ -19,8 +19,11 @@ export function addMeasurementItemListeners(itemId) {
  * Enable other scripts to call the DisplayMeasurementItem function.
  * @param {string} measurementId The id of the measurement item to display.
  */
-export function popupMeasurementItem(measurementId) {
-    displayMeasurementItem(measurementId);
+export async function popupMeasurementItem(measurementId) {
+    await displayMeasurementItem(measurementId);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Displays a measurement item in a popup.
@@ -65,5 +68,8 @@ async function displayMeasurementItem(measurementId) {
         console.error('Error getting measurement item. Error: ' + error);
     });
     stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 //# sourceMappingURL=measurement-details.js.map

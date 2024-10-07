@@ -33,9 +33,10 @@ namespace KinaUnaWeb.Controllers
         /// <param name="sort">Sort order. 0 = oldest first, 1 = newest first.</param>
         /// <param name="sortBy">Property to sort Contacts by. 0 = Date, 1 = DisplayName, 2 = FirstName, 3 = LastName.</param>
         /// <param name="sortTags">Sort the list of all tags. 0 = no sorting, 1 = sort alphabetically.</param>
+        /// <param name="contactId">The ContactId of the Contact to show details for. If 0, no contact details popup is shown.</param>
         /// <returns>View with ContactListViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0)
+        public async Task<IActionResult> Index(int childId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0, int contactId = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             ContactListViewModel model = new(baseModel);
@@ -54,6 +55,8 @@ namespace KinaUnaWeb.Controllers
                 SortBy = sortBy,
                 SortTags = sortTags
             };
+
+            model.ContactId = contactId;
 
             return View(model);
 

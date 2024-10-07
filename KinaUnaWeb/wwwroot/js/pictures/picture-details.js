@@ -30,8 +30,11 @@ export async function addPictureItemEventListeners(pictureId) {
  * Enable other scripts to call the displayPictureDetails function.
  * @param {string} pictureId The id of the picture to display.
  */
-export function popupPictureDetails(pictureId) {
-    displayPictureDetails(pictureId);
+export async function popupPictureDetails(pictureId) {
+    await displayPictureDetails(pictureId);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Overrides the comment submit form to send the comment data to the server and then refresh the picture details popup.
@@ -85,7 +88,7 @@ async function submitComment() {
             if (currentPictureIdDiv) {
                 const currentPictureId = currentPictureIdDiv.getAttribute('data-current-picture-id');
                 if (currentPictureId) {
-                    displayPictureDetails(currentPictureId, true);
+                    await displayPictureDetails(currentPictureId, true);
                 }
             }
         }
@@ -146,7 +149,7 @@ async function submitPictureEdit() {
             if (currentPictureIdDiv) {
                 const currentPictureId = currentPictureIdDiv.getAttribute('data-current-picture-id');
                 if (currentPictureId) {
-                    displayPictureDetails(currentPictureId, true);
+                    await displayPictureDetails(currentPictureId, true);
                 }
             }
         }
@@ -188,19 +191,19 @@ async function setupDateTimePicker() {
 function addNavigationEventListeners() {
     let previousLink = document.querySelector('#previous-picture-link');
     if (previousLink) {
-        previousLink.addEventListener('click', function () {
+        previousLink.addEventListener('click', async function () {
             let previousPictureId = previousLink.getAttribute('data-previous-picture-id');
             if (previousPictureId) {
-                displayPictureDetails(previousPictureId, true);
+                await displayPictureDetails(previousPictureId, true);
             }
         });
     }
     let nextLink = document.querySelector('#next-picture-link');
     if (nextLink) {
-        nextLink.addEventListener('click', function () {
+        nextLink.addEventListener('click', async function () {
             let nextPictureId = nextLink.getAttribute('data-next-picture-id');
             if (nextPictureId) {
-                displayPictureDetails(nextPictureId, true);
+                await displayPictureDetails(nextPictureId, true);
             }
         });
     }
@@ -211,7 +214,7 @@ function addNavigationEventListeners() {
             pictureDetailsTouchStartX = event.touches[0].clientX;
             pictureDetailsTouchStartY = event.touches[0].clientY;
         });
-        photoDetailsDiv.addEventListener('touchend', event => {
+        photoDetailsDiv.addEventListener('touchend', async (event) => {
             pictureDetailsTouchEndX = event.changedTouches[0].clientX;
             pictureDetailsTouchEndY = event.changedTouches[0].clientY;
             if (Math.abs(pictureDetailsTouchEndY - pictureDetailsTouchStartY) > 100) {
@@ -223,13 +226,13 @@ function addNavigationEventListeners() {
             if (pictureDetailsTouchEndX < pictureDetailsTouchStartX) {
                 let nextPictureId = nextLink?.getAttribute('data-next-picture-id');
                 if (nextPictureId) {
-                    displayPictureDetails(nextPictureId, true);
+                    await displayPictureDetails(nextPictureId, true);
                 }
             }
             if (pictureDetailsTouchEndX > pictureDetailsTouchStartX) {
                 let previousPictureId = previousLink?.getAttribute('data-previous-picture-id');
                 if (previousPictureId) {
-                    displayPictureDetails(previousPictureId, true);
+                    await displayPictureDetails(previousPictureId, true);
                 }
             }
         });
@@ -344,6 +347,9 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
     else {
         stopLoadingItemsSpinner('item-details-content-wrapper');
     }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Gets the picture page parameters from the page data div.

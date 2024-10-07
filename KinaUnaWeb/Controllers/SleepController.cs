@@ -18,9 +18,10 @@ namespace KinaUnaWeb.Controllers
         /// Sleep Index page. Shows a list of all sleep items for a progeny.
         /// </summary>
         /// <param name="childId">The Id of the Progeny to show sleep data for.</param>
+        /// <param name="sleepId">The Id of the Sleep item to show. If 0 no Sleep popup is shown.</param>
         /// <returns>View with SleepViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0)
+        public async Task<IActionResult> Index(int childId = 0, int sleepId = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SleepViewModel model = new(baseModel);
@@ -29,6 +30,8 @@ namespace KinaUnaWeb.Controllers
 
             model.ProcessSleepListData(sleepList);
             
+            model.SleepId = sleepId;
+
             return View(model);
         }
 

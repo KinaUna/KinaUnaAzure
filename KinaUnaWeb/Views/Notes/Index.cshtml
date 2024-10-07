@@ -10,6 +10,7 @@
     string nextPageString = await LocaleManager.GetTranslation("Next page", PageNames.Notes, Model.LanguageId);
 }
 <div id="notes-index-page-parameters" class="d-none" data-notes-index-page-parameters="@pageParameters"></div>
+<div id="popup-note-id-div" class="d-none" data-popup-note-id="@Model.NoteId"></div>
 <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10 col-w1900-8 col-w2500-7">
     <h2>@ViewData["Title"]</h2>
     <div class="row align-items-center">

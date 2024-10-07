@@ -26,9 +26,10 @@ namespace KinaUnaWeb.Controllers
         /// <param name="sort">Sort order. 0 = oldest first, 1 = newest first.</param>
         /// <param name="sortBy">Property to sort Contacts by. 0 = FriendsSince, 1 = Name, 2 = FirstName, 3 = LastName.</param>
         /// <param name="sortTags">Sort the list of all tags. 0 = no sorting, 1 = sort alphabetically.</param>
+        /// <param name="friendId">The FriendId of the Friend to show details for. If 0, no Friend pop-up is shown.</param>
         /// <returns>View with FriendsListViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0)
+        public async Task<IActionResult> Index(int childId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0, int friendId = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             FriendsListViewModel model = new(baseModel);
@@ -46,6 +47,8 @@ namespace KinaUnaWeb.Controllers
                 SortBy = sortBy,
                 SortTags = sortTags
             };
+
+            model.FriendId = friendId;
 
             return View(model);
 

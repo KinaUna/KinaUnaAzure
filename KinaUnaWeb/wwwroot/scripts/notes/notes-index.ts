@@ -1,4 +1,4 @@
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as pageModels from '../page-models-v8.js';
 
 const notesPageSettingsStorageKey = 'notes_page_parameters'; 
@@ -240,7 +240,7 @@ function sortNotesPageDescending(): void {
     notesPageParameters.sort = 1;
 }
 
-document.addEventListener('DOMContentLoaded', function (): void {
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     const notesPageSettingsContentDiv = document.querySelector<HTMLDivElement>('#page-settings-content-div');
     if (notesPageSettingsContentDiv !== null) {
         notesPageSettingsDiv?.appendChild(notesPageSettingsContentDiv);
@@ -262,6 +262,8 @@ document.addEventListener('DOMContentLoaded', function (): void {
         sortAscendingSettingsButton?.classList.add('active');
         sortDescendingSettingsButton?.classList.remove('active');
     }
+
+    await showPopupAtLoad(pageModels.TimeLineType.Note);
 
     getNotes();
 
@@ -297,5 +299,8 @@ document.addEventListener('DOMContentLoaded', function (): void {
     window.onpopstate = function (event) {
         getNotesPageFromHistory();
     };
-        
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 });

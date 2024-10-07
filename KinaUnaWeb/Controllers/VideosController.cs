@@ -39,9 +39,10 @@ namespace KinaUnaWeb.Controllers
         /// <param name="year">Start year.</param>
         /// <param name="month">Start month.</param>
         /// <param name="day">Start day.</param>
+        /// <param name="videoId">The Id of the video to show in a popup/modal, If 0, no popup is shown.</param>
         /// <returns>View with VideoListViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int id = 1, int pageSize = 16, int childId = 0, int sortBy = 2, string tagFilter = "", int year = 0, int month = 0, int day = 0)
+        public async Task<IActionResult> Index(int id = 1, int pageSize = 16, int childId = 0, int sortBy = 2, string tagFilter = "", int year = 0, int month = 0, int day = 0, int videoId = 0)
         {
             if (id < 1)
             {
@@ -68,7 +69,8 @@ namespace KinaUnaWeb.Controllers
                     Year = year,
                     Month = month,
                     Day = day
-                }
+                },
+                VideoId = videoId
             };
 
             VideoPageViewModel pageViewModel = await mediaHttpClient.GetVideoPage(pageSize, id, model.CurrentProgenyId, model.CurrentAccessLevel, sortBy, tagFilter, model.CurrentUser.Timezone);

@@ -9,8 +9,8 @@ export function addFriendItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-friend-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayFriendItem(itemId);
+            element.addEventListener('click', async function () {
+                await displayFriendItem(itemId);
             });
         });
     }
@@ -19,8 +19,11 @@ export function addFriendItemListeners(itemId) {
  * Enable other scripts to call the DisplayFriendItem function.
  * @param {string} friendId The id of the friend item to display.
  */
-export function popupFriendItem(friendId) {
-    displayFriendItem(friendId);
+export async function popupFriendItem(friendId) {
+    await displayFriendItem(friendId);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Displays a friend item in a popup.
@@ -65,5 +68,8 @@ async function displayFriendItem(friendId) {
         console.error('Error getting friend item. Error: ' + error);
     });
     stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 //# sourceMappingURL=friend-details.js.map

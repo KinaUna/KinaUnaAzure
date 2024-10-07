@@ -9,8 +9,8 @@ export function addContactItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-contact-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayContactItem(itemId);
+            element.addEventListener('click', async function () {
+                await displayContactItem(itemId);
             });
         });
     }
@@ -19,8 +19,11 @@ export function addContactItemListeners(itemId) {
  * Enable other scripts to call the displayContactItem function.
  * @param {string} contactId The id of the contact item to display.
  */
-export function popupContactItem(contactId) {
-    displayContactItem(contactId);
+export async function popupContactItem(contactId) {
+    await displayContactItem(contactId);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Displays a contact item in a popup.
@@ -65,5 +68,8 @@ async function displayContactItem(contactId) {
         console.error('Error getting contact item. Error: ' + error);
     });
     stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 //# sourceMappingURL=contact-details.js.map

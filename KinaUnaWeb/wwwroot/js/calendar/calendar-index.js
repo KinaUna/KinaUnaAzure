@@ -1,5 +1,7 @@
+import { showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as LocaleHelper from '../localization-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
+import { TimeLineType } from '../page-models-v8.js';
 import { popupEventItem } from './calendar-details.js';
 let selectedEventId = 0;
 let currentCulture = 'en';
@@ -93,34 +95,13 @@ function addScheduleEventListeners() {
     scheduleInstance.addEventListener('popupOpen', (args) => { onPopupOpen(args); });
 }
 /**
- * Shows the event details popup when the page is loaded, if the url query string contains an eventId.
- */
-function showPopupAtLoad() {
-    const popupEventIdDiv = document.querySelector('#popup-event-id-div');
-    if (popupEventIdDiv !== null) {
-        if (popupEventIdDiv.dataset.popupEventId) {
-            let eventId = parseInt(popupEventIdDiv.dataset.popupEventId);
-            if (eventId > 0) {
-                if (popupEventIdDiv.dataset.popupEventDateYear && popupEventIdDiv.dataset.popupEventDateMonth && popupEventIdDiv.dataset.popupEventDateDay) {
-                    const popupEventYear = parseInt(popupEventIdDiv.dataset.popupEventDateYear);
-                    const popupEventMonth = parseInt(popupEventIdDiv.dataset.popupEventDateMonth) - 1;
-                    const popupEventDay = parseInt(popupEventIdDiv.dataset.popupEventDateDay);
-                    let scheduleInstance = document.querySelector('.e-schedule').ej2_instances[0];
-                    scheduleInstance.selectedDate = new Date(popupEventYear, popupEventMonth, popupEventDay);
-                }
-                DisplayEventItem(eventId);
-            }
-        }
-    }
-}
-/**
  * Initializes page elements when it is loaded.
  */
 document.addEventListener('DOMContentLoaded', async function () {
     addScheduleEventListeners();
     await loadLocale();
     setLocale();
-    showPopupAtLoad();
+    await showPopupAtLoad(TimeLineType.Calendar);
     return new Promise(function (resolve, reject) {
         resolve();
     });

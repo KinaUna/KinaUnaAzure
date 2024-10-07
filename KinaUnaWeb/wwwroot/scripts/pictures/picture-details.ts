@@ -34,8 +34,12 @@ export async function addPictureItemEventListeners(pictureId: string): Promise<v
  * Enable other scripts to call the displayPictureDetails function.
  * @param {string} pictureId The id of the picture to display.
  */
-export function popupPictureDetails(pictureId: string): void {
-    displayPictureDetails(pictureId);
+export async function popupPictureDetails(pictureId: string): Promise<void> {
+    await displayPictureDetails(pictureId);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -97,7 +101,7 @@ async function submitComment(): Promise<void> {
             if (currentPictureIdDiv) {
                 const currentPictureId = currentPictureIdDiv.getAttribute('data-current-picture-id');
                 if (currentPictureId) {
-                    displayPictureDetails(currentPictureId, true);
+                    await displayPictureDetails(currentPictureId, true);
                 }
             }
         }
@@ -169,7 +173,7 @@ async function submitPictureEdit(): Promise<void> {
             if (currentPictureIdDiv) {
                 const currentPictureId = currentPictureIdDiv.getAttribute('data-current-picture-id');
                 if (currentPictureId) {
-                    displayPictureDetails(currentPictureId, true);
+                    await displayPictureDetails(currentPictureId, true);
                 }
             }
         }
@@ -218,19 +222,19 @@ async function setupDateTimePicker(): Promise<void> {
 function addNavigationEventListeners(): void {
     let previousLink = document.querySelector<HTMLAnchorElement>('#previous-picture-link');
     if (previousLink) {
-        previousLink.addEventListener('click', function () {
+        previousLink.addEventListener('click', async function () {
             let previousPictureId = previousLink.getAttribute('data-previous-picture-id');
             if (previousPictureId) {
-                displayPictureDetails(previousPictureId, true);
+                await displayPictureDetails(previousPictureId, true);
             }
         });
     }
     let nextLink = document.querySelector<HTMLAnchorElement>('#next-picture-link');
     if (nextLink) {
-        nextLink.addEventListener('click', function () {
+        nextLink.addEventListener('click', async function () {
             let nextPictureId = nextLink.getAttribute('data-next-picture-id');
             if (nextPictureId) {
-                displayPictureDetails(nextPictureId, true);
+                await displayPictureDetails(nextPictureId, true);
             }
         });
     }
@@ -242,7 +246,7 @@ function addNavigationEventListeners(): void {
             pictureDetailsTouchStartX = event.touches[0].clientX;
             pictureDetailsTouchStartY = event.touches[0].clientY;
         });
-        photoDetailsDiv.addEventListener('touchend', event => {
+        photoDetailsDiv.addEventListener('touchend', async event => {
             pictureDetailsTouchEndX = event.changedTouches[0].clientX;
             pictureDetailsTouchEndY = event.changedTouches[0].clientY;
             if (Math.abs(pictureDetailsTouchEndY - pictureDetailsTouchStartY) > 100) {
@@ -256,13 +260,13 @@ function addNavigationEventListeners(): void {
             if (pictureDetailsTouchEndX < pictureDetailsTouchStartX) {
                 let nextPictureId = nextLink?.getAttribute('data-next-picture-id');
                 if (nextPictureId) {
-                    displayPictureDetails(nextPictureId, true);
+                    await displayPictureDetails(nextPictureId, true);
                 }
             }
             if (pictureDetailsTouchEndX > pictureDetailsTouchStartX) {
                 let previousPictureId = previousLink?.getAttribute('data-previous-picture-id');
                 if (previousPictureId) {
-                    displayPictureDetails(previousPictureId, true);
+                    await displayPictureDetails(previousPictureId, true);
                 }
             }
         });
@@ -334,7 +338,7 @@ function addShowMapButtonEventListener(): void {
  * @param {string} pictureId The ID of the picture to display.
  * @param {boolean} isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
  */
-async function displayPictureDetails(pictureId: string, isPopupVisible: boolean = false) {
+async function displayPictureDetails(pictureId: string, isPopupVisible: boolean = false): Promise<void> {
     if (!isPopupVisible) {
         startFullPageSpinner();
     }
@@ -384,6 +388,10 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
     else {
         stopLoadingItemsSpinner('item-details-content-wrapper');
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**

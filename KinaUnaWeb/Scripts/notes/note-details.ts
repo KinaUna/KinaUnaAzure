@@ -10,8 +10,8 @@ export function addNoteEventListeners(itemId: string): void {
     const noteElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-note-id="' + itemId + '"]');
     if (noteElementsWithDataId) {
         noteElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayNoteItem(itemId);
+            element.addEventListener('click', async function () {
+                await displayNoteItem(itemId);
             });
         });
     }
@@ -21,9 +21,12 @@ export function addNoteEventListeners(itemId: string): void {
  * Enable other scripts to call the DisplayNoteItem function.
  * @param {string} noteId The id of the note to display.
  */
-export function popupNoteItem(noteId: string): void {
-    displayNoteItem(noteId);
+export async function popupNoteItem(noteId: string): Promise<void> {
+    await displayNoteItem(noteId);
 
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -70,4 +73,8 @@ async function displayNoteItem(noteId: string): Promise<void> {
     });
     
     stopFullPageSpinner();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }

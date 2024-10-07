@@ -9,8 +9,8 @@ export function addNoteEventListeners(itemId) {
     const noteElementsWithDataId = document.querySelectorAll('[data-note-id="' + itemId + '"]');
     if (noteElementsWithDataId) {
         noteElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayNoteItem(itemId);
+            element.addEventListener('click', async function () {
+                await displayNoteItem(itemId);
             });
         });
     }
@@ -19,8 +19,11 @@ export function addNoteEventListeners(itemId) {
  * Enable other scripts to call the DisplayNoteItem function.
  * @param {string} noteId The id of the note to display.
  */
-export function popupNoteItem(noteId) {
-    displayNoteItem(noteId);
+export async function popupNoteItem(noteId) {
+    await displayNoteItem(noteId);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Displays a note item in a popup.
@@ -65,5 +68,8 @@ async function displayNoteItem(noteId) {
         console.error('Error getting note item. Error: ' + error);
     });
     stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 //# sourceMappingURL=note-details.js.map

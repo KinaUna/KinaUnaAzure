@@ -1,12 +1,13 @@
 import * as LocaleHelper from '../localization-v8.js';
-import { Picture, PictureViewModel, PicturesList, PicturesPageParameters, TimelineItem } from '../page-models-v8.js';
+import { Picture, PictureViewModel, PicturesList, PicturesPageParameters, TimeLineType, TimelineItem } from '../page-models-v8.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import { popupPictureDetails } from './picture-details.js';
 
 let picturesPageParameters: PicturesPageParameters | null = new PicturesPageParameters();
+let popupPictureId: number = 0;
 const picturesPageSettingsStorageKey = 'pictures_page_parameters';
 
 let languageId = 1;
@@ -228,6 +229,7 @@ function setBrowserUrl(parameters: PicturesPageParameters, replaceState: boolean
     url.searchParams.set('month', parameters.month.toString());
     url.searchParams.set('day', parameters.day.toString());
     url.searchParams.set('sortTags', parameters.sortTags.toString());
+    url.searchParams.set('pictureId', popupPictureId.toString());
     if (replaceState) {
         window.history.replaceState({}, '', url);
     }
@@ -257,7 +259,7 @@ async function loadPageFromHistory(): Promise<void> {
         picturesPageParameters.month = url.searchParams.get('month') ? parseInt(url.searchParams.get('month') as string) : 0;
         picturesPageParameters.day = url.searchParams.get('day') ? parseInt(url.searchParams.get('day') as string) : 0;
         picturesPageParameters.sortTags = url.searchParams.get('sortTags') ? parseInt(url.searchParams.get('sortTags') as string) : 0;
-
+        popupPictureId = url.searchParams.get('pictureId') ? parseInt(url.searchParams.get('pictureId') as string) : 0;
         firstRun = false;
         clearPictureElements();
         picturesPageParameters = await getPicturesList(picturesPageParameters, false);
@@ -775,29 +777,23 @@ function refreshSelectPickers(): void {
     }
 }
 
-/**
- * Shows the picture details popup when the page is loaded, if the url query string contains pictureId that is not 0.
- */
-async function showPopupAtLoad(): Promise<void> {
-    const popupPictureIdDiv = document.querySelector<HTMLDivElement>('#popup-picture-id-div');
-    if (popupPictureIdDiv !== null) {
-        if (popupPictureIdDiv.dataset.popupPictureId) {
-            let pictureId = parseInt(popupPictureIdDiv.dataset.popupPictureId);
-            if (pictureId > 0) {
-                await popupPictureDetails(pictureId.toString());
-            }
+function getPopupPictureId() {
+    let pictureIdDiv = document.querySelector <HTMLDivElement>('#popup-picture-id-div');
+    if (pictureIdDiv !== null) {
+        let pictureIdData = pictureIdDiv.dataset.popupPictureId;
+        if (pictureIdData) {
+            popupPictureId = parseInt(pictureIdData);
+
         }
     }
-
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
 }
 
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     picturesPageProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
+
+    getPopupPictureId();
 
     await initialSettingsPanelSetup();
 
@@ -807,7 +803,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     SettingsHelper.initPageSettings();
 
-    await showPopupAtLoad();
+    await showPopupAtLoad(TimeLineType.Photo);
 
     picturesPageParameters = getPageParametersFromPageData();
     if (picturesPageParameters !== null) {

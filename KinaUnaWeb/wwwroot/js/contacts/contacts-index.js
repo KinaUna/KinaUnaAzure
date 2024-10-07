@@ -1,5 +1,5 @@
 import { updateFilterButtonDisplay } from '../data-tools-v8.js';
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as pageModels from '../page-models-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
@@ -366,6 +366,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     refreshSelectPickers();
     addResetActiveTagFilterEventListener();
     await loadContactsPageSettings();
+    await showPopupAtLoad(pageModels.TimeLineType.Contact);
     await getContactsList();
     return new Promise(function (resolve, reject) {
         resolve();

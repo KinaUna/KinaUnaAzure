@@ -1,4 +1,6 @@
 ﻿import { setMomentLocale } from '../data-tools-v8.js';
+import { showPopupAtLoad } from '../item-details/items-display-v8.js';
+import { TimeLineType } from '../page-models-v8.js';
 
 declare var Chart: any;
 declare var moment: any;
@@ -156,8 +158,14 @@ function setupSleepSlider(): void {
 /**
  * Initializes the page elements when it is loaded.
  */
-document.addEventListener('DOMContentLoaded', function (): void {
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     setupDataTable();
     setupSleepChart();
     setupSleepSlider();
+
+    await showPopupAtLoad(TimeLineType.Sleep);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 });
