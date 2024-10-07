@@ -135,11 +135,21 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(c => c.EventId == calendarReminder.EventId);
             if (calendarItem == null) return;
+            
+            UserInfo reminderUserInfo = await context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == calendarReminder.UserId);
+            if (reminderUserInfo == null) return;
+
+            if (!calendarItem.StartTime.HasValue || !calendarItem.EndTime.HasValue)
+            {
+                return;
+            }
+
+            calendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(calendarItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(reminderUserInfo.Timezone));
+            calendarItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(calendarItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(reminderUserInfo.Timezone));
 
             calendarItem.StartString = calendarItem.StartTime?.ToString("dd-MM-yyyy HH:mm") ?? "Error: Start time undefined."; // Todo: Localize/User defined format.
             calendarItem.EndString = calendarItem.EndTime?.ToString("dd-MM-yyyy HH:mm") ?? "Error: End time undefined."; // Todo: Localize/User defined format.
-            UserInfo reminderUserInfo = await context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == calendarReminder.UserId);
-            if (reminderUserInfo == null) return;
+            
 
             Progeny calendarItemProgeny = await context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == calendarItem.ProgenyId);
 
