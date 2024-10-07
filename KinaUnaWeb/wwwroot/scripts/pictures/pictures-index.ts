@@ -807,6 +807,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     SettingsHelper.initPageSettings();
 
+    await showPopupAtLoad();
+
     picturesPageParameters = getPageParametersFromPageData();
     if (picturesPageParameters !== null) {
         
@@ -818,9 +820,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
         if (firstRun) {
             picturesPageParameters = await getPicturesList(picturesPageParameters, false);
         }
-    }
-
-    await showPopupAtLoad();
+    }    
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
