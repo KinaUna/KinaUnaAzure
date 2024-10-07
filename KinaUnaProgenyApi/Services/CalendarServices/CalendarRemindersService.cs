@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
@@ -142,6 +143,8 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
             Progeny calendarItemProgeny = await context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == calendarItem.ProgenyId);
 
+            string eventLink = $"{Constants.WebAppUrl}/Calendar?eventId={calendarItem.EventId}&childId={calendarItemProgeny.Id}";
+
             string reminderTitle = $"{calendarItemProgeny.NickName}: {calendarItem.Title} - KinaUna Reminder"; // Todo: Localize.
             string reminderBody = $"<div>Event reminder for: {calendarItemProgeny.NickName}</div>"; // Todo: Localize and use template.
             reminderBody += $"<div>Title: {calendarItem.Title}</div>";
@@ -150,11 +153,11 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             reminderBody += $"<div>Location: {calendarItem.Location}</div>";
             reminderBody += $"<div>Context: {calendarItem.Context}</div>";
             reminderBody += $"<div>Notes: {calendarItem.Notes}</div>";
-            reminderBody += $"<div>Link: <a href=\"https://web.kinauna.com/Calendar?eventId={calendarItem.EventId}\">{calendarItemProgeny.NickName} : Calendar</a></div>";
+            reminderBody += $"<div>Link: <a href=\"{eventLink}\">{calendarItemProgeny.NickName} : Calendar</a></div>";
 
             await emailSender.SendEmailAsync(reminderUserInfo.UserEmail, reminderTitle, reminderBody);
 
-            await pushMessageSender.SendMessage(reminderUserInfo.UserId, reminderTitle, $"Event reminder for: {calendarItemProgeny.NickName}", $"https://web.kinauna.com/Calendar?eventId={calendarItem.EventId}", "kinaunacalendar" + calendarItemProgeny.Id);
+            await pushMessageSender.SendMessage(reminderUserInfo.UserId, reminderTitle, $"Event reminder for: {calendarItemProgeny.NickName}", eventLink, "kinaunacalendar" + calendarItem.EventId);
 
             calendarReminder.Notified = true;
 

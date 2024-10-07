@@ -61,14 +61,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Calendar/ViewEvent?eventId=" + eventItem.EventId + "&childId=" + eventItem.ProgenyId,
+                    Link = "/Calendar?eventId=" + eventItem.EventId + "&childId=" + eventItem.ProgenyId,
                     Type = "Notification"
                 };
 
                 webNotification = await notificationsService.AddWebNotification(webNotification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
-                    webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacalendar" + eventItem.ProgenyId);
+                    webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacalendar" + eventItem.EventId);
             }
         }
 
@@ -107,7 +107,7 @@ namespace KinaUnaProgenyApi.Services
                 webNotification = await notificationsService.AddWebNotification(webNotification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
-                    webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacontact" + contactItem.ProgenyId);
+                    webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacontact" + contactItem.ContactId);
             }
         }
 
