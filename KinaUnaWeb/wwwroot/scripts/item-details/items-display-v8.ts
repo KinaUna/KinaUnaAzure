@@ -92,7 +92,10 @@ function getItemIdFromPopupDiv(itemTypeString: string): number {
     if (popupIdDiv !== null) {
         let popIdData = popupIdDiv.getAttribute('data-popup-' + itemTypeString + '-id');
         if (popIdData) {
-            itemId = parseInt(popIdData.valueOf());
+            let parsedItemId = parseInt(popIdData.valueOf());
+            if (parsedItemId) {
+                itemId = parsedItemId;
+            }
         }
     }
 

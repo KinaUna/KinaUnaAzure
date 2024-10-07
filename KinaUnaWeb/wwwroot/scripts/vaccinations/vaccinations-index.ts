@@ -6,7 +6,7 @@ import { TimeLineType } from "../page-models-v8.js";
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
-    await showPopupAtLoad(TimeLineType.Measurement);
+    await showPopupAtLoad(TimeLineType.Vaccination);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
