@@ -43,9 +43,10 @@ namespace KinaUnaWeb.Controllers
         /// <param name="year">Start year.</param>
         /// <param name="month">Start month.</param>
         /// <param name="day">Start day.</param>
+        /// <param name="pictureId">The PictureId of the Picture to show in a popup. 0: don't show any popup.</param>
         /// <returns>View with PicturesListViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int id = 1, int pageSize = 10, int childId = 0, int sortBy = 2, string tagFilter = "", int year = 0, int month = 0, int day = 0)
+        public async Task<IActionResult> Index(int id = 1, int pageSize = 10, int childId = 0, int sortBy = 2, string tagFilter = "", int year = 0, int month = 0, int day = 0, int pictureId = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             PicturesListViewModel model = new(baseModel)
@@ -66,7 +67,8 @@ namespace KinaUnaWeb.Controllers
                     Year = year,
                     Month = month,
                     Day = day
-                }
+                },
+                PictureId = pictureId
             };
             
             return View(model);

@@ -9,8 +9,8 @@ export function addLocationItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-location-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayLocationItem(itemId);
+            element.addEventListener('click', async function () {
+                await displayLocationItem(itemId);
             });
         });
     }
@@ -19,8 +19,11 @@ export function addLocationItemListeners(itemId) {
  * Enable other scripts to call the DisplayLocationItem function.
  * @param {string} locationId The id of the location item to display.
  */
-export function popupLocationItem(locationId) {
+export async function popupLocationItem(locationId) {
     displayLocationItem(locationId);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Displays a location item in a popup.
@@ -66,5 +69,8 @@ async function displayLocationItem(locationId) {
         console.error('Error getting location item. Error: ' + error);
     });
     stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 //# sourceMappingURL=location-details.js.map

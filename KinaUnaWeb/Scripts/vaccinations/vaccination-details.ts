@@ -10,8 +10,8 @@ export function addVaccinationItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-vaccination-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayVaccinationItem(itemId);
+            element.addEventListener('click', async function () {
+                await displayVaccinationItem(itemId);
             });
         });
     }
@@ -21,9 +21,12 @@ export function addVaccinationItemListeners(itemId: string): void {
  * Enable other scripts to call the displayVaccinationItem function.
  * @param {string} vaccinationId The id of the vaccination item to display.
  */
-export function popupVaccinationItem(vaccinationId: string): void {
-    displayVaccinationItem(vaccinationId);
+export async function popupVaccinationItem(vaccinationId: string): Promise<void> {
+    await displayVaccinationItem(vaccinationId);
 
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -69,4 +72,8 @@ async function displayVaccinationItem(vaccinationId: string): Promise<void> {
     });
 
     stopFullPageSpinner();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }

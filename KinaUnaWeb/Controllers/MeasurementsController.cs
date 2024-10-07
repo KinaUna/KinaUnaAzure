@@ -18,9 +18,10 @@ namespace KinaUnaWeb.Controllers
         /// Measurement Index page. Shows a list of all measurements for a Progeny.
         /// </summary>
         /// <param name="childId">The Id of the Progeny to show Measurements for.</param>
+        /// <param name="measurementId">The Id of the Measurement to show. If 0 no Measurement popup is shown.</param>
         /// <returns>View with MeasurementViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0)
+        public async Task<IActionResult> Index(int childId = 0, int measurementId = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             MeasurementViewModel model = new(baseModel);
@@ -41,7 +42,9 @@ namespace KinaUnaWeb.Controllers
                 };
                 model.MeasurementsList = [m];
             }
-            
+
+            model.MeasurementId = measurementId;
+
             return View(model);
         }
 

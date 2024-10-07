@@ -1,4 +1,6 @@
 import { setMomentLocale } from '../data-tools-v8.js';
+import { showPopupAtLoad } from '../item-details/items-display-v8.js';
+import { TimeLineType } from '../page-models-v8.js';
 let sleepChart;
 /**
  * Formats a date string to a timestamp.
@@ -127,9 +129,13 @@ function setupSleepSlider() {
 /**
  * Initializes the page elements when it is loaded.
  */
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     setupDataTable();
     setupSleepChart();
     setupSleepSlider();
+    await showPopupAtLoad(TimeLineType.Sleep);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 });
 //# sourceMappingURL=sleep-index.js.map

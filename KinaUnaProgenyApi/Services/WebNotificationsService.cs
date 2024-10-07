@@ -100,7 +100,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Contacts/ViewContact?contactId=" + contactItem.ContactId + "&childId=" + contactItem.ProgenyId,
+                    Link = "/Contacts?contactId=" + contactItem.ContactId + "&childId=" + contactItem.ProgenyId,
                     Type = "Notification"
                 };
 
@@ -137,14 +137,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Friends/ViewFriend?friendId=" + friendItem.FriendId,
+                    Link = "/Friends?friendId=" + friendItem.FriendId + "&childId=" + friendItem.ProgenyId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunafriend" + friendItem.ProgenyId);
+                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunafriend" + friendItem.FriendId);
             }
         }
 
@@ -184,14 +184,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Locations/ViewLocation?locationId=" + locationItem.LocationId,
+                    Link = "/Locations?locationId=" + locationItem.LocationId + "&childId=" + locationItem.ProgenyId,
                     Type = "Notification"
                 };
 
                 webNotification = await notificationsService.AddWebNotification(webNotification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
-                    webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunalocation" + locationItem.ProgenyId);
+                    webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunalocation" + locationItem.LocationId);
             }
         }
 
@@ -222,14 +222,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Measurements/ViewMeasurement?measurementId=" + measurementItem.MeasurementId,
+                    Link = "/Measurements?measurementId=" + measurementItem.MeasurementId + "&childId=" + measurementItem.ProgenyId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunameasurement" + measurementItem.ProgenyId);
+                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunameasurement" + measurementItem.MeasurementId);
             }
         }
 
@@ -260,14 +260,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Notes/ViewNote?noteId=" + noteItem.NoteId,
+                    Link = "/Notes?noteId=" + noteItem.NoteId + "&childId=" + noteItem.ProgenyId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunanote" + noteItem.ProgenyId);
+                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunanote" + noteItem.NoteId);
             }
         }
 
@@ -309,14 +309,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Pictures/Picture/" + pictureItem.PictureId + "?childId=" + pictureItem.ProgenyId,
+                    Link = "/Pictures?childId=" + pictureItem.ProgenyId + "&pictureId=" + pictureItem.PictureId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaphoto" + pictureItem.ProgenyId);
+                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaphoto" + pictureItem.PictureId);
             }
         }
 
@@ -358,14 +358,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Videos/Video/" + videoItem.VideoId + "?childId=" + videoItem.ProgenyId,
+                    Link = "/Videos?videoId=" + videoItem.VideoId + "&childId=" + videoItem.ProgenyId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavideo" + videoItem.ProgenyId);
+                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavideo" + videoItem.VideoId);
             }
         }
 
@@ -400,14 +400,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Skills/ViewSkill?skillId=" + skillItem.SkillId,
+                    Link = "/Skills?skillId=" + skillItem.SkillId + "&childId=" + skillItem.ProgenyId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaskill" + skillItem.ProgenyId);
+                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaskill" + skillItem.SkillId);
             }
         }
 
@@ -443,13 +443,13 @@ namespace KinaUnaProgenyApi.Services
                 string tagString = string.Empty;
                 if (commentItem.ItemType == (int)KinaUnaTypes.TimeLineType.Photo)
                 {
-                    webNotification.Link = "/Pictures/Picture/" + commentItem.ItemId + "?childId=" + commentItem.Progeny.Id;
+                    webNotification.Link = "/Pictures?pictureId=" + commentItem.ItemId + "&childId=" + commentItem.Progeny.Id;
                     tagString = "kinaunaphoto";
                 }
 
                 if (commentItem.ItemType == (int)KinaUnaTypes.TimeLineType.Video)
                 {
-                    webNotification.Link = "/Videos/Video/" + commentItem.ItemId + "?childId=" + commentItem.Progeny.Id;
+                    webNotification.Link = "/Videos?videoId=" + commentItem.ItemId + "&childId=" + commentItem.Progeny.Id;
                     tagString = "kinaunavideo";
                 }
 
@@ -458,7 +458,7 @@ namespace KinaUnaProgenyApi.Services
                 webNotification = await notificationsService.AddWebNotification(webNotification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
-                    webNotification.Message, Constants.WebAppUrl + webNotification.Link, tagString + commentItem.Progeny.Id);
+                    webNotification.Message, Constants.WebAppUrl + webNotification.Link, tagString + commentItem.CommentId);
             }
         }
 
@@ -492,14 +492,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Sleep/ViewSleep?itemId=" + sleepItem.SleepId,
+                    Link = "/Sleep?sleepId=" + sleepItem.SleepId + "&childId=" + sleepItem.ProgenyId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title, notification.Message,
-                    Constants.WebAppUrl + notification.Link, "kinaunasleep" + sleepItem.ProgenyId);
+                    Constants.WebAppUrl + notification.Link, "kinaunasleep" + sleepItem.SleepId);
             }
         }
 
@@ -530,14 +530,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Vaccinations/ViewVaccination?vaccinationId=" + vaccinationItem.VaccinationId,
+                    Link = "/Vaccinations?vaccinationId=" + vaccinationItem.VaccinationId + "&childId=" + vaccinationItem.ProgenyId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavaccination" + vaccinationItem.ProgenyId);
+                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavaccination" + vaccinationItem.VaccinationId);
             }
         }
 
@@ -576,14 +576,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = userInfo.ProfilePicture,
                     Title = title,
-                    Link = "/Vocabulary/ViewVocabularyItem?vocabularyId=" + vocabularyItem.WordId,
+                    Link = "/Vocabulary?vocabularyId=" + vocabularyItem.WordId + "&childId=" + vocabularyItem.ProgenyId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavocabulary" + vocabularyItem.ProgenyId);
+                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavocabulary" + vocabularyItem.WordId);
             }
         }
 

@@ -8,6 +8,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<FriendViewModel> FriendViewModelsList { get; init; }
         public string TagFilter { get; set; }
         public FriendsPageParameters FriendsPageParameters { get; set; }
+        public int FriendId { get; set; }
 
         public FriendsListViewModel()
         {

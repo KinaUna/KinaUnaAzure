@@ -10,8 +10,8 @@ export function addContactItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-contact-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayContactItem(itemId);
+            element.addEventListener('click', async function () {
+                await displayContactItem(itemId);
             });
         });
     }
@@ -21,8 +21,12 @@ export function addContactItemListeners(itemId: string): void {
  * Enable other scripts to call the displayContactItem function.
  * @param {string} contactId The id of the contact item to display.
  */
-export function popupContactItem(contactId: string): void {
-    displayContactItem(contactId);
+export async function popupContactItem(contactId: string): Promise<void> {
+    await displayContactItem(contactId);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -68,4 +72,8 @@ async function displayContactItem(contactId: string): Promise<void> {
     });
 
     stopFullPageSpinner();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }

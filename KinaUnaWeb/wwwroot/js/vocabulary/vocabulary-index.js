@@ -1,4 +1,6 @@
 import { setMomentLocale } from '../data-tools-v8.js';
+import { showPopupAtLoad } from '../item-details/items-display-v8.js';
+import { TimeLineType } from '../page-models-v8.js';
 /**
  * Sets up the Vocabulary chart.
  */
@@ -60,6 +62,7 @@ function setupVocabularyDataTable() {
 document.addEventListener('DOMContentLoaded', async function () {
     setupVocabularyChart();
     setupVocabularyDataTable();
+    await showPopupAtLoad(TimeLineType.Vocabulary);
     return new Promise(function (resolve, reject) {
         resolve();
     });

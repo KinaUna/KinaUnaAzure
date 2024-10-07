@@ -10,8 +10,8 @@ export function addVocabularyItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-vocabulary-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                DisplayVocabularyItem(itemId);
+            element.addEventListener('click', async function () {
+                await DisplayVocabularyItem(itemId);
             });
         });
     }
@@ -21,9 +21,12 @@ export function addVocabularyItemListeners(itemId: string): void {
  * Enable other scripts to call the DisplayVocabularyItem function.
  * @param {string} vocabularyId The id of the vocabulary item to display.
  */
-export function popupVocabularyItem(vocabularyId: string): void {
-    DisplayVocabularyItem(vocabularyId);
+export async function popupVocabularyItem(vocabularyId: string): Promise<void> {
+    await DisplayVocabularyItem(vocabularyId);
 
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**

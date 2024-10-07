@@ -4,9 +4,9 @@ import { TimeLineType } from "../page-models-v8.js";
  * Initializes the page elements when it is loaded.
  */
 document.addEventListener('DOMContentLoaded', async function () {
-    await showPopupAtLoad(TimeLineType.Measurement);
+    await showPopupAtLoad(TimeLineType.Vaccination);
     return new Promise(function (resolve, reject) {
         resolve();
     });
 });
-//# sourceMappingURL=measurements-index.js.map
+//# sourceMappingURL=vaccinations-index.js.map

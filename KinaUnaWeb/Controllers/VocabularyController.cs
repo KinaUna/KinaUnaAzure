@@ -18,9 +18,10 @@ namespace KinaUnaWeb.Controllers
         /// Vocabulary Index page. Shows a list of all vocabulary items for a progeny.
         /// </summary>
         /// <param name="childId">The Id of the Progeny to show VocabularyItems for.</param>
+        /// <param name="vocabularyId">The Id of the VocabularyItem to show. If 0 no VocabularyItem popup is shown.</param>
         /// <returns>View with VocabularyListViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0)
+        public async Task<IActionResult> Index(int childId = 0, int vocabularyId = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             VocabularyListViewModel model = new(baseModel);
@@ -30,7 +31,8 @@ namespace KinaUnaWeb.Controllers
             model.SetVocabularyList(wordList);
             
             model.SetChartData();
-            
+            model.VocabularyId = vocabularyId;
+
             return View(model);
         }
 

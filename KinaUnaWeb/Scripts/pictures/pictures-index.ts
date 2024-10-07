@@ -1,11 +1,13 @@
 ﻿import * as LocaleHelper from '../localization-v8.js';
-import { Picture, PictureViewModel, PicturesList, PicturesPageParameters, TimelineItem } from '../page-models-v8.js';
+import { Picture, PictureViewModel, PicturesList, PicturesPageParameters, TimeLineType, TimelineItem } from '../page-models-v8.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
+import { popupPictureDetails } from './picture-details.js';
 
 let picturesPageParameters: PicturesPageParameters | null = new PicturesPageParameters();
+let popupPictureId: number = 0;
 const picturesPageSettingsStorageKey = 'pictures_page_parameters';
 
 let languageId = 1;
@@ -84,6 +86,7 @@ function getPageParametersFromPageData(): PicturesPageParameters | null {
 
     return picturesPageParametersResult;
 }
+
 /** Shows the loading spinner in the loading-items-div.
  */
 function runLoadingSpinner(): void {
@@ -226,6 +229,7 @@ function setBrowserUrl(parameters: PicturesPageParameters, replaceState: boolean
     url.searchParams.set('month', parameters.month.toString());
     url.searchParams.set('day', parameters.day.toString());
     url.searchParams.set('sortTags', parameters.sortTags.toString());
+    url.searchParams.set('pictureId', popupPictureId.toString());
     if (replaceState) {
         window.history.replaceState({}, '', url);
     }
@@ -255,7 +259,7 @@ async function loadPageFromHistory(): Promise<void> {
         picturesPageParameters.month = url.searchParams.get('month') ? parseInt(url.searchParams.get('month') as string) : 0;
         picturesPageParameters.day = url.searchParams.get('day') ? parseInt(url.searchParams.get('day') as string) : 0;
         picturesPageParameters.sortTags = url.searchParams.get('sortTags') ? parseInt(url.searchParams.get('sortTags') as string) : 0;
-
+        popupPictureId = url.searchParams.get('pictureId') ? parseInt(url.searchParams.get('pictureId') as string) : 0;
         firstRun = false;
         clearPictureElements();
         picturesPageParameters = await getPicturesList(picturesPageParameters, false);
@@ -773,10 +777,23 @@ function refreshSelectPickers(): void {
     }
 }
 
+function getPopupPictureId() {
+    let pictureIdDiv = document.querySelector <HTMLDivElement>('#popup-picture-id-div');
+    if (pictureIdDiv !== null) {
+        let pictureIdData = pictureIdDiv.dataset.popupPictureId;
+        if (pictureIdData) {
+            popupPictureId = parseInt(pictureIdData);
+
+        }
+    }
+}
+
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     picturesPageProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
+
+    getPopupPictureId();
 
     await initialSettingsPanelSetup();
 
@@ -785,6 +802,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     addBrowserNavigationEventListeners();    
 
     SettingsHelper.initPageSettings();
+
+    await showPopupAtLoad(TimeLineType.Photo);
 
     picturesPageParameters = getPageParametersFromPageData();
     if (picturesPageParameters !== null) {
@@ -797,8 +816,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
         if (firstRun) {
             picturesPageParameters = await getPicturesList(picturesPageParameters, false);
         }
-    }
-    
+    }    
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

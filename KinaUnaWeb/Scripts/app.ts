@@ -1,4 +1,4 @@
-﻿const serviceWorkerVersion = 'v5';
+﻿const serviceWorkerVersion = 'v6';
 import { startFullPageSpinner, stopFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v8.js';
 import { initSidebar } from './sidebar-v8.js';
 

@@ -1,22 +1,22 @@
-import { addPictureItemEventListeners } from '../pictures/picture-details.js';
-import { addCalendarEventListeners } from '../calendar/calendar-details.js';
-import { addVideoItemEventListeners } from '../videos/video-details.js';
-import { addNoteEventListeners } from '../notes/note-details.js';
-import { addSleepEventListeners } from '../sleep/sleep-details.js';
-import { addFriendItemListeners } from '../friends/friend-details.js';
-import { addContactItemListeners } from '../contacts/contact-details.js';
-import { addLocationItemListeners } from '../locations/location-details.js';
-import { addMeasurementItemListeners } from '../measurements/measurement-details.js';
-import { addSkillItemListeners } from '../skills/skill-details.js';
-import { addVocabularyItemListeners } from '../vocabulary/vocabulary-details.js';
-import { addVaccinationItemListeners } from '../vaccinations/vaccination-details.js';
+import { addPictureItemEventListeners, popupPictureDetails } from '../pictures/picture-details.js';
+import { addCalendarEventListeners, popupEventItem } from '../calendar/calendar-details.js';
+import { addVideoItemEventListeners, popupVideoDetails } from '../videos/video-details.js';
+import { addNoteEventListeners, popupNoteItem } from '../notes/note-details.js';
+import { addSleepEventListeners, popupSleepItem } from '../sleep/sleep-details.js';
+import { addFriendItemListeners, popupFriendItem } from '../friends/friend-details.js';
+import { addContactItemListeners, popupContactItem } from '../contacts/contact-details.js';
+import { addLocationItemListeners, popupLocationItem } from '../locations/location-details.js';
+import { addMeasurementItemListeners, popupMeasurementItem } from '../measurements/measurement-details.js';
+import { addSkillItemListeners, popupSkillItem } from '../skills/skill-details.js';
+import { addVocabularyItemListeners, popupVocabularyItem } from '../vocabulary/vocabulary-details.js';
+import { addVaccinationItemListeners, popupVaccinationItem } from '../vaccinations/vaccination-details.js';
 /**
  * Adds event listeners for a given timeline item. Used to show popups for items.
  * @param {TimelineItem} item The timeline item to add event listeners for.
  */
-export function addTimelineItemEventListener(item) {
+export async function addTimelineItemEventListener(item) {
     if (item.itemType === 1) {
-        addPictureItemEventListeners(item.itemId);
+        await addPictureItemEventListeners(item.itemId);
     }
     if (item.itemType === 2) {
         addVideoItemEventListeners(item.itemId);
@@ -69,5 +69,111 @@ export function showBodyScrollbars() {
     if (bodyElement) {
         bodyElement.style.removeProperty('overflow');
     }
+}
+function getItemIdFromPopupDiv(itemTypeString) {
+    let itemId = 0;
+    const popupIdDiv = document.querySelector('#popup-' + itemTypeString + '-id-div');
+    if (popupIdDiv !== null) {
+        let popIdData = popupIdDiv.getAttribute('data-popup-' + itemTypeString + '-id');
+        if (popIdData) {
+            let parsedItemId = parseInt(popIdData.valueOf());
+            if (parsedItemId) {
+                itemId = parsedItemId;
+            }
+        }
+    }
+    return itemId;
+}
+/**
+ * Shows the video details popup when the page is loaded, if the url query string contains videoId that is not 0.
+ */
+export async function showPopupAtLoad(itemType) {
+    if (itemType === 1) {
+        let itemId = getItemIdFromPopupDiv('picture');
+        if (itemId !== 0) {
+            await popupPictureDetails(itemId.toString());
+        }
+    }
+    if (itemType === 2) {
+        let itemId = getItemIdFromPopupDiv('video');
+        if (itemId !== 0) {
+            await popupVideoDetails(itemId.toString());
+        }
+    }
+    if (itemType === 3) { // Special case for calendar events, as we need to navigate to the date of the event.
+        const popupEventIdDiv = document.querySelector('#popup-event-id-div');
+        if (popupEventIdDiv !== null) {
+            if (popupEventIdDiv.dataset.popupEventId) {
+                let eventId = parseInt(popupEventIdDiv.dataset.popupEventId);
+                if (eventId > 0) {
+                    if (popupEventIdDiv.dataset.popupEventDateYear && popupEventIdDiv.dataset.popupEventDateMonth && popupEventIdDiv.dataset.popupEventDateDay) {
+                        const popupEventYear = parseInt(popupEventIdDiv.dataset.popupEventDateYear);
+                        const popupEventMonth = parseInt(popupEventIdDiv.dataset.popupEventDateMonth) - 1;
+                        const popupEventDay = parseInt(popupEventIdDiv.dataset.popupEventDateDay);
+                        let scheduleInstance = document.querySelector('.e-schedule').ej2_instances[0];
+                        scheduleInstance.selectedDate = new Date(popupEventYear, popupEventMonth, popupEventDay);
+                    }
+                    await popupEventItem(eventId.toString());
+                }
+            }
+        }
+    }
+    if (itemType === 4) {
+        let itemId = getItemIdFromPopupDiv('vocabulary');
+        if (itemId !== 0) {
+            await popupVocabularyItem(itemId.toString());
+        }
+    }
+    if (itemType === 5) {
+        let itemId = getItemIdFromPopupDiv('skill');
+        if (itemId !== 0) {
+            await popupSkillItem(itemId.toString());
+        }
+    }
+    if (itemType === 6) {
+        let itemId = getItemIdFromPopupDiv('friend');
+        if (itemId !== 0) {
+            await popupFriendItem(itemId.toString());
+        }
+    }
+    if (itemType === 7) {
+        let itemId = getItemIdFromPopupDiv('measurement');
+        if (itemId !== 0) {
+            await popupMeasurementItem(itemId.toString());
+        }
+    }
+    if (itemType === 8) {
+        let itemId = getItemIdFromPopupDiv('sleep');
+        if (itemId !== 0) {
+            await popupSleepItem(itemId.toString());
+        }
+    }
+    if (itemType === 9) {
+        let itemId = getItemIdFromPopupDiv('note');
+        if (itemId !== 0) {
+            await popupNoteItem(itemId.toString());
+        }
+    }
+    if (itemType === 10) {
+        let itemId = getItemIdFromPopupDiv('contact');
+        if (itemId !== 0) {
+            await popupContactItem(itemId.toString());
+        }
+    }
+    if (itemType === 11) {
+        let itemId = getItemIdFromPopupDiv('vaccination');
+        if (itemId !== 0) {
+            await popupVaccinationItem(itemId.toString());
+        }
+    }
+    if (itemType === 12) {
+        let itemId = getItemIdFromPopupDiv('location');
+        if (itemId !== 0) {
+            await popupLocationItem(itemId.toString());
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 //# sourceMappingURL=items-display-v8.js.map

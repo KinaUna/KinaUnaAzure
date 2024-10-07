@@ -7,6 +7,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         public List<NoteViewModel> NotesList { get; init; }
         public NotesPageParameters NotesPageParameters { get; init; }
+        public int NoteId { get; set; }
+
         public NotesListViewModel()
         {
             NotesList = [];

@@ -23,8 +23,11 @@ export function addVideoItemEventListeners(videoId) {
         });
     }
 }
-export function popupVideoDetails(videoId) {
-    displayVideoDetails(videoId);
+export async function popupVideoDetails(videoId) {
+    await displayVideoDetails(videoId);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Overrides the comment submit form to send the comment data to the server and then refresh the video details popup.
@@ -138,7 +141,7 @@ async function submitVideoEdit() {
             if (currentVideoIdDiv) {
                 const currentVideoId = currentVideoIdDiv.getAttribute('data-current-video-id');
                 if (currentVideoId) {
-                    displayVideoDetails(currentVideoId, true);
+                    await displayVideoDetails(currentVideoId, true);
                 }
             }
         }
@@ -178,19 +181,19 @@ async function setupDateTimePicker() {
 function addNavigationEventListeners() {
     let previousLink = document.querySelector('#previous-video-link');
     if (previousLink) {
-        previousLink.addEventListener('click', function () {
+        previousLink.addEventListener('click', async function () {
             let previousVideoId = previousLink.getAttribute('data-previous-video-id');
             if (previousVideoId) {
-                displayVideoDetails(previousVideoId, true);
+                await displayVideoDetails(previousVideoId, true);
             }
         });
     }
     let nextLink = document.querySelector('#next-video-link');
     if (nextLink) {
-        nextLink.addEventListener('click', function () {
+        nextLink.addEventListener('click', async function () {
             let nextVideoId = nextLink.getAttribute('data-next-video-id');
             if (nextVideoId) {
-                displayVideoDetails(nextVideoId, true);
+                await displayVideoDetails(nextVideoId, true);
             }
         });
     }
@@ -201,7 +204,7 @@ function addNavigationEventListeners() {
             videoDetailsTouchStartX = event.touches[0].clientX;
             videoDetailsTouchStartY = event.touches[0].clientY;
         });
-        videoDetailsDiv.addEventListener('touchend', event => {
+        videoDetailsDiv.addEventListener('touchend', async (event) => {
             videoDetailsTouchEndX = event.changedTouches[0].clientX;
             videoDetailsTouchEndY = event.changedTouches[0].clientY;
             if (Math.abs(videoDetailsTouchEndY - videoDetailsTouchStartY) > 100) {
@@ -213,13 +216,13 @@ function addNavigationEventListeners() {
             if (videoDetailsTouchEndX < videoDetailsTouchStartX) {
                 let nextVideoId = nextLink?.getAttribute('data-next-video-id');
                 if (nextVideoId) {
-                    displayVideoDetails(nextVideoId, true);
+                    await displayVideoDetails(nextVideoId, true);
                 }
             }
             if (videoDetailsTouchEndX > videoDetailsTouchStartX) {
                 let previousVideoId = previousLink?.getAttribute('data-previous-video-id');
                 if (previousVideoId) {
-                    displayVideoDetails(previousVideoId, true);
+                    await displayVideoDetails(previousVideoId, true);
                 }
             }
         });
@@ -321,6 +324,9 @@ async function displayVideoDetails(videoId, isPopupVisible = false) {
     else {
         stopLoadingItemsSpinner('item-details-content-wrapper');
     }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Gets the video page parameters from the page data.

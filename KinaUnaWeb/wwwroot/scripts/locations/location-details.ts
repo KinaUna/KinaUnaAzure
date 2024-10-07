@@ -11,8 +11,8 @@ export function addLocationItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-location-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayLocationItem(itemId);
+            element.addEventListener('click', async function () {
+                await displayLocationItem(itemId);
             });
         });
     }
@@ -22,8 +22,12 @@ export function addLocationItemListeners(itemId: string): void {
  * Enable other scripts to call the DisplayLocationItem function.
  * @param {string} locationId The id of the location item to display.
  */
-export function popupLocationItem(locationId: string): void {
+export async function popupLocationItem(locationId: string): Promise<void> {
     displayLocationItem(locationId);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -71,4 +75,8 @@ async function displayLocationItem(locationId: string): Promise<void> {
     });
 
     stopFullPageSpinner();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }

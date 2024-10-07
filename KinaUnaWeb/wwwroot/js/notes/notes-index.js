@@ -1,4 +1,4 @@
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as pageModels from '../page-models-v8.js';
 const notesPageSettingsStorageKey = 'notes_page_parameters';
 let notesPageParameters = new pageModels.NotesPageParameters();
@@ -208,7 +208,7 @@ function sortNotesPageDescending() {
     sortAscendingSettingsButton?.classList.remove('active');
     notesPageParameters.sort = 1;
 }
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     const notesPageSettingsContentDiv = document.querySelector('#page-settings-content-div');
     if (notesPageSettingsContentDiv !== null) {
         notesPageSettingsDiv?.appendChild(notesPageSettingsContentDiv);
@@ -228,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
         sortAscendingSettingsButton?.classList.add('active');
         sortDescendingSettingsButton?.classList.remove('active');
     }
+    await showPopupAtLoad(pageModels.TimeLineType.Note);
     getNotes();
     if (nextNotesItemsPageButton !== null && previousNotesItemsPageButton !== null) {
         nextNotesItemsPageButton.addEventListener('click', getNextNotesPage);
@@ -256,5 +257,8 @@ document.addEventListener('DOMContentLoaded', function () {
     window.onpopstate = function (event) {
         getNotesPageFromHistory();
     };
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 });
 //# sourceMappingURL=notes-index.js.map

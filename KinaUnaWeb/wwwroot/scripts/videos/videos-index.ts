@@ -1,9 +1,9 @@
 import * as LocaleHelper from '../localization-v8.js';
-import { Video, VideoViewModel, VideosList, VideosPageParameters, TimelineItem } from '../page-models-v8.js';
+import { Video, VideoViewModel, VideosList, VideosPageParameters, TimelineItem, TimeLineType } from '../page-models-v8.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 
 let videosPageParameters: VideosPageParameters | null = new VideosPageParameters();
 const videosPageSettingsStorageKey = 'videos_page_parameters';
@@ -785,6 +785,9 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     SettingsHelper.initPageSettings();
 
     videosPageParameters = getPageParametersFromPageData();
+
+    await showPopupAtLoad(TimeLineType.Video);
+
     if (videosPageParameters !== null) {
 
         refreshSelectPickers();
