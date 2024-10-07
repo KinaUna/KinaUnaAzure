@@ -15,15 +15,19 @@ let pictureDetailsTouchEndY: number = 0;
  * When clicked, the picture details popup is displayed.
  * @param {string} pictureId The ID of the picture to display.
  */
-export function addPictureItemEventListeners(pictureId: string): void {
+export async function addPictureItemEventListeners(pictureId: string): Promise<void> {
     const pictureElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-picture-id="' + pictureId + '"]');
     if (pictureElementsWithDataId) {
         pictureElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayPictureDetails(pictureId);
+            element.addEventListener('click', async function () {
+                await displayPictureDetails(pictureId);
             });
         });
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -207,7 +211,6 @@ async function setupDateTimePicker(): Promise<void> {
     });
 }
 
-
 /**
  * Adds event listeners to the previous and next links in the item details popup.
  * Adds event listners for swipe navigation and full screen image display.
@@ -264,6 +267,7 @@ function addNavigationEventListeners(): void {
             }
         });
     }
+
     // Todo: Add pinch/scroll zoom
 
     // Full screen image display

@@ -134,6 +134,7 @@ function showPopupAtLoad() {
         }
     }
 }
+
 /**
  * Initializes page elements when it is loaded.
  */

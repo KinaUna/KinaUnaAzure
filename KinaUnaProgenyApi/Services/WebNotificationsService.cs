@@ -309,14 +309,14 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Pictures/Picture/" + pictureItem.PictureId + "?childId=" + pictureItem.ProgenyId,
+                    Link = "/Pictures?childId=" + pictureItem.ProgenyId + "&pictureId=" + pictureItem.PictureId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaphoto" + pictureItem.ProgenyId);
+                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaphoto" + pictureItem.PictureId);
             }
         }
 

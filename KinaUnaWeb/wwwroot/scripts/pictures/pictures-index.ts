@@ -4,6 +4,7 @@ import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDat
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { popupPictureDetails } from './picture-details.js';
 
 let picturesPageParameters: PicturesPageParameters | null = new PicturesPageParameters();
 const picturesPageSettingsStorageKey = 'pictures_page_parameters';
@@ -84,6 +85,7 @@ function getPageParametersFromPageData(): PicturesPageParameters | null {
 
     return picturesPageParametersResult;
 }
+
 /** Shows the loading spinner in the loading-items-div.
  */
 function runLoadingSpinner(): void {
@@ -773,6 +775,25 @@ function refreshSelectPickers(): void {
     }
 }
 
+/**
+ * Shows the picture details popup when the page is loaded, if the url query string contains pictureId that is not 0.
+ */
+async function showPopupAtLoad(): Promise<void> {
+    const popupPictureIdDiv = document.querySelector<HTMLDivElement>('#popup-picture-id-div');
+    if (popupPictureIdDiv !== null) {
+        if (popupPictureIdDiv.dataset.popupPictureId) {
+            let pictureId = parseInt(popupPictureIdDiv.dataset.popupPictureId);
+            if (pictureId > 0) {
+                await popupPictureDetails(pictureId.toString());
+            }
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     picturesPageProgenyId = getCurrentProgenyId();
@@ -798,7 +819,9 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
             picturesPageParameters = await getPicturesList(picturesPageParameters, false);
         }
     }
-    
+
+    await showPopupAtLoad();
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

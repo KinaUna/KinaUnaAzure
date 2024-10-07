@@ -13,15 +13,18 @@ let pictureDetailsTouchEndY = 0;
  * When clicked, the picture details popup is displayed.
  * @param {string} pictureId The ID of the picture to display.
  */
-export function addPictureItemEventListeners(pictureId) {
+export async function addPictureItemEventListeners(pictureId) {
     const pictureElementsWithDataId = document.querySelectorAll('[data-picture-id="' + pictureId + '"]');
     if (pictureElementsWithDataId) {
         pictureElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayPictureDetails(pictureId);
+            element.addEventListener('click', async function () {
+                await displayPictureDetails(pictureId);
             });
         });
     }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Enable other scripts to call the displayPictureDetails function.

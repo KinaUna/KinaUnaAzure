@@ -15,9 +15,9 @@ import { addVaccinationItemListeners } from '../vaccinations/vaccination-details
  * Adds event listeners for a given timeline item. Used to show popups for items.
  * @param {TimelineItem} item The timeline item to add event listeners for.
  */
-export function addTimelineItemEventListener(item: TimelineItem): void {
+export async function addTimelineItemEventListener(item: TimelineItem): Promise<void> {
     if (item.itemType === 1) {
-        addPictureItemEventListeners(item.itemId);
+        await addPictureItemEventListeners(item.itemId);
     }
 
     if (item.itemType === 2) {
