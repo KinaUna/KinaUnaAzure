@@ -26,8 +26,12 @@ export function addVideoItemEventListeners(videoId: string): void {
     }
 }
 
-export function popupVideoDetails(videoId: string): void {
-    displayVideoDetails(videoId);
+export async function popupVideoDetails(videoId: string): Promise<void> {
+    await displayVideoDetails(videoId);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -160,7 +164,7 @@ async function submitVideoEdit(): Promise<void> {
             if (currentVideoIdDiv) {
                 const currentVideoId = currentVideoIdDiv.getAttribute('data-current-video-id');
                 if (currentVideoId) {
-                    displayVideoDetails(currentVideoId, true);
+                    await displayVideoDetails(currentVideoId, true);
                 }
             }
         }
@@ -206,19 +210,19 @@ async function setupDateTimePicker(): Promise<void> {
 function addNavigationEventListeners(): void {
     let previousLink = document.querySelector<HTMLAnchorElement>('#previous-video-link');
     if (previousLink) {
-        previousLink.addEventListener('click', function () {
+        previousLink.addEventListener('click', async function () {
             let previousVideoId = previousLink.getAttribute('data-previous-video-id');
             if (previousVideoId) {
-                displayVideoDetails(previousVideoId, true);
+                await displayVideoDetails(previousVideoId, true);
             }
         });
     }
     let nextLink = document.querySelector<HTMLAnchorElement>('#next-video-link');
     if (nextLink) {
-        nextLink.addEventListener('click', function () {
+        nextLink.addEventListener('click', async function () {
             let nextVideoId = nextLink.getAttribute('data-next-video-id');
             if (nextVideoId) {
-                displayVideoDetails(nextVideoId, true);
+                await displayVideoDetails(nextVideoId, true);
             }
         });
     }
@@ -230,7 +234,7 @@ function addNavigationEventListeners(): void {
             videoDetailsTouchStartX = event.touches[0].clientX;
             videoDetailsTouchStartY = event.touches[0].clientY;
         });
-        videoDetailsDiv.addEventListener('touchend', event => {
+        videoDetailsDiv.addEventListener('touchend', async event => {
             videoDetailsTouchEndX = event.changedTouches[0].clientX;
             videoDetailsTouchEndY = event.changedTouches[0].clientY;
             if (Math.abs(videoDetailsTouchEndY - videoDetailsTouchStartY) > 100) {
@@ -244,13 +248,13 @@ function addNavigationEventListeners(): void {
             if (videoDetailsTouchEndX < videoDetailsTouchStartX) {
                 let nextVideoId = nextLink?.getAttribute('data-next-video-id');
                 if (nextVideoId) {
-                    displayVideoDetails(nextVideoId, true);
+                    await displayVideoDetails(nextVideoId, true);
                 }
             }
             if (videoDetailsTouchEndX > videoDetailsTouchStartX) {
                 let previousVideoId = previousLink?.getAttribute('data-previous-video-id');
                 if (previousVideoId) {
-                    displayVideoDetails(previousVideoId, true);
+                    await displayVideoDetails(previousVideoId, true);
                 }
             }
         });
@@ -307,7 +311,7 @@ function addShowMapButtonEventListener(): void {
  * @param {string} videoId The ID of the video to display.
  * @param {boolean} isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
  */
-async function displayVideoDetails(videoId: string, isPopupVisible: boolean = false) {
+async function displayVideoDetails(videoId: string, isPopupVisible: boolean = false): Promise<void> {
     if (!isPopupVisible) {
         startFullPageSpinner();
     }
@@ -358,6 +362,9 @@ async function displayVideoDetails(videoId: string, isPopupVisible: boolean = fa
         stopLoadingItemsSpinner('item-details-content-wrapper');
     }
 
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**

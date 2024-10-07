@@ -13,6 +13,7 @@
     string pageParameters = Json.Serialize(Model.LocationsPageParameters).ToString();
 }
 <div id="locations-page-parameters" class="d-none" data-locations-page-parameters="@pageParameters"></div>
+<div id="popup-location-id-div" class="d-none" data-popup-location-id="@Model.LocationId"></div>
 <div class="row m-0">
     <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
         <div class="btn-group" style="float: right;">

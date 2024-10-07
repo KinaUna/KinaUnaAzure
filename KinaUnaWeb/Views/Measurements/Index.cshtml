@@ -18,6 +18,8 @@
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
     <script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
 }
+
+<div id="popup-measurement-id-div" class="d-none" data-popup-measurement-id="@Model.MeasurementId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     @if (Model.MeasurementsList == null || !Model.MeasurementsList.Any())
     {
@@ -78,7 +80,7 @@
         <canvas id="chart-container2" style="clear: both; height: 380px;"></canvas>
         <script src="~/lib/chart.js/dist/Chart.js"></script>
         <script type="text/javascript">
-            var heightData = [@foreach (Measurement heightItem in Model.MeasurementsList)
+            let heightData = [@foreach (Measurement heightItem in Model.MeasurementsList)
                               {
                                   if (heightItem.Height > 0.0)
                                   {
@@ -88,8 +90,8 @@
                                       @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + heightItem.Height.ToString(CultureInfo.InvariantCulture) + "},")
                                   }
                               }];
-        var heightString = '@heightString';
-        var weightData = [@foreach (Measurement weightItem in Model.MeasurementsList)
+        let heightString = '@heightString';
+        let weightData = [@foreach (Measurement weightItem in Model.MeasurementsList)
                           {
                               if (weightItem.Weight > 0.0)
                               {
@@ -99,7 +101,81 @@
                                   @Html.Raw("{ x: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + weightItem.Weight.ToString(CultureInfo.InvariantCulture) + "},")
                               }
                           }];
-                          var weightString = '@weightString';
+         let weightString = '@weightString';
+         let measurementsHeightChartContainer = document.getElementById("chart-container");
+if (measurementsHeightChartContainer != null) {
+    let myChart = new Chart(measurementsHeightChartContainer, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: heightString,
+                data: heightData,
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            quarter: 'MMM YYYY'
+                        }
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: false
+                    }
+                }]
+            }
+        }
+    });
+}
+
+let measurementsWeightChartContainer = document.getElementById("chart-container2");
+if (measurementsWeightChartContainer !== null) {
+    var myChart2 = new Chart(measurementsWeightChartContainer, {
+        type: 'line',
+        data: {
+
+            datasets: [{
+                label: weightString,
+                data: weightData,
+                borderColor: 'rgb(95, 192, 192)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            quarter: 'MMM YYYY'
+                        }
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: false
+                    }
+                }]
+            }
+        }
+    });
+}
+
+
+
         </script>
         <script src="/js/measurements/measurements-index.js" type="module" asp-append-version="true"></script>
     }

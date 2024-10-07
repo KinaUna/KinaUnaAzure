@@ -8,6 +8,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<ContactViewModel> ContactsList { get; set; }
         public string TagFilter { get; set; }
         public ContactsPageParameters ContactsPageParameters { get; set; }
+        public int ContactId {get; set; }
 
         public ContactListViewModel()
         {

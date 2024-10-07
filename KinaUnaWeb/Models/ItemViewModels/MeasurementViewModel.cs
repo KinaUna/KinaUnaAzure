@@ -12,7 +12,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
         public Measurement MeasurementItem { get; set; } = new();
-        
+        public int MeasurementId { get; set; }
+
         public MeasurementViewModel()
         {
             ProgenyList = [];

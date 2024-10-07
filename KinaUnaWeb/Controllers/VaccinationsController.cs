@@ -17,16 +17,18 @@ namespace KinaUnaWeb.Controllers
         /// Vaccinations Index page. Shows a list of all vaccinations for a progeny.
         /// </summary>
         /// <param name="childId">The Id of the Progeny to show vaccinations for.</param>
+        /// <param name="vaccinationId">The Id of the Vaccination to show. If 0 no Vaccination popup is shown.</param>
         /// <returns>View with VaccinationViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0)
+        public async Task<IActionResult> Index(int childId = 0, int vaccinationId = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             VaccinationViewModel model = new(baseModel);
             
             List<Vaccination> vaccinations = await vaccinationsHttpClient.GetVaccinationsList(model.CurrentProgenyId, model.CurrentAccessLevel);
             model.SetVaccinationsList(vaccinations);
-            
+            model.VaccinationId = vaccinationId;
+
             return View(model);
         }
 

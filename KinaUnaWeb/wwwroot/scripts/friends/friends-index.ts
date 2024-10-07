@@ -1,5 +1,5 @@
 import { updateFilterButtonDisplay } from '../data-tools-v8.js';
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as pageModels from '../page-models-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
@@ -373,6 +373,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     refreshSelectPickers();
     addResetActiveTagFilterEventListener();
     await loadFriendsPageSettings();
+    await showPopupAtLoad(pageModels.TimeLineType.Friend);
     
     await getFriendsList();
 

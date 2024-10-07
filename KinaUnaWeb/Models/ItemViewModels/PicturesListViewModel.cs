@@ -20,6 +20,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int Year { get; set; } = 0;
         public int Month { get; set; } = 0;
         public int Day { get; set; } = 0;
+        public int PictureId { get; set; }
+
         public PicturesPageParameters PicturePageParameters { get; set; }
 
         public PicturesListViewModel()

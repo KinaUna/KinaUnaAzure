@@ -24,6 +24,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public TimeSpan LastYearAverage { get; set; }
 
         public Sleep SleepItem { get; set; } = new();
+        public int SleepId { get; set; }
 
         public SleepViewModel()
         {

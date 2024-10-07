@@ -9,8 +9,8 @@ export function addVaccinationItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-vaccination-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayVaccinationItem(itemId);
+            element.addEventListener('click', async function () {
+                await displayVaccinationItem(itemId);
             });
         });
     }
@@ -19,8 +19,11 @@ export function addVaccinationItemListeners(itemId) {
  * Enable other scripts to call the displayVaccinationItem function.
  * @param {string} vaccinationId The id of the vaccination item to display.
  */
-export function popupVaccinationItem(vaccinationId) {
-    displayVaccinationItem(vaccinationId);
+export async function popupVaccinationItem(vaccinationId) {
+    await displayVaccinationItem(vaccinationId);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Displays a vaccination item in a popup.
@@ -65,5 +68,8 @@ async function displayVaccinationItem(vaccinationId) {
         console.error('Error getting vaccination item. Error: ' + error);
     });
     stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 //# sourceMappingURL=vaccination-details.js.map

@@ -8,6 +8,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         public List<VocabularyItemViewModel> VocabularyList { get; set; }
         public List<WordDateCount> ChartData { get; set; } = [];
+        public int VocabularyId { get; set; }
 
         public VocabularyListViewModel()
         {

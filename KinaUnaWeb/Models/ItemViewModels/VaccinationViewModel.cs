@@ -15,6 +15,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         
         public Vaccination VaccinationItem { get; set; } = new();
 
+        public int VaccinationId { get; set; }
         public VaccinationViewModel()
         {
             ProgenyList = [];

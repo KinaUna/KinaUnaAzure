@@ -28,9 +28,10 @@ namespace KinaUnaWeb.Controllers
         /// <param name="page">Current page number.</param>
         /// <param name="sort">Sort order, 0 = oldest first, 1 = newest first.</param>
         /// <param name="itemsPerPage">Number of Notes per page.</param>
+        /// <param name="noteId">The Id of the Note to show. If 0 no Note popup is shown.</param>
         /// <returns></returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, int page = 0, int sort = 1, int itemsPerPage = 10)
+        public async Task<IActionResult> Index(int childId = 0, int page = 0, int sort = 1, int itemsPerPage = 10, int noteId = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             NotesListViewModel model = new(baseModel)
@@ -40,7 +41,8 @@ namespace KinaUnaWeb.Controllers
                     CurrentPageNumber = page,
                     Sort = sort,
                     ItemsPerPage = itemsPerPage
-                }
+                },
+                NoteId = noteId
             };
 
             return View(model);

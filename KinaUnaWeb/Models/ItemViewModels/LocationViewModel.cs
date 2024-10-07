@@ -22,6 +22,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int Sort { get; set; }
         public int SortTags { get; set; }
         public LocationsPageParameters LocationsPageParameters { get; set; }
+        public int LocationId { get; set; }
 
         public LocationViewModel()
         {

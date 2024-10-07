@@ -34,11 +34,12 @@
 <div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
 <div id="newer-text-div" class="d-none" data-newer-text="@newerText"></div>
 <div id="older-text-div" class="d-none" data-older-text="@olderText"></div>
+<div id="popup-video-id-div" class="d-none" data-popup-video-id="@Model.VideoId"></div>
 <div class="row m-0">
     <div class="col-12">
         <div id="page-title-div" class="row">
             <div class="col-auto">
-                <h2>@Model.CurrentProgeny.NickName @await LocaleManager.GetTranslation("Video gallery", PageNames.Videos, Model.LanguageId) - @await LocaleManager.GetTranslation("Page", PageNames.Videos, Model.LanguageId) @Model.PageNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.TotalPages</h2>
+                <h2>@Model.CurrentProgeny.NickName @await LocaleManager.GetTranslation("Video gallery", PageNames.Videos, Model.LanguageId)</h2>
             </div>
             <div class="col-sm-12 col-md p-1 pl-5">
                 <div id="settings-notification-div" class="ml-auto small text-muted"></div>

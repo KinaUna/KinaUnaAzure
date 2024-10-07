@@ -1,4 +1,4 @@
-﻿import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+﻿import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as pageModels from '../page-models-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
@@ -352,6 +352,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     addResetActiveTagFilterEventListener();
     setUpMap();
     await loadLocationsPageSettings();
+    await showPopupAtLoad(pageModels.TimeLineType.Location);
 
     await getLocationsList();
 

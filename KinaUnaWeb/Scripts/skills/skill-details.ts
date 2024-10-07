@@ -10,8 +10,8 @@ export function addSkillItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-skill-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displaySkillItem(itemId);
+            element.addEventListener('click', async function () {
+                await displaySkillItem(itemId);
             });
         });
     }
@@ -21,9 +21,12 @@ export function addSkillItemListeners(itemId: string): void {
  * Enable other scripts to call the DisplaySkillItem function.
  * @param {string} skillId The id of the skill item to display.
  */
-export function popupSkillItem(skillId: string): void {
-    displaySkillItem(skillId);
+export async function popupSkillItem(skillId: string): Promise<void> {
+    await displaySkillItem(skillId);
 
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**

@@ -1,4 +1,6 @@
 ﻿import { setMomentLocale } from '../data-tools-v8.js';
+import { showPopupAtLoad } from '../item-details/items-display-v8.js';
+import { TimeLineType } from '../page-models-v8.js';
 
 /**
  * Sets up the DataTable for the Skills list.
@@ -14,6 +16,8 @@ function setupDataTable(): void {
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     setupDataTable();
+
+    await showPopupAtLoad(TimeLineType.Skill);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

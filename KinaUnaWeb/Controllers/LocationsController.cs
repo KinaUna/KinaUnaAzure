@@ -32,9 +32,10 @@ namespace KinaUnaWeb.Controllers
         /// <param name="tagFilter">Filter result to include only locations where the tagFilter is in the Tags list. Empty string includes all locations.</param>
         /// <param name="sort">Sort order, 0 = ascending, 1 descending.</param>
         /// <param name="sortTags">0 = no sorting, 1 = sort alphabetically.</param>
+        /// <param name="locationId">The LocationId of the location to show details for. If 0, no Location popup is shown.</param>
         /// <returns>View with LocationViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, int sortBy = 0, string tagFilter = "", int sort = 0, int sortTags = 0)
+        public async Task<IActionResult> Index(int childId = 0, int sortBy = 0, string tagFilter = "", int sort = 0, int sortTags = 0, int locationId = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             LocationViewModel model = new(baseModel)
@@ -58,6 +59,8 @@ namespace KinaUnaWeb.Controllers
                 Sort = sort,
                 SortTags = sortTags
             };
+
+            model.LocationId = locationId;
 
             return View(model);
         }

@@ -21,6 +21,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int Month { get; set; } = 0;
         public int Day { get; set; } = 0;
         public VideosPageParameters VideosPageParameters { get; set; }
+        public int VideoId { get; set; }
 
         public VideoListViewModel()
         {

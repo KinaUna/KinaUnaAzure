@@ -17,6 +17,7 @@
     <script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="popup-skill-id-div" class="d-none" data-popup-skill-id="@Model.SkillId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     @if (Model.SkillsList == null || !Model.SkillsList.Any())
     {

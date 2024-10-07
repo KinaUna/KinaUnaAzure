@@ -9,8 +9,8 @@ export function addSleepEventListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-sleep-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displaySleepItem(itemId);
+            element.addEventListener('click', async function () {
+                await displaySleepItem(itemId);
             });
         });
     }
@@ -19,8 +19,11 @@ export function addSleepEventListeners(itemId) {
  * Enable other scripts to call the DisplaySleepItem function.
  * @param {string} sleepId The id of the sleep item to display.
  */
-export function popupSleepItem(sleepId) {
-    displaySleepItem(sleepId);
+export async function popupSleepItem(sleepId) {
+    await displaySleepItem(sleepId);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Displays a sleep item in a popup.
@@ -65,5 +68,8 @@ async function displaySleepItem(sleepId) {
         console.error('Error getting sleep item. Error: ' + error);
     });
     stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 //# sourceMappingURL=sleep-details.js.map
