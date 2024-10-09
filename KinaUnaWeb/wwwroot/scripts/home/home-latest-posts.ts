@@ -36,6 +36,10 @@ async function getTimelineList(parameters: TimelineParameters, reset: boolean = 
 
     if (reset) {
         timelineItemsList = [];
+        const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
+        if (timelineDiv != null) {
+            timelineDiv.innerHTML = '';
+        }
     }
 
     parameters.skip = timelineItemsList.length;
@@ -54,12 +58,6 @@ async function getTimelineList(parameters: TimelineParameters, reset: boolean = 
                 const latestPostsParentDiv = document.querySelector<HTMLDivElement>('#latest-posts-parent-div');
                 if (latestPostsParentDiv !== null) {
                     latestPostsParentDiv.classList.remove('d-none');
-                    if (reset) {
-                        const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
-                        if (timelineDiv != null) {
-                            timelineDiv.innerHTML = '';
-                        }
-                    }
                 }
                 for await (const timelineItemToAdd of newTimeLineItemsList.timelineItems) {
                     timelineItemsList.push(timelineItemToAdd);

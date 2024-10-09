@@ -132,6 +132,7 @@ function setSelectProgenyButtonsEventListeners() {
     let selectProgenyButtons = document.querySelectorAll('.select-progeny-button');
     selectProgenyButtons.forEach(function (button) {
         button.addEventListener('click', function (event) {
+            event.preventDefault();
             let selectedButton = event.target;
             selectedButton.classList.toggle('selected');
             setSelectedProgenies();
@@ -157,9 +158,9 @@ function setSetDefaultProgenyEventListeners() {
     setDefaultProgenyButtons.forEach(function (button) {
         button.addEventListener('click', async function (event) {
             let selectedButton = event.target;
-            let selectedProgenyId = selectedButton.getAttribute('data-set-default-progeny-id');
+            let selectedProgenyId = selectedButton.getAttribute('data-default-progeny-id');
             if (selectedProgenyId !== null) {
-                await setDefaultProgeny(parseInt(selectedProgenyId));
+                await setDefaultProgeny(parseInt(selectedProgenyId.valueOf()));
             }
         });
     });

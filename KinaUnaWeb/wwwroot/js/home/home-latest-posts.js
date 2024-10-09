@@ -30,6 +30,10 @@ async function getTimelineList(parameters, reset = false) {
     }
     if (reset) {
         timelineItemsList = [];
+        const timelineDiv = document.querySelector('#timeline-items-div');
+        if (timelineDiv != null) {
+            timelineDiv.innerHTML = '';
+        }
     }
     parameters.skip = timelineItemsList.length;
     await fetch('/Timeline/GetTimelineList', {
@@ -46,12 +50,6 @@ async function getTimelineList(parameters, reset = false) {
                 const latestPostsParentDiv = document.querySelector('#latest-posts-parent-div');
                 if (latestPostsParentDiv !== null) {
                     latestPostsParentDiv.classList.remove('d-none');
-                    if (reset) {
-                        const timelineDiv = document.querySelector('#timeline-items-div');
-                        if (timelineDiv != null) {
-                            timelineDiv.innerHTML = '';
-                        }
-                    }
                 }
                 for await (const timelineItemToAdd of newTimeLineItemsList.timelineItems) {
                     timelineItemsList.push(timelineItemToAdd);

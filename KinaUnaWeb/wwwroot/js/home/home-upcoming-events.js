@@ -30,6 +30,10 @@ async function getUpcomingEventsList(parameters, reset = false) {
     }
     if (reset) {
         upcomingEventsList = [];
+        const timelineDiv = document.querySelector('#upcoming-events-div');
+        if (timelineDiv !== null) {
+            timelineDiv.innerHTML = '';
+        }
     }
     parameters.skip = upcomingEventsList.length;
     await fetch('/Calendar/GetUpcomingEventsList', {
@@ -46,12 +50,6 @@ async function getUpcomingEventsList(parameters, reset = false) {
                 const upcomingEventsParentDiv = document.querySelector('#upcoming-events-parent-div');
                 if (upcomingEventsParentDiv !== null) {
                     upcomingEventsParentDiv.classList.remove('d-none');
-                    if (reset) {
-                        const timelineDiv = document.querySelector('#upcoming-events-div');
-                        if (timelineDiv !== null) {
-                            timelineDiv.innerHTML = '';
-                        }
-                    }
                 }
                 for await (const eventToAdd of newUpcomingEventsList.timelineItems) {
                     upcomingEventsList.push(eventToAdd);

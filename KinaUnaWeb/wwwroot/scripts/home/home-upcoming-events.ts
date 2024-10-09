@@ -36,6 +36,10 @@ async function getUpcomingEventsList(parameters: TimelineParameters, reset: bool
 
     if (reset) {
         upcomingEventsList = [];
+        const timelineDiv = document.querySelector<HTMLDivElement>('#upcoming-events-div');
+        if (timelineDiv !== null) {
+            timelineDiv.innerHTML = '';
+        }
     }
     parameters.skip = upcomingEventsList.length;
     
@@ -53,12 +57,6 @@ async function getUpcomingEventsList(parameters: TimelineParameters, reset: bool
                 const upcomingEventsParentDiv = document.querySelector<HTMLDivElement>('#upcoming-events-parent-div');
                 if (upcomingEventsParentDiv !== null) {
                     upcomingEventsParentDiv.classList.remove('d-none');
-                    if (reset) {
-                        const timelineDiv = document.querySelector<HTMLDivElement>('#upcoming-events-div');
-                        if (timelineDiv !== null) {
-                            timelineDiv.innerHTML = '';
-                        }
-                    }
                 }
                 for await (const eventToAdd of newUpcomingEventsList.timelineItems) {
                     upcomingEventsList.push(eventToAdd);

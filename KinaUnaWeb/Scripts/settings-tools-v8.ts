@@ -86,7 +86,7 @@ export function getSelectedProgenies() {
         let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
         let selectProgenyButtons = document.querySelectorAll('.select-progeny-button');
         selectProgenyButtons.forEach(function (button) {
-            let buttonElement = button as HTMLButtonElement;
+            let buttonElement = button as HTMLAnchorElement;
             let progenyCheckSpan = buttonElement.querySelector('.progeny-check-span');
             let selectedProgenyData = button.getAttribute('data-select-progeny-id');
             if (selectedProgenyData) {

@@ -156,6 +156,7 @@ function setSelectProgenyButtonsEventListeners(): void {
     let selectProgenyButtons = document.querySelectorAll('.select-progeny-button');
     selectProgenyButtons.forEach(function (button) {
         button.addEventListener('click', function (event) {
+            event.preventDefault();
             let selectedButton = event.target as HTMLButtonElement;
             selectedButton.classList.toggle('selected');
 
@@ -167,7 +168,7 @@ function setSelectProgenyButtonsEventListeners(): void {
 
 
 function setSelectedProgenies() {
-    let selectedProgenyButtons = document.querySelectorAll<HTMLButtonElement>('.select-progeny-button.selected');
+    let selectedProgenyButtons = document.querySelectorAll<HTMLAnchorElement>('.select-progeny-button.selected');
     let selectedProgenyIds: string[] = [];
     selectedProgenyButtons.forEach(function (button) {
         let selectedProgenyData = button.getAttribute('data-select-progeny-id');
@@ -183,13 +184,14 @@ function setSelectedProgenies() {
 }
 
 function setSetDefaultProgenyEventListeners() {
-    let setDefaultProgenyButtons = document.querySelectorAll('.set-default-progeny-button');
+    let setDefaultProgenyButtons = document.querySelectorAll<HTMLAnchorElement>('.set-default-progeny-button');
     setDefaultProgenyButtons.forEach(function (button) {
+        
         button.addEventListener('click', async function (event) {
-            let selectedButton = event.target as HTMLButtonElement;
-            let selectedProgenyId = selectedButton.getAttribute('data-set-default-progeny-id');
+            let selectedButton = event.target as HTMLAnchorElement;
+            let selectedProgenyId = selectedButton.getAttribute('data-default-progeny-id');
             if (selectedProgenyId !== null) {
-                await setDefaultProgeny(parseInt(selectedProgenyId));
+                await setDefaultProgeny(parseInt(selectedProgenyId.valueOf()));
             }
         });
     });

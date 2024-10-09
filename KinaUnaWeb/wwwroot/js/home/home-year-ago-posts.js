@@ -30,6 +30,10 @@ async function getYearAgoList(parameters, reset = false) {
     }
     if (reset) {
         yearAgoItemsList = [];
+        const yearAgoItemsDiv = document.querySelector('#year-ago-items-div');
+        if (yearAgoItemsDiv !== null) {
+            yearAgoItemsDiv.innerHTML = '';
+        }
     }
     parameters.skip = yearAgoItemsList.length;
     await fetch('/Timeline/GetYearAgoList', {
@@ -46,12 +50,6 @@ async function getYearAgoList(parameters, reset = false) {
                 const yearAgoPostsParentDiv = document.querySelector('#year-ago-posts-parent-div');
                 if (yearAgoPostsParentDiv !== null) {
                     yearAgoPostsParentDiv.classList.remove('d-none');
-                    if (reset) {
-                        const yearAgoItemsDiv = document.querySelector('#year-ago-items-div');
-                        if (yearAgoItemsDiv !== null) {
-                            yearAgoItemsDiv.innerHTML = '';
-                        }
-                    }
                 }
                 for await (const yearAgoItemToAdd of newYearAgoItemsList.timelineItems) {
                     yearAgoItemsList.push(yearAgoItemToAdd);

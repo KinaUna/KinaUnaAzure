@@ -153,7 +153,7 @@
                             @foreach (Progeny prog in childList)
                             {
                                 <div class="dropdown-item">
-                                    <button type="button" class="btn btn-link btn-block text-white text-left select-progeny-button" data-select-progeny-id="@prog.Id">
+                                    <a class="btn btn-link btn-block text-white text-left select-progeny-button" data-select-progeny-id="@prog.Id">
                                         @{
                                             string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
                                             if (!string.IsNullOrWhiteSpace(prog.PictureLink))
@@ -163,14 +163,18 @@
                                             }
                                         }
                                         @Html.Raw(profilePic2) @prog.NickName <span class="d-none progeny-check-span ml-2 text-success"><i class="material-icons">check</i></span>
-                                    </button>
+                                    </a>
                                     @if (prog.Id != child.Id)
                                     {
-                                        <button type="button" class="btn btn-link btn-block text-white text-right set-default-progeny-button" data-set-default-progeny-id="@prog.Id"><i class="material-icons">star</i></button>
+                                        <a class="btn btn-link btn-block text-white text-right set-default-progeny-button" data-default-progeny-id="@prog.Id">
+                                                <i class="material-icons" data-default-progeny-id="@prog.Id">star</i>
+                                        </a>
                                     }
                                     else
                                     {
-                                        <button type="button" class="btn btn-link btn-block text-success text-right set-default-progeny-button" data-set-default-progeny-id="@prog.Id"><i class="material-icons">stars</i></button>
+                                        <a class="btn btn-link btn-block text-success text-right set-default-progeny-button" data-default-progeny-id="@prog.Id">
+                                                <i class="material-icons" data-default-progeny-id="@prog.Id">stars</i>
+                                        </a>
                                     }
                                     
                                 </div>
