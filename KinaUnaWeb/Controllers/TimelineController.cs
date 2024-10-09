@@ -120,7 +120,7 @@ namespace KinaUnaWeb.Controllers
         {
             TimelineList timelineList = new()
             {
-                TimelineItems = await progenyHttpClient.GetProgenyYearAgo(parameters.ProgenyId, 0)
+                TimelineItems = await progenyHttpClient.GetProgeniesYearAgo(parameters.Progenies)
             };
             timelineList.AllItemsCount = timelineList.TimelineItems.Count;
             timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count;

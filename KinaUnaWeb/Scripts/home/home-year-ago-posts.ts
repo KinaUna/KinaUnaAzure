@@ -27,10 +27,14 @@ function stopLoadingYearAgoItemsSpinner(): void {
  * Hides the moreYearAgoItemsButton while loading.
  * @param parameters The parameters to use for retrieving the timeline items.
  */
-async function getYearAgoList(parameters: TimelineParameters) {
+async function getYearAgoList(parameters: TimelineParameters, reset: boolean = false) {
     startLoadingYearAgoItemsSpinner();
     if (moreYearAgoItemsButton !== null) {
         moreYearAgoItemsButton.classList.add('d-none');
+    }
+
+    if (reset) {
+        yearAgoItemsList = [];
     }
     parameters.skip = yearAgoItemsList.length;
 
@@ -48,6 +52,12 @@ async function getYearAgoList(parameters: TimelineParameters) {
                 const yearAgoPostsParentDiv = document.querySelector<HTMLDivElement>('#year-ago-posts-parent-div');
                 if (yearAgoPostsParentDiv !== null) {
                     yearAgoPostsParentDiv.classList.remove('d-none');
+                    if (reset) {
+                        const yearAgoItemsDiv = document.querySelector<HTMLDivElement>('#year-ago-items-div');
+                        if (yearAgoItemsDiv !== null) {
+                            yearAgoItemsDiv.innerHTML = '';
+                        }
+                    }
                 }
                 for await (const yearAgoItemToAdd of newYearAgoItemsList.timelineItems) {
                     yearAgoItemsList.push(yearAgoItemToAdd);
@@ -113,6 +123,28 @@ function setYearAgoEventListeners(): void {
     }
 }
 
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            await getYearAgoList(yearAgoParameters, true);
+        }
+
+    });
+}
+
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        yearAgoParameters.progenies = progeniesIds;
+    }
+}
+
 /**
  * Initialization when the page is loaded.
  */
@@ -121,7 +153,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     yearAgoParameters.count = 5;
     yearAgoParameters.skip = 0;
     yearAgoParameters.progenyId = yearAgoProgenyId;
-
+    getSelectedProgenies();
+    addSelectedProgeniesChangedEventListener();
     setYearAgoEventListeners();
 
     await getYearAgoList(yearAgoParameters);

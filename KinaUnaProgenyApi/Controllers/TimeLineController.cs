@@ -154,6 +154,32 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> ProgeniesYearAgo([FromBody] List<int> progeniesList)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            List<TimeLineItem> timeLineList = [];
+            foreach (int progenyId in progeniesList)
+            {
+                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+                if (userAccess != null)
+                {
+                    List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId);
+                    progenyTimeLineList = [.. progenyTimeLineList
+                        .Where(t => t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day)
+                        .OrderBy(t => t.ProgenyTime)];
+                    if (progenyTimeLineList.Count != 0)
+                    {
+                        progenyTimeLineList.Reverse();
+                        timeLineList.AddRange(progenyTimeLineList);
+                    }
+                }
+            }
+
+            return Ok(timeLineList.Count != 0 ? timeLineList : []);
+        }
+
         /// <summary>
         /// Gets a TimeLineItem by the Type and ItemId.
         /// I.e. gets a TimeLineItem for a Picture with a given PictureId.

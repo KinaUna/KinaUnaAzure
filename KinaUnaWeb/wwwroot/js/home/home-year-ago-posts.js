@@ -23,10 +23,13 @@ function stopLoadingYearAgoItemsSpinner() {
  * Hides the moreYearAgoItemsButton while loading.
  * @param parameters The parameters to use for retrieving the timeline items.
  */
-async function getYearAgoList(parameters) {
+async function getYearAgoList(parameters, reset = false) {
     startLoadingYearAgoItemsSpinner();
     if (moreYearAgoItemsButton !== null) {
         moreYearAgoItemsButton.classList.add('d-none');
+    }
+    if (reset) {
+        yearAgoItemsList = [];
     }
     parameters.skip = yearAgoItemsList.length;
     await fetch('/Timeline/GetYearAgoList', {
@@ -43,6 +46,12 @@ async function getYearAgoList(parameters) {
                 const yearAgoPostsParentDiv = document.querySelector('#year-ago-posts-parent-div');
                 if (yearAgoPostsParentDiv !== null) {
                     yearAgoPostsParentDiv.classList.remove('d-none');
+                    if (reset) {
+                        const yearAgoItemsDiv = document.querySelector('#year-ago-items-div');
+                        if (yearAgoItemsDiv !== null) {
+                            yearAgoItemsDiv.innerHTML = '';
+                        }
+                    }
                 }
                 for await (const yearAgoItemToAdd of newYearAgoItemsList.timelineItems) {
                     yearAgoItemsList.push(yearAgoItemToAdd);
@@ -101,6 +110,25 @@ function setYearAgoEventListeners() {
         });
     }
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            await getYearAgoList(yearAgoParameters, true);
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        yearAgoParameters.progenies = progeniesIds;
+    }
+}
 /**
  * Initialization when the page is loaded.
  */
@@ -109,6 +137,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     yearAgoParameters.count = 5;
     yearAgoParameters.skip = 0;
     yearAgoParameters.progenyId = yearAgoProgenyId;
+    getSelectedProgenies();
+    addSelectedProgeniesChangedEventListener();
     setYearAgoEventListeners();
     await getYearAgoList(yearAgoParameters);
     return new Promise(function (resolve, reject) {
