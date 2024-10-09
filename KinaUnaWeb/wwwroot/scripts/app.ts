@@ -187,7 +187,7 @@ function setSetDefaultProgenyEventListeners() {
     setDefaultProgenyButtons.forEach(function (button) {
         button.addEventListener('click', async function (event) {
             let selectedButton = event.target as HTMLButtonElement;
-            let selectedProgenyId = selectedButton.getAttribute('data-select-progeny-id');
+            let selectedProgenyId = selectedButton.getAttribute('data-set-default-progeny-id');
             if (selectedProgenyId !== null) {
                 await setDefaultProgeny(parseInt(selectedProgenyId));
             }
@@ -234,4 +234,6 @@ document.addEventListener('DOMContentLoaded', function (): void {
     setSelectProgenyButtonsEventListeners();
 
     getSelectedProgenies();
+
+    setSetDefaultProgenyEventListeners();
 });

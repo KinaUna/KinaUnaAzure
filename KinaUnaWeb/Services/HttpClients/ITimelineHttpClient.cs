@@ -42,6 +42,14 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <summary>
         /// Gets a list of all TimeLineItems for a Progeny that a user has access to.
         /// </summary>
+        /// <param name="progeniesList">The list of Ids of the progenies to get TimeLineItems for.</param>
+        /// <param name="order">Sort order: 0 for ascending, 1 for descending</param>
+        /// <returns>List of TimeLineItem objects.</returns>
+        Task<List<TimeLineItem>> GetProgeniesTimeline(List<int> progeniesList, int order);
+
+        /// <summary>
+        /// Gets a list of all TimeLineItems for a Progeny that a user has access to.
+        /// </summary>
         /// <param name="progenyId">The Id of the progeny to get TimeLineItems for.</param>
         /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <param name="order">Sort order: 0 for ascending, 1 for descending</param>

@@ -23,10 +23,13 @@ function stopLoadingTimelineItemsSpinner() {
  * Hides the moreTimelineItemsButton while loading.
  * @param parameters The parameters to use for retrieving the timeline items.
  */
-async function getTimelineList(parameters) {
+async function getTimelineList(parameters, reset = false) {
     startLoadingTimelineItemsSpinner();
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.classList.add('d-none');
+    }
+    if (reset) {
+        timelineItemsList = [];
     }
     parameters.skip = timelineItemsList.length;
     await fetch('/Timeline/GetTimelineList', {
@@ -43,6 +46,12 @@ async function getTimelineList(parameters) {
                 const latestPostsParentDiv = document.querySelector('#latest-posts-parent-div');
                 if (latestPostsParentDiv !== null) {
                     latestPostsParentDiv.classList.remove('d-none');
+                    if (reset) {
+                        const timelineDiv = document.querySelector('#timeline-items-div');
+                        if (timelineDiv != null) {
+                            timelineDiv.innerHTML = '';
+                        }
+                    }
                 }
                 for await (const timelineItemToAdd of newTimeLineItemsList.timelineItems) {
                     timelineItemsList.push(timelineItemToAdd);
@@ -91,6 +100,25 @@ async function renderTimelineItem(timelineItem) {
         resolve();
     });
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            await getTimelineList(timeLineParameters, true);
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        timeLineParameters.progenies = progeniesIds;
+    }
+}
 /**
  * Initializes page settings and sets up event listeners when page is first loaded.
  */
@@ -99,6 +127,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     timeLineParameters.count = 5;
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
+    getSelectedProgenies();
     moreTimelineItemsButton = document.querySelector('#more-latest-posts-items-button');
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.addEventListener('click', async () => {

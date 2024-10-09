@@ -27,12 +27,17 @@ function stopLoadingTimelineItemsSpinner(): void {
  * Hides the moreTimelineItemsButton while loading.
  * @param parameters The parameters to use for retrieving the timeline items.
  */
-async function getTimelineList(parameters: TimelineParameters): Promise<void> {
+async function getTimelineList(parameters: TimelineParameters, reset: boolean = false): Promise<void> {
     startLoadingTimelineItemsSpinner();
 
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.classList.add('d-none');
     }
+
+    if (reset) {
+        timelineItemsList = [];
+    }
+
     parameters.skip = timelineItemsList.length;
 
     await fetch('/Timeline/GetTimelineList', {
@@ -49,6 +54,12 @@ async function getTimelineList(parameters: TimelineParameters): Promise<void> {
                 const latestPostsParentDiv = document.querySelector<HTMLDivElement>('#latest-posts-parent-div');
                 if (latestPostsParentDiv !== null) {
                     latestPostsParentDiv.classList.remove('d-none');
+                    if (reset) {
+                        const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
+                        if (timelineDiv != null) {
+                            timelineDiv.innerHTML = '';
+                        }
+                    }
                 }
                 for await (const timelineItemToAdd of newTimeLineItemsList.timelineItems) {
                     timelineItemsList.push(timelineItemToAdd);
@@ -103,6 +114,28 @@ async function renderTimelineItem(timelineItem: TimelineItem): Promise<void> {
     });
 }
 
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            await getTimelineList(timeLineParameters, true);
+        }
+
+    });
+}
+
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        timeLineParameters.progenies = progeniesIds;
+    }
+}
+
 /**
  * Initializes page settings and sets up event listeners when page is first loaded.
  */
@@ -111,6 +144,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     timeLineParameters.count = 5;
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
+    getSelectedProgenies();
 
     moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#more-latest-posts-items-button');
     if (moreTimelineItemsButton !== null) {

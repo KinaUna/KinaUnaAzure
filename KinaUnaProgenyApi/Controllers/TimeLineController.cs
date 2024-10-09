@@ -77,6 +77,26 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(timeLineList.Count != 0 ? timeLineList : []);
         }
 
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> Progenies([FromBody] List<int> progenies)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            List<TimeLineItem> timeLineList = [];
+            foreach (int progenyId in progenies)
+            {
+                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+                if (userAccess != null)
+                {
+                    List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId);
+                    progenyTimeLineList = progenyTimeLineList.Where(t => t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime < DateTime.UtcNow).ToList();
+                    timeLineList.AddRange(progenyTimeLineList);
+                }
+            }
+
+            return Ok(timeLineList.Count != 0 ? timeLineList : []);
+        }
+
         /// <summary>
         /// Gets a list of the latest TimeLineItems for a Progeny with the given ProgenyId that a user with a given access level can access.
         /// </summary>
