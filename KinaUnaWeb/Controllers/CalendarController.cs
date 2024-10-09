@@ -21,10 +21,12 @@ namespace KinaUnaWeb.Controllers
     /// </summary>
     /// <param name="calendarsHttpClient"></param>
     /// <param name="viewModelSetupService"></param>
-    public class CalendarController(ICalendarsHttpClient calendarsHttpClient,
+    public class CalendarController(
+        ICalendarsHttpClient calendarsHttpClient,
         ICalendarRemindersHttpClient calendarRemindersHttpClient,
         IViewModelSetupService viewModelSetupService,
-        IUserInfosHttpClient userInfosHttpClient) : Controller
+        IUserInfosHttpClient userInfosHttpClient,
+        IProgenyHttpClient progenyHttpClient) : Controller
     {
         /// <summary>
         /// Calendar Index page.
@@ -40,11 +42,41 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             CalendarListViewModel model = new(baseModel);
             
-            model.SetEventsList(await calendarsHttpClient.GetCalendarList(model.CurrentProgenyId, model.CurrentAccessLevel));
+            // model.SetEventsList(await calendarsHttpClient.GetCalendarList(model.CurrentProgenyId, model.CurrentAccessLevel));
             model.PopupEventId = eventId ?? 0;
             return View(model);
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> GetCalendarList([FromBody] List<int> progenies)
+        {
+            UserInfo currentUserInfo = await userInfosHttpClient.GetUserInfo(User.GetEmail());
+            List<CalendarItem> calendarItems = await calendarsHttpClient.GetProgeniesCalendarList(progenies);
+
+            calendarItems = [.. calendarItems.OrderBy(e => e.StartTime)];
+            List<CalendarItem> resultList = [];
+
+            foreach (CalendarItem ev in calendarItems)
+            {
+                if (!ev.StartTime.HasValue || !ev.EndTime.HasValue) continue;
+
+                ev.StartTime = TimeZoneInfo.ConvertTimeFromUtc(ev.StartTime.Value,
+                    TimeZoneInfo.FindSystemTimeZoneById(currentUserInfo.Timezone));
+                ev.EndTime = TimeZoneInfo.ConvertTimeFromUtc(ev.EndTime.Value,
+                    TimeZoneInfo.FindSystemTimeZoneById(currentUserInfo.Timezone));
+
+                // ToDo: Replace format string with configuration or user defined value
+                ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
+                ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
+
+                Progeny progeny = await progenyHttpClient.GetProgeny(ev.ProgenyId);
+                ev.IsReadonly = !progeny.IsInAdminList(currentUserInfo.UserEmail);
+                // Todo: Add color property
+                resultList.Add(ev);
+            }
+            return Json(resultList);
+        }
         /// <summary>
         /// Display a single CalendarItem.
         /// </summary>
@@ -261,7 +293,16 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> GetUpcomingEventsList([FromBody] TimelineParameters parameters)
         {
             TimelineList timelineList = new();
-            List<CalendarItem> upcomingCalendarItems = await calendarsHttpClient.GetCalendarList(parameters.ProgenyId, 0);
+            List<CalendarItem> upcomingCalendarItems;
+            if (parameters.Progenies.Count > 0)
+            {
+                upcomingCalendarItems = await calendarsHttpClient.GetProgeniesCalendarList(parameters.Progenies);
+            }
+            else
+            {
+                upcomingCalendarItems = await calendarsHttpClient.GetCalendarList(parameters.ProgenyId, 0);
+            }
+             
             upcomingCalendarItems = upcomingCalendarItems.Where(c => c.EndTime > DateTime.UtcNow).ToList();
             upcomingCalendarItems = [.. upcomingCalendarItems.OrderBy(c => c.StartTime)];
             

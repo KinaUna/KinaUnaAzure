@@ -306,6 +306,7 @@ export class TimelineItem {
 export class TimelineParameters {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.skip = 0;
         this.count = 5;
         this.sortBy = 1;
@@ -438,6 +439,27 @@ export class CalendarReminderRequest {
         this.notifyTimeOffsetType = 1;
         this.userId = '';
         this.notified = false;
+    }
+}
+export class CalendarItem {
+    constructor() {
+        this.eventId = 0;
+        this.progenyId = 0;
+        this.title = '';
+        this.notes = '';
+        this.location = '';
+        this.context = '';
+        this.allDay = false;
+        this.accessLevel = 5;
+        this.startString = '';
+        this.endString = '';
+        this.author = '';
+    }
+}
+export class SetProgenyRequest {
+    constructor() {
+        this.progenyId = 0;
+        this.languageId = 0;
     }
 }
 //# sourceMappingURL=page-models-v8.js.map

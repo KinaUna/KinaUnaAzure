@@ -152,24 +152,28 @@
                             <div id="select-child-dropdown-menu" class="dropdown-menu">
                             @foreach (Progeny prog in childList)
                             {
-                                if (prog.Id != child.Id)
-                                {
-                                    <div class="dropdown-item">
-                                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-languageId="@languageId" asp-route-returnUrl="@returnUrl" method="post">
-                                                <button type="submit" class="btn btn-link btn-block text-white text-left leave-page">
-                                                @{
-                                                    string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
-                                                    if (!string.IsNullOrWhiteSpace(prog.PictureLink))
-                                                    {
-                                                        string picLink2 = prog.GetProfilePictureUrl();
-                                                        profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px; object-fit: contain;\" /img> ";
-                                                    }
-                                                }
-                                                @Html.Raw(profilePic2) @prog.NickName
-                                            </button>
-                                        </form>
-                                    </div>
-                                }
+                                <div class="dropdown-item">
+                                    <button type="button" class="btn btn-link btn-block text-white text-left select-progeny-button" data-select-progeny-id="@prog.Id">
+                                        @{
+                                            string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
+                                            if (!string.IsNullOrWhiteSpace(prog.PictureLink))
+                                            {
+                                                string picLink2 = prog.GetProfilePictureUrl();
+                                                profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px; object-fit: contain;\" /img> ";
+                                            }
+                                        }
+                                        @Html.Raw(profilePic2) @prog.NickName <span class="d-none progeny-check-span ml-2 text-success"><i class="material-icons">check</i></span>
+                                    </button>
+                                    @if (prog.Id != child.Id)
+                                    {
+                                        <button type="button" class="btn btn-link btn-block text-white text-right set-default-progeny-button" data-set-default-progeny-id="@prog.Id"><i class="material-icons">star</i></button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-link btn-block text-success text-right set-default-progeny-button" data-set-default-progeny-id="@prog.Id"><i class="material-icons">stars</i></button>
+                                    }
+                                    
+                                </div>
                             }
                         </div>
                     </li>

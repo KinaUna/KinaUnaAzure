@@ -130,6 +130,28 @@ namespace KinaUnaWeb.Services.HttpClients
         }
 
         /// <summary>
+        /// Gets the list of CalendarItem objects for a progeny that a user has access to.
+        /// </summary>
+        /// <param name="progenyIds">The list of Ids of the Progenies to get the list of CalendarItems for.</param>
+        /// <returns>List of CalendarItem objects. Start and end times are in UTC timezone.</returns>
+        public async Task<List<CalendarItem>> GetProgeniesCalendarList(List<int> progenyIds)
+        {
+            List<CalendarItem> progenyCalendarList = [];
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string calendarApiPath = "/api/Calendar/Progenies/";
+            HttpResponseMessage calendarResponse = await _httpClient.PostAsync(calendarApiPath, new StringContent(JsonConvert.SerializeObject(progenyIds), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
+            if (!calendarResponse.IsSuccessStatusCode) return progenyCalendarList;
+
+            string calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            progenyCalendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(calendarAsString);
+
+            return progenyCalendarList;
+        }
+
+        /// <summary>
         /// Gets the next 5 upcoming events in the progeny's calendar.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny to get CalendarItems for.</param>

@@ -23,10 +23,13 @@ function stopLoadingUpcomingItemsSpinner() {
  * Hides the moreUpcomingEventsButton while loading.
  * @param parameters The parameters to use for retrieving the calendar items.
  */
-async function getUpcomingEventsList(parameters) {
+async function getUpcomingEventsList(parameters, reset = false) {
     startLoadingUpcomingItemsSpinner();
     if (moreUpcomingEventsButton !== null) {
         moreUpcomingEventsButton.classList.add('d-none');
+    }
+    if (reset) {
+        upcomingEventsList = [];
     }
     parameters.skip = upcomingEventsList.length;
     await fetch('/Calendar/GetUpcomingEventsList', {
@@ -43,6 +46,12 @@ async function getUpcomingEventsList(parameters) {
                 const upcomingEventsParentDiv = document.querySelector('#upcoming-events-parent-div');
                 if (upcomingEventsParentDiv !== null) {
                     upcomingEventsParentDiv.classList.remove('d-none');
+                    if (reset) {
+                        const timelineDiv = document.querySelector('#upcoming-events-div');
+                        if (timelineDiv !== null) {
+                            timelineDiv.innerHTML = '';
+                        }
+                    }
                 }
                 for await (const eventToAdd of newUpcomingEventsList.timelineItems) {
                     upcomingEventsList.push(eventToAdd);
@@ -101,6 +110,25 @@ function setUpcomingEventsEventListeners() {
         });
     }
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            await getUpcomingEventsList(upcomingEventsParameters, true);
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        upcomingEventsParameters.progenies = progeniesIds;
+    }
+}
 /**
  * Initialization when the page is loaded.
  */
@@ -110,6 +138,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     upcomingEventsParameters.skip = 0;
     upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
     setUpcomingEventsEventListeners();
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
     await getUpcomingEventsList(upcomingEventsParameters);
     return new Promise(function (resolve, reject) {
         resolve();

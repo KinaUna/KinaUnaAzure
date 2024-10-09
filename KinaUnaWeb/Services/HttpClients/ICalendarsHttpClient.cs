@@ -46,6 +46,13 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel);
 
         /// <summary>
+        /// Gets the list of CalendarItem objects for a progeny that a user has access to.
+        /// </summary>
+        /// <param name="progenyIds">The list of Ids of the Progenies to get the list of CalendarItems for.</param>
+        /// <returns>List of CalendarItem objects. Start and end times are in UTC timezone.</returns>
+        Task<List<CalendarItem>> GetProgeniesCalendarList(List<int> progenyIds);
+
+        /// <summary>
         /// Gets the next 5 upcoming events in the progeny's calendar.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny to get CalendarItems for.</param>

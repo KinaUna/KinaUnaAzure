@@ -28,13 +28,17 @@ function stopLoadingUpcomingItemsSpinner(): void {
  * Hides the moreUpcomingEventsButton while loading.
  * @param parameters The parameters to use for retrieving the calendar items.
  */
-async function getUpcomingEventsList(parameters: TimelineParameters): Promise<void> {
+async function getUpcomingEventsList(parameters: TimelineParameters, reset: boolean = false): Promise<void> {
     startLoadingUpcomingItemsSpinner();
     if (moreUpcomingEventsButton !== null) {
         moreUpcomingEventsButton.classList.add('d-none');
     }
-    parameters.skip = upcomingEventsList.length;
 
+    if (reset) {
+        upcomingEventsList = [];
+    }
+    parameters.skip = upcomingEventsList.length;
+    
     await fetch('/Calendar/GetUpcomingEventsList', {
         method: 'POST',
         headers: {
@@ -49,6 +53,12 @@ async function getUpcomingEventsList(parameters: TimelineParameters): Promise<vo
                 const upcomingEventsParentDiv = document.querySelector<HTMLDivElement>('#upcoming-events-parent-div');
                 if (upcomingEventsParentDiv !== null) {
                     upcomingEventsParentDiv.classList.remove('d-none');
+                    if (reset) {
+                        const timelineDiv = document.querySelector<HTMLDivElement>('#upcoming-events-div');
+                        if (timelineDiv !== null) {
+                            timelineDiv.innerHTML = '';
+                        }
+                    }
                 }
                 for await (const eventToAdd of newUpcomingEventsList.timelineItems) {
                     upcomingEventsList.push(eventToAdd);
@@ -113,6 +123,28 @@ function setUpcomingEventsEventListeners() {
         });
     }
 }
+
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            await getUpcomingEventsList(upcomingEventsParameters, true);
+        }
+        
+    });
+}
+
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        upcomingEventsParameters.progenies = progeniesIds;
+    }
+}
 /**
  * Initialization when the page is loaded.
  */
@@ -123,7 +155,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
 
     setUpcomingEventsEventListeners();
-
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
     await getUpcomingEventsList(upcomingEventsParameters);
 
     return new Promise<void>(function (resolve, reject) {

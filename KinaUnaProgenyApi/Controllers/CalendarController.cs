@@ -58,6 +58,38 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(calendarList);
         }
 
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> Progenies([FromBody] List<int> progenyIds)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            List<Progeny> progenyList = [];
+            foreach (int progenyId in progenyIds)
+            {
+                Progeny progeny = await progenyService.GetProgeny(progenyId);
+                if (progeny != null)
+                {
+                    UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+                    if (userAccess != null)
+                    {
+                        progenyList.Add(progeny);
+                    }
+                }
+            }
+
+            List<CalendarItem> calendarList = [];
+
+            if (progenyList.Count == 0) return NotFound();
+            foreach (Progeny progeny in progenyList)
+            {
+                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, userEmail);
+                List<CalendarItem> progenyCalendarItems = await calendarService.GetCalendarList(progeny.Id, userAccess.AccessLevel);
+                calendarList.AddRange(progenyCalendarItems);
+            }
+
+            return Ok(calendarList);
+        }
+
         /// <summary>
         /// Retrieves the list of CalendarItems for a given Progeny within a given date interval.
         /// </summary>

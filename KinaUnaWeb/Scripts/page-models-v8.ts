@@ -297,6 +297,7 @@ export class TimelineItem {
 
 export class TimelineParameters {
     progenyId: number = 0;
+    progenies: number[] = [];
     skip: number = 0;
     count: number = 5;
     sortBy: number = 1;
@@ -403,4 +404,23 @@ export class CalendarReminderRequest {
     notifyTimeOffsetType: number = 1;
     userId: string = '';
     notified: boolean = false;
+}
+
+export class CalendarItem {
+    eventId: number = 0;
+    progenyId: number = 0;
+    title: string = '';
+    notes: string = '';
+    location: string = '';
+    context: string = '';
+    allDay: boolean = false;
+    accessLevel: number = 5;
+    startString: string = '';
+    endString: string = '';
+    author: string = '';
+}
+
+export class SetProgenyRequest {
+    progenyId: number = 0;
+    languageId: number = 0;
 }

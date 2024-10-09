@@ -3,8 +3,30 @@ import * as LocaleHelper from '../localization-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { TimeLineType } from '../page-models-v8.js';
 import { popupEventItem } from './calendar-details.js';
+let progeniesList = [];
 let selectedEventId = 0;
 let currentCulture = 'en';
+async function getCalendarItems() {
+    startLoadingItemsSpinner('schedule');
+    await fetch('/Calendar/GetCalendarList', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(progeniesList)
+    }).then(async function (getCalendarItemsResult) {
+        if (getCalendarItemsResult.ok) {
+            const calendarItems = (await getCalendarItemsResult.json());
+            const scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
+            scheduleObj.eventSettings.dataSource = calendarItems;
+        }
+    });
+    stopLoadingItemsSpinner('schedule');
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
 /**
  * Retrieves the details of a calendar event and displays them in a popup.
  * @param {number} eventId The id of the event to display.
@@ -34,7 +56,7 @@ function onPopupOpen(args) {
 function onEventClick(args) {
     let scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
     let event = scheduleObj.getEventDetails(args.element);
-    selectedEventId = event.EventId;
+    selectedEventId = event.eventId;
     DisplayEventItem(selectedEventId);
 }
 /**
@@ -94,6 +116,25 @@ function addScheduleEventListeners() {
     scheduleInstance.addEventListener('eventClick', (args) => { onEventClick(args); });
     scheduleInstance.addEventListener('popupOpen', (args) => { onPopupOpen(args); });
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            await getCalendarItems();
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        progeniesList = progeniesIds;
+    }
+}
 /**
  * Initializes page elements when it is loaded.
  */
@@ -101,6 +142,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     addScheduleEventListeners();
     await loadLocale();
     setLocale();
+    // Todo: Check if only one progeny should be shown.
+    getSelectedProgenies();
+    await getCalendarItems();
     await showPopupAtLoad(TimeLineType.Calendar);
     return new Promise(function (resolve, reject) {
         resolve();
