@@ -208,7 +208,7 @@ async function processPicturesList(newItemsList: PicturesList, parameters: Pictu
     };
 
     updateTagsListDiv(newItemsList.tagsList, parameters.sortTags);
-
+    parameters.progenies = getSelectedProgenies();
     return new Promise<PicturesPageParameters>(function (resolve, reject) {
         resolve(parameters);
     });
@@ -805,7 +805,7 @@ function addSelectedProgeniesChangedEventListener() {
     });
 }
 
-function getSelectedProgenies() {
+function getSelectedProgenies(): number[] {
     let selectedProgenies = localStorage.getItem('selectedProgenies');
     if (selectedProgenies !== null) {
         let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
@@ -815,7 +815,11 @@ function getSelectedProgenies() {
         if (picturesPageParameters !== null) {
             picturesPageParameters.progenies = progeniesIds;
         }
+
+        return progeniesIds;
     }
+
+    return [getCurrentProgenyId()];
 }
 
 /** Initialization and setup when page is loaded */
@@ -833,11 +837,11 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     SettingsHelper.initPageSettings();
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
-
+    
     await showPopupAtLoad(TimeLineType.Photo);
 
     picturesPageParameters = getPageParametersFromPageData();
+    getSelectedProgenies();
     if (picturesPageParameters !== null) {
         
         refreshSelectPickers();

@@ -215,6 +215,7 @@ export class VideoViewModel {
 
 export class VideosPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    progenies: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;
