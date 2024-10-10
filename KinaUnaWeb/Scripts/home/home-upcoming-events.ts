@@ -28,19 +28,12 @@ function stopLoadingUpcomingItemsSpinner(): void {
  * Hides the moreUpcomingEventsButton while loading.
  * @param parameters The parameters to use for retrieving the calendar items.
  */
-async function getUpcomingEventsList(parameters: TimelineParameters, reset: boolean = false): Promise<void> {
+async function getUpcomingEventsList(parameters: TimelineParameters): Promise<void> {
     startLoadingUpcomingItemsSpinner();
     if (moreUpcomingEventsButton !== null) {
         moreUpcomingEventsButton.classList.add('d-none');
     }
-
-    if (reset) {
-        upcomingEventsList = [];
-        const timelineDiv = document.querySelector<HTMLDivElement>('#upcoming-events-div');
-        if (timelineDiv !== null) {
-            timelineDiv.innerHTML = '';
-        }
-    }
+        
     parameters.skip = upcomingEventsList.length;
     
     await fetch('/Calendar/GetUpcomingEventsList', {
@@ -127,7 +120,12 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             getSelectedProgenies();
-            await getUpcomingEventsList(upcomingEventsParameters, true);
+            upcomingEventsList = [];
+            const timelineDiv = document.querySelector<HTMLDivElement>('#upcoming-events-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getUpcomingEventsList(upcomingEventsParameters);
         }
         
     });

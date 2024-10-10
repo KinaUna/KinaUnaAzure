@@ -5,7 +5,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.VideoItemViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Video", PageNames.Videos, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Video", PageNames.Videos, Model.LanguageId);
     string videosString = await LocaleManager.GetTranslation("videos", PageNames.Videos, Model.LanguageId);
     string viewPrevText = "Older";
     string viewNextText = "Newer";

@@ -27,21 +27,13 @@ function stopLoadingTimelineItemsSpinner(): void {
  * Hides the moreTimelineItemsButton while loading.
  * @param parameters The parameters to use for retrieving the timeline items.
  */
-async function getTimelineList(parameters: TimelineParameters, reset: boolean = false): Promise<void> {
+async function getTimelineList(parameters: TimelineParameters): Promise<void> {
     startLoadingTimelineItemsSpinner();
 
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.classList.add('d-none');
     }
-
-    if (reset) {
-        timelineItemsList = [];
-        const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
-        if (timelineDiv != null) {
-            timelineDiv.innerHTML = '';
-        }
-    }
-
+        
     parameters.skip = timelineItemsList.length;
 
     await fetch('/Timeline/GetTimelineList', {
@@ -117,7 +109,12 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             getSelectedProgenies();
-            await getTimelineList(timeLineParameters, true);
+            timelineItemsList = [];
+            const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
+            if (timelineDiv != null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getTimelineList(timeLineParameters);
         }
 
     });

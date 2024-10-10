@@ -35,17 +35,10 @@ function stopLoadingSpinner() {
  * @param parameters  The parameters to use for retrieving the timeline items.
  * @param updateHistory If updateHistory is true the browser history is updated to reflect the current page. If false it is assumed the page was loaded from history or reload, and is already in the history stack.
  */
-async function getTimelineList(parameters, updateHistory = true, reset = false) {
+async function getTimelineList(parameters, updateHistory = true) {
     startLoadingSpinner();
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.classList.add('d-none');
-    }
-    if (reset) {
-        timelineItemsList = [];
-        const timelineDiv = document.querySelector('#timeline-items-div');
-        if (timelineDiv !== null) {
-            timelineDiv.innerHTML = '';
-        }
     }
     parameters.skip = timelineItemsList.length;
     timeLineParameters.skip = parameters.skip;
@@ -496,7 +489,12 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             getSelectedProgenies();
-            await getTimelineList(timeLineParameters, false, true);
+            timelineItemsList = [];
+            const timelineDiv = document.querySelector('#timeline-items-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getTimelineList(timeLineParameters);
         }
     });
 }

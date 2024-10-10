@@ -41,20 +41,12 @@ function stopLoadingSpinner(): void {
  * @param parameters  The parameters to use for retrieving the timeline items.
  * @param updateHistory If updateHistory is true the browser history is updated to reflect the current page. If false it is assumed the page was loaded from history or reload, and is already in the history stack.
  */
-async function getTimelineList(parameters: TimelineRequest, updateHistory: Boolean = true, reset: boolean = false): Promise<void> {
+async function getTimelineList(parameters: TimelineRequest, updateHistory: Boolean = true): Promise<void> {
     startLoadingSpinner();
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.classList.add('d-none');
     }
-
-    if (reset) {
-        timelineItemsList = [];
-        const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
-        if (timelineDiv !== null) {
-            timelineDiv.innerHTML = '';
-        }
-    }
-    
+        
     parameters.skip = timelineItemsList.length;
     timeLineParameters.skip = parameters.skip;
     setBrowserUrl(parameters, true);
@@ -569,7 +561,12 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             getSelectedProgenies();
-            await getTimelineList(timeLineParameters, false, true);
+            timelineItemsList = [];
+            const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getTimelineList(timeLineParameters);
         }
 
     });

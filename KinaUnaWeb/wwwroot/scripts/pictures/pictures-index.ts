@@ -788,6 +788,36 @@ function getPopupPictureId() {
     }
 }
 
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            if (picturesPageParameters !== null) {
+                picturesPageParameters = await getPicturesList(picturesPageParameters, false);
+            }
+        }
+
+    });
+}
+
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        if (picturesPageParameters !== null) {
+            picturesPageParameters.progenies = progeniesIds;
+        }
+    }
+}
+
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     picturesPageProgenyId = getCurrentProgenyId();
@@ -802,6 +832,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     addBrowserNavigationEventListeners();    
 
     SettingsHelper.initPageSettings();
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
 
     await showPopupAtLoad(TimeLineType.Photo);
 

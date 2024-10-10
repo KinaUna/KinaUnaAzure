@@ -173,6 +173,7 @@ export class PictureViewModel {
 export class PicturesPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 0;

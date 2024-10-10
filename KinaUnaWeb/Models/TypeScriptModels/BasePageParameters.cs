@@ -1,8 +1,11 @@
-﻿namespace KinaUnaWeb.Models.TypeScriptModels
+﻿using System.Collections.Generic;
+
+namespace KinaUnaWeb.Models.TypeScriptModels
 {
     public class BasePageParameters
     {
         public int ProgenyId { get; init; }
+        public List<int> Progenies { get; set; }
         public int LanguageId { get; set; }
         public int CurrentPageNumber { get; set; }
         public int ItemsPerPage { get; set; }

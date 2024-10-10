@@ -27,19 +27,12 @@ function stopLoadingYearAgoItemsSpinner(): void {
  * Hides the moreYearAgoItemsButton while loading.
  * @param parameters The parameters to use for retrieving the timeline items.
  */
-async function getYearAgoList(parameters: TimelineParameters, reset: boolean = false) {
+async function getYearAgoList(parameters: TimelineParameters) {
     startLoadingYearAgoItemsSpinner();
     if (moreYearAgoItemsButton !== null) {
         moreYearAgoItemsButton.classList.add('d-none');
     }
 
-    if (reset) {
-        yearAgoItemsList = [];
-        const yearAgoItemsDiv = document.querySelector<HTMLDivElement>('#year-ago-items-div');
-        if (yearAgoItemsDiv !== null) {
-            yearAgoItemsDiv.innerHTML = '';
-        }
-    }
     parameters.skip = yearAgoItemsList.length;
 
     await fetch('/Timeline/GetYearAgoList', {
@@ -127,7 +120,12 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             getSelectedProgenies();
-            await getYearAgoList(yearAgoParameters, true);
+            yearAgoItemsList = [];
+            const yearAgoItemsDiv = document.querySelector<HTMLDivElement>('#year-ago-items-div');
+            if (yearAgoItemsDiv !== null) {
+                yearAgoItemsDiv.innerHTML = '';
+            }
+            await getYearAgoList(yearAgoParameters);
         }
 
     });
