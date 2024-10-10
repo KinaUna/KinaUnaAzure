@@ -1,5 +1,5 @@
 ﻿const serviceWorkerVersion = 'v6';
-import { getCurrentLanguageId } from './data-tools-v8.js';
+import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v8.js';
 import { SetProgenyRequest } from './page-models-v8.js';
 import { getSelectedProgenies } from './settings-tools-v8.js';
@@ -176,7 +176,11 @@ function setSelectedProgenies() {
             selectedProgenyIds.push(selectedProgenyData.valueOf());
         }
     });
-
+    let currentProgenyId = getCurrentProgenyId();
+    if (!selectedProgenyIds.includes(currentProgenyId.toString())) {
+        selectedProgenyIds.push(currentProgenyId.toString());
+    }
+    
     localStorage.setItem('selectedProgenies', JSON.stringify(selectedProgenyIds));
 
     const selectedProgeniesChangedEvent = new Event('progeniesChanged');
