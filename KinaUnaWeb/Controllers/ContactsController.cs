@@ -22,7 +22,12 @@ namespace KinaUnaWeb.Controllers
     /// <param name="locationsHttpClient"></param>
     /// <param name="contactsHttpClient"></param>
     /// <param name="viewModelSetupService"></param>
-    public class ContactsController(ImageStore imageStore, ILocationsHttpClient locationsHttpClient, IContactsHttpClient contactsHttpClient, IViewModelSetupService viewModelSetupService)
+    public class ContactsController(ImageStore imageStore,
+        ILocationsHttpClient locationsHttpClient,
+        IContactsHttpClient contactsHttpClient,
+        IViewModelSetupService viewModelSetupService,
+        IProgenyHttpClient progenyHttpClient,
+        IUserAccessHttpClient userAccessHttpClient)
         : Controller
     {
         /// <summary>
@@ -135,6 +140,7 @@ namespace KinaUnaWeb.Controllers
                 contactItemResponse.ContactItem.PictureLink = contactItemResponse.ContactItem.GetProfilePictureUrl();
                 BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), contactItemResponse.ContactItem.ProgenyId);
                 contactItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
+                contactItemResponse.ContactItem.Progeny = await progenyHttpClient.GetProgeny(contactItemResponse.ContactItem.ProgenyId);
             }
 
 
@@ -162,9 +168,17 @@ namespace KinaUnaWeb.Controllers
             {
                 parameters.CurrentPageNumber = 1;
             }
+            
+            List<UserAccess> userAccessList = await userAccessHttpClient.GetUserAccessList(User.GetEmail());
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
-            List<Contact> contactsList = await contactsHttpClient.GetContactsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+            List<Contact> contactsList = []; //await contactsHttpClient.GetContactsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+
+            foreach (int progenyId in parameters.Progenies)
+            {
+                int accessLevel = userAccessList.FirstOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                List<Contact> progenyContacts = await contactsHttpClient.GetContactsList(progenyId, accessLevel, parameters.TagFilter);
+                contactsList.AddRange(progenyContacts);
+            }
 
             List<string> tagsList = [];
 

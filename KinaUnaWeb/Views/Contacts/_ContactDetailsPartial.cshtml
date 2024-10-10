@@ -1,4 +1,5 @@
 ﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
@@ -15,7 +16,7 @@
     <div class="timeline-card-body bg-contact item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.ContactItem.Progeny.PictureLink" class="item-details-title-picture" />
+                <img src="@Model.ContactItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -26,7 +27,7 @@
                 </div>
             </div>
             <div class="col-auto">
-                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">face</i></span>
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">contact_phone</i></span>
             </div>
             <div class="col">
                 <div class="timeline-title row">

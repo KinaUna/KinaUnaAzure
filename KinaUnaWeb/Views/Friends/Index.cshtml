@@ -3,7 +3,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.FriendsListViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Friends", PageNames.Friends, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Friends", PageNames.Friends, Model.LanguageId);
 
     string personalFriend = await LocaleManager.GetTranslation("Personal friend", PageNames.Friends, Model.LanguageId);
     string toyFriend = await LocaleManager.GetTranslation("Toy/animal friend", PageNames.Friends, Model.LanguageId);
