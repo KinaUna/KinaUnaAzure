@@ -417,6 +417,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             OnThisDayRequest onThisDayRequest = new()
             {
                 ProgenyId = 2,
+                Progenies = [2],
                 ThisDayDateTime = _sampleDateTime,
                 AccessLevel = 0,
                 Skip = 0,
@@ -426,7 +427,27 @@ namespace KinaUnaProgenyApi.Tests.Services
                 TimeLineTypeFilter = []
             };
 
-            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, Constants.DefaultTimezone);
+            UserInfo userInfo = new()
+            {
+                UserId = "User1",
+                UserEmail = "test@test.com"
+            };
+
+            UserAccess userAccess1 = new()
+            {
+                ProgenyId = 1,
+                UserId = "User1",
+                AccessLevel = 0
+            };
+
+            UserAccess userAccess2 = new()
+            {
+                ProgenyId = 2,
+                UserId = "User1",
+                AccessLevel = 0
+            };
+
+            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, userInfo, [userAccess1, userAccess2]);
 
             Assert.NotNull(onThisDayResponse);
             Assert.IsType<OnThisDayResponse>(onThisDayResponse);
@@ -486,6 +507,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             OnThisDayRequest onThisDayRequest = new()
             {
                 ProgenyId = 1,
+                Progenies = [1, 2],
                 ThisDayDateTime = _sampleDateTime,
                 AccessLevel = 0,
                 Skip = 0,
@@ -495,7 +517,27 @@ namespace KinaUnaProgenyApi.Tests.Services
                 TimeLineTypeFilter = []
             };
 
-            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, Constants.DefaultTimezone);
+            UserInfo userInfo = new()
+            {
+                UserId = "User1",
+                UserEmail = "test@test.com"
+            };
+
+            UserAccess userAccess1 = new()
+            {
+                ProgenyId = 1,
+                UserId = "User1",
+                AccessLevel = 0
+            };
+
+            UserAccess userAccess2 = new()
+            {
+                ProgenyId = 2,
+                UserId = "User1",
+                AccessLevel = 0
+            };
+
+            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, userInfo, [userAccess1, userAccess2]);
 
             Assert.NotNull(onThisDayResponse);
             Assert.IsType<OnThisDayResponse>(onThisDayResponse);

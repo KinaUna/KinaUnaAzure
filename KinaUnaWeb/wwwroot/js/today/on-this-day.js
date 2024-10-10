@@ -35,10 +35,17 @@ function stopLoadingSpinner() {
  * Hides the moreTimelineItemsButton while loading.
  * @param parameters  The parameters to use for retrieving the timeline items.
  */
-async function getOnThisDayData(parameters) {
+async function getOnThisDayData(parameters, reset = false) {
     startLoadingSpinner();
     if (moreOnThisDayItemsButton !== null) {
         moreOnThisDayItemsButton.classList.add('d-none');
+    }
+    if (reset) {
+        timelineItemsList = [];
+        const timelineDiv = document.querySelector('#on-this-day-items-div');
+        if (timelineDiv !== null) {
+            timelineDiv.innerHTML = '';
+        }
     }
     parameters.skip = timelineItemsList.length;
     await fetch('/Today/GetOnThisDayList', {
@@ -455,6 +462,25 @@ function refreshSelectPickers() {
         $(".selectpicker").selectpicker('refresh');
     }
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            await getOnThisDayData(onThisDayParameters, true);
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        onThisDayParameters.progenies = progeniesIds;
+    }
+}
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function () {
     languageId = getCurrentLanguageId();
@@ -470,6 +496,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     getParametersFromPageProperties();
     await loadOnThisDayPageSettings();
     refreshSelectPickers();
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
     await getOnThisDayData(onThisDayParameters);
     if (firstRun) { // getOnThisDayData updated the parameters and exited early to reload with the new values.
         await getOnThisDayData(onThisDayParameters);

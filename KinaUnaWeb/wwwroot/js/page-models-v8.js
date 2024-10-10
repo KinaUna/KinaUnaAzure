@@ -359,6 +359,7 @@ export class TimelineList {
 export class OnThisDayRequest {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.accessLevel = 5;
         this.skip = 0;
         this.numberOfItems = 5;

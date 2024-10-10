@@ -394,7 +394,18 @@ namespace KinaUnaProgenyApi.Controllers
                 DateTime updateTime = new(onThisDayRequest.ThisDayDateTime.Year, onThisDayRequest.ThisDayDateTime.Month, onThisDayRequest.ThisDayDateTime.Day, 23, 59, 59);
                 onThisDayRequest.ThisDayDateTime = updateTime;
             }
-            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, currentUser.Timezone);
+
+            List<UserAccess> userAccessList = [];
+            foreach (int progenyId in onThisDayRequest.Progenies)
+            {
+                UserAccess userAccessItem = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+                if (userAccessItem != null)
+                {
+                    userAccessList.Add(userAccessItem);
+                }
+            }
+
+            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, currentUser, userAccessList);
             
             return Ok(onThisDayResponse);
         }

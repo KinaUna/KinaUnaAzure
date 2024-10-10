@@ -345,6 +345,7 @@ export class TimelineList {
 
 export class OnThisDayRequest {
     progenyId: number = 0;
+    progenies: number[] = [];
     accessLevel: number = 5;
     skip: number = 0;
     numberOfItems: number = 5;
