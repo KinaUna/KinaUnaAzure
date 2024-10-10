@@ -128,7 +128,10 @@ function getSelectedProgenies() {
             return parseInt(id);
         });
         timeLineParameters.progenies = progeniesIds;
+        return;
     }
+
+    timeLineParameters.progenies = [getCurrentProgenyId()];
 }
 
 /**

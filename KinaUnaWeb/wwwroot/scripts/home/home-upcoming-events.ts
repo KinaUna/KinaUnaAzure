@@ -139,7 +139,10 @@ function getSelectedProgenies() {
             return parseInt(id);
         });
         upcomingEventsParameters.progenies = progeniesIds;
+        return;
     }
+
+    upcomingEventsParameters.progenies = [getCurrentProgenyId()];
 }
 /**
  * Initialization when the page is loaded.

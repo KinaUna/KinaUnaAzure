@@ -141,6 +141,7 @@ export class NoteItemParameters implements BaseItemParameters {
 
 export class NotesPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    progenies: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;

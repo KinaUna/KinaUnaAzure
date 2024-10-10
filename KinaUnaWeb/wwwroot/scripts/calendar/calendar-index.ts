@@ -1,3 +1,4 @@
+import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as LocaleHelper from '../localization-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
@@ -158,7 +159,10 @@ function getSelectedProgenies() {
             return parseInt(id);
         });
         progeniesList = progeniesIds;
+        return;
     }
+
+    progeniesList = [getCurrentProgenyId()];
 }
 
 /**

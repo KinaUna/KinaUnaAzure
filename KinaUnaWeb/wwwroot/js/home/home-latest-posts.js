@@ -113,7 +113,9 @@ function getSelectedProgenies() {
             return parseInt(id);
         });
         timeLineParameters.progenies = progeniesIds;
+        return;
     }
+    timeLineParameters.progenies = [getCurrentProgenyId()];
 }
 /**
  * Initializes page settings and sets up event listeners when page is first loaded.

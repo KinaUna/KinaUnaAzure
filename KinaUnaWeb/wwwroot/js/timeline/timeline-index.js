@@ -506,7 +506,9 @@ function getSelectedProgenies() {
             return parseInt(id);
         });
         timeLineParameters.progenies = progeniesIds;
+        return;
     }
+    timeLineParameters.progenies = [getCurrentProgenyId()];
 }
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function () {

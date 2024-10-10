@@ -123,7 +123,9 @@ function getSelectedProgenies() {
             return parseInt(id);
         });
         yearAgoParameters.progenies = progeniesIds;
+        return;
     }
+    yearAgoParameters.progenies = [getCurrentProgenyId()];
 }
 /**
  * Initialization when the page is loaded.

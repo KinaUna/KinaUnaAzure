@@ -702,10 +702,6 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             getSelectedProgenies();
-            const timelineDiv = document.querySelector('#timeline-items-div');
-            if (timelineDiv !== null) {
-                timelineDiv.innerHTML = '';
-            }
             if (picturesPageParameters !== null) {
                 picturesPageParameters = await getPicturesList(picturesPageParameters, false);
             }
@@ -723,6 +719,9 @@ function getSelectedProgenies() {
             picturesPageParameters.progenies = progeniesIds;
         }
         return progeniesIds;
+    }
+    if (picturesPageParameters !== null) {
+        picturesPageParameters.progenies = [getCurrentProgenyId()];
     }
     return [getCurrentProgenyId()];
 }

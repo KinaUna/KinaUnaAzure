@@ -1,6 +1,7 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
 @using System.Web;
+@using KinaUna.Data.Extensions
 @model KinaUnaWeb.Models.TypeScriptModels.Notes.NoteItemResponse
 @inject ILocaleManager LocaleManager
 
@@ -11,14 +12,15 @@
     }
     else
     {
-        <div class="card-header rounded w-100" style="padding-right: 5px; margin-bottom: 0;">
+        <div class="card-header rounded w-100 p-0 pt-2" style="padding-right: 5px; margin-bottom: 0;">
+            <img class="float-right" src="@Model.Note.Progeny.GetProfilePictureUrl()" style="max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;"/>
             <div class="card-title text-left"><span class="pr-2"><i class="material-icons icon-top-4">note</i> </span><span class="h4">@Model.Note.Title</span></div>
             <div class="row card-category text-white-50">
                 <div class="col-auto">@Model.Note.CreatedDate.ToString("dd-MMM-yyyy HH:mm")</div>
                 <div class="col-auto ml-auto">@Model.Note.Owner</div>
             </div>
         </div>
-        <div class="card-body p-3 w-100">
+        <div class="card-body p-0 w-100">
             <div class="card-text">
                 <div class="text-dark card-body bg-white" style="overflow: hidden; max-height: 250px;" align="left">@Html.Raw(HttpUtility.HtmlDecode(Model.Note.Content))</div>
             </div>

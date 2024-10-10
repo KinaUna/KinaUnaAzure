@@ -18,6 +18,7 @@ namespace KinaUnaWeb.Controllers
         IProgenyHttpClient progenyHttpClient,
         INotesHttpClient notesHttpClient,
         IUserInfosHttpClient userInfosHttpClient,
+        IUserAccessHttpClient userAccessHttpClient,
         IViewModelSetupService viewModelSetupService)
         : Controller
     {
@@ -100,8 +101,19 @@ namespace KinaUnaWeb.Controllers
             }
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
-            List<Note> notes = await notesHttpClient.GetNotesList(baseModel.CurrentProgenyId, baseModel.CurrentAccessLevel);
             
+            List<UserAccess> accessList = await userAccessHttpClient.GetUserAccessList(baseModel.CurrentUser.UserEmail);
+
+            List<Note> notes = [];
+
+            foreach (int progenyId in parameters.Progenies)
+            {
+                int accessLevel = accessList.FirstOrDefault(a => a.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                List<Note> progenyNotes = await notesHttpClient.GetNotesList(progenyId, accessLevel);
+                
+                notes.AddRange(progenyNotes);
+            }
+
             parameters.TotalPages = (int)double.Ceiling((double)notes.Count / parameters.ItemsPerPage);
             parameters.TotalItems = notes.Count;
 
@@ -149,6 +161,7 @@ namespace KinaUnaWeb.Controllers
             else
             {
                 noteItemResponse.Note = await notesHttpClient.GetNote(parameters.NoteId);
+                noteItemResponse.Note.Progeny = await progenyHttpClient.GetProgeny(noteItemResponse.Note.ProgenyId);
                 noteItemResponse.NoteId = noteItemResponse.Note.NoteId;
 
                 BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), noteItemResponse.Note.ProgenyId);
