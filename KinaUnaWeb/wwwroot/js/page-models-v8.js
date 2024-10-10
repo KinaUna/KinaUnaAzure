@@ -320,6 +320,7 @@ export class TimelineParameters {
 export class TimelineRequest {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.accessLevel = 5;
         this.skip = 0;
         this.numberOfItems = 5;

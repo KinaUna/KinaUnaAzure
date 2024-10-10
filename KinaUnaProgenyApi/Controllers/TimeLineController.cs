@@ -40,18 +40,25 @@ namespace KinaUnaProgenyApi.Controllers
             if (progeny == null) return Ok(new TimelineResponse());
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(timelineRequest.ProgenyId, userEmail);
-            if (userAccess == null) return Ok(new OnThisDayResponse());
             UserInfo currentUser = await userInfoService.GetUserInfoByEmail(userEmail);
-            timelineRequest.AccessLevel = userAccess.AccessLevel;
+
+            List<UserAccess> userAccessList = [];
+            foreach (int progenyId in timelineRequest.Progenies)
+            {
+                UserAccess userAccessItem = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+                if (userAccessItem != null)
+                {
+                    userAccessList.Add(userAccessItem);
+                }
+            }
+
             if (timelineRequest.SortOrder == 1)
             {
                 DateTime updateTime = new(timelineRequest.TimelineStartDateTime.Year, timelineRequest.TimelineStartDateTime.Month, timelineRequest.TimelineStartDateTime.Day, 23, 59, 59);
                 timelineRequest.TimelineStartDateTime = updateTime;
             }
 
-            TimelineResponse timelineResponse = await timelineService.GetTimelineData(timelineRequest, currentUser.Timezone);
+            TimelineResponse timelineResponse = await timelineService.GetTimelineData(timelineRequest, currentUser, userAccessList);
 
             return Ok(timelineResponse);
         }

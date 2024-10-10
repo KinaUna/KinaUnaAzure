@@ -61,6 +61,13 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>OnThisDayResponse object.</returns>
         Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest, UserInfo userInfo, List<UserAccess> userAccessList);
 
-        Task<TimelineResponse> GetTimelineData(TimelineRequest timelineRequest, string timezone);
+        /// <summary>
+        /// Gets a TimelineResponse for displaying TimeLineItems on the Timeline page.
+        /// </summary>
+        /// <param name="timelineRequest">The TimelineRequest object with the parameters.</param>
+        /// <param name="userInfo">The current users UserInfo.</param>
+        /// <param name="userAccessList">List of UserAccess objects for the current user and the progenies.</param>
+        /// <returns>TimelineResponse with the filtered list of Timeline items.</returns>
+        Task<TimelineResponse> GetTimelineData(TimelineRequest timelineRequest, UserInfo userInfo, List<UserAccess> userAccessList);
     }
 }

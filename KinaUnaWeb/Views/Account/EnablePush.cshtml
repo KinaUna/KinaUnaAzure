@@ -21,29 +21,29 @@
                     <ul id="errorMessage"></ul>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group d-none">
                 <label asp-for="Name" class="col-auto control-label">@await LocaleManager.GetTranslation("User ID", PageNames.Account, languageId)</label>
                 <div class="col-auto">
                     <input asp-for="Name" class="col-auto form-control" value="user" readonly="readonly" />
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group d-none">
                 <h4 class="col-auto">@await LocaleManager.GetTranslation("Web Push details", PageNames.Account, languageId)</h4>
                 <div class="col-auto" style="font-size: 12px;">@await LocaleManager.GetTranslation("These values will automatically become populated once correct permissions are given by the browser.", PageNames.Account, languageId)</div>
             </div>
-            <div class="form-group">
+            <div class="form-group d-none">
                 <label asp-for="PushEndpoint" class="col-auto control-label"></label>
                 <div class="col-auto">
                     <input asp-for="PushEndpoint" class="form-control" readonly required />
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group d-none">
                 <label asp-for="PushP256DH" class="col-auto control-label"></label>
                 <div class="col-auto">
                     <input asp-for="PushP256DH" class="form-control" readonly required />
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group d-none">
                 <label asp-for="PushAuth" class="col-auto control-label"></label>
                 <div class="col-auto">
                     <input asp-for="PushAuth" class="form-control" readonly required />
