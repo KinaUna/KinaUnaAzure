@@ -1,4 +1,5 @@
 ﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
 @inject ILocaleManager LocaleManager
@@ -7,7 +8,11 @@
 }
 <button class="item-btn col-12 col-sm-12 col-md-6 col-lg-4" data-location-id="@Model.LocationItem.LocationId">
     <div class="card text-white bg-location text-break" style="height: -webkit-fill-available">
-        <div class="card-header bg-location-header h5 kinauna-yellow-text">@Model.LocationItem.Name</div>
+        <div class="card-header bg-location-header h5 kinauna-yellow-text">
+            <img class="float-right" src="@Model.LocationItem.Progeny.GetProfilePictureUrl()" style="max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;"/>
+            <i class="material-icons kinauna-icon-medium mr-2 text-white" style="font-size: 32px;">person_pin</i>
+            @Model.LocationItem.Name
+        </div>
         <div class="card-body">
             <div class="card-text">
                 <div>@await LocaleManager.GetTranslation("Date:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.Date.Value.ToString("dd-MMM-yyyy")</div>

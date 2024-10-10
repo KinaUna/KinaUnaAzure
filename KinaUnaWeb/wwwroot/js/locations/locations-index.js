@@ -1,3 +1,4 @@
+import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as pageModels from '../page-models-v8.js';
@@ -291,6 +292,28 @@ function refreshSelectPickers() {
 function setUpMap() {
     setUpMapClickToShowLocationListener(map);
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            locationsPageParameters.currentPageNumber = 1;
+            await getLocationsList();
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        locationsPageParameters.progenies = progeniesIds;
+        return;
+    }
+    locationsPageParameters.progenies = [getCurrentProgenyId()];
+}
 /**
  * Initializes the page elements when it is loaded.
  */
@@ -303,6 +326,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     setUpMap();
     await loadLocationsPageSettings();
     await showPopupAtLoad(pageModels.TimeLineType.Location);
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
     await getLocationsList();
     return new Promise(function (resolve, reject) {
         resolve();
