@@ -335,6 +335,9 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
         });
     }
 
+    window.addEventListener('resize', () => map?.getViewPort().resize());
+    map?.getViewPort().resize();
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

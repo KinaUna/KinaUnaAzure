@@ -1,5 +1,6 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @model Friend
 @inject ILocaleManager LocaleManager
 @{
@@ -23,6 +24,7 @@
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-friend">
             <div class="row">
+                <img class="float-right" src="@Model.Progeny.GetProfilePictureUrl()" style="max-height: 24px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; right: 2px; position: absolute;" />
                 <div class="col-auto">
                     <span class="timeline-icon"><i class="material-icons">face</i></span>
                 </div>
@@ -46,7 +48,7 @@
                                         <div class="col text-nowrap">@await LocaleManager.GetTranslation("Type:", PageNames.Friends, languageId) </div>
                                         <div class="col text-right text-nowrap">@typeList[Model.Type]</div>
                                     </div>
-                                    
+
                                     @if (!string.IsNullOrEmpty(Model.Context))
                                     {
                                         <div class="space-20"></div>
@@ -54,11 +56,11 @@
                                             <div class="col text-nowrap">@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, languageId) </div>
                                             <div class="col text-right text-nowrap">@Model.Context</div>
                                         </div>
-                                        
+
                                     }
                                     <div class="space-20"></div>
                                 </div>
-                                    
+
                                 @if (!string.IsNullOrEmpty(Model.Tags))
                                 {
                                     List<string> tagsList = Model.Tags.Split(',').ToList();

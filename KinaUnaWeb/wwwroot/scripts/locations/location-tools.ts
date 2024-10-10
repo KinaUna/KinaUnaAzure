@@ -78,7 +78,7 @@ export function setupHereMaps(languageId: number) {
 
 
     let marker = new H.map.Marker({ lat: latitudeValue, lng: longitudeValue }, {icon: defaultIcon });
-    map.addObject(marker);
+    map.addObject(marker);    
 }
 
 export function setUpMapClickToShowLocationListener(map: H.Map) {
@@ -136,6 +136,6 @@ export function setupHereMapsPhotoLocations(languageId: number): H.Map | null {
 
     let ui = H.ui.UI.createDefault(map, maptypes);
     let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-
+        
     return map;
 }

@@ -287,6 +287,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             await processPicturesNearLocation();
         });
     }
+    window.addEventListener('resize', () => map?.getViewPort().resize());
+    map?.getViewPort().resize();
     return new Promise(function (resolve, reject) {
         resolve();
     });

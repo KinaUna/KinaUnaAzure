@@ -16,7 +16,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int PictureHeight { get; init; }
 
         public int ProgenyId { get; init; }
-        public Progeny Progeny { get; init; }
+        public Progeny Progeny { get; set; }
         public string Owners { get; init; } // Comma separated list of emails.
         public int AccessLevel { get; init; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
         public string Author { get; init; }

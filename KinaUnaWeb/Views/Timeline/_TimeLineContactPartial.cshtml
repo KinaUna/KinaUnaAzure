@@ -1,5 +1,6 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @model Contact
 @inject ILocaleManager LocaleManager
 @{
@@ -10,6 +11,7 @@
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-contact">
             <div class="row">
+                <img class="float-right" src="@Model.Progeny.GetProfilePictureUrl()" style="max-height: 24px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; right: 2px; position: absolute;" />
                 <div class="col-auto">
                     <span class="timeline-icon"><i class="material-icons">contact_phone</i></span>
                 </div>
@@ -19,7 +21,7 @@
                     </div>
                     <div class="timeline-text text-white-50">
                         <div style="max-width: 60vw; overflow: hidden;">
-                            <img class="img-thumbnail lazyload" style="max-height: 200px; max-width: 200px; background: black; margin-bottom: 8px; margin-top: 8px;" data-src="@Model.PictureLink" />
+                            <img class="img-thumbnail lazyload" style="max-height: 200px; max-width: 200px; background: black; margin-bottom: 8px; margin-top: 8px;" data-src="@Model.PictureLink"/>
                         </div>
                         <div class="text-white">@Model.FirstName @Model.MiddleName @Model.LastName</div>
                         @if (!string.IsNullOrEmpty(Model.Context))

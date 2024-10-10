@@ -174,16 +174,12 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId);
                     progenyTimeLineList = [.. progenyTimeLineList
-                        .Where(t => t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day)
-                        .OrderBy(t => t.ProgenyTime)];
-                    if (progenyTimeLineList.Count != 0)
-                    {
-                        progenyTimeLineList.Reverse();
-                        timeLineList.AddRange(progenyTimeLineList);
-                    }
+                        .Where(t => t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day)];
+                    timeLineList.AddRange(progenyTimeLineList);
                 }
             }
-
+            timeLineList = timeLineList.OrderByDescending(t => t.ProgenyTime).ToList();
+            
             return Ok(timeLineList.Count != 0 ? timeLineList : []);
         }
 

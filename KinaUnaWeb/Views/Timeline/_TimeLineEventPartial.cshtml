@@ -1,6 +1,7 @@
 ﻿@using System.Text.RegularExpressions
 @using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @model CalendarItem
 @inject ILocaleManager LocaleManager
 @{
@@ -32,6 +33,7 @@
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-calendar">
             <div class="row">
+                <img class="float-right" src="@Model.Progeny.GetProfilePictureUrl()" style="max-height: 24px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; right: 2px; position: absolute;"/>
                 <div class="col-auto">
                     <span class="timeline-icon"><i class="material-icons">event_note</i></span>
                 </div>
