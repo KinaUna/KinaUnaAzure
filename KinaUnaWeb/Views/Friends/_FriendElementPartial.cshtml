@@ -1,4 +1,5 @@
 ﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
 @inject ILocaleManager LocaleManager
@@ -18,9 +19,13 @@
 }
 <button class="item-btn friend-item col-sm-12 col-md-5 col-lg-4 col-xl-3 @chkClass" data-friend-id="@Model.FriendItem.FriendId">
     <div class="card text-white bg-primary text-break" style="height: -webkit-fill-available">
-        <div class="card-header card-header-rose h5">@Model.FriendItem.Name</div>
+        <div class="card-header card-header-rose h5">
+            <img class="float-right" src="@Model.FriendItem.Progeny.GetProfilePictureUrl()" style="max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;"/>
+            <i class="material-icons kinauna-icon-medium mr-2" style="font-size: 32px;">face</i>
+            @Model.FriendItem.Name
+        </div>
         <div style="max-height: 400px; overflow-y: hidden;">
-            <img class="img-thumbnail mx-auto d-block lazyload" style="max-height: 250px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@Model.FriendItem.PictureLink" alt="@Model.FriendItem.Name" />
+            <img class="img-thumbnail mx-auto d-block lazyload" style="max-height: 250px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@Model.FriendItem.PictureLink" alt="@Model.FriendItem.Name"/>
         </div>
         <div class="card-body" style="align-content: end;">
             <div align="left">
