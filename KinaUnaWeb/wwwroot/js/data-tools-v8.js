@@ -487,7 +487,6 @@ export function setCopyContentEventListners() {
                     if (notificationSpan !== null) {
                         notificationSpan.classList.remove('d-none');
                         setTimeout(function () {
-                            notificationSpan.textContent = '';
                             notificationSpan.classList.add('d-none');
                         }, 3000);
                     }
