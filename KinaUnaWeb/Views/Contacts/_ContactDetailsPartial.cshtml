@@ -11,6 +11,8 @@
     {
         websiteLink = "https://" + Model.ContactItem.Website;
     }
+    string emailString = await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId);
+    string emailCopiedString = await LocaleManager.GetTranslation("Email copied to clipboard", PageNames.Contacts, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-contact item-details-content">
@@ -67,20 +69,103 @@
                     @if (!string.IsNullOrEmpty(Model.ContactItem.MobileNumber))
                     {
                         <div class="col-12">
-                            <strong>@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.MobileNumber
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId)</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span id="contact-mobile-number-@Model.ContactItem.ContactId" class="p-2">@Model.ContactItem.MobileNumber</span>
+                                            <button class="btn btn-link p-3 copy-content-button text-white-50" data-copy-content-id="contact-mobile-number-@Model.ContactItem.ContactId">
+                                                <i class="material-icons kinauna-icon-medium">content_copy</i>
+                                                <span class="toast-notification d-none">@await LocaleManager.GetTranslation("Mobile number copied to clipboard", PageNames.Contacts, Model.LanguageId)</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-auto">
+                                            <a class="btn btn-link p-3 text-white-50" href="tel:@Model.ContactItem.MobileNumber"><i class="material-icons kinauna-icon-medium">call</i></a>
+                                            <a class="btn btn-link p-3 text-white-50" href="sms:@Model.ContactItem.MobileNumber"><i class="material-icons kinauna-icon-medium">sms</i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-20"></div>
                         </div>
                     }
                     @if (!string.IsNullOrEmpty(Model.ContactItem.PhoneNumber))
                     {
                         <div class="col-12">
-                            <strong>@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.PhoneNumber
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId)</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span id="contact-phone-number-@Model.ContactItem.ContactId">@Model.ContactItem.PhoneNumber</span>
+                                            <button class="btn btn-link p-3 copy-content-button text-white-50" data-copy-content-id="contact-phone-number-@Model.ContactItem.ContactId">
+                                                <i class="material-icons">content_copy</i>
+                                                <span class="toast-notification d-none">@await LocaleManager.GetTranslation("Phone number copied to clipboard", PageNames.Contacts, Model.LanguageId)</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-auto">
+                                            <a class="btn btn-link p-3 text-white-50" href="tel:@Model.ContactItem.PhoneNumber"><i class="material-icons kinauna-icon-medium">call</i></a>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-20"></div>
                         </div>
                     }
-                    @if (!string.IsNullOrEmpty(Model.ContactItem.Email1 + Model.ContactItem.Email2))
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.Email1))
                     {
                         <div class="col-12">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>@emailString</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span id="contact-email1-@Model.ContactItem.ContactId">@Model.ContactItem.Email1</span>
+                                            <button class="btn btn-link p-3 copy-content-button text-white-50" data-copy-content-id="contact-email1-@Model.ContactItem.ContactId">
+                                                <i class="material-icons">content_copy</i>
+                                                <span class="toast-notification d-none">@emailCopiedString</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-auto">
+                                            <a class="btn btn-link p-3 text-white-50" href="mailto:@Model.ContactItem.Email1"><i class="material-icons kinauna-icon-medium">outgoing_mail</i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="space-20"></div>
-                            <strong>@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId)</strong> <span class="mr-3">@Model.ContactItem.Email1</span><span>@Model.ContactItem.Email2</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.Email2))
+                    {
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>@emailString</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span id="contact-email2-@Model.ContactItem.ContactId">@Model.ContactItem.Email2</span>
+                                            <button class="btn btn-link p-3 copy-content-button text-white-50" data-copy-content-id="contact-email2-@Model.ContactItem.ContactId">
+                                                <i class="material-icons">content_copy</i>
+                                                <span class="toast-notification d-none">@emailCopiedString</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-auto">
+                                            <a class="btn btn-link p-3 text-white-50" href="mailto:@Model.ContactItem.Email2"><i class="material-icons kinauna-icon-medium">outgoing_mail</i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-20"></div>
                         </div>
                     }
                     

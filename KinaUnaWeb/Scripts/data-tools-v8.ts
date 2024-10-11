@@ -1,4 +1,5 @@
-﻿import { AutoSuggestList } from './page-models-v8.js';
+﻿import { getTranslation } from './localization-v8.js';
+import { AutoSuggestList } from './page-models-v8.js';
 
 declare let moment: any;
 let currentMomentLocale: string = 'en';
@@ -530,5 +531,34 @@ export function dateStringFormatConverter(originalDateString: string, inputForma
     let pickertime: any = moment.utc(originalDateString, inputFormat);
     let timeString: string = pickertime.format(outputFormat);
     return timeString;
+}
+
+export function setCopyContentEventListners() {
+    let copyContentButtons = document.querySelectorAll<HTMLButtonElement>('.copy-content-button');
+    if (copyContentButtons) {
+        copyContentButtons.forEach((button) => {
+            button.addEventListener('click', async function () {
+                if (!button.dataset.copyContentId) {
+                    return;
+                }
+                let copyContentElement = document.getElementById(button.dataset.copyContentId);
+                if (copyContentElement !== null) {
+                    let copyText = copyContentElement.textContent;
+                    if (copyText === null) {
+                        return;
+                    }
+                    navigator.clipboard.writeText(copyText);
+                    // Notify that the text has been copied to the clipboard.
+                    let notificationSpan = button.querySelector<HTMLSpanElement>('.toast-notification');
+                    if (notificationSpan !== null) {
+                        notificationSpan.classList.remove('d-none');
+                        setTimeout(function () {
+                            notificationSpan.classList.add('d-none');
+                        }, 3000);
+                    }
+                }
+            });
+        });
+    }
 }
 

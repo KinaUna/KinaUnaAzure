@@ -1,4 +1,5 @@
-﻿import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
+﻿import { setCopyContentEventListners } from '../data-tools-v8.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 
 /**
@@ -63,6 +64,8 @@ async function displayContactItem(contactId: string): Promise<void> {
                         });
                     });
                 }
+
+                setCopyContentEventListners();
             }
         } else {
             console.error('Error getting contact item. Status: ' + response.status + ', Message: ' + response.statusText);
