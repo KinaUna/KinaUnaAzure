@@ -113,6 +113,7 @@ export class LocationsPageResponse implements BaseItemsPageResponseModel {
 
 export class NearByPhotosRequest {
     progenyId: number = 0;
+    progenies: number[] = [];
     locationItem: LocationItem = new LocationItem();
     distance: number = 0.25;
     sortOrder: number = 1;

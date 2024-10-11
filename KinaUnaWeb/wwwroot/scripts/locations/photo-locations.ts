@@ -95,6 +95,7 @@ async function processLocationsList(locationsList: LocationItem[]): Promise<void
 async function getPicturesNearLocation(locationItem: LocationItem): Promise<void> {
     nearByPhotosRequest.locationItem = locationItem;
     nearByPhotosRequest.progenyId = photoLocationsProgenyId;
+    nearByPhotosRequest.progenies = locationsPageParameters.progenies;
     picturesShown = 0;
     await fetch('/Pictures/GetPicturesNearLocation/', {
         method: 'POST',
