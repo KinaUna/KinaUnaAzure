@@ -38,11 +38,14 @@ async function getPicturesLocationsList(): Promise<void> {
     startLoadingSpinner();
 
     picturesLocationsRequest.progenyId = photoLocationsProgenyId;
-    
+    picturesLocationsRequest.progenies = locationsPageParameters.progenies;
+
+    // Clear map markers
     if (group)
     {
         group.removeAll();
     }
+
     await fetch('/Pictures/GetPicturesLocations/', {
         method: 'POST',
         headers: {
@@ -92,6 +95,7 @@ async function processLocationsList(locationsList: LocationItem[]): Promise<void
 async function getPicturesNearLocation(locationItem: LocationItem): Promise<void> {
     nearByPhotosRequest.locationItem = locationItem;
     nearByPhotosRequest.progenyId = photoLocationsProgenyId;
+    nearByPhotosRequest.progenies = locationsPageParameters.progenies;
     picturesShown = 0;
     await fetch('/Pictures/GetPicturesNearLocation/', {
         method: 'POST',
@@ -309,12 +313,41 @@ function loadPhotoLocationsPageSettings() {
     }
 }
 
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            await getPicturesLocationsList();
+        }
+
+    });
+}
+
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        locationsPageParameters.progenies = progeniesIds;
+        return;
+    }
+
+    locationsPageParameters.progenies = [getCurrentProgenyId()];
+}
+
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     photoLocationsProgenyId = getCurrentProgenyId();
     getLocationsPageParameters();
     loadPhotoLocationsPageSettings();
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
+
     map = setupHereMapsPhotoLocations(locationsPageParameters.languageId);
     setUpMap();
+
     const photoLocationsSaveSettingsButton = document.querySelector<HTMLButtonElement>('#photo-locations-page-save-settings-button');
     if (photoLocationsSaveSettingsButton !== null) {
         photoLocationsSaveSettingsButton.addEventListener('click', savePhotoLocationsPageSettings);
@@ -324,6 +357,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
         sortAscendingSettingsButton.addEventListener('click', sortPicturesAscending);
         sortDescendingSettingsButton.addEventListener('click', sortPicturesDescending);
     }
+
     SettingsHelper.initPageSettings();
 
     await getPicturesLocationsList();

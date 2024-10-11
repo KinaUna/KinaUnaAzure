@@ -822,10 +822,11 @@ function getSelectedProgenies(): number[] {
 
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    getPopupPictureId();
+    await showPopupAtLoad(TimeLineType.Photo);
+
     picturesPageProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
-
-    getPopupPictureId();
 
     await initialSettingsPanelSetup();
 
@@ -836,8 +837,6 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     SettingsHelper.initPageSettings();
     addSelectedProgeniesChangedEventListener();
     
-    await showPopupAtLoad(TimeLineType.Photo);
-
     picturesPageParameters = getPageParametersFromPageData();
     getSelectedProgenies();
     if (picturesPageParameters !== null) {

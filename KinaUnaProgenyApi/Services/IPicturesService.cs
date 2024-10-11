@@ -121,15 +121,17 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of distinct Locations for a Progeny's pictures.
         /// </summary>
         /// <param name="picturesLocationsRequest">PicturesLocationsRequest with the distance, in kilometers, to group picture locations by.</param>
+        /// <param name="userAccesses">List of UserAccess objects with the access level for each Progeny.</param>
         /// <returns>PicturesLocationsResponse</returns>
-        Task<PicturesLocationsResponse> GetPicturesLocations(PicturesLocationsRequest picturesLocationsRequest);
+        Task<PicturesLocationsResponse> GetPicturesLocations(PicturesLocationsRequest picturesLocationsRequest, List<UserAccess> userAccesses);
 
         /// <summary>
         /// Gets a list of Pictures near a specific Location.
         /// </summary>
         /// <param name="nearByPhotosRequest">NearByPhotosRequest object with the location data.</param>
+        /// <param name="userAccesses">List of UserAccess objects with the access level for each Progeny.</param>
         /// <returns>NearByPhotosResponse, with the list of Picture objects.</returns>
-        Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest);
+        Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest, List<UserAccess> userAccesses);
 
         /// <summary>
         /// Extracts the file extension of an image file in a blob container and saves to a new file with the file extension.

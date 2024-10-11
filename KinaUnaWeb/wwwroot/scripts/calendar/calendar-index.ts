@@ -1,7 +1,7 @@
 import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as LocaleHelper from '../localization-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
+import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { CalendarItem, TimeLineType, TimelineItem } from '../page-models-v8.js';
 import { popupEventItem } from './calendar-details.js';
 
@@ -42,11 +42,7 @@ async function getCalendarItems(): Promise<void> {
  * @param {number} eventId The id of the event to display.
  */
 async function DisplayEventItem(eventId: number): Promise<void> {
-    startLoadingItemsSpinner('schedule');
-
     await popupEventItem(eventId.toString());
-
-    stopLoadingItemsSpinner('schedule');
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -169,16 +165,16 @@ function getSelectedProgenies() {
  * Initializes page elements when it is loaded.
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    await showPopupAtLoad(TimeLineType.Calendar);
 
     addScheduleEventListeners();
     await loadLocale();
     setLocale();
-    // Todo: Check if only one progeny should be shown.
+    
     getSelectedProgenies();
+    startFullPageSpinner();
     await getCalendarItems();
-   
-    await showPopupAtLoad(TimeLineType.Calendar);
-
+    stopFullPageSpinner();
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

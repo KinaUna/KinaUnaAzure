@@ -91,6 +91,9 @@ export function setFullPageSpinnerEventListeners() {
     window.addEventListener('waitMeStart2', () => {
         startFullPageLoadingSpinner2();
     });
+    window.addEventListener('waitMeStop2', () => {
+        stopFullPageSpinner2();
+    });
 }
 /**
  * Triggers an event for showing the full page spinner.

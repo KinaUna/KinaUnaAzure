@@ -128,6 +128,7 @@ export class NearByPhotosResponse {
 
 export class PicturesLocationsRequest {
     progenyId: number = 0;
+    progenies: number[] = [];
     distance: number = 0.1;
 }
 

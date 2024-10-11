@@ -1169,14 +1169,11 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetPictureLocations(PicturesLocationsRequest picturesLocationsRequest)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(picturesLocationsRequest.ProgenyId, userEmail);
+            
+            List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(userEmail);
 
-            if (userAccess == null && picturesLocationsRequest.ProgenyId != Constants.DefaultChildId)
-            {
-                return Unauthorized();
-            }
+            PicturesLocationsResponse pictureLocation = await picturesService.GetPicturesLocations(picturesLocationsRequest, userAccessList);
 
-            PicturesLocationsResponse pictureLocation = await picturesService.GetPicturesLocations(picturesLocationsRequest);
             return Ok(pictureLocation);
         }
 
@@ -1185,14 +1182,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetPicturesNearLocation([FromBody] NearByPhotosRequest nearByPhotosRequest)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(nearByPhotosRequest.ProgenyId, userEmail);
+            
+            List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(userEmail);
 
-            if (userAccess == null && nearByPhotosRequest.ProgenyId != Constants.DefaultChildId)
-            {
-                return Unauthorized();
-            }
-
-            NearByPhotosResponse nearByPhotosResponse = await picturesService.GetPicturesNearLocation(nearByPhotosRequest);
+            NearByPhotosResponse nearByPhotosResponse = await picturesService.GetPicturesNearLocation(nearByPhotosRequest, userAccessList);
             return Ok(nearByPhotosResponse);
         }
 

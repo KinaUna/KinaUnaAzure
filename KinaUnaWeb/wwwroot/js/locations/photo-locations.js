@@ -33,6 +33,8 @@ function stopLoadingSpinner() {
 async function getPicturesLocationsList() {
     startLoadingSpinner();
     picturesLocationsRequest.progenyId = photoLocationsProgenyId;
+    picturesLocationsRequest.progenies = locationsPageParameters.progenies;
+    // Clear map markers
     if (group) {
         group.removeAll();
     }
@@ -78,6 +80,7 @@ async function processLocationsList(locationsList) {
 async function getPicturesNearLocation(locationItem) {
     nearByPhotosRequest.locationItem = locationItem;
     nearByPhotosRequest.progenyId = photoLocationsProgenyId;
+    nearByPhotosRequest.progenies = locationsPageParameters.progenies;
     picturesShown = 0;
     await fetch('/Pictures/GetPicturesNearLocation/', {
         method: 'POST',
@@ -265,10 +268,33 @@ function loadPhotoLocationsPageSettings() {
         $(".selectpicker").selectpicker('refresh');
     }
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            await getPicturesLocationsList();
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        locationsPageParameters.progenies = progeniesIds;
+        return;
+    }
+    locationsPageParameters.progenies = [getCurrentProgenyId()];
+}
 document.addEventListener('DOMContentLoaded', async function () {
     photoLocationsProgenyId = getCurrentProgenyId();
     getLocationsPageParameters();
     loadPhotoLocationsPageSettings();
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
     map = setupHereMapsPhotoLocations(locationsPageParameters.languageId);
     setUpMap();
     const photoLocationsSaveSettingsButton = document.querySelector('#photo-locations-page-save-settings-button');

@@ -103,6 +103,7 @@ export class LocationsPageResponse {
 export class NearByPhotosRequest {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.locationItem = new LocationItem();
         this.distance = 0.25;
         this.sortOrder = 1;
@@ -120,6 +121,7 @@ export class NearByPhotosResponse {
 export class PicturesLocationsRequest {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.distance = 0.1;
     }
 }

@@ -727,15 +727,15 @@ function getSelectedProgenies() {
 }
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function () {
+    getPopupPictureId();
+    await showPopupAtLoad(TimeLineType.Photo);
     picturesPageProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
-    getPopupPictureId();
     await initialSettingsPanelSetup();
     addPageNavigationEventListeners();
     addBrowserNavigationEventListeners();
     SettingsHelper.initPageSettings();
     addSelectedProgeniesChangedEventListener();
-    await showPopupAtLoad(TimeLineType.Photo);
     picturesPageParameters = getPageParametersFromPageData();
     getSelectedProgenies();
     if (picturesPageParameters !== null) {

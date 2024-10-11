@@ -11,6 +11,7 @@ import { addMeasurementItemListeners, popupMeasurementItem } from '../measuremen
 import { addSkillItemListeners, popupSkillItem } from '../skills/skill-details.js';
 import { addVocabularyItemListeners, popupVocabularyItem } from '../vocabulary/vocabulary-details.js';
 import { addVaccinationItemListeners, popupVaccinationItem } from '../vaccinations/vaccination-details.js';
+import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
  * Adds event listeners for a given timeline item. Used to show popups for items.
  * @param {TimelineItem} item The timeline item to add event listeners for.
@@ -105,7 +106,7 @@ function getItemIdFromPopupDiv(itemTypeString: string): number {
  * Shows the video details popup when the page is loaded, if the url query string contains videoId that is not 0.
  */
 export async function showPopupAtLoad(itemType: number): Promise<void> {
-    
+    startFullPageSpinner();
     if (itemType === 1) {
         let itemId = getItemIdFromPopupDiv('picture');
         if (itemId !== 0) {
@@ -203,7 +204,8 @@ export async function showPopupAtLoad(itemType: number): Promise<void> {
             await popupLocationItem(itemId.toString());
         }
     }
-    
+
+    stopFullPageSpinner();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

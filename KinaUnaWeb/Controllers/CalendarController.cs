@@ -44,6 +44,10 @@ namespace KinaUnaWeb.Controllers
             
             // model.SetEventsList(await calendarsHttpClient.GetCalendarList(model.CurrentProgenyId, model.CurrentAccessLevel));
             model.PopupEventId = eventId ?? 0;
+            if (model.PopupEventId != 0)
+            {
+                model.EventsList.Add(await calendarsHttpClient.GetCalendarItem(model.PopupEventId));
+            }
             return View(model);
         }
 

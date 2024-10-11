@@ -3,7 +3,6 @@ const bodyContentDiv: any = $('.body-content');
  * Displays the default cirle loading spinner in the middle of the page, and fades the rest of the page.
  */
 function startFullPageLoadingSpinner(): void {
-
     bodyContentDiv.waitMe({
         effect: 'roundBounce',
         text: '',
@@ -97,6 +96,10 @@ export function setFullPageSpinnerEventListeners(): void {
 
     window.addEventListener('waitMeStart2', () => {
         startFullPageLoadingSpinner2();
+    });
+
+    window.addEventListener('waitMeStop2', () => {
+        stopFullPageSpinner2();
     });
 }
 

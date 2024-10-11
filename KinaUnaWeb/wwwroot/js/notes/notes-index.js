@@ -232,6 +232,7 @@ function getSelectedProgenies() {
     notesPageParameters.progenies = [getCurrentProgenyId()];
 }
 document.addEventListener('DOMContentLoaded', async function () {
+    await showPopupAtLoad(pageModels.TimeLineType.Note);
     const notesPageSettingsContentDiv = document.querySelector('#page-settings-content-div');
     if (notesPageSettingsContentDiv !== null) {
         notesPageSettingsDiv?.appendChild(notesPageSettingsContentDiv);
@@ -251,7 +252,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         sortAscendingSettingsButton?.classList.add('active');
         sortDescendingSettingsButton?.classList.remove('active');
     }
-    await showPopupAtLoad(pageModels.TimeLineType.Note);
     addSelectedProgeniesChangedEventListener();
     getSelectedProgenies();
     getNotes();

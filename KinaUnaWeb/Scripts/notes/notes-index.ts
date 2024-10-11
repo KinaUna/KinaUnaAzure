@@ -268,6 +268,8 @@ function getSelectedProgenies() {
 }
 
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    await showPopupAtLoad(pageModels.TimeLineType.Note);
+
     const notesPageSettingsContentDiv = document.querySelector<HTMLDivElement>('#page-settings-content-div');
     if (notesPageSettingsContentDiv !== null) {
         notesPageSettingsDiv?.appendChild(notesPageSettingsContentDiv);
@@ -289,8 +291,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
         sortAscendingSettingsButton?.classList.add('active');
         sortDescendingSettingsButton?.classList.remove('active');
     }
-
-    await showPopupAtLoad(pageModels.TimeLineType.Note);
+        
     addSelectedProgeniesChangedEventListener();
     getSelectedProgenies();
 
