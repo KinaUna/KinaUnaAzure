@@ -467,4 +467,33 @@ export function dateStringFormatConverter(originalDateString, inputFormat, outpu
     let timeString = pickertime.format(outputFormat);
     return timeString;
 }
+export function setCopyContentEventListners() {
+    let copyContentButtons = document.querySelectorAll('.copy-content-button');
+    if (copyContentButtons) {
+        copyContentButtons.forEach((button) => {
+            button.addEventListener('click', async function () {
+                if (!button.dataset.copyContentId) {
+                    return;
+                }
+                let copyContentElement = document.getElementById(button.dataset.copyContentId);
+                if (copyContentElement !== null) {
+                    let copyText = copyContentElement.textContent;
+                    if (copyText === null) {
+                        return;
+                    }
+                    navigator.clipboard.writeText(copyText);
+                    // Notify that the text has been copied to the clipboard.
+                    let notificationSpan = button.querySelector('.toast-notification');
+                    if (notificationSpan !== null) {
+                        notificationSpan.classList.remove('d-none');
+                        setTimeout(function () {
+                            notificationSpan.textContent = '';
+                            notificationSpan.classList.add('d-none');
+                        }, 3000);
+                    }
+                }
+            });
+        });
+    }
+}
 //# sourceMappingURL=data-tools-v8.js.map
