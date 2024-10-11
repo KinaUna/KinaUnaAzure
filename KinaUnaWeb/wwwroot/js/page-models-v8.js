@@ -7,6 +7,7 @@ export class ContactItemParameters {
 export class ContactsPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 0;
@@ -37,6 +38,7 @@ export class FriendItemParameters {
 export class FriendsPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 0;
@@ -76,6 +78,7 @@ export class LocationItemParameters {
 export class LocationsPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 0;
@@ -100,6 +103,7 @@ export class LocationsPageResponse {
 export class NearByPhotosRequest {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.locationItem = new LocationItem();
         this.distance = 0.25;
         this.sortOrder = 1;
@@ -117,6 +121,7 @@ export class NearByPhotosResponse {
 export class PicturesLocationsRequest {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.distance = 0.1;
     }
 }
@@ -136,6 +141,7 @@ export class NoteItemParameters {
 export class NotesPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 0;
@@ -173,6 +179,7 @@ export class PictureViewModel {
 export class PicturesPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 0;
@@ -218,6 +225,7 @@ export class VideoViewModel {
 export class VideosPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 0;
@@ -306,6 +314,7 @@ export class TimelineItem {
 export class TimelineParameters {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.skip = 0;
         this.count = 5;
         this.sortBy = 1;
@@ -319,6 +328,7 @@ export class TimelineParameters {
 export class TimelineRequest {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.accessLevel = 5;
         this.skip = 0;
         this.numberOfItems = 5;
@@ -358,6 +368,7 @@ export class TimelineList {
 export class OnThisDayRequest {
     constructor() {
         this.progenyId = 0;
+        this.progenies = [];
         this.accessLevel = 5;
         this.skip = 0;
         this.numberOfItems = 5;
@@ -438,6 +449,27 @@ export class CalendarReminderRequest {
         this.notifyTimeOffsetType = 1;
         this.userId = '';
         this.notified = false;
+    }
+}
+export class CalendarItem {
+    constructor() {
+        this.eventId = 0;
+        this.progenyId = 0;
+        this.title = '';
+        this.notes = '';
+        this.location = '';
+        this.context = '';
+        this.allDay = false;
+        this.accessLevel = 5;
+        this.startString = '';
+        this.endString = '';
+        this.author = '';
+    }
+}
+export class SetProgenyRequest {
+    constructor() {
+        this.progenyId = 0;
+        this.languageId = 0;
     }
 }
 //# sourceMappingURL=page-models-v8.js.map

@@ -71,11 +71,9 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetTimelineList([FromBody] TimelineParameters parameters)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parameters.ProgenyId);
-
             TimelineList timelineList = new()
             {
-                TimelineItems = await timelineHttpClient.GetTimeline(baseModel.CurrentProgenyId, baseModel.CurrentAccessLevel, parameters.SortBy)
+                TimelineItems = await timelineHttpClient.GetProgeniesTimeline(parameters.Progenies, parameters.SortBy)
             };
 
             if (timelineList.TimelineItems.Count > 0)
@@ -122,7 +120,7 @@ namespace KinaUnaWeb.Controllers
         {
             TimelineList timelineList = new()
             {
-                TimelineItems = await progenyHttpClient.GetProgenyYearAgo(parameters.ProgenyId, 0)
+                TimelineItems = await progenyHttpClient.GetProgeniesYearAgo(parameters.Progenies)
             };
             timelineList.AllItemsCount = timelineList.TimelineItems.Count;
             timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count;

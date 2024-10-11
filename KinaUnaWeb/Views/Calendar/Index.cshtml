@@ -3,7 +3,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.CalendarListViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Calendar", PageNames.Calendar, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Calendar", PageNames.Calendar, Model.LanguageId);
     int popupDateYear = 0;
     int popupDateMonth = 0;
     int popupDateDay = 0;
@@ -23,14 +23,14 @@
         <div id="popup-event-id-div" class="d-none" data-popup-event-id="@Model.PopupEventId" data-popup-event-date-year="@popupDateYear" data-popup-event-date-month="@popupDateMonth" data-popup-event-date-day="@popupDateDay"></div>
         <div class="" style="clear: both; height: 90vh; min-height: 600px; max-height: 1180px;">
             <ejs-schedule id="schedule" height="95%" width="100%" dateFormat="dd/MMM/yyyy" views="@Model.ViewOptions">
-                <e-schedule-eventsettings dataSource="@Model.EventsList">
+                <e-schedule-eventsettings>
                     <e-eventsettings-fields id="EventId">
-                        <e-field-subject name="Title"></e-field-subject>
-                        <e-field-location name="Location"></e-field-location>
-                        <e-field-description name="Notes"></e-field-description>
-                        <e-field-isallday name="AllDay"></e-field-isallday>
-                        <e-field-starttime name="StartTime"></e-field-starttime>
-                        <e-field-endtime name="EndTime"></e-field-endtime>
+                        <e-field-subject name="title"></e-field-subject>
+                        <e-field-location name="location"></e-field-location>
+                        <e-field-description name="notes"></e-field-description>
+                        <e-field-isallday name="allDay"></e-field-isallday>
+                        <e-field-starttime name="startTime"></e-field-starttime>
+                        <e-field-endtime name="endTime"></e-field-endtime>
                     </e-eventsettings-fields>
                 </e-schedule-eventsettings>
             </ejs-schedule>

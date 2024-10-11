@@ -1,4 +1,4 @@
-import { updateFilterButtonDisplay } from '../data-tools-v8.js';
+import { getCurrentProgenyId, updateFilterButtonDisplay } from '../data-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as pageModels from '../page-models-v8.js';
@@ -355,6 +355,28 @@ function refreshSelectPickers() {
         $(".selectpicker").selectpicker('refresh');
     }
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            contactsPageParameters.currentPageNumber = 1;
+            await getContactsList();
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        contactsPageParameters.progenies = progeniesIds;
+        return;
+    }
+    contactsPageParameters.progenies = [getCurrentProgenyId()];
+}
 /**
  * Initializes the page elements when it is loaded.
  */
@@ -367,6 +389,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     addResetActiveTagFilterEventListener();
     await loadContactsPageSettings();
     await showPopupAtLoad(pageModels.TimeLineType.Contact);
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
     await getContactsList();
     return new Promise(function (resolve, reject) {
         resolve();

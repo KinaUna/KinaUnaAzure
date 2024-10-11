@@ -16,7 +16,11 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class FriendsController(ImageStore imageStore, IFriendsHttpClient friendsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
+    public class FriendsController(ImageStore imageStore,
+        IFriendsHttpClient friendsHttpClient,
+        IViewModelSetupService viewModelSetupService,
+        IUserAccessHttpClient userAccessHttpClient,
+        IProgenyHttpClient progenyHttpClient) : Controller
     {
         /// <summary>
         /// Index page for Friends. Shows a list of all friends for the current Progeny.
@@ -138,6 +142,7 @@ namespace KinaUnaWeb.Controllers
                 friendItemResponse.FriendItem.PictureLink = friendItemResponse.FriendItem.GetProfilePictureUrl();
                 BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), friendItemResponse.FriendItem.ProgenyId);
                 friendItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
+                friendItemResponse.FriendItem.Progeny = await progenyHttpClient.GetProgeny(friendItemResponse.FriendItem.ProgenyId);
             }
 
 
@@ -166,7 +171,15 @@ namespace KinaUnaWeb.Controllers
             }
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
-            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+            List<Friend> friendsList = []; // await friendsHttpClient.GetFriendsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+            List<UserAccess> accessList = await userAccessHttpClient.GetUserAccessList(baseModel.CurrentUser.UserEmail);
+
+            foreach (int progenyId in parameters.Progenies)
+            {
+                int accessLevel = accessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                List<Friend> friends = await friendsHttpClient.GetFriendsList(progenyId, accessLevel, parameters.TagFilter);
+                friendsList.AddRange(friends);
+            }
 
             List<string> tagsList = [];
             

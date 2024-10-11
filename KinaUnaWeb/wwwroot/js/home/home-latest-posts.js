@@ -91,6 +91,32 @@ async function renderTimelineItem(timelineItem) {
         resolve();
     });
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            timelineItemsList = [];
+            const timelineDiv = document.querySelector('#timeline-items-div');
+            if (timelineDiv != null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getTimelineList(timeLineParameters);
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        timeLineParameters.progenies = progeniesIds;
+        return;
+    }
+    timeLineParameters.progenies = [getCurrentProgenyId()];
+}
 /**
  * Initializes page settings and sets up event listeners when page is first loaded.
  */
@@ -99,6 +125,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     timeLineParameters.count = 5;
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
+    getSelectedProgenies();
+    addSelectedProgeniesChangedEventListener();
     moreTimelineItemsButton = document.querySelector('#more-latest-posts-items-button');
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.addEventListener('click', async () => {

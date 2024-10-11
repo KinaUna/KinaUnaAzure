@@ -32,7 +32,8 @@ namespace KinaUnaWeb.Services
         IFriendsHttpClient friendsHttpClient,
         IContactsHttpClient contactsHttpClient,
         ICalendarsHttpClient calendarsHttpClient,
-        ISleepHttpClient sleepHttpClient)
+        ISleepHttpClient sleepHttpClient,
+        IProgenyHttpClient progenyHttpClient)
         : ITimeLineItemsService
     {
         /// <summary>
@@ -56,6 +57,7 @@ namespace KinaUnaWeb.Services
                         string pictureUrl = "/Pictures/File?id=" + picture.PictureId + "&size=600";
                         picture.PictureLink = pictureUrl;
                         picture.CommentsCount = picture.CommentsList.Count;
+                        picture.Progeny = await progenyHttpClient.GetProgeny(picture.ProgenyId);
                         return new TimeLineItemPartialViewModel("_TimeLinePhotoPartial", picture);
                     }
                 }
@@ -69,6 +71,7 @@ namespace KinaUnaWeb.Services
                     if (video != null && video.VideoId > 0)
                     {
                         video.CommentsCount = video.CommentsList.Count;
+                        video.Progeny = await progenyHttpClient.GetProgeny(video.ProgenyId);
                         return new TimeLineItemPartialViewModel("_TimeLineVideoPartial", video);
                     }
                 }
@@ -85,6 +88,7 @@ namespace KinaUnaWeb.Services
 
                         evt.StartTime = TimeZoneInfo.ConvertTimeFromUtc(evt.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                         evt.EndTime = TimeZoneInfo.ConvertTimeFromUtc(evt.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        evt.Progeny = await progenyHttpClient.GetProgeny(evt.ProgenyId);
                         return new TimeLineItemPartialViewModel("_TimeLineEventPartial", evt);
                     }
                 }
@@ -102,6 +106,8 @@ namespace KinaUnaWeb.Services
                             voc.Date = TimeZoneInfo.ConvertTimeFromUtc(voc.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
                         }
+                        voc.Progeny = await progenyHttpClient.GetProgeny(voc.ProgenyId);
+
                         return new TimeLineItemPartialViewModel("_TimeLineVocabularyPartial", voc);
                     }
                 }
@@ -114,6 +120,8 @@ namespace KinaUnaWeb.Services
                     Skill skl = await skillsHttpClient.GetSkill(itemId);
                     if (skl != null && skl.SkillId > 0)
                     {
+                        skl.Progeny = await progenyHttpClient.GetProgeny(skl.ProgenyId);
+
                         return new TimeLineItemPartialViewModel("_TimeLineSkillPartial", skl);
                     }
                 }
@@ -127,6 +135,7 @@ namespace KinaUnaWeb.Services
                     if (frn != null && frn.FriendId > 0)
                     {
                         frn.PictureLink = frn.GetProfilePictureUrl();
+                        frn.Progeny = await progenyHttpClient.GetProgeny(frn.ProgenyId);
                         return new TimeLineItemPartialViewModel("_TimeLineFriendPartial", frn);
                     }
                 }
@@ -139,6 +148,7 @@ namespace KinaUnaWeb.Services
                     Measurement mes = await measurementsHttpClient.GetMeasurement(itemId);
                     if (mes != null && mes.MeasurementId > 0)
                     {
+                        mes.Progeny = await progenyHttpClient.GetProgeny(mes.ProgenyId);
                         return new TimeLineItemPartialViewModel("_TimeLineMeasurementPartial", mes);
                     }
                 }
@@ -158,6 +168,7 @@ namespace KinaUnaWeb.Services
                         DateTimeOffset eOffset = new(slp.SleepEnd,
                             TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone).GetUtcOffset(slp.SleepEnd));
                         slp.SleepDuration = eOffset - sOffset;
+                        slp.Progeny = await progenyHttpClient.GetProgeny(slp.ProgenyId);
 
                         return new TimeLineItemPartialViewModel("_TimeLineSleepPartial", slp);
                     }
@@ -172,6 +183,8 @@ namespace KinaUnaWeb.Services
                     if (nte != null && nte.NoteId > 0)
                     {
                         nte.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(nte.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        nte.Progeny = await progenyHttpClient.GetProgeny(nte.ProgenyId);
+
                         return new TimeLineItemPartialViewModel("_TimeLineNotePartial", nte);
                     }
                 }
@@ -187,6 +200,7 @@ namespace KinaUnaWeb.Services
                         cnt.DateAdded ??= DateTime.UtcNow;
 
                         cnt.PictureLink = cnt.GetProfilePictureUrl();
+                        cnt.Progeny = await progenyHttpClient.GetProgeny(cnt.ProgenyId);
 
                         return new TimeLineItemPartialViewModel("_TimeLineContactPartial", cnt);
                     }
@@ -200,6 +214,8 @@ namespace KinaUnaWeb.Services
                     Vaccination vac = await vaccinationsHttpClient.GetVaccination(itemId);
                     if (vac != null && vac.VaccinationId > 0)
                     {
+                        vac.Progeny = await progenyHttpClient.GetProgeny(vac.ProgenyId);
+
                         return new TimeLineItemPartialViewModel("_TimeLineVaccinationPartial", vac);
                     }
                 }
@@ -212,6 +228,8 @@ namespace KinaUnaWeb.Services
                     Location loc = await locationsHttpClient.GetLocation(itemId);
                     if (loc != null && loc.LocationId > 0)
                     {
+                        loc.Progeny = await progenyHttpClient.GetProgeny(loc.ProgenyId);
+
                         return new TimeLineItemPartialViewModel("_TimeLineLocationPartial", loc);
                     }
                 }

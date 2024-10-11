@@ -200,5 +200,22 @@ namespace KinaUnaWeb.Services.HttpClients
 
             return yearAgoPosts;
         }
+
+        public async Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList)
+        {
+            List<TimeLineItem> yearAgoPosts = [];
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string yearAgoApiPath = "/api/Timeline/ProgeniesYearAgo/";
+            HttpResponseMessage yearAgoResponse = await _httpClient.PostAsync(yearAgoApiPath, new StringContent(JsonConvert.SerializeObject(progeniesList), System.Text.Encoding.UTF8, "application/json"));
+            if (!yearAgoResponse.IsSuccessStatusCode) return yearAgoPosts;
+
+            string yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync();
+
+            yearAgoPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(yearAgoAsString);
+
+            return yearAgoPosts;
+        }
     }
 }

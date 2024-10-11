@@ -1,4 +1,4 @@
-﻿import { updateFilterButtonDisplay } from '../data-tools-v8.js';
+﻿import { getCurrentProgenyId, updateFilterButtonDisplay } from '../data-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as pageModels from '../page-models-v8.js';
@@ -360,6 +360,31 @@ function refreshSelectPickers(): void {
         ($(".selectpicker") as any).selectpicker('refresh');
     }
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            friendsPageParameters.currentPageNumber = 1;
+            await getFriendsList();
+        }
+
+    });
+}
+
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        friendsPageParameters.progenies = progeniesIds;
+
+        return;
+    }
+    friendsPageParameters.progenies = [getCurrentProgenyId()];
+}
 
 /**
  * Initializes the page elements when it is loaded.
@@ -374,7 +399,10 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     addResetActiveTagFilterEventListener();
     await loadFriendsPageSettings();
     await showPopupAtLoad(pageModels.TimeLineType.Friend);
-    
+
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
+
     await getFriendsList();
 
     return new Promise<void>(function (resolve, reject) {

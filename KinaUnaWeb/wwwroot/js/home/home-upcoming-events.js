@@ -101,6 +101,32 @@ function setUpcomingEventsEventListeners() {
         });
     }
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            upcomingEventsList = [];
+            const timelineDiv = document.querySelector('#upcoming-events-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getUpcomingEventsList(upcomingEventsParameters);
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        upcomingEventsParameters.progenies = progeniesIds;
+        return;
+    }
+    upcomingEventsParameters.progenies = [getCurrentProgenyId()];
+}
 /**
  * Initialization when the page is loaded.
  */
@@ -110,6 +136,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     upcomingEventsParameters.skip = 0;
     upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
     setUpcomingEventsEventListeners();
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
     await getUpcomingEventsList(upcomingEventsParameters);
     return new Promise(function (resolve, reject) {
         resolve();

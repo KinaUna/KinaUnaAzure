@@ -605,13 +605,22 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of distinct Locations for a Progeny's pictures.
         /// </summary>
         /// <param name="picturesLocationsRequest">PicturesLocationsRequest with the distance, in kilometers, to group picture locations by.</param>
+        /// <param name="userAccesses">List of UserAccess objects with the access level for each Progeny.</param>
         /// <returns>PicturesLocationsResponse</returns>
-        public async Task<PicturesLocationsResponse> GetPicturesLocations(PicturesLocationsRequest picturesLocationsRequest)
+        public async Task<PicturesLocationsResponse> GetPicturesLocations(PicturesLocationsRequest picturesLocationsRequest, List<UserAccess> userAccesses)
         {
-            List<Picture> allPictures = await GetPicturesList(picturesLocationsRequest.ProgenyId);
-            allPictures = [.. allPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
+            List<Picture> allPictures = [];
 
+            foreach (int progenyId in picturesLocationsRequest.Progenies)
+            {
+                List<Picture> progenyPictures = await GetPicturesList(progenyId);
+                progenyPictures = [.. progenyPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
+                int accessLevel = userAccesses.FirstOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                progenyPictures = [.. progenyPictures.Where(p => p.AccessLevel >= accessLevel)];
+                allPictures.AddRange(progenyPictures);
+            }
 
+            // Group by location, using the distance parameter.
             List<Location> locations = new();
             foreach (Picture picture in allPictures)
             {
@@ -644,20 +653,32 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of Pictures near a specific Location.
         /// </summary>
         /// <param name="nearByPhotosRequest">NearByPhotosRequest object with the location data.</param>
+        /// <param name="userAccesses">List of UserAccess objects with the access level for each Progeny.</param>
         /// <returns>NearByPhotosResponse, with the list of Picture objects.</returns>
-        public async Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest)
+        public async Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest, List<UserAccess> userAccesses)
         {
             // Todo: Add unit tests for this method.
             // Todo: Add sort order parameter.
-            List<Picture> allPictures = await GetPicturesList(nearByPhotosRequest.ProgenyId);
-            allPictures = [.. allPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
+
+            List<Picture> allPictures = [];
+
+            foreach (int progenyId in nearByPhotosRequest.Progenies)
+            {
+                List<Picture> progenyPictures = await GetPicturesList(progenyId);
+                progenyPictures = [.. progenyPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
+                int accessLevel = userAccesses.FirstOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                progenyPictures = [.. progenyPictures.Where(p => p.AccessLevel >= accessLevel)];
+                allPictures.AddRange(progenyPictures);
+            }
 
             List<Picture> nearPictures = new();
             foreach (Picture picture in allPictures)
             {
-                double.TryParse(picture.Latitude, out double latitude);
-                double.TryParse(picture.Longtitude, out double longitude);
+                bool latitudeParsed = double.TryParse(picture.Latitude, out double latitude);
+                bool longitudeParsed = double.TryParse(picture.Longtitude, out double longitude);
                 
+                if (!latitudeParsed || !longitudeParsed) continue;
+
                 double distance = nearByPhotosRequest.LocationItem.Distance(latitude, longitude);
                 if (distance < nearByPhotosRequest.Distance)
                 {

@@ -1,5 +1,8 @@
 const serviceWorkerVersion = 'v6';
+import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v8.js';
 import { startFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v8.js';
+import { SetProgenyRequest } from './page-models-v8.js';
+import { getSelectedProgenies } from './settings-tools-v8.js';
 import { initSidebar } from './sidebar-v8.js';
 const serviceWorkerVersion_key = 'service_worker_version';
 /**
@@ -125,6 +128,68 @@ function showSelectProgenyDropdownWhenCurrentProgenyClicked() {
         }
     });
 }
+function setSelectProgenyButtonsEventListeners() {
+    let selectProgenyButtons = document.querySelectorAll('.select-progeny-button');
+    selectProgenyButtons.forEach(function (button) {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            let selectedButton = event.target;
+            selectedButton.classList.toggle('selected');
+            setSelectedProgenies();
+            getSelectedProgenies();
+        });
+    });
+}
+function setSelectedProgenies() {
+    let selectedProgenyButtons = document.querySelectorAll('.select-progeny-button.selected');
+    let selectedProgenyIds = [];
+    selectedProgenyButtons.forEach(function (button) {
+        let selectedProgenyData = button.getAttribute('data-select-progeny-id');
+        if (selectedProgenyData) {
+            selectedProgenyIds.push(selectedProgenyData.valueOf());
+        }
+    });
+    let currentProgenyId = getCurrentProgenyId();
+    if (!selectedProgenyIds.includes(currentProgenyId.toString())) {
+        selectedProgenyIds.push(currentProgenyId.toString());
+    }
+    localStorage.setItem('selectedProgenies', JSON.stringify(selectedProgenyIds));
+    const selectedProgeniesChangedEvent = new Event('progeniesChanged');
+    window.dispatchEvent(selectedProgeniesChangedEvent);
+}
+function setSetDefaultProgenyEventListeners() {
+    let setDefaultProgenyButtons = document.querySelectorAll('.set-default-progeny-button');
+    setDefaultProgenyButtons.forEach(function (button) {
+        button.addEventListener('click', async function (event) {
+            let selectedButton = event.target;
+            let selectedProgenyId = selectedButton.getAttribute('data-default-progeny-id');
+            if (selectedProgenyId !== null) {
+                await setDefaultProgeny(parseInt(selectedProgenyId.valueOf()));
+            }
+        });
+    });
+}
+async function setDefaultProgeny(progenyId) {
+    let request = new SetProgenyRequest();
+    request.progenyId = progenyId;
+    request.languageId = getCurrentLanguageId();
+    await fetch('/Home/SetDefaultProgeny', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(request)
+    }).then(async function (setDefaultProgenyResult) {
+        if (setDefaultProgenyResult.ok) {
+            // Reload page.
+            location.reload();
+        }
+    });
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
 /**
  * Initializes the page settings when the website is first loaded.
  */
@@ -132,5 +197,8 @@ document.addEventListener('DOMContentLoaded', function () {
     initPageSettings();
     showSelectProgenyDropdownWhenCurrentProgenyClicked();
     setDocumentClickEventListeners();
+    setSelectProgenyButtonsEventListeners();
+    getSelectedProgenies();
+    setSetDefaultProgenyEventListeners();
 });
 //# sourceMappingURL=app.js.map

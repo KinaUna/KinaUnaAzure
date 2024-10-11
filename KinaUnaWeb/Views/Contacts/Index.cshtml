@@ -3,7 +3,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.ContactListViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
     string pageParameters = Json.Serialize(Model.ContactsPageParameters).ToString();
     string ascendingString = await LocaleManager.GetTranslation("Ascending", PageNames.Contacts, Model.LanguageId);
     string descendingString = await LocaleManager.GetTranslation("Descending", PageNames.Contacts, Model.LanguageId);

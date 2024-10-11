@@ -135,6 +135,7 @@ async function getVideosList(parameters, updateHistory = true) {
     }).catch(function (error) {
         console.log('Error loading Videos list. Error: ' + error);
     });
+    parameters.progenies = getSelectedProgenies();
     stopLoadingSpinner();
     return new Promise(function (resolve, reject) {
         resolve(parameters);
@@ -685,6 +686,34 @@ function refreshSelectPickers() {
         $(".selectpicker").selectpicker('refresh');
     }
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            if (videosPageParameters !== null) {
+                videosPageParameters = await getVideosList(videosPageParameters, false);
+            }
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        if (videosPageParameters !== null) {
+            videosPageParameters.progenies = progeniesIds;
+        }
+        return progeniesIds;
+    }
+    if (videosPageParameters !== null) {
+        videosPageParameters.progenies = [getCurrentProgenyId()];
+    }
+    return [getCurrentProgenyId()];
+}
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function () {
     videosPageProgenyId = getCurrentProgenyId();
@@ -694,6 +723,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     addBrowserNavigationEventListeners();
     SettingsHelper.initPageSettings();
     videosPageParameters = getPageParametersFromPageData();
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
     await showPopupAtLoad(TimeLineType.Video);
     if (videosPageParameters !== null) {
         refreshSelectPickers();

@@ -40,10 +40,18 @@ function stopLoadingSpinner(): void {
  * Hides the moreTimelineItemsButton while loading.
  * @param parameters  The parameters to use for retrieving the timeline items.
  */
-async function getOnThisDayData(parameters: OnThisDayRequest) {
+async function getOnThisDayData(parameters: OnThisDayRequest, reset: boolean = false) {
     startLoadingSpinner();
     if (moreOnThisDayItemsButton !== null) {
         moreOnThisDayItemsButton.classList.add('d-none');
+    }
+
+    if (reset) {
+        timelineItemsList = [];
+        const timelineDiv = document.querySelector<HTMLDivElement>('#on-this-day-items-div');
+        if (timelineDiv !== null) {
+            timelineDiv.innerHTML = '';
+        }
     }
 
     parameters.skip = timelineItemsList.length;
@@ -520,6 +528,30 @@ function refreshSelectPickers(): void {
     }
 }
 
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            await getOnThisDayData(onThisDayParameters, true);
+        }
+
+    });
+}
+
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        onThisDayParameters.progenies = progeniesIds;
+        return;
+    }
+
+    onThisDayParameters.progenies = [getCurrentProgenyId()];
+}
 
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
@@ -540,6 +572,9 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     getParametersFromPageProperties();
     await loadOnThisDayPageSettings();
     refreshSelectPickers();
+
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
 
     await getOnThisDayData(onThisDayParameters);
     if (firstRun) { // getOnThisDayData updated the parameters and exited early to reload with the new values.

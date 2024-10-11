@@ -33,8 +33,9 @@ async function getUpcomingEventsList(parameters: TimelineParameters): Promise<vo
     if (moreUpcomingEventsButton !== null) {
         moreUpcomingEventsButton.classList.add('d-none');
     }
+        
     parameters.skip = upcomingEventsList.length;
-
+    
     await fetch('/Calendar/GetUpcomingEventsList', {
         method: 'POST',
         headers: {
@@ -113,6 +114,36 @@ function setUpcomingEventsEventListeners() {
         });
     }
 }
+
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            upcomingEventsList = [];
+            const timelineDiv = document.querySelector<HTMLDivElement>('#upcoming-events-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getUpcomingEventsList(upcomingEventsParameters);
+        }
+        
+    });
+}
+
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        upcomingEventsParameters.progenies = progeniesIds;
+        return;
+    }
+
+    upcomingEventsParameters.progenies = [getCurrentProgenyId()];
+}
 /**
  * Initialization when the page is loaded.
  */
@@ -123,7 +154,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
 
     setUpcomingEventsEventListeners();
-
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
     await getUpcomingEventsList(upcomingEventsParameters);
 
     return new Promise<void>(function (resolve, reject) {

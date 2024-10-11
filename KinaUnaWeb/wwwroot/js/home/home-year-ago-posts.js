@@ -101,6 +101,32 @@ function setYearAgoEventListeners() {
         });
     }
 }
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            yearAgoItemsList = [];
+            const yearAgoItemsDiv = document.querySelector('#year-ago-items-div');
+            if (yearAgoItemsDiv !== null) {
+                yearAgoItemsDiv.innerHTML = '';
+            }
+            await getYearAgoList(yearAgoParameters);
+        }
+    });
+}
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        yearAgoParameters.progenies = progeniesIds;
+        return;
+    }
+    yearAgoParameters.progenies = [getCurrentProgenyId()];
+}
 /**
  * Initialization when the page is loaded.
  */
@@ -109,6 +135,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     yearAgoParameters.count = 5;
     yearAgoParameters.skip = 0;
     yearAgoParameters.progenyId = yearAgoProgenyId;
+    getSelectedProgenies();
+    addSelectedProgeniesChangedEventListener();
     setYearAgoEventListeners();
     await getYearAgoList(yearAgoParameters);
     return new Promise(function (resolve, reject) {

@@ -18,6 +18,7 @@ namespace KinaUnaWeb.Controllers
     public class LocationsController(
         IProgenyHttpClient progenyHttpClient,
         ILocationsHttpClient locationsHttpClient,
+        IUserAccessHttpClient userAccessHttpClient,
         IViewModelSetupService viewModelSetupService,
         IConfiguration configuration)
         : Controller
@@ -127,6 +128,7 @@ namespace KinaUnaWeb.Controllers
                 locationItemResponse.LocationItem = await locationsHttpClient.GetLocation(parameters.LocationId);
                 BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), locationItemResponse.LocationItem.ProgenyId);
                 locationItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
+                locationItemResponse.LocationItem.Progeny = baseModel.CurrentProgeny;
             }
 
 
@@ -156,7 +158,16 @@ namespace KinaUnaWeb.Controllers
             }
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
-            List<Location> locationsList = await locationsHttpClient.GetLocationsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+            List<Location> locationsList = []; // await locationsHttpClient.GetLocationsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+            List<UserAccess> userAccesses = await userAccessHttpClient.GetUserAccessList(baseModel.CurrentUser.UserEmail);
+
+            foreach (int progenyId in parameters.Progenies)
+            {
+                int accessLevel = userAccesses.FirstOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                List<Location> locList = await locationsHttpClient.GetLocationsList(progenyId, accessLevel, parameters.TagFilter);
+                locationsList.AddRange(locList);
+            }
+
 
             List<string> tagsList = [];
 

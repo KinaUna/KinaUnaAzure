@@ -9,6 +9,8 @@ function addRandomPictureEventListener(): void {
         });
     }
 }
+
+
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     addRandomPictureEventListener();
 });

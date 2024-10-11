@@ -7,6 +7,7 @@ import { popupNoteItem } from "../notes/note-details.js";
 import { popupSleepItem } from "../sleep/sleep-details.js";
 import { popupLocationItem } from "../locations/location-details.js";
 import { popupMeasurementItem } from "../measurements/measurement-details.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
 /**
  * Used to handle the click event on a notification.
  * Updates the notification as read if it is unread.
@@ -14,6 +15,7 @@ import { popupMeasurementItem } from "../measurements/measurement-details.js";
  * @param btn The notification element clicked.
  */
 async function notificationItemClick(btn) {
+    startFullPageSpinner();
     let notifId = btn.getAttribute('data-notificationid');
     if (btn.classList.contains('notification-unread')) {
         await fetch('/Notifications/SetRead?Id=' + notifId, {
@@ -33,7 +35,8 @@ async function notificationItemClick(btn) {
             let notificationLinkSplit = notificationLinkWithoutPath.split('?');
             let pictureId = notificationLinkSplit[0];
             if (pictureId !== null) {
-                popupPictureDetails(pictureId);
+                await popupPictureDetails(pictureId);
+                stopFullPageSpinner();
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });
@@ -44,7 +47,8 @@ async function notificationItemClick(btn) {
             let notificationLinkSplit = notificationLinkWithoutPath.split('?');
             let videoId = notificationLinkSplit[0];
             if (videoId !== null) {
-                popupVideoDetails(videoId);
+                await popupVideoDetails(videoId);
+                stopFullPageSpinner();
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });
@@ -56,6 +60,7 @@ async function notificationItemClick(btn) {
             let eventId = notificationLinkSplit[0];
             if (eventId !== null) {
                 await popupEventItem(eventId);
+                stopFullPageSpinner();
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });
@@ -66,7 +71,8 @@ async function notificationItemClick(btn) {
             let notificationLinkSplit = notificationLinkWithoutPath.split('&');
             let noteId = notificationLinkSplit[0];
             if (noteId !== null) {
-                popupNoteItem(noteId);
+                await popupNoteItem(noteId);
+                stopFullPageSpinner();
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });
@@ -77,7 +83,8 @@ async function notificationItemClick(btn) {
             let notificationLinkSplit = notificationLinkWithoutPath.split('&');
             let sleepId = notificationLinkSplit[0];
             if (sleepId !== null) {
-                popupSleepItem(sleepId);
+                await popupSleepItem(sleepId);
+                stopFullPageSpinner();
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });
@@ -88,7 +95,8 @@ async function notificationItemClick(btn) {
             let notificationLinkSplit = notificationLinkWithoutPath.split('&');
             let friendId = notificationLinkSplit[0];
             if (friendId !== null) {
-                popupFriendItem(friendId);
+                await popupFriendItem(friendId);
+                stopFullPageSpinner();
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });
@@ -99,7 +107,8 @@ async function notificationItemClick(btn) {
             let notificationLinkSplit = notificationLinkWithoutPath.split('&');
             let contactId = notificationLinkSplit[0];
             if (contactId !== null) {
-                popupContactItem(contactId);
+                await popupContactItem(contactId);
+                stopFullPageSpinner();
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });
@@ -110,7 +119,8 @@ async function notificationItemClick(btn) {
             let notificationLinkSplit = notificationLinkWithoutPath.split('&');
             let locationId = notificationLinkSplit[0];
             if (locationId !== null) {
-                popupLocationItem(locationId);
+                await popupLocationItem(locationId);
+                stopFullPageSpinner();
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });
@@ -121,12 +131,14 @@ async function notificationItemClick(btn) {
             let notificationLinkSplit = notificationLinkWithoutPath.split('&');
             let measurementId = notificationLinkSplit[0];
             if (measurementId !== null) {
-                popupMeasurementItem(measurementId);
+                await popupMeasurementItem(measurementId);
+                stopFullPageSpinner();
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });
             }
         }
+        stopFullPageSpinner();
         window.location.href = notificationLink;
     }
     return new Promise(function (resolve, reject) {
@@ -199,7 +211,7 @@ export function updateNoficationElementEvents(notificationButtonsList) {
             }
             button.addEventListener('click', async function (event) {
                 event.stopImmediatePropagation();
-                notificationItemClick(button);
+                await notificationItemClick(button);
             });
             const markReadButton = button.getElementsByClassName('mark-notification-read-button');
             if (markReadButton !== null) {
@@ -207,7 +219,7 @@ export function updateNoficationElementEvents(notificationButtonsList) {
                     let markReadSpan = markReadElement;
                     markReadSpan.addEventListener('click', async function (event) {
                         event.stopImmediatePropagation();
-                        markRead(markReadSpan);
+                        await markRead(markReadSpan);
                     });
                 });
             }
@@ -217,7 +229,7 @@ export function updateNoficationElementEvents(notificationButtonsList) {
                     let deleteSpan = deleteElement;
                     deleteSpan.addEventListener('click', async function (event) {
                         event.stopImmediatePropagation();
-                        removeNotification(deleteSpan);
+                        await removeNotification(deleteSpan);
                     });
                 });
             }

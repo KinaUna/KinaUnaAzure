@@ -32,6 +32,7 @@ async function getYearAgoList(parameters: TimelineParameters) {
     if (moreYearAgoItemsButton !== null) {
         moreYearAgoItemsButton.classList.add('d-none');
     }
+
     parameters.skip = yearAgoItemsList.length;
 
     await fetch('/Timeline/GetYearAgoList', {
@@ -48,6 +49,7 @@ async function getYearAgoList(parameters: TimelineParameters) {
                 const yearAgoPostsParentDiv = document.querySelector<HTMLDivElement>('#year-ago-posts-parent-div');
                 if (yearAgoPostsParentDiv !== null) {
                     yearAgoPostsParentDiv.classList.remove('d-none');
+                    
                 }
                 for await (const yearAgoItemToAdd of newYearAgoItemsList.timelineItems) {
                     yearAgoItemsList.push(yearAgoItemToAdd);
@@ -113,6 +115,36 @@ function setYearAgoEventListeners(): void {
     }
 }
 
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            yearAgoItemsList = [];
+            const yearAgoItemsDiv = document.querySelector<HTMLDivElement>('#year-ago-items-div');
+            if (yearAgoItemsDiv !== null) {
+                yearAgoItemsDiv.innerHTML = '';
+            }
+            await getYearAgoList(yearAgoParameters);
+        }
+
+    });
+}
+
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        yearAgoParameters.progenies = progeniesIds;
+        return;
+    }
+
+    yearAgoParameters.progenies = [getCurrentProgenyId()];
+}
+
 /**
  * Initialization when the page is loaded.
  */
@@ -121,7 +153,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     yearAgoParameters.count = 5;
     yearAgoParameters.skip = 0;
     yearAgoParameters.progenyId = yearAgoProgenyId;
-
+    getSelectedProgenies();
+    addSelectedProgeniesChangedEventListener();
     setYearAgoEventListeners();
 
     await getYearAgoList(yearAgoParameters);

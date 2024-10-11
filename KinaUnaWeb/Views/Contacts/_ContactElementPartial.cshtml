@@ -1,4 +1,5 @@
 ﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
 @inject ILocaleManager LocaleManager
@@ -12,7 +13,11 @@
 }
 <button class="item-btn @chkClass col col-sm-12 col-md-5 col-lg-4 col-xl-3"  data-contact-id="@Model.ContactItem.ContactId">
     <div class="card text-white bg-contact text-break" style="height: -webkit-fill-available">
-        <div class="card-header bg-contact-header h5 kinauna-yellow-text">@Model.ContactItem.DisplayName</div>
+        <div class="card-header bg-contact-header h5 kinauna-yellow-text">
+            <img class="float-right" src="@Model.ContactItem.Progeny.GetProfilePictureUrl()" style="max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;" />
+            <i class="material-icons kinauna-icon-medium mr-2 text-white" style="font-size: 32px;">contact_phone</i>
+            @Model.ContactItem.DisplayName
+        </div>
         <div class="card-body">
             <div class="card-text">
                 <div style="height: 253px;">

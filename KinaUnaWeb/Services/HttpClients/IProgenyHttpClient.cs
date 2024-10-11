@@ -60,5 +60,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of TimeLineItem objects.</returns>
         Task<List<TimeLineItem>> GetProgenyYearAgo(int progenyId, int accessLevel);
+
+        Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList);
     }
 }

@@ -25,6 +25,7 @@ namespace KinaUnaWeb.Controllers
         ImageStore imageStore,
         IUserInfosHttpClient userInfosHttpClient,
         ILocationsHttpClient locationsHttpClient,
+        IUserAccessHttpClient userAccessHttpClient,
         IEmailSender emailSender,
         IViewModelSetupService viewModelSetupService,
         IConfiguration configuration)
@@ -545,10 +546,16 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parameters.ProgenyId);
 
-            PicturesList picturesList = new()
+            // Todo: Refactor to process the pictures list in the API.
+            List<UserAccess> userAccessList = await userAccessHttpClient.GetUserAccessList(baseModel.CurrentUser.UserEmail); 
+            PicturesList picturesList = new();
+            foreach (int progenyId in parameters.Progenies)
             {
-                PictureItems = await mediaHttpClient.GetProgenyPictureList(baseModel.CurrentProgenyId, baseModel.CurrentAccessLevel)
-            };
+                int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                List<Picture> pictureItems = await mediaHttpClient.GetProgenyPictureList(progenyId, accessLevel);
+                picturesList.PictureItems.AddRange(pictureItems);
+            }
+            
 
             picturesList.PictureItems = picturesList.PictureItems.OrderBy(p => p.PictureTime).ToList();
 

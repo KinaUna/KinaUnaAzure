@@ -208,7 +208,7 @@ async function processPicturesList(newItemsList: PicturesList, parameters: Pictu
     };
 
     updateTagsListDiv(newItemsList.tagsList, parameters.sortTags);
-
+    parameters.progenies = getSelectedProgenies();
     return new Promise<PicturesPageParameters>(function (resolve, reject) {
         resolve(parameters);
     });
@@ -788,12 +788,45 @@ function getPopupPictureId() {
     }
 }
 
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            if (picturesPageParameters !== null) {
+                picturesPageParameters = await getPicturesList(picturesPageParameters, false);
+            }
+        }
+
+    });
+}
+
+function getSelectedProgenies(): number[] {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        if (picturesPageParameters !== null) {
+            picturesPageParameters.progenies = progeniesIds;
+        }
+
+        return progeniesIds;
+    }
+    if (picturesPageParameters !== null) {
+        picturesPageParameters.progenies = [getCurrentProgenyId()];
+    }
+    return [getCurrentProgenyId()];
+}
+
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    getPopupPictureId();
+    await showPopupAtLoad(TimeLineType.Photo);
+
     picturesPageProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
-
-    getPopupPictureId();
 
     await initialSettingsPanelSetup();
 
@@ -802,10 +835,10 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     addBrowserNavigationEventListeners();    
 
     SettingsHelper.initPageSettings();
-
-    await showPopupAtLoad(TimeLineType.Photo);
-
+    addSelectedProgeniesChangedEventListener();
+    
     picturesPageParameters = getPageParametersFromPageData();
+    getSelectedProgenies();
     if (picturesPageParameters !== null) {
         
         refreshSelectPickers();

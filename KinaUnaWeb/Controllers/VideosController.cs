@@ -21,6 +21,7 @@ namespace KinaUnaWeb.Controllers
         IMediaHttpClient mediaHttpClient,
         IUserInfosHttpClient userInfosHttpClient,
         ILocationsHttpClient locationsHttpClient,
+        IUserAccessHttpClient userAccessHttpClient,
         IEmailSender emailSender,
         IViewModelSetupService viewModelSetupService,
         IConfiguration configuration)
@@ -432,11 +433,21 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parameters.ProgenyId);
 
-            VideosList videosList = new()
-            {
-                VideoItems = await mediaHttpClient.GetProgenyVideoList(baseModel.CurrentProgenyId, baseModel.CurrentAccessLevel)
-            };
+            // Todo: Refactor to process the videos list in the API.
+            List<UserAccess> userAccessList = await userAccessHttpClient.GetUserAccessList(baseModel.CurrentUser.UserEmail);
 
+            VideosList videosList = new();
+
+            foreach (int progenyId in parameters.Progenies)
+            {
+                int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                List<Video> progenyVideos = await mediaHttpClient.GetProgenyVideoList(baseModel.CurrentProgenyId, accessLevel);
+                if (progenyVideos != null)
+                {
+                    videosList.VideoItems.AddRange(progenyVideos);
+                }
+            }
+            
             videosList.VideoItems = videosList.VideoItems.OrderBy(p => p.VideoTime).ToList();
 
             if (!string.IsNullOrEmpty(parameters.TagFilter))

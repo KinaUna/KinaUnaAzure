@@ -4,22 +4,12 @@
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId);
     string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Timeline, Model.LanguageId);
     string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Timeline, Model.LanguageId);
     string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
     string pageParameters = Json.Serialize(Model.LocationsPageParameters).ToString();
-}
-@section Scripts{
-    @if (allowHereMaps)
-    {
-        <script src="https://js.api.here.com/v3/3.1/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
-        <script src="https://js.api.here.com/v3/3.1/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
-        <script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js" type="text/javascript" charset="utf-8"></script>
-        <script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js" type="text/javascript" charset="utf-8"></script>
-        <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css"/>
-    }
 }
 
 <div id="locations-page-parameters" class="d-none" data-locations-page-parameters="@pageParameters"></div>
@@ -58,6 +48,7 @@
         </div>
         <div class="ml-md-auto mr-md-auto col" style="max-width: 600px;">
             <div id="photo-items-parent-div" class="d-none">
+                <div class="space-20"></div>
                 <div id="photo-items-div">
                 </div>
                 <div style="height: 150px;">

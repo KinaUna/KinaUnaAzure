@@ -79,7 +79,7 @@ function getPageParametersFromPageData(): VideosPageParameters | null {
     else {
         sortVideosDescending();
     }
-
+    
     return videosPageParametersResult;
 }
 /** Shows the loading spinner in the loading-items-div.
@@ -151,8 +151,10 @@ async function getVideosList(parameters: VideosPageParameters, updateHistory: Bo
         console.log('Error loading Videos list. Error: ' + error);
     });
 
-    stopLoadingSpinner();
+    parameters.progenies = getSelectedProgenies();
 
+    stopLoadingSpinner();
+    
     return new Promise<VideosPageParameters>(function (resolve, reject) {
         resolve(parameters);
     });
@@ -771,6 +773,39 @@ function refreshSelectPickers(): void {
     }
 }
 
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            if (videosPageParameters !== null) {
+                videosPageParameters = await getVideosList(videosPageParameters, false);
+            }
+        }
+
+    });
+}
+
+function getSelectedProgenies(): number[] {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        if (videosPageParameters !== null) {
+            videosPageParameters.progenies = progeniesIds;
+        }
+
+        return progeniesIds;
+    }
+    if (videosPageParameters !== null) {
+        videosPageParameters.progenies = [getCurrentProgenyId()];
+    }
+
+    return [getCurrentProgenyId()];
+}
+
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     videosPageProgenyId = getCurrentProgenyId();
@@ -785,6 +820,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     SettingsHelper.initPageSettings();
 
     videosPageParameters = getPageParametersFromPageData();
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
 
     await showPopupAtLoad(TimeLineType.Video);
 

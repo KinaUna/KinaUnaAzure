@@ -1,3 +1,4 @@
+import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as pageModels from '../page-models-v8.js';
 
@@ -240,7 +241,35 @@ function sortNotesPageDescending(): void {
     notesPageParameters.sort = 1;
 }
 
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            getSelectedProgenies();
+            notesPageParameters.currentPageNumber = 1;
+            await getNotes();
+        }
+
+    });
+}
+
+function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let progeniesIds = selectedProgenyIds.map(function (id) {
+            return parseInt(id);
+        });
+        notesPageParameters.progenies = progeniesIds;
+
+        return;
+    }
+    notesPageParameters.progenies = [getCurrentProgenyId()];
+}
+
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    await showPopupAtLoad(pageModels.TimeLineType.Note);
+
     const notesPageSettingsContentDiv = document.querySelector<HTMLDivElement>('#page-settings-content-div');
     if (notesPageSettingsContentDiv !== null) {
         notesPageSettingsDiv?.appendChild(notesPageSettingsContentDiv);
@@ -262,8 +291,9 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
         sortAscendingSettingsButton?.classList.add('active');
         sortDescendingSettingsButton?.classList.remove('active');
     }
-
-    await showPopupAtLoad(pageModels.TimeLineType.Note);
+        
+    addSelectedProgeniesChangedEventListener();
+    getSelectedProgenies();
 
     getNotes();
 

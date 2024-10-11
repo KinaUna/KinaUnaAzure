@@ -80,3 +80,54 @@ export function getPageSettingsStartDate(momentDateTimeFormat: string): any {
     return settingsStartTime;
 }
 
+export function getSelectedProgenies() {
+    let selectedProgenies = localStorage.getItem('selectedProgenies');
+    if (selectedProgenies !== null) {
+        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let selectProgenyButtons = document.querySelectorAll('.select-progeny-button');
+        selectProgenyButtons.forEach(function (button) {
+            let buttonElement = button as HTMLAnchorElement;
+            let progenyCheckSpan = buttonElement.querySelector('.progeny-check-span');
+            let selectedProgenyData = button.getAttribute('data-select-progeny-id');
+            if (selectedProgenyData) {
+                if (selectedProgenyIds.includes(selectedProgenyData.valueOf())) {
+                    buttonElement.classList.add('selected');
+
+                    if (progenyCheckSpan !== null) {
+                        progenyCheckSpan.classList.remove('d-none');
+                    }
+                }
+                else {
+                    buttonElement.classList.remove('selected');
+                    if (progenyCheckSpan !== null) {
+                        progenyCheckSpan.classList.add('d-none');
+                    }
+                }
+            }
+
+        });
+    }
+
+    else {
+        let selectedProgenyButtons = document.querySelectorAll<HTMLButtonElement>('.select-progeny-button');
+        let selectedProgenyIds: string[] = [];
+        selectedProgenyButtons.forEach(function (button) {
+            let buttonElement = button as HTMLButtonElement;
+            let progenyCheckSpan = buttonElement.querySelector('.progeny-check-span');
+            let selectedProgenyData = button.getAttribute('data-select-progeny-id');
+            if (selectedProgenyData) {
+                selectedProgenyIds.push(selectedProgenyData.valueOf());
+                buttonElement.classList.add('selected');
+                if (progenyCheckSpan !== null) {
+                    progenyCheckSpan.classList.remove('d-none');
+                }
+            }
+        });
+
+        localStorage.setItem('selectedProgenies', JSON.stringify(selectedProgenyIds));
+
+        const selectedProgeniesChangedEvent = new Event('progeniesChanged');
+        window.dispatchEvent(selectedProgeniesChangedEvent);
+    }
+}
+

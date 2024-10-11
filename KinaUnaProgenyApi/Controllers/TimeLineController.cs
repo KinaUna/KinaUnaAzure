@@ -40,18 +40,25 @@ namespace KinaUnaProgenyApi.Controllers
             if (progeny == null) return Ok(new TimelineResponse());
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(timelineRequest.ProgenyId, userEmail);
-            if (userAccess == null) return Ok(new OnThisDayResponse());
             UserInfo currentUser = await userInfoService.GetUserInfoByEmail(userEmail);
-            timelineRequest.AccessLevel = userAccess.AccessLevel;
+
+            List<UserAccess> userAccessList = [];
+            foreach (int progenyId in timelineRequest.Progenies)
+            {
+                UserAccess userAccessItem = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+                if (userAccessItem != null)
+                {
+                    userAccessList.Add(userAccessItem);
+                }
+            }
+
             if (timelineRequest.SortOrder == 1)
             {
                 DateTime updateTime = new(timelineRequest.TimelineStartDateTime.Year, timelineRequest.TimelineStartDateTime.Month, timelineRequest.TimelineStartDateTime.Day, 23, 59, 59);
                 timelineRequest.TimelineStartDateTime = updateTime;
             }
 
-            TimelineResponse timelineResponse = await timelineService.GetTimelineData(timelineRequest, currentUser.Timezone);
+            TimelineResponse timelineResponse = await timelineService.GetTimelineData(timelineRequest, currentUser, userAccessList);
 
             return Ok(timelineResponse);
         }
@@ -74,6 +81,26 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id);
             timeLineList = timeLineList.Where(t => userAccess != null && t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime < DateTime.UtcNow).ToList();
+            return Ok(timeLineList.Count != 0 ? timeLineList : []);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> Progenies([FromBody] List<int> progenies)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            List<TimeLineItem> timeLineList = [];
+            foreach (int progenyId in progenies)
+            {
+                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+                if (userAccess != null)
+                {
+                    List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId);
+                    progenyTimeLineList = progenyTimeLineList.Where(t => t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime < DateTime.UtcNow).ToList();
+                    timeLineList.AddRange(progenyTimeLineList);
+                }
+            }
+
             return Ok(timeLineList.Count != 0 ? timeLineList : []);
         }
 
@@ -132,6 +159,28 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(timeLineList);
 
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> ProgeniesYearAgo([FromBody] List<int> progeniesList)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            List<TimeLineItem> timeLineList = [];
+            foreach (int progenyId in progeniesList)
+            {
+                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+                if (userAccess != null)
+                {
+                    List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId);
+                    progenyTimeLineList = [.. progenyTimeLineList
+                        .Where(t => t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day)];
+                    timeLineList.AddRange(progenyTimeLineList);
+                }
+            }
+            timeLineList = timeLineList.OrderByDescending(t => t.ProgenyTime).ToList();
+            
+            return Ok(timeLineList.Count != 0 ? timeLineList : []);
         }
 
         /// <summary>
@@ -348,7 +397,18 @@ namespace KinaUnaProgenyApi.Controllers
                 DateTime updateTime = new(onThisDayRequest.ThisDayDateTime.Year, onThisDayRequest.ThisDayDateTime.Month, onThisDayRequest.ThisDayDateTime.Day, 23, 59, 59);
                 onThisDayRequest.ThisDayDateTime = updateTime;
             }
-            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, currentUser.Timezone);
+
+            List<UserAccess> userAccessList = [];
+            foreach (int progenyId in onThisDayRequest.Progenies)
+            {
+                UserAccess userAccessItem = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+                if (userAccessItem != null)
+                {
+                    userAccessList.Add(userAccessItem);
+                }
+            }
+
+            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, currentUser, userAccessList);
             
             return Ok(onThisDayResponse);
         }

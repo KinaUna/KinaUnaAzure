@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Caching.Distributed;
@@ -191,6 +192,19 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", new{ childId });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> SetDefaultProgeny([FromBody] SetProgenyRequest request)
+        {
+            if (User.Identity == null || !User.Identity.IsAuthenticated) return BadRequest();
+
+            UserInfo userinfo = await userInfosHttpClient.GetUserInfo(User.GetEmail());
+            userinfo.ViewChild = request.ProgenyId;
+            await userInfosHttpClient.UpdateUserInfo(userinfo);
+
+            await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + request.LanguageId + "_user_" + userinfo.UserEmail.ToUpper() + "_progeny_" + 0);
+
+            return Ok();
+        }
         /// <summary>
         /// HttpPost action to set the current language.
         /// </summary>

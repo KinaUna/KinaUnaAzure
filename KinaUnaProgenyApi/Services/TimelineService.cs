@@ -259,16 +259,26 @@ namespace KinaUnaProgenyApi.Services
         /// Creates a OnThisDayResponse for displaying TimeLineItems on the OnThisDay page.
         /// </summary>
         /// <param name="onThisDayRequest">The OnThisDayRequest object with the parameters.</param>
-        /// <param name="timezone">The timezone to use for the dates.</param>
+        /// <param name="userInfo">The current users UserInfo.</param>
+        /// <param name="userAccessList">List of UserAccess objects for the current user and the progenies.</param>
         /// <returns>OnThisDayResponse object.</returns>
-        public async Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest, string timezone)
+        public async Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest, UserInfo userInfo, List<UserAccess> userAccessList)
         {
             OnThisDayResponse onThisDayResponse = new()
             {
                 Request = onThisDayRequest
             };
 
-            List<TimeLineItem> allTimeLineItems = await GetTimeLineList(onThisDayRequest.ProgenyId);
+            List<TimeLineItem> allTimeLineItems = [];
+            foreach (int progenyId in onThisDayRequest.Progenies)
+            {
+                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId);
+                int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                progenyTimeLineItems = progenyTimeLineItems.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
+                allTimeLineItems.AddRange(progenyTimeLineItems);
+            }
+
+            // allTimeLineItems = await GetTimeLineList(onThisDayRequest.ProgenyId);
             allTimeLineItems = allTimeLineItems.Where(t => t.AccessLevel >= onThisDayRequest.AccessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
             if (allTimeLineItems.Count == 0)
             {
@@ -282,7 +292,7 @@ namespace KinaUnaProgenyApi.Services
             
             foreach (TimeLineItem timeLineItem in onThisDayResponse.TimeLineItems)
             {
-                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(timezone));
+                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
             }
 
             allTimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(allTimeLineItems, onThisDayRequest);
@@ -339,18 +349,27 @@ namespace KinaUnaProgenyApi.Services
         /// <summary>
         /// Gets a TimelineResponse for displaying TimeLineItems on the Timeline page.
         /// </summary>
-        /// <param name="timelineRequest">The request parameters.</param>
-        /// <param name="timezone">The user's timezone.</param>
+        /// <param name="timelineRequest">The TimelineRequest object with the parameters.</param>
+        /// <param name="userInfo">The current users UserInfo.</param>
+        /// <param name="userAccessList">List of UserAccess objects for the current user and the progenies.</param>
         /// <returns>TimelineResponse with the filtered list of Timeline items.</returns>
-        public async Task<TimelineResponse> GetTimelineData(TimelineRequest timelineRequest, string timezone)
+        public async Task<TimelineResponse> GetTimelineData(TimelineRequest timelineRequest, UserInfo userInfo, List<UserAccess> userAccessList)
         {
             TimelineResponse timelineResponse = new()
             {
                 Request = timelineRequest
             };
 
-            List<TimeLineItem> allTimeLineItems = await GetTimeLineList(timelineRequest.ProgenyId);
-            allTimeLineItems = allTimeLineItems.Where(t => t.AccessLevel >= timelineRequest.AccessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
+            List<TimeLineItem> allTimeLineItems = []; await GetTimeLineList(timelineRequest.ProgenyId);
+
+            foreach (int progenyId in timelineRequest.Progenies)
+            {
+                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId);
+                int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                progenyTimeLineItems = progenyTimeLineItems.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
+                allTimeLineItems.AddRange(progenyTimeLineItems);
+            }
+
             if (allTimeLineItems.Count == 0)
             {
                 timelineResponse.TimeLineItems = [];
@@ -363,7 +382,7 @@ namespace KinaUnaProgenyApi.Services
 
             foreach (TimeLineItem timeLineItem in allTimeLineItems)
             {
-                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(timezone));
+                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
             }
 
 

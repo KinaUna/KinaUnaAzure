@@ -56,9 +56,18 @@ namespace KinaUnaProgenyApi.Services
         /// Creates a OnThisDayResponse for displaying TimeLineItems on the OnThisDay page.
         /// </summary>
         /// <param name="onThisDayRequest">The OnThisDayRequest object with the parameters.</param>
-        /// <param name="timezone">The timezone to use for the dates.</param>
+        /// <param name="userInfo">The current users UserInfo.</param>
+        /// <param name="userAccessList">List of UserAccess objects for the current user and the progenies.</param>
         /// <returns>OnThisDayResponse object.</returns>
-        Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest, string timezone);
-        Task<TimelineResponse> GetTimelineData(TimelineRequest timelineRequest, string timezone);
+        Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest, UserInfo userInfo, List<UserAccess> userAccessList);
+
+        /// <summary>
+        /// Gets a TimelineResponse for displaying TimeLineItems on the Timeline page.
+        /// </summary>
+        /// <param name="timelineRequest">The TimelineRequest object with the parameters.</param>
+        /// <param name="userInfo">The current users UserInfo.</param>
+        /// <param name="userAccessList">List of UserAccess objects for the current user and the progenies.</param>
+        /// <returns>TimelineResponse with the filtered list of Timeline items.</returns>
+        Task<TimelineResponse> GetTimelineData(TimelineRequest timelineRequest, UserInfo userInfo, List<UserAccess> userAccessList);
     }
 }

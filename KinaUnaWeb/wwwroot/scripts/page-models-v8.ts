@@ -26,6 +26,7 @@ export class ContactItemParameters implements BaseItemParameters {
 
 export class ContactsPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    progenies: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;
@@ -53,6 +54,7 @@ export class FriendItemParameters implements BaseItemParameters {
 
 export class FriendsPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    progenies: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;
@@ -88,6 +90,7 @@ export class LocationItemParameters implements BaseItemParameters {
 
 export class LocationsPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    progenies: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;
@@ -110,6 +113,7 @@ export class LocationsPageResponse implements BaseItemsPageResponseModel {
 
 export class NearByPhotosRequest {
     progenyId: number = 0;
+    progenies: number[] = [];
     locationItem: LocationItem = new LocationItem();
     distance: number = 0.25;
     sortOrder: number = 1;
@@ -125,6 +129,7 @@ export class NearByPhotosResponse {
 
 export class PicturesLocationsRequest {
     progenyId: number = 0;
+    progenies: number[] = [];
     distance: number = 0.1;
 }
 
@@ -141,6 +146,7 @@ export class NoteItemParameters implements BaseItemParameters {
 
 export class NotesPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    progenies: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;
@@ -173,6 +179,7 @@ export class PictureViewModel {
 }
 export class PicturesPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    progenies : number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;
@@ -214,6 +221,7 @@ export class VideoViewModel {
 
 export class VideosPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    progenies: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;
@@ -297,6 +305,7 @@ export class TimelineItem {
 
 export class TimelineParameters {
     progenyId: number = 0;
+    progenies: number[] = [];
     skip: number = 0;
     count: number = 5;
     sortBy: number = 1;
@@ -309,6 +318,7 @@ export class TimelineParameters {
 
 export class TimelineRequest {
     progenyId: number = 0;
+    progenies: number[] = [];
     accessLevel: number = 5;
     skip: number = 0;
     numberOfItems: number = 5;
@@ -344,6 +354,7 @@ export class TimelineList {
 
 export class OnThisDayRequest {
     progenyId: number = 0;
+    progenies: number[] = [];
     accessLevel: number = 5;
     skip: number = 0;
     numberOfItems: number = 5;
@@ -403,4 +414,23 @@ export class CalendarReminderRequest {
     notifyTimeOffsetType: number = 1;
     userId: string = '';
     notified: boolean = false;
+}
+
+export class CalendarItem {
+    eventId: number = 0;
+    progenyId: number = 0;
+    title: string = '';
+    notes: string = '';
+    location: string = '';
+    context: string = '';
+    allDay: boolean = false;
+    accessLevel: number = 5;
+    startString: string = '';
+    endString: string = '';
+    author: string = '';
+}
+
+export class SetProgenyRequest {
+    progenyId: number = 0;
+    languageId: number = 0;
 }

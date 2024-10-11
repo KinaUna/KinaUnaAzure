@@ -6,7 +6,7 @@ namespace KinaUna.Data.Models.DTOs
     public class TimelineRequest
     {
         public int ProgenyId { get; set; } = 0;
-
+        public List<int> Progenies { get; set; } = [];
         public DateTime TimelineStartDateTime
         {
             get
