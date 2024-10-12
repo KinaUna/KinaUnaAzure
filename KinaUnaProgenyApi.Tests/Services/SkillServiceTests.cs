@@ -322,8 +322,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SkillService skillService = new(context, memoryCache);
 
-            List<Skill> skillsList = await skillService.GetSkillsList(1);
-            List<Skill> skillsList2 = await skillService.GetSkillsList(1); // Test cached result.
+            List<Skill> skillsList = await skillService.GetSkillsList(1, 0);
+            List<Skill> skillsList2 = await skillService.GetSkillsList(1, 0); // Test cached result.
             Skill firstSkill = skillsList.First();
 
             Assert.NotNull(skillsList);
@@ -377,8 +377,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SkillService skillService = new(context, memoryCache);
 
-            List<Skill> skillsList = await skillService.GetSkillsList(2);
-            List<Skill> skillsList2 = await skillService.GetSkillsList(2); // Test cached result.
+            List<Skill> skillsList = await skillService.GetSkillsList(2, 0);
+            List<Skill> skillsList2 = await skillService.GetSkillsList(2, 0); // Test cached result.
 
             Assert.NotNull(skillsList);
             Assert.IsType<List<Skill>>(skillsList);

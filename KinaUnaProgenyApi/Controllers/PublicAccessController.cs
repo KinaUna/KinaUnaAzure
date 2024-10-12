@@ -265,11 +265,10 @@ namespace KinaUnaProgenyApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> ProgenyContactsMobile(int id, int accessLevel = 5)
         {
-            List<Contact> contactsList = await contactService.GetContactsList(Constants.DefaultChildId);
-            contactsList = contactsList.Where(c => c.AccessLevel >= 5).ToList();
+            List<Contact> contactsList = await contactService.GetContactsList(Constants.DefaultChildId, accessLevel);
+            
             if (contactsList.Count == 0) return Ok(new List<Contact>());
 
             foreach (Contact cont in contactsList)
@@ -288,11 +287,10 @@ namespace KinaUnaProgenyApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> ProgenyFriendsMobile(int id, int accessLevel = 5)
         {
-            List<Friend> friendsList = await friendService.GetFriendsList(Constants.DefaultChildId);
-            friendsList = friendsList.Where(c => c.AccessLevel >= 5).ToList();
+            List<Friend> friendsList = await friendService.GetFriendsList(Constants.DefaultChildId, accessLevel);
+            
             if (friendsList.Count == 0) return Ok(new List<Contact>());
 
             foreach (Friend frn in friendsList)
@@ -715,8 +713,8 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Note> allItems = await noteService.GetNotesList(Constants.DefaultChildId);
-            allItems = [.. allItems.Where(n => n.AccessLevel == 5).OrderBy(v => v.CreatedDate)];
+            List<Note> allItems = await noteService.GetNotesList(Constants.DefaultChildId, accessLevel);
+            allItems = [.. allItems.OrderBy(v => v.CreatedDate)];
 
             if (sortBy == 1)
             {
@@ -1067,7 +1065,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="sortBy"></param>
         /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetSkillsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
@@ -1080,7 +1077,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Skill> allItems = await skillService.GetSkillsList(progenyId);
+            List<Skill> allItems = await skillService.GetSkillsList(progenyId, accessLevel);
             allItems = [.. allItems.OrderBy(s => s.SkillFirstObservation)];
 
             if (sortBy == 1)

@@ -56,9 +56,12 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, it will be looked up in the database and added to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
+        /// <param name="accessLevel">The access level required to view the Contact.</param>
         /// <returns>List of Contacts.</returns>
-        Task<List<Contact>> GetContactsList(int progenyId);
-        Task<List<Contact>> GetContactsWithTag(int progenyId, string tag);
-        Task<List<Contact>> GetContactsWithContext(int progenyId, string context);
+        Task<List<Contact>> GetContactsList(int progenyId, int accessLevel);
+
+        Task<List<Contact>> GetContactsWithTag(int progenyId, string tag, int accessLevel);
+
+        Task<List<Contact>> GetContactsWithContext(int progenyId, string context, int accessLevel);
     }
 }

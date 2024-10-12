@@ -14,16 +14,18 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="timeLineItems">The list of items to filter.</param>
         /// <param name="tags">Comma separated list of tags.</param>
+        /// <param name="accessLevel">The required access level to view the items.</param>
         /// <returns>List of TimeLineItems that contain any of the tags.</returns>
-        Task<List<TimeLineItem>> GetTimeLineItemsWithTags(List<TimeLineItem> timeLineItems, string tags);
-        
+        Task<List<TimeLineItem>> GetTimeLineItemsWithTags(List<TimeLineItem> timeLineItems, string tags, int accessLevel);
+
         /// <summary>
         /// Filters TimeLineItems based on categories.
         /// </summary>
         /// <param name="timeLineItems">The list of items to filter.</param>
         /// <param name="categories">Comma separated list of categories.</param>
+        /// <param name="accessLevel">The required access level to view the items.</param>
         /// <returns>List of TimeLineItems that contain any of the categories</returns>
-        Task<List<TimeLineItem>> GetTimeLineItemsWithCategories(List<TimeLineItem> timeLineItems, string categories);
+        Task<List<TimeLineItem>> GetTimeLineItemsWithCategories(List<TimeLineItem> timeLineItems, string categories, int accessLevel);
 
         /// <summary>
         /// Filters TimeLineItems based on contexts.
@@ -39,7 +41,8 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="timeLineItems">The list of items to filter.</param>
         /// <param name="keywords">Comma separated list of keywords.</param>
+        /// <param name="accessLevel">The required access level to view the items.</param>
         /// <returns>List of TimeLineItems that contain any of the keywords.</returns>
-        Task<List<TimeLineItem>> GetTimeLineItemsWithKeyword(List<TimeLineItem> timeLineItems, string keywords);
+        Task<List<TimeLineItem>> GetTimeLineItemsWithKeyword(List<TimeLineItem> timeLineItems, string keywords, int accessLevel);
     }
 }

@@ -52,8 +52,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
 
-            List<Skill> skillsList = await skillService.GetSkillsList(id);
-            skillsList = skillsList.Where(s => s.AccessLevel >= accessLevel).ToList();
+            List<Skill> skillsList = await skillService.GetSkillsList(id, userAccess?.AccessLevel ?? accessLevel);
             if (skillsList.Count != 0)
             {
                 return Ok(skillsList);
@@ -257,7 +256,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="sortBy">Sort order. 0 = oldest first, 1 = newest first.</param>
         /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetSkillsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -272,7 +270,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Skill> allItems = await skillService.GetSkillsList(progenyId);
+            List<Skill> allItems = await skillService.GetSkillsList(progenyId, userAccess?.AccessLevel ?? accessLevel);
             allItems = [.. allItems.OrderBy(s => s.SkillFirstObservation)];
 
             if (sortBy == 1)

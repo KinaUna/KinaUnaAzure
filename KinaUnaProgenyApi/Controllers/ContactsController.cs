@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -56,8 +55,8 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess == null && id != Constants.DefaultChildId) return NotFound();
 
-            List<Contact> contactsList = await contactService.GetContactsList(id);
-            contactsList = contactsList.Where(c => c.AccessLevel >= (userAccess?.AccessLevel ?? accessLevel)).ToList();
+            List<Contact> contactsList = await contactService.GetContactsList(id, userAccess?.AccessLevel ?? accessLevel);
+            
             if (contactsList.Count != 0)
             {
                 return Ok(contactsList);
@@ -322,9 +321,8 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
-            List<Contact> contactsList = await contactService.GetContactsList(id);
-            contactsList = contactsList.Where(c => c.AccessLevel >= accessLevel).ToList();
-
+            List<Contact> contactsList = await contactService.GetContactsList(id, accessLevel);
+            
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if ((userAccess == null && id != Constants.DefaultChildId) || contactsList.Count == 0) return Ok(new List<Contact>());

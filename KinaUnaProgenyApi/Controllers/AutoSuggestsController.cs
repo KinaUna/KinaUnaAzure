@@ -74,12 +74,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             AutoSuggestListBuilder autoSuggestListBuilder = new AutoSuggestListBuilder();
             
-            List<Note> allNotes = await noteService.GetNotesList(id);
-            allNotes = allNotes.Where(p => p.AccessLevel >= accessLevel).ToList();
+            List<Note> allNotes = await noteService.GetNotesList(id, accessLevel);
             autoSuggestListBuilder.AddItemsToCategoriesList(allNotes);
 
-            List<Skill> allSkills = await skillService.GetSkillsList(id);
-            allSkills = allSkills.Where(p => p.AccessLevel >= accessLevel).ToList();
+            List<Skill> allSkills = await skillService.GetSkillsList(id, accessLevel);
             autoSuggestListBuilder.AddItemsToCategoriesList(allSkills);
             
             List<string> autoSuggestList = autoSuggestListBuilder.GetCategoriesList(); 
@@ -107,54 +105,18 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<string> autoSuggestList = [];
+            AutoSuggestListBuilder autoSuggestListBuilder = new AutoSuggestListBuilder();
 
-            List<Friend> allFriends = await friendService.GetFriendsList(id);
-            allFriends = allFriends.Where(p => p.AccessLevel >= accessLevel).ToList();
-            foreach (Friend friendItem in allFriends)
-            {
-                if (string.IsNullOrEmpty(friendItem.Context)) continue;
-
-                List<string> tagsList = [.. friendItem.Context.Split(',')];
-                foreach (string tagString in tagsList)
-                {
-                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                    {
-                        autoSuggestList.Add(tagString.Trim());
-                    }
-                }
-            }
-
+            List<Friend> allFriends = await friendService.GetFriendsList(id, accessLevel);
+            autoSuggestListBuilder.AddItemsToContextsList(allFriends);
+            
             List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id, accessLevel);
-            foreach (CalendarItem calendarItem in allCalendarItems)
-            {
-                if (string.IsNullOrEmpty(calendarItem.Context)) continue;
+            autoSuggestListBuilder.AddItemsToContextsList(allCalendarItems);
 
-                List<string> tagsList = [.. calendarItem.Context.Split(',')];
-                foreach (string tagString in tagsList)
-                {
-                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                    {
-                        autoSuggestList.Add(tagString.Trim());
-                    }
-                }
-            }
-
-            List<Contact> allContacts = await contactService.GetContactsList(id);
-            allContacts = allContacts.Where(p => p.AccessLevel >= accessLevel).ToList();
-            foreach (Contact contactItem in allContacts)
-            {
-                if (string.IsNullOrEmpty(contactItem.Context)) continue;
-
-                List<string> tagsList = [.. contactItem.Context.Split(',')];
-                foreach (string tagString in tagsList)
-                {
-                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                    {
-                        autoSuggestList.Add(tagString.Trim());
-                    }
-                }
-            }
+            List<Contact> allContacts = await contactService.GetContactsList(id, accessLevel);
+            autoSuggestListBuilder.AddItemsToContextsList(allContacts);
+            
+            List<string> autoSuggestList = autoSuggestListBuilder.GetContextsList();
             autoSuggestList.Sort();
 
             return Ok(autoSuggestList);
@@ -317,8 +279,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Friend> allFriends = await friendService.GetFriendsList(id);
-            allFriends = allFriends.Where(p => p.AccessLevel >= accessLevel).ToList();
+            List<Friend> allFriends = await friendService.GetFriendsList(id, accessLevel);
             foreach (Friend friend in allFriends)
             {
                 if (string.IsNullOrEmpty(friend.Tags)) continue;
@@ -333,8 +294,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Contact> allContacts = await contactService.GetContactsList(id);
-            allContacts = allContacts.Where(p => p.AccessLevel >= accessLevel).ToList();
+            List<Contact> allContacts = await contactService.GetContactsList(id, accessLevel);
             foreach (Contact contact in allContacts)
             {
                 if (string.IsNullOrEmpty(contact.Tags)) continue;

@@ -277,9 +277,8 @@ namespace KinaUnaProgenyApi.Services
                 progenyTimeLineItems = progenyTimeLineItems.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
                 allTimeLineItems.AddRange(progenyTimeLineItems);
             }
-
-            // allTimeLineItems = await GetTimeLineList(onThisDayRequest.ProgenyId);
-            allTimeLineItems = allTimeLineItems.Where(t => t.AccessLevel >= onThisDayRequest.AccessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
+            
+            allTimeLineItems = allTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow).ToList();
             if (allTimeLineItems.Count == 0)
             {
                 onThisDayResponse.TimeLineItems = [];
@@ -304,19 +303,34 @@ namespace KinaUnaProgenyApi.Services
             if (!string.IsNullOrEmpty(onThisDayRequest.TagFilter))
             {
                 anyFilter = true;
-                onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(allTimeLineItems, onThisDayRequest.TagFilter));
+                foreach (int progenyId in onThisDayRequest.Progenies)
+                {
+                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyTimeLineItems, onThisDayRequest.TagFilter, accessLevel));
+                }
             }
 
             if (!string.IsNullOrEmpty(onThisDayRequest.CategoryFilter))
             {
                 anyFilter = true;
-                onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(allTimeLineItems, onThisDayRequest.CategoryFilter));
+                foreach (int progenyId in onThisDayRequest.Progenies)
+                {
+                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyTimeLineItems, onThisDayRequest.CategoryFilter, accessLevel));
+                }
             }
 
             if (!string.IsNullOrEmpty(onThisDayRequest.ContextFilter))
             {
                 anyFilter = true;
-                onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(allTimeLineItems, onThisDayRequest.ContextFilter, onThisDayRequest.AccessLevel));
+                foreach (int progenyId in onThisDayRequest.Progenies)
+                {
+                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyTimeLineItems, onThisDayRequest.ContextFilter, accessLevel));
+                }
             }
 
             if (anyFilter)
@@ -384,8 +398,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
             }
-
-
+            
             // Todo: Implement Tags for TimeLineItems.
             // onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
 
@@ -393,19 +406,34 @@ namespace KinaUnaProgenyApi.Services
             if (!string.IsNullOrEmpty(timelineRequest.TagFilter))
             {
                 anyFilter = true;
-                timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(allTimeLineItems, timelineRequest.TagFilter));
+                foreach (int progenyId in timelineRequest.Progenies)
+                {
+                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyTimeLineItems, timelineRequest.TagFilter, accessLevel));
+                }
             }
 
             if (!string.IsNullOrEmpty(timelineRequest.CategoryFilter))
             {
                 anyFilter = true;
-                timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(allTimeLineItems, timelineRequest.CategoryFilter));
+                foreach (int progenyId in timelineRequest.Progenies)
+                {
+                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyTimeLineItems, timelineRequest.CategoryFilter, accessLevel));
+                }
             }
 
             if (!string.IsNullOrEmpty(timelineRequest.ContextFilter))
             {
                 anyFilter = true;
-                timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(allTimeLineItems, timelineRequest.ContextFilter, timelineRequest.AccessLevel));
+                foreach (int progenyId in timelineRequest.Progenies)
+                {
+                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyTimeLineItems, timelineRequest.ContextFilter, accessLevel));
+                }
             }
 
             if (anyFilter)

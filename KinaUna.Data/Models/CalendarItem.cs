@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KinaUna.Data.Models.ItemInterfaces;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,7 +8,7 @@ namespace KinaUna.Data.Models
     /// <summary>
     /// Entity Framework Entity for calendar event data.
     /// </summary>
-    public class CalendarItem
+    public class CalendarItem: IContexted
     {
         /// <summary>
         /// Primary key for the calendar event.

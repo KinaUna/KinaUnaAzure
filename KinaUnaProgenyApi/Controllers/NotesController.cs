@@ -54,7 +54,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
 
-            List<Note> notesList = await noteService.GetNotesList(id);
+            List<Note> notesList = await noteService.GetNotesList(id, accessLevel);
             notesList = notesList.Where(n => n.AccessLevel >= accessLevel).ToList();
             if (notesList.Count == 0) return NotFound();
 
@@ -253,11 +253,8 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="sortBy">int: Sort order for the Note items. 0 = oldest first, 1 = newest first.</param>
         /// <returns>List of Measurement items.</returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetNotesListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
-        {
-
-            // Check if user should be allowed access.
+        { 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
@@ -270,7 +267,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Note> allItems = await noteService.GetNotesList(progenyId);
+            List<Note> allItems = await noteService.GetNotesList(progenyId, userAccess?.AccessLevel ?? accessLevel);
             allItems = [.. allItems.OrderBy(v => v.CreatedDate)];
 
             if (sortBy == 1)

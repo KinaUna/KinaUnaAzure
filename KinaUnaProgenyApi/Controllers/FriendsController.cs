@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -54,13 +53,9 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
 
-            List<Friend> friendsList = await friendService.GetFriendsList(id);
-            friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
-            if (friendsList.Count != 0)
-            {
-                return Ok(friendsList);
-            }
-            return NotFound();
+            List<Friend> friendsList = await friendService.GetFriendsList(id, accessLevel);
+
+            return Ok(friendsList);
 
         }
 
@@ -284,8 +279,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
 
-            List<Friend> friendsList = await friendService.GetFriendsList(id);
-            friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
+            List<Friend> friendsList = await friendService.GetFriendsList(id, accessLevel);
             if (friendsList.Count == 0) return NotFound();
 
             foreach (Friend friend in friendsList)

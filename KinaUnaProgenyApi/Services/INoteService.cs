@@ -39,8 +39,10 @@ namespace KinaUnaProgenyApi.Services
         /// First tries to get the list from the cache, then from the database if it's not in the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Notes for.</param>
+        /// <param name="accessLevel">The access level required to view the Note.</param>
         /// <returns>List of Note objects.</returns>
-        Task<List<Note>> GetNotesList(int progenyId);
-        Task<List<Note>> GetNotesWithCategory(int progenyId, string category);
+        Task<List<Note>> GetNotesList(int progenyId, int accessLevel);
+
+        Task<List<Note>> GetNotesWithCategory(int progenyId, string category, int accessLevel);
     }
 }
