@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KinaUna.Data.Models.ItemInterfaces;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
@@ -6,7 +7,7 @@ namespace KinaUna.Data.Models
     /// <summary>
     /// Entity Framework Entity for Note data.
     /// </summary>
-    public class Note
+    public class Note: ICategorical
     {
         public int NoteId { get; set; }
         public string Title { get; set; }

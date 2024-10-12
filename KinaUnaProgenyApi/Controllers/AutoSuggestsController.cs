@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.UserAccessService;
@@ -56,44 +57,32 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
-            if (userAccess == null && id != Constants.DefaultChildId)
+            if (userAccess == null)
             {
-                return Unauthorized();
+                if (id != Constants.DefaultChildId)
+                {
+                    return Unauthorized();
+                }
+
+                userAccess = await userAccessService.GetProgenyUserAccessForUser(Constants.DefaultChildId, userEmail);
             }
 
-            List<string> autoSuggestList = [];
+            if (userAccess.AccessLevel > accessLevel)
+            {
+                accessLevel = userAccess.AccessLevel;
+            }
+
+            AutoSuggestListBuilder autoSuggestListBuilder = new AutoSuggestListBuilder();
+            
             List<Note> allNotes = await noteService.GetNotesList(id);
             allNotes = allNotes.Where(p => p.AccessLevel >= accessLevel).ToList();
-            foreach (Note noteItem in allNotes)
-            {
-                if (string.IsNullOrEmpty(noteItem.Category)) continue;
-
-                List<string> tagsList = [.. noteItem.Category.Split(',')];
-                foreach (string tagString in tagsList)
-                {
-                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                    {
-                        autoSuggestList.Add(tagString.Trim());
-                    }
-                }
-            }
+            autoSuggestListBuilder.AddItemsToCategoriesList(allNotes);
 
             List<Skill> allSkills = await skillService.GetSkillsList(id);
             allSkills = allSkills.Where(p => p.AccessLevel >= accessLevel).ToList();
-            foreach (Skill skillItem in allSkills)
-            {
-                if (string.IsNullOrEmpty(skillItem.Category)) continue;
-
-                List<string> tagsList = [.. skillItem.Category.Split(',')];
-                foreach (string tagString in tagsList)
-                {
-                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                    {
-                        autoSuggestList.Add(tagString.Trim());
-                    }
-                }
-            }
-
+            autoSuggestListBuilder.AddItemsToCategoriesList(allSkills);
+            
+            List<string> autoSuggestList = autoSuggestListBuilder.GetCategoriesList(); 
             autoSuggestList.Sort();
 
             return Ok(autoSuggestList);
