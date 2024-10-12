@@ -27,7 +27,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SkillsListViewModel model = new(baseModel);
             
-            List<Skill> skillsList = await skillsHttpClient.GetSkillsList(model.CurrentProgenyId, model.CurrentAccessLevel);
+            List<Skill> skillsList = await skillsHttpClient.GetSkillsList(model.CurrentProgenyId);
             
             if (skillsList.Count != 0)
             {

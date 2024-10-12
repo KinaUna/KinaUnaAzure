@@ -426,8 +426,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             LocationService locationService = new(context, memoryCache);
 
-            List<Location> locationsList = await locationService.GetLocationsList(1);
-            List<Location> locationsList2 = await locationService.GetLocationsList(1); // Test cached result.
+            List<Location> locationsList = await locationService.GetLocationsList(1, 0);
+            List<Location> locationsList2 = await locationService.GetLocationsList(1,0); // Test cached result.
             Location firstLocation = locationsList.First();
 
             Assert.NotNull(locationsList);
@@ -502,8 +502,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             LocationService locationService = new(context, memoryCache);
 
-            List<Location> locationsList = await locationService.GetLocationsList(2);
-            List<Location> locationsList2 = await locationService.GetLocationsList(2); // Test cached result.
+            List<Location> locationsList = await locationService.GetLocationsList(2, 0);
+            List<Location> locationsList2 = await locationService.GetLocationsList(2, 0); // Test cached result.
 
             Assert.NotNull(locationsList);
             Assert.IsType<List<Location>>(locationsList);

@@ -41,8 +41,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all VocabularyItems for a Progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the progeny.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of VocabularyItem objects.</returns>
-        Task<List<VocabularyItem>> GetWordsList(int progenyId, int accessLevel);
+        Task<List<VocabularyItem>> GetWordsList(int progenyId);
     }
 }

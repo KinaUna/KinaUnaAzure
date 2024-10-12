@@ -23,19 +23,17 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets a random picture from the list of pictures a user has access to for a given progeny, with the PictureTime converted to the given time zone.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny that the Picture belongs to.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <param name="timeZone">The time zone to use for PictureTime.</param>
         /// <returns>Picture object.</returns>
-        Task<Picture> GetRandomPicture(int progenyId, int accessLevel, string timeZone);
+        Task<Picture> GetRandomPicture(int progenyId, string timeZone);
 
         /// <summary>
         /// Gets a list of all Pictures for a given progeny that a user has access to, with the PictureTime converted to the given time zone for each Picture.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <param name="timeZone">The time zone to use for PictureTime.</param>
         /// <returns>List of Picture objects.</returns>
-        Task<List<Picture>> GetPictureList(int progenyId, int accessLevel, string timeZone);
+        Task<List<Picture>> GetPictureList(int progenyId, string timeZone);
 
         /// <summary>
         /// Adds a new Picture.
@@ -78,12 +76,11 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="pageSize">The number of Pictures per page.</param>
         /// <param name="id">The current page number.</param>
         /// <param name="progenyId">The Id of the Progeny.</param>
-        /// <param name="userAccessLevel">The user's access level for the Progeny.</param>
         /// <param name="sortBy">Sort order. 0 for oldest first, 1 (default) for newest first.</param>
         /// <param name="tagFilter">Only include Pictures tagged with this string. If null or empty include all Pictures.</param>
         /// <param name="timeZone">The time zone to use for PictureTime.</param>
         /// <returns>PicturePageViewModel</returns>
-        Task<PicturePageViewModel> GetPicturePage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy,
+        Task<PicturePageViewModel> GetPicturePage(int pageSize, int id, int progenyId, int sortBy,
             string tagFilter, string timeZone);
 
         /// <summary>
@@ -91,12 +88,11 @@ namespace KinaUnaWeb.Services.HttpClients
         /// PictureTime and Comment's time will be converted to the given time zone.
         /// </summary>
         /// <param name="id">The PictureId for the Picture to get..</param>
-        /// <param name="userAccessLevel">The user's access level for the Progeny that the Picture belongs to.</param>
         /// <param name="sortBy">Sort order. 0 for oldest first, 1 (default) for newest first.</param>
         /// <param name="timeZone">The time zone to use for PictureTime and Comment's time.</param>
         /// <param name="tagFilter">Only include Pictures tagged with this string. If null or empty include all Pictures.</param>
         /// <returns>PictureVieModel.</returns>
-        Task<PictureViewModel> GetPictureViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "");
+        Task<PictureViewModel> GetPictureViewModel(int id, int sortBy, string timeZone, string tagFilter = "");
 
         /// <summary>
         /// Gets a list of Locations that are obtained from Pictures.
@@ -124,10 +120,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets a list of Videos for a given progeny that a user has access to, with the VideoTime converted to the given time zone for each video.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <param name="timeZone">The time zone to use for VideoTime.</param>
         /// <returns>List of Video objects.</returns>
-        Task<List<Video>> GetVideoList(int progenyId, int accessLevel, string timeZone);
+        Task<List<Video>> GetVideoList(int progenyId, string timeZone);
         
         /// <summary>
         /// Adds a new Video.
@@ -170,33 +165,30 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="pageSize">The number of Videos per page.</param>
         /// <param name="id">The current page number.</param>
         /// <param name="progenyId">The Id of the Progeny.</param>
-        /// <param name="userAccessLevel">The user's access level for the Progeny.</param>
         /// <param name="sortBy">Sort order. 0 for oldest first, 1 (default) for newest first.</param>
         /// <param name="tagFilter">Only include Videos tagged with this string. If null or empty include all Pictures.</param>
         /// <param name="timeZone">The time zone to use for VideoTime.</param>
         /// <returns>VideoPageViewModel</returns>
-        Task<VideoPageViewModel> GetVideoPage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy,
+        Task<VideoPageViewModel> GetVideoPage(int pageSize, int id, int progenyId, int sortBy,
             string tagFilter, string timeZone);
 
         /// <summary>
         /// Gets a VideoViewModel for the Video with a given VideoId.
         /// </summary>
         /// <param name="id">The VideoId for the Video to get the VideoViewModel for.</param>
-        /// <param name="userAccessLevel">The user's access level for Progeny the Video belongs to.</param>
         /// <param name="sortBy">Sort order. 0 for oldest first, 1 (default) for newest first.</param>
         /// <param name="timeZone">The time zone to use for VideoTime and Comment's time.</param>
         /// <param name="tagFilter">Only include Videos tagged with this string. If null or empty include all Pictures.</param>
         /// <returns>VideoViewModel</returns>
-        Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "");
+        Task<VideoViewModel> GetVideoViewModel(int id, int sortBy, string timeZone, string tagFilter = "");
 
         /// <summary>
         /// Gets a list of all Pictures for a given progeny that a user has access to.
         /// Time zone for PictureTime will not be converted and should be assumed to be UTC.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny to get Pictures for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Picture objects.</returns>
-        Task<List<Picture>> GetProgenyPictureList(int progenyId, int accessLevel);
+        Task<List<Picture>> GetProgenyPictureList(int progenyId);
 
         /// <summary>
         /// Gets a simplified PictureViewModel for a Picture entity with the provided PictureId.
@@ -211,9 +203,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Time zone for VideoTime will not be converted and should be assumed to be UTC.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny to get all Videos for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Video objects.</returns>
-        Task<List<Video>> GetProgenyVideoList(int progenyId, int accessLevel);
+        Task<List<Video>> GetProgenyVideoList(int progenyId);
 
         /// <summary>
         /// Gets a simplified VideoViewModel for a Video entity with the provided VideoId.

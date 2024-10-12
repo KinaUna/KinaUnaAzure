@@ -107,8 +107,8 @@ async function addEditEventListeners() {
         $("#toggle-edit-button").on('click', function () {
             $("#edit-section").toggle(500);
         });
-        await setTagsAutoSuggestList(getCurrentProgenyId());
-        await setLocationAutoSuggestList(getCurrentProgenyId());
+        await setTagsAutoSuggestList([getCurrentProgenyId()]);
+        await setLocationAutoSuggestList([getCurrentProgenyId()]);
         setupDateTimePicker();
         setupAccessLevelList();
         addCopyLocationButtonEventListener();

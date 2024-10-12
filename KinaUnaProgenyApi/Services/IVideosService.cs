@@ -63,10 +63,11 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Videos for a Progeny.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Videos for.</param>
+        /// <param name="accessLevel">The access level of the user.</param>
         /// <returns>List of Video objects.</returns>
-        Task<List<Video>> GetVideosList(int progenyId);
+        Task<List<Video>> GetVideosList(int progenyId, int accessLevel);
 
-        Task<List<Video>> GetVideosWithTag(int progenyId, string tag);
+        Task<List<Video>> GetVideosWithTag(int progenyId, string tag, int accessLevel);
 
         /// <summary>
         /// Gets a list of all Videos for a Progeny from the database and adds it to the cache.

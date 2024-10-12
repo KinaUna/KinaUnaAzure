@@ -8,6 +8,7 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.Models.ViewModels;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
@@ -54,37 +55,30 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="pageSize">The number of Picture elements per page.</param>
         /// <param name="pageIndex">The current page number.</param>
         /// <param name="progenyId">The ProgenyId to get Picture entities for.</param>
-        /// <param name="accessLevel">The current user's access level for this Progeny.</param>
         /// <param name="tagFilter">Only include Picture entities with a Tag property that contains the tagFilter string. If empty, include all Picture entities.</param>
         /// <param name="sortBy">Sort order, 0 = oldest first, 1 = newest first.</param>
         /// <returns>PicturePageViewModel with the list of Picture objects that belong on the page, and other properties for the page.</returns>
-        // GET api/pictures/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
+        // GET api/pictures/page[?pageSize=3&pageIndex=10&progenyId=2&tagFilter=funny]
         [HttpGet]
         [Route("[action]")]
-        public async Task<IActionResult> Page([FromQuery] int pageSize = 16, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
+        public async Task<IActionResult> Page([FromQuery] int pageSize = 16, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
-
-            if (accessLevel < userAccess?.AccessLevel)
-            {
-                accessLevel = userAccess.AccessLevel;
-            }
-
+            
             if (pageIndex < 1)
             {
                 pageIndex = 1;
             }
 
             // Todo: Refactor this to use a separate method in the service.
-            List<Picture> allItems = await picturesService.GetPicturesWithTag(progenyId, tagFilter);
-            allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime)];
+            List<Picture> allItems = await picturesService.GetPicturesWithTag(progenyId, tagFilter, accessLevelResult.Value);
+            allItems = [.. allItems.OrderBy(p => p.PictureTime)];
 
             if (sortBy == 1)
             {
@@ -151,13 +145,12 @@ namespace KinaUnaProgenyApi.Controllers
         /// Gets a PictureViewModel for a Picture entity with the provided PictureId.
         /// </summary>
         /// <param name="id">The PictureId of the entity to get.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny the Picture belongs to.</param>
         /// <param name="sortBy">Sort order, 0=oldest first, 1= newest first.</param>
         /// <param name="tagFilter">Only include Picture items where the Tag property contains the tagFilter string. If tagFilter is an empty string, include all Picture items.</param>
         /// <returns>PictureViewModel for the Picture and current user.</returns>
         [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}")]
-        public async Task<IActionResult> PictureViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1, [FromQuery] string tagFilter = "")
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> PictureViewModel(int id, [FromQuery] int sortBy = 1, [FromQuery] string tagFilter = "")
         {
             Picture picture = await picturesService.GetPicture(id);
 
@@ -165,16 +158,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
-
-            if (userAccess == null && picture.ProgenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(picture.ProgenyId, userEmail, picture.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
-            }
-
-            if (accessLevel < userAccess?.AccessLevel)
-            {
-                accessLevel = userAccess.AccessLevel;
+                return accessLevelResult.ToActionResult();
             }
 
             PictureViewModel model = new();
@@ -184,8 +171,8 @@ namespace KinaUnaProgenyApi.Controllers
             model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
             model.TagsList = "";
             List<string> tagsList = [];
-            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
-            pictureList = [.. pictureList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime)];
+            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId, accessLevelResult.Value);
+            pictureList = [.. pictureList.OrderBy(p => p.PictureTime)];
             if (pictureList.Count != 0)
             {
                 if (!string.IsNullOrEmpty(tagFilter))
@@ -265,19 +252,19 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
-            
-            if ((userAccess == null && picture.ProgenyId != Constants.DefaultChildId) || (userAccess != null && userAccess.AccessLevel > picture.AccessLevel && picture.ProgenyId != Constants.DefaultChildId ))
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(picture.ProgenyId, userEmail, picture.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
-
+            
             PictureViewModel model = new();
             model.SetPicturePropertiesFromPictureItem(picture);
             model.PictureNumber = 0;
             model.PictureCount = 0;
             model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
             model.TagsList = "";
+
             return Ok(model);
 
         }
@@ -287,33 +274,29 @@ namespace KinaUnaProgenyApi.Controllers
         /// Includes comments.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Picture objects.</returns>
         // GET api/pictures/progeny/[id]/[accessLevel]
         [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}")]
-        public async Task<IActionResult> Progeny(int id, int accessLevel)
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> Progeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-
-            if (userAccess == null && id != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
-            List<Picture> picturesList = await picturesService.GetPicturesList(id);
-            picturesList = picturesList.Where(p => p.AccessLevel >= accessLevel).ToList();
-
+            List<Picture> picturesList = await picturesService.GetPicturesList(id, accessLevelResult.Value);
+            
             if (picturesList.Count != 0)
             {
                 foreach (Picture pic in picturesList)
                 {
                     pic.Comments = await commentsService.GetCommentsList(pic.CommentThreadNumber);
-                    pic.PictureLink = Constants.ProgenyApiUrl + pic.GetPictureUrl(0); // imageStore.UriFor(pic.PictureLink);
-                    pic.PictureLink1200 = Constants.ProgenyApiUrl + pic.GetPictureUrl(1200); // imageStore.UriFor(pic.PictureLink1200);
-                    pic.PictureLink600 = Constants.ProgenyApiUrl + pic.GetPictureUrl(600); //imageStore.UriFor(pic.PictureLink600);
-
+                    pic.PictureLink = Constants.ProgenyApiUrl + pic.GetPictureUrl(0);
+                    pic.PictureLink1200 = Constants.ProgenyApiUrl + pic.GetPictureUrl(1200);
+                    pic.PictureLink600 = Constants.ProgenyApiUrl + pic.GetPictureUrl(600);
                 }
 
                 return Ok(picturesList);
@@ -331,23 +314,20 @@ namespace KinaUnaProgenyApi.Controllers
         /// Does not include comments.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get pictures for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <returns>List of all Pictures for the Progeny that the user have access to.</returns>
         [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}")]
-        public async Task<IActionResult> ProgenyPicturesList(int id, int accessLevel)
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> ProgenyPicturesList(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-
-            if (userAccess == null && id != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
-            List<Picture> picturesList = await picturesService.GetPicturesList(id);
-            picturesList = picturesList.Where(p => p.AccessLevel >= accessLevel).ToList();
-
+            List<Picture> picturesList = await picturesService.GetPicturesList(id, accessLevelResult.Value);
+            
             if (picturesList.Count != 0)
             {
                 return Ok(picturesList);
@@ -373,25 +353,24 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> ByLink(string id)
         {
             Picture picture = await picturesService.GetPictureByLink(id);
-            if (picture != null)
+            if (picture == null)
             {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
+                Picture tempPicture = new();
+                tempPicture.ApplyPlaceholderProperties();
 
-                if (userAccess == null && picture.ProgenyId != Constants.DefaultChildId)
-                {
-                    return Unauthorized();
-                }
-
-                picture.Comments = await commentsService.GetCommentsList(picture.CommentThreadNumber);
-
-                return Ok(picture);
+                return Ok(tempPicture);
             }
 
-            Picture tempPicture = new();
-            tempPicture.ApplyPlaceholderProperties();
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(picture.ProgenyId, userEmail, picture.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
+                
+            picture.Comments = await commentsService.GetCommentsList(picture.CommentThreadNumber);
 
-            return Ok(tempPicture);
+            return Ok(picture);
         }
 
         /// <summary>
@@ -404,24 +383,28 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetPicture(int id)
         {
-            Picture result = await picturesService.GetPicture(id);
-            if (result != null)
+            Picture picture = await picturesService.GetPicture(id);
+            if (picture == null)
             {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+                Picture tempPicture = new();
+                tempPicture.ApplyPlaceholderProperties();
 
-                if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
-                {
-                    return Unauthorized();
-                }
-
-                return Ok(result);
+                return Ok(tempPicture);
             }
 
-            Picture tempPicture = new();
-            tempPicture.ApplyPlaceholderProperties();
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(picture.ProgenyId, userEmail, picture.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
 
-            return Ok(tempPicture);
+            if (accessLevelResult.Value >= picture.AccessLevel)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(picture);
         }
 
         /// <summary>
@@ -617,41 +600,38 @@ namespace KinaUnaProgenyApi.Controllers
         /// Does not include comments.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get a Picture for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <returns>The Picture object.</returns>
         // GET api/pictures/random/[Progeny id]?accessLevel=5
         [HttpGet]
-        [Route("[action]/{progenyId:int}/{accessLevel:int}")]
-        public async Task<IActionResult> Random(int progenyId, int accessLevel)
+        [Route("[action]/{progenyId:int}")]
+        public async Task<IActionResult> Random(int progenyId)
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
-            List<Picture> picturesList = await picturesService.GetPicturesList(progenyId);
-            picturesList = picturesList.Where(p => p.AccessLevel >= accessLevel).ToList();
-            if (picturesList.Count != 0)
+            List<Picture> picturesList = await picturesService.GetPicturesList(progenyId, accessLevelResult.Value);
+            if (picturesList.Count == 0)
             {
-                Random r = new();
-                int pictureNumber = r.Next(0, picturesList.Count);
-
-                Picture picture = picturesList[pictureNumber];
-                if (!picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !picture.PictureLink.Contains('.'))
-                {
-                    picture = await picturesService.GetPicture(picture.PictureId);
-                }
-
-                return Ok(picture);
+                Picture tempPicture = new();
+                tempPicture.ApplyPlaceholderProperties();
+                return Ok(tempPicture);
             }
 
-            Picture tempPicture = new();
-            tempPicture.ApplyPlaceholderProperties();
-            return Ok(tempPicture);
+            Random r = new();
+            int pictureNumber = r.Next(0, picturesList.Count);
+
+            Picture picture = picturesList[pictureNumber];
+            if (!picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !picture.PictureLink.Contains('.'))
+            {
+                picture = await picturesService.GetPicture(picture.PictureId);
+            }
+
+            return Ok(picture);
         }
 
         /// <summary>
@@ -668,34 +648,33 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
-            List<Picture> picturesList = await picturesService.GetPicturesList(progenyId);
-            picturesList = picturesList.Where(p => p.AccessLevel >= accessLevel).ToList();
-            if (picturesList.Count != 0)
+            List<Picture> picturesList = await picturesService.GetPicturesList(progenyId, accessLevelResult.Value);
+
+            if (picturesList.Count == 0)
             {
-                Random r = new();
-                int pictureNumber = r.Next(0, picturesList.Count);
+                Picture tempPicture = new();
+                tempPicture.ApplyPlaceholderProperties();
 
-                Picture picture = picturesList[pictureNumber];
-                if (picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase)) return Ok(picture);
-
-                picture.PictureLink = imageStore.UriFor(picture.PictureLink);
-                picture.PictureLink1200 = imageStore.UriFor(picture.PictureLink1200);
-                picture.PictureLink600 = imageStore.UriFor(picture.PictureLink600);
-
-                return Ok(picture);
+                return Ok(tempPicture);
             }
 
-            Picture tempPicture = new();
-            tempPicture.ApplyPlaceholderProperties();
+            Random r = new();
+            int pictureNumber = r.Next(0, picturesList.Count);
 
-            return Ok(tempPicture);
+            Picture picture = picturesList[pictureNumber];
+            if (picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase)) return Ok(picture);
+
+            picture.PictureLink = imageStore.UriFor(picture.PictureLink);
+            picture.PictureLink1200 = imageStore.UriFor(picture.PictureLink1200);
+            picture.PictureLink600 = imageStore.UriFor(picture.PictureLink600);
+
+            return Ok(picture);
         }
 
         /// <summary>
@@ -709,30 +688,29 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetPictureMobile(int id)
         {
-            Picture result = await picturesService.GetPicture(id);
-            if (result != null)
+            Picture picture = await picturesService.GetPicture(id);
+            if (picture == null)
             {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+                Picture tempPicture = new();
+                tempPicture.ApplyPlaceholderProperties();
 
-                if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
-                {
-                    return Unauthorized();
-                }
-
-                if (result.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase)) return Ok(result);
-
-                result.PictureLink = imageStore.UriFor(result.PictureLink);
-                result.PictureLink1200 = imageStore.UriFor(result.PictureLink1200);
-                result.PictureLink600 = imageStore.UriFor(result.PictureLink600);
-                return Ok(result);
+                return Ok(tempPicture);
             }
 
 
-            Picture tempPicture = new();
-            tempPicture.ApplyPlaceholderProperties();
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(picture.ProgenyId, userEmail, picture.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
+            
+            if (picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase)) return Ok(picture);
 
-            return Ok(tempPicture);
+            picture.PictureLink = imageStore.UriFor(picture.PictureLink);
+            picture.PictureLink1200 = imageStore.UriFor(picture.PictureLink1200);
+            picture.PictureLink600 = imageStore.UriFor(picture.PictureLink600);
+            return Ok(picture);
         }
 
         /// <summary>
@@ -751,11 +729,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> PageMobile([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
             if (pageIndex < 1)
@@ -763,7 +740,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Picture> allItems = await picturesService.GetPicturesList(progenyId);
+            List<Picture> allItems = await picturesService.GetPicturesList(progenyId, accessLevelResult.Value);
             List<string> tagsList = [];
             foreach (Picture pic in allItems)
             {
@@ -782,11 +759,11 @@ namespace KinaUnaProgenyApi.Controllers
             if (!string.IsNullOrEmpty(tagFilter))
             {
 
-                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
+                allItems = [.. allItems.Where(p => p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
             }
             else
             {
-                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime)];
+                allItems = [.. allItems.OrderBy(p => p.PictureTime)];
             }
 
             if (sortBy == 1)
@@ -852,7 +829,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// <returns>PictureViewModel</returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Needed for mobile clients.")]
         public async Task<IActionResult> PictureViewModelMobile(int id, int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
             Picture picture = await picturesService.GetPicture(id);
@@ -861,11 +837,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
-
-            if (userAccess == null || picture.AccessLevel < userAccess.AccessLevel)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(picture.ProgenyId, userEmail, picture.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
             PictureViewModel model = new();
@@ -877,8 +852,8 @@ namespace KinaUnaProgenyApi.Controllers
             model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
             model.TagsList = "";
             List<string> tagsList = [];
-            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
-            pictureList = [.. pictureList.Where(p => p.AccessLevel >= userAccess.AccessLevel).OrderBy(p => p.PictureTime)];
+            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId, accessLevelResult.Value);
+            pictureList = [.. pictureList.OrderBy(p => p.PictureTime)];
             if (pictureList.Count != 0)
             {
                 int currentIndex = 0;
@@ -951,11 +926,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
-
-            if (userAccess == null)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, picture.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
             PictureViewModel model = new();
@@ -966,8 +940,8 @@ namespace KinaUnaProgenyApi.Controllers
             model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
             model.TagsList = "";
             List<string> tagsList = [];
-            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
-            pictureList = [.. pictureList.Where(p => p.AccessLevel >= userAccess.AccessLevel).OrderBy(p => p.PictureTime)];
+            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId, accessLevelResult.Value);
+            pictureList = [.. pictureList.OrderBy(p => p.PictureTime)];
             if (pictureList.Count != 0)
             {
                 int currentIndex = 0;
@@ -1189,111 +1163,63 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(nearByPhotosResponse);
         }
 
+        // Todo: Delete this method, it should be replaced by the one in the AutoSuggestController.
         /// <summary>
         /// Gets a list of string with all locations from Picture and Video entities for a given ProgenyId and AccessLevel.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to locations for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <returns>List of string with location names.</returns>
-        [Route("[action]/{id:int}/{accessLevel:int}")]
+        [Route("[action]/{id:int}")]
         [HttpGet]
-        public async Task<IActionResult> GetLocationAutoSuggestList(int id, int accessLevel)
+        public async Task<IActionResult> GetLocationAutoSuggestList(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-
-            if (userAccess == null && id != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
-            List<Picture> allPictures = await picturesService.GetPicturesList(id);
-            allPictures = allPictures.Where(p => p.AccessLevel >= accessLevel).ToList();
+            List<Picture> allPictures = await picturesService.GetPicturesList(id, accessLevelResult.Value);
+            
+            AutoSuggestListBuilder autoSuggestListBuilder = new();
+            autoSuggestListBuilder.AddItemsToLocationsList(allPictures);
 
-            List<string> autoSuggestList = [];
+            List<Video> allVideos = await videosService.GetVideosList(id, accessLevelResult.Value);
+            autoSuggestListBuilder.AddItemsToLocationsList(allVideos);
 
-            foreach (Picture picture in allPictures)
-            {
-                if (string.IsNullOrEmpty(picture.Location)) continue;
-
-                if (!autoSuggestList.Contains(picture.Location))
-                {
-                    autoSuggestList.Add(picture.Location);
-                }
-            }
-
-            List<Video> allVideos = await videosService.GetVideosList(id);
-            allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
-            foreach (Video video in allVideos)
-            {
-                if (string.IsNullOrEmpty(video.Location)) continue;
-
-                if (!autoSuggestList.Contains(video.Location))
-                {
-                    autoSuggestList.Add(video.Location);
-                }
-            }
-
+            List<string> autoSuggestList = autoSuggestListBuilder.GetLocationsList();
             autoSuggestList.Sort();
 
             return Ok(autoSuggestList);
         }
 
+        // Todo: Delete this method it should be replaced by the one in the AutoSuggestController.
         /// <summary>
         /// Gets a list of string with all tags from Picture and Video entities for a given ProgenyId and AccessLevel.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get tags for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <returns>List of strings for each tag.</returns>
-        [Route("[action]/{id:int}/{accessLevel:int}")]
+        [Route("[action]/{id:int}")]
         [HttpGet]
-        public async Task<IActionResult> GetTagsAutoSuggestList(int id, int accessLevel)
+        public async Task<IActionResult> GetTagsAutoSuggestList(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-
-            if (userAccess == null && id != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
+            AutoSuggestListBuilder autoSuggestListBuilder = new();
 
-            List<Picture> allPictures = await picturesService.GetPicturesList(id);
-            allPictures = allPictures.Where(p => p.AccessLevel >= accessLevel).ToList();
-            List<string> autoSuggestList = [];
+            List<Picture> allPictures = await picturesService.GetPicturesList(id, accessLevelResult.Value); 
+            autoSuggestListBuilder.AddItemsToTagsList(allPictures);
+            
+            List<Video> allVideos = await videosService.GetVideosList(id, accessLevelResult.Value);
+            autoSuggestListBuilder.AddItemsToTagsList(allVideos);
 
-            foreach (Picture picture in allPictures)
-            {
-                if (string.IsNullOrEmpty(picture.Tags)) continue;
-
-                List<string> tagsList = [.. picture.Tags.Split(',')];
-                foreach (string tagString in tagsList)
-                {
-                    string trimmedTag = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
-                    if (!string.IsNullOrEmpty(trimmedTag) && !tagsList.Contains(trimmedTag))
-                    {
-                        autoSuggestList.Add(trimmedTag);
-                    }
-                }
-            }
-
-            List<Video> allVideos = await videosService.GetVideosList(id);
-            allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
-
-            foreach (Video video in allVideos)
-            {
-                if (string.IsNullOrEmpty(video.Tags)) continue;
-
-                List<string> tagsList = [.. video.Tags.Split(',')];
-                foreach (string tagString in tagsList)
-                {
-                    string trimmedTag = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
-                    if (!string.IsNullOrEmpty(trimmedTag) && !tagsList.Contains(trimmedTag))
-                    {
-                        autoSuggestList.Add(trimmedTag);
-                    }
-                }
-            }
+            List<string> autoSuggestList = autoSuggestListBuilder.GetTagsList();
             autoSuggestList.Sort();
             return Ok(autoSuggestList);
         }

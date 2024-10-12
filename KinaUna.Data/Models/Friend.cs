@@ -8,7 +8,7 @@ namespace KinaUna.Data.Models
     /// <summary>
     /// Entity Framework Entity for Friend data.
     /// </summary>
-    public class Friend: IContexted
+    public class Friend: IContexted, ITaggable
     {
         [Key]
         public int FriendId { get; set; }

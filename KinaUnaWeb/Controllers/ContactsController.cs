@@ -26,8 +26,7 @@ namespace KinaUnaWeb.Controllers
         ILocationsHttpClient locationsHttpClient,
         IContactsHttpClient contactsHttpClient,
         IViewModelSetupService viewModelSetupService,
-        IProgenyHttpClient progenyHttpClient,
-        IUserAccessHttpClient userAccessHttpClient)
+        IProgenyHttpClient progenyHttpClient)
         : Controller
     {
         /// <summary>
@@ -46,7 +45,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             ContactListViewModel model = new(baseModel);
             
-            List<Contact> contactList = await contactsHttpClient.GetContactsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
+            List<Contact> contactList = await contactsHttpClient.GetContactsList(model.CurrentProgenyId, tagFilter);
             
             model.TagFilter = tagFilter;
 
@@ -169,14 +168,11 @@ namespace KinaUnaWeb.Controllers
                 parameters.CurrentPageNumber = 1;
             }
             
-            List<UserAccess> userAccessList = await userAccessHttpClient.GetUserAccessList(User.GetEmail());
-
-            List<Contact> contactsList = []; //await contactsHttpClient.GetContactsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+            List<Contact> contactsList = [];
 
             foreach (int progenyId in parameters.Progenies)
             {
-                int accessLevel = userAccessList.FirstOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                List<Contact> progenyContacts = await contactsHttpClient.GetContactsList(progenyId, accessLevel, parameters.TagFilter);
+                List<Contact> progenyContacts = await contactsHttpClient.GetContactsList(progenyId, parameters.TagFilter);
                 contactsList.AddRange(progenyContacts);
             }
 

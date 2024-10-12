@@ -8,7 +8,7 @@ namespace KinaUna.Data.Models
     /// Entity Framework Entity for Contact data.
     /// AddressIdNumber is used to link to an Address entity.
     /// </summary>
-    public class Contact: IContexted
+    public class Contact: IContexted, ITaggable
     {
         public int ContactId { get; set; }
         public bool Active { get; set; }

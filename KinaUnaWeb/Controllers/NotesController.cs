@@ -18,7 +18,6 @@ namespace KinaUnaWeb.Controllers
         IProgenyHttpClient progenyHttpClient,
         INotesHttpClient notesHttpClient,
         IUserInfosHttpClient userInfosHttpClient,
-        IUserAccessHttpClient userAccessHttpClient,
         IViewModelSetupService viewModelSetupService)
         : Controller
     {
@@ -99,17 +98,12 @@ namespace KinaUnaWeb.Controllers
             {
                 parameters.ItemsPerPage = 10;
             }
-
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
             
-            List<UserAccess> accessList = await userAccessHttpClient.GetUserAccessList(baseModel.CurrentUser.UserEmail);
-
             List<Note> notes = [];
 
             foreach (int progenyId in parameters.Progenies)
             {
-                int accessLevel = accessList.FirstOrDefault(a => a.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                List<Note> progenyNotes = await notesHttpClient.GetNotesList(progenyId, accessLevel);
+                List<Note> progenyNotes = await notesHttpClient.GetNotesList(progenyId);
                 
                 notes.AddRange(progenyNotes);
             }

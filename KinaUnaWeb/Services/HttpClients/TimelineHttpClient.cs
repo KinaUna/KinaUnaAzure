@@ -109,38 +109,6 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <summary>
         /// Gets a list of all TimeLineItems for a Progeny that a user has access to.
         /// </summary>
-        /// <param name="progenyId">The Id of the progeny to get TimeLineItems for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
-        /// <param name="order">Sort order: 0 for ascending, 1 for descending</param>
-        /// <returns>List of TimeLineItem objects.</returns>
-        public async Task<List<TimeLineItem>> GetTimeline(int progenyId, int accessLevel, int order)
-        {
-            List<TimeLineItem> progenyTimeline = [];
-
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
-
-            string timelineApiPath = "/api/Timeline/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
-            HttpResponseMessage timelineResponse = await _httpClient.GetAsync(timelineApiPath);
-            if (!timelineResponse.IsSuccessStatusCode) return progenyTimeline;
-
-            string timelineAsString = await timelineResponse.Content.ReadAsStringAsync();
-            progenyTimeline = JsonConvert.DeserializeObject<List<TimeLineItem>>(timelineAsString);
-            if (order == 1)
-            {
-                progenyTimeline = [.. progenyTimeline.OrderByDescending(t => t.ProgenyTime)];
-            }
-            else
-            {
-                progenyTimeline = [.. progenyTimeline.OrderBy(t => t.ProgenyTime)];
-            }
-
-            return progenyTimeline;
-        }
-
-        /// <summary>
-        /// Gets a list of all TimeLineItems for a Progeny that a user has access to.
-        /// </summary>
         /// <param name="progeniesList">The list of Ids of the progenies to get TimeLineItems for.</param>
         /// <param name="order">Sort order: 0 for ascending, 1 for descending</param>
         /// <returns>List of TimeLineItem objects.</returns>

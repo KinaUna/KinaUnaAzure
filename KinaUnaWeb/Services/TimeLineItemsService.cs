@@ -51,7 +51,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    PictureViewModel picture = await mediaHttpClient.GetPictureViewModel(itemId, 0, 1, model.CurrentUser.Timezone, model.TagFilter);
+                    PictureViewModel picture = await mediaHttpClient.GetPictureViewModel(itemId, 1, model.CurrentUser.Timezone, model.TagFilter);
                     if (picture != null && picture.PictureId > 0)
                     {
                         string pictureUrl = "/Pictures/File?id=" + picture.PictureId + "&size=600";
@@ -67,7 +67,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    VideoViewModel video = await mediaHttpClient.GetVideoViewModel(itemId, 0, 1, model.CurrentUser.Timezone);
+                    VideoViewModel video = await mediaHttpClient.GetVideoViewModel(itemId, 1, model.CurrentUser.Timezone);
                     if (video != null && video.VideoId > 0)
                     {
                         video.CommentsCount = video.CommentsList.Count;

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
@@ -43,27 +44,26 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves all Notes for a given Progeny for a user with a given access level.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get Note items for.</param>
-        /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <returns>List of Note items.</returns>
-        // GET api/notes/progeny/[id]?accessLevel=[accessLevel]
         [HttpGet]
         [Route("[action]/{id:int}")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
 
-            List<Note> notesList = await noteService.GetNotesList(id, accessLevel);
-            notesList = notesList.Where(n => n.AccessLevel >= accessLevel).ToList();
-            if (notesList.Count == 0) return NotFound();
-
+            List<Note> notesList = await noteService.GetNotesList(id, accessLevelResult.Value);
+            
             foreach (Note note in notesList)
             {
                 note.Content = imageStore.UpdateBlobLinks(note.Content);
             }
-            return Ok(notesList);
 
+            return Ok(notesList);
         }
 
         /// <summary>
@@ -75,14 +75,17 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetNoteItem(int id)
         {
-            Note result = await noteService.GetNote(id);
+            Note note = await noteService.GetNote(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(note.ProgenyId, userEmail, note.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
 
-            result.Content = imageStore.UpdateBlobLinks(result.Content);
-            return Ok(result);
+            note.Content = imageStore.UpdateBlobLinks(note.Content);
+            return Ok(note);
 
         }
 
@@ -249,25 +252,24 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="pageSize">The number of Note items per page.</param>
         /// <param name="pageIndex">The current page number.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Notes for.</param>
-        /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <param name="sortBy">int: Sort order for the Note items. 0 = oldest first, 1 = newest first.</param>
         /// <returns>List of Measurement items.</returns>
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetNotesListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        public async Task<IActionResult> GetNotesListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int sortBy = 1)
         { 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
+
             if (pageIndex < 1)
             {
                 pageIndex = 1;
             }
 
-            List<Note> allItems = await noteService.GetNotesList(progenyId, userAccess?.AccessLevel ?? accessLevel);
+            List<Note> allItems = await noteService.GetNotesList(progenyId, accessLevelResult.Value);
             allItems = [.. allItems.OrderBy(v => v.CreatedDate)];
 
             if (sortBy == 1)

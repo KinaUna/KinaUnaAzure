@@ -89,6 +89,15 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         Task<UserAccess> GetProgenyUserAccessForUser(int progenyId, string userEmail);
 
         /// <summary>
+        /// Gets the validated access level for a user for a Progeny.
+        /// </summary>
+        /// <param name="progenyId">The Progeny's Id.</param>
+        /// <param name="userEmail">The current user's email address.</param>
+        /// <param name="itemAccessLevel">Optional access level required for a specific item.</param>
+        /// <returns>Integer with the access level.</returns>
+        Task<CustomResult<int>> GetValidatedAccessLevel(int progenyId, string userEmail, int? itemAccessLevel);
+
+        /// <summary>
         /// Checks if a user with a given email is in a list of UserAccesses.
         /// </summary>
         /// <param name="accessList">The list of UserAccesses.</param>

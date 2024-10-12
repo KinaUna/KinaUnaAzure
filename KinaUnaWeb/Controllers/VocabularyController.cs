@@ -26,7 +26,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             VocabularyListViewModel model = new(baseModel);
 
-            List<VocabularyItem> wordList = await wordsHttpClient.GetWordsList(model.CurrentProgenyId, model.CurrentAccessLevel);
+            List<VocabularyItem> wordList = await wordsHttpClient.GetWordsList(model.CurrentProgenyId);
             
             model.SetVocabularyList(wordList);
             

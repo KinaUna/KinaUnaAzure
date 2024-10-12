@@ -169,8 +169,9 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Videos for a Progeny.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Videos for.</param>
+        /// <param name="accessLevel">The access level of the user.</param>
         /// <returns>List of Video objects.</returns>
-        public async Task<List<Video>> GetVideosList(int progenyId)
+        public async Task<List<Video>> GetVideosList(int progenyId, int accessLevel)
         {
             List<Video> videosList = await GetVideosListFromCache(progenyId);
             if (videosList.Count == 0)
@@ -178,12 +179,14 @@ namespace KinaUnaProgenyApi.Services
                 videosList = await SetVideosListInCache(progenyId);
             }
 
+            videosList = videosList.Where(p => p.AccessLevel >= accessLevel).ToList();
+
             return videosList;
         }
 
-        public async Task<List<Video>> GetVideosWithTag(int progenyId, string tag)
+        public async Task<List<Video>> GetVideosWithTag(int progenyId, string tag, int accessLevel)
         {
-            List<Video> allItems = await GetVideosList(progenyId);
+            List<Video> allItems = await GetVideosList(progenyId, accessLevel);
             if (!string.IsNullOrEmpty(tag))
             {
                 allItems = [.. allItems.Where(v => v.Tags != null && v.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];

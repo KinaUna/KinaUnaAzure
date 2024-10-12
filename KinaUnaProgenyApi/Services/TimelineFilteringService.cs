@@ -35,12 +35,12 @@ namespace KinaUnaProgenyApi.Services
 
             foreach (string tag in tagsList)
             {
-                List<Picture> allPictureItems = await picturesService.GetPicturesWithTag(progenyId, tag);
+                List<Picture> allPictureItems = await picturesService.GetPicturesWithTag(progenyId, tag, accessLevel);
                 List<TimeLineItem> allTimeLinePictureItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Photo).ToList();
                 List<TimeLineItem> allTimeLinePictureItemsInTimeLineItems = allTimeLinePictureItems.Where(t => allPictureItems.Any(p => p.PictureId == int.Parse(t.ItemId))).ToList();
                 filteredTimeLineItems.AddRange(allTimeLinePictureItemsInTimeLineItems);
 
-                List<Video> allVideoItems = await videosService.GetVideosWithTag(progenyId, tag);
+                List<Video> allVideoItems = await videosService.GetVideosWithTag(progenyId, tag, accessLevel);
                 List<TimeLineItem> allTimeLineVideoItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Video).ToList();
                 List<TimeLineItem> allTimeLineVideoItemsInTimeLineItems = allTimeLineVideoItems.Where(t => allVideoItems.Any(v => v.VideoId == int.Parse(t.ItemId))).ToList();
                 filteredTimeLineItems.AddRange(allTimeLineVideoItemsInTimeLineItems);
@@ -55,7 +55,7 @@ namespace KinaUnaProgenyApi.Services
                 List<TimeLineItem> allTimeLineContactItemsInTimeLineItems = allTimeLineContactItems.Where(t => allContactItems.Any(c => c.ContactId == int.Parse(t.ItemId))).ToList();
                 filteredTimeLineItems.AddRange(allTimeLineContactItemsInTimeLineItems);
 
-                List<Location> allLocationItems = await locationService.GetLocationsWithTag(progenyId, tag);
+                List<Location> allLocationItems = await locationService.GetLocationsWithTag(progenyId, tag, accessLevel);
                 List<TimeLineItem> allTimeLineLocationItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Location).ToList();
                 List<TimeLineItem> allTimeLineLocationItemsInTimeLineItems = allTimeLineLocationItems.Where(t => allLocationItems.Any(l => l.LocationId == int.Parse(t.ItemId))).ToList();
                 filteredTimeLineItems.AddRange(allTimeLineLocationItemsInTimeLineItems);

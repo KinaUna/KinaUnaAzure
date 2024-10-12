@@ -112,16 +112,15 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of Friend objects for a given progeny that a user with a given access level has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the progeny.</param>
-        /// <param name="accessLevel">The user's access level.</param>
         /// <param name="tagFilter">The tag to filter by. Only Friend items with the tagFilter string in the Tag property are included. Includes all friends if tagFilter is an empty string.</param>
         /// <returns>List of Friend objects.</returns>
-        public async Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel, string tagFilter = "")
+        public async Task<List<Friend>> GetFriendsList(int progenyId, string tagFilter = "")
         {
             List<Friend> progenyFriendsList = [];
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string friendsApiPath = "/api/Friends/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
+            string friendsApiPath = "/api/Friends/Progeny/" + progenyId;
             HttpResponseMessage friendsResponse = await _httpClient.GetAsync(friendsApiPath).ConfigureAwait(false);
             if (!friendsResponse.IsSuccessStatusCode) return progenyFriendsList;
 

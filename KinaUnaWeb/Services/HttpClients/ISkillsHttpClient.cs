@@ -41,8 +41,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets a list of all Skills for a Progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the progeny to get Skills for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Skill objects.</returns>
-        Task<List<Skill>> GetSkillsList(int progenyId, int accessLevel);
+        Task<List<Skill>> GetSkillsList(int progenyId);
     }
 }

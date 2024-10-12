@@ -2,6 +2,7 @@
 import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 
 let upcomingEventsList: TimelineItem[] = []
 const upcomingEventsParameters: TimelineParameters = new TimelineParameters();
@@ -119,7 +120,7 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            upcomingEventsParameters.progenies = getSelectedProgenies();
             upcomingEventsList = [];
             const timelineDiv = document.querySelector<HTMLDivElement>('#upcoming-events-div');
             if (timelineDiv !== null) {
@@ -127,23 +128,9 @@ function addSelectedProgeniesChangedEventListener() {
             }
             await getUpcomingEventsList(upcomingEventsParameters);
         }
-        
     });
 }
 
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        upcomingEventsParameters.progenies = progeniesIds;
-        return;
-    }
-
-    upcomingEventsParameters.progenies = [getCurrentProgenyId()];
-}
 /**
  * Initialization when the page is loaded.
  */
@@ -155,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     setUpcomingEventsEventListeners();
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
+    upcomingEventsParameters.progenies = getSelectedProgenies();
     await getUpcomingEventsList(upcomingEventsParameters);
 
     return new Promise<void>(function (resolve, reject) {

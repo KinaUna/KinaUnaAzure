@@ -8,7 +8,7 @@ namespace KinaUna.Data.Models
     /// <summary>
     /// Entity Framework Entity for calendar event data.
     /// </summary>
-    public class CalendarItem: IContexted
+    public class CalendarItem: IContexted, ILocatable
     {
         /// <summary>
         /// Primary key for the calendar event.
@@ -74,5 +74,10 @@ namespace KinaUna.Data.Models
         /// </summary>
         [NotMapped]
         public bool IsReadonly { get; set; }
+
+        public string GetLocationString()
+        {
+            return Location;
+        }
     }
 }

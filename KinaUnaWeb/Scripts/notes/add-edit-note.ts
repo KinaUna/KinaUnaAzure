@@ -38,8 +38,8 @@ function setupProgenySelectList(): void {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList(currentProgenyId);
-            await setCategoriesAutoSuggestList(currentProgenyId);
+            await setTagsAutoSuggestList([currentProgenyId]);
+            await setCategoriesAutoSuggestList([currentProgenyId]);
         });
     }
 }
@@ -53,8 +53,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     await setupDateTimePicker();
     setupProgenySelectList();
-    await setTagsAutoSuggestList(currentProgenyId);
-    await setCategoriesAutoSuggestList(currentProgenyId);
+    await setTagsAutoSuggestList([currentProgenyId]);
+    await setCategoriesAutoSuggestList([currentProgenyId]);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

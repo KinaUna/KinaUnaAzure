@@ -462,7 +462,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
-            List<Sleep> model = await sleepService.GetSleepList(Constants.DefaultChildId);
+            List<Sleep> model = await sleepService.GetSleepList(Constants.DefaultChildId, 5);
             model = model.Where(s => s.AccessLevel >= 5).ToList();
             model = [.. model.OrderByDescending(s => s.SleepStart)];
             model = model.Skip(start).Take(25).ToList();
@@ -486,7 +486,7 @@ namespace KinaUnaProgenyApi.Controllers
                 SleepLastYear = TimeSpan.Zero,
                 SleepLastMonth = TimeSpan.Zero
             };
-            List<Sleep> sList = await sleepService.GetSleepList(Constants.DefaultChildId);
+            List<Sleep> sList = await sleepService.GetSleepList(Constants.DefaultChildId, 5);
             List<Sleep> sleepList = [];
             DateTime yearAgo = new(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
@@ -551,7 +551,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
             const string userTimeZone = Constants.DefaultTimezone;
-            List<Sleep> sList = await sleepService.GetSleepList(Constants.DefaultChildId);
+            List<Sleep> sList = await sleepService.GetSleepList(Constants.DefaultChildId, 5);
             List<Sleep> chartList = [];
             foreach (Sleep chartItem in sList)
             {
@@ -772,7 +772,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Sleep> allItems = await sleepService.GetSleepList(Constants.DefaultChildId);
+            List<Sleep> allItems = await sleepService.GetSleepList(Constants.DefaultChildId, 5);
             allItems = [.. allItems.Where(s => s.AccessLevel == 5).OrderBy(s => s.SleepStart)];
 
             if (sortBy == 1)
@@ -827,7 +827,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (currentSleep == null || currentSleep.ProgenyId != Constants.DefaultChildId) return Unauthorized();
 
             const string userTimeZone = Constants.DefaultTimezone;
-            List<Sleep> sList = await sleepService.GetSleepList(currentSleep.ProgenyId);
+            List<Sleep> sList = await sleepService.GetSleepList(currentSleep.ProgenyId, 5);
             List<Sleep> sleepList = [];
             foreach (Sleep s in sList)
             {
@@ -893,7 +893,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id != Constants.DefaultChildId) return Unauthorized();
 
-            List<Location> locationsList = await locationService.GetLocationsList(id);
+            List<Location> locationsList = await locationService.GetLocationsList(id, 5);
             locationsList = locationsList.Where(l => l.AccessLevel == 5).ToList();
             if (locationsList.Count != 0)
             {
@@ -930,7 +930,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Location> allItems = await locationService.GetLocationsList(progenyId);
+            List<Location> allItems = await locationService.GetLocationsList(progenyId, 5);
             allItems = [.. allItems.OrderBy(v => v.Date)];
 
             if (sortBy == 1)
@@ -993,7 +993,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Measurement> allItems = await measurementService.GetMeasurementsList(progenyId);
+            List<Measurement> allItems = await measurementService.GetMeasurementsList(progenyId, 5);
             allItems = [.. allItems.OrderBy(m => m.Date)];
 
             if (sortBy == 1)
@@ -1045,7 +1045,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id != Constants.DefaultChildId) return Unauthorized();
 
-            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(id);
+            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(id, 5);
             measurementsList = measurementsList.Where(m => m.AccessLevel >= accessLevel).ToList();
             if (measurementsList.Count != 0)
             {
@@ -1140,7 +1140,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<VocabularyItem> allItems = await vocabularyService.GetVocabularyList(progenyId);
+            List<VocabularyItem> allItems = await vocabularyService.GetVocabularyList(progenyId, 5);
             allItems = [.. allItems.OrderBy(v => v.Date)];
 
             if (sortBy == 1)
@@ -1192,7 +1192,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id != Constants.DefaultChildId) return Unauthorized();
 
-            List<VocabularyItem> wordList = await vocabularyService.GetVocabularyList(id);
+            List<VocabularyItem> wordList = await vocabularyService.GetVocabularyList(id, 5);
             wordList = wordList.Where(w => w.AccessLevel >= accessLevel).ToList();
             if (wordList.Count != 0)
             {
@@ -1214,7 +1214,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id != Constants.DefaultChildId) return Unauthorized();
 
-            List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(id);
+            List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(id, 5);
             vaccinationsList = vaccinationsList.Where(v => v.AccessLevel >= accessLevel).ToList();
             if (vaccinationsList.Count != 0)
             {
@@ -1236,7 +1236,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> RandomPictureMobile(int progenyId, int accessLevel)
         {
-            List<Picture> picturesList = await picturesService.GetPicturesList(Constants.DefaultChildId);
+            List<Picture> picturesList = await picturesService.GetPicturesList(Constants.DefaultChildId, 5);
             picturesList = picturesList.Where(p => p.AccessLevel >= 5).ToList();
             if (picturesList.Count != 0)
             {
@@ -1342,13 +1342,13 @@ namespace KinaUnaProgenyApi.Controllers
             List<Picture> allItems;
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                allItems = await picturesService.GetPicturesList(Constants.DefaultChildId);
-                allItems = [.. allItems.Where(p => p.AccessLevel >= 5 && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
+                allItems = await picturesService.GetPicturesList(Constants.DefaultChildId, 5);
+                allItems = [.. allItems.Where(p => p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
             }
             else
             {
-                allItems = await picturesService.GetPicturesList(2);
-                allItems = [.. allItems.Where(p => p.AccessLevel >= 5).OrderBy(p => p.PictureTime)];
+                allItems = await picturesService.GetPicturesList(2, 5);
+                allItems = [.. allItems.OrderBy(p => p.PictureTime)];
             }
 
             if (sortBy == 1)
@@ -1451,8 +1451,8 @@ namespace KinaUnaProgenyApi.Controllers
             model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
             model.TagsList = "";
             List<string> tagsList = [];
-            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
-            pictureList = [.. pictureList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime)];
+            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId, 5);
+            pictureList = [.. pictureList.OrderBy(p => p.PictureTime)];
             if (pictureList.Count != 0)
             {
                 int currentIndex = 0;
@@ -1561,13 +1561,13 @@ namespace KinaUnaProgenyApi.Controllers
             List<Video> allItems;
             if (tagFilter != "")
             {
-                allItems = await videosService.GetVideosList(Constants.DefaultChildId);
-                allItems = [.. allItems.Where(p => p.AccessLevel >= 5 && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
+                allItems = await videosService.GetVideosList(Constants.DefaultChildId, 5);
+                allItems = [.. allItems.Where(p => p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
             }
             else
             {
-                allItems = await videosService.GetVideosList(Constants.DefaultChildId);
-                allItems = [.. allItems.Where(p => p.AccessLevel >= 5).OrderBy(p => p.VideoTime)];
+                allItems = await videosService.GetVideosList(Constants.DefaultChildId, 5);
+                allItems = [.. allItems.OrderBy(p => p.VideoTime)];
             }
 
             if (sortBy == 1)
@@ -1690,8 +1690,8 @@ namespace KinaUnaProgenyApi.Controllers
             model.Altitude = video.Latitude;
             model.TagsList = "";
             List<string> tagsList = [];
-            List<Video> videosList = await videosService.GetVideosList(video.ProgenyId);
-            videosList = [.. videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime)];
+            List<Video> videosList = await videosService.GetVideosList(video.ProgenyId, 5);
+            videosList = [.. videosList.OrderBy(p => p.VideoTime)];
             if (videosList.Count != 0)
             {
                 int currentIndex = 0;
@@ -1769,7 +1769,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string tagListString = "";
             List<string> tagsList = [];
-            List<Picture> pictureList = await picturesService.GetPicturesList(id);
+            List<Picture> pictureList = await picturesService.GetPicturesList(id, 5);
             if (pictureList.Count != 0)
             {
                 foreach (Picture pic in pictureList)

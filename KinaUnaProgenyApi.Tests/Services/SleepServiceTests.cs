@@ -322,8 +322,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SleepService sleepService = new(context, memoryCache);
 
-            List<Sleep> sleepsList = await sleepService.GetSleepList(1);
-            List<Sleep> sleepsList2 = await sleepService.GetSleepList(1); // Test cached result.
+            List<Sleep> sleepsList = await sleepService.GetSleepList(1, 0);
+            List<Sleep> sleepsList2 = await sleepService.GetSleepList(1, 0); // Test cached result.
             Sleep firstSleep = sleepsList.First();
 
             Assert.NotNull(sleepsList);
@@ -377,8 +377,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SleepService sleepService = new(context, memoryCache);
 
-            List<Sleep> sleepsList = await sleepService.GetSleepList(2);
-            List<Sleep> sleepsList2 = await sleepService.GetSleepList(2); // Test cached result.
+            List<Sleep> sleepsList = await sleepService.GetSleepList(2, 0);
+            List<Sleep> sleepsList2 = await sleepService.GetSleepList(2, 0); // Test cached result.
 
             Assert.NotNull(sleepsList);
             Assert.IsType<List<Sleep>>(sleepsList);

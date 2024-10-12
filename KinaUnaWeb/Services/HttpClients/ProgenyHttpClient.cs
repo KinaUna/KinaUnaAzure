@@ -154,53 +154,6 @@ namespace KinaUnaWeb.Services.HttpClients
             return accessList;
         }
 
-        /// <summary>
-        /// Gets the latest 5 posts (timeline time, not added time) for a Progeny, that the user is allowed access to.
-        /// </summary>
-        /// <param name="progenyId">The progeny's Id.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
-        /// <returns>List of TimeLineItem objects.</returns>
-        public async Task<List<TimeLineItem>> GetProgenyLatestPosts(int progenyId, int accessLevel)
-        {
-            List<TimeLineItem> progenyPosts = [];
-
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
-
-            string latestApiPath = "/api/Timeline/ProgenyLatest/" + progenyId + "/" + accessLevel + "/5/0";
-            HttpResponseMessage latestResponse = await _httpClient.GetAsync(latestApiPath);
-            if (!latestResponse.IsSuccessStatusCode) return progenyPosts;
-
-            string latestAsString = await latestResponse.Content.ReadAsStringAsync();
-
-            progenyPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(latestAsString);
-
-            return progenyPosts;
-        }
-
-        /// <summary>
-        /// Gets all the posts with today's day of month and month, for all years (timeline time, not added time), that the user has access to.
-        /// </summary>
-        /// <param name="progenyId">The progeny's Id.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
-        /// <returns>List of TimeLineItem objects.</returns>
-        public async Task<List<TimeLineItem>> GetProgenyYearAgo(int progenyId, int accessLevel)
-        {
-            List<TimeLineItem> yearAgoPosts = [];
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
-
-            string yearAgoApiPath = "/api/Timeline/ProgenyYearAgo/" + progenyId + "/" + accessLevel;
-            HttpResponseMessage yearAgoResponse = await _httpClient.GetAsync(yearAgoApiPath);
-            if (!yearAgoResponse.IsSuccessStatusCode) return yearAgoPosts;
-
-            string yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync();
-
-            yearAgoPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(yearAgoAsString);
-
-            return yearAgoPosts;
-        }
-
         public async Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList)
         {
             List<TimeLineItem> yearAgoPosts = [];

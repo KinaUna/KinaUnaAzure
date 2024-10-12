@@ -67,20 +67,22 @@ namespace KinaUnaProgenyApi.Controllers
         /// Gets a list of all TimeLineItems for a Progeny with the given ProgenyId that a user with a given access level can access.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get TimeLineItems for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of TimeLineItems.</returns>
         // GET api/timeline/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
 
             List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id);
-            timeLineList = timeLineList.Where(t => userAccess != null && t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime < DateTime.UtcNow).ToList();
+            timeLineList = timeLineList.Where(t => t.AccessLevel >= accessLevelResult.Value && t.ProgenyTime < DateTime.UtcNow).ToList();
+            
             return Ok(timeLineList.Count != 0 ? timeLineList : []);
         }
 
@@ -108,22 +110,23 @@ namespace KinaUnaProgenyApi.Controllers
         /// Gets a list of the latest TimeLineItems for a Progeny with the given ProgenyId that a user with a given access level can access.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get TimeLineItems for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <param name="count">The number of TimeLineItems to include.</param>
         /// <param name="start">The number of TimeLineItems to skip.</param>
         /// <returns>List of TimeLineItems.</returns>
         [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}/{count:int}/{start:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public async Task<IActionResult> ProgenyLatest(int id, int accessLevel = 5, int count = 5, int start = 0)
+        [Route("[action]/{id:int}/{count:int}/{start:int}")]
+        public async Task<IActionResult> ProgenyLatest(int id, int count = 5, int start = 0)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
 
             List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id);
             timeLineList = [.. timeLineList
-                .Where(t => userAccess != null && t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime)];
+                .Where(t => t.AccessLevel >= accessLevelResult.Value && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime)];
             if (timeLineList.Count == 0) return Ok(new List<TimeLineItem>());
 
             timeLineList.Reverse();
@@ -136,21 +139,22 @@ namespace KinaUnaProgenyApi.Controllers
         /// Gets a list of TimeLineItems that happened on the same day as the current date.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get TimeLineItems for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of TimeLineItems.</returns>
         [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public async Task<IActionResult> ProgenyYearAgo(int id, int accessLevel = 5)
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> ProgenyYearAgo(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
 
             List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id);
 
             timeLineList = [.. timeLineList
-                .Where(t => userAccess != null && t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day)
+                .Where(t => t.AccessLevel >= accessLevelResult.Value && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day)
                 .OrderBy(t => t.ProgenyTime)];
 
             if (timeLineList.Count == 0) return Ok(new List<TimeLineItem>());
@@ -193,16 +197,16 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{itemId}/{itemType:int}")]
         public async Task<IActionResult> GetTimeLineItemByItemId(string itemId, int itemType)
         {
-            TimeLineItem result = await timelineService.GetTimeLineItemByItemId(itemId, itemType);
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(itemId, itemType);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if ((userAccess != null && userAccess.AccessLevel <= result.AccessLevel) || result.ProgenyId == Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(timeLineItem.ProgenyId, userEmail, timeLineItem.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(result);
+                return accessLevelResult.ToActionResult();
             }
-
-            return Unauthorized();
+            
+            return Ok(timeLineItem);
         }
 
         /// <summary>
@@ -214,16 +218,16 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetTimeLineItem(int id)
         {
-            TimeLineItem result = await timelineService.GetTimeLineItem(id);
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItem(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if ((userAccess != null && userAccess.AccessLevel <= result.AccessLevel) || id == Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(timeLineItem.ProgenyId, userEmail, timeLineItem.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(result);
+                return accessLevelResult.ToActionResult();
             }
 
-            return Unauthorized();
+            return Ok(timeLineItem);
         }
 
 

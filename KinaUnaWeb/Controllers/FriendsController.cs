@@ -19,7 +19,6 @@ namespace KinaUnaWeb.Controllers
     public class FriendsController(ImageStore imageStore,
         IFriendsHttpClient friendsHttpClient,
         IViewModelSetupService viewModelSetupService,
-        IUserAccessHttpClient userAccessHttpClient,
         IProgenyHttpClient progenyHttpClient) : Controller
     {
         /// <summary>
@@ -37,7 +36,7 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             FriendsListViewModel model = new(baseModel);
-            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
+            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, tagFilter);
 
             model.TagFilter = tagFilter;
 
@@ -83,7 +82,7 @@ namespace KinaUnaWeb.Controllers
             model.FriendItem.PictureLink = model.FriendItem.GetProfilePictureUrl();
 
             List<string> tagsList = [];
-            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
+            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, tagFilter);
             foreach (Friend friendItem in friendsList)
             {
                 if (string.IsNullOrEmpty(friendItem.Tags)) continue;
@@ -169,15 +168,12 @@ namespace KinaUnaWeb.Controllers
             {
                 parameters.CurrentPageNumber = 1;
             }
-
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
+            
             List<Friend> friendsList = []; // await friendsHttpClient.GetFriendsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
-            List<UserAccess> accessList = await userAccessHttpClient.GetUserAccessList(baseModel.CurrentUser.UserEmail);
-
+            
             foreach (int progenyId in parameters.Progenies)
             {
-                int accessLevel = accessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                List<Friend> friends = await friendsHttpClient.GetFriendsList(progenyId, accessLevel, parameters.TagFilter);
+                List<Friend> friends = await friendsHttpClient.GetFriendsList(progenyId, parameters.TagFilter);
                 friendsList.AddRange(friends);
             }
 
@@ -277,7 +273,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (!int.TryParse(item.Value, out int progenyId)) continue;
 
-                List<Friend> friendsList = await friendsHttpClient.GetFriendsList(progenyId, 0);
+                List<Friend> friendsList = await friendsHttpClient.GetFriendsList(progenyId);
                 foreach (Friend friend in friendsList)
                 {
                     if (string.IsNullOrEmpty(friend.Tags)) continue;
@@ -361,7 +357,7 @@ namespace KinaUnaWeb.Controllers
             model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
             
             List<string> tagsList = [];
-            List<Friend> friendsList1 = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, 0);
+            List<Friend> friendsList1 = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId);
             foreach (Friend friendItem in friendsList1)
             {
                 if (string.IsNullOrEmpty(friendItem.Tags)) continue;

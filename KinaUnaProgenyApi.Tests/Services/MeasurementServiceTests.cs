@@ -333,8 +333,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             MeasurementService measurementService = new(context, memoryCache);
 
-            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(1);
-            List<Measurement> measurementsList2 = await measurementService.GetMeasurementsList(1); // Test cached result.
+            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(1, 0);
+            List<Measurement> measurementsList2 = await measurementService.GetMeasurementsList(1, 0); // Test cached result.
             Measurement firstMeasurement = measurementsList.First();
 
             Assert.NotNull(measurementsList);
@@ -393,8 +393,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             MeasurementService measurementService = new(context, memoryCache);
 
-            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(2);
-            List<Measurement> measurementsList2 = await measurementService.GetMeasurementsList(2); // Test cached result.
+            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(2, 0);
+            List<Measurement> measurementsList2 = await measurementService.GetMeasurementsList(2, 0); // Test cached result.
 
             Assert.NotNull(measurementsList);
             Assert.IsType<List<Measurement>>(measurementsList);

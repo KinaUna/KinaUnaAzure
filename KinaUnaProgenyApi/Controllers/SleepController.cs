@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
@@ -41,19 +42,21 @@ namespace KinaUnaProgenyApi.Controllers
         /// Gets the list of Sleep items for a given Progeny and AccessLevel.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get Sleep data for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Sleep items.</returns>
         // GET api/sleep/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return NotFound();
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
 
-            List<Sleep> sleepList = await sleepService.GetSleepList(id);
-            sleepList = sleepList.Where(s => s.AccessLevel >= accessLevel).ToList();
+            List<Sleep> sleepList = await sleepService.GetSleepList(id, accessLevelResult.Value);
+            
             if (sleepList.Count != 0)
             {
                 return Ok(sleepList);
@@ -70,22 +73,16 @@ namespace KinaUnaProgenyApi.Controllers
         // GET api/sleep/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetSleepItem(int id)
-        {
-
-            Sleep result = await sleepService.GetSleep(id);
-            if (result.AccessLevel == (int)AccessLevel.Public || result.ProgenyId == Constants.DefaultChildId)
-            {
-                return Ok(result);
-            }
-
+        { 
+            Sleep sleep = await sleepService.GetSleep(id);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(sleep.ProgenyId, userEmail, sleep.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(result);
+                return accessLevelResult.ToActionResult();
             }
 
-            return Unauthorized();
+            return Ok(sleep);
         }
 
         /// <summary>
@@ -255,27 +252,26 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="pageSize">Number of Sleep items per page.</param>
         /// <param name="pageIndex">Current page number.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Sleep data for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <param name="sortBy">Sort order. 0 = oldest first, 1= newest first.</param>
         /// <returns>SleepListPage object.</returns>
         [HttpGet("[action]")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public async Task<IActionResult> GetSleepListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        public async Task<IActionResult> GetSleepListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int sortBy = 1)
         {
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
+
             if (pageIndex < 1)
             {
                 pageIndex = 1;
             }
 
-            List<Sleep> allItems = await sleepService.GetSleepList(progenyId);
+            List<Sleep> allItems = await sleepService.GetSleepList(progenyId, accessLevelResult.Value);
             allItems = [.. allItems.OrderBy(s => s.SleepStart)];
 
             if (sortBy == 1)
@@ -330,7 +326,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
             if (userAccess == null) return Unauthorized();
 
-            List<Sleep> result = await sleepService.GetSleepList(progenyId);
+            List<Sleep> result = await sleepService.GetSleepList(progenyId, userAccess.AccessLevel);
             result = result.Where(s => s.AccessLevel >= accessLevel).ToList();
             result = [.. result.OrderByDescending(s => s.SleepStart)];
             if (start != -1)
@@ -357,7 +353,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
             string userTimeZone = userInfo.Timezone;
-            List<Sleep> allSleepList = await sleepService.GetSleepList(progenyId);
+            List<Sleep> allSleepList = await sleepService.GetSleepList(progenyId, userAccess.AccessLevel);
             SleepStatsModel model = new();
             model.ProcessSleepStats(allSleepList, accessLevel, userTimeZone);
 
@@ -382,7 +378,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
             string userTimeZone = userInfo.Timezone;
 
-            List<Sleep> sList = await sleepService.GetSleepList(progenyId);
+            List<Sleep> sList = await sleepService.GetSleepList(progenyId, userAccess.AccessLevel);
 
             SleepStatsModel sleepStatsModel = new();
             List<Sleep> chartList = sleepStatsModel.ProcessSleepChartData(sList, accessLevel, userTimeZone);
@@ -397,25 +393,26 @@ namespace KinaUnaProgenyApi.Controllers
         /// Generates a SleepDetailsModel for displaying Sleep with next and previous Sleep items.
         /// </summary>
         /// <param name="sleepId">The SleepId of the Sleep item to display.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny to display Sleep data for.</param>
         /// <param name="sortOrder">Sort order. 0 = Oldest first, 1 = Newest first.</param>
         /// <returns></returns>
-        [HttpGet("[action]/{sleepId:int}/{accessLevel:int}/{sortOrder:int}")]
-        public async Task<IActionResult> GetSleepDetails(int sleepId, int accessLevel, int sortOrder)
+        [HttpGet("[action]/{sleepId:int}/{sortOrder:int}")]
+        public async Task<IActionResult> GetSleepDetails(int sleepId, int sortOrder)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
             Sleep currentSleep = await sleepService.GetSleep(sleepId);
 
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(currentSleep.ProgenyId, userEmail);
-            if (userAccess == null) return Unauthorized();
-
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(currentSleep.ProgenyId, userEmail, currentSleep.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
+            
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
             string userTimeZone = userInfo.Timezone;
 
-            List<Sleep> allSleepList = await sleepService.GetSleepList(currentSleep.ProgenyId);
+            List<Sleep> allSleepList = await sleepService.GetSleepList(currentSleep.ProgenyId, accessLevelResult.Value);
             SleepDetailsModel sleepDetailsModel = new();
-            sleepDetailsModel.CreateSleepList(currentSleep, allSleepList, accessLevel, sortOrder, userTimeZone);
+            sleepDetailsModel.CreateSleepList(currentSleep, allSleepList, accessLevelResult.Value, sortOrder, userTimeZone);
 
             return Ok(sleepDetailsModel.SleepList);
 

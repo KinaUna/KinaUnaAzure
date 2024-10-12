@@ -107,15 +107,14 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all VocabularyItems for a Progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the progeny.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of VocabularyItem objects.</returns>
-        public async Task<List<VocabularyItem>> GetWordsList(int progenyId, int accessLevel)
+        public async Task<List<VocabularyItem>> GetWordsList(int progenyId)
         {
             List<VocabularyItem> progenyWordsList = [];
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string vocabularyApiPath = "/api/Vocabulary/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
+            string vocabularyApiPath = "/api/Vocabulary/Progeny/" + progenyId;
             HttpResponseMessage wordsResponse = await _httpClient.GetAsync(vocabularyApiPath);
             if (!wordsResponse.IsSuccessStatusCode) return progenyWordsList;
 

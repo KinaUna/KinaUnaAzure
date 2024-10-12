@@ -40,7 +40,8 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
+        /// <param name="accessLevel">The access level of the user.</param>
         /// <returns>List of VocabularyItem objects.</returns>
-        Task<List<VocabularyItem>> GetVocabularyList(int progenyId);
+        Task<List<VocabularyItem>> GetVocabularyList(int progenyId, int accessLevel);
     }
 }

@@ -38,7 +38,7 @@ function setupProgenySelectList(): void {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList(currentProgenyId);
+            await setTagsAutoSuggestList([currentProgenyId]);
             //await setContextAutoSuggestList(currentProgenyId);
         });
     }
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     await setupDateTimePicker();
 
-    await setTagsAutoSuggestList(currentProgenyId);
+    await setTagsAutoSuggestList([currentProgenyId]);
     //await setContextAutoSuggestList(currentProgenyId);
 
     setupProgenySelectList();

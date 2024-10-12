@@ -106,15 +106,14 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all Vaccinations for a Progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny to get Vaccinations for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Vaccination objects.</returns>
-        public async Task<List<Vaccination>> GetVaccinationsList(int progenyId, int accessLevel)
+        public async Task<List<Vaccination>> GetVaccinationsList(int progenyId)
         {
             List<Vaccination> progenyVaccinationsList = [];
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string vaccinationsApiPath = "/api/Vaccinations/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
+            string vaccinationsApiPath = "/api/Vaccinations/Progeny/" + progenyId;
             HttpResponseMessage vaccinationsResponse = await _httpClient.GetAsync(vaccinationsApiPath);
             if (!vaccinationsResponse.IsSuccessStatusCode) return progenyVaccinationsList;
 

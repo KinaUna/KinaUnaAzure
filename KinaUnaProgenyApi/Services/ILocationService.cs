@@ -41,8 +41,9 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, it will be looked up in the database and added to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Location entities for.</param>
+        /// <param name="accessLevel">The access level of the user.</param>
         /// <returns>List of Locations.</returns>
-        Task<List<Location>> GetLocationsList(int progenyId);
+        Task<List<Location>> GetLocationsList(int progenyId, int accessLevel);
 
         /// <summary>
         /// Gets an Address by AddressId.
@@ -72,6 +73,7 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="id">The AddressId of the Address to delete.</param>
         /// <returns></returns>
         Task RemoveAddressItem(int id);
-        Task<List<Location>> GetLocationsWithTag(int progenyId, string tag);
+
+        Task<List<Location>> GetLocationsWithTag(int progenyId, string tag, int accessLevel);
     }
 }

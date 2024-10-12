@@ -4,6 +4,7 @@ import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDat
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 let videosPageParameters = new VideosPageParameters();
 const videosPageSettingsStorageKey = 'videos_page_parameters';
 let languageId = 1;
@@ -690,29 +691,12 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
             if (videosPageParameters !== null) {
+                videosPageParameters.progenies = getSelectedProgenies();
                 videosPageParameters = await getVideosList(videosPageParameters, false);
             }
         }
     });
-}
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        if (videosPageParameters !== null) {
-            videosPageParameters.progenies = progeniesIds;
-        }
-        return progeniesIds;
-    }
-    if (videosPageParameters !== null) {
-        videosPageParameters.progenies = [getCurrentProgenyId()];
-    }
-    return [getCurrentProgenyId()];
 }
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function () {
@@ -724,9 +708,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     SettingsHelper.initPageSettings();
     videosPageParameters = getPageParametersFromPageData();
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
     await showPopupAtLoad(TimeLineType.Video);
     if (videosPageParameters !== null) {
+        videosPageParameters.progenies = getSelectedProgenies();
         refreshSelectPickers();
         videosPageParameters = await getVideosList(videosPageParameters, false);
         // If firstRun is still true the initial date of the first item, the total page count, or number of items, have changed. Run it again.

@@ -308,8 +308,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VaccinationService vaccinationService = new(context, memoryCache);
 
-            List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(1);
-            List<Vaccination> vaccinationsList2 = await vaccinationService.GetVaccinationsList(1); // Test cached result.
+            List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(1, 0);
+            List<Vaccination> vaccinationsList2 = await vaccinationService.GetVaccinationsList(1, 0); // Test cached result.
             Vaccination firstVaccination = vaccinationsList.First();
 
             Assert.NotNull(vaccinationsList);
@@ -359,8 +359,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VaccinationService vaccinationService = new(context, memoryCache);
 
-            List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(2);
-            List<Vaccination> vaccinationsList2 = await vaccinationService.GetVaccinationsList(2); // Test cached result.
+            List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(2, 0);
+            List<Vaccination> vaccinationsList2 = await vaccinationService.GetVaccinationsList(2, 0); // Test cached result.
 
             Assert.NotNull(vaccinationsList);
             Assert.IsType<List<Vaccination>>(vaccinationsList);

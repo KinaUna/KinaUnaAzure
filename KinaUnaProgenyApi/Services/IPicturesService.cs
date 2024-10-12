@@ -99,8 +99,9 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Pictures for a Progeny from the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Pictures for.</param>
+        /// <param name="accessLevel">The access level for the user.</param>
         /// <returns>List of Picture objects.</returns>
-        Task<List<Picture>> GetPicturesList(int progenyId);
+        Task<List<Picture>> GetPicturesList(int progenyId, int accessLevel);
 
         /// <summary>
         /// Gets a list of all Pictures for a Progeny from the database and adds it to the cache.
@@ -114,8 +115,9 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get pictures for.</param>
         /// <param name="tag">String with the tag.</param>
+        /// <param name="accessLevel">The access level for the user.</param>
         /// <returns>List of Picture objects.</returns>
-        Task<List<Picture>> GetPicturesWithTag(int progenyId, string tag);
+        Task<List<Picture>> GetPicturesWithTag(int progenyId, string tag, int accessLevel);
 
         /// <summary>
         /// Gets a list of distinct Locations for a Progeny's pictures.

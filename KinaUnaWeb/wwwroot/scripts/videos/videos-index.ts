@@ -4,6 +4,7 @@ import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDat
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 
 let videosPageParameters: VideosPageParameters | null = new VideosPageParameters();
 const videosPageSettingsStorageKey = 'videos_page_parameters';
@@ -777,33 +778,13 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            
             if (videosPageParameters !== null) {
+                videosPageParameters.progenies = getSelectedProgenies();
                 videosPageParameters = await getVideosList(videosPageParameters, false);
             }
         }
-
     });
-}
-
-function getSelectedProgenies(): number[] {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        if (videosPageParameters !== null) {
-            videosPageParameters.progenies = progeniesIds;
-        }
-
-        return progeniesIds;
-    }
-    if (videosPageParameters !== null) {
-        videosPageParameters.progenies = [getCurrentProgenyId()];
-    }
-
-    return [getCurrentProgenyId()];
 }
 
 /** Initialization and setup when page is loaded */
@@ -821,11 +802,12 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     videosPageParameters = getPageParametersFromPageData();
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
+    
 
     await showPopupAtLoad(TimeLineType.Video);
 
     if (videosPageParameters !== null) {
+        videosPageParameters.progenies = getSelectedProgenies();
 
         refreshSelectPickers();
 

@@ -1,8 +1,9 @@
-import { getCurrentProgenyId, updateFilterButtonDisplay } from '../data-tools-v8.js';
+import { updateFilterButtonDisplay } from '../data-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as pageModels from '../page-models-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 const contactsPageSettingsStorageKey = 'contacts_page_parameters';
 let contactsPageParameters = new pageModels.ContactsPageParameters();
 const sortAscendingSettingsButton = document.querySelector('#settings-sort-ascending-button');
@@ -359,23 +360,11 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            contactsPageParameters.progenies = getSelectedProgenies();
             contactsPageParameters.currentPageNumber = 1;
             await getContactsList();
         }
     });
-}
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        contactsPageParameters.progenies = progeniesIds;
-        return;
-    }
-    contactsPageParameters.progenies = [getCurrentProgenyId()];
 }
 /**
  * Initializes the page elements when it is loaded.
@@ -390,7 +379,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     await loadContactsPageSettings();
     await showPopupAtLoad(pageModels.TimeLineType.Contact);
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
+    contactsPageParameters.progenies = getSelectedProgenies();
     await getContactsList();
     return new Promise(function (resolve, reject) {
         resolve();

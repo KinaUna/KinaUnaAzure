@@ -1,8 +1,8 @@
-import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as LocaleHelper from '../localization-v8.js';
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { TimeLineType } from '../page-models-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 import { popupEventItem } from './calendar-details.js';
 let progeniesList = [];
 let selectedEventId = 0;
@@ -119,22 +119,10 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            progeniesList = getSelectedProgenies();
             await getCalendarItems();
         }
     });
-}
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        progeniesList = progeniesIds;
-        return;
-    }
-    progeniesList = [getCurrentProgenyId()];
 }
 /**
  * Initializes page elements when it is loaded.
@@ -144,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     addScheduleEventListeners();
     await loadLocale();
     setLocale();
-    getSelectedProgenies();
+    progeniesList = getSelectedProgenies();
     startFullPageSpinner();
     await getCalendarItems();
     stopFullPageSpinner();

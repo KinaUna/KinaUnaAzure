@@ -3,6 +3,7 @@ import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/i
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as pageModels from '../page-models-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 
 const friendsPageSettingsStorageKey = 'friends_page_parameters';
 let friendsPageParameters = new pageModels.FriendsPageParameters();
@@ -364,26 +365,11 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            friendsPageParameters.progenies = getSelectedProgenies();
             friendsPageParameters.currentPageNumber = 1;
             await getFriendsList();
         }
-
     });
-}
-
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        friendsPageParameters.progenies = progeniesIds;
-
-        return;
-    }
-    friendsPageParameters.progenies = [getCurrentProgenyId()];
 }
 
 /**
@@ -401,7 +387,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     await showPopupAtLoad(pageModels.TimeLineType.Friend);
 
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
+    friendsPageParameters.progenies = getSelectedProgenies();
 
     await getFriendsList();
 

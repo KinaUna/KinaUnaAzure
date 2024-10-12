@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
@@ -40,25 +40,22 @@ namespace KinaUnaProgenyApi.Controllers
         /// Get a list of all VocabularyItems for a specific Progeny.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get Vocabulary items for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <returns>List of Vocabulary items.</returns>
         // GET api/vocabulary/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
-
-            List<VocabularyItem> wordList = await vocabularyService.GetVocabularyList(id);
-            wordList = wordList.Where(w => w.AccessLevel >= accessLevel).ToList();
-            if (wordList.Count != 0)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(wordList);
+                return accessLevelResult.ToActionResult();
             }
-            return NotFound();
 
+            List<VocabularyItem> wordList = await vocabularyService.GetVocabularyList(id, accessLevelResult.Value);
+            
+            return Ok(wordList);
         }
 
         /// <summary>
@@ -71,16 +68,16 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetVocabularyItem(int id)
         {
-            VocabularyItem result = await vocabularyService.GetVocabularyItem(id);
+            VocabularyItem vocabularyItem = await vocabularyService.GetVocabularyItem(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(vocabularyItem.ProgenyId, userEmail, vocabularyItem.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(result);
+                return accessLevelResult.ToActionResult();
             }
 
-            return Unauthorized();
+            return Ok(vocabularyItem);
         }
 
         /// <summary>
@@ -229,19 +226,18 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetItemMobile(int id)
         {
-            VocabularyItem result = await vocabularyService.GetVocabularyItem(id);
+            VocabularyItem vocabularyItem = await vocabularyService.GetVocabularyItem(id);
 
-            if (result == null) return NotFound();
+            if (vocabularyItem == null) return NotFound();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-            if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(vocabularyItem.ProgenyId, userEmail, vocabularyItem.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(result);
+                return accessLevelResult.ToActionResult();
             }
 
-            return Unauthorized();
+            return Ok(vocabularyItem);
 
         }
 
@@ -251,23 +247,20 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="pageSize">The number of VocabularyItems per page.</param>
         /// <param name="pageIndex">The current page number.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny to show VocabularyItems for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <param name="sortBy">Sort order. 0 = oldest first, 1 = newest first.</param>
         /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public async Task<IActionResult> GetVocabularyListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        public async Task<IActionResult> GetVocabularyListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int sortBy = 1)
         {
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
-            List<VocabularyItem> allItems = await vocabularyService.GetVocabularyList(progenyId);
+            List<VocabularyItem> allItems = await vocabularyService.GetVocabularyList(progenyId, accessLevelResult.Value);
 
             VocabularyListPage model = new();
             model.ProcessVocabularyList(allItems, sortBy, pageIndex, pageSize);

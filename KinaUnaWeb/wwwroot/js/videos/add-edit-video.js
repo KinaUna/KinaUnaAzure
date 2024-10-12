@@ -37,8 +37,8 @@ function setupProgenySelectList() {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList(currentProgenyId);
-            await setLocationAutoSuggestList(currentProgenyId);
+            await setTagsAutoSuggestList([currentProgenyId]);
+            await setLocationAutoSuggestList([currentProgenyId]);
         });
     }
 }
@@ -80,8 +80,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     currentProgenyId = getCurrentProgenyId();
     await setupDateTimePicker();
     setupProgenySelectList();
-    await setTagsAutoSuggestList(currentProgenyId);
-    await setLocationAutoSuggestList(currentProgenyId);
+    await setTagsAutoSuggestList([currentProgenyId]);
+    await setLocationAutoSuggestList([currentProgenyId]);
     setupCopyLocationButton();
     setupEditButton();
     return new Promise(function (resolve, reject) {

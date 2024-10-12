@@ -41,8 +41,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all Vaccinations for a Progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny to get Vaccinations for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Vaccination objects.</returns>
-        Task<List<Vaccination>> GetVaccinationsList(int progenyId, int accessLevel);
+        Task<List<Vaccination>> GetVaccinationsList(int progenyId);
     }
 }

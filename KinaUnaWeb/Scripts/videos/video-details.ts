@@ -116,8 +116,8 @@ async function addEditEventListeners(): Promise<void> {
             $("#edit-section").toggle(500);
         });
 
-        await setTagsAutoSuggestList(getCurrentProgenyId());
-        await setLocationAutoSuggestList(getCurrentProgenyId());
+        await setTagsAutoSuggestList([getCurrentProgenyId()]);
+        await setLocationAutoSuggestList([getCurrentProgenyId()]);
         setupDateTimePicker();
         addCopyLocationButtonEventListener();
         const submitForm = document.getElementById('edit-video-form') as HTMLFormElement;

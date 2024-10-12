@@ -1,12 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.ItemInterfaces;
 
 namespace KinaUna.Data.Models
 {
     /// <summary>
     /// Entity Framework Entity for Location data.
     /// </summary>
-    public class Location
+    public class Location: ILocatable, ITaggable
     {
         public int LocationId { get; set; }
         public int ProgenyId { get; set; }
@@ -34,5 +35,10 @@ namespace KinaUna.Data.Models
 
         [NotMapped]
         public Progeny Progeny { get; set; }
+
+        public string GetLocationString()
+        {
+            return Name;
+        }
     }
 }

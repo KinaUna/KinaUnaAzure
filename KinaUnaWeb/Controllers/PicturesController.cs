@@ -25,7 +25,6 @@ namespace KinaUnaWeb.Controllers
         ImageStore imageStore,
         IUserInfosHttpClient userInfosHttpClient,
         ILocationsHttpClient locationsHttpClient,
-        IUserAccessHttpClient userAccessHttpClient,
         IEmailSender emailSender,
         IViewModelSetupService viewModelSetupService,
         IConfiguration configuration)
@@ -103,7 +102,7 @@ namespace KinaUnaWeb.Controllers
                 HereMapsApiKey = _hereMapsApiKey,
                 PartialView = partialView
             };
-            PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
+            PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(id, sortBy, model.CurrentUser.Timezone, tagFilter);
 
             model.SetPropertiesFromPictureViewModel(pictureViewModel);
             model.Picture.PictureLink = model.Picture.GetPictureUrl(1200);
@@ -128,7 +127,7 @@ namespace KinaUnaWeb.Controllers
             }
             if (model.IsCurrentUserProgenyAdmin)
             {
-                model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId, model.CurrentAccessLevel);
+                model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId);
                 model.LocationsList = [];
                 if (model.ProgenyLocations.Count != 0)
                 {
@@ -547,12 +546,10 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parameters.ProgenyId);
 
             // Todo: Refactor to process the pictures list in the API.
-            List<UserAccess> userAccessList = await userAccessHttpClient.GetUserAccessList(baseModel.CurrentUser.UserEmail); 
             PicturesList picturesList = new();
             foreach (int progenyId in parameters.Progenies)
             {
-                int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                List<Picture> pictureItems = await mediaHttpClient.GetProgenyPictureList(progenyId, accessLevel);
+                List<Picture> pictureItems = await mediaHttpClient.GetProgenyPictureList(progenyId);
                 picturesList.PictureItems.AddRange(pictureItems);
             }
             

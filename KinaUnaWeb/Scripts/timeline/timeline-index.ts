@@ -4,6 +4,7 @@ import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDat
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 
 const timelinePageSettingsStorageKey = 'timeline_page_parameters';
 let timelineItemsList: TimelineItem[] = []
@@ -525,9 +526,9 @@ async function initialSettingsPanelSetup(): Promise<void> {
         allButton.addEventListener('click', setTimeLineTypeFilterToAll);
     }
 
-    await setTagsAutoSuggestList(getCurrentProgenyId(), 'tag-filter-input', true);
-    await setCategoriesAutoSuggestList(getCurrentProgenyId(), 'category-filter-input', true);
-    await setContextAutoSuggestList(getCurrentProgenyId(), 'context-filter-input', true);
+    await setTagsAutoSuggestList(timeLineParameters.progenies, 'tag-filter-input', true);
+    await setCategoriesAutoSuggestList(timeLineParameters.progenies, 'category-filter-input', true);
+    await setContextAutoSuggestList(timeLineParameters.progenies, 'context-filter-input', true);
 
 
     return new Promise<void>(function (resolve, reject) {
@@ -560,7 +561,7 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            timeLineParameters.progenies = getSelectedProgenies();
             timelineItemsList = [];
             const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
             if (timelineDiv !== null) {
@@ -572,20 +573,6 @@ function addSelectedProgeniesChangedEventListener() {
     });
 }
 
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        timeLineParameters.progenies = progeniesIds;
-        return;
-    }
-
-    timeLineParameters.progenies = [getCurrentProgenyId()];
-}
-
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     languageId = getCurrentLanguageId();
@@ -595,7 +582,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     addSelectedProgeniesChangedEventListener();
     SettingsHelper.initPageSettings();
 
-    getSelectedProgenies();
+    timeLineParameters.progenies = getSelectedProgenies();
 
     moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#more-timeline-items-button');
     if (moreTimelineItemsButton !== null) {

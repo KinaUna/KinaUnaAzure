@@ -18,7 +18,6 @@ namespace KinaUnaWeb.Controllers
     public class LocationsController(
         IProgenyHttpClient progenyHttpClient,
         ILocationsHttpClient locationsHttpClient,
-        IUserAccessHttpClient userAccessHttpClient,
         IViewModelSetupService viewModelSetupService,
         IConfiguration configuration)
         : Controller
@@ -44,7 +43,7 @@ namespace KinaUnaWeb.Controllers
                 HereMapsApiKey = _hereMapsApiKey
             };
 
-            model.LocationsList = await locationsHttpClient.GetLocationsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
+            model.LocationsList = await locationsHttpClient.GetLocationsList(model.CurrentProgenyId, tagFilter);
             
             model.SortBy = sortBy;
             model.TagFilter = tagFilter;
@@ -157,14 +156,11 @@ namespace KinaUnaWeb.Controllers
                 parameters.CurrentPageNumber = 1;
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
             List<Location> locationsList = []; // await locationsHttpClient.GetLocationsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
-            List<UserAccess> userAccesses = await userAccessHttpClient.GetUserAccessList(baseModel.CurrentUser.UserEmail);
-
+            
             foreach (int progenyId in parameters.Progenies)
             {
-                int accessLevel = userAccesses.FirstOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                List<Location> locList = await locationsHttpClient.GetLocationsList(progenyId, accessLevel, parameters.TagFilter);
+                List<Location> locList = await locationsHttpClient.GetLocationsList(progenyId, parameters.TagFilter);
                 locationsList.AddRange(locList);
             }
 
@@ -276,7 +272,7 @@ namespace KinaUnaWeb.Controllers
                 {
                     foreach (Progeny progeny in accessList)
                     {
-                        List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id, 0);
+                        List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id);
                         foreach (Location loc in locList1)
                         {
                             if (string.IsNullOrEmpty(loc.Tags)) continue;
@@ -360,7 +356,7 @@ namespace KinaUnaWeb.Controllers
                     foreach (Progeny progeny in accessList)
                     {
                         
-                        List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id, 0);
+                        List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id);
                         foreach (Location locationItem in locList1)
                         {
                             if (string.IsNullOrEmpty(locationItem.Tags)) continue;

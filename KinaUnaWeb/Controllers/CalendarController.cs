@@ -304,7 +304,7 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                upcomingCalendarItems = await calendarsHttpClient.GetCalendarList(parameters.ProgenyId, 0);
+                upcomingCalendarItems = await calendarsHttpClient.GetCalendarList(parameters.ProgenyId);
             }
              
             upcomingCalendarItems = upcomingCalendarItems.Where(c => c.EndTime > DateTime.UtcNow).ToList();

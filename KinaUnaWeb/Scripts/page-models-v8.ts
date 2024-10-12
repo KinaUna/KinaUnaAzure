@@ -288,10 +288,10 @@ export class TextTranslationPageListModel {
 }
 
 export class AutoSuggestList {
-    progenyId: number;
+    progenies: number[];
     suggestions: string[];
-    constructor(_progenyId: number) {
-        this.progenyId = _progenyId;
+    constructor(_progenies: number[]) {
+        this.progenies = _progenies;
         this.suggestions = [];
     }
 }

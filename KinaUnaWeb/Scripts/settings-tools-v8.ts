@@ -1,4 +1,6 @@
-﻿declare let moment: any;
+﻿import { getCurrentProgenyId } from "./data-tools-v8.js";
+
+declare let moment: any;
 let currentPageSettingsDiv = document.querySelector<HTMLDivElement>('#page-settings-div');
 let currentPageMainDiv = document.querySelector<HTMLDivElement>('#kinauna-main-div');
 let currentPageSettingsButton = document.querySelector<HTMLButtonElement>('#page-settings-button');
@@ -80,17 +82,45 @@ export function getPageSettingsStartDate(momentDateTimeFormat: string): any {
     return settingsStartTime;
 }
 
-export function getSelectedProgenies() {
+export function getSelectedProgenies(): number[] {
+    let selectedProgenyIds: string[] = [];
     let selectedProgenies = localStorage.getItem('selectedProgenies');
     if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
+        let parsedSelectedProgenies = JSON.parse(selectedProgenies);
+        if (parsedSelectedProgenies as string[] !== null) {
+            selectedProgenyIds = parsedSelectedProgenies as string[];
+        }
+
+        // if progeny with id 0 is in the selectedProgenyIds, remove it.
+        if (selectedProgenyIds.includes('0')) {
+            selectedProgenyIds = selectedProgenyIds.filter(function (value) {
+                return value !== '0';
+            });
+        }
+        
+
+        if (selectedProgenyIds.length === 0) {
+            let allProgenyButtons = document.querySelectorAll<HTMLAnchorElement>('.select-progeny-button');
+            allProgenyButtons.forEach(function (button) {
+                let selectedProgenyData = button.getAttribute('data-select-progeny-id');
+                if (selectedProgenyData) {
+                    selectedProgenyIds.push(selectedProgenyData);
+                    button.classList.add('selected');
+                }
+            });
+            if (selectedProgenyIds.length === 0) {
+                selectedProgenyIds = [getCurrentProgenyId().toString()];
+            }
+            localStorage.setItem('selectedProgenies', JSON.stringify(selectedProgenyIds));
+        }
+        
         let selectProgenyButtons = document.querySelectorAll('.select-progeny-button');
         selectProgenyButtons.forEach(function (button) {
             let buttonElement = button as HTMLAnchorElement;
             let progenyCheckSpan = buttonElement.querySelector('.progeny-check-span');
             let selectedProgenyData = button.getAttribute('data-select-progeny-id');
             if (selectedProgenyData) {
-                if (selectedProgenyIds.includes(selectedProgenyData.valueOf())) {
+                if (selectedProgenyIds.includes(selectedProgenyData)) {
                     buttonElement.classList.add('selected');
 
                     if (progenyCheckSpan !== null) {
@@ -104,19 +134,16 @@ export function getSelectedProgenies() {
                     }
                 }
             }
-
         });
     }
-
     else {
         let selectedProgenyButtons = document.querySelectorAll<HTMLButtonElement>('.select-progeny-button');
-        let selectedProgenyIds: string[] = [];
         selectedProgenyButtons.forEach(function (button) {
             let buttonElement = button as HTMLButtonElement;
             let progenyCheckSpan = buttonElement.querySelector('.progeny-check-span');
             let selectedProgenyData = button.getAttribute('data-select-progeny-id');
             if (selectedProgenyData) {
-                selectedProgenyIds.push(selectedProgenyData.valueOf());
+                selectedProgenyIds.push(selectedProgenyData);
                 buttonElement.classList.add('selected');
                 if (progenyCheckSpan !== null) {
                     progenyCheckSpan.classList.remove('d-none');
@@ -124,10 +151,20 @@ export function getSelectedProgenies() {
             }
         });
 
+        if (selectedProgenyIds.length === 0) {
+            selectedProgenyIds = [getCurrentProgenyId().toString()];
+        }
         localStorage.setItem('selectedProgenies', JSON.stringify(selectedProgenyIds));
-
-        const selectedProgeniesChangedEvent = new Event('progeniesChanged');
-        window.dispatchEvent(selectedProgeniesChangedEvent);
     }
+
+    
+    let progeniesIds = selectedProgenyIds.map(function (id) {
+        return parseInt(id);
+    });
+
+    if (progeniesIds.length === 1 && progeniesIds[0] === 0) {
+        progeniesIds[0] = 2;
+    }
+    return progeniesIds;
 }
 

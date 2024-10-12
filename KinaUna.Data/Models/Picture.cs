@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.ItemInterfaces;
 using Newtonsoft.Json;
 
 namespace KinaUna.Data.Models
@@ -9,7 +10,7 @@ namespace KinaUna.Data.Models
     /// <summary>
     /// Entity Framework Entity for Picture data.
     /// </summary>
-    public class Picture
+    public class Picture : ITaggable, ILocatable
     {
         [Required]
         public int PictureId { get; set; }
@@ -48,5 +49,10 @@ namespace KinaUna.Data.Models
         
         [NotMapped]
         public int PictureNumber { get; set; }
+
+        public string GetLocationString()
+        {
+            return Location;
+        }
     }
 }

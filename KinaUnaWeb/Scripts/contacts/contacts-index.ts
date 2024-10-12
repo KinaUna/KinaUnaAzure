@@ -3,6 +3,7 @@ import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/i
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as pageModels from '../page-models-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 
 const contactsPageSettingsStorageKey = 'contacts_page_parameters';
 let contactsPageParameters = new pageModels.ContactsPageParameters();
@@ -421,26 +422,11 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            contactsPageParameters.progenies = getSelectedProgenies();
             contactsPageParameters.currentPageNumber = 1;
             await getContactsList();
         }
-
     });
-}
-
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        contactsPageParameters.progenies = progeniesIds;
-
-        return;
-    }
-    contactsPageParameters.progenies = [getCurrentProgenyId()];
 }
 
 /**
@@ -458,7 +444,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     await showPopupAtLoad(pageModels.TimeLineType.Contact);
 
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
+    contactsPageParameters.progenies = getSelectedProgenies();
 
     await getContactsList();
 

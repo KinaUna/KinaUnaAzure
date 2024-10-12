@@ -26,7 +26,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             MeasurementViewModel model = new(baseModel);
             
-            model.MeasurementsList = await measurementsHttpClient.GetMeasurementsList(model.CurrentProgenyId, model.CurrentAccessLevel);
+            model.MeasurementsList = await measurementsHttpClient.GetMeasurementsList(model.CurrentProgenyId);
             
             if (model.MeasurementsList.Count != 0)
             {

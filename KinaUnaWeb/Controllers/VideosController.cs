@@ -21,7 +21,6 @@ namespace KinaUnaWeb.Controllers
         IMediaHttpClient mediaHttpClient,
         IUserInfosHttpClient userInfosHttpClient,
         ILocationsHttpClient locationsHttpClient,
-        IUserAccessHttpClient userAccessHttpClient,
         IEmailSender emailSender,
         IViewModelSetupService viewModelSetupService,
         IConfiguration configuration)
@@ -74,7 +73,7 @@ namespace KinaUnaWeb.Controllers
                 VideoId = videoId
             };
 
-            VideoPageViewModel pageViewModel = await mediaHttpClient.GetVideoPage(pageSize, id, model.CurrentProgenyId, model.CurrentAccessLevel, sortBy, tagFilter, model.CurrentUser.Timezone);
+            VideoPageViewModel pageViewModel = await mediaHttpClient.GetVideoPage(pageSize, id, model.CurrentProgenyId, sortBy, tagFilter, model.CurrentUser.Timezone);
             model.SetPropertiesFromPageViewModel(pageViewModel);
             
             
@@ -105,7 +104,7 @@ namespace KinaUnaWeb.Controllers
                 PartialView = partialView
             };
 
-            VideoViewModel videoViewModel = await mediaHttpClient.GetVideoViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
+            VideoViewModel videoViewModel = await mediaHttpClient.GetVideoViewModel(id, sortBy, model.CurrentUser.Timezone, tagFilter);
             
             model.SetPropertiesFromVideoViewModel(videoViewModel);
             
@@ -126,7 +125,7 @@ namespace KinaUnaWeb.Controllers
             if (model.IsCurrentUserProgenyAdmin)
             {
                 model.ProgenyLocations = [];
-                model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId, model.CurrentAccessLevel);
+                model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId);
                 model.LocationsList = [];
                 if (model.ProgenyLocations.Count != 0)
                 {
@@ -191,7 +190,7 @@ namespace KinaUnaWeb.Controllers
                 model.Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
                 model.ProgenyLocations = [];
-                model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId, model.CurrentAccessLevel);
+                model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId);
                 model.LocationsList = [];
                 if (model.ProgenyLocations.Count != 0)
                 {
@@ -434,14 +433,12 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parameters.ProgenyId);
 
             // Todo: Refactor to process the videos list in the API.
-            List<UserAccess> userAccessList = await userAccessHttpClient.GetUserAccessList(baseModel.CurrentUser.UserEmail);
-
+            
             VideosList videosList = new();
 
             foreach (int progenyId in parameters.Progenies)
             {
-                int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                List<Video> progenyVideos = await mediaHttpClient.GetProgenyVideoList(baseModel.CurrentProgenyId, accessLevel);
+                List<Video> progenyVideos = await mediaHttpClient.GetProgenyVideoList(progenyId);
                 if (progenyVideos != null)
                 {
                     videosList.VideoItems.AddRange(progenyVideos);

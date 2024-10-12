@@ -25,7 +25,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             VaccinationViewModel model = new(baseModel);
             
-            List<Vaccination> vaccinations = await vaccinationsHttpClient.GetVaccinationsList(model.CurrentProgenyId, model.CurrentAccessLevel);
+            List<Vaccination> vaccinations = await vaccinationsHttpClient.GetVaccinationsList(model.CurrentProgenyId);
             model.SetVaccinationsList(vaccinations);
             model.VaccinationId = vaccinationId;
 

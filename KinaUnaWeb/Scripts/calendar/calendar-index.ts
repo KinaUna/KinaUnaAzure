@@ -3,6 +3,7 @@ import { showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as LocaleHelper from '../localization-v8.js';
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { CalendarItem, TimeLineType, TimelineItem } from '../page-models-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 import { popupEventItem } from './calendar-details.js';
 
 declare var syncfusionReference: any;
@@ -140,25 +141,11 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            progeniesList = getSelectedProgenies();
             await getCalendarItems();
         }
 
     });
-}
-
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        progeniesList = progeniesIds;
-        return;
-    }
-
-    progeniesList = [getCurrentProgenyId()];
 }
 
 /**
@@ -171,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     await loadLocale();
     setLocale();
     
-    getSelectedProgenies();
+    progeniesList = getSelectedProgenies();
     startFullPageSpinner();
     await getCalendarItems();
     stopFullPageSpinner();

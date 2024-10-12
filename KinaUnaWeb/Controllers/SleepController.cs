@@ -26,7 +26,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SleepViewModel model = new(baseModel);
 
-            List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId, model.CurrentAccessLevel);
+            List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId);
 
             model.ProcessSleepListData(sleepList);
             
@@ -72,7 +72,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SleepViewModel model = new(baseModel);
             
-            List<Sleep> allSleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId, model.CurrentAccessLevel);
+            List<Sleep> allSleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId);
             
             model.ProcessSleepCalendarList(allSleepList);
 
