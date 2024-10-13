@@ -41,8 +41,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the List of all Sleep objects for a Progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny.</param>
-        /// <param name="accessLevel">The access level of the user for the Progeny.</param>
         /// <returns>List of Sleep objects.</returns>
-        Task<List<Sleep>> GetSleepList(int progenyId, int accessLevel);
+        Task<List<Sleep>> GetSleepList(int progenyId);
     }
 }

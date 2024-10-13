@@ -513,8 +513,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             PicturesService pictureService = new(context, memoryCache, imageStore.Object);
 
-            List<Picture> picturesList = await pictureService.GetPicturesList(1);
-            List<Picture> picturesList2 = await pictureService.GetPicturesList(1); // Test cached result.
+            List<Picture> picturesList = await pictureService.GetPicturesList(1, 0);
+            List<Picture> picturesList2 = await pictureService.GetPicturesList(1, 0); // Test cached result.
             Picture firstPicture = picturesList.First();
 
             Assert.NotNull(picturesList);
@@ -591,8 +591,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             PicturesService pictureService = new(context, memoryCache, imageStore.Object);
 
-            List<Picture> picturesList = await pictureService.GetPicturesList(2);
-            List<Picture> picturesList2 = await pictureService.GetPicturesList(2); // Test cached result.
+            List<Picture> picturesList = await pictureService.GetPicturesList(2,0);
+            List<Picture> picturesList2 = await pictureService.GetPicturesList(2, 0); // Test cached result.
 
             Assert.NotNull(picturesList);
             Assert.IsType<List<Picture>>(picturesList);

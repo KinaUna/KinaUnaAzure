@@ -68,9 +68,9 @@ export function getLongDateTimeFormatMoment() {
  * @param progenyId The Id of the Progeny to get tags for.
  * @returns The full list of tags for the Progeny.
  */
-export async function getTagsList(progenyId) {
-    let tagsList = new AutoSuggestList(progenyId);
-    const getTagsListParameters = new AutoSuggestList(progenyId);
+export async function getTagsList(progenies) {
+    let tagsList = new AutoSuggestList(progenies);
+    const getTagsListParameters = new AutoSuggestList(progenies);
     await fetch('/Progeny/GetAllProgenyTags/', {
         method: 'POST',
         body: JSON.stringify(getTagsListParameters),
@@ -91,10 +91,10 @@ export async function getTagsList(progenyId) {
  * @param progenyId The Id of the Progeny to set tags for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setTagsAutoSuggestList(progenyId, elementId = 'tag-list', whiteList = false, tagLimit = 0) {
+export async function setTagsAutoSuggestList(progenyIds, elementId = 'tag-list', whiteList = false, tagLimit = 0) {
     let tagListElement = document.getElementById(elementId);
     if (tagListElement !== null) {
-        const tagsList = await getTagsList(progenyId);
+        const tagsList = await getTagsList(progenyIds);
         $('#' + elementId).amsifySuggestags({
             suggestions: tagsList.suggestions,
             selectOnHover: false,
@@ -128,9 +128,9 @@ export async function setTagsAutoSuggestList(progenyId, elementId = 'tag-list', 
  * @param progenyId The Id of the Progeny to get contexts for.
  * @returns The full list of contexts for the Progeny.
  */
-export async function getContextsList(progenyId) {
-    let contextsList = new AutoSuggestList(progenyId);
-    const getContextsListParameters = new AutoSuggestList(progenyId);
+export async function getContextsList(progenyIds) {
+    let contextsList = new AutoSuggestList(progenyIds);
+    const getContextsListParameters = new AutoSuggestList(progenyIds);
     await fetch('/Progeny/GetAllProgenyContexts/', {
         method: 'POST',
         body: JSON.stringify(getContextsListParameters),
@@ -151,10 +151,10 @@ export async function getContextsList(progenyId) {
  * @param progenyId The Id of the Progeny to set contexts for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setContextAutoSuggestList(progenyId, elementId = 'context-input', whiteList = false, tagLimit = 0) {
+export async function setContextAutoSuggestList(progenyIds, elementId = 'context-input', whiteList = false, tagLimit = 0) {
     let contextInputElement = document.getElementById(elementId);
     if (contextInputElement !== null) {
-        const contextsList = await getContextsList(progenyId);
+        const contextsList = await getContextsList(progenyIds);
         $('#' + elementId).amsifySuggestags({
             suggestions: contextsList.suggestions,
             selectOnHover: false,
@@ -188,9 +188,9 @@ export async function setContextAutoSuggestList(progenyId, elementId = 'context-
  * @param progenyId The Id of the Progeny to get locations for.
  * @returns The full list of locations for the Progeny.
  */
-export async function getLocationsList(progenyId) {
-    let locationsList = new AutoSuggestList(progenyId);
-    const getLocationsListParameters = new AutoSuggestList(progenyId);
+export async function getLocationsList(progenyIds) {
+    let locationsList = new AutoSuggestList(progenyIds);
+    const getLocationsListParameters = new AutoSuggestList(progenyIds);
     await fetch('/Progeny/GetAllProgenyLocations/', {
         method: 'POST',
         body: JSON.stringify(getLocationsListParameters),
@@ -211,10 +211,10 @@ export async function getLocationsList(progenyId) {
  * @param progenyId The Id of the Progeny to set locations for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setLocationAutoSuggestList(progenyId, elementId = 'location-input', whiteList = false, tagLimit = 5) {
+export async function setLocationAutoSuggestList(progenyIds, elementId = 'location-input', whiteList = false, tagLimit = 5) {
     let locationInputElement = document.getElementById(elementId);
     if (locationInputElement !== null) {
-        const locationsList = await getLocationsList(progenyId);
+        const locationsList = await getLocationsList(progenyIds);
         $('#' + elementId).amsifySuggestags({
             suggestions: locationsList.suggestions,
             selectOnHover: false,
@@ -248,9 +248,9 @@ export async function setLocationAutoSuggestList(progenyId, elementId = 'locatio
  * @param progenyId The Id of the Progeny to get categories for.
  * @returns The full list of categories for the Progeny.
  */
-export async function getCategoriesList(progenyId) {
-    let categoriesList = new AutoSuggestList(progenyId);
-    const getCategoriesListParameters = new AutoSuggestList(progenyId);
+export async function getCategoriesList(progenyIds) {
+    let categoriesList = new AutoSuggestList(progenyIds);
+    const getCategoriesListParameters = new AutoSuggestList(progenyIds);
     await fetch('/Progeny/GetAllProgenyCategories/', {
         method: 'POST',
         body: JSON.stringify(getCategoriesListParameters),
@@ -271,10 +271,10 @@ export async function getCategoriesList(progenyId) {
  * @param progenyId The Id of the Progeny to set categories for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setCategoriesAutoSuggestList(progenyId, elementId = 'category-input', whiteList = false, tagLimit = 0) {
+export async function setCategoriesAutoSuggestList(progenyIds, elementId = 'category-input', whiteList = false, tagLimit = 0) {
     let categoryInputElement = document.getElementById(elementId);
     if (categoryInputElement !== null) {
-        const categoriesList = await getCategoriesList(progenyId);
+        const categoriesList = await getCategoriesList(progenyIds);
         $('#' + elementId).amsifySuggestags({
             suggestions: categoriesList.suggestions,
             selectOnHover: false,
@@ -308,9 +308,9 @@ export async function setCategoriesAutoSuggestList(progenyId, elementId = 'categ
  * @param progenyId The Id of the Progeny to get languages for.
  * @returns The full list of languages for the Progeny.
  */
-export async function getVocabularyLanguagesList(progenyId) {
-    let languagesList = new AutoSuggestList(progenyId);
-    const getLanguagesListParameters = new AutoSuggestList(progenyId);
+export async function getVocabularyLanguagesList(progenyIds) {
+    let languagesList = new AutoSuggestList(progenyIds);
+    const getLanguagesListParameters = new AutoSuggestList(progenyIds);
     await fetch('/Progeny/GetAllProgenyVocabularyLanguages/', {
         method: 'POST',
         body: JSON.stringify(getLanguagesListParameters),
@@ -331,10 +331,10 @@ export async function getVocabularyLanguagesList(progenyId) {
  * @param progenyId The Id of the Progeny to set languages for.
  * @param elementId The Id of the element to set the autosuggest list for.
  */
-export async function setVocabularyLanguagesAutoSuggestList(progenyId, elementId = 'vocabulary-languages-input', whiteList = false, tagLimit = 0) {
+export async function setVocabularyLanguagesAutoSuggestList(progenyIds, elementId = 'vocabulary-languages-input', whiteList = false, tagLimit = 0) {
     let languageInputElement = document.getElementById(elementId);
     if (languageInputElement !== null) {
-        const languagesList = await getVocabularyLanguagesList(progenyId);
+        const languagesList = await getVocabularyLanguagesList(progenyIds);
         $('#' + elementId).amsifySuggestags({
             suggestions: languagesList.suggestions,
             selectOnHover: false,

@@ -3,6 +3,7 @@ import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/i
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as pageModels from '../page-models-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 import { setUpMapClickToShowLocationListener } from './location-tools.js';
 
 const locationsPageSettingsStorageKey = 'locations_page_parameters';
@@ -346,26 +347,11 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            locationsPageParameters.progenies = getSelectedProgenies();
             locationsPageParameters.currentPageNumber = 1;
             await getLocationsList();
         }
-
     });
-}
-
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        locationsPageParameters.progenies = progeniesIds;
-
-        return;
-    }
-    locationsPageParameters.progenies = [getCurrentProgenyId()];
 }
 
 /**
@@ -383,7 +369,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     await showPopupAtLoad(pageModels.TimeLineType.Location);
 
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
+    locationsPageParameters.progenies = getSelectedProgenies();
     
     await getLocationsList();
 

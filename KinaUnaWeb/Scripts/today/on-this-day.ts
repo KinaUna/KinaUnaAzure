@@ -4,6 +4,7 @@ import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDat
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 
 const onThisDayPageSettingsStorageKey = 'on_this_day_page_parameters';
 const onThisDayParameters: OnThisDayRequest = new OnThisDayRequest();
@@ -40,20 +41,12 @@ function stopLoadingSpinner(): void {
  * Hides the moreTimelineItemsButton while loading.
  * @param parameters  The parameters to use for retrieving the timeline items.
  */
-async function getOnThisDayData(parameters: OnThisDayRequest, reset: boolean = false) {
+async function getOnThisDayData(parameters: OnThisDayRequest) {
     startLoadingSpinner();
     if (moreOnThisDayItemsButton !== null) {
         moreOnThisDayItemsButton.classList.add('d-none');
     }
-
-    if (reset) {
-        timelineItemsList = [];
-        const timelineDiv = document.querySelector<HTMLDivElement>('#on-this-day-items-div');
-        if (timelineDiv !== null) {
-            timelineDiv.innerHTML = '';
-        }
-    }
-
+        
     parameters.skip = timelineItemsList.length;
     
     await fetch('/Today/GetOnThisDayList', {
@@ -511,9 +504,9 @@ async function initialSettingsPanelSetup(): Promise<void> {
         allButton.addEventListener('click', setTimeLineTypeFilterToAll);
     }
 
-    await setTagsAutoSuggestList(getCurrentProgenyId(), 'tag-filter-input', true);
-    await setCategoriesAutoSuggestList(getCurrentProgenyId(), 'category-filter-input', true);
-    await setContextAutoSuggestList(getCurrentProgenyId(), 'context-filter-input', true);
+    await setTagsAutoSuggestList(onThisDayParameters.progenies, 'tag-filter-input', true);
+    await setCategoriesAutoSuggestList(onThisDayParameters.progenies, 'category-filter-input', true);
+    await setContextAutoSuggestList(onThisDayParameters.progenies, 'context-filter-input', true);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -532,35 +525,22 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
-            await getOnThisDayData(onThisDayParameters, true);
+            onThisDayParameters.progenies = getSelectedProgenies();
+            timelineItemsList = [];
+            const timelineDiv = document.querySelector<HTMLDivElement>('#on-this-day-items-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getOnThisDayData(onThisDayParameters);
         }
 
     });
-}
-
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        onThisDayParameters.progenies = progeniesIds;
-        return;
-    }
-
-    onThisDayParameters.progenies = [getCurrentProgenyId()];
 }
 
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     languageId = getCurrentLanguageId();
     onThisDayProgenyId = getCurrentProgenyId();
-
-    initialSettingsPanelSetup();
-
-    SettingsHelper.initPageSettings();
 
     moreOnThisDayItemsButton = document.querySelector<HTMLButtonElement>('#more-on-this-day-items-button');
     if (moreOnThisDayItemsButton !== null) {
@@ -574,7 +554,11 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     refreshSelectPickers();
 
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
+    onThisDayParameters.progenies = getSelectedProgenies();
+
+    initialSettingsPanelSetup();
+
+    SettingsHelper.initPageSettings();
 
     await getOnThisDayData(onThisDayParameters);
     if (firstRun) { // getOnThisDayData updated the parameters and exited early to reload with the new values.

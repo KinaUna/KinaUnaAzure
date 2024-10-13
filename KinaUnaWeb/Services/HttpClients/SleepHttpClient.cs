@@ -106,15 +106,14 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the List of all Sleep objects for a Progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny.</param>
-        /// <param name="accessLevel">The access level of the user for the Progeny.</param>
         /// <returns>List of Sleep objects.</returns>
-        public async Task<List<Sleep>> GetSleepList(int progenyId, int accessLevel)
+        public async Task<List<Sleep>> GetSleepList(int progenyId)
         {
             List<Sleep> progenySleepList = [];
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string sleepApiPath = "/api/Sleep/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
+            string sleepApiPath = "/api/Sleep/Progeny/" + progenyId;
             HttpResponseMessage sleepResponse = await _httpClient.GetAsync(sleepApiPath);
             if (!sleepResponse.IsSuccessStatusCode) return progenySleepList;
             string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();

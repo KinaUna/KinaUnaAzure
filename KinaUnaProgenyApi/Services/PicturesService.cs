@@ -572,14 +572,17 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Pictures for a Progeny from the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Pictures for.</param>
+        /// <param name="accessLevel">The access level for the user.</param>
         /// <returns>List of Picture objects.</returns>
-        public async Task<List<Picture>> GetPicturesList(int progenyId)
+        public async Task<List<Picture>> GetPicturesList(int progenyId, int accessLevel)
         {
             List<Picture> picturesList = await GetPicturesListFromCache(progenyId);
             if (picturesList.Count == 0)
             {
                 picturesList = await SetPicturesListInCache(progenyId);
             }
+
+            picturesList = picturesList.Where(p => p.AccessLevel >= accessLevel).ToList();
 
             return picturesList;
         }
@@ -589,10 +592,11 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get pictures for.</param>
         /// <param name="tag">String with the tag.</param>
+        /// <param name="accessLevel">The access level for the user.</param>
         /// <returns>List of Picture objects.</returns>
-        public async Task<List<Picture>> GetPicturesWithTag(int progenyId, string tag)
+        public async Task<List<Picture>> GetPicturesWithTag(int progenyId, string tag, int accessLevel)
         {
-            List<Picture> allItems = await GetPicturesList(progenyId);
+            List<Picture> allItems = await GetPicturesList(progenyId, accessLevel);
             if (!string.IsNullOrEmpty(tag))
             {
                 allItems = [.. allItems.Where(p => p.Tags != null && p.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];
@@ -613,19 +617,22 @@ namespace KinaUnaProgenyApi.Services
 
             foreach (int progenyId in picturesLocationsRequest.Progenies)
             {
-                List<Picture> progenyPictures = await GetPicturesList(progenyId);
-                progenyPictures = [.. progenyPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
                 int accessLevel = userAccesses.FirstOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                progenyPictures = [.. progenyPictures.Where(p => p.AccessLevel >= accessLevel)];
+                List<Picture> progenyPictures = await GetPicturesList(progenyId, accessLevel);
+                progenyPictures = [.. progenyPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
+                
                 allPictures.AddRange(progenyPictures);
             }
 
             // Group by location, using the distance parameter.
-            List<Location> locations = new();
+            List<Location> locations = [];
             foreach (Picture picture in allPictures)
             {
-                double.TryParse(picture.Latitude, out double latitude);
-                double.TryParse(picture.Longtitude, out double longitude);
+                bool latitudeParsed = double.TryParse(picture.Latitude, out double latitude);
+                bool longitudeParsed = double.TryParse(picture.Longtitude, out double longitude);
+
+                if (!latitudeParsed || !longitudeParsed) continue;
+
                 Location location = new()
                 {
                     Latitude = latitude,
@@ -664,14 +671,14 @@ namespace KinaUnaProgenyApi.Services
 
             foreach (int progenyId in nearByPhotosRequest.Progenies)
             {
-                List<Picture> progenyPictures = await GetPicturesList(progenyId);
-                progenyPictures = [.. progenyPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
                 int accessLevel = userAccesses.FirstOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                progenyPictures = [.. progenyPictures.Where(p => p.AccessLevel >= accessLevel)];
+                List<Picture> progenyPictures = await GetPicturesList(progenyId, accessLevel);
+                progenyPictures = [.. progenyPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
+                
                 allPictures.AddRange(progenyPictures);
             }
 
-            List<Picture> nearPictures = new();
+            List<Picture> nearPictures = [];
             foreach (Picture picture in allPictures)
             {
                 bool latitudeParsed = double.TryParse(picture.Latitude, out double latitude);
@@ -686,10 +693,10 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            nearPictures = nearPictures.OrderBy(p => p.PictureTime).ToList();
+            nearPictures = [.. nearPictures.OrderBy(p => p.PictureTime)];
             if (nearByPhotosRequest.SortOrder == 1)
             {
-                nearPictures = nearPictures.OrderByDescending(p => p.PictureTime).ToList();
+                nearPictures = [.. nearPictures.OrderByDescending(p => p.PictureTime)];
             }
 
             NearByPhotosResponse nearByPhotosResponse = new()

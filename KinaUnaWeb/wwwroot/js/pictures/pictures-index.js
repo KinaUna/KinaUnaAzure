@@ -4,6 +4,7 @@ import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDat
 import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 let picturesPageParameters = new PicturesPageParameters();
 let popupPictureId = 0;
 const picturesPageSettingsStorageKey = 'pictures_page_parameters';
@@ -701,29 +702,12 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
             if (picturesPageParameters !== null) {
+                picturesPageParameters.progenies = getSelectedProgenies();
                 picturesPageParameters = await getPicturesList(picturesPageParameters, false);
             }
         }
     });
-}
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        if (picturesPageParameters !== null) {
-            picturesPageParameters.progenies = progeniesIds;
-        }
-        return progeniesIds;
-    }
-    if (picturesPageParameters !== null) {
-        picturesPageParameters.progenies = [getCurrentProgenyId()];
-    }
-    return [getCurrentProgenyId()];
 }
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function () {
@@ -737,8 +721,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     SettingsHelper.initPageSettings();
     addSelectedProgeniesChangedEventListener();
     picturesPageParameters = getPageParametersFromPageData();
-    getSelectedProgenies();
     if (picturesPageParameters !== null) {
+        picturesPageParameters.progenies = getSelectedProgenies();
         refreshSelectPickers();
         picturesPageParameters = await getPicturesList(picturesPageParameters, false);
         // If firstRun is still true the initial date of the first item, the total page count, or number of items, have changed. Run it again.

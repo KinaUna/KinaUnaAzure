@@ -40,7 +40,8 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
+        /// <param name="accessLevel">The access level for the current user.</param>
         /// <returns>List of Vaccination objects.</returns>
-        Task<List<Vaccination>> GetVaccinationsList(int progenyId);
+        Task<List<Vaccination>> GetVaccinationsList(int progenyId, int accessLevel);
     }
 }

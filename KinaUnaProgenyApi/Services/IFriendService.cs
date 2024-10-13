@@ -56,9 +56,12 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, it will be looked up in the database and added to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list of Friends for.</param>
+        /// <param name="accessLevel">The access level required to view the Friend.</param>
         /// <returns>List of Friends.</returns>
-        Task<List<Friend>> GetFriendsList(int progenyId);
-        Task<List<Friend>> GetFriendsWithTag(int progenyId, string tag);
-        Task<List<Friend>> GetFriendsWithContext(int progenyId, string context);
+        Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel);
+
+        Task<List<Friend>> GetFriendsWithTag(int progenyId, string tag, int accessLevel);
+
+        Task<List<Friend>> GetFriendsWithContext(int progenyId, string context, int accessLevel);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
@@ -230,7 +231,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            List<Picture> photoList = await mediaHttpClient.GetPictureList(model.Id, (int)AccessLevel.Private, userinfo.Timezone);
+            List<Picture> photoList = await mediaHttpClient.GetPictureList(model.Id, userinfo.Timezone);
             if (photoList.Count != 0)
             {
                 foreach (Picture picture in photoList)
@@ -246,7 +247,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Video> videoList = await mediaHttpClient.GetVideoList(model.Id, 0, userinfo.Timezone);
+            List<Video> videoList = await mediaHttpClient.GetVideoList(model.Id, userinfo.Timezone);
             if (videoList.Count != 0)
             {
                 foreach (Video video in videoList)
@@ -261,7 +262,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<CalendarItem> eventsList = await calendarsHttpClient.GetCalendarList(model.Id, 0);
+            List<CalendarItem> eventsList = await calendarsHttpClient.GetCalendarList(model.Id);
             if (eventsList.Count != 0)
             {
                 foreach (CalendarItem evt in eventsList)
@@ -276,7 +277,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<VocabularyItem> vocabList = await wordsHttpClient.GetWordsList(model.Id, 0);
+            List<VocabularyItem> vocabList = await wordsHttpClient.GetWordsList(model.Id);
             if (vocabList.Count != 0)
             {
                 foreach (VocabularyItem voc in vocabList)
@@ -292,7 +293,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Skill> skillList = await skillsHttpClient.GetSkillsList(model.Id, 0);
+            List<Skill> skillList = await skillsHttpClient.GetSkillsList(model.Id);
             if (skillList.Count != 0)
             {
                 foreach (Skill skill in skillList)
@@ -308,7 +309,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.Id, 0);
+            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.Id);
 
             if (friendsList.Count != 0)
             {
@@ -326,7 +327,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Measurement> measurementsList = await measurementsHttpClient.GetMeasurementsList(model.Id, 0);
+            List<Measurement> measurementsList = await measurementsHttpClient.GetMeasurementsList(model.Id);
 
             if (measurementsList.Count != 0)
             {
@@ -343,7 +344,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.Id, 0);
+            List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.Id);
             
             if (sleepList.Count != 0)
             {
@@ -360,7 +361,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Note> notesList = await notesClient.GetNotesList(model.Id, 0);
+            List<Note> notesList = await notesClient.GetNotesList(model.Id);
 
             if (notesList.Count != 0)
             {
@@ -378,7 +379,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Contact> contactsList = await contactsHttpClient.GetContactsList(model.Id, 0);
+            List<Contact> contactsList = await contactsHttpClient.GetContactsList(model.Id);
             
             if (contactsList.Count != 0)
             {
@@ -397,7 +398,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Vaccination> vaccinationsList = await vaccinationsHttpClient.GetVaccinationsList(model.Id, 0);
+            List<Vaccination> vaccinationsList = await vaccinationsHttpClient.GetVaccinationsList(model.Id);
 
             if (vaccinationsList.Count != 0)
             {
@@ -414,7 +415,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Location> locationsList = await locationsHttpClient.GetLocationsList(model.Id, 0);
+            List<Location> locationsList = await locationsHttpClient.GetLocationsList(model.Id);
             if (locationsList.Count != 0)
             {
                 foreach (Location location in locationsList)
@@ -441,7 +442,18 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetAllProgenyTags([FromBody] AutoSuggestList suggestionsList)
         {
-            suggestionsList.Suggestions = await autoSuggestsHttpClient.GetTagsList(suggestionsList.ProgenyId, 0);
+            if (suggestionsList.Progenies.Count == 0)
+            {
+                suggestionsList.Progenies = [Constants.DefaultChildId];
+            }
+
+            List<string> tagsList = [];
+            foreach (int progenyId in suggestionsList.Progenies)
+            {
+                tagsList.AddRange(await autoSuggestsHttpClient.GetTagsList(progenyId));
+            }
+
+            suggestionsList.Suggestions = tagsList.Distinct().ToList();
 
 
             return Json(suggestionsList);
@@ -455,8 +467,20 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetAllProgenyContexts([FromBody] AutoSuggestList suggestionsList)
         {
-            suggestionsList.Suggestions = await autoSuggestsHttpClient.GetContextsList(suggestionsList.ProgenyId, 0);
-            
+            if (suggestionsList.Progenies.Count == 0)
+            {
+                suggestionsList.Progenies = [Constants.DefaultChildId];
+            }
+
+            List<string> contextsList = [];
+            foreach (int progenyId in suggestionsList.Progenies)
+            {
+                contextsList.AddRange(await autoSuggestsHttpClient.GetContextsList(progenyId));
+            }
+
+            suggestionsList.Suggestions = contextsList.Distinct().ToList();
+
+
             return Json(suggestionsList);
         }
 
@@ -468,7 +492,19 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetAllProgenyLocations([FromBody] AutoSuggestList suggestionsList)
         {
-            suggestionsList.Suggestions = await autoSuggestsHttpClient.GetLocationsList(suggestionsList.ProgenyId, 0);
+            if (suggestionsList.Progenies.Count == 0)
+            {
+                suggestionsList.Progenies = [Constants.DefaultChildId];
+            }
+
+            List<string> locationsList = [];
+            foreach (int progenyId in suggestionsList.Progenies)
+            {
+                locationsList.AddRange(await autoSuggestsHttpClient.GetLocationsList(progenyId));
+            }
+
+            suggestionsList.Suggestions = locationsList.Distinct().ToList();
+
 
             return Json(suggestionsList);
         }
@@ -481,8 +517,20 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetAllProgenyCategories([FromBody] AutoSuggestList suggestionsList)
         {
-            suggestionsList.Suggestions = await autoSuggestsHttpClient.GetCategoriesList(suggestionsList.ProgenyId, 0);
-            
+            if (suggestionsList.Progenies.Count == 0)
+            {
+                suggestionsList.Progenies = [Constants.DefaultChildId];
+            }
+
+            List<string> categoriesList = [];
+            foreach (int progenyId in suggestionsList.Progenies)
+            {
+                categoriesList.AddRange(await autoSuggestsHttpClient.GetCategoriesList(progenyId));
+            }
+
+            suggestionsList.Suggestions = categoriesList.Distinct().ToList();
+
+
             return Json(suggestionsList);
         }
 
@@ -494,7 +542,19 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetAllProgenyVocabularyLanguages([FromBody] AutoSuggestList suggestionsList)
         {
-            suggestionsList.Suggestions = await autoSuggestsHttpClient.GetVocabularyLanguageList(suggestionsList.ProgenyId, 0);
+            if (suggestionsList.Progenies.Count == 0)
+            {
+                suggestionsList.Progenies = [Constants.DefaultChildId];
+            }
+
+            List<string> languagesList = [];
+            foreach (int progenyId in suggestionsList.Progenies)
+            {
+                languagesList.AddRange(await autoSuggestsHttpClient.GetVocabularyLanguageList(progenyId));
+            }
+
+            suggestionsList.Suggestions = languagesList.Distinct().ToList();
+
 
             return Json(suggestionsList);
         }

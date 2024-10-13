@@ -182,8 +182,9 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, it will be looked up in the database and added to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list of Friends for.</param>
+        /// <param name="accessLevel">The access level required to view the Friend.</param>
         /// <returns>List of Friends.</returns>
-        public async Task<List<Friend>> GetFriendsList(int progenyId)
+        public async Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel)
         {
             List<Friend> friendsList = await GetFriendsListFromCache(progenyId);
 
@@ -191,6 +192,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 friendsList = await SetFriendsListInCache(progenyId);
             }
+
+            friendsList = friendsList.Where(p => p.AccessLevel >= accessLevel).ToList();
 
             return friendsList;
         }
@@ -225,9 +228,9 @@ namespace KinaUnaProgenyApi.Services
             return friendsList;
         }
 
-        public async Task<List<Friend>> GetFriendsWithTag(int progenyId, string tag)
+        public async Task<List<Friend>> GetFriendsWithTag(int progenyId, string tag, int accessLevel)
         {
-            List<Friend> allItems = await GetFriendsList(progenyId);
+            List<Friend> allItems = await GetFriendsList(progenyId, accessLevel);
             if (!string.IsNullOrEmpty(tag))
             {
                 allItems = [.. allItems.Where(f => f.Tags != null && f.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];
@@ -236,9 +239,9 @@ namespace KinaUnaProgenyApi.Services
             return allItems;
         }
 
-        public async Task<List<Friend>> GetFriendsWithContext(int progenyId, string context)
+        public async Task<List<Friend>> GetFriendsWithContext(int progenyId, string context, int accessLevel)
         {
-            List<Friend> allItems = await GetFriendsList(progenyId);
+            List<Friend> allItems = await GetFriendsList(progenyId, accessLevel);
             if (!string.IsNullOrEmpty(context))
             {
                 allItems = [.. allItems.Where(f => f.Context != null && f.Context.Contains(context, StringComparison.CurrentCultureIgnoreCase))];

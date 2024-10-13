@@ -41,18 +41,16 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all locations for a Progeny that the user is allowed access to.
         /// </summary>
         /// <param name="progenyId">The progeny's Id.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Location objects.</returns>
-        Task<List<Location>> GetProgenyLocations(int progenyId, int accessLevel);
+        Task<List<Location>> GetProgenyLocations(int progenyId);
 
         /// <summary>
         /// Gets the list of Locations for a progeny that a user has access to with a given tag.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <param name="tagFilter">The string to filter the result list by. An empty string will include all locations.</param>
         /// <returns>List of Location objects.</returns>
-        Task<List<Location>> GetLocationsList(int progenyId, int accessLevel, string tagFilter = "");
+        Task<List<Location>> GetLocationsList(int progenyId, string tagFilter = "");
 
         /// <summary>
         /// Gets the Address entity with a given AddressId.

@@ -2,6 +2,7 @@ import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList }
 import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 
 let yearAgoItemsList: TimelineItem[] = []
 const yearAgoParameters: TimelineParameters = new TimelineParameters();
@@ -119,7 +120,7 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            yearAgoParameters.progenies = getSelectedProgenies();
             yearAgoItemsList = [];
             const yearAgoItemsDiv = document.querySelector<HTMLDivElement>('#year-ago-items-div');
             if (yearAgoItemsDiv !== null) {
@@ -131,20 +132,6 @@ function addSelectedProgeniesChangedEventListener() {
     });
 }
 
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        yearAgoParameters.progenies = progeniesIds;
-        return;
-    }
-
-    yearAgoParameters.progenies = [getCurrentProgenyId()];
-}
-
 /**
  * Initialization when the page is loaded.
  */
@@ -153,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     yearAgoParameters.count = 5;
     yearAgoParameters.skip = 0;
     yearAgoParameters.progenyId = yearAgoProgenyId;
-    getSelectedProgenies();
+    yearAgoParameters.progenies = getSelectedProgenies();
     addSelectedProgeniesChangedEventListener();
     setYearAgoEventListeners();
 

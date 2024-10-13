@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KinaUna.Data.Models.ItemInterfaces;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
@@ -7,7 +8,7 @@ namespace KinaUna.Data.Models
     /// Entity Framework Entity for Contact data.
     /// AddressIdNumber is used to link to an Address entity.
     /// </summary>
-    public class Contact
+    public class Contact: IContexted, ITaggable
     {
         public int ContactId { get; set; }
         public bool Active { get; set; }

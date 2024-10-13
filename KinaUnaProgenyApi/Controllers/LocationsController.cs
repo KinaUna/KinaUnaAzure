@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
@@ -41,26 +42,22 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves all locations for a given progeny that a user with a given access level has access to.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get Location items for.</param>
-        /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <returns>List of Locations, or NotFound if no Locations are found.</returns>
         // GET api/locations/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
-
-            List<Location> locationsList = await locationService.GetLocationsList(id);
-            locationsList = locationsList.Where(l => l.AccessLevel >= accessLevel).ToList();
-            if (locationsList.Count != 0)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(locationsList);
+                return accessLevelResult.ToActionResult();
             }
 
-            return NotFound();
-
+            List<Location> locationsList = await locationService.GetLocationsList(id, accessLevelResult.Value);
+            
+            return Ok(locationsList);
         }
 
         /// <summary>
@@ -80,13 +77,13 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(location.ProgenyId, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(location.ProgenyId, userEmail, location.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(location);
+                return accessLevelResult.ToActionResult();
             }
-
-            return Unauthorized();
+            
+            return Ok(location);
         }
 
         /// <summary>
@@ -240,15 +237,13 @@ namespace KinaUnaProgenyApi.Controllers
             if (result == null) return NotFound();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-            if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, result.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(result);
+                return accessLevelResult.ToActionResult();
             }
 
-            return Unauthorized();
-
+            return Ok(result);
         }
 
         /// <summary>
@@ -257,30 +252,27 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="pageSize">The number of Location items per page.</param>
         /// <param name="pageIndex">The current page number.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny to display Locations for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <param name="sortBy">int: Sort order for the Location items. 0 = oldest first, 1 = newest first.</param>
         /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Mobile clients still use this parameter.")]
         public async Task<IActionResult> GetLocationsListPage([FromQuery] int pageSize = 8,
             [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId,
-            [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+            [FromQuery] int sortBy = 1)
         {
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
-
+            
             if (pageIndex < 1)
             {
                 pageIndex = 1;
             }
 
-            List<Location> allItems = await locationService.GetLocationsList(progenyId);
+            List<Location> allItems = await locationService.GetLocationsList(progenyId, accessLevelResult.Value);
             allItems = [.. allItems.OrderBy(v => v.Date)];
 
             if (sortBy == 1)

@@ -150,8 +150,9 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
+        /// <param name="accessLevel">The access level of the user requesting the list.</param>
         /// <returns>List of Vaccination objects.</returns>
-        public async Task<List<Vaccination>> GetVaccinationsList(int progenyId)
+        public async Task<List<Vaccination>> GetVaccinationsList(int progenyId, int accessLevel)
         {
             List<Vaccination> vaccinationsList = await GetVaccinationListFromCache(progenyId);
             if (vaccinationsList.Count == 0)
@@ -159,6 +160,7 @@ namespace KinaUnaProgenyApi.Services
                 vaccinationsList = await SetVaccinationListInCache(progenyId);
             }
 
+            vaccinationsList = vaccinationsList.Where(v => v.AccessLevel >= accessLevel).ToList();
             return vaccinationsList;
         }
 

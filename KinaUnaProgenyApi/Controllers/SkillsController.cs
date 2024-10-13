@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
@@ -49,17 +50,15 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
-
-            List<Skill> skillsList = await skillService.GetSkillsList(id);
-            skillsList = skillsList.Where(s => s.AccessLevel >= accessLevel).ToList();
-            if (skillsList.Count != 0)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(skillsList);
+                return accessLevelResult.ToActionResult();
             }
-            return NotFound();
 
+            List<Skill> skillsList = await skillService.GetSkillsList(id, accessLevelResult.Value);
+            
+            return Ok(skillsList);
         }
 
         /// <summary>
@@ -71,16 +70,16 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetSkillItem(int id)
         {
-            Skill result = await skillService.GetSkill(id);
+            Skill skill = await skillService.GetSkill(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(skill.ProgenyId, userEmail, skill.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(result);
+                return accessLevelResult.ToActionResult();
             }
 
-            return Unauthorized();
+            return Ok(skill);
         }
 
         /// <summary>
@@ -253,26 +252,24 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="pageSize">The number of Skills per page.</param>
         /// <param name="pageIndex">The current page number.</param>
         /// <param name="progenyId">The ProgenyId for the Progeny to show skills for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <param name="sortBy">Sort order. 0 = oldest first, 1 = newest first.</param>
         /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public async Task<IActionResult> GetSkillsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        public async Task<IActionResult> GetSkillsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int sortBy = 1)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
+
             if (pageIndex < 1)
             {
                 pageIndex = 1;
             }
 
-            List<Skill> allItems = await skillService.GetSkillsList(progenyId);
+            List<Skill> allItems = await skillService.GetSkillsList(progenyId, accessLevelResult.Value);
             allItems = [.. allItems.OrderBy(s => s.SkillFirstObservation)];
 
             if (sortBy == 1)

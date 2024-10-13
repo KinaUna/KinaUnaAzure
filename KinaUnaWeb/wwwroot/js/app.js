@@ -146,12 +146,21 @@ function setSelectedProgenies() {
     selectedProgenyButtons.forEach(function (button) {
         let selectedProgenyData = button.getAttribute('data-select-progeny-id');
         if (selectedProgenyData) {
-            selectedProgenyIds.push(selectedProgenyData.valueOf());
+            selectedProgenyIds.push(selectedProgenyData);
         }
     });
     let currentProgenyId = getCurrentProgenyId();
     if (!selectedProgenyIds.includes(currentProgenyId.toString())) {
         selectedProgenyIds.push(currentProgenyId.toString());
+    }
+    if (selectedProgenyIds.length === 0) {
+        let allProgenyButtons = document.querySelectorAll('.select-progeny-button');
+        allProgenyButtons.forEach(function (button) {
+            let selectedProgenyData = button.getAttribute('data-select-progeny-id');
+            if (selectedProgenyData) {
+                selectedProgenyIds.push(selectedProgenyData);
+            }
+        });
     }
     localStorage.setItem('selectedProgenies', JSON.stringify(selectedProgenyIds));
     const selectedProgeniesChangedEvent = new Event('progeniesChanged');
@@ -164,7 +173,7 @@ function setSetDefaultProgenyEventListeners() {
             let selectedButton = event.target;
             let selectedProgenyId = selectedButton.getAttribute('data-default-progeny-id');
             if (selectedProgenyId !== null) {
-                await setDefaultProgeny(parseInt(selectedProgenyId.valueOf()));
+                await setDefaultProgeny(parseInt(selectedProgenyId));
             }
         });
     });

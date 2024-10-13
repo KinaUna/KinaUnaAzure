@@ -41,8 +41,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of Measurements for a progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny to get Measurements for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Measurement objects.</returns>
-        Task<List<Measurement>> GetMeasurementsList(int progenyId, int accessLevel);
+        Task<List<Measurement>> GetMeasurementsList(int progenyId);
     }
 }

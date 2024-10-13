@@ -157,7 +157,7 @@ function setSelectProgenyButtonsEventListeners(): void {
     selectProgenyButtons.forEach(function (button) {
         button.addEventListener('click', function (event) {
             event.preventDefault();
-            let selectedButton = event.target as HTMLButtonElement;
+            let selectedButton = event.target as HTMLAnchorElement;
             selectedButton.classList.toggle('selected');
 
             setSelectedProgenies();
@@ -173,14 +173,24 @@ function setSelectedProgenies() {
     selectedProgenyButtons.forEach(function (button) {
         let selectedProgenyData = button.getAttribute('data-select-progeny-id');
         if (selectedProgenyData) {
-            selectedProgenyIds.push(selectedProgenyData.valueOf());
+            selectedProgenyIds.push(selectedProgenyData);
         }
     });
     let currentProgenyId = getCurrentProgenyId();
     if (!selectedProgenyIds.includes(currentProgenyId.toString())) {
         selectedProgenyIds.push(currentProgenyId.toString());
     }
-    
+
+    if (selectedProgenyIds.length === 0) {
+        let allProgenyButtons = document.querySelectorAll<HTMLAnchorElement>('.select-progeny-button');
+        allProgenyButtons.forEach(function (button) {
+            let selectedProgenyData = button.getAttribute('data-select-progeny-id');
+            if (selectedProgenyData) {
+                selectedProgenyIds.push(selectedProgenyData);
+            }
+        });
+    }
+
     localStorage.setItem('selectedProgenies', JSON.stringify(selectedProgenyIds));
 
     const selectedProgeniesChangedEvent = new Event('progeniesChanged');
@@ -195,7 +205,7 @@ function setSetDefaultProgenyEventListeners() {
             let selectedButton = event.target as HTMLAnchorElement;
             let selectedProgenyId = selectedButton.getAttribute('data-default-progeny-id');
             if (selectedProgenyId !== null) {
-                await setDefaultProgeny(parseInt(selectedProgenyId.valueOf()));
+                await setDefaultProgeny(parseInt(selectedProgenyId));
             }
         });
     });

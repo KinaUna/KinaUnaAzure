@@ -151,14 +151,17 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
+        /// <param name="accessLevel">The access level of the user.</param>
         /// <returns>List of VocabularyItem objects.</returns>
-        public async Task<List<VocabularyItem>> GetVocabularyList(int progenyId)
+        public async Task<List<VocabularyItem>> GetVocabularyList(int progenyId, int accessLevel)
         {
             List<VocabularyItem> vocabularyList = await GetVocabularyListFromCache(progenyId);
             if (vocabularyList.Count == 0)
             {
                 vocabularyList = await SetVocabularyListInCache(progenyId);
             }
+
+            vocabularyList = vocabularyList.Where(p => p.AccessLevel >= accessLevel).ToList();
 
             return vocabularyList;
         }

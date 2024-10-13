@@ -108,16 +108,15 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of Contact objects for a progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <param name="tagFilter">String to filter the result list by, only items with the tagFilter string in the Tags property are included. If empty string all items are included.</param>
         /// <returns>List of Contact objects.</returns>
-        public async Task<List<Contact>> GetContactsList(int progenyId, int accessLevel = 5, string tagFilter = "")
+        public async Task<List<Contact>> GetContactsList(int progenyId, string tagFilter = "")
         {
             List<Contact> progenyContactsList = [];
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string contactsApiPath = "/api/Contacts/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
+            string contactsApiPath = "/api/Contacts/Progeny/" + progenyId;
             HttpResponseMessage contactsResponse = await _httpClient.GetAsync(contactsApiPath).ConfigureAwait(false);
             if (!contactsResponse.IsSuccessStatusCode) return progenyContactsList;
 

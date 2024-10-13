@@ -1,6 +1,6 @@
-import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as pageModels from '../page-models-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 const notesPageSettingsStorageKey = 'notes_page_parameters';
 let notesPageParameters = new pageModels.NotesPageParameters();
 let notesPageParametersHistory = [];
@@ -213,23 +213,11 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            notesPageParameters.progenies = getSelectedProgenies();
             notesPageParameters.currentPageNumber = 1;
             await getNotes();
         }
     });
-}
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        notesPageParameters.progenies = progeniesIds;
-        return;
-    }
-    notesPageParameters.progenies = [getCurrentProgenyId()];
 }
 document.addEventListener('DOMContentLoaded', async function () {
     await showPopupAtLoad(pageModels.TimeLineType.Note);
@@ -253,7 +241,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         sortDescendingSettingsButton?.classList.remove('active');
     }
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
+    notesPageParameters.progenies = getSelectedProgenies();
     getNotes();
     if (nextNotesItemsPageButton !== null && previousNotesItemsPageButton !== null) {
         nextNotesItemsPageButton.addEventListener('click', getNextNotesPage);

@@ -41,9 +41,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of Friend objects for a given progeny that a user with a given access level has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the progeny.</param>
-        /// <param name="accessLevel">The user's access level.</param>
         /// <param name="tagFilter">The tag to filter by. Only Friend items with the tagFilter string in the Tag property are included. Includes all friends if tagFilter is an empty string.</param>
         /// <returns>List of Friend objects.</returns>
-        Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel, string tagFilter = "");
+        Task<List<Friend>> GetFriendsList(int progenyId, string tagFilter = "");
     }
 }

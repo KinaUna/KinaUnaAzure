@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
 using KinaUna.Data.Extensions;
 using KinaUnaProgenyApi.Services.UserAccessService;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -43,24 +43,21 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves the List of all friends for a given Progeny that a user has access to.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get Friend items for.</param>
-        /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <returns>List of Friends.</returns>
-        // GET api/friends/progeny/[id]?accessLevel=[accessLevel]
         [HttpGet]
         [Route("[action]/{id:int}")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
-
-            List<Friend> friendsList = await friendService.GetFriendsList(id);
-            friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
-            if (friendsList.Count != 0)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(friendsList);
+                return accessLevelResult.ToActionResult();
             }
-            return NotFound();
+
+            List<Friend> friendsList = await friendService.GetFriendsList(id, accessLevelResult.Value);
+
+            return Ok(friendsList);
 
         }
 
@@ -73,20 +70,20 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetFriendItem(int id)
         {
-            Friend result = await friendService.GetFriend(id);
-            if (result == null)
+            Friend friend = await friendService.GetFriend(id);
+            if (friend == null)
             {
                 return NotFound();
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(friend.ProgenyId, userEmail, friend.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(result);
+                return accessLevelResult.ToActionResult();
             }
 
-            return Unauthorized();
+            return Ok(friend);
         }
 
         /// <summary>
@@ -284,8 +281,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
 
-            List<Friend> friendsList = await friendService.GetFriendsList(id);
-            friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
+            List<Friend> friendsList = await friendService.GetFriendsList(id, accessLevel);
             if (friendsList.Count == 0) return NotFound();
 
             foreach (Friend friend in friendsList)

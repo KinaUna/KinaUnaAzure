@@ -359,8 +359,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             Mock<IImageStore> imageStore = new();
             FriendService friendService = new(context, memoryCache, imageStore.Object);
 
-            List<Friend> friendsList = await friendService.GetFriendsList(1);
-            List<Friend> friendsList2 = await friendService.GetFriendsList(1); // Test cached result.
+            List<Friend> friendsList = await friendService.GetFriendsList(1, 0);
+            List<Friend> friendsList2 = await friendService.GetFriendsList(1, 0); // Test cached result.
             Friend firstFriend = friendsList.First();
 
             Assert.NotNull(friendsList);
@@ -421,8 +421,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             Mock<IImageStore> imageStore = new();
             FriendService friendService = new(context, memoryCache, imageStore.Object);
 
-            List<Friend> friendsList = await friendService.GetFriendsList(2);
-            List<Friend> friendsList2 = await friendService.GetFriendsList(2); // Test cached result.
+            List<Friend> friendsList = await friendService.GetFriendsList(2, 0);
+            List<Friend> friendsList2 = await friendService.GetFriendsList(2, 0); // Test cached result.
 
             Assert.NotNull(friendsList);
             Assert.IsType<List<Friend>>(friendsList);

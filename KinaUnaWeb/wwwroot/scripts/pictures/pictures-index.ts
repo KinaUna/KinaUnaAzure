@@ -5,6 +5,7 @@ import * as SettingsHelper from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import { popupPictureDetails } from './picture-details.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 
 let picturesPageParameters: PicturesPageParameters | null = new PicturesPageParameters();
 let popupPictureId: number = 0;
@@ -792,33 +793,15 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
             if (picturesPageParameters !== null) {
+                picturesPageParameters.progenies = getSelectedProgenies();
                 picturesPageParameters = await getPicturesList(picturesPageParameters, false);
             }
         }
-
     });
 }
 
-function getSelectedProgenies(): number[] {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        if (picturesPageParameters !== null) {
-            picturesPageParameters.progenies = progeniesIds;
-        }
 
-        return progeniesIds;
-    }
-    if (picturesPageParameters !== null) {
-        picturesPageParameters.progenies = [getCurrentProgenyId()];
-    }
-    return [getCurrentProgenyId()];
-}
 
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
@@ -838,9 +821,9 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     addSelectedProgeniesChangedEventListener();
     
     picturesPageParameters = getPageParametersFromPageData();
-    getSelectedProgenies();
+   
     if (picturesPageParameters !== null) {
-        
+        picturesPageParameters.progenies = getSelectedProgenies();
         refreshSelectPickers();
 
         picturesPageParameters = await getPicturesList(picturesPageParameters, false);

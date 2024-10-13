@@ -112,15 +112,14 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of Measurements for a progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny to get Measurements for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Measurement objects.</returns>
-        public async Task<List<Measurement>> GetMeasurementsList(int progenyId, int accessLevel)
+        public async Task<List<Measurement>> GetMeasurementsList(int progenyId)
         {
             List<Measurement> progenyMeasurementsList = [];
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string measurementsApiPath = "/api/measurements/progeny/" + progenyId + "?accessLevel=" + accessLevel;
+            string measurementsApiPath = "/api/measurements/progeny/" + progenyId;
             HttpResponseMessage measurementsResponse = await _httpClient.GetAsync(measurementsApiPath).ConfigureAwait(false);
             if (!measurementsResponse.IsSuccessStatusCode) return progenyMeasurementsList;
 

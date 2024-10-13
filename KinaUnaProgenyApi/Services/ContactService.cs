@@ -190,14 +190,17 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, it will be looked up in the database and added to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
+        /// <param name="accessLevel">The access level required to view the Contact.</param>
         /// <returns>List of Contacts.</returns>
-        public async Task<List<Contact>> GetContactsList(int progenyId)
+        public async Task<List<Contact>> GetContactsList(int progenyId, int accessLevel)
         {
             List<Contact> contactsList = await GetContactsListFromCache(progenyId);
             if (contactsList.Count == 0)
             {
                 contactsList = await SetContactsListInCache(progenyId);
             }
+
+            contactsList = contactsList.Where(p => p.AccessLevel >= accessLevel).ToList();
 
             return contactsList;
         }
@@ -227,9 +230,9 @@ namespace KinaUnaProgenyApi.Services
             return contactsList;
         }
 
-        public async Task<List<Contact>> GetContactsWithTag(int progenyId, string tag)
+        public async Task<List<Contact>> GetContactsWithTag(int progenyId, string tag, int accessLevel)
         {
-            List<Contact> allItems = await GetContactsList(progenyId);
+            List<Contact> allItems = await GetContactsList(progenyId, accessLevel);
             if (!string.IsNullOrEmpty(tag))
             {
                 allItems = [.. allItems.Where(c => c.Tags != null && c.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];
@@ -238,9 +241,9 @@ namespace KinaUnaProgenyApi.Services
             return allItems;
         }
 
-        public async Task<List<Contact>> GetContactsWithContext(int progenyId, string context)
+        public async Task<List<Contact>> GetContactsWithContext(int progenyId, string context, int accessLevel)
         {
-            List<Contact> allItems = await GetContactsList(progenyId);
+            List<Contact> allItems = await GetContactsList(progenyId, accessLevel);
             if (!string.IsNullOrEmpty(context))
             {
                 allItems = [.. allItems.Where(c => c.Context != null && c.Context.Contains(context, StringComparison.CurrentCultureIgnoreCase))];

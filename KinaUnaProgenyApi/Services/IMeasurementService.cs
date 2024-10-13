@@ -40,7 +40,8 @@ namespace KinaUnaProgenyApi.Services
         /// First tries to get the list from the cache, then from the database if it's not in the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Measurements for.</param>
+        /// <param name="accessLevel">The access level for the user requesting the list.</param>
         /// <returns>List of Measurements.</returns>
-        Task<List<Measurement>> GetMeasurementsList(int progenyId);
+        Task<List<Measurement>> GetMeasurementsList(int progenyId, int accessLevel);
     }
 }

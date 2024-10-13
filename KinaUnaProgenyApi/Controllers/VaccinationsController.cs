@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
@@ -39,19 +39,21 @@ namespace KinaUnaProgenyApi.Controllers
         /// Get all vaccinations for a specific Progeny that a user with a given access level is allowed to see.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get vaccinations for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Vaccination objects.</returns>
         // GET api/vaccinations/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
 
-            List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(id);
-            vaccinationsList = vaccinationsList.Where(v => v.AccessLevel >= accessLevel).ToList();
+            List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(id, accessLevelResult.Value);
+            
             if (vaccinationsList.Count != 0)
             {
                 return Ok(vaccinationsList);
@@ -71,16 +73,16 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetVaccinationItem(int id)
         {
-            Vaccination result = await vaccinationService.GetVaccination(id);
+            Vaccination vaccination = await vaccinationService.GetVaccination(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(vaccination.ProgenyId, userEmail, vaccination.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(result);
+                return accessLevelResult.ToActionResult();
             }
 
-            return Unauthorized();
+            return Ok(vaccination);
         }
 
         /// <summary>

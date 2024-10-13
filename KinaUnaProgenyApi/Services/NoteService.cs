@@ -156,14 +156,17 @@ namespace KinaUnaProgenyApi.Services
         /// First tries to get the list from the cache, then from the database if it's not in the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Notes for.</param>
+        /// <param name="accessLevel">The access level required to view the Note.</param>
         /// <returns>List of Note objects.</returns>
-        public async Task<List<Note>> GetNotesList(int progenyId)
+        public async Task<List<Note>> GetNotesList(int progenyId, int accessLevel)
         {
             List<Note> notesList = await GetNotesListFromCache(progenyId);
             if (notesList.Count == 0)
             {
                 notesList = await SetNotesListInCache(progenyId);
             }
+
+            notesList = notesList.Where(p => p.AccessLevel >= accessLevel).ToList();
 
             return notesList;
         }
@@ -198,9 +201,9 @@ namespace KinaUnaProgenyApi.Services
             return notesList;
         }
 
-        public async Task<List<Note>> GetNotesWithCategory(int progenyId, string category)
+        public async Task<List<Note>> GetNotesWithCategory(int progenyId, string category, int accessLevel)
         {
-            List<Note> allItems = await GetNotesList(progenyId);
+            List<Note> allItems = await GetNotesList(progenyId, accessLevel);
             if (!string.IsNullOrEmpty(category))
             {
                 allItems = [.. allItems.Where(n => n.Category != null && n.Category.Contains(category, StringComparison.CurrentCultureIgnoreCase))];

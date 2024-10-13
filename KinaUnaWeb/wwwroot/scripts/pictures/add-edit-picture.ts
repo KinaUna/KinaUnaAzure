@@ -48,8 +48,8 @@ function setupProgenySelectList(): void {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList(currentProgenyId);
-            await setLocationAutoSuggestList(currentProgenyId);
+            await setTagsAutoSuggestList([currentProgenyId]);
+            await setLocationAutoSuggestList([currentProgenyId]);
         });
     }
 }
@@ -614,8 +614,8 @@ async function setupAddEditPicture(): Promise<void> {
     await setupDateTimePicker();
     
     setupProgenySelectList();
-    await setTagsAutoSuggestList(currentProgenyId);
-    await setLocationAutoSuggestList(currentProgenyId);
+    await setTagsAutoSuggestList([currentProgenyId]);
+    await setLocationAutoSuggestList([currentProgenyId]);
 
     addEditButtonEventListener();
     addCopyLocationButtonEventListener();

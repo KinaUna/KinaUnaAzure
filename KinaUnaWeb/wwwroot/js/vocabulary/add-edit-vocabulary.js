@@ -33,7 +33,7 @@ function setupProgenySelectList() {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setVocabularyLanguagesAutoSuggestList(currentProgenyId);
+            await setVocabularyLanguagesAutoSuggestList([currentProgenyId]);
         });
     }
 }
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     languageId = getCurrentLanguageId();
     await setupDateTimePicker();
     setupProgenySelectList();
-    await setVocabularyLanguagesAutoSuggestList(currentProgenyId);
+    await setVocabularyLanguagesAutoSuggestList([currentProgenyId]);
     return new Promise(function (resolve, reject) {
         resolve();
     });

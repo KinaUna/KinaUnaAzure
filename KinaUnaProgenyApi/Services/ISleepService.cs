@@ -40,7 +40,8 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Sleep items for.</param>
+        /// <param name="accessLevel">The access level for the current user.</param>
         /// <returns>List of Sleep objects.</returns>
-        Task<List<Sleep>> GetSleepList(int progenyId);
+        Task<List<Sleep>> GetSleepList(int progenyId, int accessLevel);
     }
 }

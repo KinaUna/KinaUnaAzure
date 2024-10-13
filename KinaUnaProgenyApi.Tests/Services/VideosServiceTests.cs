@@ -473,8 +473,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VideosService videoService = new(context, memoryCache);
 
-            List<Video> videosList = await videoService.GetVideosList(1);
-            List<Video> videosList2 = await videoService.GetVideosList(1); // Test cached result.
+            List<Video> videosList = await videoService.GetVideosList(1, 0);
+            List<Video> videosList2 = await videoService.GetVideosList(1, 0); // Test cached result.
             Video firstVideo = videosList.First();
 
             Assert.NotNull(videosList);
@@ -545,8 +545,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VideosService videoService = new(context, memoryCache);
 
-            List<Video> videosList = await videoService.GetVideosList(2);
-            List<Video> videosList2 = await videoService.GetVideosList(2); // Test cached result.
+            List<Video> videosList = await videoService.GetVideosList(2, 0);
+            List<Video> videosList2 = await videoService.GetVideosList(2, 0); // Test cached result.
 
             Assert.NotNull(videosList);
             Assert.IsType<List<Video>>(videosList);

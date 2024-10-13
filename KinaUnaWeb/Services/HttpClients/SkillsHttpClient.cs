@@ -108,16 +108,15 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets a list of all Skills for a Progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the progeny to get Skills for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Skill objects.</returns>
-        public async Task<List<Skill>> GetSkillsList(int progenyId, int accessLevel)
+        public async Task<List<Skill>> GetSkillsList(int progenyId)
         {
             List<Skill> progenySkillsList = [];
 
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string skillsApiPath = "/api/Skills/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
+            string skillsApiPath = "/api/Skills/Progeny/" + progenyId;
             HttpResponseMessage skillsResponse = await _httpClient.GetAsync(skillsApiPath);
             if (!skillsResponse.IsSuccessStatusCode) return progenySkillsList;
 

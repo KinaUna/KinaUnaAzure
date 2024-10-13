@@ -4,6 +4,7 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation
 import { LocationItem, LocationsPageParameters, NearByPhotosRequest, PicturesLocationsRequest, TimeLineItemViewModel, TimelineItem } from '../page-models-v8.js';
 import { setupHereMapsPhotoLocations } from './location-tools.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 const photoLocationsPageSettingsStorageKey = 'photo_locations_page_parameters';
 const nearByPhotosSettingsStorageKey = 'near_by_photos_parameters';
 let locationsPageParameters = new LocationsPageParameters();
@@ -272,29 +273,17 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            locationsPageParameters.progenies = getSelectedProgenies();
             await getPicturesLocationsList();
         }
     });
-}
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        locationsPageParameters.progenies = progeniesIds;
-        return;
-    }
-    locationsPageParameters.progenies = [getCurrentProgenyId()];
 }
 document.addEventListener('DOMContentLoaded', async function () {
     photoLocationsProgenyId = getCurrentProgenyId();
     getLocationsPageParameters();
     loadPhotoLocationsPageSettings();
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
+    locationsPageParameters.progenies = getSelectedProgenies();
     map = setupHereMapsPhotoLocations(locationsPageParameters.languageId);
     setUpMap();
     const photoLocationsSaveSettingsButton = document.querySelector('#photo-locations-page-save-settings-button');

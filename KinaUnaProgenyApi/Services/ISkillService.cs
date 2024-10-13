@@ -40,8 +40,10 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Skills for.</param>
+        /// <param name="accessLevel">The access level required to view the Skill.</param>
         /// <returns>List of Skill objects.</returns>
-        Task<List<Skill>> GetSkillsList(int progenyId);
-        Task<List<Skill>> GetSkillsWithCategory(int progenyId, string category);
+        Task<List<Skill>> GetSkillsList(int progenyId, int accessLevel);
+        
+        Task<List<Skill>> GetSkillsWithCategory(int progenyId, string category, int accessLevel);
     }
 }

@@ -334,8 +334,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VocabularyService vocabularyService = new(context, memoryCache);
 
-            List<VocabularyItem> vocabularyItemsList = await vocabularyService.GetVocabularyList(1);
-            List<VocabularyItem> vocabularyItemsList2 = await vocabularyService.GetVocabularyList(1); // Test cached result.
+            List<VocabularyItem> vocabularyItemsList = await vocabularyService.GetVocabularyList(1, 0);
+            List<VocabularyItem> vocabularyItemsList2 = await vocabularyService.GetVocabularyList(1,0); // Test cached result.
             VocabularyItem firstVocabularyItem = vocabularyItemsList.First();
 
             Assert.NotNull(vocabularyItemsList);
@@ -391,8 +391,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VocabularyService vocabularyService = new(context, memoryCache);
 
-            List<VocabularyItem> vocabularyItemsList = await vocabularyService.GetVocabularyList(2);
-            List<VocabularyItem> vocabularyItemsList2 = await vocabularyService.GetVocabularyList(2); // Test cached result.
+            List<VocabularyItem> vocabularyItemsList = await vocabularyService.GetVocabularyList(2, 0);
+            List<VocabularyItem> vocabularyItemsList2 = await vocabularyService.GetVocabularyList(2, 0); // Test cached result.
 
             Assert.NotNull(vocabularyItemsList);
             Assert.IsType<List<VocabularyItem>>(vocabularyItemsList);

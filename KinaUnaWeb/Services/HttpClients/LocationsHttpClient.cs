@@ -111,16 +111,15 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all locations for a Progeny that the user is allowed access to.
         /// </summary>
         /// <param name="progenyId">The progeny's Id.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <returns>List of Location objects.</returns>
-        public async Task<List<Location>> GetProgenyLocations(int progenyId, int accessLevel)
+        public async Task<List<Location>> GetProgenyLocations(int progenyId)
         {
             List<Location> progenyLocations = [];
 
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string locationsApiPath = "/api/Locations/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
+            string locationsApiPath = "/api/Locations/Progeny/" + progenyId;
             HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath);
             if (!locationsResponse.IsSuccessStatusCode) return progenyLocations;
 
@@ -135,16 +134,15 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of Locations for a progeny that a user has access to with a given tag.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <param name="tagFilter">The string to filter the result list by. An empty string will include all locations.</param>
         /// <returns>List of Location objects.</returns>
-        public async Task<List<Location>> GetLocationsList(int progenyId, int accessLevel, string tagFilter = "")
+        public async Task<List<Location>> GetLocationsList(int progenyId, string tagFilter = "")
         {
             List<Location> progenyLocationsList = [];
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string locationsApiPath = "/api/Locations/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
+            string locationsApiPath = "/api/Locations/Progeny/" + progenyId;
             HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath);
             if (!locationsResponse.IsSuccessStatusCode) return progenyLocationsList;
 

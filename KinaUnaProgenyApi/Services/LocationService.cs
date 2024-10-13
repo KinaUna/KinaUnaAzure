@@ -153,8 +153,9 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, it will be looked up in the database and added to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Location entities for.</param>
+        /// <param name="accessLevel">The access level of the user.</param>
         /// <returns>List of Locations.</returns>
-        public async Task<List<Location>> GetLocationsList(int progenyId)
+        public async Task<List<Location>> GetLocationsList(int progenyId, int accessLevel)
         {
             List<Location> locationsList = await GetLocationsListFromCache(progenyId);
             if (locationsList.Count == 0)
@@ -162,6 +163,7 @@ namespace KinaUnaProgenyApi.Services
                 locationsList = await SetLocationsListInCache(progenyId);
             }
 
+            locationsList = locationsList.Where(p => p.AccessLevel >= accessLevel).ToList();
             return locationsList;
         }
 
@@ -306,9 +308,9 @@ namespace KinaUnaProgenyApi.Services
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "address" + id);
         }
 
-        public async Task<List<Location>> GetLocationsWithTag(int progenyId, string tag)
+        public async Task<List<Location>> GetLocationsWithTag(int progenyId, string tag, int accessLevel)
         {
-            List<Location> allItems = await GetLocationsList(progenyId);
+            List<Location> allItems = await GetLocationsList(progenyId, accessLevel);
             if (!string.IsNullOrEmpty(tag))
             {
                 allItems = [.. allItems.Where(l => l.Tags != null && l.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];

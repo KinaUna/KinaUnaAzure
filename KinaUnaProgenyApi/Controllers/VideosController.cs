@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models.ViewModels;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
@@ -45,23 +46,21 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="pageSize">Number of Videos per page.</param>
         /// <param name="pageIndex">The current page number.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny to get videos for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <param name="tagFilter">Include only Videos with Tags containing the tagFilter string. If empty, include all videos.</param>
         /// <param name="sortBy">Sort order. 0 = oldest first, 1 = newest first.</param>
         /// <returns>VideoPageViewModel</returns>
-        // GET api/videos/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
         [HttpGet]
         [Route("[action]")]
-        public async Task<IActionResult> Page([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
+        public async Task<IActionResult> Page([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
+
             if (pageIndex < 1)
             {
                 pageIndex = 1;
@@ -70,13 +69,13 @@ namespace KinaUnaProgenyApi.Controllers
             List<Video> allItems;
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                allItems = await videosService.GetVideosList(progenyId);
-                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
+                allItems = await videosService.GetVideosList(progenyId, accessLevelResult.Value);
+                allItems = [.. allItems.Where(p => p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
             }
             else
             {
-                allItems = await videosService.GetVideosList(progenyId);
-                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime)];
+                allItems = await videosService.GetVideosList(progenyId, accessLevelResult.Value);
+                allItems = [.. allItems.OrderBy(p => p.VideoTime)];
             }
 
             if (sortBy == 1)
@@ -157,17 +156,17 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
         [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}")]
-        public async Task<IActionResult> VideoViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1, [FromQuery] string tagFilter = "")
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> VideoViewModel(int id, [FromQuery] int sortBy = 1, [FromQuery] string tagFilter = "")
         {
             Video video = await videosService.GetVideo(id);
             if (video == null) return NotFound();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail);
-            if (userAccess == null && video.ProgenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(video.ProgenyId, userEmail, video.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
             VideoViewModel model = new()
@@ -197,13 +196,13 @@ namespace KinaUnaProgenyApi.Controllers
             model.Altitude = video.Latitude;
             model.TagsList = "";
             List<string> tagsList = [];
-            List<Video> videosList = await videosService.GetVideosList(video.ProgenyId);
-            videosList = [.. videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime)];
+            List<Video> videosList = await videosService.GetVideosList(video.ProgenyId, accessLevelResult.Value);
+            videosList = [.. videosList.OrderBy(p => p.VideoTime)];
             if (videosList.Count != 0)
             {
                 if (!string.IsNullOrEmpty(tagFilter))
                 {
-                    videosList = [.. videosList.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
+                    videosList = [.. videosList.Where(p => p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
                 }
 
                 int currentIndex = 0;
@@ -285,11 +284,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail);
-
-            if ((userAccess == null && video.ProgenyId != Constants.DefaultChildId) || (userAccess != null && userAccess.AccessLevel > video.AccessLevel && video.ProgenyId != Constants.DefaultChildId))
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(video.ProgenyId, userEmail, video.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
             VideoViewModel model = new();
@@ -298,8 +296,8 @@ namespace KinaUnaProgenyApi.Controllers
             model.VideoCount = 0;
             model.CommentsList = await commentsService.GetCommentsList(video.CommentThreadNumber);
             model.TagsList = "";
-            return Ok(model);
 
+            return Ok(model);
         }
 
         /// <summary>
@@ -307,30 +305,29 @@ namespace KinaUnaProgenyApi.Controllers
         /// Includes Comments for each Video.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get videos for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <returns>List of Videos.</returns>
         // GET api/videos/progeny/[id]/[accessLevel]
         [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}")]
-        public async Task<IActionResult> Progeny(int id, int accessLevel)
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> Progeny(int id)
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-
-            if (userAccess == null && id != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
-            List<Video> videosList = await videosService.GetVideosList(id);
-            videosList = videosList.Where(v => v.AccessLevel >= accessLevel).ToList();
+            List<Video> videosList = await videosService.GetVideosList(id, accessLevelResult.Value);
+            
             if (videosList.Count == 0) return Ok(videosList);
 
             foreach (Video video in videosList)
             {
                 video.Comments = await commentsService.GetCommentsList(video.CommentThreadNumber);
             }
+
             return Ok(videosList);
         }
 
@@ -339,31 +336,28 @@ namespace KinaUnaProgenyApi.Controllers
         /// Does not include comments for each Video.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get videos for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <returns>List of Videos.</returns>
         [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}")]
-        public async Task<IActionResult> ProgenyVideosList(int id, int accessLevel)
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> ProgenyVideosList(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-
-            if (userAccess == null && id != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
-            List<Video> videosList = await videosService.GetVideosList(id);
-            videosList = videosList.Where(p => p.AccessLevel >= accessLevel).ToList();
+            List<Video> videosList = await videosService.GetVideosList(id, accessLevelResult.Value);
 
-            if (videosList.Count != 0)
+            if (videosList.Count == 0)
             {
+                Video tempPicture = new();
+
+                videosList.Add(tempPicture);
                 return Ok(videosList);
             }
 
-            Video tempPicture = new();
-            
-            videosList.Add(tempPicture);
             return Ok(videosList);
         }
 
@@ -377,19 +371,18 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetVideo(int id)
         {
-            Video result = await videosService.GetVideo(id);
-            if (result == null) return NotFound();
+            Video video = await videosService.GetVideo(id);
+            if (video == null) return NotFound();
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-            if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(video.ProgenyId, userEmail, video.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
-            return Ok(result);
+            return Ok(video);
 
         }
 
@@ -402,19 +395,18 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{videoLink}/{progenyId:int}")]
         public async Task<IActionResult> ByLink(string videoLink, int progenyId)
         {
-            Video result = await videosService.GetVideoByLink(videoLink, progenyId);
-            if (result == null) return NotFound();
+            Video video = await videosService.GetVideoByLink(videoLink, progenyId);
+            if (video == null) return NotFound();
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-            if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(video.ProgenyId, userEmail, video.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
-            return Ok(result);
+            return Ok(video);
 
         }
 
@@ -593,18 +585,17 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetVideoMobile(int id)
         {
-            Video result = await videosService.GetVideo(id);
+            Video video = await videosService.GetVideo(id);
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-            if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(video.ProgenyId, userEmail, video.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
-            return Ok(result);
+            return Ok(video);
         }
 
         /// <summary>
@@ -624,11 +615,10 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
 
             if (pageIndex < 1)
@@ -636,7 +626,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Video> allItems = await videosService.GetVideosList(progenyId);
+            List<Video> allItems = await videosService.GetVideosList(progenyId, accessLevelResult.Value);
             List<string> tagsList = [];
             foreach (Video vid in allItems)
             {

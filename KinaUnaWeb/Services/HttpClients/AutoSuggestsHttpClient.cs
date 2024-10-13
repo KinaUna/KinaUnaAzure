@@ -33,16 +33,15 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all unique tags for a Progeny, including only items that the user has access to.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get tags for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny</param>
         /// <returns>List of strings.</returns>
-        public async Task<List<string>> GetTagsList(int progenyId, int accessLevel)
+        public async Task<List<string>> GetTagsList(int progenyId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             List<string> resultTagsList = [];
 
-            string tagsApiPath = "/api/AutoSuggests/GetTagsAutoSuggestList/" + progenyId + "/" + accessLevel;
+            string tagsApiPath = "/api/AutoSuggests/GetTagsAutoSuggestList/" + progenyId;
 
             HttpResponseMessage tagsResponse = await _httpClient.GetAsync(tagsApiPath).ConfigureAwait(false);
             if (!tagsResponse.IsSuccessStatusCode) return resultTagsList;
@@ -58,16 +57,15 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all unique contexts for a Progeny, including only items that the user has access to.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get contexts for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny</param>
         /// <returns>List of strings.</returns>
-        public async Task<List<string>> GetContextsList(int progenyId, int accessLevel)
+        public async Task<List<string>> GetContextsList(int progenyId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             List<string> resultContextsList = [];
 
-            string contextsApiPath = "/api/AutoSuggests/GetContextAutoSuggestList/" + progenyId + "/" + accessLevel;
+            string contextsApiPath = "/api/AutoSuggests/GetContextAutoSuggestList/" + progenyId;
 
             HttpResponseMessage contextsResponse = await _httpClient.GetAsync(contextsApiPath).ConfigureAwait(false);
             if (!contextsResponse.IsSuccessStatusCode) return resultContextsList;
@@ -83,16 +81,15 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all unique location names for a Progeny, including only items that the user has access to.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get locations for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny</param>
         /// <returns>List of strings.</returns>
-        public async Task<List<string>> GetLocationsList(int progenyId, int accessLevel)
+        public async Task<List<string>> GetLocationsList(int progenyId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             List<string> resultLocationsList = [];
 
-            string locationsApiPath = "/api/AutoSuggests/GetLocationAutoSuggestList/" + progenyId + "/" + accessLevel;
+            string locationsApiPath = "/api/AutoSuggests/GetLocationAutoSuggestList/" + progenyId;
 
             HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath).ConfigureAwait(false);
             if (!locationsResponse.IsSuccessStatusCode) return resultLocationsList;
@@ -108,16 +105,15 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all unique categories for a Progeny, including only items that the user has access to.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get categories for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny</param>
         /// <returns>List of strings.</returns>
-        public async Task<List<string>> GetCategoriesList(int progenyId, int accessLevel)
+        public async Task<List<string>> GetCategoriesList(int progenyId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             List<string> resultCategoriesList = [];
 
-            string categoriesApiPath = "/api/AutoSuggests/GetCategoryAutoSuggestList/" + progenyId + "/" + accessLevel;
+            string categoriesApiPath = "/api/AutoSuggests/GetCategoryAutoSuggestList/" + progenyId;
 
             HttpResponseMessage categoriesResponse = await _httpClient.GetAsync(categoriesApiPath).ConfigureAwait(false);
             if (!categoriesResponse.IsSuccessStatusCode) return resultCategoriesList;
@@ -133,16 +129,15 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all unique languages for a Progeny's VocabularyItems, including only items that the user has access to.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get languages for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny</param>
         /// <returns>List of strings.</returns>
-        public async Task<List<string>> GetVocabularyLanguageList(int progenyId, int accessLevel)
+        public async Task<List<string>> GetVocabularyLanguageList(int progenyId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             List<string> resultLanguagesList = [];
 
-            string languagesApiPath = "/api/AutoSuggests/GetVocabularyLanguagesSuggestList/" + progenyId + "/" + accessLevel;
+            string languagesApiPath = "/api/AutoSuggests/GetVocabularyLanguagesSuggestList/" + progenyId;
 
             HttpResponseMessage languagesResponse = await _httpClient.GetAsync(languagesApiPath).ConfigureAwait(false);
             if (!languagesResponse.IsSuccessStatusCode) return resultLanguagesList;

@@ -377,6 +377,31 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         }
 
         /// <summary>
+        /// Gets the validated access level for a user for a Progeny.
+        /// </summary>
+        /// <param name="progenyId">The Progeny's Id.</param>
+        /// <param name="userEmail">The current user's email address.</param>
+        /// <param name="itemAccessLevel">Optional access level required for a specific item.</param>
+        /// <returns>Integer with the access level.</returns>
+        public async Task<CustomResult<int>> GetValidatedAccessLevel(int progenyId, string userEmail, int? itemAccessLevel)
+        {
+            UserAccess userAccess = await GetProgenyUserAccessForUser(progenyId, userEmail);
+
+            if (userAccess == null && progenyId == Constants.DefaultChildId)
+            {
+                // Default child is always allowed.
+                userAccess = await GetProgenyUserAccessForUser(Constants.DefaultChildId, userEmail);
+            }
+
+            if (userAccess == null || (itemAccessLevel != null && itemAccessLevel < userAccess.AccessLevel))
+            {
+                return CustomError.UnauthorizedError("User is not authorized to view this content");
+            }
+            
+            return userAccess.AccessLevel;
+        }
+
+        /// <summary>
         /// Gets the UserAccess entity for a specific User and a Progeny from the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the UserAccess.</param>

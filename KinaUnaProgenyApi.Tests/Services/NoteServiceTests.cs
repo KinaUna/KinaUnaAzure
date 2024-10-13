@@ -311,8 +311,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             NoteService noteService = new(context, memoryCache);
 
-            List<Note> notesList = await noteService.GetNotesList(1);
-            List<Note> notesList2 = await noteService.GetNotesList(1); // Test cached result.
+            List<Note> notesList = await noteService.GetNotesList(1, 0);
+            List<Note> notesList2 = await noteService.GetNotesList(1, 0); // Test cached result.
             Note firstNote = notesList.First();
 
             Assert.NotNull(notesList);
@@ -364,8 +364,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             NoteService noteService = new(context, memoryCache);
 
-            List<Note> notesList = await noteService.GetNotesList(2);
-            List<Note> notesList2 = await noteService.GetNotesList(2); // Test cached result.
+            List<Note> notesList = await noteService.GetNotesList(2, 0);
+            List<Note> notesList2 = await noteService.GetNotesList(2, 0); // Test cached result.
 
             Assert.NotNull(notesList);
             Assert.IsType<List<Note>>(notesList);

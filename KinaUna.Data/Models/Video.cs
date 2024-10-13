@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.ItemInterfaces;
 
 namespace KinaUna.Data.Models
 {
     /// <summary>
     /// Entity Framework Entity for Video data.
     /// </summary>
-    public class Video
+    public class Video: ITaggable, ILocatable
     {
         [Key]
         public int VideoId { get; set; }
@@ -42,5 +43,10 @@ namespace KinaUna.Data.Models
         public string DurationMinutes { get; set; }
         [NotMapped]
         public string DurationSeconds { get; set; }
+
+        public string GetLocationString()
+        {
+            return Location;
+        }
     }
 }

@@ -44,23 +44,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="email">The user's email address.</param>
         /// <returns>List of Progeny objects.</returns>
         Task<List<Progeny>> GetProgenyAdminList(string email);
-
-        /// <summary>
-        /// Gets the latest 5 posts (timeline time, not added time) for a Progeny, that the user is allowed access to.
-        /// </summary>
-        /// <param name="progenyId">The progeny's Id.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
-        /// <returns>List of TimeLineItem objects.</returns>
-        Task<List<TimeLineItem>> GetProgenyLatestPosts(int progenyId, int accessLevel);
-
-        /// <summary>
-        /// Gets all the posts with today's day of month and month, for all years (timeline time, not added time), that the user has access to.
-        /// </summary>
-        /// <param name="progenyId">The progeny's Id.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
-        /// <returns>List of TimeLineItem objects.</returns>
-        Task<List<TimeLineItem>> GetProgenyYearAgo(int progenyId, int accessLevel);
-
+        
         Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList);
     }
 }

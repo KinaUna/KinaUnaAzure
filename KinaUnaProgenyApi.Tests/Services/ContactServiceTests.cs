@@ -396,8 +396,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             Mock<IImageStore> imageStore = new();
             ContactService contactService = new(context, memoryCache, imageStore.Object);
 
-            List<Contact> contactsList = await contactService.GetContactsList(1);
-            List<Contact> contactsList2 = await contactService.GetContactsList(1); // Test cached result.
+            List<Contact> contactsList = await contactService.GetContactsList(1, 0);
+            List<Contact> contactsList2 = await contactService.GetContactsList(1, 0); // Test cached result.
             Contact firstContact = contactsList.First();
 
             Assert.NotNull(contactsList);
@@ -466,8 +466,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             Mock<IImageStore> imageStore = new();
             ContactService contactService = new(context, memoryCache, imageStore.Object);
 
-            List<Contact> contactsList = await contactService.GetContactsList(2);
-            List<Contact> contactsList2 = await contactService.GetContactsList(2); // Test cached result.
+            List<Contact> contactsList = await contactService.GetContactsList(2, 0);
+            List<Contact> contactsList2 = await contactService.GetContactsList(2, 0); // Test cached result.
 
             Assert.NotNull(contactsList);
             Assert.IsType<List<Contact>>(contactsList);

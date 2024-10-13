@@ -2,6 +2,7 @@ import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList }
 import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 
 let timelineItemsList: TimelineItem[] = []
 const timeLineParameters: TimelineParameters = new TimelineParameters();
@@ -108,7 +109,7 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            timeLineParameters.progenies = getSelectedProgenies();
             timelineItemsList = [];
             const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
             if (timelineDiv != null) {
@@ -116,22 +117,7 @@ function addSelectedProgeniesChangedEventListener() {
             }
             await getTimelineList(timeLineParameters);
         }
-
     });
-}
-
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds: string[] = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        timeLineParameters.progenies = progeniesIds;
-        return;
-    }
-
-    timeLineParameters.progenies = [getCurrentProgenyId()];
 }
 
 /**
@@ -142,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     timeLineParameters.count = 5;
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
-    getSelectedProgenies();
+    timeLineParameters.progenies = getSelectedProgenies();
     addSelectedProgeniesChangedEventListener();
 
     moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#more-latest-posts-items-button');

@@ -149,8 +149,9 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Skills for.</param>
+        /// <param name="accessLevel">The access level required to view the Skill.</param>
         /// <returns>List of Skill objects.</returns>
-        public async Task<List<Skill>> GetSkillsList(int progenyId)
+        public async Task<List<Skill>> GetSkillsList(int progenyId, int accessLevel)
         {
             List<Skill> skillsList = await GetSkillsListFromCache(progenyId);
             if (skillsList.Count == 0)
@@ -158,12 +159,13 @@ namespace KinaUnaProgenyApi.Services
                 skillsList = await SetSkillsListInCache(progenyId);
             }
 
+            skillsList = skillsList.Where(p => p.AccessLevel >= accessLevel).ToList();
             return skillsList;
         }
 
-        public async Task<List<Skill>> GetSkillsWithCategory(int progenyId, string category)
+        public async Task<List<Skill>> GetSkillsWithCategory(int progenyId, string category, int accessLevel)
         {
-            List<Skill> allItems = await GetSkillsList(progenyId);
+            List<Skill> allItems = await GetSkillsList(progenyId, accessLevel);
             allItems = [.. allItems.Where(s => s.Category != null && s.Category.Contains(category, StringComparison.CurrentCultureIgnoreCase))];
             
             return allItems;

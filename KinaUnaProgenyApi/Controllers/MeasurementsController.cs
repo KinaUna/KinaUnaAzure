@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
@@ -41,25 +42,22 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves all Measurements for a given Progeny that a user with the given access level can access.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get Measurement items for.</param>
-        /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <returns>List of Measurements.</returns>
         // GET api/measurements/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
-
-            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(id);
-            measurementsList = measurementsList.Where(m => m.AccessLevel >= accessLevel).ToList();
-            if (measurementsList.Count != 0)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(measurementsList);
+                return accessLevelResult.ToActionResult();
             }
-            return NotFound();
 
+            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(id, accessLevelResult.Value);
+            
+            return Ok(measurementsList);
         }
 
         /// <summary>
@@ -71,16 +69,16 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetMeasurementItem(int id)
         {
-            Measurement result = await measurementService.GetMeasurement(id);
+            Measurement measurement = await measurementService.GetMeasurement(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(measurement.ProgenyId, userEmail, measurement.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(result);
+                return accessLevelResult.ToActionResult();
             }
 
-            return Unauthorized();
+            return Ok(measurement);
         }
 
         /// <summary>
@@ -254,27 +252,25 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="pageSize">The number of Measurement items per page.</param>
         /// <param name="pageIndex">The current page number.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Measurements for.</param>
-        /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <param name="sortBy">int: Sort order for the Measurement items. 0 = oldest first, 1 = newest first.</param>
         /// <returns>List of Measurement items.</returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public async Task<IActionResult> GetMeasurementsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        public async Task<IActionResult> GetMeasurementsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int sortBy = 1)
         {
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-
-            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Unauthorized();
+                return accessLevelResult.ToActionResult();
             }
+
             if (pageIndex < 1)
             {
                 pageIndex = 1;
             }
 
-            List<Measurement> allItems = await measurementService.GetMeasurementsList(progenyId);
+            List<Measurement> allItems = await measurementService.GetMeasurementsList(progenyId, accessLevelResult.Value);
             allItems = [.. allItems.OrderBy(m => m.Date)];
 
             if (sortBy == 1)

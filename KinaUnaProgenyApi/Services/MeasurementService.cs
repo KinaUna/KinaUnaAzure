@@ -152,14 +152,17 @@ namespace KinaUnaProgenyApi.Services
         /// First tries to get the list from the cache, then from the database if it's not in the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Measurements for.</param>
+        /// <param name="accessLevel">The access level of the user making the request.</param>
         /// <returns>List of Measurements.</returns>
-        public async Task<List<Measurement>> GetMeasurementsList(int progenyId)
+        public async Task<List<Measurement>> GetMeasurementsList(int progenyId, int accessLevel)
         {
             List<Measurement> measurementsList = await GetMeasurementsListFromCache(progenyId);
             if (measurementsList.Count == 0)
             {
                 measurementsList = await SetMeasurementsListInCache(progenyId);
             }
+
+            measurementsList = measurementsList.Where(m => m.AccessLevel >= accessLevel).ToList();
 
             return measurementsList;
         }

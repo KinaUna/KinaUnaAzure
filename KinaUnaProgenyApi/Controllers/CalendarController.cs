@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.UserAccessService;
@@ -42,18 +43,20 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves the list of all CalendarItems for a given Progeny.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny</param>
-        /// <param name="accessLevel">The user's access level for this Progeny</param>
         /// <returns>List of CalendarItems. Start and end times are in the UTC timezone.</returns>
         // GET api/calendar/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return NotFound();
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
 
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, accessLevel);
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, accessLevelResult.Value);
             
             return Ok(calendarList);
         }
@@ -96,23 +99,24 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="id">The ProgenyId of the Progeny</param>
         /// <param name="start">string: The start of the interval in UTC timezone, in the format 'dd-MM-yyy'</param>
         /// <param name="end">string: The end of the interval in UTC timezone, in the format 'dd-MM-yyy'</param>
-        /// <param name="accessLevel">The user's access level for this Progeny</param>
         /// <returns>List of CalendarItems with all the Progeny's CalendarItems within the interval. Start and End times are in UTC timezone.</returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "The parameter is needed for mobile clients")]
-        public async Task<IActionResult> ProgenyInterval(int id, [FromQuery] string start, [FromQuery] string end, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> ProgenyInterval(int id, [FromQuery] string start, [FromQuery] string end)
         {
             bool startParsed = DateTime.TryParseExact(start, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime startDate);
             bool endParsed = DateTime.TryParseExact(end, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime endDate);
-            
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail; 
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && (id != Constants.DefaultChildId || !startParsed || !endParsed)) return NotFound();
 
-            if (userAccess == null) return NotFound();
+            if (!startParsed || !endParsed) return BadRequest();
 
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, userAccess.AccessLevel);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
+
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, accessLevelResult.Value);
             calendarList = calendarList.Where(c => c.EndTime > startDate && c.StartTime < endDate).ToList();
 
             return Ok(calendarList);
@@ -131,13 +135,13 @@ namespace KinaUnaProgenyApi.Controllers
             if (result == null) return NotFound();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if ((userAccess != null && userAccess.AccessLevel <= result.AccessLevel) || result.ProgenyId == Constants.DefaultChildId)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(result.ProgenyId, userEmail, result.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(result);
+                return accessLevelResult.ToActionResult();
             }
-
-            return NotFound();
+            
+            return Ok(result);
         }
 
         /// <summary>
@@ -163,7 +167,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                return NotFound();
+                return BadRequest();
             }
 
             value.Author = User.GetUserId();
@@ -218,7 +222,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                return NotFound();
+                return BadRequest();
             }
 
             calendarItem = await calendarService.UpdateCalendarItem(value);
@@ -258,7 +262,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                return NotFound();
+                return BadRequest();
             }
 
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
@@ -290,28 +294,24 @@ namespace KinaUnaProgenyApi.Controllers
         /// Default number of items is set in Constants.DefaultUpcomingCalendarItemsCount.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get CalendarItems for.</param>
-        /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <returns>List of CalendarItems. Start and end times are in UTC timezone.</returns>
         [HttpGet]
-        [Route("[action]/{progenyId:int}/{accessLevel:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public async Task<IActionResult> EventList(int progenyId, int accessLevel)
+        [Route("[action]/{progenyId:int}")]
+        public async Task<IActionResult> EventList(int progenyId)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-            if (userAccess == null && progenyId != Constants.DefaultChildId) return NotFound();
-
-            if (userAccess != null)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
             {
-                List<CalendarItem> calendarList = await calendarService.GetCalendarList(progenyId, userAccess.AccessLevel);
-                calendarList = calendarList.Where(c => c.EndTime > DateTime.UtcNow).ToList();
-                calendarList = [.. calendarList.OrderBy(e => e.StartTime)];
-                calendarList = calendarList.Take(Constants.DefaultUpcomingCalendarItemsCount).ToList();
-
-                return Ok(calendarList);
+                return accessLevelResult.ToActionResult();
             }
-
-            return Ok(new List<CalendarItem>());
+            
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(progenyId, accessLevelResult.Value); 
+            calendarList = calendarList.Where(c => c.EndTime > DateTime.UtcNow).ToList();
+            calendarList = [.. calendarList.OrderBy(e => e.StartTime)];
+            calendarList = calendarList.Take(Constants.DefaultUpcomingCalendarItemsCount).ToList();
+            
+            return Ok(calendarList);
         }
 
         /// <summary>
@@ -326,13 +326,13 @@ namespace KinaUnaProgenyApi.Controllers
             CalendarItem calendarItem = await calendarService.GetCalendarItem(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(calendarItem.ProgenyId, userEmail);
-            if (userAccess != null && userAccess.AccessLevel <= calendarItem.AccessLevel)
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, calendarItem.AccessLevel);
+            if (!accessLevelResult.IsSuccess)
             {
-                return Ok(calendarItem);
+                return accessLevelResult.ToActionResult();
             }
 
-            return Unauthorized();
+            return Ok(calendarItem);
         }
 
         /// <summary>
@@ -347,10 +347,13 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
 
-            if (userAccess == null) return Unauthorized();
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, accessLevel);
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, accessLevelResult.Value);
             
             return Ok(calendarList);
         }

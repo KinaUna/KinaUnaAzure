@@ -57,8 +57,11 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetProgeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
+            if (!accessLevelResult.IsSuccess)
+            {
+                return accessLevelResult.ToActionResult();
+            }
 
             Progeny result = await progenyService.GetProgeny(id);
 

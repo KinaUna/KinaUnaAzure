@@ -1,8 +1,8 @@
-import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as pageModels from '../page-models-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 import { setUpMapClickToShowLocationListener } from './location-tools.js';
 const locationsPageSettingsStorageKey = 'locations_page_parameters';
 let locationsPageParameters = new pageModels.LocationsPageParameters();
@@ -296,23 +296,11 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            getSelectedProgenies();
+            locationsPageParameters.progenies = getSelectedProgenies();
             locationsPageParameters.currentPageNumber = 1;
             await getLocationsList();
         }
     });
-}
-function getSelectedProgenies() {
-    let selectedProgenies = localStorage.getItem('selectedProgenies');
-    if (selectedProgenies !== null) {
-        let selectedProgenyIds = JSON.parse(selectedProgenies);
-        let progeniesIds = selectedProgenyIds.map(function (id) {
-            return parseInt(id);
-        });
-        locationsPageParameters.progenies = progeniesIds;
-        return;
-    }
-    locationsPageParameters.progenies = [getCurrentProgenyId()];
 }
 /**
  * Initializes the page elements when it is loaded.
@@ -327,7 +315,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     await loadLocationsPageSettings();
     await showPopupAtLoad(pageModels.TimeLineType.Location);
     addSelectedProgeniesChangedEventListener();
-    getSelectedProgenies();
+    locationsPageParameters.progenies = getSelectedProgenies();
     await getLocationsList();
     window.addEventListener('resize', () => map.getViewPort().resize());
     map.getViewPort().resize();

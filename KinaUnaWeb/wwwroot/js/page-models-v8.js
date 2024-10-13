@@ -298,8 +298,8 @@ export class TextTranslationPageListModel {
     }
 }
 export class AutoSuggestList {
-    constructor(_progenyId) {
-        this.progenyId = _progenyId;
+    constructor(_progenies) {
+        this.progenies = _progenies;
         this.suggestions = [];
     }
 }
