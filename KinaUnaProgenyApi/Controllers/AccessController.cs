@@ -232,102 +232,19 @@ namespace KinaUnaProgenyApi.Controllers
             await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
             await webNotificationsService.SendUserAccessNotification(userAccess, userInfo, notificationTitle);
         }
-
-        /// <summary>
-        /// Retrieves a list of all Progeny a given user has access to.
-        /// </summary>
-        /// <param name="id">The email address of the user</param>
-        /// <returns>List of Progeny that the user has access to.</returns>
-        // GET api/Access/ProgenyListByUser/[userid]
-        [HttpGet("[action]/{id}")]
-        public async Task<IActionResult> ProgenyListByUser(string id)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!userEmail.Equals(id, System.StringComparison.CurrentCultureIgnoreCase)) return NotFound();
-
-            List<Progeny> result = [];
-            List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(id);
-            
-            foreach (UserAccess userAccess in userAccessList)
-            {
-                Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
-                result.Add(progeny);
-            }
-
-            return Ok(result);
-
-        }
-
-        /// <summary>
-        /// Retrieves a list of all Progeny a given user has access to.
-        /// The difference between this and ProgenyListByUser is that the URL for each Progeny's picture is generated, as the mobile client cannot do that itself.
-        /// This action is obsolete, use ProgenyListByUserPost instead as it doesn't reveal a user's email address in the url.
-        /// </summary>
-        /// <param name="id">The email address of the user</param>
-        /// <returns>List of Progeny that the user has access to.</returns>
-        // GET api/Access/ProgenyListByUserMobile/[userid]
-        [HttpGet("[action]/{id}")]
-        public async Task<IActionResult> ProgenyListByUserMobile(string id)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!userEmail.Equals(id, System.StringComparison.CurrentCultureIgnoreCase)) return NotFound();
-
-            List<Progeny> result = [];
-            List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(id);
-            
-            foreach (UserAccess userAccess in userAccessList)
-            {
-                Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
-                progeny.PictureLink = imageStore.UriFor(progeny.PictureLink, "progeny");
-
-                result.Add(progeny);
-            }
-
-            return Ok(result);
-
-        }
-
-        /// <summary>
-        /// Retrieves a list of all Progeny a given user has access to.
-        /// The difference between this and ProgenyListByUser is that the URL for each Progeny's picture is generated, as the mobile client cannot do that itself.
-        /// </summary>
-        /// <param name="id">The email address of the user</param>
-        /// <returns>List of Progeny that the user has access to.</returns>
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<IActionResult> ProgenyListByUserPostMobile([FromBody] string id)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!userEmail.Equals(id, System.StringComparison.CurrentCultureIgnoreCase)) return NotFound();
-
-            List<Progeny> result = [];
-            List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(id);
-            
-            foreach (UserAccess userAccess in userAccessList)
-            {
-                Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
-                progeny.PictureLink = imageStore.UriFor(progeny.PictureLink, "progeny");
-
-                result.Add(progeny);
-            }
-
-            return Ok(result);
-
-        }
-
+        
         /// <summary>
         /// Retrieves the list of UserAccess items for a given user.
         /// </summary>
-        /// <param name="id">The user's email address</param>
+        /// <param name="userEmail">The user's email address</param>
         /// <returns>List of UserAccess items for the user.</returns>
-        // GET api/Access/AccessListByUser/[userid]
-        [HttpGet("[action]/{id}")]
-        public async Task<IActionResult> AccessListByUser(string id)
+        // POST api/Access/AccessListByUser/
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AccessListByUser([FromBody] string userEmail)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!userEmail.Equals(id, System.StringComparison.CurrentCultureIgnoreCase)) return NotFound();
+            if (!userEmail.Equals(User.GetEmail() ?? Constants.DefaultUserEmail, System.StringComparison.CurrentCultureIgnoreCase)) return NotFound();
 
-            List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(id);
+            List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(userEmail);
             
             foreach (UserAccess userAccess in userAccessList)
             {
@@ -336,33 +253,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(userAccessList);
         }
-
-        /// <summary>
-        /// Retrieves the list of Progeny that a user has admin access to.
-        /// Obsolete, use AdminListByUserPost instead. This action reveals the user's email address in the url.
-        /// </summary>
-        /// <param name="id">The email address of the user.</param>
-        /// <returns>List of Progeny that the user is admin for.</returns>
-        // GET api/Access/AdminListByUser/[UserEmail]
-        [HttpGet("[action]/{id}")]
-        public async Task<IActionResult> AdminListByUser(string id)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!userEmail.Equals(id, System.StringComparison.CurrentCultureIgnoreCase)) return Ok();
-
-            List<UserAccess> userAccessList = await userAccessService.GetUsersUserAdminAccessList(id);
-
-            List<Progeny> progenyList = [];
-            
-            foreach (UserAccess userAccess in userAccessList)
-            {
-                Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
-                progenyList.Add(progeny);
-            }
-            
-            return Ok(progenyList);
-        }
-
+        
         /// <summary>
         /// Retrieves the list of Progeny that a user has admin access to.
         /// </summary>

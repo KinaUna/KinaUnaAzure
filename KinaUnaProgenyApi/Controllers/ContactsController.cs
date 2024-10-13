@@ -284,65 +284,7 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
 
         }
-
-        /// <summary>
-        /// Retrieves a Contact entity with the given id.
-        /// For mobile clients, that can't generate/obtain tokens for fetching the profile picture in Azure storage directly.
-        /// </summary>
-        /// <param name="id">The ContactId of the Contact entity to get.</param>
-        /// <returns>Contact object with the provided ContactId.</returns>
-        [HttpGet("[action]/{id:int}")]
-        public async Task<IActionResult> GetContactMobile(int id)
-        {
-            Contact contact = await contactService.GetContact(id);
-
-            if (contact == null) return NotFound();
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(contact.ProgenyId, userEmail);
-
-            if (userAccess == null && contact.ProgenyId != Constants.DefaultChildId) return NotFound();
-
-            if (contact.AddressIdNumber.HasValue)
-            {
-                contact.Address = await locationService.GetAddressItem(contact.AddressIdNumber.Value);
-            }
-
-            contact.PictureLink = imageStore.UriFor(contact.PictureLink, BlobContainers.Contacts);
-
-            return Ok(contact);
-
-        }
-
-        /// <summary>
-        /// Retrieves all Contacts for a Progeny with the given id and access level.
-        /// </summary>
-        /// <param name="id">The ProgenyId of the Progeny to get contact items for.</param>
-        /// <param name="accessLevel">The user's access level for this Progeny.</param>
-        /// <returns>List of all contacts for this Progeny that the user has access to.</returns>
-        [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}")]
-        public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
-        {
-            List<Contact> contactsList = await contactService.GetContactsList(id, accessLevel);
-            
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if ((userAccess == null && id != Constants.DefaultChildId) || contactsList.Count == 0) return Ok(new List<Contact>());
-
-            foreach (Contact contact in contactsList)
-            {
-                if (contact.AddressIdNumber.HasValue)
-                {
-                    contact.Address = await locationService.GetAddressItem(contact.AddressIdNumber.Value);
-                }
-
-                contact.PictureLink = imageStore.UriFor(contact.PictureLink, BlobContainers.Contacts);
-            }
-            return Ok(contactsList);
-
-        }
-
+        
         /// <summary>
         /// Download a Contact's profile picture from a URL in the Contact's PictureLink and save it to the image store.
         /// </summary>

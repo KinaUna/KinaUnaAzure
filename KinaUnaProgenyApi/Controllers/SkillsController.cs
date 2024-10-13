@@ -221,31 +221,7 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
 
         }
-
-        /// <summary>
-        /// Gets a Skill item.
-        /// For mobile clients.
-        /// </summary>
-        /// <param name="id">The SkillId of the Skill item to get.</param>
-        /// <returns>The Skill with the given SkillId. UnauthorizedResult if the user doesn't have access to the Skill. NotFoundResult if the Skill doesn't exist.</returns>
-        [HttpGet("[action]/{id:int}")]
-        public async Task<IActionResult> GetSkillMobile(int id)
-        {
-            Skill result = await skillService.GetSkill(id);
-            if (result == null) return NotFound();
-            
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-            if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
-            {
-                return Ok(result);
-            }
-
-            return Unauthorized();
-
-        }
-
+        
         /// <summary>
         /// Gets a SkillListPage for displaying Skills in a paged list.
         /// </summary>

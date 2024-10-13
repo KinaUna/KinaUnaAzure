@@ -215,32 +215,7 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
 
         }
-
-        /// <summary>
-        /// Gets the VocabularyItem with the given WordId.
-        /// Only users with appropriate access for the Progeny can get the item.
-        /// For mobile clients.
-        /// </summary>
-        /// <param name="id">The WordId of the VocabularyItem to get.</param>
-        /// <returns>VocabularyItem</returns>
-        [HttpGet("[action]/{id:int}")]
-        public async Task<IActionResult> GetItemMobile(int id)
-        {
-            VocabularyItem vocabularyItem = await vocabularyService.GetVocabularyItem(id);
-
-            if (vocabularyItem == null) return NotFound();
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(vocabularyItem.ProgenyId, userEmail, vocabularyItem.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            return Ok(vocabularyItem);
-
-        }
-
+        
         /// <summary>
         /// Generates a VocabularyListPage for a specific Progeny.
         /// </summary>

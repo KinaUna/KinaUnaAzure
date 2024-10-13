@@ -328,56 +328,6 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         /// <summary>
-        /// Gets a list of the latest TimeLineItems for a Progeny with the given ProgenyId that a user with a given access level can access.
-        /// If a start date is provided, only TimeLineItems before that date are included.
-        /// </summary>
-        /// <param name="id">The ProgenyId of the Progeny to get TimeLineItems for.</param>
-        /// <param name="accessLevel">The user's access level for the Progeny.</param>
-        /// <param name="count">The number of TimeLineItems to include.</param>
-        /// <param name="start">The number of TimeLineItems to skip.</param>
-        /// <param name="year">The start date year. 0 for all items.</param>
-        /// <param name="month">The start date month. 1 = Jan, 2 = Feb, etc. 0 for all items.</param>
-        /// <param name="day">The start date day. 0 for all items.</param>
-        /// <returns>List of TimeLineItems ordered by newest first.</returns>
-        [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}/{count:int}/{start:int}/{year:int}/{month:int}/{day:int}")]
-        // ReSharper disable once RedundantAssignment
-        // The parameter is used by mobile app and cannot be removed until the mobile app is updated.
-        public async Task<IActionResult> ProgenyLatestMobile(int id, int accessLevel = 5, int count = 5, int start = 0, int year = 0, int month = 0, int day = 0)
-        {
-            Progeny progeny = await progenyService.GetProgeny(id);
-            if (progeny == null) return Ok(new List<TimeLineItem>());
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null) return Ok(new List<TimeLineItem>());
-
-            accessLevel = userAccess.AccessLevel;
-
-            DateTime startDate;
-            if (year != 0 && month != 0 && day != 0)
-            {
-                startDate = new DateTime(year, month, day, 23, 59, 59, DateTimeKind.Utc);
-
-            }
-            else
-            {
-                startDate = DateTime.UtcNow;
-            }
-
-            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id);
-
-            if (timeLineList.Count == 0) return Ok(new List<TimeLineItem>());
-
-            timeLineList = [.. timeLineList.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime < startDate).OrderBy(t => t.ProgenyTime)];
-            timeLineList.Reverse();
-
-            return Ok(timeLineList.Skip(start).Take(count));
-
-        }
-
-        /// <summary>
         /// Gets a list of TimeLineItems that happened on the same day for each year, month, or week, for a Progeny,
         /// Filtering by TimeLineItem type, category, tags is optional.
         /// </summary>

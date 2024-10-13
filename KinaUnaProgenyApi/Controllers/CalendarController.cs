@@ -313,49 +313,5 @@ namespace KinaUnaProgenyApi.Controllers
             
             return Ok(calendarList);
         }
-
-        /// <summary>
-        /// Retrieves a single CalendarItem with a given id.
-        /// For mobile clients.
-        /// </summary>
-        /// <param name="id">The EventId of the CalendarItem to get.</param>
-        /// <returns>The CalendarItem with the provided EventId. Start and end times are in UTC timezone.</returns>
-        [HttpGet("[action]/{id:int}")]
-        public async Task<IActionResult> GetItemMobile(int id)
-        {
-            CalendarItem calendarItem = await calendarService.GetCalendarItem(id);
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, calendarItem.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            return Ok(calendarItem);
-        }
-
-        /// <summary>
-        /// Retrieves the list of all CalendarItems for a given Progeny that the user has access to.
-        /// For mobile clients.
-        /// </summary>
-        /// <param name="id">The ProgenyId of the Progeny to get CalendarItems for.</param>
-        /// <param name="accessLevel">The user's access level for this Progeny.</param>
-        /// <returns>List of CalendarItem objects. Start and end time are in UTC timezone.</returns>
-        [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}")]
-        public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, accessLevelResult.Value);
-            
-            return Ok(calendarList);
-        }
     }
 }
