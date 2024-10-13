@@ -41,20 +41,12 @@ function stopLoadingSpinner(): void {
  * Hides the moreTimelineItemsButton while loading.
  * @param parameters  The parameters to use for retrieving the timeline items.
  */
-async function getOnThisDayData(parameters: OnThisDayRequest, reset: boolean = false) {
+async function getOnThisDayData(parameters: OnThisDayRequest) {
     startLoadingSpinner();
     if (moreOnThisDayItemsButton !== null) {
         moreOnThisDayItemsButton.classList.add('d-none');
     }
-
-    if (reset) {
-        timelineItemsList = [];
-        const timelineDiv = document.querySelector<HTMLDivElement>('#on-this-day-items-div');
-        if (timelineDiv !== null) {
-            timelineDiv.innerHTML = '';
-        }
-    }
-
+        
     parameters.skip = timelineItemsList.length;
     
     await fetch('/Today/GetOnThisDayList', {
@@ -534,7 +526,12 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             onThisDayParameters.progenies = getSelectedProgenies();
-            await getOnThisDayData(onThisDayParameters, true);
+            timelineItemsList = [];
+            const timelineDiv = document.querySelector<HTMLDivElement>('#on-this-day-items-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getOnThisDayData(onThisDayParameters);
         }
 
     });
@@ -544,10 +541,6 @@ function addSelectedProgeniesChangedEventListener() {
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     languageId = getCurrentLanguageId();
     onThisDayProgenyId = getCurrentProgenyId();
-
-    initialSettingsPanelSetup();
-
-    SettingsHelper.initPageSettings();
 
     moreOnThisDayItemsButton = document.querySelector<HTMLButtonElement>('#more-on-this-day-items-button');
     if (moreOnThisDayItemsButton !== null) {
@@ -562,6 +555,10 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     addSelectedProgeniesChangedEventListener();
     onThisDayParameters.progenies = getSelectedProgenies();
+
+    initialSettingsPanelSetup();
+
+    SettingsHelper.initPageSettings();
 
     await getOnThisDayData(onThisDayParameters);
     if (firstRun) { // getOnThisDayData updated the parameters and exited early to reload with the new values.

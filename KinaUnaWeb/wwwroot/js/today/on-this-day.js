@@ -36,17 +36,10 @@ function stopLoadingSpinner() {
  * Hides the moreTimelineItemsButton while loading.
  * @param parameters  The parameters to use for retrieving the timeline items.
  */
-async function getOnThisDayData(parameters, reset = false) {
+async function getOnThisDayData(parameters) {
     startLoadingSpinner();
     if (moreOnThisDayItemsButton !== null) {
         moreOnThisDayItemsButton.classList.add('d-none');
-    }
-    if (reset) {
-        timelineItemsList = [];
-        const timelineDiv = document.querySelector('#on-this-day-items-div');
-        if (timelineDiv !== null) {
-            timelineDiv.innerHTML = '';
-        }
     }
     parameters.skip = timelineItemsList.length;
     await fetch('/Today/GetOnThisDayList', {
@@ -468,7 +461,12 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             onThisDayParameters.progenies = getSelectedProgenies();
-            await getOnThisDayData(onThisDayParameters, true);
+            timelineItemsList = [];
+            const timelineDiv = document.querySelector('#on-this-day-items-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getOnThisDayData(onThisDayParameters);
         }
     });
 }
@@ -476,8 +474,6 @@ function addSelectedProgeniesChangedEventListener() {
 document.addEventListener('DOMContentLoaded', async function () {
     languageId = getCurrentLanguageId();
     onThisDayProgenyId = getCurrentProgenyId();
-    initialSettingsPanelSetup();
-    SettingsHelper.initPageSettings();
     moreOnThisDayItemsButton = document.querySelector('#more-on-this-day-items-button');
     if (moreOnThisDayItemsButton !== null) {
         moreOnThisDayItemsButton.addEventListener('click', async () => {
@@ -489,6 +485,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     refreshSelectPickers();
     addSelectedProgeniesChangedEventListener();
     onThisDayParameters.progenies = getSelectedProgenies();
+    initialSettingsPanelSetup();
+    SettingsHelper.initPageSettings();
     await getOnThisDayData(onThisDayParameters);
     if (firstRun) { // getOnThisDayData updated the parameters and exited early to reload with the new values.
         await getOnThisDayData(onThisDayParameters);

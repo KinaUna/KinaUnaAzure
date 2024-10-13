@@ -40,7 +40,7 @@ function setupProgenySelectList(): void {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setCategoriesAutoSuggestList(currentProgenyId);
+            await setCategoriesAutoSuggestList([currentProgenyId]);
         });
     }
 }
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
 
-    await setCategoriesAutoSuggestList(currentProgenyId);
+    await setCategoriesAutoSuggestList([currentProgenyId]);
     await setupDateTimePicker();
     setupProgenySelectList();
     

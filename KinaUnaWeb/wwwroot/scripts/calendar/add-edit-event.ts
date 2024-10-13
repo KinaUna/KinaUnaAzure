@@ -106,8 +106,8 @@ function setupProgenySelectList() {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setContextAutoSuggestList(currentProgenyId);
-            await setLocationAutoSuggestList(currentProgenyId);
+            await setContextAutoSuggestList([currentProgenyId]);
+            await setLocationAutoSuggestList([currentProgenyId]);
         });
     }
 }
@@ -119,8 +119,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
     
-    await setContextAutoSuggestList(currentProgenyId);
-    await setLocationAutoSuggestList(currentProgenyId);
+    await setContextAutoSuggestList([currentProgenyId]);
+    await setLocationAutoSuggestList([currentProgenyId]);
 
     setupProgenySelectList();
     setupDateTimePickers();

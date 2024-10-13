@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
@@ -452,7 +453,7 @@ namespace KinaUnaWeb.Controllers
                 tagsList.AddRange(await autoSuggestsHttpClient.GetTagsList(progenyId));
             }
 
-            suggestionsList.Suggestions = tagsList;
+            suggestionsList.Suggestions = tagsList.Distinct().ToList();
 
 
             return Json(suggestionsList);
@@ -471,13 +472,13 @@ namespace KinaUnaWeb.Controllers
                 suggestionsList.Progenies = [Constants.DefaultChildId];
             }
 
-            List<string> tagsList = [];
+            List<string> contextsList = [];
             foreach (int progenyId in suggestionsList.Progenies)
             {
-                tagsList.AddRange(await autoSuggestsHttpClient.GetContextsList(progenyId));
+                contextsList.AddRange(await autoSuggestsHttpClient.GetContextsList(progenyId));
             }
 
-            suggestionsList.Suggestions = tagsList;
+            suggestionsList.Suggestions = contextsList.Distinct().ToList();
 
 
             return Json(suggestionsList);
@@ -496,13 +497,13 @@ namespace KinaUnaWeb.Controllers
                 suggestionsList.Progenies = [Constants.DefaultChildId];
             }
 
-            List<string> tagsList = [];
+            List<string> locationsList = [];
             foreach (int progenyId in suggestionsList.Progenies)
             {
-                tagsList.AddRange(await autoSuggestsHttpClient.GetLocationsList(progenyId));
+                locationsList.AddRange(await autoSuggestsHttpClient.GetLocationsList(progenyId));
             }
 
-            suggestionsList.Suggestions = tagsList;
+            suggestionsList.Suggestions = locationsList.Distinct().ToList();
 
 
             return Json(suggestionsList);
@@ -521,13 +522,13 @@ namespace KinaUnaWeb.Controllers
                 suggestionsList.Progenies = [Constants.DefaultChildId];
             }
 
-            List<string> tagsList = [];
+            List<string> categoriesList = [];
             foreach (int progenyId in suggestionsList.Progenies)
             {
-                tagsList.AddRange(await autoSuggestsHttpClient.GetCategoriesList(progenyId));
+                categoriesList.AddRange(await autoSuggestsHttpClient.GetCategoriesList(progenyId));
             }
 
-            suggestionsList.Suggestions = tagsList;
+            suggestionsList.Suggestions = categoriesList.Distinct().ToList();
 
 
             return Json(suggestionsList);
@@ -546,13 +547,13 @@ namespace KinaUnaWeb.Controllers
                 suggestionsList.Progenies = [Constants.DefaultChildId];
             }
 
-            List<string> tagsList = [];
+            List<string> languagesList = [];
             foreach (int progenyId in suggestionsList.Progenies)
             {
-                tagsList.AddRange(await autoSuggestsHttpClient.GetVocabularyLanguageList(progenyId));
+                languagesList.AddRange(await autoSuggestsHttpClient.GetVocabularyLanguageList(progenyId));
             }
 
-            suggestionsList.Suggestions = tagsList;
+            suggestionsList.Suggestions = languagesList.Distinct().ToList();
 
 
             return Json(suggestionsList);
