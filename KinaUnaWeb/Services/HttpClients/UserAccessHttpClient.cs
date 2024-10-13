@@ -115,8 +115,8 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(accessToken);
 
             List<UserAccess> accessList = [];
-            string accessApiPath = "/api/Access/AccessListByUser/" + userEmail;
-            HttpResponseMessage accessResponse = await _httpClient.GetAsync(accessApiPath);
+            string accessApiPath = "/api/Access/AccessListByUser/";
+            HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(userEmail), System.Text.Encoding.UTF8, "application/json"));
             if (!accessResponse.IsSuccessStatusCode) return accessList;
 
             string accessAsString = await accessResponse.Content.ReadAsStringAsync();

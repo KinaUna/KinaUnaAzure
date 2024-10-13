@@ -224,28 +224,7 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
 
         }
-
-        /// <summary>
-        /// Retrieves a Location entity for a mobile client.
-        /// </summary>
-        /// <param name="id">The LocationId for the Location entity to get.</param>
-        /// <returns>The Location object with the provided LocationId.</returns>
-        [HttpGet("[action]/{id:int}")]
-        public async Task<IActionResult> GetLocationMobile(int id)
-        {
-            Location result = await locationService.GetLocation(id);
-            if (result == null) return NotFound();
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, result.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            return Ok(result);
-        }
-
+        
         /// <summary>
         /// Retrieves the list of Location items to display on a page for a given Progeny.
         /// </summary>

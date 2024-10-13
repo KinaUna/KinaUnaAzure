@@ -226,27 +226,6 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         /// <summary>
-        /// Gets a list of Sleep items for a given Progeny and AccessLevel.
-        /// For use in the mobile clients.
-        /// </summary>
-        /// <param name="id">The SleepId of the Sleep item to get.</param>
-        /// <returns>The Sleep item with the given SleepId.UnauthorizedResult if the user doesn't have access to the Sleep item.</returns>
-        [HttpGet("[action]/{id:int}")]
-        public async Task<IActionResult> GetSleepMobile(int id)
-        {
-
-            Sleep result = await sleepService.GetSleep(id);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null)
-            {
-                return Ok(result);
-            }
-
-            return Unauthorized();
-        }
-
-        /// <summary>
         /// Gets a SleepListPage for displaying Sleep items in a paged list.
         /// </summary>
         /// <param name="pageSize">Number of Sleep items per page.</param>
@@ -310,85 +289,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(model);
         }
-
-        /// <summary>
-        /// Gets a list of Sleep items for a given Progeny and AccessLevel.
-        /// For use in the mobile clients.
-        /// </summary>
-        /// <param name="progenyId">The ProgenyId of the Progeny to get sleep items for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
-        /// <param name="start">Number of Sleep items to skip.</param>
-        /// <returns>List of Sleep objects.</returns>
-        [HttpGet("[action]/{progenyId:int}/{accessLevel:int}/{start:int}")]
-        public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-            if (userAccess == null) return Unauthorized();
-
-            List<Sleep> result = await sleepService.GetSleepList(progenyId, userAccess.AccessLevel);
-            result = result.Where(s => s.AccessLevel >= accessLevel).ToList();
-            result = [.. result.OrderByDescending(s => s.SleepStart)];
-            if (start != -1)
-            {
-                result = result.Skip(start).Take(25).ToList();
-            }
-
-            return Ok(result);
-
-        }
-
-        /// <summary>
-        /// Gets SleepStats for a given Progeny and AccessLevel.
-        /// </summary>
-        /// <param name="progenyId">The ProgenyId of the Progeny to get Sleep statistics for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
-        /// <returns>SleepStats object.</returns>
-        [HttpGet("[action]/{progenyId:int}/{accessLevel:int}")]
-        public async Task<IActionResult> GetSleepStatsMobile(int progenyId, int accessLevel)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-            if (userAccess == null) return Unauthorized();
-
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            string userTimeZone = userInfo.Timezone;
-            List<Sleep> allSleepList = await sleepService.GetSleepList(progenyId, userAccess.AccessLevel);
-            SleepStatsModel model = new();
-            model.ProcessSleepStats(allSleepList, accessLevel, userTimeZone);
-
-            return Ok(model);
-
-        }
-
-        /// <summary>
-        /// Generates a list of Sleep items for displaying in Sleep statistics charts.
-        /// For mobile clients.
-        /// </summary>
-        /// <param name="progenyId">The ProgenyId of the Progeny to display statistics for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
-        /// <returns>List of Sleep objects.</returns>
-        [HttpGet("[action]/{progenyId:int}/{accessLevel:int}")]
-        public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-            if (userAccess == null) return Unauthorized();
-
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            string userTimeZone = userInfo.Timezone;
-
-            List<Sleep> sList = await sleepService.GetSleepList(progenyId, userAccess.AccessLevel);
-
-            SleepStatsModel sleepStatsModel = new();
-            List<Sleep> chartList = sleepStatsModel.ProcessSleepChartData(sList, accessLevel, userTimeZone);
-
-            List<Sleep> model = [.. chartList.OrderBy(s => s.SleepStart)];
-
-            return Ok(model);
-
-        }
-
+        
         /// <summary>
         /// Generates a SleepDetailsModel for displaying Sleep with next and previous Sleep items.
         /// </summary>

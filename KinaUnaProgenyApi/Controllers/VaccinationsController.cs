@@ -225,30 +225,5 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
 
         }
-
-        /// <summary>
-        /// Get a specific vaccination item with a given VaccinationId.
-        /// For mobile clients.
-        /// </summary>
-        /// <param name="id">The VaccinationId of the Vaccination to get.</param>
-        /// <returns>Vaccination with the given VaccinationId.</returns>
-        [HttpGet("[action]/{id:int}")]
-        public async Task<IActionResult> GetVaccinationMobile(int id)
-        {
-            Vaccination vaccination = await vaccinationService.GetVaccination(id);
-
-            if (vaccination == null) return NotFound();
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(vaccination.ProgenyId, userEmail);
-
-            if (userAccess != null || vaccination.ProgenyId == Constants.DefaultChildId)
-            {
-                return Ok(vaccination);
-            }
-
-            return Unauthorized();
-
-        }
     }
 }

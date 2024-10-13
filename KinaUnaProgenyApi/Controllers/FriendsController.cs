@@ -241,58 +241,7 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
 
         }
-
-        /// <summary>
-        /// Retrieves a Friend entity with a given id.
-        /// For mobile clients.
-        /// </summary>
-        /// <param name="id">The FriendId of the Friend entity to get.</param>
-        /// <returns>Friend object with the provided id.</returns>
-        [HttpGet("[action]/{id:int}")]
-        public async Task<IActionResult> GetFriendMobile(int id)
-        {
-            Friend result = await friendService.GetFriend(id);
-
-            if (result == null) return NotFound();
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-            if (userAccess == null && result.ProgenyId != Constants.DefaultChildId) return NotFound();
-
-            result.PictureLink = imageStore.UriFor(result.PictureLink, BlobContainers.Friends);
-
-            return Ok(result);
-
-        }
-
-        /// <summary>
-        /// Retrieves the list of all Friends for a given Progeny that a user with the give access level has access to.
-        /// For mobile clients, as they cannot generate/obtain tokens for accessing image files in Azure storage.
-        /// </summary>
-        /// <param name="id">The FriendId of the Friend entity to get.</param>
-        /// <param name="accessLevel"></param>
-        /// <returns>List of Friend items.</returns>
-        [HttpGet]
-        [Route("[action]/{id:int}/{accessLevel:int}")]
-        public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
-
-            List<Friend> friendsList = await friendService.GetFriendsList(id, accessLevel);
-            if (friendsList.Count == 0) return NotFound();
-
-            foreach (Friend friend in friendsList)
-            {
-                friend.PictureLink = imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
-            }
-
-            return Ok(friendsList);
-
-        }
-
+        
         /// <summary>
         /// Download a Friend's profile picture from a URL in the Friend's PictureLink and save it to the image store.
         /// </summary>

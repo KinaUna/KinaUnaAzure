@@ -4,25 +4,28 @@
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-photo">
             <div class="row">
-                <img class="float-right" src="@Model.Progeny.GetProfilePictureUrl()" style="max-height: 24px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; right: 2px; position: absolute;" />
                 <div class="col-auto">
                     <span class="timeline-icon"><i class="material-icons">photo_library</i></span>
                 </div>
                 <div class="col">
                     <div class="timeline-title">
-                        @Model.PictureTime?.ToString("dd-MMM-yyyy HH:mm")
+                        <img src="@Model.Progeny.GetProfilePictureUrl()" style="float: right; max-height: 24px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; right: 8px; position: absolute;"/>
+                        <div>
+                            @Model.PictureTime?.ToString("dd-MMM-yyyy HH:mm")
+                        </div>
+                        
                     </div>
                     <div class="timeline-text text-white-50">
-                        @if (!string.IsNullOrEmpty(Model.Location))
-                        {
-                            <div style="color: lightblue;">@Model.Location</div>
-                        }
-                        <div class="img-rounded" style="overflow: hidden; margin: 2px; margin-left: 2px; padding: 1px; width: 100%; height: 216px; background-color: #000000; text-align: center; line-height: 217px; display: inline-block; position: relative;">
-                            <img class="lazyload" data-src="@Model.PictureLink" style="max-height: 208px;"/>
+                        <div class="img-rounded" style="overflow: hidden; margin: 2px; margin-left: 2px; padding: 1px; width: 100%; max-height: 800px; background-color: #000000; text-align: center; display: inline-block; position: relative;">
+                            <img class="lazyload" data-src="@Model.PictureLink" style="width:100%"/>
                             <div class="img-rounded" style="position: absolute; height: 25px; width: 50px; bottom: 2px; right: 2px; font-size: 5px; background-color: forestgreen; display: inline-block;">
-                                <p style="width: 40px; height: 20px; font-size: 12px; position: absolute; color: lightgoldenrodyellow; text-align: center; transform: translate(6px, -96px);"><i class="far fa-comment-alt"></i> @Model.CommentsCount</p>
+                                <p style="width: 40px; height: 20px; font-size: 12px; position: absolute; color: lightgoldenrodyellow; text-align: center; transform: translate(6px, 4px);"><i class="far fa-comment-alt"></i> @Model.CommentsCount</p>
                             </div>
                         </div>
+                        @if (!string.IsNullOrEmpty(Model.Location))
+                        {
+                            <div style="color: lightblue;"><i class="material-icons" style="font-size: 18px;">location_on</i> @Model.Location</div>
+                        }
                         @if (!string.IsNullOrEmpty(Model.Tags))
                         {
                             List<string> tagsList = Model.Tags.Split(',').ToList();

@@ -222,30 +222,7 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
 
         }
-
-        /// <summary>
-        /// Retrieves a Note entity with a given id.
-        /// For mobile clients.
-        /// </summary>
-        /// <param name="id">The NoteId of the Note entity to get.</param>
-        /// <returns>The Note object with the provided NoteId.</returns>
-        [HttpGet("[action]/{id:int}")]
-        public async Task<IActionResult> GetNoteMobile(int id)
-        {
-            Note result = await noteService.GetNote(id);
-
-            if (result == null) return NotFound();
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-            if (userAccess == null && result.ProgenyId != Constants.DefaultChildId) return Unauthorized();
-
-            result.Content = imageStore.UpdateBlobLinks(result.Content);
-            return Ok(result);
-
-        }
-
+        
         /// <summary>
         /// Retrieves the list of Note items to display on a Notes page for a given Progeny.
         /// </summary>

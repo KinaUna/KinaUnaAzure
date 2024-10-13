@@ -219,33 +219,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             return NotFound();
         }
-
-
-        /// <summary>
-        /// Retrieves a specific Measurement by id.
-        /// Used by the mobile clients.
-        /// </summary>
-        /// <param name="id">The MeasurementId of the Measurement entity to get.</param>
-        /// <returns>The Measurement object with the provided MeasurementId. UnauthorizedResult if the user doesn't have the required access level.</returns>
-        [HttpGet("[action]/{id:int}")]
-        public async Task<IActionResult> GetMeasurementMobile(int id)
-        {
-            Measurement result = await measurementService.GetMeasurement(id);
-
-            if (result == null) return NotFound();
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-            if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
-            {
-                return Ok(result);
-            }
-
-            return Unauthorized();
-
-        }
-
+        
         /// <summary>
         /// Retrieves the list of Measurement items to display on a page for a given Progeny.
         /// </summary>

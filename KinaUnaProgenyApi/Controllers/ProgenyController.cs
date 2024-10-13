@@ -72,27 +72,7 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
 
         }
-
-        /// <summary>
-        /// Gets the Progeny entity with the specified id.
-        /// For mobile clients.
-        /// </summary>
-        /// <param name="id">The ProgenyId of the Progeny to get.</param>
-        /// <returns>Progeny object with the given ProgenyId.</returns>
-        // For Xamarin mobile app.
-        [HttpGet("[action]/{id:int}")]
-        public async Task<IActionResult> Mobile(int id)
-        {
-            Progeny result = await progenyService.GetProgeny(id);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
-
-            result.PictureLink = imageStore.UriFor(result.PictureLink, "progeny");
-            return Ok(result);
-
-        }
-
+        
         /// <summary>
         /// Adds a new Progeny entity to the database.
         /// </summary>
