@@ -1,4 +1,5 @@
 const serviceWorkerVersion = 'v6';
+import { setAddItemButtonEventListeners } from './addItem/add-item.js';
 import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v8.js';
 import { startFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v8.js';
 import { SetProgenyRequest } from './page-models-v8.js';
@@ -133,7 +134,7 @@ function setSelectProgenyButtonsEventListeners() {
     selectProgenyButtons.forEach(function (button) {
         button.addEventListener('click', function (event) {
             event.preventDefault();
-            let selectedButton = event.target;
+            let selectedButton = event.currentTarget;
             selectedButton.classList.toggle('selected');
             setSelectedProgenies();
             getSelectedProgenies();
@@ -170,7 +171,7 @@ function setSetDefaultProgenyEventListeners() {
     let setDefaultProgenyButtons = document.querySelectorAll('.set-default-progeny-button');
     setDefaultProgenyButtons.forEach(function (button) {
         button.addEventListener('click', async function (event) {
-            let selectedButton = event.target;
+            let selectedButton = event.currentTarget;
             let selectedProgenyId = selectedButton.getAttribute('data-default-progeny-id');
             if (selectedProgenyId !== null) {
                 await setDefaultProgeny(parseInt(selectedProgenyId));
@@ -209,5 +210,6 @@ document.addEventListener('DOMContentLoaded', function () {
     setSelectProgenyButtonsEventListeners();
     getSelectedProgenies();
     setSetDefaultProgenyEventListeners();
+    setAddItemButtonEventListeners();
 });
 //# sourceMappingURL=app.js.map
