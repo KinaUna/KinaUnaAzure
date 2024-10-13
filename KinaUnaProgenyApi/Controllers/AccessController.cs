@@ -14,7 +14,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for user access management.
     /// </summary>
-    /// <param name="imageStore"></param>
     /// <param name="azureNotifications"></param>
     /// <param name="progenyService"></param>
     /// <param name="userInfoService"></param>
@@ -25,7 +24,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class AccessController(
-        IImageStore imageStore,
         IAzureNotifications azureNotifications,
         IProgenyService progenyService,
         IUserInfoService userInfoService,
