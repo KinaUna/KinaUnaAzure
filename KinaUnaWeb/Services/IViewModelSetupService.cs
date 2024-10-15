@@ -26,8 +26,9 @@ public interface IViewModelSetupService
     /// Generates a SelectListItem list of Progeny for the given user.
     /// </summary>
     /// <param name="userInfo">The user's UserInfo data.</param>
+    /// <param name="selectedProgenyId">The Id of the Progeny to select in the list. If 0, the current user's default progeny is selected.</param>
     /// <returns>List of SelectListItem objects.</returns>
-    Task<List<SelectListItem>> GetProgenySelectList(UserInfo userInfo);
+    Task<List<SelectListItem>> GetProgenySelectList(UserInfo userInfo, int selectedProgenyId = 0);
 
     /// <summary>
     /// Generates a SelectListItem list of offset times for setting reminders.

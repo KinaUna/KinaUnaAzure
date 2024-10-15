@@ -40,7 +40,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
             UserAccessViewModel model = new(baseModel);
             
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser, progenyId);
 
             model.SetAccessLevelList();
 
@@ -61,7 +61,7 @@ namespace KinaUnaWeb.Controllers
             
             if(!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                return RedirectToAction("Index", "Home");
+                return PartialView("_AccessDeniedPartial");
             }
 
             UserAccess userAccessToAdd = new()
@@ -84,9 +84,7 @@ namespace KinaUnaWeb.Controllers
                 _ = await userAccessHttpClient.AddUserAccess(userAccessToAdd);
             }
             
-            // Todo: Notify user of update
-            
-            return RedirectToAction("Index");
+            return PartialView("_NewAccessPartial", model);
         }
 
         /// <summary>

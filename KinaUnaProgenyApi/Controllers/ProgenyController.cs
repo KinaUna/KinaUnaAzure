@@ -14,14 +14,13 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for Progeny data.
     /// </summary>
-    /// <param name="imageStore"></param>
     /// <param name="progenyService"></param>
     /// <param name="userAccessService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ProgenyController(IImageStore imageStore, IProgenyService progenyService, IUserAccessService userAccessService) : ControllerBase
+    public class ProgenyController(IProgenyService progenyService, IUserAccessService userAccessService) : ControllerBase
     {
         /// <summary>
         /// Gets a list of all Progeny that the current user is admin for.

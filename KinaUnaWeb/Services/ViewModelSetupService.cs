@@ -84,8 +84,9 @@ namespace KinaUnaWeb.Services
         /// Generates a SelectListItem list of Progeny for the given user.
         /// </summary>
         /// <param name="userInfo">The user's UserInfo data.</param>
+        /// <param name="selectedProgenyId">The Id of the Progeny to select in the list. If 0, the current user's default progeny is selected.</param>
         /// <returns>List of SelectListItem objects.</returns>
-        public async Task<List<SelectListItem>> GetProgenySelectList(UserInfo userInfo)
+        public async Task<List<SelectListItem>> GetProgenySelectList(UserInfo userInfo, int selectedProgenyId = 0)
         {
             List<SelectListItem> progenyList = [];
             List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userInfo.UserEmail);
@@ -98,9 +99,19 @@ namespace KinaUnaWeb.Services
                     Text = accessList.Single(p => p.Id == progeny.Id).NickName,
                     Value = progeny.Id.ToString()
                 };
-                if (progeny.Id == userInfo.ViewChild)
+                if (selectedProgenyId == 0)
                 {
-                    selItem.Selected = true;
+                    if (progeny.Id == userInfo.ViewChild)
+                    {
+                        selItem.Selected = true;
+                    }
+                }
+                else
+                {
+                    if (progeny.Id == selectedProgenyId)
+                    {
+                        selItem.Selected = true;
+                    }
                 }
 
                 progenyList.Add(selItem);

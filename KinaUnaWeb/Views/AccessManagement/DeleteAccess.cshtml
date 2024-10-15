@@ -27,6 +27,7 @@
             </div>
             <div class="space-20"></div>
             <input asp-for="AccessId" class="form-control" value="@Model.AccessId" type="hidden"/>
+            <input asp-for="CurrentProgenyId" class="form-control" value="@Model.CurrentProgenyId" type="hidden"/>
             <div class="col-auto">
                 <Button class="btn btn-success leave-page">@await LocaleManager.GetTranslation("Yes", PageNames.AccessManagement, Model.LanguageId)</Button>
                 <a class="btn btn-danger leave-page" asp-controller="AccessManagement" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AccessManagement, Model.LanguageId)</a>
