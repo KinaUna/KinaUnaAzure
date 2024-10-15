@@ -1,6 +1,9 @@
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v8.js";
 
+/**
+ * Adds event listeners to all elements with the data-add-item-type attribute.
+ */
 export function setAddItemButtonEventListeners(): void {
     let addItemButtons = document.querySelectorAll<HTMLAnchorElement>('.add-item-button');
     addItemButtons.forEach(function (button) {
@@ -17,10 +20,19 @@ export function setAddItemButtonEventListeners(): void {
                 await popupAddItemModal(addItemType as string, addItemProgenyId);
             }
             stopFullPageSpinner();
+
+            return new Promise<void>(function (resolve, reject) {
+                resolve();
+            });
         });
     });
 }
 
+/**
+ * Shows the add item modal for the specified item type and progeny.
+ * @param addItemType
+ * @param addItemProgenyId
+ */
 async function popupAddItemModal(addItemType: string, addItemProgenyId: string): Promise<void> {
     let popup = document.getElementById('item-details-div');
     if (popup !== null) {
@@ -36,12 +48,14 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
                 const fullScreenOverlay = document.createElement('div');
                 fullScreenOverlay.classList.add('full-screen-bg');
                 fullScreenOverlay.innerHTML = modalContent;
-                popup.appendChild(fullScreenOverlay);              
+                popup.appendChild(fullScreenOverlay);
             }
+        }).catch(function (error) {
+            console.error('Error getting add item popup content:', error);
         });
 
         // hide main-modal
-        $('#main-modal').modal('toggle');
+        $('#main-modal').modal('hide');
 
         // show item-details-div
         popup.classList.remove('d-none');
@@ -49,9 +63,81 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
-        setSaveAddItemFormEventListener();
+        setSaveItemFormEventListener();
     }
 
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/**
+* Adds event listeners to all elements with the data-add-item-type attribute.
+*/
+export function setEditItemButtonEventListeners(): void {
+    let addItemButtons = document.querySelectorAll<HTMLAnchorElement>('.edit-item-button');
+    addItemButtons.forEach(function (button) {
+        button.addEventListener('click', async function (event) {
+            event.preventDefault();
+            startFullPageSpinner();
+            let editItemButton = event.currentTarget as HTMLAnchorElement;
+            let editItemType = editItemButton.getAttribute('data-edit-item-type');
+            let editItemItemId = editItemButton.getAttribute('data-edit-item-item-id');
+
+            if (editItemType !== null && editItemItemId !== null && editItemItemId !== '0') {
+                await popupEditItemModal(editItemType, editItemItemId);
+            }
+
+            stopFullPageSpinner();
+
+            return new Promise<void>(function (resolve, reject) {
+                resolve();
+            });
+        });
+    });
+}
+
+/**
+ * Shows the edit item modal for the specified item type and progeny.
+ * @param editItemType
+ * @param editItemItemId
+ */
+async function popupEditItemModal(editItemType: string, editItemItemId: string): Promise<void> {
+    let popup = document.getElementById('item-details-div');
+    if (popup !== null) {
+        popup.innerHTML = '';
+        await fetch('/AddItem/GetEditItemModalContent?itemType=' + editItemType + '&itemId=' + editItemItemId, {
+            method: 'GET',
+            headers: {
+                'Accept': 'text/html',
+            }
+        }).then(async function (response) {
+            if (response.ok) {
+                let modalContent = await response.text();
+                const fullScreenOverlay = document.createElement('div');
+                fullScreenOverlay.classList.add('full-screen-bg');
+                fullScreenOverlay.innerHTML = modalContent;
+                popup.appendChild(fullScreenOverlay);
+            }
+        }).catch(function (error) {
+            console.error('Error getting edit item popup content:', error);
+        });
+
+        // hide main-modal
+        $('#main-modal').modal('hide');
+
+        // show item-details-div
+        popup.classList.remove('d-none');
+        ($(".selectpicker") as any).selectpicker('refresh');
+        hideBodyScrollbars();
+        addCloseButtonEventListener();
+        addCancelButtonEventListener();
+        setSaveItemFormEventListener();
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -94,8 +180,12 @@ function addCancelButtonEventListener(): void {
     }
 }
 
-function setSaveAddItemFormEventListener(): void {
-    let addItemForm = document.querySelector<HTMLFormElement>('#add-item-form');
+/**
+ * Adds an event listener to the save item form.
+ * When submitted, the form is sent to the server and the response is displayed in the item details popup.
+ */
+function setSaveItemFormEventListener(): void {
+    let addItemForm = document.querySelector<HTMLFormElement>('#save-item-form');
     if (addItemForm) {
         addItemForm.addEventListener('submit', async function (event) {
             event.preventDefault();
@@ -118,15 +208,21 @@ function setSaveAddItemFormEventListener(): void {
                             const fullScreenOverlay = document.createElement('div');
                             fullScreenOverlay.classList.add('full-screen-bg');
                             fullScreenOverlay.innerHTML = modalContent;
-                            itemDetailsPopupDiv.appendChild(fullScreenOverlay);        
+                            itemDetailsPopupDiv.appendChild(fullScreenOverlay);
                             itemDetailsPopupDiv.classList.remove('d-none');
                             hideBodyScrollbars();
                             addCloseButtonEventListener();
                         }
                     }
+                }).catch(function (error) {
+                    console.error('Error saving item:', error);
                 });
             }
             stopFullPageSpinner();
+
+            return new Promise<void>(function (resolve, reject) {
+                resolve();
+            });
         });
     }
 }

@@ -12,7 +12,7 @@
             <h2 class="col-12">@ViewData["Title"]</h2>
             <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             <div class="space-20"></div>
-            <form id="add-item-form" asp-action="AddAccess" asp-controller="AccessManagement" role="form">
+            <form id="save-item-form" asp-action="AddAccess" asp-controller="AccessManagement" role="form">
                 @if (Model.ProgenyList.Count > 1)
                 {
                     <div class="form-group">

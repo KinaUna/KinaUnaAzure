@@ -44,7 +44,12 @@ namespace KinaUnaWeb.Controllers
 
             model.SetAccessLevelList();
 
-            return View(model);
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            return PartialView("_AddAccessPartial", model);
         }
 
         /// <summary>
@@ -74,16 +79,13 @@ namespace KinaUnaWeb.Controllers
             List<UserAccess> progenyAccessList = await userAccessHttpClient.GetUserAccessList(model.Email.ToUpper());
             
             UserAccess oldUserAccess = progenyAccessList.SingleOrDefault(u => u.ProgenyId == model.CurrentProgenyId);
-            if (oldUserAccess == null)
-            {
-                _ = await userAccessHttpClient.AddUserAccess(userAccessToAdd);
-            }
-            else
+            if (oldUserAccess != null)
             {
                 _ = await userAccessHttpClient.DeleteUserAccess(oldUserAccess.AccessId);
-                _ = await userAccessHttpClient.AddUserAccess(userAccessToAdd);
             }
-            
+
+            _ = await userAccessHttpClient.AddUserAccess(userAccessToAdd);
+
             return PartialView("_NewAccessPartial", model);
         }
 
@@ -110,10 +112,10 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                return RedirectToAction("Index", "Home");
+                return PartialView("_AccessDeniedPartial");
             }
 
-            return View(model);
+            return PartialView("_EditAccessPartial", model);
         }
 
         /// <summary>
@@ -129,16 +131,22 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                return RedirectToAction("Index", "Home");
+                return PartialView("_AccessDeniedPartial");
             }
 
             UserAccess userAccess = model.CreateUserAccess();
-            
-            await userAccessHttpClient.UpdateUserAccess(userAccess);
-            
-            // Todo: Notify user of update
-            
-            return RedirectToAction("Index");
+
+            userAccess = await userAccessHttpClient.UpdateUserAccess(userAccess);
+
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfo(userAccess.UserId);
+
+            model.SetUserAccessItem(userAccess, userInfo);
+
+            model.ProgenyName = model.CurrentProgeny.Name;
+
+            model.SetAccessLevelList();
+
+            return PartialView("_UpdatedAccessPartial", model);
         }
 
         /// <summary>
@@ -154,16 +162,20 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userAccess.ProgenyId);
             UserAccessViewModel model = new(baseModel);
 
-            UserInfo userAccessUserInfo = await userInfosHttpClient.GetUserInfo(userAccess.UserId);
-            model.SetUserAccessItem(userAccess, userAccessUserInfo);
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfo(userAccess.UserId);
+
+            model.SetUserAccessItem(userAccess, userInfo);
+
+            model.ProgenyName = model.CurrentProgeny.Name;
+
             model.SetAccessLevelList();
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                return RedirectToAction("Index", "Home");
+                return PartialView("_AccessDeniedPartial");
             }
 
-            return View(model);
+            return PartialView("_DeleteAccessPartial", model);
         }
 
         /// <summary>
@@ -180,7 +192,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                return RedirectToAction("Index", "Home");
+                return PartialView("_AccessDeniedPartial");
             }
 
             UserAccess accessToDelete = await userAccessHttpClient.GetUserAccess(model.AccessId);
@@ -188,9 +200,16 @@ namespace KinaUnaWeb.Controllers
             {
                 await userAccessHttpClient.DeleteUserAccess(model.AccessId);
             }
-            
-            // Todo: Notify user of update
-            return RedirectToAction("Index");
+
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfo(accessToDelete.UserId);
+
+            model.SetUserAccessItem(accessToDelete, userInfo);
+
+            model.ProgenyName = model.CurrentProgeny.Name;
+
+            model.SetAccessLevelList();
+
+            return PartialView("_DeletedAccessPartial", model);
         }
     }
 }

@@ -91,18 +91,33 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAddItemModalContent(string itemType, int progenyId)
+        public IActionResult GetAddItemModalContent(string itemType, int progenyId)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
             if (itemType == "user")
             {
-                UserAccessViewModel model = new(baseModel);
+                return RedirectToAction("AddAccess", "AccessManagement", new {progenyId});
+            }
 
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser, progenyId);
+            return PartialView("../Shared/_NotFoundPartial");
+        }
 
-                model.SetAccessLevelList();
+        [HttpGet]
+        public IActionResult GetEditItemModalContent(string itemType, int itemId)
+        {
+            if (itemType == "user")
+            {
+                return RedirectToAction("EditAccess", "AccessManagement", new { accessId = itemId });
+            }
 
-                return PartialView("../AccessManageMent/_AddAccessPartial", model);
+            return PartialView("../Shared/_NotFoundPartial");
+        }
+
+        [HttpGet]
+        public IActionResult GetDeleteItemModalContent(string itemType, int itemId)
+        {
+            if (itemType == "user")
+            {
+                return RedirectToAction("DeleteAccess", "AccessManagement", new { accessId = itemId });
             }
 
             return PartialView("../Shared/_NotFoundPartial");

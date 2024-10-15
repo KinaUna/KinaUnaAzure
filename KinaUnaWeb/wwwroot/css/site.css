@@ -3119,6 +3119,11 @@ button.Zebra_DatePicker_Icon {
         color: #fff;
     }
 
+        .form-control:disabled, .form-control[readonly] {
+            background-color: #262426;
+            opacity: 1;
+        }
+
     .form-control:focus {
         color: #fff;
         background-color: #000;

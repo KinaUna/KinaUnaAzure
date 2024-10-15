@@ -3,9 +3,9 @@
 @model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = await LocaleManager.GetTranslation("New user added", PageNames.AccessManagement, Model.LanguageId);
-    string addUserForString = await LocaleManager.GetTranslation("User added for", PageNames.AccessManagement, Model.LanguageId);
-    string addedUserString = await LocaleManager.GetTranslation("User email", PageNames.AccessManagement, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("User access updated", PageNames.AccessManagement, Model.LanguageId);
+    string updateUserForString = await LocaleManager.GetTranslation("User updated for", PageNames.AccessManagement, Model.LanguageId);
+    string updateUserString = await LocaleManager.GetTranslation("User email", PageNames.AccessManagement, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
@@ -17,11 +17,11 @@
             <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">
-                    @addUserForString : @Model.CurrentProgeny.NickName
+                    @updateUserForString : @Model.CurrentProgeny.NickName
                 </div>
                 <div class="col-12">
                     <div class="space-20"></div>
-                    @addedUserString : @Model.Email
+                    @updateUserString : @Model.Email
                 </div>
 
                 <div class="col-12">
