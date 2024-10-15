@@ -9,11 +9,11 @@
     <h2>@ViewData["Title"]</h2>
     <br />
     <div class="card card-blog card-plain">
-        <div class="card-header card-header-warning title">@await LocaleManager.GetTranslation("My children", PageNames.Family, Model.LanguageId)</div>
+        <div class="card-header card-header-warning title">@await LocaleManager.GetTranslation("My family members", PageNames.Family, Model.LanguageId)</div>
         <div class="card-text">
             <div class="btn-group">
                 <a asp-controller="Progeny" asp-action="AddProgeny" class="btn btn-success btn-rounded leave-page">
-                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add child", PageNames.Family, Model.LanguageId)
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add person or pet", PageNames.Family, Model.LanguageId)
                 </a>
             </div>
         </div>
@@ -35,39 +35,39 @@
 
                 <tbody>
                     @{
-                        List<string> progIds1 = new List<string>();
+                        List<string> myFamilyProgenyList = new List<string>();
                     }
-                    @foreach (Progeny accMvm in Model.Family.Children)
+                    @foreach (Progeny progeny in Model.Family.Children)
                     {
-                        if (!progIds1.Contains(accMvm.Id.ToString()))
+                        if (!myFamilyProgenyList.Contains(progeny.Id.ToString()))
                         {
                             <tr>
-                                <td>@accMvm.NickName</td>
-                                <td>@accMvm.Name</td>
+                                <td>@progeny.NickName</td>
+                                <td>@progeny.Name</td>
                                 <td>
-                                    @if (accMvm.BirthDay != null)
+                                    @if (progeny.BirthDay != null)
                                     {
-                                        @accMvm.BirthDay.Value.ToString("dd-MMM-yyyy HH:mm")
+                                        @progeny.BirthDay.Value.ToString("dd-MMM-yyyy HH:mm")
                                     }
                                 </td>
-                                <td>@accMvm.Admins</td>
+                                <td>@progeny.Admins</td>
                                 <td style="min-width: 100px;">
-                                    <a asp-controller="MyData" asp-action="ChildSpreadSheet" asp-route-progenyId="@accMvm.Id" class="btn btn-primary btn-sm">
+                                    <a asp-controller="MyData" asp-action="ChildSpreadSheet" asp-route-progenyId="@progeny.Id" class="btn btn-primary btn-sm">
                                         @await LocaleManager.GetTranslation("Download spreadsheet", PageNames.Family, Model.LanguageId)
                                         <i class="fas fa-archive"></i>
                                     </a>
                                 </td>
                                 <td>
-                                    <a asp-controller="Progeny" asp-action="EditProgeny" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-info leave-page">
+                                    <a asp-controller="Progeny" asp-action="EditProgeny" asp-route-progenyId="@progeny.Id.ToString()" class="btn btn-info leave-page">
                                         <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                                     </a>
-                                    <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-danger leave-page">
+                                    <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@progeny.Id.ToString()" class="btn btn-danger leave-page">
                                         <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
                                     </a>
 
                                 </td>
                             </tr>
-                            progIds1.Add(accMvm.Id.ToString());
+                            myFamilyProgenyList.Add(progeny.Id.ToString());
                         }
                     }
                 </tbody>
@@ -76,21 +76,21 @@
 
         <br />
         <div class="card card-blog card-plain">
-            <div class="card-header card-header-warning title">Users</div>
+            <div class="card-header card-header-warning title">@await LocaleManager.GetTranslation("Access list", PageNames.Family, Model.LanguageId)</div>
             <div class="card-text">
                 @{
-                    List<string> progIds = new List<string>();
+                    List<string> accessListProgenies = new List<string>();
                 }
-                @foreach (Progeny accMvm in Model.Family.Children)
+                @foreach (Progeny progeny in Model.Family.Children)
                 {
-                    if (!progIds.Contains(accMvm.Id.ToString()))
+                    if (!accessListProgenies.Contains(progeny.Id.ToString()))
                     {
                         <div class="btn-group">
-                            <a asp-controller="AccessManagement" asp-action="AddAccess" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-success btn-rounded leave-page">
-                                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add user for", PageNames.Family, Model.LanguageId) @accMvm.Name
+                            <a class="btn btn-success btn-rounded add-item-button" data-add-item-type="user" data-add-item-progeny-id="@progeny.Id">
+                                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add user for", PageNames.Family, Model.LanguageId) @progeny.Name
                             </a>
                         </div>
-                        progIds.Add(accMvm.Id.ToString());
+                        accessListProgenies.Add(progeny.Id.ToString());
                     }
                 }
             </div>

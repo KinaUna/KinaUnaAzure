@@ -40,7 +40,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
             UserAccessViewModel model = new(baseModel);
             
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser, progenyId);
 
             model.SetAccessLevelList();
 

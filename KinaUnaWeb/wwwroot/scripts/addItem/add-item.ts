@@ -9,19 +9,23 @@ export function setAddItemButtonEventListeners(): void {
             startFullPageSpinner();
             let addItemButton = event.currentTarget as HTMLAnchorElement;
             let addItemType = addItemButton.getAttribute('data-add-item-type');
+            let addItemProgenyId = addItemButton.getAttribute('data-add-item-progeny-id');
             if (addItemType !== null) {
-                await popupAddItemModal(addItemType as string);
+                if (addItemProgenyId === null) {
+                    addItemProgenyId = '0';
+                }
+                await popupAddItemModal(addItemType as string, addItemProgenyId);
             }
             stopFullPageSpinner();
         });
     });
 }
 
-async function popupAddItemModal(addItemType: string): Promise<void> {
+async function popupAddItemModal(addItemType: string, addItemProgenyId: string): Promise<void> {
     let popup = document.getElementById('item-details-div');
     if (popup !== null) {
         popup.innerHTML = '';
-        await fetch('/AddItem/GetAddItemModalContent?itemType=' + addItemType, {
+        await fetch('/AddItem/GetAddItemModalContent?itemType=' + addItemType + '&progenyId=' + addItemProgenyId, {
             method: 'GET',
             headers: {
                 'Accept': 'text/html',

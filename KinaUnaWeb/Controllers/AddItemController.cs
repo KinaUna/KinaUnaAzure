@@ -91,14 +91,14 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAddItemModalContent(string itemType)
+        public async Task<IActionResult> GetAddItemModalContent(string itemType, int progenyId)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
             if (itemType == "user")
             {
                 UserAccessViewModel model = new(baseModel);
 
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser, progenyId);
 
                 model.SetAccessLevelList();
 
