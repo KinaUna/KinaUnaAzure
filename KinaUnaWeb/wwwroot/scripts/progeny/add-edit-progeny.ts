@@ -2,7 +2,6 @@ import * as LocaleHelper from '../localization-v8.js';
 import { getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v8.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
-let languageId = 1;
 let zebraDateTimeFormat: string;
 
 /**
@@ -11,7 +10,7 @@ let zebraDateTimeFormat: string;
 async function setupDateTimePicker(): Promise<void> {
     setMomentLocale();
     zebraDateTimeFormat = getZebraDateTimeFormat();
-    zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
+    zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(getCurrentLanguageId());
 
     if (document.getElementById('progeny-date-time-picker') !== null) {
         const dateTimePicker: any = $('#progeny-date-time-picker');
@@ -26,6 +25,16 @@ async function setupDateTimePicker(): Promise<void> {
         });
     }
 
+    ($(".selectpicker") as any).selectpicker('refresh');
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+export async function InitializeAddEditProgeny(): Promise<void> {
+    await setupDateTimePicker();
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
@@ -35,9 +44,7 @@ async function setupDateTimePicker(): Promise<void> {
  * Initializes the page elements when it is loaded.
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
-    languageId = getCurrentLanguageId();
-
-    await setupDateTimePicker();
+    await InitializeAddEditProgeny();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

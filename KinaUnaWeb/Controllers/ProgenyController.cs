@@ -82,7 +82,7 @@ namespace KinaUnaWeb.Controllers
             model.CurrentUser = await userInfosHttpClient.GetUserInfo(userEmail);
             model.Admins = model.CurrentUser.UserEmail.ToUpper();
             
-            return View(model);
+            return PartialView("_AddProgenyPartial", model);
         }
 
         /// <summary>
@@ -118,8 +118,9 @@ namespace KinaUnaWeb.Controllers
             }
 
             await progenyHttpClient.AddProgeny(prog);
-            
-            return RedirectToAction("Index");
+            model.PictureLink = prog.GetProfilePictureUrl();
+
+            return PartialView("_ProgenyAddedPartial", model);
         }
 
         /// <summary>
@@ -149,10 +150,10 @@ namespace KinaUnaWeb.Controllers
 
             if (!progeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
-            return View(model);
+            return PartialView("_EditProgenyPartial", model);
         }
 
         /// <summary>
@@ -171,7 +172,7 @@ namespace KinaUnaWeb.Controllers
             if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
             
             prog.BirthDay = model.BirthDay;
@@ -186,9 +187,12 @@ namespace KinaUnaWeb.Controllers
                 string fileFormat = Path.GetExtension(model.File.FileName);
                 prog.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny, fileFormat);
             }
+            
             await progenyHttpClient.UpdateProgeny(prog);
 
-            return RedirectToAction("Index");
+            model.PictureLink = prog.GetProfilePictureUrl();
+
+            return PartialView("_ProgenyUpdatedPartial", model);
         }
 
         /// <summary>

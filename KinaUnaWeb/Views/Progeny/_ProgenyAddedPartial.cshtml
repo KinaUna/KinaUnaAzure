@@ -1,0 +1,79 @@
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@using System.Globalization
+@model KinaUnaWeb.Models.FamilyViewModels.ProgenyViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = @Model.Name + " - " + await LocaleManager.GetTranslation("Family member added", PageNames.Progeny, Model.LanguageId);
+    string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
+    string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="add-item-container">
+            <h2 class="col-12">@ViewData["Title"]</h2>
+            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            <div class="space-20"></div>
+            <form>
+                <div class="form-group">
+                    <label asp-for="Name" class="col-auto">@await LocaleManager.GetTranslation("Name", PageNames.Progeny, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="Name" class="form-control" value="@Model.Name" readonly="readonly" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="NickName" class="col-auto">@await LocaleManager.GetTranslation("Display name", PageNames.Progeny, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="NickName" class="form-control" value="@Model.NickName" readonly="readonly" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="BirthDay" class="col-auto control-label">@await LocaleManager.GetTranslation("Birthday", PageNames.Progeny, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <div class="input-group date">
+                            @{
+                                string birthdayString = Model.BirthDay?.ToString(longDateTimeFormat);
+                            }
+                            <input readonly="readonly" type="text" class="form-control" asp-for="BirthDay" value="@birthdayString" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TimeZone" class="col-auto control-label">@await LocaleManager.GetTranslation("Time zone", PageNames.Progeny, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input class="form-control" asp-for="TimeZone" value="@Model.TimeZone" readonly="readonly"></input>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Admins" class="col-auto">@await LocaleManager.GetTranslation("Administrators", PageNames.Progeny, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="Admins" class="form-control" value="@Model.Admins" readonly="readonly" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Profile picture", PageNames.Progeny, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <div class="text-center">
+                            <div class="thumbnail img-raised">
+                                <img src="@Model.PictureLink" alt="...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-20"></div>
+                <div class="space-50"></div>
+                <div class="col-auto">
+                    <strong>@await LocaleManager.GetTranslation("Name:", PageNames.Progeny, Model.LanguageId)</strong> @await LocaleManager.GetTranslation("The full name of the child.", PageNames.Progeny, Model.LanguageId)
+                    <div class="space-20"></div>
+                    <strong>@await LocaleManager.GetTranslation("Display name:", PageNames.Progeny, Model.LanguageId)</strong> @await LocaleManager.GetTranslation("The name that will appear on pages, lists, etc.", PageNames.Progeny, Model.LanguageId)
+                    <div class="space-20"></div>
+                    <strong>@await LocaleManager.GetTranslation("Birthday:", PageNames.Progeny, Model.LanguageId)</strong> @await LocaleManager.GetTranslation("The date and time of birth in the format day-month-year Hours: Minutes.", PageNames.Progeny, Model.LanguageId)
+                    <div class="space-20"></div>
+                    <strong>@await LocaleManager.GetTranslation("Time zone:", PageNames.Progeny, Model.LanguageId)</strong> @await LocaleManager.GetTranslation("The timezone for the birthday entered above.", PageNames.Progeny, Model.LanguageId)
+                    <div class="space-20"></div>
+                    <strong>@await LocaleManager.GetTranslation("Administrators:", PageNames.Progeny, Model.LanguageId)</strong> @await LocaleManager.GetTranslation("A comma separated list of email addresses.", PageNames.Progeny, Model.LanguageId)
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

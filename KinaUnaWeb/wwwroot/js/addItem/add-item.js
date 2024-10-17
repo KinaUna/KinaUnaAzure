@@ -1,5 +1,6 @@
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
+import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */
@@ -54,7 +55,12 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
         $('#main-modal').modal('hide');
         // show item-details-div
         popup.classList.remove('d-none');
-        $(".selectpicker").selectpicker('refresh');
+        if (addItemType === 'user') {
+            $(".selectpicker").selectpicker('refresh');
+        }
+        if (addItemType === 'progeny') {
+            await InitializeAddEditProgeny();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -115,7 +121,12 @@ async function popupEditItemModal(editItemType, editItemItemId) {
         $('#main-modal').modal('hide');
         // show item-details-div
         popup.classList.remove('d-none');
-        $(".selectpicker").selectpicker('refresh');
+        if (editItemType === 'user') {
+            $(".selectpicker").selectpicker('refresh');
+        }
+        if (editItemType === 'progeny') {
+            await InitializeAddEditProgeny();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -176,7 +187,9 @@ async function popupDeleteItemModal(deleteItemType, deleteItemItemId) {
         $('#main-modal').modal('hide');
         // show item-details-div
         popup.classList.remove('d-none');
-        $(".selectpicker").selectpicker('refresh');
+        if (deleteItemType === 'user') {
+            $(".selectpicker").selectpicker('refresh');
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
