@@ -23,53 +23,53 @@
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
                 <thead>
-                    <tr>
-                        <th><strong>@await LocaleManager.GetTranslation("Display name", PageNames.Family, Model.LanguageId)</strong></th>
-                        <th><strong>@await LocaleManager.GetTranslation("Name", PageNames.Family, Model.LanguageId)</strong></th>
-                        <th><strong>@await LocaleManager.GetTranslation("Birthday", PageNames.Family, Model.LanguageId)</strong></th>
-                        <th><strong>@await LocaleManager.GetTranslation("Administrators", PageNames.Family, Model.LanguageId)</strong></th>
-                        <th><strong>@await LocaleManager.GetTranslation("Data", PageNames.Family, Model.LanguageId)</strong></th>
-                        <th><strong>@await LocaleManager.GetTranslation("Action", PageNames.Family, Model.LanguageId)</strong></th>
-                    </tr>
+                <tr>
+                    <th><strong>@await LocaleManager.GetTranslation("Display name", PageNames.Family, Model.LanguageId)</strong></th>
+                    <th><strong>@await LocaleManager.GetTranslation("Name", PageNames.Family, Model.LanguageId)</strong></th>
+                    <th><strong>@await LocaleManager.GetTranslation("Birthday", PageNames.Family, Model.LanguageId)</strong></th>
+                    <th><strong>@await LocaleManager.GetTranslation("Administrators", PageNames.Family, Model.LanguageId)</strong></th>
+                    <th><strong>@await LocaleManager.GetTranslation("Data", PageNames.Family, Model.LanguageId)</strong></th>
+                    <th><strong>@await LocaleManager.GetTranslation("Action", PageNames.Family, Model.LanguageId)</strong></th>
+                </tr>
                 </thead>
 
                 <tbody>
-                    @{
-                        List<string> myFamilyProgenyList = new List<string>();
-                    }
-                    @foreach (Progeny progeny in Model.Family.Children)
+                @{
+                    List<string> myFamilyProgenyList = new List<string>();
+                }
+                @foreach (Progeny progeny in Model.Family.Children)
+                {
+                    if (!myFamilyProgenyList.Contains(progeny.Id.ToString()))
                     {
-                        if (!myFamilyProgenyList.Contains(progeny.Id.ToString()))
-                        {
-                            <tr>
-                                <td>@progeny.NickName</td>
-                                <td>@progeny.Name</td>
-                                <td>
-                                    @if (progeny.BirthDay != null)
-                                    {
-                                        @progeny.BirthDay.Value.ToString("dd-MMM-yyyy HH:mm")
-                                    }
-                                </td>
-                                <td>@progeny.Admins</td>
-                                <td style="min-width: 100px;">
-                                    <a asp-controller="MyData" asp-action="ChildSpreadSheet" asp-route-progenyId="@progeny.Id" class="btn btn-primary btn-sm">
-                                        @await LocaleManager.GetTranslation("Download spreadsheet", PageNames.Family, Model.LanguageId)
-                                        <i class="fas fa-archive"></i>
-                                    </a>
-                                </td>
-                                <td>
-                                    <a asp-controller="Progeny" asp-action="EditProgeny" asp-route-progenyId="@progeny.Id.ToString()" class="btn btn-info leave-page">
-                                        <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
-                                    </a>
-                                    <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@progeny.Id.ToString()" class="btn btn-danger leave-page">
-                                        <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
-                                    </a>
+                        <tr>
+                            <td>@progeny.NickName</td>
+                            <td>@progeny.Name</td>
+                            <td>
+                                @if (progeny.BirthDay != null)
+                                {
+                                    @progeny.BirthDay.Value.ToString("dd-MMM-yyyy HH:mm")
+                                }
+                            </td>
+                            <td>@progeny.Admins</td>
+                            <td style="min-width: 100px;">
+                                <a asp-controller="MyData" asp-action="ChildSpreadSheet" asp-route-progenyId="@progeny.Id" class="btn btn-primary btn-sm">
+                                    @await LocaleManager.GetTranslation("Download spreadsheet", PageNames.Family, Model.LanguageId)
+                                    <i class="fas fa-archive"></i>
+                                </a>
+                            </td>
+                            <td>
+                                <a asp-controller="Progeny" asp-action="EditProgeny" asp-route-progenyId="@progeny.Id.ToString()" class="btn btn-info leave-page">
+                                    <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
+                                </a>
+                                <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@progeny.Id.ToString()" class="btn btn-danger leave-page">
+                                    <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
+                                </a>
 
-                                </td>
-                            </tr>
-                            myFamilyProgenyList.Add(progeny.Id.ToString());
-                        }
+                            </td>
+                        </tr>
+                        myFamilyProgenyList.Add(progeny.Id.ToString());
                     }
+                }
                 </tbody>
             </table>
         </div>
@@ -101,37 +101,38 @@
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
                 <thead>
-                    <tr>
-                        <th><strong>@await LocaleManager.GetTranslation("Child", PageNames.Family, Model.LanguageId)</strong></th>
-                        <th><strong>@await LocaleManager.GetTranslation("User name", PageNames.Family, Model.LanguageId)</strong></th>
-                        <th><strong>@await LocaleManager.GetTranslation("Full name", PageNames.Family, Model.LanguageId)</strong></th>
-                        <th><strong>@await LocaleManager.GetTranslation("Email", PageNames.Family, Model.LanguageId)</strong></th>
-                        <th><strong>@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</strong></th>
-                        <th><strong>@await LocaleManager.GetTranslation("Edit child access", PageNames.Family, Model.LanguageId)</strong></th>
-                    </tr>
+                <tr>
+                    <th><strong>@await LocaleManager.GetTranslation("Child", PageNames.Family, Model.LanguageId)</strong></th>
+                    <th><strong>@await LocaleManager.GetTranslation("User name", PageNames.Family, Model.LanguageId)</strong></th>
+                    <th><strong>@await LocaleManager.GetTranslation("Full name", PageNames.Family, Model.LanguageId)</strong></th>
+                    <th><strong>@await LocaleManager.GetTranslation("Email", PageNames.Family, Model.LanguageId)</strong></th>
+                    <th><strong>@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</strong></th>
+                    <th><strong>@await LocaleManager.GetTranslation("Edit child access", PageNames.Family, Model.LanguageId)</strong></th>
+                </tr>
                 </thead>
                 <tbody>
-                    @foreach (UserAccess item in Model.Family.AccessList)
-                    {
-                        <tr>
-                            <td>@item.Progeny.NickName</td>
-                            <td>@item.User.UserName</td>
-                            <td>@item.User.FirstName @item.User.MiddleName @item.User.LastName</td>
-                            <td>@item.UserId</td>
-                            <td>@Model.Family.AccessLevelList.AccessLevelListEn[item.AccessLevel].Text</td>
-                            <td>
-                                <a asp-controller="AccessManagement" asp-action="EditAccess" asp-route-accessId="@item.AccessId" class="btn btn-info leave-page">
-                                    <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
-                                </a>
-                                <a asp-controller="AccessManagement" asp-action="DeleteAccess" asp-route-accessId="@item.AccessId" class="btn btn-danger leave-page">
-                                    <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
-                                </a>
+                @foreach (UserAccess item in Model.Family.AccessList)
+                {
+                    <tr>
+                        <td>@item.Progeny.NickName</td>
+                        <td>@item.User.UserName</td>
+                        <td>@item.User.FirstName @item.User.MiddleName @item.User.LastName</td>
+                        <td>@item.UserId</td>
+                        <td>@Model.Family.AccessLevelList.AccessLevelListEn[item.AccessLevel].Text</td>
+                        <td>
+                            <a data-edit-item-type="user" data-edit-item-item-id="@item.AccessId" class="btn btn-info edit-item-button">
+                                <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
+                            </a>
+                            <a data-delete-item-type="user" data-delete-item-item-id="@item.AccessId" class="btn btn-danger delete-item-button">
+                                <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
+                            </a>
 
-                            </td>
-                        </tr>
-                    }
+                        </td>
+                    </tr>
+                }
                 </tbody>
             </table>
         </div>
     }
 </div>
+<script src="/js/family/family-index.js" type="module" asp-append-version="true"></script>
