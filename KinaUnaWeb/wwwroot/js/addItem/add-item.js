@@ -68,8 +68,8 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
 * Adds event listeners to all elements with the data-add-item-type attribute.
 */
 export function setEditItemButtonEventListeners() {
-    let addItemButtons = document.querySelectorAll('.edit-item-button');
-    addItemButtons.forEach(function (button) {
+    let editItemButtons = document.querySelectorAll('.edit-item-button');
+    editItemButtons.forEach(function (button) {
         button.addEventListener('click', async function (event) {
             event.preventDefault();
             startFullPageSpinner();
@@ -110,6 +110,67 @@ async function popupEditItemModal(editItemType, editItemItemId) {
             }
         }).catch(function (error) {
             console.error('Error getting edit item popup content:', error);
+        });
+        // hide main-modal
+        $('#main-modal').modal('hide');
+        // show item-details-div
+        popup.classList.remove('d-none');
+        $(".selectpicker").selectpicker('refresh');
+        hideBodyScrollbars();
+        addCloseButtonEventListener();
+        addCancelButtonEventListener();
+        setSaveItemFormEventListener();
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
+/**
+* Adds event listeners to all elements with the data-add-item-type attribute.
+*/
+export function setDeleteItemButtonEventListeners() {
+    let deleteItemButtons = document.querySelectorAll('.delete-item-button');
+    deleteItemButtons.forEach(function (button) {
+        button.addEventListener('click', async function (event) {
+            event.preventDefault();
+            startFullPageSpinner();
+            let deleteItemButton = event.currentTarget;
+            let deleteItemType = deleteItemButton.getAttribute('data-delete-item-type');
+            let deleteItemItemId = deleteItemButton.getAttribute('data-delete-item-item-id');
+            if (deleteItemType !== null && deleteItemItemId !== null && deleteItemItemId !== '0') {
+                await popupDeleteItemModal(deleteItemType, deleteItemItemId);
+            }
+            stopFullPageSpinner();
+            return new Promise(function (resolve, reject) {
+                resolve();
+            });
+        });
+    });
+}
+/**
+ * Shows the edit item modal for the specified item type and progeny.
+ * @param editItemType
+ * @param editItemItemId
+ */
+async function popupDeleteItemModal(deleteItemType, deleteItemItemId) {
+    let popup = document.getElementById('item-details-div');
+    if (popup !== null) {
+        popup.innerHTML = '';
+        await fetch('/AddItem/GetDeleteItemModalContent?itemType=' + deleteItemType + '&itemId=' + deleteItemItemId, {
+            method: 'GET',
+            headers: {
+                'Accept': 'text/html',
+            }
+        }).then(async function (response) {
+            if (response.ok) {
+                let modalContent = await response.text();
+                const fullScreenOverlay = document.createElement('div');
+                fullScreenOverlay.classList.add('full-screen-bg');
+                fullScreenOverlay.innerHTML = modalContent;
+                popup.appendChild(fullScreenOverlay);
+            }
+        }).catch(function (error) {
+            console.error('Error getting delete item popup content:', error);
         });
         // hide main-modal
         $('#main-modal').modal('hide');
