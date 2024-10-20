@@ -64,14 +64,19 @@
                                 </a>
                             </td>
                             <td>
-                                    <a data-edit-item-type="progeny" data-edit-item-item-id="@progeny.Id" class="btn btn-info edit-item-button">
+                                <a data-progeny-info-id="@progeny.Id" class="btn btn-info">
+                                    <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("More info", PageNames.Family, Model.LanguageId)
+                                </a>
+                            </td>
+                            @* <td>
+                                <a data-edit-item-type="progeny" data-edit-item-item-id="@progeny.Id" class="btn btn-info edit-item-button">
                                     <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                                 </a>
                                 <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@progeny.Id.ToString()" class="btn btn-danger leave-page">
                                     <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
                                 </a>
 
-                            </td>
+                            </td> *@
                         </tr>
                         myFamilyProgenyList.Add(progeny.Id.ToString());
                     }

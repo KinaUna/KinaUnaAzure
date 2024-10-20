@@ -15,12 +15,12 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForUpdate(this Address currentAddress, Address otherAddress )
         {
             currentAddress.AddressId = otherAddress.AddressId;
-            currentAddress.AddressLine1 = otherAddress.AddressLine1;
-            currentAddress.AddressLine2 = otherAddress.AddressLine2;
-            currentAddress.City = otherAddress.City;
-            currentAddress.PostalCode = otherAddress.PostalCode;
-            currentAddress.State = otherAddress.State;
-            currentAddress.Country = otherAddress.Country;
+            currentAddress.AddressLine1 = otherAddress.AddressLine1 ?? string.Empty;
+            currentAddress.AddressLine2 = otherAddress.AddressLine2 ?? string.Empty;
+            currentAddress.City = otherAddress.City ?? string.Empty;
+            currentAddress.PostalCode = otherAddress.PostalCode ?? string.Empty;
+            currentAddress.State = otherAddress.State ?? string.Empty;
+            currentAddress.Country = otherAddress.Country ?? string.Empty;
         }
 
         /// <summary>
@@ -30,12 +30,12 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherAddress"></param>
         public static void CopyPropertiesForAdd(this Address currentAddress, Address otherAddress)
         {
-            currentAddress.AddressLine1 = otherAddress.AddressLine1;
-            currentAddress.AddressLine2 = otherAddress.AddressLine2;
-            currentAddress.City = otherAddress.City;
-            currentAddress.PostalCode = otherAddress.PostalCode;
-            currentAddress.State = otherAddress.State;
-            currentAddress.Country = otherAddress.Country;
+            currentAddress.AddressLine1 = otherAddress.AddressLine1 ?? string.Empty;
+            currentAddress.AddressLine2 = otherAddress.AddressLine2 ?? string.Empty;
+            currentAddress.City = otherAddress.City ?? string.Empty;
+            currentAddress.PostalCode = otherAddress.PostalCode ?? string.Empty;
+            currentAddress.State = otherAddress.State ?? string.Empty;
+            currentAddress.Country = otherAddress.Country ?? string.Empty;
             
         }
 

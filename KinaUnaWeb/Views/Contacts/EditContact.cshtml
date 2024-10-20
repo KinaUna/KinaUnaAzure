@@ -104,7 +104,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label asp-for="AddressItem.Country" class="col-auto control-label">@await LocaleManager.GetTranslation("County", PageNames.Contacts, Model.LanguageId)</label>
+                <label asp-for="AddressItem.Country" class="col-auto control-label">@await LocaleManager.GetTranslation("Country", PageNames.Contacts, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input asp-for="AddressItem.Country" class="form-control" value="@Model.AddressItem.Country" />
                 </div>

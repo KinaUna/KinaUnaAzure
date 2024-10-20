@@ -34,6 +34,10 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The deleted Progeny.</returns>
         Task<Progeny> DeleteProgeny(Progeny progeny);
 
+        Task<ProgenyInfo> GetProgenyInfo(int progenyId);
+        Task<ProgenyInfo> AddProgenyInfo(ProgenyInfo progenyInfo);
+        Task<ProgenyInfo> UpdateProgenyInfo(ProgenyInfo progenyInfo);
+        Task<ProgenyInfo> DeleteProgenyInfo(ProgenyInfo progenyInfo);
         /// <summary>
         /// Resizes a Progeny profile picture and saves it to the image store.
         /// </summary>

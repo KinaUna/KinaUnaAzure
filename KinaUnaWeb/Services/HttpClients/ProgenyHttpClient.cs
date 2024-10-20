@@ -133,6 +133,39 @@ namespace KinaUnaWeb.Services.HttpClients
             return progenyResponse.IsSuccessStatusCode;
         }
 
+        public async Task<ProgenyInfo> GetProgenyInfo(int progenyId)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            ProgenyInfo progenyInfo = new();
+            string progenyInfoApiPath = "/api/Progeny/GetProgenyInfo/" + progenyId;
+
+            HttpResponseMessage progenyInfoResponse = await _httpClient.GetAsync(progenyInfoApiPath);
+
+            if (!progenyInfoResponse.IsSuccessStatusCode) return progenyInfo;
+
+            string progenyInfoAsString = await progenyInfoResponse.Content.ReadAsStringAsync();
+            progenyInfo = JsonConvert.DeserializeObject<ProgenyInfo>(progenyInfoAsString);
+
+            return progenyInfo;
+
+        }
+
+        public async Task<ProgenyInfo> UpdateProgenyInfo(ProgenyInfo progenyInfo)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string updateProgenyInfoApiPath = "/api/Progeny/UpdateProgenyInfo/" + progenyInfo.ProgenyId;
+            HttpResponseMessage progenyInfoResponse = await _httpClient.PutAsync(updateProgenyInfoApiPath, new StringContent(JsonConvert.SerializeObject(progenyInfo), System.Text.Encoding.UTF8, "application/json"));
+            if (!progenyInfoResponse.IsSuccessStatusCode) return new ProgenyInfo();
+
+            string updateProgenyInfoResponseString = await progenyInfoResponse.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ProgenyInfo>(updateProgenyInfoResponseString);
+
+        }
+
         /// <summary>
         /// Gets a list of Progeny objects where the user is an admin.
         /// </summary>

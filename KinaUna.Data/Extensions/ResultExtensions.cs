@@ -41,6 +41,12 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Convert CustomResult to IActionResult.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="result"></param>
+        /// <returns></returns>
         public static IActionResult ToActionResult<T>(this CustomResult<T> result)
         {
             if (result == null)

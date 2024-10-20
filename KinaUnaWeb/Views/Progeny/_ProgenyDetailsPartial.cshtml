@@ -1,0 +1,190 @@
+﻿@using System.Globalization
+@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model KinaUnaWeb.Models.FamilyViewModels.ProgenyDetailsViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Details", PageNames.Progeny, Model.LanguageId);
+    string websiteLink = Model.ProgenyInfo.Website;
+    if (!string.IsNullOrEmpty(Model.ProgenyInfo.Website) && !Model.ProgenyInfo.Website.StartsWith("https://"))
+    {
+        websiteLink = "https://" + Model.ProgenyInfo.Website;
+    }
+    string emailString = await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId);
+    string emailCopiedString = await LocaleManager.GetTranslation("Email copied to clipboard", PageNames.Contacts, Model.LanguageId);
+    string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
+    string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-contact item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        @Model.CurrentProgeny.NickName
+                        <div class="space-10"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <img class="img-thumbnail d-block" style="max-height: 300px; max-width: 100%; background: black;" src="@Model.CurrentProgeny.GetProfilePictureUrl()" alt="Picture" />
+                    </div>
+                </div>
+                <div class="space-20"></div>
+                <div class="row text-white">
+                    @if (!string.IsNullOrEmpty(Model.CurrentProgeny.Name))
+                    {
+                        <div class="col-12">
+                            <div><strong>@await LocaleManager.GetTranslation("Name:", PageNames.Progeny, Model.LanguageId)</strong> @Model.CurrentProgeny.Name</div>
+                        </div>
+                    }
+                    @if (Model.CurrentProgeny.BirthDay.HasValue)
+                    {
+                        <div class="col-12">
+                            <div><strong>@await LocaleManager.GetTranslation("Birthday:", PageNames.Progeny, Model.LanguageId)</strong> @Model.CurrentProgeny.BirthDay.Value.ToString(longDateTimeFormat)</div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.CurrentProgeny.TimeZone))
+                    {
+                        <div class="col-12">
+                            <div><strong>@await LocaleManager.GetTranslation("Time zone", PageNames.Progeny, Model.LanguageId)</strong> @Model.CurrentProgeny.TimeZone</div>
+                        </div>
+                    }
+                </div>
+                <div class="space-20"></div>
+                <div class="timeline-text row text-white-75">
+                    @if (!string.IsNullOrEmpty(Model.ProgenyInfo.MobileNumber))
+                    {
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId)</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span id="contact-mobile-number-@Model.ProgenyInfo.ProgenyId" class="p-2">@Model.ProgenyInfo.MobileNumber</span>
+                                            <button class="btn btn-link p-3 copy-content-button text-white-50" data-copy-content-id="contact-mobile-number-@Model.ProgenyInfo.ProgenyId">
+                                                <i class="material-icons kinauna-icon-medium">content_copy</i>
+                                                <span class="toast-notification d-none">@await LocaleManager.GetTranslation("Mobile number copied to clipboard", PageNames.Contacts, Model.LanguageId)</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-auto">
+                                            <a class="btn btn-link p-3 text-white-50" href="tel:@Model.ProgenyInfo.MobileNumber"><i class="material-icons kinauna-icon-medium">call</i></a>
+                                            <a class="btn btn-link p-3 text-white-50" href="sms:@Model.ProgenyInfo.MobileNumber"><i class="material-icons kinauna-icon-medium">sms</i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-20"></div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ProgenyInfo.Email))
+                    {
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>@emailString</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span id="contact-email1-@Model.ProgenyInfo.ProgenyId">@Model.ProgenyInfo.Email</span>
+                                            <button class="btn btn-link p-3 copy-content-button text-white-50" data-copy-content-id="contact-email1-@Model.ProgenyInfo.ProgenyId">
+                                                <i class="material-icons">content_copy</i>
+                                                <span class="toast-notification d-none">@emailCopiedString</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-auto">
+                                            <a class="btn btn-link p-3 text-white-50" href="mailto:@Model.ProgenyInfo.Email"><i class="material-icons kinauna-icon-medium">outgoing_mail</i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-20"></div>
+                        </div>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.ProgenyInfo.Address?.AddressLine1 + Model.ProgenyInfo.Address?.AddressLine2 + Model.ProgenyInfo.Address?.City + Model.ProgenyInfo.Address?.State + Model.ProgenyInfo.Address?.PostalCode + Model.ProgenyInfo.Address?.Country))
+                    {
+                        <div class="col-12">
+                            <div class="space-20"></div>
+                            <strong>@await LocaleManager.GetTranslation("Address:", PageNames.Contacts, Model.LanguageId)</strong>
+                            <div class="space-10"></div>
+                            @if (!string.IsNullOrEmpty(Model.ProgenyInfo.Address?.AddressLine1))
+                            {
+                                @Model.ProgenyInfo.Address.AddressLine1
+                                <div class="space-10"></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProgenyInfo.Address?.AddressLine2))
+                            {
+                                @Model.ProgenyInfo.Address.AddressLine2
+                                <div class="space-10"></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProgenyInfo.Address?.City))
+                            {
+                                @Model.ProgenyInfo.Address.City
+                                <div class="space-10"></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProgenyInfo.Address.State))
+                            {
+                                @Model.ProgenyInfo.Address.State
+                                <div class="space-10"></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProgenyInfo.Address.PostalCode))
+                            {
+                                @Model.ProgenyInfo.Address.PostalCode
+                                <div class="space-10"></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProgenyInfo.Address.Country))
+                            {
+                                @Model.ProgenyInfo.Address.Country
+                                <div class="space-10"></div>
+                            }
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ProgenyInfo.Website + Model.ProgenyInfo.Notes))
+                    {
+
+                        @if (!string.IsNullOrEmpty(Model.ProgenyInfo.Website))
+                        {
+                            <div class="space-20"></div>
+                            <div class="col-12">
+                                <strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@websiteLink">@Model.ProgenyInfo.Website</a>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.ProgenyInfo.Notes))
+                        {
+                            <div class="col-12">
+                                <div class="space-20"></div>
+                                <strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ProgenyInfo.Notes
+                            </div>
+                        }
+                    }
+                </div>
+
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="space-20"></div>
+                <div class="col-12">
+                    <a data-edit-item-type="progeny" data-edit-item-item-id="@Model.CurrentProgeny.Id" class="btn btn-info edit-item-button item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@Model.CurrentProgeny.Id.ToString()" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

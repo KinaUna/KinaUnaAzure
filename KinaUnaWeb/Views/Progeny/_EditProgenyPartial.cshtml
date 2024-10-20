@@ -72,8 +72,72 @@
                         </div>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label asp-for="ProgenyInfo.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="ProgenyInfo.Email" class="form-control" value="@Model.ProgenyInfo.Email"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ProgenyInfo.MobileNumber" class="col-auto control-label">@await LocaleManager.GetTranslation("Mobile number", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="ProgenyInfo.MobileNumber" class="form-control" value="@Model.ProgenyInfo.MobileNumber"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ProgenyInfo.Website" class="col-auto control-label">@await LocaleManager.GetTranslation("Website", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="ProgenyInfo.Website" class="form-control" value="@Model.ProgenyInfo.Website"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ProgenyInfo.Address.AddressLine1" class="col-auto control-label">@await LocaleManager.GetTranslation("Address line 1", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="ProgenyInfo.Address.AddressLine1" class="form-control" value="@Model.ProgenyInfo.Address.AddressLine1" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ProgenyInfo.Address.AddressLine2" class="col-auto control-label">@await LocaleManager.GetTranslation("Address line 2", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="ProgenyInfo.Address.AddressLine2" class="form-control" value="@Model.ProgenyInfo.Address.AddressLine2" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ProgenyInfo.Address.City" class="col-auto control-label">@await LocaleManager.GetTranslation("City", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="ProgenyInfo.Address.City" class="form-control" value="@Model.ProgenyInfo.Address.City" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ProgenyInfo.Address.State" class="col-auto control-label">@await LocaleManager.GetTranslation("State/region", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="ProgenyInfo.Address.State" class="form-control" value="@Model.ProgenyInfo.Address.State" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ProgenyInfo.Address.PostalCode" class="col-auto control-label">@await LocaleManager.GetTranslation("Postal code", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="ProgenyInfo.Address.PostalCode" class="form-control" value="@Model.ProgenyInfo.Address.PostalCode" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ProgenyInfo.Address.Country" class="col-auto control-label">@await LocaleManager.GetTranslation("Country", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="ProgenyInfo.Address.Country" class="form-control" value="@Model.ProgenyInfo.Address.Country" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ProgenyInfo.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <textarea asp-for="ProgenyInfo.Notes" class="form-control" rows="4" value="@Model.ProgenyInfo.Notes"></textarea>
+                    </div>
+                </div>
                 <div class="space-20"></div>
                 <input asp-for="ProgenyId" class="form-control" value="@Model.ProgenyId" type="hidden" />
+                <input asp-for="ProgenyInfo.ProgenyId" class="form-control" value="@Model.ProgenyInfo.ProgenyId" type="hidden"/>
+                <input asp-for="ProgenyInfo.ProgenyInfoId" class="form-control" value="@Model.ProgenyInfo.ProgenyInfoId" type="hidden" />
+                <input asp-for="ProgenyInfo.AddressIdNumber" class="form-control" value="@Model.ProgenyInfo.AddressIdNumber" type="hidden" />
+                <input asp-for="ProgenyInfo.Address.AddressId" class="form-control" value="@Model.ProgenyInfo.Address.AddressId" type="hidden"/>
                 <div class="form-group">
                     <div class="col-auto"></div>
                     <div class="col-auto">
@@ -95,12 +159,5 @@
                 </div>
             </form>
         </div>
-    </div>
-</div>
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    <div class="add-item-container">
-        <h2 class="col-12">@ViewData["Title"]</h2>
-        <div class="space-20"></div>
-        
     </div>
 </div>

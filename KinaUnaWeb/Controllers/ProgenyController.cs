@@ -35,12 +35,27 @@ namespace KinaUnaWeb.Controllers
         IViewModelSetupService viewModelSetupService)
         : Controller
     {
-        private const string DefaultUser = Constants.DefaultUserEmail;
-
         public IActionResult Index()
         {
             return RedirectToAction("Index", "Family");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+
+            if (baseModel.CurrentAccessLevel > (int)AccessLevel.Friends)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            ProgenyDetailsViewModel model = new ProgenyDetailsViewModel(baseModel);
+            model.ProgenyInfo = await progenyHttpClient.GetProgenyInfo(progenyId);
+
+            return PartialView("_ProgenyDetailsPartial", model);
+        }
+
 
         /// <summary>
         /// Profile picture for a Progeny. If the Progeny has no picture or the user has no access to the picture, a default image is returned.
@@ -52,8 +67,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<FileContentResult> ProfilePicture(int id)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), id);
-
-
+            
             if (string.IsNullOrEmpty(baseModel.CurrentProgeny.PictureLink) || baseModel.CurrentAccessLevel > (int)AccessLevel.Friends)
             {
                 MemoryStream fileContentNoAccess = await imageStore.GetStream("868b62e2-6978-41a1-97dc-1cc1116f65a6.jpg");
@@ -95,7 +109,16 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> AddProgeny(ProgenyViewModel model)
         {
-            Progeny prog = new()
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+
+            if (userEmail == Constants.DefaultUserEmail)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            model.CurrentUser = await userInfosHttpClient.GetUserInfo(userEmail);
+
+            Progeny progeny = new()
             {
                 BirthDay = model.BirthDay,
                 Admins = model.Admins.ToUpper(),
@@ -104,21 +127,20 @@ namespace KinaUnaWeb.Controllers
                 PictureLink = model.PictureLink,
                 TimeZone = model.TimeZone
             };
-            // Todo: Check if the progeny exists.
-
+            
             if (model.File != null)
             {
                 await using Stream stream = model.File.OpenReadStream();
                 string fileFormat = Path.GetExtension(model.File.FileName);
-                prog.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny, fileFormat);
+                progeny.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny, fileFormat);
             }
             else
             {
-                prog.PictureLink = Constants.WebAppUrl + "/photodb/childcareicon.jpg"; // Todo: Find better image
+                progeny.PictureLink = Constants.WebAppUrl + "/photodb/childcareicon.jpg"; // Todo: Find better image
             }
 
-            await progenyHttpClient.AddProgeny(prog);
-            model.PictureLink = prog.GetProfilePictureUrl();
+            await progenyHttpClient.AddProgeny(progeny);
+            model.PictureLink = progeny.GetProfilePictureUrl();
 
             return PartialView("_ProgenyAddedPartial", model);
         }
@@ -139,6 +161,10 @@ namespace KinaUnaWeb.Controllers
             model.CurrentUser = await userInfosHttpClient.GetUserInfo(userEmail);
 
             Progeny progeny = await progenyHttpClient.GetProgeny(progenyId);
+            if (!progeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
 
             model.ProgenyId = progeny.Id;
             model.Name = progeny.Name;
@@ -147,11 +173,8 @@ namespace KinaUnaWeb.Controllers
             model.TimeZone = progeny.TimeZone;
             model.Admins = progeny.Admins.ToUpper();
             model.PictureLink = progeny.GetProfilePictureUrl();
-
-            if (!progeny.IsInAdminList(model.CurrentUser.UserEmail))
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
+            
+            model.ProgenyInfo = await progenyHttpClient.GetProgenyInfo(progenyId);
 
             return PartialView("_EditProgenyPartial", model);
         }
@@ -166,31 +189,33 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> EditProgeny(ProgenyViewModel model)
         {
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? DefaultUser;
+            string userEmail = User.GetEmail();
             UserInfo userinfo = await userInfosHttpClient.GetUserInfo(userEmail);
-            Progeny prog = await progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.IsInAdminList(userinfo.UserEmail))
+            Progeny progeny = await progenyHttpClient.GetProgeny(model.ProgenyId);
+            if (!progeny.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return PartialView("_AccessDeniedPartial");
             }
             
-            prog.BirthDay = model.BirthDay;
-            prog.Admins = model.Admins.ToUpper();
-            prog.Name = model.Name;
-            prog.NickName = model.NickName;
-            prog.TimeZone = model.TimeZone;
+            progeny.BirthDay = model.BirthDay;
+            progeny.Admins = model.Admins.ToUpper();
+            progeny.Name = model.Name;
+            progeny.NickName = model.NickName;
+            progeny.TimeZone = model.TimeZone;
             
             if (model.File != null && model.File.Name != string.Empty)
             {
                 await using Stream stream = model.File.OpenReadStream();
                 string fileFormat = Path.GetExtension(model.File.FileName);
-                prog.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny, fileFormat);
+                progeny.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny, fileFormat);
             }
             
-            await progenyHttpClient.UpdateProgeny(prog);
+            await progenyHttpClient.UpdateProgeny(progeny);
 
-            model.PictureLink = prog.GetProfilePictureUrl();
+            model.ProgenyInfo = await progenyHttpClient.UpdateProgenyInfo(model.ProgenyInfo);
+
+            model.PictureLink = progeny.GetProfilePictureUrl();
 
             return PartialView("_ProgenyUpdatedPartial", model);
         }
@@ -433,8 +458,9 @@ namespace KinaUnaWeb.Controllers
                     await locationsHttpClient.DeleteLocation(location.LocationId);
                 }
             }
-
+            
             await progenyHttpClient.DeleteProgeny(model.Id);
+
             return RedirectToAction("Index");
         }
 

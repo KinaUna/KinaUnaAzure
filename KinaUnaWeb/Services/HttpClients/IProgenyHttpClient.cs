@@ -38,6 +38,11 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if successfully removed.</returns>
         Task<bool> DeleteProgeny(int progenyId);
 
+        Task<ProgenyInfo> GetProgenyInfo(int progenyId);
+        
+        Task<ProgenyInfo> UpdateProgenyInfo(ProgenyInfo progenyInfo);
+
+
         /// <summary>
         /// Gets a list of Progeny objects where the user is an admin.
         /// </summary>

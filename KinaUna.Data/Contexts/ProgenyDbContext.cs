@@ -30,5 +30,6 @@ namespace KinaUna.Data.Contexts
         public DbSet<PushDevices> PushDevices { get; init; }
         public DbSet<KinaUnaBackgroundTask> BackgroundTasksDb { get; init; }
         public DbSet<CalendarReminder> CalendarRemindersDb { get; init; }
+        public DbSet<ProgenyInfo> ProgenyInfoDb { get; init; }
     }
 }

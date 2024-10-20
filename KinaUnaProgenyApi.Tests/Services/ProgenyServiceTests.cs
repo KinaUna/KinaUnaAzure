@@ -25,7 +25,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             Mock<IImageStore> imageStore = new();
-            ProgenyService progenyService = new(context, memoryCache, imageStore.Object);
+            Mock<ILocationService> locationService = new();
+            ProgenyService progenyService = new(context, memoryCache, imageStore.Object, locationService.Object);
 
             Progeny resultProgeny = await progenyService.GetProgeny(1);
             // 2nd call to GetProgeny is retrieving the Progeny object from cache.
@@ -60,7 +61,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             Mock<IImageStore> imageStore = new();
-            ProgenyService progenyService = new(context, memoryCache, imageStore.Object);
+            Mock<ILocationService> locationService = new();
+            ProgenyService progenyService = new(context, memoryCache, imageStore.Object, locationService.Object);
 
             Progeny progeny = await progenyService.GetProgeny(0);
 
@@ -76,7 +78,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             Mock<IImageStore> imageStore = new();
-            ProgenyService progenyService = new(context, memoryCache, imageStore.Object);
+            Mock<ILocationService> locationService = new();
+            ProgenyService progenyService = new(context, memoryCache, imageStore.Object, locationService.Object);
 
             Progeny progenyToAdd = new() { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
 
@@ -124,7 +127,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             Mock<IImageStore> imageStore = new();
-            ProgenyService progenyService = new(context, memoryCache, imageStore.Object);
+            Mock<ILocationService> locationService = new();
+            ProgenyService progenyService = new(context, memoryCache, imageStore.Object, locationService.Object);
 
             Progeny progenyToUpdate = await progenyService.GetProgeny(1);
             progenyToUpdate.Name = "B";
@@ -169,7 +173,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             Mock<IImageStore> imageStore = new();
-            ProgenyService progenyService = new(context, memoryCache, imageStore.Object);
+            Mock<ILocationService> locationService = new();
+            ProgenyService progenyService = new(context, memoryCache, imageStore.Object, locationService.Object);
 
             Progeny progenyToDelete = await progenyService.GetProgeny(1);
 
