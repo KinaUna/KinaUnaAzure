@@ -3,6 +3,7 @@ import { setAddItemButtonEventListeners } from './addItem/add-item.js';
 import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v8.js';
 import { startFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v8.js';
 import { SetProgenyRequest } from './page-models-v8.js';
+import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-details.js';
 import { getSelectedProgenies } from './settings-tools-v8.js';
 import { initSidebar } from './sidebar-v8.js';
 const serviceWorkerVersion_key = 'service_worker_version';
@@ -210,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setSelectProgenyButtonsEventListeners();
     getSelectedProgenies();
     setSetDefaultProgenyEventListeners();
+    addProgenyItemEventListenersForAllProgenies();
     setAddItemButtonEventListeners();
 });
 //# sourceMappingURL=app.js.map

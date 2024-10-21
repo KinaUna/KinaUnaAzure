@@ -1,5 +1,6 @@
 ﻿import { setEditItemButtonEventListeners } from "../addItem/add-item.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
 
 /**
  * Adds click event listeners to all elements with data-progeny-id on the page.
@@ -54,6 +55,7 @@ export async function popupProgenyDetails(progenyId: string): Promise<void> {
 }
 
 async function displayProgenyDetails(progenyId: string): Promise<void> {
+    startFullPageSpinner();
     let url = '/Progeny/Details?progenyId=' + progenyId;
     await fetch(url, {
         method: 'GET',
@@ -88,6 +90,8 @@ async function displayProgenyDetails(progenyId: string): Promise<void> {
     }).catch(function (error) {
         console.error('Get Progeny/Details Request failed', error);
     });
+
+    stopFullPageSpinner();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

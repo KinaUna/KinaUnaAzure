@@ -179,7 +179,7 @@
             </div>
             @if (Model.IsCurrentUserProgenyAdmin)
             {
-                <div class="space-20"></div>
+                <div class="space-100"></div>
                 <div class="col-12">
                     <a data-edit-item-type="progeny" data-edit-item-item-id="@Model.CurrentProgeny.Id" class="btn btn-info edit-item-button item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
                     <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@Model.CurrentProgeny.Id.ToString()" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>

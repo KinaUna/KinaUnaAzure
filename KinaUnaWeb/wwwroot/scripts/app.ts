@@ -4,6 +4,7 @@ import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v8.js';
 import { hideBodyScrollbars, showBodyScrollbars } from './item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v8.js';
 import { SetProgenyRequest } from './page-models-v8.js';
+import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-details.js';
 import { getSelectedProgenies } from './settings-tools-v8.js';
 import { initSidebar } from './sidebar-v8.js';
 
@@ -255,6 +256,8 @@ document.addEventListener('DOMContentLoaded', function (): void {
     getSelectedProgenies();
 
     setSetDefaultProgenyEventListeners();
+
+    addProgenyItemEventListenersForAllProgenies();
 
     setAddItemButtonEventListeners();
 });
