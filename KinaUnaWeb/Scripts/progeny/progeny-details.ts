@@ -22,6 +22,10 @@ export async function addProgenyItemEventListeners(progenyId: string): Promise<v
     });
 }
 
+/**
+ * Adds click event listeners to all elements with data-progeny-id on the page.
+ * When clicked, the progeny details popup is displayed.
+ */
 export function addProgenyItemEventListenersForAllProgenies(): void {
     const progenyElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-progeny-info-id]');
     if (progenyElementsWithDataId) {

@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.FamilyViewModels
 {
+    /// <summary>
+    /// Viewmodel for Progeny views.
+    /// </summary>
     public class ProgenyViewModel: BaseViewModel
     {
         public int ProgenyId { get; set; }

@@ -6,6 +6,9 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models;
 
+/// <summary>
+/// Base ViewModel for pages that display items.
+/// </summary>
 public class BaseItemsViewModel : BaseViewModel
 {
     public int CurrentProgenyId { get; set; }
@@ -16,6 +19,12 @@ public class BaseItemsViewModel : BaseViewModel
     public string Tags { get; set; }
     public string TagsList { get; set; }
 
+    /// <summary>
+    /// Set the current Progeny Id.
+    /// If the Progeny Id is 0 and the CurrentUser has a ViewChild set, the ViewChild Id is used.
+    /// Else the DefaultChildId is used.
+    /// </summary>
+    /// <param name="progenyId">The Id of the Progeny.</param>
     public void SetCurrentProgenyId(int progenyId)
     {
         CurrentProgenyId = progenyId;
@@ -31,6 +40,9 @@ public class BaseItemsViewModel : BaseViewModel
         }
     }
 
+    /// <summary>
+    /// Set the current users access level for the current Progeny and determines if the current user is an admin for the progeny.
+    /// </summary>
     public void SetCurrentUsersAccessLevel()
     {
         CurrentAccessLevel = (int)AccessLevel.NoAccess;
@@ -50,6 +62,10 @@ public class BaseItemsViewModel : BaseViewModel
         CurrentAccessLevel = (int)AccessLevel.Private;
     }
 
+    /// <summary>
+    /// Sets the base properties for the ViewModel, used by classes inheriting from this class.
+    /// </summary>
+    /// <param name="baseItemsViewModel"></param>
     public void SetBaseProperties(BaseItemsViewModel baseItemsViewModel)
     {
         LanguageId = baseItemsViewModel.LanguageId;
@@ -61,6 +77,10 @@ public class BaseItemsViewModel : BaseViewModel
         IsCurrentUserProgenyAdmin = baseItemsViewModel.IsCurrentUserProgenyAdmin;
     }
 
+    /// <summary>
+    /// Set the TagsList property for the ViewModel.
+    /// </summary>
+    /// <param name="tagsList">List of strings containing the tags.</param>
     public void SetTagList(List<string> tagsList)
     {
         string tagItems = "[";
@@ -80,20 +100,5 @@ public class BaseItemsViewModel : BaseViewModel
         tagItems += "]";
 
         TagsList = tagItems;
-    }
-
-    public void SetTags(List<string> tagsList)
-    {
-        string tags = "";
-        foreach (string tagstring in tagsList)
-        {
-            if (!string.IsNullOrEmpty(tagstring))
-            {
-                tags = tags + tagstring + ",";
-            }
-        }
-
-        Tags = tags.TrimEnd(',');
-
     }
 }

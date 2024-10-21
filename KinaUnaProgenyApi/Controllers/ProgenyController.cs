@@ -256,6 +256,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets the ProgenyInfo entity for the specified ProgenyId.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny.</param>
+        /// <returns>OkResult with the ProgenyInfo object.</returns>
         [HttpGet("[action]/{progenyId:int}")]
         public async Task<IActionResult> GetProgenyInfo(int progenyId)
         {
@@ -276,6 +281,12 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
         }
 
+        /// <summary>
+        /// Updates a ProgenyInfo entity in the database.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny the ProgenyInfo entity belongs to.</param>
+        /// <param name="progenyInfo">The ProgenyInfo object with the updated properties.</param>
+        /// <returns>OkResult with the updated ProgenyInfo object.</returns>
         [HttpPut]
         [Route("[action]/{progenyId:int}")]
         public async Task<IActionResult> UpdateProgenyInfo(int progenyId, [FromBody] ProgenyInfo progenyInfo)

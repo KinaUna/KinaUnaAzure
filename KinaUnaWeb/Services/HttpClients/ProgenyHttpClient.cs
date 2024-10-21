@@ -133,6 +133,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return progenyResponse.IsSuccessStatusCode;
         }
 
+        /// <summary>
+        /// Gets the ProgenyInfo object for the given Progeny.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny to get the ProgenyInfo object for.</param>
+        /// <returns>The ProgenyInfo object for the given Progeny.</returns>
         public async Task<ProgenyInfo> GetProgenyInfo(int progenyId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -152,6 +157,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Updates a ProgenyInfo object.
+        /// </summary>
+        /// <param name="progenyInfo">The ProgenyInfo object with the updated properties.</param>
+        /// <returns>The updated ProgenyInfo object.</returns>
         public async Task<ProgenyInfo> UpdateProgenyInfo(ProgenyInfo progenyInfo)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -187,6 +197,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return accessList;
         }
 
+        /// <summary>
+        /// Gets the list of TimeLineItems that happened on this data for the given Progenies.
+        /// </summary>
+        /// <param name="progeniesList">List of Ids for the progenies to get timeline items for.</param>
+        /// <returns>List of TimeLineItem objects.</returns>
         public async Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList)
         {
             List<TimeLineItem> yearAgoPosts = [];

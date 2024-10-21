@@ -291,6 +291,11 @@ namespace KinaUnaProgenyApi.Services
         }
 
         // Todo: Add unit tests.
+        /// <summary>
+        /// Adds a new ProgenyInfo object to the database.
+        /// </summary>
+        /// <param name="progenyInfo">The ProgenyInfo object to add to the database.</param>
+        /// <returns>The added ProgenyInfo object.</returns>
         public async Task<ProgenyInfo> AddProgenyInfo(ProgenyInfo progenyInfo)
         {
             if (progenyInfo.Address != null)
@@ -314,6 +319,11 @@ namespace KinaUnaProgenyApi.Services
         }
 
         // Todo: Add unit tests.
+        /// <summary>
+        /// Updates a ProgenyInfo entity in the database.
+        /// </summary>
+        /// <param name="progenyInfo">The ProgenyInfo object with the updated properties.</param>
+        /// <returns>The updated ProgenyInfo object.</returns>
         public async Task<ProgenyInfo> UpdateProgenyInfo(ProgenyInfo progenyInfo)
         {
             ProgenyInfo progenyInfoToUpdate = await _context.ProgenyInfoDb.SingleOrDefaultAsync(p => p.ProgenyId == progenyInfo.ProgenyId);
@@ -365,6 +375,11 @@ namespace KinaUnaProgenyApi.Services
         }
 
         // Todo: Add unit tests.
+        /// <summary>
+        /// Deletes a ProgenyInfo entity from the database.
+        /// </summary>
+        /// <param name="progenyInfo">The ProgenyInfo object to remove.</param>
+        /// <returns>The deleted ProgenyInfo object.</returns>
         public async Task<ProgenyInfo> DeleteProgenyInfo(ProgenyInfo progenyInfo)
         {
             ProgenyInfo progenyInfoToDelete = await _context.ProgenyInfoDb.SingleOrDefaultAsync(p => p.ProgenyId == progenyInfo.ProgenyId);

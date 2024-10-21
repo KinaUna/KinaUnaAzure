@@ -2,7 +2,7 @@
 {
     /// <summary>
     /// Entity Framework Entity for address data.
-    /// Used for Contacts.
+    /// Used for Contacts and ProgenyInfo.
     /// </summary>
     public class Address
     {

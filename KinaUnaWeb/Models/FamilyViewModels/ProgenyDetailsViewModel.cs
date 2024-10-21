@@ -2,6 +2,9 @@
 
 namespace KinaUnaWeb.Models.FamilyViewModels
 {
+    /// <summary>
+    /// ViewModel for the Progeny Details view.
+    /// </summary>
     public class ProgenyDetailsViewModel: BaseItemsViewModel
     {
         public ProgenyDetailsViewModel(BaseItemsViewModel baseItemsViewModel)

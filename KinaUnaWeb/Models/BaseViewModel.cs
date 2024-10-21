@@ -2,6 +2,9 @@
 
 namespace KinaUnaWeb.Models
 {
+    /// <summary>
+    /// Base ViewModel for all views.
+    /// </summary>
     public class BaseViewModel
     {
         public UserInfo CurrentUser { get; set; }
