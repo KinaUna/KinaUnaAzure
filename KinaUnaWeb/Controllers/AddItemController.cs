@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 using KinaUna.Data.Extensions;
-using KinaUnaWeb.Models.FamilyViewModels;
 using KinaUnaWeb.Models.HomeViewModels;
 
 namespace KinaUnaWeb.Controllers
@@ -21,7 +20,7 @@ namespace KinaUnaWeb.Controllers
     /// </summary>
     /// <param name="imageStore"></param>
     [Authorize]
-    public class AddItemController(ImageStore imageStore, IViewModelSetupService viewModelSetupService) : Controller
+    public class AddItemController(ImageStore imageStore) : Controller
     {
         /// <summary>
         /// Add Item Index page. Not used anymore.
@@ -98,6 +97,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddAccess", "AccessManagement", new {progenyId});
             }
 
+            if (itemType == "progeny")
+            {
+                return RedirectToAction("AddProgeny", "Progeny");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
@@ -107,6 +111,11 @@ namespace KinaUnaWeb.Controllers
             if (itemType == "user")
             {
                 return RedirectToAction("EditAccess", "AccessManagement", new { accessId = itemId });
+            }
+
+            if (itemType == "progeny")
+            {
+                return RedirectToAction("EditProgeny", "Progeny", new { progenyId = itemId });
             }
 
             return PartialView("../Shared/_NotFoundPartial");

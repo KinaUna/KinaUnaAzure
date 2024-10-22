@@ -68,10 +68,11 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Ok(result);
             }
+
             return NotFound();
 
         }
-        
+
         /// <summary>
         /// Adds a new Progeny entity to the database.
         /// </summary>
@@ -215,7 +216,7 @@ namespace KinaUnaProgenyApi.Controllers
             progeny.PictureLink = value.PictureLink;
 
             progeny = await progenyService.UpdateProgeny(progeny);
-            
+
             return Ok(progeny);
         }
 
@@ -237,7 +238,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-            
+
             CustomResult<List<UserAccess>> userAccessListResult = await userAccessService.GetProgenyUserAccessList(progeny.Id, userEmail);
             if (!userAccessListResult.IsSuccess) return userAccessListResult.ToActionResult();
 
@@ -248,9 +249,68 @@ namespace KinaUnaProgenyApi.Controllers
 
             await progenyService.DeleteProgeny(progeny);
 
+            ProgenyInfo progenyInfo = await progenyService.GetProgenyInfo(progeny.Id);
+            await progenyService.DeleteProgenyInfo(progenyInfo);
 
             return NoContent();
 
+        }
+
+        /// <summary>
+        /// Gets the ProgenyInfo entity for the specified ProgenyId.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny.</param>
+        /// <returns>OkResult with the ProgenyInfo object.</returns>
+        [HttpGet("[action]/{progenyId:int}")]
+        public async Task<IActionResult> GetProgenyInfo(int progenyId)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+            if (accessLevelResult.IsFailure)
+            {
+                return accessLevelResult.ToActionResult();
+            }
+
+            ProgenyInfo result = await progenyService.GetProgenyInfo(progenyId);
+
+            if (result != null)
+            {
+                return Ok(result);
+            }
+
+            return NotFound();
+        }
+
+        /// <summary>
+        /// Updates a ProgenyInfo entity in the database.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny the ProgenyInfo entity belongs to.</param>
+        /// <param name="progenyInfo">The ProgenyInfo object with the updated properties.</param>
+        /// <returns>OkResult with the updated ProgenyInfo object.</returns>
+        [HttpPut]
+        [Route("[action]/{progenyId:int}")]
+        public async Task<IActionResult> UpdateProgenyInfo(int progenyId, [FromBody] ProgenyInfo progenyInfo)
+        {
+            Progeny progeny = await progenyService.GetProgeny(progenyId);
+            if (progeny == null)
+            {
+                return NotFound();
+            }
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (!progeny.IsInAdminList(userEmail))
+            {
+                return Unauthorized();
+            }
+
+            if (progenyId != progenyInfo.ProgenyId)
+            {
+                return BadRequest();
+            }
+
+            ProgenyInfo updatedProgenyInfo = await progenyService.UpdateProgenyInfo(progenyInfo);
+
+            return Ok(updatedProgenyInfo);
         }
     }
 }

@@ -1,5 +1,6 @@
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v8.js";
+import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
 
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
@@ -59,7 +60,14 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
 
         // show item-details-div
         popup.classList.remove('d-none');
-        ($(".selectpicker") as any).selectpicker('refresh');
+        if (addItemType === 'user') {
+            ($(".selectpicker") as any).selectpicker('refresh');
+        }
+
+        if (addItemType === 'progeny') {
+            await InitializeAddEditProgeny();
+        }
+       
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -128,7 +136,15 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
 
         // show item-details-div
         popup.classList.remove('d-none');
-        ($(".selectpicker") as any).selectpicker('refresh');
+
+        if (editItemType === 'user') {
+            ($(".selectpicker") as any).selectpicker('refresh');
+        }
+
+        if (editItemType === 'progeny') {
+            await InitializeAddEditProgeny();
+        }
+
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -197,7 +213,11 @@ async function popupDeleteItemModal(deleteItemType: string, deleteItemItemId: st
 
         // show item-details-div
         popup.classList.remove('d-none');
-        ($(".selectpicker") as any).selectpicker('refresh');
+
+        if (deleteItemType === 'user') {
+            ($(".selectpicker") as any).selectpicker('refresh');
+        }
+
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();

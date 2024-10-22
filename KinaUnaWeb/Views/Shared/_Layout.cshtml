@@ -153,29 +153,32 @@
                             @foreach (Progeny prog in childList)
                             {
                                 <div class="dropdown-item">
-                                    <a class="btn btn-link btn-block text-white text-left select-progeny-button" data-select-progeny-id="@prog.Id">
+                                    <a class="btn btn-link btn-block text-white text-left ml-0 select-progeny-button" data-select-progeny-id="@prog.Id">
                                         @{
                                             string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
                                             if (!string.IsNullOrWhiteSpace(prog.PictureLink))
                                             {
                                                 string picLink2 = prog.GetProfilePictureUrl();
-                                                profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px; object-fit: contain;\" /img> ";
+                                                profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; width: 42px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px; object-fit: contain;\" /img> ";
                                             }
                                         }
                                         @Html.Raw(profilePic2) @prog.NickName <span class="d-none progeny-check-span ml-2 text-success"><i class="material-icons">check</i></span>
                                     </a>
                                     @if (prog.Id != child.Id)
                                     {
-                                        <a class="btn btn-link btn-block text-white text-right set-default-progeny-button" data-default-progeny-id="@prog.Id">
-                                                <i class="material-icons" data-default-progeny-id="@prog.Id">star</i>
+                                        <a class="ml-auto btn btn-link text-white set-default-progeny-button" data-default-progeny-id="@prog.Id" style="width: 64px;">
+                                            <i class="material-icons" data-default-progeny-id="@prog.Id">star</i>
                                         </a>
                                     }
                                     else
                                     {
-                                        <a class="btn btn-link btn-block text-success text-right set-default-progeny-button" data-default-progeny-id="@prog.Id">
-                                                <i class="material-icons" data-default-progeny-id="@prog.Id">stars</i>
+                                            <a class="ml-auto btn btn-link text-success set-default-progeny-button" data-default-progeny-id="@prog.Id" style="width: 64px;">
+                                            <i class="material-icons" data-default-progeny-id="@prog.Id">stars</i>
                                         </a>
                                     }
+                                        <a class="btn btn-link text-white default-progeny-button" data-progeny-info-id="@prog.Id" style="width: 64px;">
+                                        <i class="material-icons" data-progeny-info-id="@prog.Id">info</i>
+                                    </a>
                                     
                                 </div>
                             }
