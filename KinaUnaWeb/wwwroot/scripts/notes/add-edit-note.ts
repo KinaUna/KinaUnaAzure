@@ -44,10 +44,63 @@ function setupProgenySelectList(): void {
     }
 }
 
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+function setupRichTextEditor() {
+    const fullScreenOverlay = document.getElementById('full-screen-overlay-div');
+    if (fullScreenOverlay !== null) {
+        if (fullScreenOverlay.querySelector('script') !== null) {
+            eval((fullScreenOverlay.querySelector('script') as HTMLElement).innerHTML);
+        }
+        const richTextEditor: any = document.getElementById('content-rich-text-editor');
+        if (richTextEditor && richTextEditor.ej2_instances) {
+
+            richTextEditor.ej2_instances[0].addEventListener('imageUploadSuccess', function (args: any) {
+            onImageUploadSuccess(args);
+
+            });
+
+            richTextEditor.ej2_instances[0].addEventListener('created', function () {
+                onRichTextEditorCreated();
+            });
+
+            richTextEditor.ej2_instances[0].addEventListener('focus', function () {
+                onRichTextEditorFocus();
+            });
+        }
+    }    
+}
+
+function onImageUploadSuccess(args: any) {
+    if (args.e.currentTarget.getResponseHeader('name') != null) {
+        args.file.name = args.e.currentTarget.getResponseHeader('name');
+        let filename: any = document.querySelectorAll(".e-file-name")[0];
+        filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+        filename.title = args.file.name;
+    }
+}
+
+function onRichTextEditorCreated() {
+    setTimeout(function () {
+        let rteElement: any = document.getElementById('content-rich-text-editor');
+        if (rteElement) {
+            if (rteElement.ej2_instances && rteElement.ej2_instances.length > 0) {
+                rteElement.ej2_instances[0].refreshUI();
+            }
+            
+        }
+    },
+        1000);
+}
+
+function onRichTextEditorFocus() {
+    let rteElement: any = document.getElementById('content-rich-text-editor');
+    if (rteElement) {
+        if (rteElement.ej2_instances && rteElement.ej2_instances.length > 0) {
+            rteElement.ej2_instances[0].refreshUI();
+        }
+    }
+}
+
+export async function initializeAddEditNote(): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
 
@@ -55,6 +108,19 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId]);
     await setCategoriesAutoSuggestList([currentProgenyId]);
+    ($(".selectpicker") as any).selectpicker('refresh');
+
+    setupRichTextEditor();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+/**
+ * Initializes the page elements when it is loaded.
+ */
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

@@ -45,8 +45,9 @@ public interface IImageStore
     /// SAS links are valid for a limited time, so they need to be updated.
     /// </summary>
     /// <param name="originalText">string: The text to update links for.</param>
+    /// <param name="noteId">int: The Id of the note the text is from.</param>
     /// <returns>string: The text with updated links.</returns>
-    string UpdateBlobLinks(string originalText);
+    string UpdateBlobLinks(string originalText, int noteId);
 
     /// <summary>
     /// Checks if an image exists in a storage container.

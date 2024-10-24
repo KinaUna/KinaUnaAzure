@@ -121,8 +121,9 @@ namespace KinaUnaProgenyApi.Services
         /// SAS links are valid for a limited time, so they need to be updated.
         /// </summary>
         /// <param name="originalText">string: The text to update links for.</param>
+        /// <param name="noteId">int: The Id of the note the text is from.</param>
         /// <returns>string: The text with updated links.</returns>
-        public string UpdateBlobLinks(string originalText)
+        public string UpdateBlobLinks(string originalText, int noteId)
         {
             if (string.IsNullOrEmpty(originalText))
             {
@@ -151,9 +152,10 @@ namespace KinaUnaProgenyApi.Services
                 int firstSlash = blobString.IndexOf('/', 15);
                 int secondSlash = blobString.IndexOf('/', firstSlash + 1);
                 int firstQuestionmark = blobString.IndexOf('?');
-                string container = blobString[firstSlash..secondSlash].Replace("/", "");
+                //string container = blobString[firstSlash..secondSlash].Replace("/", "");
                 string blobId = blobString[secondSlash..firstQuestionmark].Replace("/", "").Replace("?", "");
-                string updatedBlobUri = UriFor(blobId, container);
+                //string updatedBlobUri = UriFor(blobId, container);
+                string updatedBlobUri = "/Notes/Image?noteId=" + noteId + "&imageId=" + blobId;
                 updatedText = updatedText.Replace(blobString, updatedBlobUri);
             }
 

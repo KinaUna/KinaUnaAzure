@@ -60,7 +60,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             foreach (Note note in notesList)
             {
-                note.Content = imageStore.UpdateBlobLinks(note.Content);
+                note.Content = imageStore.UpdateBlobLinks(note.Content, note.NoteId);
             }
 
             return Ok(notesList);
@@ -84,7 +84,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return accessLevelResult.ToActionResult();
             }
 
-            note.Content = imageStore.UpdateBlobLinks(note.Content);
+            note.Content = imageStore.UpdateBlobLinks(note.Content, note.NoteId);
             return Ok(note);
 
         }
@@ -277,7 +277,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             foreach (Note note in itemsOnPage)
             {
-                note.Content = imageStore.UpdateBlobLinks(note.Content);
+                note.Content = imageStore.UpdateBlobLinks(note.Content, note.NoteId);
             }
 
             NotesListPage model = new()

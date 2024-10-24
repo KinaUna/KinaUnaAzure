@@ -102,6 +102,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddProgeny", "Progeny");
             }
 
+            if (itemType == "note")
+            {
+                return RedirectToAction("AddNote", "Notes");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
@@ -118,6 +123,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("EditProgeny", "Progeny", new { progenyId = itemId });
             }
 
+            if (itemType == "note")
+            {
+                return RedirectToAction("EditNote", "Notes");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
@@ -127,6 +137,16 @@ namespace KinaUnaWeb.Controllers
             if (itemType == "user")
             {
                 return RedirectToAction("DeleteAccess", "AccessManagement", new { accessId = itemId });
+            }
+
+            if (itemType == "progeny")
+            {
+                return RedirectToAction("DeleteProgeny", "Progeny", new { progenyId = itemId });
+            }
+
+            if (itemType == "note")
+            {
+                return RedirectToAction("DeleteNote", "Notes", new { noteId = itemId });
             }
 
             return PartialView("../Shared/_NotFoundPartial");

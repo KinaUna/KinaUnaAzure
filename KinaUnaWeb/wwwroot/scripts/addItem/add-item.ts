@@ -1,5 +1,6 @@
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v8.js";
+import { initializeAddEditNote } from "../notes/add-edit-note.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
 
 /**
@@ -48,6 +49,7 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
                 let modalContent = await response.text();
                 const fullScreenOverlay = document.createElement('div');
                 fullScreenOverlay.classList.add('full-screen-bg');
+                fullScreenOverlay.id = 'full-screen-overlay-div';
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
             }
@@ -66,6 +68,10 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
 
         if (addItemType === 'progeny') {
             await InitializeAddEditProgeny();
+        }
+
+        if (addItemType === 'note') {
+            await initializeAddEditNote();
         }
        
         hideBodyScrollbars();
