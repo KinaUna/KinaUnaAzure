@@ -54,8 +54,7 @@ function setupRichTextEditor() {
         if (richTextEditor && richTextEditor.ej2_instances) {
 
             richTextEditor.ej2_instances[0].addEventListener('imageUploadSuccess', function (args: any) {
-            onImageUploadSuccess(args);
-
+                onImageUploadSuccess(args);
             });
 
             richTextEditor.ej2_instances[0].addEventListener('created', function () {
@@ -116,13 +115,3 @@ export async function initializeAddEditNote(): Promise<void> {
         resolve();
     });
 }
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
-    
-
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-});

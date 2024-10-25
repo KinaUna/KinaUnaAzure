@@ -11,7 +11,7 @@
     <div class="timeline-card-body bg-notes item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.NoteItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -27,7 +27,6 @@
             <div class="col">
                 <div class="row text-white h5">
                     <div class="col-auto">@Model.NoteItem.CreatedDate.ToString("dd-MMM-yyyy HH:mm")</div>
-                    <div class="col-auto ml-auto text-white-50">@Model.NoteItem.Owner</div>
                 </div>
                 <div class="timeline-title row">
                     <div class="col-12 h4">

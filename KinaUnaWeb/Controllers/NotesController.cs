@@ -240,8 +240,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.SetPropertiesFromNote(note);
@@ -250,7 +249,7 @@ namespace KinaUnaWeb.Controllers
 
             model.PathName = model.CurrentUser.UserId;
             
-            return View(model);
+            return PartialView("_EditNotePartial", model);
         }
 
         /// <summary>
@@ -266,16 +265,15 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
-            {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+            { 
+                return PartialView("_AccessDeniedPartial");
             }
             
             Note editedNote = model.CreateNote();
 
-            _ = await notesHttpClient.UpdateNote(editedNote);
+            model.NoteItem = await notesHttpClient.UpdateNote(editedNote);
             
-            return RedirectToAction("Index", "Notes");
+            return PartialView("_NoteUpdatedPartial", model);
         }
 
         /// <summary>
@@ -329,7 +327,7 @@ namespace KinaUnaWeb.Controllers
         /// This provides a static URL for embedded images.
         /// </summary>
         /// <param name="imageId">The Id of the image.</param>
-        /// <param name="noteId">The Id of the Note the image is attached to.</param>
+        /// <param name="noteId">The NoteId of the Note the image is attached to.</param>
         /// <returns>FileContentResult with the image data.</returns>
         [AllowAnonymous]
 

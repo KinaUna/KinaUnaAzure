@@ -76,6 +76,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetNoteItem(int id)
         {
             Note note = await noteService.GetNote(id);
+            if (note == null) return NotFound();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(note.ProgenyId, userEmail, note.AccessLevel);

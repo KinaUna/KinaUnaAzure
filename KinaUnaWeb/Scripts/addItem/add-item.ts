@@ -130,6 +130,7 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
                 let modalContent = await response.text();
                 const fullScreenOverlay = document.createElement('div');
                 fullScreenOverlay.classList.add('full-screen-bg');
+                fullScreenOverlay.id = 'full-screen-overlay-div';
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
             }
@@ -149,6 +150,10 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
 
         if (editItemType === 'progeny') {
             await InitializeAddEditProgeny();
+        }
+
+        if (editItemType === 'note') {
+            await initializeAddEditNote();
         }
 
         hideBodyScrollbars();

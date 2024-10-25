@@ -125,7 +125,7 @@ namespace KinaUnaWeb.Controllers
 
             if (itemType == "note")
             {
-                return RedirectToAction("EditNote", "Notes");
+                return RedirectToAction("EditNote", "Notes", new { itemId });
             }
 
             return PartialView("../Shared/_NotFoundPartial");

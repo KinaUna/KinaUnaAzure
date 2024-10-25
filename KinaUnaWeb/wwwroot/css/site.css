@@ -2660,7 +2660,7 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 
 @media (min-width: 768px) {
     .add-item-container-wide {
-        max-width: 85%;
+        max-width: 100%;
         margin-left: 5%;
         margin-right: 5%;
         margin-bottom: 20px;
@@ -2678,18 +2678,18 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 
 @media (min-width: 1200px) {
     .add-item-container-wide {
-        max-width: 1000px;
-        margin-left: 10%;
-        margin-right: auto;
+        max-width: 1100px;
+        margin-left: 15%;
+        margin-right: 15%;
         margin-bottom: 20px;
     }
 }
 
 @media (min-width: 1400px) {
     .add-item-container-wide {
-        max-width: 1200px;
-        margin-left: 10%;
-        margin-right: auto;
+        max-width: 1300px;
+        margin-left: 15%;
+        margin-right: 15%;
         margin-bottom: 20px;
     }
 }
@@ -3413,6 +3413,11 @@ noUi-handle:after, .noUi-handle:before {
 
 .item-details-content-wrapper {
     max-width: 800px;
+    max-height: 100vh;
+}
+
+.item-details-content-wrapper-wide {
+    max-width: 95vw;
     max-height: 100vh;
 }
 

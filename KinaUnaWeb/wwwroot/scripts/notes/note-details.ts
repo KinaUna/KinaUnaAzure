@@ -1,3 +1,4 @@
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 
@@ -63,6 +64,8 @@ async function displayNoteItem(noteId: string): Promise<void> {
                         });
                     });
                 }
+
+                setEditItemButtonEventListeners();
 
             }
         } else {

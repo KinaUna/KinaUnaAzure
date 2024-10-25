@@ -151,6 +151,10 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
             await InitializeAddEditProgeny();
         }
 
+        if (editItemType === 'note') {
+            await initializeAddEditNote();
+        }
+
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();

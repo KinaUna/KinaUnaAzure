@@ -97,12 +97,4 @@ export async function initializeAddEditNote() {
         resolve();
     });
 }
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function () {
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-});
 //# sourceMappingURL=add-edit-note.js.map
