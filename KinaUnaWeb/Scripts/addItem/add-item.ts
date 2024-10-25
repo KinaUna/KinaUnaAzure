@@ -1,4 +1,5 @@
-﻿import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
+﻿import { initializeAddEditEvent } from "../calendar/add-edit-event.js";
+import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v8.js";
 import { initializeAddEditNote } from "../notes/add-edit-note.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
@@ -72,6 +73,10 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
 
         if (addItemType === 'note') {
             await initializeAddEditNote();
+        }
+
+        if (addItemType === 'calendar') {
+            await initializeAddEditEvent();
         }
        
         hideBodyScrollbars();
@@ -154,6 +159,10 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
 
         if (editItemType === 'note') {
             await initializeAddEditNote();
+        }
+
+        if (editItemType === 'calendar') {
+            await initializeAddEditEvent();
         }
 
         hideBodyScrollbars();
@@ -312,6 +321,7 @@ function setSaveItemFormEventListener(): void {
                             itemDetailsPopupDiv.classList.remove('d-none');
                             hideBodyScrollbars();
                             addCloseButtonEventListener();
+                            setEditItemButtonEventListeners();
                         }
                     }
                 }).catch(function (error) {

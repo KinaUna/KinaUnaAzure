@@ -66,7 +66,6 @@ async function displayNoteItem(noteId: string): Promise<void> {
                 }
 
                 setEditItemButtonEventListeners();
-
             }
         } else {
             console.error('Error getting note item. Status: ' + response.status + ', Message: ' + response.statusText);

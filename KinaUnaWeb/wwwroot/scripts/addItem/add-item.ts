@@ -1,3 +1,4 @@
+import { initializeAddEditEvent } from "../calendar/add-edit-event.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v8.js";
 import { initializeAddEditNote } from "../notes/add-edit-note.js";
@@ -73,6 +74,10 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
         if (addItemType === 'note') {
             await initializeAddEditNote();
         }
+
+        if (addItemType === 'calendar') {
+            await initializeAddEditEvent();
+        }
        
         hideBodyScrollbars();
         addCloseButtonEventListener();
@@ -130,6 +135,7 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
                 let modalContent = await response.text();
                 const fullScreenOverlay = document.createElement('div');
                 fullScreenOverlay.classList.add('full-screen-bg');
+                fullScreenOverlay.id = 'full-screen-overlay-div';
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
             }
@@ -153,6 +159,10 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
 
         if (editItemType === 'note') {
             await initializeAddEditNote();
+        }
+
+        if (editItemType === 'calendar') {
+            await initializeAddEditEvent();
         }
 
         hideBodyScrollbars();

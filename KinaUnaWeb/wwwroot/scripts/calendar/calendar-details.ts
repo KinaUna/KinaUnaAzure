@@ -1,6 +1,7 @@
 import { setupRemindersSection } from '../reminders/reminders.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 
 
 /**
@@ -67,6 +68,7 @@ async function DisplayEventItem(eventId: string): Promise<void> {
                 }
                 
                 setupRemindersSection();
+                setEditItemButtonEventListeners();
             }
         } else {
             console.error('Error getting event item. Status: ' + response.status + ', Message: ' + response.statusText);

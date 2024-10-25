@@ -50,6 +50,14 @@
                 </div>
 
             </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="col-12">
+                    <a data-edit-item-type="note" data-edit-item-item-id="@Model.NoteItem.NoteId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Notes" asp-action="DeleteNote" asp-route-itemId="@Model.NoteItem.NoteId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+
+            }
         </div>
     </div>
 </div>

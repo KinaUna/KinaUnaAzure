@@ -1,6 +1,7 @@
 import { setupRemindersSection } from '../reminders/reminders.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 /**
  * Adds event listeners to all elements with the data-calendar-event-id attribute.
  * When clicked, the DisplayEventItem function is called.
@@ -61,6 +62,7 @@ async function DisplayEventItem(eventId) {
                     });
                 }
                 setupRemindersSection();
+                setEditItemButtonEventListeners();
             }
         }
         else {

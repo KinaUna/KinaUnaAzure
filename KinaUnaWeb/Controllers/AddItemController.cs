@@ -107,6 +107,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddNote", "Notes");
             }
 
+            if (itemType == "calendar")
+            {
+                return RedirectToAction("AddEvent", "Calendar");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
@@ -126,6 +131,11 @@ namespace KinaUnaWeb.Controllers
             if (itemType == "note")
             {
                 return RedirectToAction("EditNote", "Notes", new { itemId });
+            }
+
+            if (itemType == "calendar")
+            {
+                return RedirectToAction("EditEvent", "Calendar", new { itemId });
             }
 
             return PartialView("../Shared/_NotFoundPartial");

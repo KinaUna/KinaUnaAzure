@@ -97,10 +97,7 @@ function setupProgenySelectList() {
         });
     }
 }
-/**
- * Setup and configuration of the page elements when the page is loaded.
-  */
-document.addEventListener('DOMContentLoaded', async function () {
+export async function initializeAddEditEvent() {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
     await setContextAutoSuggestList([currentProgenyId]);
@@ -108,8 +105,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     setupProgenySelectList();
     setupDateTimePickers();
     setupRemindersSection();
+    $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve, reject) {
         resolve();
     });
-});
+}
 //# sourceMappingURL=add-edit-event.js.map

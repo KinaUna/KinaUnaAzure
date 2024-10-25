@@ -1,12 +1,13 @@
 ﻿@using System.Text.RegularExpressions
 @using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
-    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Events", PageNames.Calendar, Model.LanguageId);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Event Added", PageNames.Calendar, Model.LanguageId);
     Model.CalendarItem.StartTime ??= DateTime.MinValue;
     Model.CalendarItem.EndTime ??= DateTime.MinValue;
     string startDateString = Model.CalendarItem.StartTime.Value.ToString("dd MMM yyyy");
@@ -34,7 +35,7 @@
     <div class="timeline-card-body bg-calendar item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.CalendarItem.Progeny.PictureLink" class="item-details-title-picture"/>
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -133,10 +134,10 @@
                     }
                 </div>
             </div>
-            
+
             @if (Model.IsCurrentUserProgenyAdmin)
             {
-                
+
                 <div class="col-12">
                     <div class="space-20"></div>
                     <a data-edit-item-type="calendar" data-edit-item-item-id="@Model.CalendarItem.EventId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>

@@ -112,20 +112,20 @@ function setupProgenySelectList() {
     }
 }
 
-/**
- * Setup and configuration of the page elements when the page is loaded.
-  */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+export async function initializeAddEditEvent(): Promise<void> {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
-    
+
     await setContextAutoSuggestList([currentProgenyId]);
     await setLocationAutoSuggestList([currentProgenyId]);
 
     setupProgenySelectList();
     setupDateTimePickers();
     setupRemindersSection();
+
+    ($(".selectpicker") as any).selectpicker('refresh');
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
-});
+}

@@ -35,7 +35,6 @@ namespace KinaUnaWeb.Controllers
         /// <param name="childId">The Id of the Progeny to show the calendar for.</param>
         /// <returns>View with a CalendarListViewModel.</returns>
         [AllowAnonymous]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> Index(int? eventId, int childId = 0)
         {
 
@@ -102,8 +101,8 @@ namespace KinaUnaWeb.Controllers
             
             if (eventItem.AccessLevel < model.CurrentAccessLevel)
             {
-                // Todo: Show access denied instead of redirecting.
-                RedirectToAction("Index");
+                
+                return PartialView("_AccessDeniedPartial");
             }
             
             model.SetCalendarItem(eventItem);
@@ -135,7 +134,7 @@ namespace KinaUnaWeb.Controllers
            
             if (model.CurrentUser == null)
             {
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
             
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserEmail != null && model.CurrentUser.UserId != null)
@@ -146,7 +145,7 @@ namespace KinaUnaWeb.Controllers
             
             model.SetAccessLevelList();
             
-            return View(model);
+            return PartialView("_AddEventPartial", model);
         }
 
         /// <summary>
@@ -158,20 +157,19 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddEvent([FromForm] CalendarItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CalendarItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             CalendarItem eventItem = model.CreateCalendarItem();
             
-            eventItem = await calendarsHttpClient.AddCalendarItem(eventItem);
+            model.CalendarItem = await calendarsHttpClient.AddCalendarItem(eventItem);
             
-            return RedirectToAction("Index", "Calendar", new{eventId = eventItem.EventId, childId = eventItem.ProgenyId});
+            return PartialView("_EventAddedPartial", model);
         }
 
         /// <summary>
@@ -189,8 +187,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
             
             model.SetCalendarItem(eventItem);
@@ -198,7 +195,7 @@ namespace KinaUnaWeb.Controllers
             model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
 
             List<CalendarReminder> calendarReminders = await calendarRemindersHttpClient.GetUsersCalendarRemindersForEvent(eventItem.EventId, model.CurrentUser.UserId);
-            if (calendarReminders == null) return View(model);
+            if (calendarReminders == null) return PartialView("_EditEventPartial", model);
 
             foreach (CalendarReminder calendarReminder in calendarReminders)
             {
@@ -207,7 +204,7 @@ namespace KinaUnaWeb.Controllers
 
             model.CalendarReminders = calendarReminders;
 
-            return View(model);
+            return PartialView("_EditEventPartial", model);
         }
 
         /// <summary>
@@ -224,17 +221,14 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
-
-            if (!ModelState.IsValid) return RedirectToAction("Index", "Calendar");
 
             CalendarItem editedEvent = model.CreateCalendarItem();
                 
-            await calendarsHttpClient.UpdateCalendarItem(editedEvent);
+            model.CalendarItem = await calendarsHttpClient.UpdateCalendarItem(editedEvent);
             
-            return RedirectToAction("Index", "Calendar", new { eventId = editedEvent.EventId, childId = editedEvent.ProgenyId });
+            return PartialView("_EventUpdatedPartial", model);
         }
 
         /// <summary>

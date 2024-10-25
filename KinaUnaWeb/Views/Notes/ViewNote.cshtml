@@ -46,7 +46,7 @@
 
                     <div class="row m-0 mt-2 mb-2">
                         <div class="col-auto">
-                            <a asp-controller="Notes" asp-action="EditNote" asp-route-itemId="@Model.NoteItem.NoteId" class="p-2 kinauna-yellow-text bg-dark">@await LocaleManager.GetTranslation("Edit", PageNames.Notes, languageId)</a>
+                            <a data-edit-item-type="note" data-edit-item-item-id="@Model.NoteItem.NoteId" class="btn btn-info item-details-edit-button edit-item-button">@await LocaleManager.GetTranslation("Edit", PageNames.Notes, languageId)</a>
                         </div>
                         <div class="col-auto">
                             <a asp-controller="Notes" asp-action="DeleteNote" asp-route-itemId="@Model.NoteItem.NoteId" class="p-2 kinauna-yellow-text bg-dark">@await LocaleManager.GetTranslation("Delete", PageNames.Notes, languageId)</a>
