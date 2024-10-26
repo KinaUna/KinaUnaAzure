@@ -5,6 +5,7 @@ import { initializeAddEditNote } from "../notes/add-edit-note.js";
 import { initializeAddEditPicture } from "../pictures/add-edit-picture.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
 import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
+import { initializeAddEditVideo } from "../videos/add-edit-video.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */
@@ -78,6 +79,9 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
         }
         if (addItemType === 'picture') {
             await initializeAddEditPicture();
+        }
+        if (addItemType === 'video') {
+            await initializeAddEditVideo();
         }
         hideBodyScrollbars();
         addCloseButtonEventListener();
@@ -282,12 +286,8 @@ function setSaveItemFormEventListener() {
 async function onSaveItemFormSubmit(event) {
     event.preventDefault();
     startFullPageSpinner();
-    let itemDetailsPopupDiv = document.querySelector('#item-details-div');
-    if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.classList.add('d-none');
-        itemDetailsPopupDiv.innerHTML = '';
-    }
     let addItemForm = document.querySelector('#save-item-form');
+    console.log(addItemForm);
     if (!addItemForm) {
         return new Promise(function (resolve, reject) {
             resolve();
@@ -295,6 +295,11 @@ async function onSaveItemFormSubmit(event) {
     }
     let formData = new FormData(addItemForm);
     let formAction = addItemForm.getAttribute('action');
+    let itemDetailsPopupDiv = document.querySelector('#item-details-div');
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.classList.add('d-none');
+        itemDetailsPopupDiv.innerHTML = '';
+    }
     if (formAction) {
         await fetch(formAction, {
             method: 'POST',
@@ -311,6 +316,7 @@ async function onSaveItemFormSubmit(event) {
                     hideBodyScrollbars();
                     addCloseButtonEventListener();
                     setEditItemButtonEventListeners();
+                    setAddItemButtonEventListeners();
                 }
             }
         }).catch(function (error) {

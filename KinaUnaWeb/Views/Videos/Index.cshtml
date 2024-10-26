@@ -5,7 +5,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.VideoListViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Videos", PageNames.Videos, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Videos", PageNames.Videos, Model.LanguageId);
     bool allowYouTube = Context.Request.YouTubeCookieSet();
     string pageParameters = Json.Serialize(Model.VideosPageParameters).ToString();
     //string videosString = await LocaleManager.GetTranslation("videos", PageNames.Videos, Model.LanguageId);
@@ -39,7 +39,7 @@
     <div class="col-12">
         <div id="page-title-div" class="row">
             <div class="col-auto">
-                <h2>@Model.CurrentProgeny.NickName @await LocaleManager.GetTranslation("Video gallery", PageNames.Videos, Model.LanguageId)</h2>
+                <h2>@await LocaleManager.GetTranslation("Video gallery", PageNames.Videos, Model.LanguageId)</h2>
             </div>
             <div class="col-sm-12 col-md p-1 pl-5">
                 <div id="settings-notification-div" class="ml-auto small text-muted"></div>

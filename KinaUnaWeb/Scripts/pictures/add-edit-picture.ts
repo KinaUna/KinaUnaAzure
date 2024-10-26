@@ -656,13 +656,3 @@ export async function initializeAddEditPicture(): Promise<void> {
         resolve();
     });
 }
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
-    await initializeAddEditPicture();
-    
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-});

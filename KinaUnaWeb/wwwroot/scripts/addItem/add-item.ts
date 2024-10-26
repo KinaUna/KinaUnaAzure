@@ -5,6 +5,7 @@ import { initializeAddEditNote } from "../notes/add-edit-note.js";
 import { initializeAddEditPicture } from "../pictures/add-edit-picture.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
 import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
+import { initializeAddEditVideo } from "../videos/add-edit-video.js";
 
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
@@ -90,6 +91,10 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
 
         if (addItemType === 'picture') {
             await initializeAddEditPicture();
+        }
+
+        if (addItemType === 'video') {
+            await initializeAddEditVideo();
         }
        
         hideBodyScrollbars();
@@ -357,6 +362,7 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
                     hideBodyScrollbars();
                     addCloseButtonEventListener();
                     setEditItemButtonEventListeners();
+                    setAddItemButtonEventListeners();
                 }
             }
         }).catch(function (error) {

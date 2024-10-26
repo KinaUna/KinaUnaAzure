@@ -10,7 +10,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class UploadVideoViewModel: BaseItemsViewModel
     {
-        public Video Video { get; init; } = new();
+        public Video Video { get; set; } = new();
         public IFormFile File { get; init; }
         public List<SelectListItem> ProgenyList { get; set; }
         public string FileName { get; init; }

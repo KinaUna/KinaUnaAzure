@@ -5,6 +5,7 @@ import { initializeAddEditNote } from "../notes/add-edit-note.js";
 import { initializeAddEditPicture } from "../pictures/add-edit-picture.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
 import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
+import { initializeAddEditVideo } from "../videos/add-edit-video.js";
 
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
@@ -90,6 +91,10 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
 
         if (addItemType === 'picture') {
             await initializeAddEditPicture();
+        }
+
+        if (addItemType === 'video') {
+            await initializeAddEditVideo();
         }
        
         hideBodyScrollbars();
@@ -327,12 +332,9 @@ function setSaveItemFormEventListener(): void {
 async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
     startFullPageSpinner();
-    let itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
-    if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.classList.add('d-none');
-        itemDetailsPopupDiv.innerHTML = '';
-    }
+    
     let addItemForm = document.querySelector<HTMLFormElement>('#save-item-form');
+    console.log(addItemForm);
     if (!addItemForm) {
         return new Promise<void>(function (resolve, reject) {
             resolve();
@@ -341,12 +343,20 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
 
     let formData = new FormData(addItemForm);
     let formAction = addItemForm.getAttribute('action');
+
+    let itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.classList.add('d-none');
+        itemDetailsPopupDiv.innerHTML = '';
+    }
+
     if (formAction) {
         await fetch(formAction, {
             method: 'POST',
             body: formData
         }).then(async function (response) {
             if (response.ok) {
+                
                 if (itemDetailsPopupDiv) {
                     let modalContent = await response.text();
                     const fullScreenOverlay = document.createElement('div');
@@ -357,6 +367,7 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
                     hideBodyScrollbars();
                     addCloseButtonEventListener();
                     setEditItemButtonEventListeners();
+                    setAddItemButtonEventListeners();
                 }
             }
         }).catch(function (error) {

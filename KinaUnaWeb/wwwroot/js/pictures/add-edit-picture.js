@@ -567,13 +567,4 @@ export async function initializeAddEditPicture() {
         resolve();
     });
 }
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function () {
-    await initializeAddEditPicture();
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-});
 //# sourceMappingURL=add-edit-picture.js.map

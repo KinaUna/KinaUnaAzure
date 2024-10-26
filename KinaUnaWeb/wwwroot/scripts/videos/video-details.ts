@@ -19,11 +19,23 @@ export function addVideoItemEventListeners(videoId: string): void {
     const videoElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-video-id="' + videoId + '"]');
     if (videoElementsWithDataId) {
         videoElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayVideoDetails(videoId);
-            });
+            element.addEventListener('click', onVideoItemDivClicked);
         });
     }
+}
+
+async function onVideoItemDivClicked(event: MouseEvent): Promise<void> {
+    const videoElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
+    if (videoElement !== null) {
+        const videoId = videoElement.dataset.videoId;
+        if (videoId) {
+            await displayVideoDetails(videoId);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 export async function popupVideoDetails(videoId: string): Promise<void> {
@@ -41,31 +53,38 @@ export async function popupVideoDetails(videoId: string): Promise<void> {
 async function addCommentEventListeners(): Promise<void> {
     const submitForm = document.getElementById('new-video-comment-form') as HTMLFormElement;
     if (submitForm !== null) {
-        submitForm.addEventListener('submit', async function (event) {
-            event.preventDefault();
-
-            submitComment();
-        });
+        submitForm.addEventListener('submit', onSubmitComment);
     }
 
     const newCommentTextArea = document.getElementById('new-video-comment-text-area') as HTMLTextAreaElement;
     if (newCommentTextArea !== null) {
-        newCommentTextArea.addEventListener('input', function () {
-            const submitCommentButton = document.getElementById('submit-new-video-comment-button') as HTMLButtonElement;
-            if (submitCommentButton) {
-                if (newCommentTextArea.value.length > 0) {
-                    submitCommentButton.disabled = false;
-                    return;
-                }
-                submitCommentButton.disabled = true;
-            }
-        });
+        newCommentTextArea.addEventListener('input', onCommentInput);
     }
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
+}
 
+async function onSubmitComment(event: SubmitEvent) {
+    event.preventDefault();
+    await submitComment();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+function onCommentInput() {
+    const newCommentTextArea = document.getElementById('new-video-comment-text-area') as HTMLTextAreaElement;
+    const submitCommentButton = document.getElementById('submit-new-video-comment-button') as HTMLButtonElement;
+    if (submitCommentButton) {
+        if (newCommentTextArea.value.length > 0) {
+            submitCommentButton.disabled = false;
+            return;
+        }
+        submitCommentButton.disabled = true;
+    }
 }
 
 /**
@@ -122,15 +141,20 @@ async function addEditEventListeners(): Promise<void> {
         addCopyLocationButtonEventListener();
         const submitForm = document.getElementById('edit-video-form') as HTMLFormElement;
         if (submitForm !== null) {
-            submitForm.addEventListener('submit', async function (event) {
-                event.preventDefault();
-
-                submitVideoEdit();
-            });
+            submitForm.addEventListener('submit', onSubmitEditVideoForm);
         }
 
         ($(".selectpicker") as any).selectpicker("refresh");
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function onSubmitEditVideoForm(event: SubmitEvent) {
+    event.preventDefault();
+    submitVideoEdit();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -210,55 +234,98 @@ async function setupDateTimePicker(): Promise<void> {
 function addNavigationEventListeners(): void {
     let previousLink = document.querySelector<HTMLAnchorElement>('#previous-video-link');
     if (previousLink) {
-        previousLink.addEventListener('click', async function () {
-            let previousVideoId = previousLink.getAttribute('data-previous-video-id');
-            if (previousVideoId) {
-                await displayVideoDetails(previousVideoId, true);
-            }
-        });
+        previousLink.addEventListener('click', onPreviousLinkClicked);
     }
     let nextLink = document.querySelector<HTMLAnchorElement>('#next-video-link');
     if (nextLink) {
-        nextLink.addEventListener('click', async function () {
-            let nextVideoId = nextLink.getAttribute('data-next-video-id');
-            if (nextVideoId) {
-                await displayVideoDetails(nextVideoId, true);
-            }
-        });
+        nextLink.addEventListener('click', onNextLinkClicked);
     }
 
     // Swipe navigation
     const videoDetailsDiv = document.querySelector<HTMLDivElement>('#video-details-div');
     if (videoDetailsDiv) {
-        videoDetailsDiv.addEventListener('touchstart', event => {
-            videoDetailsTouchStartX = event.touches[0].clientX;
-            videoDetailsTouchStartY = event.touches[0].clientY;
-        });
-        videoDetailsDiv.addEventListener('touchend', async event => {
-            videoDetailsTouchEndX = event.changedTouches[0].clientX;
-            videoDetailsTouchEndY = event.changedTouches[0].clientY;
-            if (Math.abs(videoDetailsTouchEndY - videoDetailsTouchStartY) > 100) {
-                return;
-            }
+        videoDetailsDiv.addEventListener('touchstart', onVideoDetailsTouchStart);
+        videoDetailsDiv.addEventListener('touchend', onVideoDetailsTouchEnd);
+    }
+}
 
-            if (Math.abs(videoDetailsTouchEndX - videoDetailsTouchStartX) < 50) {
-                return;
-            }
-
-            if (videoDetailsTouchEndX < videoDetailsTouchStartX) {
-                let nextVideoId = nextLink?.getAttribute('data-next-video-id');
-                if (nextVideoId) {
-                    await displayVideoDetails(nextVideoId, true);
-                }
-            }
-            if (videoDetailsTouchEndX > videoDetailsTouchStartX) {
-                let previousVideoId = previousLink?.getAttribute('data-previous-video-id');
-                if (previousVideoId) {
-                    await displayVideoDetails(previousVideoId, true);
-                }
-            }
+async function onPreviousLinkClicked() {
+    let previousLink = document.querySelector<HTMLAnchorElement>('#previous-video-link');
+    if (previousLink === null) {
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
         });
     }
+
+    let previousVideoId = previousLink.getAttribute('data-previous-video-id');
+    if (previousVideoId) {
+        await displayVideoDetails(previousVideoId, true);
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function onNextLinkClicked() {
+    let nextLink = document.querySelector<HTMLAnchorElement>('#next-video-link');
+    if (nextLink === null) {
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+
+    let nextVideoId = nextLink.getAttribute('data-next-video-id');
+    if (nextVideoId) {
+        await displayVideoDetails(nextVideoId, true);
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+function onVideoDetailsTouchStart(event: TouchEvent) {
+    videoDetailsTouchStartX = event.touches[0].clientX;
+    videoDetailsTouchStartY = event.touches[0].clientY;
+}
+
+async function onVideoDetailsTouchEnd(event: TouchEvent) {
+    videoDetailsTouchEndX = event.changedTouches[0].clientX;
+    videoDetailsTouchEndY = event.changedTouches[0].clientY;
+    if (Math.abs(videoDetailsTouchEndY - videoDetailsTouchStartY) > 100) {
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+
+    if (Math.abs(videoDetailsTouchEndX - videoDetailsTouchStartX) < 75) {
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+
+    let nextLink = document.querySelector<HTMLAnchorElement>('#next-video-link');
+
+    if (videoDetailsTouchEndX < videoDetailsTouchStartX) {
+        let nextVideoId = nextLink?.getAttribute('data-next-video-id');
+        if (nextVideoId) {
+            await displayVideoDetails(nextVideoId, true);
+        }
+    }
+
+    let previousLink = document.querySelector<HTMLAnchorElement>('#previous-video-link');
+
+    if (videoDetailsTouchEndX > videoDetailsTouchStartX) {
+        let previousVideoId = previousLink?.getAttribute('data-previous-video-id');
+        if (previousVideoId) {
+            await displayVideoDetails(previousVideoId, true);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -288,22 +355,25 @@ function addCloseButtonEventListener(): void {
 function addShowMapButtonEventListener(): void {
     let showMapButton = document.querySelector<HTMLButtonElement>('#show-here-maps-button');
     if (showMapButton) {
-        const mapContainerDiv = document.getElementById('here-map-container-div');
-        showMapButton.addEventListener('click', function () {
-            if (mapContainerDiv === null) {
-                return;
-            }
-            if (mapContainerDiv.classList.contains('d-none')) {
-                mapContainerDiv.innerHTML = '';
-                mapContainerDiv.classList.remove('d-none');
-                setupHereMaps(getCurrentLanguageId());
-            }
-            else {
-                mapContainerDiv.classList.add('d-none');
-            }
-        });
+        showMapButton.addEventListener('click', onShowHereMapsButtonClicked);
     }
 }
+
+function onShowHereMapsButtonClicked() {
+    const mapContainerDiv = document.getElementById('here-map-container-div');
+    if (mapContainerDiv === null) {
+        return;
+    }
+    if (mapContainerDiv.classList.contains('d-none')) {
+        mapContainerDiv.innerHTML = '';
+        mapContainerDiv.classList.remove('d-none');
+        setupHereMaps(getCurrentLanguageId());
+    }
+    else {
+        mapContainerDiv.classList.add('d-none');
+    }
+}
+
 
 /**
  * Fetches the HTML for video details and displays it in a popup.

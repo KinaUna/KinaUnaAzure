@@ -122,6 +122,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddPicture", "Pictures");
             }
 
+            if (itemType == "video")
+            {
+                return RedirectToAction("AddVideo", "Videos");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
