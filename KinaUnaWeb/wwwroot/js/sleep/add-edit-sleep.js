@@ -93,13 +93,14 @@ function setupProgenySelectList() {
         });
     }
 }
-document.addEventListener('DOMContentLoaded', async function () {
+export async function initializeAddEditSleep() {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
     await setupDateTimePickers();
     setupProgenySelectList();
+    $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve) {
         resolve();
     });
-});
+}
 //# sourceMappingURL=add-edit-sleep.js.map

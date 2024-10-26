@@ -3,6 +3,7 @@ import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-di
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
 import { initializeAddEditNote } from "../notes/add-edit-note.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
+import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */
@@ -69,6 +70,9 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
         }
         if (addItemType === 'calendar') {
             await initializeAddEditEvent();
+        }
+        if (addItemType === 'sleep') {
+            await initializeAddEditSleep();
         }
         hideBodyScrollbars();
         addCloseButtonEventListener();
@@ -142,6 +146,9 @@ async function popupEditItemModal(editItemType, editItemItemId) {
         }
         if (editItemType === 'calendar') {
             await initializeAddEditEvent();
+        }
+        if (editItemType === 'sleep') {
+            await initializeAddEditSleep();
         }
         hideBodyScrollbars();
         addCloseButtonEventListener();

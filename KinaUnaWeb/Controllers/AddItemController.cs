@@ -112,6 +112,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddEvent", "Calendar");
             }
 
+            if(itemType == "sleep")
+            {
+                return RedirectToAction("AddSleep", "Sleep");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
@@ -136,6 +141,11 @@ namespace KinaUnaWeb.Controllers
             if (itemType == "calendar")
             {
                 return RedirectToAction("EditEvent", "Calendar", new { itemId });
+            }
+
+            if (itemType == "sleep")
+            {
+                return RedirectToAction("EditSleep", "Sleep", new { itemId });
             }
 
             return PartialView("../Shared/_NotFoundPartial");

@@ -107,14 +107,16 @@ function setupProgenySelectList() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+export async function initializeAddEditSleep() {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
 
     await setupDateTimePickers();
     setupProgenySelectList();
 
+    ($(".selectpicker") as any).selectpicker('refresh');
+
     return new Promise<void>(function (resolve) {
         resolve();
     });
-});
+}

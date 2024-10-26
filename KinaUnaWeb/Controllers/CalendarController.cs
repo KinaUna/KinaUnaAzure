@@ -249,8 +249,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             return View(model);
@@ -272,8 +271,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail) && model.CurrentProgenyId != model.CalendarItem.ProgenyId)
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             await calendarsHttpClient.DeleteCalendarItem(model.CalendarItem.EventId);

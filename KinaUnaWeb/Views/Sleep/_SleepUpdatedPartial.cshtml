@@ -5,7 +5,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.SleepItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Sleep", PageNames.Sleep, Model.LanguageId);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Sleep updated", PageNames.Sleep, Model.LanguageId);
     string startDateString = Model.SleepItem.SleepStart.ToString("dd MMM yyyy");
     string startTimeString = Model.SleepItem.SleepStart.ToString("HH:mm");
     string endDateString = Model.SleepItem.SleepEnd.ToString("dd MMM yyyy");

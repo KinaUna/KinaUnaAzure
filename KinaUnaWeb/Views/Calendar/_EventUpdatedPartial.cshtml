@@ -7,7 +7,7 @@
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
-    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Event Updated", PageNames.Calendar, Model.LanguageId);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Event updated", PageNames.Calendar, Model.LanguageId);
     Model.CalendarItem.StartTime ??= DateTime.MinValue;
     Model.CalendarItem.EndTime ??= DateTime.MinValue;
     string startDateString = Model.CalendarItem.StartTime.Value.ToString("dd MMM yyyy");

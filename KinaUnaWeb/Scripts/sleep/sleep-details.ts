@@ -1,4 +1,5 @@
-﻿import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
+﻿import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 
 /**
@@ -63,7 +64,7 @@ async function displaySleepItem(sleepId: string): Promise<void> {
                         });
                     });
                 }
-
+                setEditItemButtonEventListeners();
             }
         } else {
             console.error('Error getting sleep item. Status: ' + response.status + ', Message: ' + response.statusText);
