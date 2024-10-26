@@ -10,10 +10,17 @@ export function addSleepEventListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-sleep-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displaySleepItem(itemId);
-            });
+            element.addEventListener('click', onSleepItemDivClicked);
         });
+    }
+}
+async function onSleepItemDivClicked(event) {
+    const sleepElement = event.currentTarget;
+    if (sleepElement !== null) {
+        const sleepId = sleepElement.dataset.sleepId;
+        if (sleepId) {
+            await displaySleepItem(sleepId);
+        }
     }
 }
 /**

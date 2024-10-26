@@ -11,10 +11,18 @@ export function addSleepEventListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-sleep-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displaySleepItem(itemId);
-            });
+            element.addEventListener('click', onSleepItemDivClicked);
         });
+    }
+}
+
+async function onSleepItemDivClicked(event: MouseEvent): Promise<void> {
+    const sleepElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
+    if (sleepElement !== null) {
+        const sleepId = sleepElement.dataset.sleepId;
+        if (sleepId) {
+            await displaySleepItem(sleepId);
+        }
     }
 }
 

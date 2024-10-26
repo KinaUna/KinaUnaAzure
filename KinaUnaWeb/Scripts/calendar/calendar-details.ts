@@ -13,19 +13,26 @@ export function addCalendarEventListeners(itemId: string): void {
     const eventElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-calendar-event-id="' + itemId + '"]');
     if (eventElementsWithDataId) {
         eventElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                DisplayEventItem(itemId);
-            });
+            element.addEventListener('click', onCalendarItemDivClicked);
         });
     }
 }
 
+async function onCalendarItemDivClicked(event: MouseEvent): Promise<void> {
+    const eventElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
+    if (eventElement !== null) {
+        const eventId = eventElement.dataset.calendarEventId;
+        if (eventId) {
+            await displayEventItem(eventId);
+        }
+    }
+}
 /**
  * Enable other scripts to call the DisplayEventItem function.
  * @param {string} eventId The id of the event to display.
  */
 export async function popupEventItem(eventId: string): Promise<void> {
-    await DisplayEventItem(eventId);
+    await displayEventItem(eventId);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -36,7 +43,7 @@ export async function popupEventItem(eventId: string): Promise<void> {
  * Retrieves the details of a calendar event and displays them in a popup.
  * @param {string} eventId The id of the event to display.
  */
-async function DisplayEventItem(eventId: string): Promise<void> {
+async function displayEventItem(eventId: string): Promise<void> {
     startFullPageSpinner();
     let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";
     await fetch(url, {

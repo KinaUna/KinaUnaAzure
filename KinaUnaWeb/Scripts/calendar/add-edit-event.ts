@@ -104,11 +104,16 @@ async function setupDateTimePickers(): Promise<void> {
 function setupProgenySelectList() {
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-            await setContextAutoSuggestList([currentProgenyId]);
-            await setLocationAutoSuggestList([currentProgenyId]);
-        });
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
+    }
+}
+
+async function onProgenySelectListChanged() {
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = parseInt(progenyIdSelect.value);
+        await setContextAutoSuggestList([currentProgenyId]);
+        await setLocationAutoSuggestList([currentProgenyId]);
     }
 }
 

@@ -16,6 +16,15 @@ export function addNoteEventListeners(itemId) {
         });
     }
 }
+async function onNoteItemDivClicked(event) {
+    const noteElement = event.currentTarget;
+    if (noteElement !== null) {
+        const noteId = noteElement.dataset.noteId;
+        if (noteId) {
+            await displayNoteItem(noteId);
+        }
+    }
+}
 /**
  * Enable other scripts to call the DisplayNoteItem function.
  * @param {string} noteId The id of the note to display.

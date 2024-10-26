@@ -13,13 +13,20 @@ export function addCalendarEventListeners(itemId: string): void {
     const eventElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-calendar-event-id="' + itemId + '"]');
     if (eventElementsWithDataId) {
         eventElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                DisplayEventItem(itemId);
-            });
+            element.addEventListener('click', onCalendarItemDivClicked);
         });
     }
 }
 
+async function onCalendarItemDivClicked(event: MouseEvent): Promise<void> {
+    const eventElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
+    if (eventElement !== null) {
+        const eventId = eventElement.dataset.calendarEventId;
+        if (eventId) {
+            await DisplayEventItem(eventId);
+        }
+    }
+}
 /**
  * Enable other scripts to call the DisplayEventItem function.
  * @param {string} eventId The id of the event to display.

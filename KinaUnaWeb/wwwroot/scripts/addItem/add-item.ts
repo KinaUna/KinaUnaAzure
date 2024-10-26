@@ -2,6 +2,7 @@ import { initializeAddEditEvent } from "../calendar/add-edit-event.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v8.js";
 import { initializeAddEditNote } from "../notes/add-edit-note.js";
+import { initializeAddEditPicture } from "../pictures/add-edit-picture.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
 import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
 
@@ -11,24 +12,26 @@ import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
 export function setAddItemButtonEventListeners(): void {
     let addItemButtons = document.querySelectorAll<HTMLAnchorElement>('.add-item-button');
     addItemButtons.forEach(function (button) {
-        button.addEventListener('click', async function (event) {
-            event.preventDefault();
-            startFullPageSpinner();
-            let addItemButton = event.currentTarget as HTMLAnchorElement;
-            let addItemType = addItemButton.getAttribute('data-add-item-type');
-            let addItemProgenyId = addItemButton.getAttribute('data-add-item-progeny-id');
-            if (addItemType !== null) {
-                if (addItemProgenyId === null) {
-                    addItemProgenyId = '0';
-                }
-                await popupAddItemModal(addItemType as string, addItemProgenyId);
-            }
-            stopFullPageSpinner();
+        button.addEventListener('click', onAddItemButtonClicked);
+    });
+}
 
-            return new Promise<void>(function (resolve, reject) {
-                resolve();
-            });
-        });
+async function onAddItemButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    startFullPageSpinner();
+    let addItemButton = event.currentTarget as HTMLAnchorElement;
+    let addItemType = addItemButton.getAttribute('data-add-item-type');
+    let addItemProgenyId = addItemButton.getAttribute('data-add-item-progeny-id');
+    if (addItemType !== null) {
+        if (addItemProgenyId === null) {
+            addItemProgenyId = '0';
+        }
+        await popupAddItemModal(addItemType as string, addItemProgenyId);
+    }
+    stopFullPageSpinner();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
     });
 }
 
@@ -41,6 +44,7 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
     let popup = document.getElementById('item-details-div');
     if (popup !== null) {
         popup.innerHTML = '';
+        
         await fetch('/AddItem/GetAddItemModalContent?itemType=' + addItemType + '&progenyId=' + addItemProgenyId, {
             method: 'GET',
             headers: {
@@ -83,6 +87,10 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
         if (addItemType === 'sleep') {
             await initializeAddEditSleep();
         }
+
+        if (addItemType === 'picture') {
+            await initializeAddEditPicture();
+        }
        
         hideBodyScrollbars();
         addCloseButtonEventListener();
@@ -101,23 +109,25 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
 export function setEditItemButtonEventListeners(): void {
     let editItemButtons = document.querySelectorAll<HTMLAnchorElement>('.edit-item-button');
     editItemButtons.forEach(function (button) {
-        button.addEventListener('click', async function (event) {
-            event.preventDefault();
-            startFullPageSpinner();
-            let editItemButton = event.currentTarget as HTMLAnchorElement;
-            let editItemType = editItemButton.getAttribute('data-edit-item-type');
-            let editItemItemId = editItemButton.getAttribute('data-edit-item-item-id');
+        button.addEventListener('click', onEditItemButtonClicked);
+    });
+}
 
-            if (editItemType !== null && editItemItemId !== null && editItemItemId !== '0') {
-                await popupEditItemModal(editItemType, editItemItemId);
-            }
+async function onEditItemButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    startFullPageSpinner();
+    let editItemButton = event.currentTarget as HTMLAnchorElement;
+    let editItemType = editItemButton.getAttribute('data-edit-item-type');
+    let editItemItemId = editItemButton.getAttribute('data-edit-item-item-id');
 
-            stopFullPageSpinner();
+    if (editItemType !== null && editItemItemId !== null && editItemItemId !== '0') {
+        await popupEditItemModal(editItemType, editItemItemId);
+    }
 
-            return new Promise<void>(function (resolve, reject) {
-                resolve();
-            });
-        });
+    stopFullPageSpinner();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
     });
 }
 
@@ -191,26 +201,27 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
 export function setDeleteItemButtonEventListeners(): void {
     let deleteItemButtons = document.querySelectorAll<HTMLAnchorElement>('.delete-item-button');
     deleteItemButtons.forEach(function (button) {
-        button.addEventListener('click', async function (event) {
-            event.preventDefault();
-            startFullPageSpinner();
-            let deleteItemButton = event.currentTarget as HTMLAnchorElement;
-            let deleteItemType = deleteItemButton.getAttribute('data-delete-item-type');
-            let deleteItemItemId = deleteItemButton.getAttribute('data-delete-item-item-id');
-
-            if (deleteItemType !== null && deleteItemItemId !== null && deleteItemItemId !== '0') {
-                await popupDeleteItemModal(deleteItemType, deleteItemItemId);
-            }
-
-            stopFullPageSpinner();
-
-            return new Promise<void>(function (resolve, reject) {
-                resolve();
-            });
-        });
+        button.addEventListener('click', onDeleteItemButtonClicked);
     });
 }
 
+async function onDeleteItemButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    startFullPageSpinner();
+    let deleteItemButton = event.currentTarget as HTMLAnchorElement;
+    let deleteItemType = deleteItemButton.getAttribute('data-delete-item-type');
+    let deleteItemItemId = deleteItemButton.getAttribute('data-delete-item-item-id');
+
+    if (deleteItemType !== null && deleteItemItemId !== null && deleteItemItemId !== '0') {
+        await popupDeleteItemModal(deleteItemType, deleteItemItemId);
+    }
+
+    stopFullPageSpinner();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
 /**
  * Shows the edit item modal for the specified item type and progeny.
  * @param editItemType
@@ -266,15 +277,17 @@ function addCloseButtonEventListener(): void {
     let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
-            button.addEventListener('click', function () {
-                const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
-                if (itemDetailsPopupDiv) {
-                    itemDetailsPopupDiv.innerHTML = '';
-                    itemDetailsPopupDiv.classList.add('d-none');
-                    showBodyScrollbars();
-                }
-            });
+            button.addEventListener('click', onCloseButtonClicked);
         });
+    }
+}
+
+function onCloseButtonClicked() {
+    const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.innerHTML = '';
+        itemDetailsPopupDiv.classList.add('d-none');
+        showBodyScrollbars();
     }
 }
 
@@ -286,15 +299,17 @@ function addCancelButtonEventListener(): void {
     let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-cancel-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
-            button.addEventListener('click', function () {
-                const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
-                if (itemDetailsPopupDiv) {
-                    itemDetailsPopupDiv.innerHTML = '';
-                    itemDetailsPopupDiv.classList.add('d-none');
-                    showBodyScrollbars();
-                }
-            });
+            button.addEventListener('click', onCancelButtonClicked);
         });
+    }
+}
+
+function onCancelButtonClicked() {
+    const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.innerHTML = '';
+        itemDetailsPopupDiv.classList.add('d-none');
+        showBodyScrollbars();
     }
 }
 
@@ -305,43 +320,52 @@ function addCancelButtonEventListener(): void {
 function setSaveItemFormEventListener(): void {
     let addItemForm = document.querySelector<HTMLFormElement>('#save-item-form');
     if (addItemForm) {
-        addItemForm.addEventListener('submit', async function (event) {
-            event.preventDefault();
-            startFullPageSpinner();
-            let itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
-            if (itemDetailsPopupDiv) {
-                itemDetailsPopupDiv.classList.add('d-none');
-                itemDetailsPopupDiv.innerHTML = '';
-            }
-            let formData = new FormData(addItemForm);
-            let formAction = addItemForm.getAttribute('action');
-            if (formAction) {
-                await fetch(formAction, {
-                    method: 'POST',
-                    body: formData
-                }).then(async function (response) {
-                    if (response.ok) {
-                        if (itemDetailsPopupDiv) {
-                            let modalContent = await response.text();
-                            const fullScreenOverlay = document.createElement('div');
-                            fullScreenOverlay.classList.add('full-screen-bg');
-                            fullScreenOverlay.innerHTML = modalContent;
-                            itemDetailsPopupDiv.appendChild(fullScreenOverlay);
-                            itemDetailsPopupDiv.classList.remove('d-none');
-                            hideBodyScrollbars();
-                            addCloseButtonEventListener();
-                            setEditItemButtonEventListeners();
-                        }
-                    }
-                }).catch(function (error) {
-                    console.error('Error saving item:', error);
-                });
-            }
-            stopFullPageSpinner();
+        addItemForm.addEventListener('submit', onSaveItemFormSubmit);
+    }
+}
 
-            return new Promise<void>(function (resolve, reject) {
-                resolve();
-            });
+async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
+    event.preventDefault();
+    startFullPageSpinner();
+    let itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.classList.add('d-none');
+        itemDetailsPopupDiv.innerHTML = '';
+    }
+    let addItemForm = document.querySelector<HTMLFormElement>('#save-item-form');
+    if (!addItemForm) {
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
         });
     }
+
+    let formData = new FormData(addItemForm);
+    let formAction = addItemForm.getAttribute('action');
+    if (formAction) {
+        await fetch(formAction, {
+            method: 'POST',
+            body: formData
+        }).then(async function (response) {
+            if (response.ok) {
+                if (itemDetailsPopupDiv) {
+                    let modalContent = await response.text();
+                    const fullScreenOverlay = document.createElement('div');
+                    fullScreenOverlay.classList.add('full-screen-bg');
+                    fullScreenOverlay.innerHTML = modalContent;
+                    itemDetailsPopupDiv.appendChild(fullScreenOverlay);
+                    itemDetailsPopupDiv.classList.remove('d-none');
+                    hideBodyScrollbars();
+                    addCloseButtonEventListener();
+                    setEditItemButtonEventListeners();
+                }
+            }
+        }).catch(function (error) {
+            console.error('Error saving item:', error);
+        });
+    }
+    stopFullPageSpinner();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }

@@ -3,6 +3,7 @@ import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { Picture, PictureViewModel } from '../page-models-v8.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
+import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat: string;
@@ -185,12 +186,17 @@ function addOverrideSubmitEvent(): void {
                 await uploadPicture(formData, fileItem, itemNumber);
                 itemNumber++;
             }
+
+            const uploadCompletedDiv = document.getElementById('upload-completed-div') as HTMLDivElement;
+            if (uploadCompletedDiv !== null) {
+                uploadCompletedDiv.classList.remove('d-none');
+            }
         });
     }
 }
 
 /**
- * Uploads a pictur file with the given form data.
+ * Uploads a picture file with the given form data.
  * @param {FormData} formData The Picture item form data (location, tags, accesslevel).
  * @param {File} pictureFile The picture file to upload.
  * @param {number} itemNumber The number of the picture item to upload in fileList, for identifying íts preview HTML element.
@@ -198,7 +204,6 @@ function addOverrideSubmitEvent(): void {
 async function uploadPicture(formData: FormData, pictureFile: File, itemNumber: number): Promise<void> {
     
     formData.append('files', pictureFile);
-    // Add spinner to indicate that the picture is being uploaded.
     const picturePreviewDiv = document.getElementById('picture-preview-div' + itemNumber) as HTMLDivElement;
     
     const response = await fetch('/Pictures/SavePicture', {
@@ -607,7 +612,7 @@ async function displayNotSupportedFile(file: File): Promise<void> {
 /**
  * Setup of elements and event listeners.
  */
-async function setupAddEditPicture(): Promise<void> {
+export async function initializeAddEditPicture(): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
 
@@ -622,6 +627,8 @@ async function setupAddEditPicture(): Promise<void> {
     addFileInputEventListener();
     addDropEventListener();
     addOverrideSubmitEvent();
+    setAddItemButtonEventListeners();
+    ($(".selectpicker") as any).selectpicker('refresh');
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -631,7 +638,7 @@ async function setupAddEditPicture(): Promise<void> {
  * Initializes the page elements when it is loaded.
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
-    await setupAddEditPicture();
+    await initializeAddEditPicture();
     
     return new Promise<void>(function (resolve, reject) {
         resolve();

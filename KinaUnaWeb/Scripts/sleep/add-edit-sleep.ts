@@ -78,16 +78,16 @@ async function setupDateTimePickers(): Promise<void> {
 
     const startZebraPicker = document.querySelector<HTMLInputElement>(startDateTimePickerId);
     if (startZebraPicker !== null) {
-        startZebraPicker.addEventListener('change', () => { validateDatePickerStartEnd(); });
-        startZebraPicker.addEventListener('blur', () => { validateDatePickerStartEnd(); });
-        startZebraPicker.addEventListener('focus', () => { validateDatePickerStartEnd(); });
+        startZebraPicker.addEventListener('change', validateDatePickerStartEnd);
+        startZebraPicker.addEventListener('blur', validateDatePickerStartEnd);
+        startZebraPicker.addEventListener('focus', validateDatePickerStartEnd);
     }
 
     const endZebraPicker = document.querySelector<HTMLInputElement>(endDateTimePickerId);
     if (endZebraPicker !== null) {
-        endZebraPicker.addEventListener('change', () => { validateDatePickerStartEnd(); });
-        endZebraPicker.addEventListener('blur', () => { validateDatePickerStartEnd(); });
-        endZebraPicker.addEventListener('focus', () => { validateDatePickerStartEnd(); });
+        endZebraPicker.addEventListener('change', validateDatePickerStartEnd);
+        endZebraPicker.addEventListener('blur', validateDatePickerStartEnd);
+        endZebraPicker.addEventListener('focus', validateDatePickerStartEnd);
     }
 
     return new Promise<void>(function (resolve, reject) {
@@ -101,9 +101,14 @@ async function setupDateTimePickers(): Promise<void> {
 function setupProgenySelectList() {
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-        });
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
+    }
+}
+
+function onProgenySelectListChanged() {
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = parseInt(progenyIdSelect.value);
     }
 }
 

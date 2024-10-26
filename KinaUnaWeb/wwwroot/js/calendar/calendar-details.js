@@ -11,10 +11,17 @@ export function addCalendarEventListeners(itemId) {
     const eventElementsWithDataId = document.querySelectorAll('[data-calendar-event-id="' + itemId + '"]');
     if (eventElementsWithDataId) {
         eventElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                DisplayEventItem(itemId);
-            });
+            element.addEventListener('click', onCalendarItemDivClicked);
         });
+    }
+}
+async function onCalendarItemDivClicked(event) {
+    const eventElement = event.currentTarget;
+    if (eventElement !== null) {
+        const eventId = eventElement.dataset.calendarEventId;
+        if (eventId) {
+            await displayEventItem(eventId);
+        }
     }
 }
 /**
@@ -22,7 +29,7 @@ export function addCalendarEventListeners(itemId) {
  * @param {string} eventId The id of the event to display.
  */
 export async function popupEventItem(eventId) {
-    await DisplayEventItem(eventId);
+    await displayEventItem(eventId);
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -31,7 +38,7 @@ export async function popupEventItem(eventId) {
  * Retrieves the details of a calendar event and displays them in a popup.
  * @param {string} eventId The id of the event to display.
  */
-async function DisplayEventItem(eventId) {
+async function displayEventItem(eventId) {
     startFullPageSpinner();
     let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";
     await fetch(url, {

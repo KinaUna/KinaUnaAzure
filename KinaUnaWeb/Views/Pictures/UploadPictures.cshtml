@@ -5,28 +5,34 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Photo upload", PageNames.Pictures, Model.LanguageId);
 }
-
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    <div class="add-item-container">
-        <h2 class="col-12">@ViewData["Title"]</h2>
-        <div class="space-20"></div>
-        @{
-            int fileCounter = 0;
-        }
-        @foreach (string file in Model.FileNames)
-        {
-            <div style="margin: 20px;">
-                <H4>@await LocaleManager.GetTranslation("The photo has been uploaded", PageNames.Pictures, Model.LanguageId)</H4>
-                <div><img width="80%" src="@Model.FileLinks[fileCounter]" /></div>
-                <div style="opacity: 0.1; overflow: hidden;">ID: @file</div>
-                @{
-                    fileCounter++;
-                }
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="add-item-container">
+            <h2 class="col-12">@ViewData["Title"]</h2>
+            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            <div class="space-20"></div>
+            @{
+                int fileCounter = 0;
+            }
+            @foreach (string file in Model.FileNames)
+            {
+                <div style="margin: 20px;">
+                    <H4>@await LocaleManager.GetTranslation("The photo has been uploaded", PageNames.Pictures, Model.LanguageId)</H4>
+                    <div><img width="80%" src="@Model.FileLinks[fileCounter]"/></div>
+                    <div style="opacity: 0.1; overflow: hidden;">ID: @file</div>
+                    @{
+                        fileCounter++;
+                    }
+                </div>
+            }
+            <div class="space-20"></div>
+            <div>
+                <a class="btn btn-add-photo" data-add-item-type="picture" data-add-item-progeny-id="0">@await LocaleManager.GetTranslation("Return to photo upload", PageNames.Pictures, Model.LanguageId)</a>
             </div>
-        }
-        <div class="space-20"></div>
-        <div><a class="leave-page" asp-controller="Pictures" asp-action="AddPicture">@await LocaleManager.GetTranslation("Return to photo upload", PageNames.Pictures, Model.LanguageId)</a></div>
-        <div class="space-20"></div>
-        <div><a class="leave-page" asp-controller="Pictures" asp-action="Index" asp-route-childId="@Model.Picture.ProgenyId">@await LocaleManager.GetTranslation("Go to photo gallery", PageNames.Pictures, Model.LanguageId)</a></div>
+            <div class="space-20"></div>
+            <div>
+                <a class="leave-page" asp-controller="Pictures" asp-action="Index" asp-route-childId="@Model.Picture.ProgenyId">@await LocaleManager.GetTranslation("Go to photo gallery", PageNames.Pictures, Model.LanguageId)</a>
+            </div>
+        </div>
     </div>
 </div>

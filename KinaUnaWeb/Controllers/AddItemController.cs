@@ -117,6 +117,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddSleep", "Sleep");
             }
 
+            if (itemType == "picture")
+            {
+                return RedirectToAction("AddPicture", "Pictures");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 

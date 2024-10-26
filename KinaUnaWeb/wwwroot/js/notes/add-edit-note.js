@@ -46,15 +46,9 @@ function setupRichTextEditor() {
         }
         const richTextEditor = document.getElementById('content-rich-text-editor');
         if (richTextEditor && richTextEditor.ej2_instances) {
-            richTextEditor.ej2_instances[0].addEventListener('imageUploadSuccess', function (args) {
-                onImageUploadSuccess(args);
-            });
-            richTextEditor.ej2_instances[0].addEventListener('created', function () {
-                onRichTextEditorCreated();
-            });
-            richTextEditor.ej2_instances[0].addEventListener('focus', function () {
-                onRichTextEditorFocus();
-            });
+            richTextEditor.ej2_instances[0].addEventListener('imageUploadSuccess', onImageUploadSuccess);
+            richTextEditor.ej2_instances[0].addEventListener('created', onRichTextEditorCreated);
+            richTextEditor.ej2_instances[0].addEventListener('focus', onRichTextEditorFocus);
         }
     }
 }

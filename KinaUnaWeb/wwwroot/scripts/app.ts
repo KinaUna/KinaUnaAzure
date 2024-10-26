@@ -126,17 +126,19 @@ function collapsePopupsAndModals(clickover: HTMLElement): void {
  * Also collapses pop-ups and modals if clicking outside the pop-up or modal.
  */
 function setDocumentClickEventListeners(): void {
-    document.addEventListener('click', function (event) {
-        const clickover = event.target as HTMLElement;
-
-        if (clickover !== null) {
-            let leavingPage = checkLeavePage(clickover);
-            closeMenuIfClickedOutsideOrLeaving(clickover, leavingPage);
-            collapsePopupsAndModals(clickover);
-            }
-    });
+    document.addEventListener('click', onDocumentClicked);
 
     setFullPageSpinnerEventListeners();
+}
+
+function onDocumentClicked(event: MouseEvent) {
+    const clickover = event.target as HTMLElement;
+
+    if (clickover !== null) {
+        let leavingPage = checkLeavePage(clickover);
+        closeMenuIfClickedOutsideOrLeaving(clickover, leavingPage);
+        collapsePopupsAndModals(clickover);
+    }
 }
 
 /**
@@ -156,19 +158,20 @@ function showSelectProgenyDropdownWhenCurrentProgenyClicked(): void {
 
 function setSelectProgenyButtonsEventListeners(): void {
 
-    let selectProgenyButtons = document.querySelectorAll('.select-progeny-button');
+    let selectProgenyButtons = document.querySelectorAll <HTMLAnchorElement>('.select-progeny-button');
     selectProgenyButtons.forEach(function (button) {
-        button.addEventListener('click', function (event) {
-            event.preventDefault();
-            let selectedButton = event.currentTarget as HTMLAnchorElement;
-            selectedButton.classList.toggle('selected');
-
-            setSelectedProgenies();
-            getSelectedProgenies();
-        });
+        button.addEventListener('click', onSelectProgenyButtonClicked);
     });
 }
 
+function onSelectProgenyButtonClicked(event: MouseEvent) {
+    event.preventDefault();
+    let selectedButton = event.currentTarget as HTMLAnchorElement;
+    selectedButton.classList.toggle('selected');
+
+    setSelectedProgenies();
+    getSelectedProgenies();
+}
 
 function setSelectedProgenies() {
     let selectedProgenyButtons = document.querySelectorAll<HTMLAnchorElement>('.select-progeny-button.selected');
@@ -203,15 +206,17 @@ function setSelectedProgenies() {
 function setSetDefaultProgenyEventListeners() {
     let setDefaultProgenyButtons = document.querySelectorAll<HTMLAnchorElement>('.set-default-progeny-button');
     setDefaultProgenyButtons.forEach(function (button) {
-        
-        button.addEventListener('click', async function (event) {
-            let selectedButton = event.currentTarget as HTMLAnchorElement;
-            let selectedProgenyId = selectedButton.getAttribute('data-default-progeny-id');
-            if (selectedProgenyId !== null) {
-                await setDefaultProgeny(parseInt(selectedProgenyId));
-            }
-        });
+
+        button.addEventListener('click', onSetDefaultProgenyButtonClicked);
     });
+}
+
+async function onSetDefaultProgenyButtonClicked(event: MouseEvent) {
+    let selectedButton = event.currentTarget as HTMLAnchorElement;
+    let selectedProgenyId = selectedButton.getAttribute('data-default-progeny-id');
+    if (selectedProgenyId !== null) {
+        await setDefaultProgeny(parseInt(selectedProgenyId));
+    }
 }
 
 async function setDefaultProgeny(progenyId: number) {
