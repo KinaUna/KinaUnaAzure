@@ -137,6 +137,31 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddFriend", "Friends");
             }
 
+            if (itemType == "measurement")
+            {
+                return RedirectToAction("AddMeasurement", "Measurements");
+            }
+
+            if (itemType == "contact")
+            {
+                return RedirectToAction("AddContact", "Contacts");
+            }
+
+            if (itemType == "skill")
+            {
+                return RedirectToAction("AddSkill", "Skills");
+            }
+
+            if (itemType == "vaccination")
+            {
+                return RedirectToAction("AddVaccination", "Vaccinations");
+            }
+
+            if (itemType == "location")
+            {
+                return RedirectToAction("AddLocation", "Locations");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
@@ -178,7 +203,32 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("EditFriend", "Friends", new { itemId });
             }
 
-            return PartialView("../Shared/_NotFoundPartial");
+            if (itemType == "measurement")
+            {
+                return RedirectToAction("EditMeasurement", "Measurements", new { itemId });
+            }
+
+            if (itemType == "contact")
+            {
+                return RedirectToAction("EditContact", "Contacts", new { itemId });
+            }
+
+            if (itemType == "skill")
+            {
+                return RedirectToAction("EditSkill", "Skills", new { itemId });
+            }
+
+            if (itemType == "vaccination")
+            {
+                return RedirectToAction("EditVaccination", "Vaccinations", new { itemId });
+            }
+
+            if (itemType == "location")
+            {
+                return RedirectToAction("EditLocation", "Locations", new { itemId });
+            }
+
+            return PartialView("../Shared/_NotFoundPartial", new { itemId });
         }
 
         [HttpGet]

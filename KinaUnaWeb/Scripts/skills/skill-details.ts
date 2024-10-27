@@ -1,4 +1,5 @@
-﻿import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
+﻿import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 
 /**
@@ -10,11 +11,23 @@ export function addSkillItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-skill-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displaySkillItem(itemId);
-            });
+            element.addEventListener('click', onSkillItemDivClicked);
         });
     }
+}
+
+async function onSkillItemDivClicked(event: MouseEvent): Promise<void> {
+    const skillElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
+    if (skillElement !== null) {
+        const skillId = skillElement.dataset.skillId;
+        if (skillId) {
+            await displaySkillItem(skillId);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -63,6 +76,8 @@ async function displaySkillItem(skillId: string): Promise<void> {
                         });
                     });
                 }
+
+                setEditItemButtonEventListeners();
             }
         } else {
             console.error('Error getting skill item. Status: ' + response.status + ', Message: ' + response.statusText);

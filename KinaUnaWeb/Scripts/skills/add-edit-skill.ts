@@ -38,25 +38,32 @@ async function setupDateTimePicker(): Promise<void> {
 function setupProgenySelectList(): void {
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-            await setCategoriesAutoSuggestList([currentProgenyId]);
-        });
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
     }
 }
 
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+async function onProgenySelectListChanged(): Promise<void> {
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = parseInt(progenyIdSelect.value);
+        await setCategoriesAutoSuggestList([currentProgenyId]);
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+export async function initializeAddEditSkill(): Promise<void> {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
 
     await setCategoriesAutoSuggestList([currentProgenyId]);
     await setupDateTimePicker();
     setupProgenySelectList();
-    
+    ($(".selectpicker") as any).selectpicker('refresh');
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
-});
+}

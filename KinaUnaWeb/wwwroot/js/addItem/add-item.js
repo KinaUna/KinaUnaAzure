@@ -1,11 +1,16 @@
 import { initializeAddEditEvent } from "../calendar/add-edit-event.js";
+import { initializeAddEditContact } from "../contacts/add-edit-contact.js";
 import { initializeAddEditFriend } from "../friends/add-edit-friend.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
+import { initializeAddEditLocation } from "../locations/add-edit-location.js";
+import { initializeAddEditMeasurement } from "../measurements/add-edit-measurement.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
 import { initializeAddEditNote } from "../notes/add-edit-note.js";
 import { initializeAddEditPicture } from "../pictures/add-edit-picture.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
+import { initializeAddEditSkill } from "../skills/add-edit-skill.js";
 import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
+import { initializeAddEditVaccination } from "../vaccinations/add-edit-vaccination.js";
 import { initializeAddEditVideo } from "../videos/add-edit-video.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
 /**
@@ -91,6 +96,21 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
         if (addItemType === 'friend') {
             await initializeAddEditFriend();
         }
+        if (addItemType === 'measurement') {
+            await initializeAddEditMeasurement();
+        }
+        if (addItemType === 'contact') {
+            await initializeAddEditContact();
+        }
+        if (addItemType === 'skill') {
+            await initializeAddEditSkill();
+        }
+        if (addItemType === 'vaccination') {
+            await initializeAddEditVaccination();
+        }
+        if (addItemType === 'location') {
+            await initializeAddEditLocation();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -173,6 +193,21 @@ async function popupEditItemModal(editItemType, editItemItemId) {
         }
         if (editItemType === 'friend') {
             await initializeAddEditFriend();
+        }
+        if (editItemType === 'measurement') {
+            await initializeAddEditMeasurement();
+        }
+        if (editItemType === 'contact') {
+            await initializeAddEditContact();
+        }
+        if (editItemType === 'skill') {
+            await initializeAddEditSkill();
+        }
+        if (editItemType === 'vaccination') {
+            await initializeAddEditVaccination();
+        }
+        if (editItemType === 'location') {
+            await initializeAddEditLocation();
         }
         hideBodyScrollbars();
         addCloseButtonEventListener();

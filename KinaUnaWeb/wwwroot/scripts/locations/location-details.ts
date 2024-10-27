@@ -1,3 +1,4 @@
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 declare let map: H.Map;
@@ -11,11 +12,23 @@ export function addLocationItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-location-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displayLocationItem(itemId);
-            });
+            element.addEventListener('click', onLocationItemDivClicked);
         });
     }
+}
+
+async function onLocationItemDivClicked(event: MouseEvent): Promise<void> {
+    const locationElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
+    if (locationElement !== null) {
+        const locationId = locationElement.dataset.locationId;
+        if (locationId) {
+            await displayLocationItem(locationId);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -64,7 +77,7 @@ async function displayLocationItem(locationId: string): Promise<void> {
                         });
                     });
                 }
-
+                setEditItemButtonEventListeners();
                 // Todo: If a map is loaded, center it on this location.
             }
         } else {

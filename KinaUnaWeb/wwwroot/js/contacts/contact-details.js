@@ -1,3 +1,4 @@
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { setCopyContentEventListners } from '../data-tools-v8.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
@@ -10,11 +11,21 @@ export function addContactItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-contact-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displayContactItem(itemId);
-            });
+            element.addEventListener('click', onContactItemDivClicked);
         });
     }
+}
+async function onContactItemDivClicked(event) {
+    const contactElement = event.currentTarget;
+    if (contactElement !== null) {
+        const contactId = contactElement.dataset.contactId;
+        if (contactId) {
+            await displayContactItem(contactId);
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Enable other scripts to call the displayContactItem function.
@@ -60,6 +71,7 @@ async function displayContactItem(contactId) {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
                 setCopyContentEventListners();
             }
         }

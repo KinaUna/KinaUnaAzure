@@ -93,7 +93,7 @@ namespace KinaUnaWeb.Controllers
             
             if (model.CurrentUser == null)
             {
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
@@ -101,7 +101,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_AddMeasurementPartial", model);
         }
 
         /// <summary>
@@ -117,17 +117,18 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.MeasurementItem.CreatedDate = DateTime.UtcNow;
 
             Measurement measurementItem = model.CreateMeasurement();
+                
+            model.MeasurementItem = await measurementsHttpClient.AddMeasurement(measurementItem);
+            model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.Date, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.MeasurementItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
-            _ = await measurementsHttpClient.AddMeasurement(measurementItem);
-            
-            return RedirectToAction("Index", "Measurements");
+            return PartialView("_MeasurementAddedPartial", model);
         }
 
         /// <summary>
@@ -144,15 +145,14 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.SetPropertiesFromMeasurement(measurement, model.IsCurrentUserProgenyAdmin);
 
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_EditMeasurementPartial", model);
         }
 
         /// <summary>
@@ -169,15 +169,15 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             Measurement editedMeasurement = model.CreateMeasurement();
 
-            _ = await measurementsHttpClient.UpdateMeasurement(editedMeasurement);
-
-            return RedirectToAction("Index", "Measurements");
+            model.MeasurementItem = await measurementsHttpClient.UpdateMeasurement(editedMeasurement);
+            model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.Date, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.MeasurementItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            return PartialView("_MeasurementUpdated", model);
         }
 
         /// <summary>
@@ -194,8 +194,7 @@ namespace KinaUnaWeb.Controllers
            
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.MeasurementItem = measurement;
@@ -217,8 +216,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             _ = await measurementsHttpClient.DeleteMeasurement(measurement.MeasurementId);

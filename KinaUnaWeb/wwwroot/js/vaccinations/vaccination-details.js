@@ -1,3 +1,4 @@
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
@@ -9,11 +10,21 @@ export function addVaccinationItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-vaccination-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displayVaccinationItem(itemId);
-            });
+            element.addEventListener('click', onVaccinationItemDivClicked);
         });
     }
+}
+async function onVaccinationItemDivClicked(event) {
+    const vaccinationElement = event.currentTarget;
+    if (vaccinationElement !== null) {
+        const vaccinationId = vaccinationElement.dataset.vaccinationId;
+        if (vaccinationId) {
+            await displayVaccinationItem(vaccinationId);
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Enable other scripts to call the displayVaccinationItem function.
@@ -59,6 +70,7 @@ async function displayVaccinationItem(vaccinationId) {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
             }
         }
         else {

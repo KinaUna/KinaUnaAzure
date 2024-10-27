@@ -1,3 +1,4 @@
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
@@ -9,11 +10,21 @@ export function addMeasurementItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-measurement-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displayMeasurementItem(itemId);
-            });
+            element.addEventListener('click', onMeasurmentItemDivClicked);
         });
     }
+}
+async function onMeasurmentItemDivClicked(event) {
+    const measurementElement = event.currentTarget;
+    if (measurementElement !== null) {
+        const measurementId = measurementElement.dataset.measurementId;
+        if (measurementId) {
+            await displayMeasurementItem(measurementId);
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Enable other scripts to call the DisplayMeasurementItem function.
@@ -59,6 +70,7 @@ async function displayMeasurementItem(measurementId) {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
             }
         }
         else {
