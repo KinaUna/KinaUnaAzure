@@ -5,7 +5,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.FriendItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Friends", PageNames.Friends, Model.LanguageId);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Friend updated", PageNames.Friends, Model.LanguageId);
     string personalFriend = await LocaleManager.GetTranslation("Personal friend", PageNames.Friends, Model.LanguageId);
     string toyFriend = await LocaleManager.GetTranslation("Toy/animal friend", PageNames.Friends, Model.LanguageId);
     string parentFriend = await LocaleManager.GetTranslation("Parent", PageNames.Friends, Model.LanguageId);
@@ -22,7 +22,7 @@
     <div class="timeline-card-body bg-friend item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.FriendItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -44,7 +44,7 @@
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <img class="img-thumbnail d-block lazyload" style="max-height: 300px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@Model.FriendItem.PictureLink" alt="@Model.FriendItem.Name"/>
+                        <img class="img-thumbnail d-block lazyload" style="max-height: 300px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@Model.FriendItem.GetProfilePictureUrl()" alt="@Model.FriendItem.Name"/>
                     </div>
                 </div>
                 <div class="row text-white">

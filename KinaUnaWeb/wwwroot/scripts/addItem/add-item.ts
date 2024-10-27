@@ -1,4 +1,5 @@
 import { initializeAddEditEvent } from "../calendar/add-edit-event.js";
+import { initializeAddEditFriend } from "../friends/add-edit-friend.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v8.js";
 import { initializeAddEditNote } from "../notes/add-edit-note.js";
@@ -101,6 +102,10 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
         if (addItemType === 'vocabulary') {
             await initializeAddEditVocabulary();
         }
+
+        if (addItemType === 'friend') {
+            await initializeAddEditFriend();
+        }
        
         hideBodyScrollbars();
         addCloseButtonEventListener();
@@ -196,6 +201,10 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
 
         if (editItemType === 'vocabulary') {
             await initializeAddEditVocabulary();
+        }
+
+        if (editItemType === 'friend') {
+            await initializeAddEditFriend();
         }
 
         hideBodyScrollbars();
@@ -346,7 +355,7 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
         itemDetailsPopupDiv.classList.add('d-none');
     }
     let addItemForm = document.querySelector<HTMLFormElement>('#save-item-form');
-    console.log(addItemForm);
+    
     if (!addItemForm) {
         return new Promise<void>(function (resolve, reject) {
             resolve();

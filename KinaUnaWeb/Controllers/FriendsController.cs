@@ -1,4 +1,5 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using System;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -293,7 +294,7 @@ namespace KinaUnaWeb.Controllers
             model.SetAccessLevelList();
             model.SetFriendTypeList();
             
-            return View(model);
+            return PartialView("_AddFriendPartial", model);
         }
 
         /// <summary>
@@ -311,8 +312,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             Friend friendItem = model.CreateFriend();
@@ -328,9 +328,14 @@ namespace KinaUnaWeb.Controllers
                 friendItem.PictureLink = Constants.ProfilePictureUrl;
             }
 
-            _ = await friendsHttpClient.AddFriend(friendItem);
-
-            return RedirectToAction("Index", "Friends");
+            model.FriendItem = await friendsHttpClient.AddFriend(friendItem);
+            model.FriendItem.FriendAddedDate = TimeZoneInfo.ConvertTimeFromUtc(model.FriendItem.FriendAddedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            if (model.FriendItem.FriendSince.HasValue)
+            {
+                model.FriendItem.FriendSince = TimeZoneInfo.ConvertTimeFromUtc(model.FriendItem.FriendSince.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            
+            return PartialView("_FriendAddedPartial", model);
         }
 
 
@@ -348,8 +353,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             friend.PictureLink = friend.GetProfilePictureUrl();
@@ -376,7 +380,7 @@ namespace KinaUnaWeb.Controllers
             model.SetAccessLevelList();
             model.SetFriendTypeList();
 
-            return View(model);
+            return PartialView("_EditFriendPartial", model);
         }
 
         /// <summary>
@@ -394,8 +398,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             Friend editedFriend = model.CreateFriend();
@@ -414,9 +417,14 @@ namespace KinaUnaWeb.Controllers
                 editedFriend.PictureLink = originalFriend.PictureLink;
             }
 
-            _ = await friendsHttpClient.UpdateFriend(editedFriend);
+            model.FriendItem = await friendsHttpClient.UpdateFriend(editedFriend);
+            model.FriendItem.FriendAddedDate = TimeZoneInfo.ConvertTimeFromUtc(model.FriendItem.FriendAddedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            if (model.FriendItem.FriendSince.HasValue)
+            {
+                model.FriendItem.FriendSince = TimeZoneInfo.ConvertTimeFromUtc(model.FriendItem.FriendSince.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
 
-            return RedirectToAction("Index", "Friends");
+            return PartialView("_FriendUpdatedPartial", model);
         }
 
         /// <summary>

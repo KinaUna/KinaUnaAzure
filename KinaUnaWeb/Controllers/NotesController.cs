@@ -62,9 +62,11 @@ namespace KinaUnaWeb.Controllers
         {
             Note note = await notesHttpClient.GetNote(noteId);
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
-            NoteViewModel model = new(baseModel);
+            NoteViewModel model = new(baseModel)
+            {
+                NoteItem = note
+            };
 
-            model.NoteItem = note;
             model.NoteItem.Progeny = model.CurrentProgeny;
             model.NoteItem.Progeny.PictureLink = model.NoteItem.Progeny.GetProfilePictureUrl();
             UserInfo noteUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.NoteItem.Owner);

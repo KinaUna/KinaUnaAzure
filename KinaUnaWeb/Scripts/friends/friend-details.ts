@@ -1,4 +1,5 @@
-﻿import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
+﻿import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 
 /**
@@ -10,11 +11,23 @@ export function addFriendItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-friend-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displayFriendItem(itemId);
-            });
+            element.addEventListener('click', onFriendItemDivClicked);
         });
     }
+}
+
+async function onFriendItemDivClicked(event: MouseEvent): Promise<void> {
+    const friendElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
+    if (friendElement !== null) {
+        const friendId = friendElement.dataset.friendId;
+        if (friendId) {
+            await displayFriendItem(friendId);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -63,6 +76,7 @@ async function displayFriendItem(friendId: string): Promise<void> {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
             }
         } else {
             console.error('Error getting friend item. Status: ' + response.status + ', Message: ' + response.statusText);

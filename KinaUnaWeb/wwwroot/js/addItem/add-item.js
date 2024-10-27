@@ -1,4 +1,5 @@
 import { initializeAddEditEvent } from "../calendar/add-edit-event.js";
+import { initializeAddEditFriend } from "../friends/add-edit-friend.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
 import { initializeAddEditNote } from "../notes/add-edit-note.js";
@@ -87,6 +88,9 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
         if (addItemType === 'vocabulary') {
             await initializeAddEditVocabulary();
         }
+        if (addItemType === 'friend') {
+            await initializeAddEditFriend();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -166,6 +170,9 @@ async function popupEditItemModal(editItemType, editItemItemId) {
         }
         if (editItemType === 'vocabulary') {
             await initializeAddEditVocabulary();
+        }
+        if (editItemType === 'friend') {
+            await initializeAddEditFriend();
         }
         hideBodyScrollbars();
         addCloseButtonEventListener();

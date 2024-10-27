@@ -132,6 +132,10 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddVocabulary", "Vocabulary");
             }
 
+            if (itemType == "friend")
+            {
+                return RedirectToAction("AddFriend", "Friends");
+            }
 
             return PartialView("../Shared/_NotFoundPartial");
         }
@@ -167,6 +171,11 @@ namespace KinaUnaWeb.Controllers
             if (itemType == "vocabulary")
             {
                 return RedirectToAction("EditVocabulary", "Vocabulary", new { itemId });
+            }
+
+            if (itemType == "friend")
+            {
+                return RedirectToAction("EditFriend", "Friends", new { itemId });
             }
 
             return PartialView("../Shared/_NotFoundPartial");
