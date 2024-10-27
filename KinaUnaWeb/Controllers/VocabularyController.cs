@@ -86,7 +86,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_AddVocabularyPartial", model);
         }
 
         /// <summary>
@@ -103,8 +103,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
 
@@ -112,9 +111,15 @@ namespace KinaUnaWeb.Controllers
 
             model.VocabularyItem.Author = model.CurrentUser.UserId;
 
-            _ = await wordsHttpClient.AddWord(model.VocabularyItem);
-            
-            return RedirectToAction("Index", "Vocabulary");
+            model.VocabularyItem = await wordsHttpClient.AddWord(model.VocabularyItem);
+            if (model.VocabularyItem.Date.HasValue)
+            {
+                model.VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            model.VocabularyItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.DateAdded, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            return PartialView("_VocabularyAddedPartial", model);
         }
 
         /// <summary>
@@ -131,15 +136,14 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
             
             model.SetPropertiesFromVocabularyItem(vocab);
 
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_EditVocabularyPartial", model);
         }
 
         /// <summary>
@@ -156,15 +160,19 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.VocabularyItem.Date ??= TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
-            await wordsHttpClient.UpdateWord(model.VocabularyItem);
+            model.VocabularyItem = await wordsHttpClient.UpdateWord(model.VocabularyItem);
+            if (model.VocabularyItem.Date.HasValue)
+            {
+                model.VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            model.VocabularyItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.DateAdded, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
-            return RedirectToAction("Index", "Vocabulary");
+            return PartialView("_VocabularyUpdatedPartial", model);
         }
 
         /// <summary>

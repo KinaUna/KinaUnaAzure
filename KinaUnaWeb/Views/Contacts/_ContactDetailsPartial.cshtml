@@ -40,7 +40,7 @@
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <img class="img-thumbnail d-block" style="max-height: 300px; max-width: 100%; background: black;" src="@Model.ContactItem.PictureLink" alt="Contact Picture" />
+                        <img class="img-thumbnail d-block" style="max-height: 300px; max-width: 100%; background: black;" src="@Model.ContactItem.GetProfilePictureUrl()" alt="Contact Picture" />
                     </div>
                 </div>
                 <div class="space-20"></div>
@@ -251,7 +251,7 @@
             {
                 <div class="space-20"></div>
                 <div class="col-12">
-                    <a asp-controller="Contacts" asp-action="EditContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a data-edit-item-type="contact" data-edit-item-item-id="@Model.ContactItem.ContactId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
                     <a asp-controller="Contacts" asp-action="DeleteContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                 </div>
             }

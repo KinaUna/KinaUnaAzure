@@ -1,17 +1,17 @@
 ﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUnaWeb.Models.ItemViewModels.MeasurementViewModel
 @inject ILocaleManager LocaleManager
 @{
     string title = Model.MeasurementItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Measurements", PageNames.Measurements, Model.LanguageId);
-    
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-measurement item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.MeasurementItem.Progeny.PictureLink" class="item-details-title-picture" />
+                <img src="@Model.MeasurementItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -59,7 +59,7 @@
             {
                 <div class="space-20"></div>
                 <div class="col-12">
-                    <a asp-controller="Measurements" asp-action="EditMeasurement" asp-route-itemId="@Model.MeasurementItem.MeasurementId" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a data-edit-item-type="measurement" data-edit-item-item-id="@Model.MeasurementItem.MeasurementId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
                     <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@Model.MeasurementItem.MeasurementId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                 </div>
 

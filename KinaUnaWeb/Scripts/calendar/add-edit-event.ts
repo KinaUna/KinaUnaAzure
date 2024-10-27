@@ -104,28 +104,33 @@ async function setupDateTimePickers(): Promise<void> {
 function setupProgenySelectList() {
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-            await setContextAutoSuggestList([currentProgenyId]);
-            await setLocationAutoSuggestList([currentProgenyId]);
-        });
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
     }
 }
 
-/**
- * Setup and configuration of the page elements when the page is loaded.
-  */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+async function onProgenySelectListChanged() {
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = parseInt(progenyIdSelect.value);
+        await setContextAutoSuggestList([currentProgenyId]);
+        await setLocationAutoSuggestList([currentProgenyId]);
+    }
+}
+
+export async function initializeAddEditEvent(): Promise<void> {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
-    
+
     await setContextAutoSuggestList([currentProgenyId]);
     await setLocationAutoSuggestList([currentProgenyId]);
 
     setupProgenySelectList();
     setupDateTimePickers();
     setupRemindersSection();
+
+    ($(".selectpicker") as any).selectpicker('refresh');
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
-});
+}

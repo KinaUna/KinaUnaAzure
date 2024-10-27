@@ -1,0 +1,87 @@
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.VocabularyItemViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Add word", PageNames.Vocabulary, Model.LanguageId);
+    string addWordForString = await LocaleManager.GetTranslation("Add word for:", PageNames.Vocabulary, Model.LanguageId);
+    const string zebraDateTimeFormat = "d-F-Y";
+}
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="add-item-container">
+            <h2 class="col-12">@ViewData["Title"]</h2>
+            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            <div class="space-20"></div>
+            <form id="save-item-form" asp-action="AddVocabulary" asp-controller="Vocabulary" role="form" method="post">
+                @if (Model.ProgenyList.Count > 1)
+                {
+                    <div class="form-group">
+                        <label class="col-auto control-label">@addWordForString </label>
+                        <div class="col-auto">
+                            <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="VocabularyItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label class="col-auto control-label">@addWordForString </label>
+                        <div class="col-auto">
+                            <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                        </div>
+                        <input asp-for="VocabularyItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                    </div>
+                }
+                <div class="form-group">
+                    <label asp-for="VocabularyItem.Word" class="col-auto control-label">@await LocaleManager.GetTranslation("Word", PageNames.Vocabulary, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="VocabularyItem.Word" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="VocabularyItem.SoundsLike" class="col-auto control-label">@await LocaleManager.GetTranslation("Sounds like", PageNames.Vocabulary, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="VocabularyItem.SoundsLike" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="VocabularyItem.Description" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Vocabulary, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <textarea asp-for="VocabularyItem.Description" class="form-control" rows="4"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="VocabularyItem.Language" class="col-auto control-label">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input id="vocabulary-languages-input" asp-for="VocabularyItem.Language" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="VocabularyItem.Date" class="col-auto control-label">@await LocaleManager.GetTranslation("Date", PageNames.Vocabulary, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <div class="input-group date">
+                            <input id="vocabulary-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="VocabularyItem.Date" value="" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="VocabularyItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="VocabularyItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                    </div>
+                </div>
+                <div class="space-20"></div>
+                <div class="form-group">
+                    <div class="col-auto control-label"></div>
+                    <div class="col-auto">
+                        <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                        <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

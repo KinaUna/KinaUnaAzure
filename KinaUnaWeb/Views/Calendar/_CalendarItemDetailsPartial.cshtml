@@ -139,7 +139,7 @@
                 
                 <div class="col-12">
                     <div class="space-20"></div>
-                    <a asp-controller="Calendar" asp-action="EditEvent" asp-route-itemId="@Model.CalendarItem.EventId" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a data-edit-item-type="calendar" data-edit-item-item-id="@Model.CalendarItem.EventId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
                     <a asp-controller="Calendar" asp-action="DeleteEvent" asp-route-itemId="@Model.CalendarItem.EventId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                 </div>
             }

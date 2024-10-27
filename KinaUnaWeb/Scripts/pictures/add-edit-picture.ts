@@ -3,6 +3,7 @@ import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { Picture, PictureViewModel } from '../page-models-v8.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
+import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat: string;
@@ -46,12 +47,21 @@ async function setupDateTimePicker(): Promise<void> {
 function setupProgenySelectList(): void {
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId]);
-            await setLocationAutoSuggestList([currentProgenyId]);
-        });
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
     }
+}
+
+async function onProgenySelectListChanged(): Promise<void> {
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = parseInt(progenyIdSelect.value);
+        await setTagsAutoSuggestList([currentProgenyId]);
+        await setLocationAutoSuggestList([currentProgenyId]);
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -165,32 +175,45 @@ function showLoadingSpinners(): void {
 function addOverrideSubmitEvent(): void {
     const submitForm = document.getElementById('add-pictures-form') as HTMLFormElement;
     if (submitForm !== null) {
-        submitForm.addEventListener('submit', async function (event) {
-            event.preventDefault();
-            
-            hideInputsWhenUploading();
-            showLoadingSpinners();
-
-            const filesInput = document.querySelector<HTMLInputElement>('#select-photos-button');
-            if (filesInput !== null) {
-                filesInput.value = '';
-            }
-
-            const submitForm = document.getElementById('add-pictures-form') as HTMLFormElement;
-            const formData = new FormData(submitForm);
-            let itemNumber = 1;
-            
-            for (let fileItem of fileList) {
-                formData.delete('files');
-                await uploadPicture(formData, fileItem, itemNumber);
-                itemNumber++;
-            }
-        });
+        submitForm.addEventListener('submit', onSubmitAddPicturesForm);
     }
 }
 
+async function onSubmitAddPicturesForm(event: SubmitEvent): Promise<void> {
+    event.preventDefault();
+
+    hideInputsWhenUploading();
+    showLoadingSpinners();
+
+    const filesInput = document.querySelector<HTMLInputElement>('#select-photos-button');
+    if (filesInput !== null) {
+        filesInput.value = '';
+    }
+
+    const submitForm = document.getElementById('add-pictures-form') as HTMLFormElement;
+    const formData = new FormData(submitForm);
+    let itemNumber = 1;
+
+    for (let fileItem of fileList) {
+        formData.delete('files');
+        await uploadPicture(formData, fileItem, itemNumber);
+        itemNumber++;
+    }
+
+    fileList = [];
+    notSupportedFiles = [];
+
+    const uploadCompletedDiv = document.getElementById('upload-completed-div') as HTMLDivElement;
+    if (uploadCompletedDiv !== null) {
+        uploadCompletedDiv.classList.remove('d-none');
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
 /**
- * Uploads a pictur file with the given form data.
+ * Uploads a picture file with the given form data.
  * @param {FormData} formData The Picture item form data (location, tags, accesslevel).
  * @param {File} pictureFile The picture file to upload.
  * @param {number} itemNumber The number of the picture item to upload in fileList, for identifying íts preview HTML element.
@@ -198,7 +221,6 @@ function addOverrideSubmitEvent(): void {
 async function uploadPicture(formData: FormData, pictureFile: File, itemNumber: number): Promise<void> {
     
     formData.append('files', pictureFile);
-    // Add spinner to indicate that the picture is being uploaded.
     const picturePreviewDiv = document.getElementById('picture-preview-div' + itemNumber) as HTMLDivElement;
     
     const response = await fetch('/Pictures/SavePicture', {
@@ -261,9 +283,7 @@ function addSelectPhotoButtonEventListener(): void {
     const selectPhotoButton = document.querySelector<HTMLButtonElement>('#select-photos-button');
     if (selectPhotoButton !== null) {
         
-        selectPhotoButton.addEventListener('click', async () => {
-            await selectFiles();
-        });
+        selectPhotoButton.addEventListener('click', selectFiles);
     }
 
 }
@@ -375,22 +395,26 @@ function addDropEventListener(): void {
     if (dropZone === null) {
         return;
     }
-    dropZone.addEventListener('dragover', function (event) {
-        event.stopPropagation();
-        event.preventDefault();
-        if (event.dataTransfer === null) return;
-        event.dataTransfer.dropEffect = 'copy';
-    });
-    dropZone.addEventListener('drop', async function (event) {
-        event.stopPropagation(); // Stops some browsers from redirecting.
-        event.preventDefault();
-        if (event.dataTransfer === null) return;
+    dropZone.addEventListener('dragover', onDropFilesDivDragOver);
+    dropZone.addEventListener('drop', onDropFilesDivDrop);
 
-        var files = event.dataTransfer.files;
-        handleFilesAdded(files);
-        return false;
-    });
+}
 
+function onDropFilesDivDragOver(event: DragEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+    if (event.dataTransfer === null) return;
+    event.dataTransfer.dropEffect = 'copy';
+}
+
+async function onDropFilesDivDrop(event: DragEvent) {
+    event.stopPropagation(); // Stops some browsers from redirecting.
+    event.preventDefault();
+    if (event.dataTransfer === null) return;
+
+    var files = event.dataTransfer.files;
+    handleFilesAdded(files);
+    return false;
 }
 
 /**
@@ -405,15 +429,21 @@ function addFileInputEventListener(): void {
         return;
     }
 
-    filesInput.addEventListener('change', async (event) => {
-        const eventTargetAsHtmlInputElement = event.target as HTMLInputElement;
-        
-        if (eventTargetAsHtmlInputElement !== null && eventTargetAsHtmlInputElement.files !== null) {
-            handleFilesAdded(eventTargetAsHtmlInputElement.files);
-        }
-    });
+    filesInput.addEventListener('change', onFilesInputChanged);
 
     filesInput.value = '';
+}
+
+async function onFilesInputChanged(event: Event){
+    const eventTargetAsHtmlInputElement = event.target as HTMLInputElement;
+
+    if (eventTargetAsHtmlInputElement !== null && eventTargetAsHtmlInputElement.files !== null) {
+        handleFilesAdded(eventTargetAsHtmlInputElement.files);
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -607,9 +637,12 @@ async function displayNotSupportedFile(file: File): Promise<void> {
 /**
  * Setup of elements and event listeners.
  */
-async function setupAddEditPicture(): Promise<void> {
+export async function initializeAddEditPicture(): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
+    fileList = [];
+    notSupportedFiles = [];
+    imagesLoaded = 0;
 
     await setupDateTimePicker();
     
@@ -622,18 +655,10 @@ async function setupAddEditPicture(): Promise<void> {
     addFileInputEventListener();
     addDropEventListener();
     addOverrideSubmitEvent();
+    setAddItemButtonEventListeners();
+    ($(".selectpicker") as any).selectpicker('refresh');
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
-    await setupAddEditPicture();
-    
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-});

@@ -3,6 +3,7 @@ import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import { PictureViewModel } from '../page-models-v8.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
+import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat;
@@ -41,12 +42,19 @@ async function setupDateTimePicker() {
 function setupProgenySelectList() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId]);
-            await setLocationAutoSuggestList([currentProgenyId]);
-        });
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
     }
+}
+async function onProgenySelectListChanged() {
+    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = parseInt(progenyIdSelect.value);
+        await setTagsAutoSuggestList([currentProgenyId]);
+        await setLocationAutoSuggestList([currentProgenyId]);
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Adds an event listener to the edit button to toggle the edit section.
@@ -146,34 +154,43 @@ function showLoadingSpinners() {
 function addOverrideSubmitEvent() {
     const submitForm = document.getElementById('add-pictures-form');
     if (submitForm !== null) {
-        submitForm.addEventListener('submit', async function (event) {
-            event.preventDefault();
-            hideInputsWhenUploading();
-            showLoadingSpinners();
-            const filesInput = document.querySelector('#select-photos-button');
-            if (filesInput !== null) {
-                filesInput.value = '';
-            }
-            const submitForm = document.getElementById('add-pictures-form');
-            const formData = new FormData(submitForm);
-            let itemNumber = 1;
-            for (let fileItem of fileList) {
-                formData.delete('files');
-                await uploadPicture(formData, fileItem, itemNumber);
-                itemNumber++;
-            }
-        });
+        submitForm.addEventListener('submit', onSubmitAddPicturesForm);
     }
 }
+async function onSubmitAddPicturesForm(event) {
+    event.preventDefault();
+    hideInputsWhenUploading();
+    showLoadingSpinners();
+    const filesInput = document.querySelector('#select-photos-button');
+    if (filesInput !== null) {
+        filesInput.value = '';
+    }
+    const submitForm = document.getElementById('add-pictures-form');
+    const formData = new FormData(submitForm);
+    let itemNumber = 1;
+    for (let fileItem of fileList) {
+        formData.delete('files');
+        await uploadPicture(formData, fileItem, itemNumber);
+        itemNumber++;
+    }
+    fileList = [];
+    notSupportedFiles = [];
+    const uploadCompletedDiv = document.getElementById('upload-completed-div');
+    if (uploadCompletedDiv !== null) {
+        uploadCompletedDiv.classList.remove('d-none');
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
 /**
- * Uploads a pictur file with the given form data.
+ * Uploads a picture file with the given form data.
  * @param {FormData} formData The Picture item form data (location, tags, accesslevel).
  * @param {File} pictureFile The picture file to upload.
  * @param {number} itemNumber The number of the picture item to upload in fileList, for identifying íts preview HTML element.
  */
 async function uploadPicture(formData, pictureFile, itemNumber) {
     formData.append('files', pictureFile);
-    // Add spinner to indicate that the picture is being uploaded.
     const picturePreviewDiv = document.getElementById('picture-preview-div' + itemNumber);
     const response = await fetch('/Pictures/SavePicture', {
         method: 'POST',
@@ -228,9 +245,7 @@ async function uploadPicture(formData, pictureFile, itemNumber) {
 function addSelectPhotoButtonEventListener() {
     const selectPhotoButton = document.querySelector('#select-photos-button');
     if (selectPhotoButton !== null) {
-        selectPhotoButton.addEventListener('click', async () => {
-            await selectFiles();
-        });
+        selectPhotoButton.addEventListener('click', selectFiles);
     }
 }
 /**
@@ -330,22 +345,24 @@ function addDropEventListener() {
     if (dropZone === null) {
         return;
     }
-    dropZone.addEventListener('dragover', function (event) {
-        event.stopPropagation();
-        event.preventDefault();
-        if (event.dataTransfer === null)
-            return;
-        event.dataTransfer.dropEffect = 'copy';
-    });
-    dropZone.addEventListener('drop', async function (event) {
-        event.stopPropagation(); // Stops some browsers from redirecting.
-        event.preventDefault();
-        if (event.dataTransfer === null)
-            return;
-        var files = event.dataTransfer.files;
-        handleFilesAdded(files);
-        return false;
-    });
+    dropZone.addEventListener('dragover', onDropFilesDivDragOver);
+    dropZone.addEventListener('drop', onDropFilesDivDrop);
+}
+function onDropFilesDivDragOver(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    if (event.dataTransfer === null)
+        return;
+    event.dataTransfer.dropEffect = 'copy';
+}
+async function onDropFilesDivDrop(event) {
+    event.stopPropagation(); // Stops some browsers from redirecting.
+    event.preventDefault();
+    if (event.dataTransfer === null)
+        return;
+    var files = event.dataTransfer.files;
+    handleFilesAdded(files);
+    return false;
 }
 /**
  * Adds an event listener to the file input element to handle the selected files.
@@ -358,13 +375,17 @@ function addFileInputEventListener() {
     if (filesInput === null) {
         return;
     }
-    filesInput.addEventListener('change', async (event) => {
-        const eventTargetAsHtmlInputElement = event.target;
-        if (eventTargetAsHtmlInputElement !== null && eventTargetAsHtmlInputElement.files !== null) {
-            handleFilesAdded(eventTargetAsHtmlInputElement.files);
-        }
-    });
+    filesInput.addEventListener('change', onFilesInputChanged);
     filesInput.value = '';
+}
+async function onFilesInputChanged(event) {
+    const eventTargetAsHtmlInputElement = event.target;
+    if (eventTargetAsHtmlInputElement !== null && eventTargetAsHtmlInputElement.files !== null) {
+        handleFilesAdded(eventTargetAsHtmlInputElement.files);
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Adds a div element with a preview of the picture file and basic file info.
@@ -530,9 +551,12 @@ async function displayNotSupportedFile(file) {
 /**
  * Setup of elements and event listeners.
  */
-async function setupAddEditPicture() {
+export async function initializeAddEditPicture() {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
+    fileList = [];
+    notSupportedFiles = [];
+    imagesLoaded = 0;
     await setupDateTimePicker();
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId]);
@@ -542,17 +566,10 @@ async function setupAddEditPicture() {
     addFileInputEventListener();
     addDropEventListener();
     addOverrideSubmitEvent();
+    setAddItemButtonEventListeners();
+    $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve, reject) {
         resolve();
     });
 }
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function () {
-    await setupAddEditPicture();
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-});
 //# sourceMappingURL=add-edit-picture.js.map

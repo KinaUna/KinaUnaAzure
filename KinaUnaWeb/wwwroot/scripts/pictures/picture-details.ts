@@ -19,15 +19,23 @@ export async function addPictureItemEventListeners(pictureId: string): Promise<v
     const pictureElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-picture-id="' + pictureId + '"]');
     if (pictureElementsWithDataId) {
         pictureElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displayPictureDetails(pictureId);
-            });
+            element.addEventListener('click', onPictureItemDivClicked);
         });
     }
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
+}
+
+async function onPictureItemDivClicked(event: MouseEvent): Promise<void> {
+    const pictureElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
+    if (pictureElement !== null) {
+        const pictureId = pictureElement.dataset.pictureId;
+        if (pictureId) {
+            await displayPictureDetails(pictureId);
+        }
+    }
 }
 
 /**
@@ -49,31 +57,35 @@ export async function popupPictureDetails(pictureId: string): Promise<void> {
 async function addCommentEventListeners(): Promise<void> {
     const submitForm = document.getElementById('new-picture-comment-form') as HTMLFormElement;
     if (submitForm !== null) {
-        submitForm.addEventListener('submit', async function (event) {
-            event.preventDefault();
-
-            submitComment();
-        });
+        submitForm.addEventListener('submit', onSubmitComment);
     }
 
     const newCommentTextArea = document.getElementById('new-picture-comment-text-area') as HTMLTextAreaElement;
     if (newCommentTextArea !== null) {
-        newCommentTextArea.addEventListener('input', function () {
-            const submitCommentButton = document.getElementById('submit-new-picture-comment-button') as HTMLButtonElement;
-            if (submitCommentButton) {
-                if (newCommentTextArea.value.length > 0) {
-                    submitCommentButton.disabled = false;
-                    return;
-                }
-                submitCommentButton.disabled = true;
-            }
-        });
+        newCommentTextArea.addEventListener('input', onCommentInput);
     }
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 
+}
+
+function onSubmitComment(event: SubmitEvent) {
+    event.preventDefault();
+    submitComment();
+}
+
+function onCommentInput() {
+    const submitCommentButton = document.getElementById('submit-new-picture-comment-button') as HTMLButtonElement;
+    if (submitCommentButton) {
+        const newCommentTextArea = document.getElementById('new-picture-comment-text-area') as HTMLTextAreaElement;
+        if (newCommentTextArea.value.length > 0) {
+            submitCommentButton.disabled = false;
+            return;
+        }
+        submitCommentButton.disabled = true;
+    }
 }
 
 /**
@@ -131,16 +143,21 @@ async function addEditEventListeners(): Promise<void> {
         addCopyLocationButtonEventListener();
         const submitForm = document.getElementById('edit-picture-form') as HTMLFormElement;
         if (submitForm !== null) {
-            submitForm.addEventListener('submit', async function (event) {
-                event.preventDefault();
-
-                submitPictureEdit();
-            });
+            submitForm.addEventListener('submit', onSubmitEditPicture);
         }
 
         ($(".selectpicker") as any).selectpicker("refresh");
     }
     
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function onSubmitEditPicture(event: SubmitEvent): Promise<void> {
+    event.preventDefault();
+    await submitPictureEdit();
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
@@ -222,54 +239,18 @@ async function setupDateTimePicker(): Promise<void> {
 function addNavigationEventListeners(): void {
     let previousLink = document.querySelector<HTMLAnchorElement>('#previous-picture-link');
     if (previousLink) {
-        previousLink.addEventListener('click', async function () {
-            let previousPictureId = previousLink.getAttribute('data-previous-picture-id');
-            if (previousPictureId) {
-                await displayPictureDetails(previousPictureId, true);
-            }
-        });
+        previousLink.addEventListener('click', onPreviousPictureClicked);
     }
     let nextLink = document.querySelector<HTMLAnchorElement>('#next-picture-link');
     if (nextLink) {
-        nextLink.addEventListener('click', async function () {
-            let nextPictureId = nextLink.getAttribute('data-next-picture-id');
-            if (nextPictureId) {
-                await displayPictureDetails(nextPictureId, true);
-            }
-        });
+        nextLink.addEventListener('click', onNextPictureClicked);
     }
 
     // Swipe navigation
     const photoDetailsDiv = document.querySelector<HTMLDivElement>('#photo-details-div');
     if (photoDetailsDiv) {
-        photoDetailsDiv.addEventListener('touchstart', event => {
-            pictureDetailsTouchStartX = event.touches[0].clientX;
-            pictureDetailsTouchStartY = event.touches[0].clientY;
-        });
-        photoDetailsDiv.addEventListener('touchend', async event => {
-            pictureDetailsTouchEndX = event.changedTouches[0].clientX;
-            pictureDetailsTouchEndY = event.changedTouches[0].clientY;
-            if (Math.abs(pictureDetailsTouchEndY - pictureDetailsTouchStartY) > 100) {
-                return;
-            }
-
-            if (Math.abs(pictureDetailsTouchEndX - pictureDetailsTouchStartX) < 50) {
-                return;
-            }
-
-            if (pictureDetailsTouchEndX < pictureDetailsTouchStartX) {
-                let nextPictureId = nextLink?.getAttribute('data-next-picture-id');
-                if (nextPictureId) {
-                    await displayPictureDetails(nextPictureId, true);
-                }
-            }
-            if (pictureDetailsTouchEndX > pictureDetailsTouchStartX) {
-                let previousPictureId = previousLink?.getAttribute('data-previous-picture-id');
-                if (previousPictureId) {
-                    await displayPictureDetails(previousPictureId, true);
-                }
-            }
-        });
+        photoDetailsDiv.addEventListener('touchstart', onTouchStart);
+        photoDetailsDiv.addEventListener('touchend', onTouchEnd );
     }
 
     // Todo: Add pinch/scroll zoom
@@ -278,14 +259,87 @@ function addNavigationEventListeners(): void {
     const imageElements = document.querySelectorAll<HTMLImageElement>('.picture-details-image');
     if (imageElements) {
         imageElements.forEach((imageElement) => {
-            imageElement.addEventListener('click', function (event) {
-                const targetImage = event.target as HTMLImageElement;
-                if (targetImage) {
-                    targetImage.parentElement?.classList.toggle('picture-details-image-full-screen');
-                }
-            });
+            imageElement.addEventListener('click', onImageElementClicked);
         });
     }
+}
+
+function onImageElementClicked(event: MouseEvent) {
+    const targetImage = event.target as HTMLImageElement;
+    if (targetImage) {
+        targetImage.parentElement?.classList.toggle('picture-details-image-full-screen');
+    }
+}
+
+function onTouchStart(event: TouchEvent) {
+    pictureDetailsTouchStartX = event.touches[0].clientX;
+    pictureDetailsTouchStartY = event.touches[0].clientY;
+}
+
+async function onTouchEnd(event: TouchEvent): Promise<void> {
+    let previousLink = document.querySelector<HTMLAnchorElement>('#previous-picture-link');
+    let nextLink = document.querySelector<HTMLAnchorElement>('#next-picture-link');
+
+    if (nextLink === null || previousLink === null) {
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+
+    pictureDetailsTouchEndX = event.changedTouches[0].clientX;
+    pictureDetailsTouchEndY = event.changedTouches[0].clientY;
+    if (Math.abs(pictureDetailsTouchEndY - pictureDetailsTouchStartY) > 100) {
+        return;
+    }
+
+    if (Math.abs(pictureDetailsTouchEndX - pictureDetailsTouchStartX) < 75) {
+        return;
+    }
+
+    if (pictureDetailsTouchEndX < pictureDetailsTouchStartX) {
+        let nextPictureId = nextLink?.getAttribute('data-next-picture-id');
+        if (nextPictureId) {
+            await displayPictureDetails(nextPictureId, true);
+        }
+    }
+    if (pictureDetailsTouchEndX > pictureDetailsTouchStartX) {
+        let previousPictureId = previousLink?.getAttribute('data-previous-picture-id');
+        if (previousPictureId) {
+            await displayPictureDetails(previousPictureId, true);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function onPreviousPictureClicked() {
+    let previousLink = document.querySelector<HTMLAnchorElement>('#previous-picture-link');
+    if (previousLink) {
+        let previousPictureId = previousLink.getAttribute('data-previous-picture-id');
+        if (previousPictureId) {
+            await displayPictureDetails(previousPictureId, true);
+        }
+    }
+    
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function onNextPictureClicked() {
+    let nextLink = document.querySelector<HTMLAnchorElement>('#next-picture-link');
+    if (nextLink) {
+        let nextPictureId = nextLink.getAttribute('data-next-picture-id');
+        if (nextPictureId) {
+            await displayPictureDetails(nextPictureId, true);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -315,20 +369,22 @@ function addCloseButtonEventListener(): void {
 function addShowMapButtonEventListener(): void {
     let showMapButton = document.querySelector<HTMLButtonElement>('#show-here-maps-button');
     if (showMapButton) {
-        const mapContainerDiv = document.getElementById('here-map-container-div');
-        showMapButton.addEventListener('click', function () {
-            if (mapContainerDiv === null) {
-                return;
-            }
-            if (mapContainerDiv.classList.contains('d-none')) {
-                mapContainerDiv.innerHTML = '';
-                mapContainerDiv.classList.remove('d-none');
-                setupHereMaps(getCurrentLanguageId());
-            }
-            else {
-                mapContainerDiv.classList.add('d-none');
-            }
-        });
+        showMapButton.addEventListener('click', onShowMapButtonClicked);
+    }
+}
+
+function onShowMapButtonClicked() {
+    const mapContainerDiv = document.getElementById('here-map-container-div');
+    if (mapContainerDiv === null) {
+        return;
+    }
+    if (mapContainerDiv.classList.contains('d-none')) {
+        mapContainerDiv.innerHTML = '';
+        mapContainerDiv.classList.remove('d-none');
+        setupHereMaps(getCurrentLanguageId());
+    }
+    else {
+        mapContainerDiv.classList.add('d-none');
     }
 }
 

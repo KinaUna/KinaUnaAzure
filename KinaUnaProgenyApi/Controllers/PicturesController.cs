@@ -398,12 +398,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return accessLevelResult.ToActionResult();
             }
-
-            if (accessLevelResult.Value >= picture.AccessLevel)
-            {
-                return Unauthorized();
-            }
-
+            
             return Ok(picture);
         }
 

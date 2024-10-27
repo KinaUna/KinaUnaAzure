@@ -1,0 +1,65 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model KinaUnaWeb.Models.ItemViewModels.VocabularyItemViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Vocabulary item updated", PageNames.Vocabulary, Model.LanguageId);
+
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-vocabulary item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">forum</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        @if (Model.VocabularyItem.Date.HasValue)
+                        {
+                            <div class="text-white">@Model.VocabularyItem.Date.Value.ToString("dd-MMM-yyyy")</div>
+                        }
+                        <div class="space-10"></div>
+                        <div>@Model.VocabularyItem.Word</div>
+                    </div>
+                </div>
+                <div class="row text-white-75">
+                    @if (!string.IsNullOrEmpty(Model.VocabularyItem.SoundsLike))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Sounds like", PageNames.Vocabulary, Model.LanguageId): @Model.VocabularyItem.SoundsLike</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.VocabularyItem.Description))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Description", PageNames.Vocabulary, Model.LanguageId): @Model.VocabularyItem.Description</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.VocabularyItem.Language))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId): @Model.VocabularyItem.Language</div>
+                    }
+                </div>
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="space-20"></div>
+                <div class="col-12">
+                    <a data-edit-item-type="vocabulary" data-edit-item-item-id="@Model.VocabularyItem.WordId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Vocabulary" asp-action="DeleteVocabulary" asp-route-itemId="@Model.VocabularyItem.WordId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>

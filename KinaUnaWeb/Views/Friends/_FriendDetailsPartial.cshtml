@@ -1,4 +1,5 @@
 ﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
@@ -21,7 +22,7 @@
     <div class="timeline-card-body bg-friend item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.FriendItem.Progeny.PictureLink" class="item-details-title-picture" />
+                <img src="@Model.FriendItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -108,7 +109,7 @@
             @if (Model.IsCurrentUserProgenyAdmin)
             {
                 <div class="col-12">
-                    <a asp-controller="Friends" asp-action="EditFriend" asp-route-itemId="@Model.FriendItem.FriendId" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a data-edit-item-type="friend" data-edit-item-item-id="@Model.FriendItem.FriendId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
                     <a asp-controller="Friends" asp-action="DeleteFriend" asp-route-itemId="@Model.FriendItem.FriendSince" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                 </div>
 

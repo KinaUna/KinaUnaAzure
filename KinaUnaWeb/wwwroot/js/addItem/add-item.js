@@ -1,29 +1,42 @@
+import { initializeAddEditEvent } from "../calendar/add-edit-event.js";
+import { initializeAddEditContact } from "../contacts/add-edit-contact.js";
+import { initializeAddEditFriend } from "../friends/add-edit-friend.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
+import { initializeAddEditLocation } from "../locations/add-edit-location.js";
+import { initializeAddEditMeasurement } from "../measurements/add-edit-measurement.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
+import { initializeAddEditNote } from "../notes/add-edit-note.js";
+import { initializeAddEditPicture } from "../pictures/add-edit-picture.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
+import { initializeAddEditSkill } from "../skills/add-edit-skill.js";
+import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
+import { initializeAddEditVaccination } from "../vaccinations/add-edit-vaccination.js";
+import { initializeAddEditVideo } from "../videos/add-edit-video.js";
+import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */
 export function setAddItemButtonEventListeners() {
     let addItemButtons = document.querySelectorAll('.add-item-button');
     addItemButtons.forEach(function (button) {
-        button.addEventListener('click', async function (event) {
-            event.preventDefault();
-            startFullPageSpinner();
-            let addItemButton = event.currentTarget;
-            let addItemType = addItemButton.getAttribute('data-add-item-type');
-            let addItemProgenyId = addItemButton.getAttribute('data-add-item-progeny-id');
-            if (addItemType !== null) {
-                if (addItemProgenyId === null) {
-                    addItemProgenyId = '0';
-                }
-                await popupAddItemModal(addItemType, addItemProgenyId);
-            }
-            stopFullPageSpinner();
-            return new Promise(function (resolve, reject) {
-                resolve();
-            });
-        });
+        button.addEventListener('click', onAddItemButtonClicked);
+    });
+}
+async function onAddItemButtonClicked(event) {
+    event.preventDefault();
+    startFullPageSpinner();
+    let addItemButton = event.currentTarget;
+    let addItemType = addItemButton.getAttribute('data-add-item-type');
+    let addItemProgenyId = addItemButton.getAttribute('data-add-item-progeny-id');
+    if (addItemType !== null) {
+        if (addItemProgenyId === null) {
+            addItemProgenyId = '0';
+        }
+        await popupAddItemModal(addItemType, addItemProgenyId);
+    }
+    stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
     });
 }
 /**
@@ -45,6 +58,7 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
                 let modalContent = await response.text();
                 const fullScreenOverlay = document.createElement('div');
                 fullScreenOverlay.classList.add('full-screen-bg');
+                fullScreenOverlay.id = 'full-screen-overlay-div';
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
             }
@@ -61,6 +75,42 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
         if (addItemType === 'progeny') {
             await InitializeAddEditProgeny();
         }
+        if (addItemType === 'note') {
+            await initializeAddEditNote();
+        }
+        if (addItemType === 'calendar') {
+            await initializeAddEditEvent();
+        }
+        if (addItemType === 'sleep') {
+            await initializeAddEditSleep();
+        }
+        if (addItemType === 'picture') {
+            await initializeAddEditPicture();
+        }
+        if (addItemType === 'video') {
+            await initializeAddEditVideo();
+        }
+        if (addItemType === 'vocabulary') {
+            await initializeAddEditVocabulary();
+        }
+        if (addItemType === 'friend') {
+            await initializeAddEditFriend();
+        }
+        if (addItemType === 'measurement') {
+            await initializeAddEditMeasurement();
+        }
+        if (addItemType === 'contact') {
+            await initializeAddEditContact();
+        }
+        if (addItemType === 'skill') {
+            await initializeAddEditSkill();
+        }
+        if (addItemType === 'vaccination') {
+            await initializeAddEditVaccination();
+        }
+        if (addItemType === 'location') {
+            await initializeAddEditLocation();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -76,20 +126,21 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
 export function setEditItemButtonEventListeners() {
     let editItemButtons = document.querySelectorAll('.edit-item-button');
     editItemButtons.forEach(function (button) {
-        button.addEventListener('click', async function (event) {
-            event.preventDefault();
-            startFullPageSpinner();
-            let editItemButton = event.currentTarget;
-            let editItemType = editItemButton.getAttribute('data-edit-item-type');
-            let editItemItemId = editItemButton.getAttribute('data-edit-item-item-id');
-            if (editItemType !== null && editItemItemId !== null && editItemItemId !== '0') {
-                await popupEditItemModal(editItemType, editItemItemId);
-            }
-            stopFullPageSpinner();
-            return new Promise(function (resolve, reject) {
-                resolve();
-            });
-        });
+        button.addEventListener('click', onEditItemButtonClicked);
+    });
+}
+async function onEditItemButtonClicked(event) {
+    event.preventDefault();
+    startFullPageSpinner();
+    let editItemButton = event.currentTarget;
+    let editItemType = editItemButton.getAttribute('data-edit-item-type');
+    let editItemItemId = editItemButton.getAttribute('data-edit-item-item-id');
+    if (editItemType !== null && editItemItemId !== null && editItemItemId !== '0') {
+        await popupEditItemModal(editItemType, editItemItemId);
+    }
+    stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
     });
 }
 /**
@@ -111,6 +162,7 @@ async function popupEditItemModal(editItemType, editItemItemId) {
                 let modalContent = await response.text();
                 const fullScreenOverlay = document.createElement('div');
                 fullScreenOverlay.classList.add('full-screen-bg');
+                fullScreenOverlay.id = 'full-screen-overlay-div';
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
             }
@@ -127,6 +179,36 @@ async function popupEditItemModal(editItemType, editItemItemId) {
         if (editItemType === 'progeny') {
             await InitializeAddEditProgeny();
         }
+        if (editItemType === 'note') {
+            await initializeAddEditNote();
+        }
+        if (editItemType === 'calendar') {
+            await initializeAddEditEvent();
+        }
+        if (editItemType === 'sleep') {
+            await initializeAddEditSleep();
+        }
+        if (editItemType === 'vocabulary') {
+            await initializeAddEditVocabulary();
+        }
+        if (editItemType === 'friend') {
+            await initializeAddEditFriend();
+        }
+        if (editItemType === 'measurement') {
+            await initializeAddEditMeasurement();
+        }
+        if (editItemType === 'contact') {
+            await initializeAddEditContact();
+        }
+        if (editItemType === 'skill') {
+            await initializeAddEditSkill();
+        }
+        if (editItemType === 'vaccination') {
+            await initializeAddEditVaccination();
+        }
+        if (editItemType === 'location') {
+            await initializeAddEditLocation();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -142,20 +224,21 @@ async function popupEditItemModal(editItemType, editItemItemId) {
 export function setDeleteItemButtonEventListeners() {
     let deleteItemButtons = document.querySelectorAll('.delete-item-button');
     deleteItemButtons.forEach(function (button) {
-        button.addEventListener('click', async function (event) {
-            event.preventDefault();
-            startFullPageSpinner();
-            let deleteItemButton = event.currentTarget;
-            let deleteItemType = deleteItemButton.getAttribute('data-delete-item-type');
-            let deleteItemItemId = deleteItemButton.getAttribute('data-delete-item-item-id');
-            if (deleteItemType !== null && deleteItemItemId !== null && deleteItemItemId !== '0') {
-                await popupDeleteItemModal(deleteItemType, deleteItemItemId);
-            }
-            stopFullPageSpinner();
-            return new Promise(function (resolve, reject) {
-                resolve();
-            });
-        });
+        button.addEventListener('click', onDeleteItemButtonClicked);
+    });
+}
+async function onDeleteItemButtonClicked(event) {
+    event.preventDefault();
+    startFullPageSpinner();
+    let deleteItemButton = event.currentTarget;
+    let deleteItemType = deleteItemButton.getAttribute('data-delete-item-type');
+    let deleteItemItemId = deleteItemButton.getAttribute('data-delete-item-item-id');
+    if (deleteItemType !== null && deleteItemItemId !== null && deleteItemItemId !== '0') {
+        await popupDeleteItemModal(deleteItemType, deleteItemItemId);
+    }
+    stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
     });
 }
 /**
@@ -207,15 +290,16 @@ function addCloseButtonEventListener() {
     let closeButtonsList = document.querySelectorAll('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
-            button.addEventListener('click', function () {
-                const itemDetailsPopupDiv = document.querySelector('#item-details-div');
-                if (itemDetailsPopupDiv) {
-                    itemDetailsPopupDiv.innerHTML = '';
-                    itemDetailsPopupDiv.classList.add('d-none');
-                    showBodyScrollbars();
-                }
-            });
+            button.addEventListener('click', onCloseButtonClicked);
         });
+    }
+}
+function onCloseButtonClicked() {
+    const itemDetailsPopupDiv = document.querySelector('#item-details-div');
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.innerHTML = '';
+        itemDetailsPopupDiv.classList.add('d-none');
+        showBodyScrollbars();
     }
 }
 /**
@@ -226,15 +310,16 @@ function addCancelButtonEventListener() {
     let closeButtonsList = document.querySelectorAll('.item-details-cancel-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
-            button.addEventListener('click', function () {
-                const itemDetailsPopupDiv = document.querySelector('#item-details-div');
-                if (itemDetailsPopupDiv) {
-                    itemDetailsPopupDiv.innerHTML = '';
-                    itemDetailsPopupDiv.classList.add('d-none');
-                    showBodyScrollbars();
-                }
-            });
+            button.addEventListener('click', onCancelButtonClicked);
         });
+    }
+}
+function onCancelButtonClicked() {
+    const itemDetailsPopupDiv = document.querySelector('#item-details-div');
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.innerHTML = '';
+        itemDetailsPopupDiv.classList.add('d-none');
+        showBodyScrollbars();
     }
 }
 /**
@@ -244,42 +329,53 @@ function addCancelButtonEventListener() {
 function setSaveItemFormEventListener() {
     let addItemForm = document.querySelector('#save-item-form');
     if (addItemForm) {
-        addItemForm.addEventListener('submit', async function (event) {
-            event.preventDefault();
-            startFullPageSpinner();
-            let itemDetailsPopupDiv = document.querySelector('#item-details-div');
-            if (itemDetailsPopupDiv) {
-                itemDetailsPopupDiv.classList.add('d-none');
-                itemDetailsPopupDiv.innerHTML = '';
-            }
-            let formData = new FormData(addItemForm);
-            let formAction = addItemForm.getAttribute('action');
-            if (formAction) {
-                await fetch(formAction, {
-                    method: 'POST',
-                    body: formData
-                }).then(async function (response) {
-                    if (response.ok) {
-                        if (itemDetailsPopupDiv) {
-                            let modalContent = await response.text();
-                            const fullScreenOverlay = document.createElement('div');
-                            fullScreenOverlay.classList.add('full-screen-bg');
-                            fullScreenOverlay.innerHTML = modalContent;
-                            itemDetailsPopupDiv.appendChild(fullScreenOverlay);
-                            itemDetailsPopupDiv.classList.remove('d-none');
-                            hideBodyScrollbars();
-                            addCloseButtonEventListener();
-                        }
-                    }
-                }).catch(function (error) {
-                    console.error('Error saving item:', error);
-                });
-            }
-            stopFullPageSpinner();
-            return new Promise(function (resolve, reject) {
-                resolve();
-            });
+        addItemForm.addEventListener('submit', onSaveItemFormSubmit);
+    }
+}
+async function onSaveItemFormSubmit(event) {
+    event.preventDefault();
+    startFullPageSpinner();
+    let itemDetailsPopupDiv = document.querySelector('#item-details-div');
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.classList.add('d-none');
+    }
+    let addItemForm = document.querySelector('#save-item-form');
+    if (!addItemForm) {
+        return new Promise(function (resolve, reject) {
+            resolve();
         });
     }
+    let formData = new FormData(addItemForm);
+    let formAction = addItemForm.getAttribute('action');
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.innerHTML = '';
+    }
+    if (formAction) {
+        await fetch(formAction, {
+            method: 'POST',
+            body: formData
+        }).then(async function (response) {
+            if (response.ok) {
+                if (itemDetailsPopupDiv) {
+                    let modalContent = await response.text();
+                    const fullScreenOverlay = document.createElement('div');
+                    fullScreenOverlay.classList.add('full-screen-bg');
+                    fullScreenOverlay.innerHTML = modalContent;
+                    itemDetailsPopupDiv.appendChild(fullScreenOverlay);
+                    itemDetailsPopupDiv.classList.remove('d-none');
+                    hideBodyScrollbars();
+                    addCloseButtonEventListener();
+                    setEditItemButtonEventListeners();
+                    setAddItemButtonEventListeners();
+                }
+            }
+        }).catch(function (error) {
+            console.error('Error saving item:', error);
+        });
+    }
+    stopFullPageSpinner();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 //# sourceMappingURL=add-item.js.map

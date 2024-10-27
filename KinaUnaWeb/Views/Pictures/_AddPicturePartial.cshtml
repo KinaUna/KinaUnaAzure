@@ -1,0 +1,100 @@
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@using System.Globalization
+@model KinaUnaWeb.Models.ItemViewModels.UploadPictureViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Add photo", PageNames.Pictures, Model.LanguageId);
+    string addPhotoForString = await LocaleManager.GetTranslation("Add photo for:", PageNames.Pictures, Model.LanguageId);
+    string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
+    string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+}
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="add-item-container">
+            <h2 class="col-12">@ViewData["Title"]</h2>
+            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            <div class="space-20"></div>
+            <form id="add-pictures-form" method="post">
+                @if (Model.ProgenyList.Count > 1)
+                {
+                    <div class="form-group">
+                        <label class="control-label col-auto">@addPhotoForString </label>
+                        <div class="col-auto">
+                            <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="Picture.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label class="control-label col-auto">@addPhotoForString </label>
+                        <div class="col-auto">
+                            <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                        </div>
+                        <input asp-for="Picture.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                    </div>
+                }
+                <div class="form-group">
+                    <label id="photo-header-label" class="col-auto control-label">@await LocaleManager.GetTranslation("Photo", PageNames.Pictures, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <div id="upload-file-div">
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div id="drop-files-div" class="border-info bg-secondary p-4" style="height: 100px;" draggable="true">
+                            <span id="drop-files-text">@await LocaleManager.GetTranslation("Drop files here, or click the Select Photo(s) button.", PageNames.Pictures, Model.LanguageId)</span>
+                        </div>
+                        <div class="space-20"></div>
+                        <div id="select-photos-button-parent-div" class="btn btn-primary btn-round btn-file">
+                            <label for="select-photos-button" class="mb-0">@await LocaleManager.GetTranslation("Select photo(s)", PageNames.Pictures, Model.LanguageId)</label>
+                            <input id="select-photos-button" type="file" name="Files" accept=".gif,.jpg,.jpeg,.png,.webp,.kinauna" multiple />
+                        </div>
+                    </div>
+                </div>
+                <div id="location-form-group" class="form-group">
+                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input id="location-input" type="text" asp-for="Picture.Location" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
+                    </div>
+                </div>
+                <div id="tags-form-group" class="form-group">
+                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input id="tag-list" type="text" asp-for="Picture.Tags" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
+                    </div>
+                </div>
+                <div id="access-level-form-group" class="form-group">
+                    <label asp-for="Picture.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="Picture.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                    </div>
+                </div>
+                <div class="space-20"></div>
+                <div id="actions-form-group" class="form-group">
+                    <div class="col-auto"></div>
+                    <input asp-for="Picture.Owners" class="form-control" value="@Model.Picture.Owners" type="hidden" />
+                    <div class="col-auto">
+                        <button id="add-picture-save-button" class="btn btn-success" type="submit" disabled="disabled">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                        <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    </div>
+                </div>
+            </form>
+            <div id="upload-completed-div" class="d-none">
+                <div class="space-20"></div>
+                <div>
+                    <h3>@await LocaleManager.GetTranslation("Upload completed", PageNames.Pictures, Model.LanguageId)</h3>
+                </div>
+                <div>
+                    <a class="btn add-item-button" data-add-item-type="picture" data-add-item-progeny-id="0">@await LocaleManager.GetTranslation("Return to photo upload", PageNames.Pictures, Model.LanguageId)</a>
+                </div>
+                <div class="space-20"></div>
+                <div>
+                    <a class="leave-page" asp-controller="Pictures" asp-action="Index" asp-route-childId="@Model.Picture.ProgenyId">@await LocaleManager.GetTranslation("Go to photo gallery", PageNames.Pictures, Model.LanguageId)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

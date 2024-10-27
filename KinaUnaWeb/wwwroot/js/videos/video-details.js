@@ -17,11 +17,21 @@ export function addVideoItemEventListeners(videoId) {
     const videoElementsWithDataId = document.querySelectorAll('[data-video-id="' + videoId + '"]');
     if (videoElementsWithDataId) {
         videoElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', function () {
-                displayVideoDetails(videoId);
-            });
+            element.addEventListener('click', onVideoItemDivClicked);
         });
     }
+}
+async function onVideoItemDivClicked(event) {
+    const videoElement = event.currentTarget;
+    if (videoElement !== null) {
+        const videoId = videoElement.dataset.videoId;
+        if (videoId) {
+            await displayVideoDetails(videoId);
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 export async function popupVideoDetails(videoId) {
     await displayVideoDetails(videoId);
@@ -36,27 +46,33 @@ export async function popupVideoDetails(videoId) {
 async function addCommentEventListeners() {
     const submitForm = document.getElementById('new-video-comment-form');
     if (submitForm !== null) {
-        submitForm.addEventListener('submit', async function (event) {
-            event.preventDefault();
-            submitComment();
-        });
+        submitForm.addEventListener('submit', onSubmitComment);
     }
     const newCommentTextArea = document.getElementById('new-video-comment-text-area');
     if (newCommentTextArea !== null) {
-        newCommentTextArea.addEventListener('input', function () {
-            const submitCommentButton = document.getElementById('submit-new-video-comment-button');
-            if (submitCommentButton) {
-                if (newCommentTextArea.value.length > 0) {
-                    submitCommentButton.disabled = false;
-                    return;
-                }
-                submitCommentButton.disabled = true;
-            }
-        });
+        newCommentTextArea.addEventListener('input', onCommentInput);
     }
     return new Promise(function (resolve, reject) {
         resolve();
     });
+}
+async function onSubmitComment(event) {
+    event.preventDefault();
+    await submitComment();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
+function onCommentInput() {
+    const newCommentTextArea = document.getElementById('new-video-comment-text-area');
+    const submitCommentButton = document.getElementById('submit-new-video-comment-button');
+    if (submitCommentButton) {
+        if (newCommentTextArea.value.length > 0) {
+            submitCommentButton.disabled = false;
+            return;
+        }
+        submitCommentButton.disabled = true;
+    }
 }
 /**
  * Gets the form data from the comment form and sends it to the server to add a new comment to the video.
@@ -106,13 +122,17 @@ async function addEditEventListeners() {
         addCopyLocationButtonEventListener();
         const submitForm = document.getElementById('edit-video-form');
         if (submitForm !== null) {
-            submitForm.addEventListener('submit', async function (event) {
-                event.preventDefault();
-                submitVideoEdit();
-            });
+            submitForm.addEventListener('submit', onSubmitEditVideoForm);
         }
         $(".selectpicker").selectpicker("refresh");
     }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
+async function onSubmitEditVideoForm(event) {
+    event.preventDefault();
+    submitVideoEdit();
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -181,52 +201,83 @@ async function setupDateTimePicker() {
 function addNavigationEventListeners() {
     let previousLink = document.querySelector('#previous-video-link');
     if (previousLink) {
-        previousLink.addEventListener('click', async function () {
-            let previousVideoId = previousLink.getAttribute('data-previous-video-id');
-            if (previousVideoId) {
-                await displayVideoDetails(previousVideoId, true);
-            }
-        });
+        previousLink.addEventListener('click', onPreviousLinkClicked);
     }
     let nextLink = document.querySelector('#next-video-link');
     if (nextLink) {
-        nextLink.addEventListener('click', async function () {
-            let nextVideoId = nextLink.getAttribute('data-next-video-id');
-            if (nextVideoId) {
-                await displayVideoDetails(nextVideoId, true);
-            }
-        });
+        nextLink.addEventListener('click', onNextLinkClicked);
     }
     // Swipe navigation
     const videoDetailsDiv = document.querySelector('#video-details-div');
     if (videoDetailsDiv) {
-        videoDetailsDiv.addEventListener('touchstart', event => {
-            videoDetailsTouchStartX = event.touches[0].clientX;
-            videoDetailsTouchStartY = event.touches[0].clientY;
-        });
-        videoDetailsDiv.addEventListener('touchend', async (event) => {
-            videoDetailsTouchEndX = event.changedTouches[0].clientX;
-            videoDetailsTouchEndY = event.changedTouches[0].clientY;
-            if (Math.abs(videoDetailsTouchEndY - videoDetailsTouchStartY) > 100) {
-                return;
-            }
-            if (Math.abs(videoDetailsTouchEndX - videoDetailsTouchStartX) < 50) {
-                return;
-            }
-            if (videoDetailsTouchEndX < videoDetailsTouchStartX) {
-                let nextVideoId = nextLink?.getAttribute('data-next-video-id');
-                if (nextVideoId) {
-                    await displayVideoDetails(nextVideoId, true);
-                }
-            }
-            if (videoDetailsTouchEndX > videoDetailsTouchStartX) {
-                let previousVideoId = previousLink?.getAttribute('data-previous-video-id');
-                if (previousVideoId) {
-                    await displayVideoDetails(previousVideoId, true);
-                }
-            }
+        videoDetailsDiv.addEventListener('touchstart', onVideoDetailsTouchStart);
+        videoDetailsDiv.addEventListener('touchend', onVideoDetailsTouchEnd);
+    }
+}
+async function onPreviousLinkClicked() {
+    let previousLink = document.querySelector('#previous-video-link');
+    if (previousLink === null) {
+        return new Promise(function (resolve, reject) {
+            resolve();
         });
     }
+    let previousVideoId = previousLink.getAttribute('data-previous-video-id');
+    if (previousVideoId) {
+        await displayVideoDetails(previousVideoId, true);
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
+async function onNextLinkClicked() {
+    let nextLink = document.querySelector('#next-video-link');
+    if (nextLink === null) {
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
+    }
+    let nextVideoId = nextLink.getAttribute('data-next-video-id');
+    if (nextVideoId) {
+        await displayVideoDetails(nextVideoId, true);
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
+function onVideoDetailsTouchStart(event) {
+    videoDetailsTouchStartX = event.touches[0].clientX;
+    videoDetailsTouchStartY = event.touches[0].clientY;
+}
+async function onVideoDetailsTouchEnd(event) {
+    videoDetailsTouchEndX = event.changedTouches[0].clientX;
+    videoDetailsTouchEndY = event.changedTouches[0].clientY;
+    if (Math.abs(videoDetailsTouchEndY - videoDetailsTouchStartY) > 100) {
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
+    }
+    if (Math.abs(videoDetailsTouchEndX - videoDetailsTouchStartX) < 75) {
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
+    }
+    let nextLink = document.querySelector('#next-video-link');
+    if (videoDetailsTouchEndX < videoDetailsTouchStartX) {
+        let nextVideoId = nextLink?.getAttribute('data-next-video-id');
+        if (nextVideoId) {
+            await displayVideoDetails(nextVideoId, true);
+        }
+    }
+    let previousLink = document.querySelector('#previous-video-link');
+    if (videoDetailsTouchEndX > videoDetailsTouchStartX) {
+        let previousVideoId = previousLink?.getAttribute('data-previous-video-id');
+        if (previousVideoId) {
+            await displayVideoDetails(previousVideoId, true);
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Adds an event listener to the close button in the item details popup.
@@ -254,20 +305,21 @@ function addCloseButtonEventListener() {
 function addShowMapButtonEventListener() {
     let showMapButton = document.querySelector('#show-here-maps-button');
     if (showMapButton) {
-        const mapContainerDiv = document.getElementById('here-map-container-div');
-        showMapButton.addEventListener('click', function () {
-            if (mapContainerDiv === null) {
-                return;
-            }
-            if (mapContainerDiv.classList.contains('d-none')) {
-                mapContainerDiv.innerHTML = '';
-                mapContainerDiv.classList.remove('d-none');
-                setupHereMaps(getCurrentLanguageId());
-            }
-            else {
-                mapContainerDiv.classList.add('d-none');
-            }
-        });
+        showMapButton.addEventListener('click', onShowHereMapsButtonClicked);
+    }
+}
+function onShowHereMapsButtonClicked() {
+    const mapContainerDiv = document.getElementById('here-map-container-div');
+    if (mapContainerDiv === null) {
+        return;
+    }
+    if (mapContainerDiv.classList.contains('d-none')) {
+        mapContainerDiv.innerHTML = '';
+        mapContainerDiv.classList.remove('d-none');
+        setupHereMaps(getCurrentLanguageId());
+    }
+    else {
+        mapContainerDiv.classList.add('d-none');
     }
 }
 /**

@@ -3,8 +3,8 @@
 @model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = await LocaleManager.GetTranslation("New user added", PageNames.AccessManagement, Model.LanguageId);
-    string addUserForString = await LocaleManager.GetTranslation("User added for", PageNames.AccessManagement, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("User removed added", PageNames.AccessManagement, Model.LanguageId);
+    string addUserForString = await LocaleManager.GetTranslation("User removed for", PageNames.AccessManagement, Model.LanguageId);
     string addedUserString = await LocaleManager.GetTranslation("User email", PageNames.AccessManagement, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
@@ -26,7 +26,7 @@
 
                 <div class="col-12">
                     <div class="space-20"></div>
-                    @await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId) : @Model.AccessLevel
+                    @await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId) : @Model.AccessLevelListEn[Model.AccessLevel].Text
                 </div>
             </div>
         </div>

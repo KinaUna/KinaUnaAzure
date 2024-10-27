@@ -221,7 +221,7 @@ namespace KinaUnaWeb.Controllers
             
             if (model.CurrentUser == null)
             {
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
@@ -229,7 +229,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_AddPicturePartial", model);
         }
 
         /// <summary>
@@ -299,7 +299,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetAccessLevelList();
 
-            return View(result);
+            return PartialView(result);
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿import * as LocaleHelper from '../localization-v8.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v8.js';
+import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
@@ -41,12 +42,21 @@ async function setupDateTimePicker(): Promise<void> {
 function setupProgenySelectList(): void {
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId]);
-            await setLocationAutoSuggestList([currentProgenyId]);
-        });
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
     }
+}
+
+async function onProgenySelectListChanged(): Promise<void> {
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = parseInt(progenyIdSelect.value);
+        await setTagsAutoSuggestList([currentProgenyId]);
+        await setLocationAutoSuggestList([currentProgenyId]);
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -55,19 +65,21 @@ function setupProgenySelectList(): void {
 function setupCopyLocationButton(): void {
     copyLocationButton = document.querySelector<HTMLButtonElement>('#copy-location-button');
     if (copyLocationButton !== null) {
-        copyLocationButton.addEventListener('click', function () {
-            const latitudeInput = document.getElementById('latitude') as HTMLInputElement;
-            const longitudeInput = document.getElementById('longitude') as HTMLInputElement;
-            const locationSelect = document.getElementById('copy-location') as HTMLSelectElement;
+        copyLocationButton.addEventListener('click', onCopyLocationButtonClicked);
+    }
+}
 
-            if (latitudeInput !== null && longitudeInput !== null && locationSelect !== null) {
-                let locId = parseInt(locationSelect.value);
-                let selectedLocation = copyLocationList.find((obj: { id: number; name: string; lat: number, lng: number }) => { return obj.id === locId });
+function onCopyLocationButtonClicked() {
+    const latitudeInput = document.getElementById('latitude') as HTMLInputElement;
+    const longitudeInput = document.getElementById('longitude') as HTMLInputElement;
+    const locationSelect = document.getElementById('copy-location') as HTMLSelectElement;
 
-                latitudeInput.setAttribute('value', selectedLocation.lat);
-                longitudeInput.setAttribute('value', selectedLocation.lng);
-            }
-        });
+    if (latitudeInput !== null && longitudeInput !== null && locationSelect !== null) {
+        let locId = parseInt(locationSelect.value);
+        let selectedLocation = copyLocationList.find((obj: { id: number; name: string; lat: number, lng: number }) => { return obj.id === locId });
+
+        latitudeInput.setAttribute('value', selectedLocation.lat);
+        longitudeInput.setAttribute('value', selectedLocation.lng);
     }
 }
 
@@ -83,10 +95,7 @@ function setupEditButton(): void {
     }
 }
 
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+export async function initializeAddEditVideo(): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
 
@@ -94,10 +103,12 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId]);
     await setLocationAutoSuggestList([currentProgenyId]);
-    setupCopyLocationButton();    
+    setupCopyLocationButton();
     setupEditButton();
+    setAddItemButtonEventListeners();
+    ($(".selectpicker") as any).selectpicker('refresh');
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
-});
+}

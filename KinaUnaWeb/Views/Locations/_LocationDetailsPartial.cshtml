@@ -1,18 +1,19 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
-    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Locations", PageNames.Locations, Model.LanguageId);
+    string title = Model.LocationItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Locations", PageNames.Locations, Model.LanguageId);
     Model.LocationItem.Date ??= DateTime.MinValue;
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-location item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.LocationItem.Progeny.PictureLink" class="item-details-title-picture" />
+                <img src="@Model.LocationItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -89,11 +90,10 @@
                 </div>
             </div>
             @if (Model.IsCurrentUserProgenyAdmin)
-            {
-
+            { 
                 <div class="col-12">
                     <div class="space-20"></div>
-                    <a asp-controller="Locations" asp-action="EditLocation" asp-route-itemId="@Model.LocationItem.LocationId" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a data-edit-item-type="location" data-edit-item-item-id="@Model.LocationItem.LocationId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
                     <a asp-controller="Locations" asp-action="DeleteLocation" asp-route-itemId="@Model.LocationItem.LocationId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                 </div>
             }

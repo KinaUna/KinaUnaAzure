@@ -11,6 +11,7 @@ using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Notes;
 using KinaUnaWeb.Services.HttpClients;
+using System.IO;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -18,7 +19,8 @@ namespace KinaUnaWeb.Controllers
         IProgenyHttpClient progenyHttpClient,
         INotesHttpClient notesHttpClient,
         IUserInfosHttpClient userInfosHttpClient,
-        IViewModelSetupService viewModelSetupService)
+        IViewModelSetupService viewModelSetupService,
+        ImageStore imageStore)
         : Controller
     {
         /// <summary>
@@ -60,9 +62,11 @@ namespace KinaUnaWeb.Controllers
         {
             Note note = await notesHttpClient.GetNote(noteId);
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
-            NoteViewModel model = new(baseModel);
+            NoteViewModel model = new(baseModel)
+            {
+                NoteItem = note
+            };
 
-            model.NoteItem = note;
             model.NoteItem.Progeny = model.CurrentProgeny;
             model.NoteItem.Progeny.PictureLink = model.NoteItem.Progeny.GetProfilePictureUrl();
             UserInfo noteUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.NoteItem.Owner);
@@ -181,7 +185,7 @@ namespace KinaUnaWeb.Controllers
             NoteViewModel model = new(baseModel);
             if (model.CurrentUser == null)
             {
-                return RedirectToAction("Index");
+                return PartialView("_NotFoundPartial");
             }
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
@@ -195,7 +199,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_AddNotePartial", model);
         }
 
         /// <summary>
@@ -218,10 +222,11 @@ namespace KinaUnaWeb.Controllers
             }
 
             Note noteItem = model.CreateNote();
+                
+            model.NoteItem = await notesHttpClient.AddNote(noteItem);
+            model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
-            _ = await notesHttpClient.AddNote(noteItem);
-            
-            return RedirectToAction("Index", "Notes");
+            return PartialView("_NoteAddedPartial", model);
         }
 
         /// <summary>
@@ -238,8 +243,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.SetPropertiesFromNote(note);
@@ -248,7 +252,7 @@ namespace KinaUnaWeb.Controllers
 
             model.PathName = model.CurrentUser.UserId;
             
-            return View(model);
+            return PartialView("_EditNotePartial", model);
         }
 
         /// <summary>
@@ -264,16 +268,16 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
-            {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+            { 
+                return PartialView("_AccessDeniedPartial");
             }
             
             Note editedNote = model.CreateNote();
 
-            _ = await notesHttpClient.UpdateNote(editedNote);
-            
-            return RedirectToAction("Index", "Notes");
+            model.NoteItem = await notesHttpClient.UpdateNote(editedNote);
+            model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            return PartialView("_NoteUpdatedPartial", model);
         }
 
         /// <summary>
@@ -320,6 +324,35 @@ namespace KinaUnaWeb.Controllers
 
             _ = await notesHttpClient.DeleteNote(note.NoteId);
             return RedirectToAction("Index", "Notes");
+        }
+
+        /// <summary>
+        /// Get method for fetching an image for a Note from the Azure Blob Storage.
+        /// This provides a static URL for embedded images.
+        /// </summary>
+        /// <param name="imageId">The Id of the image.</param>
+        /// <param name="noteId">The NoteId of the Note the image is attached to.</param>
+        /// <returns>FileContentResult with the image data.</returns>
+        [AllowAnonymous]
+
+        public async Task<FileContentResult> Image([FromQuery] int noteId, [FromQuery] string imageId)
+        {
+            Note note = await notesHttpClient.GetNote(noteId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
+
+            if (baseModel.CurrentAccessLevel > note.AccessLevel)
+            {
+                MemoryStream fileContentNoAccess = await imageStore.GetStream("868b62e2-6978-41a1-97dc-1cc1116f65a6.jpg");
+                byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
+                return new FileContentResult(fileContentBytesNoAccess, "image/jpeg");
+            }
+
+            MemoryStream fileContent = await imageStore.GetStream(imageId, BlobContainers.Notes);
+            byte[] fileContentBytes = fileContent.ToArray();
+
+            string contentType = FileContentTypeHelpers.GetContentTypeString(imageId);
+
+            return new FileContentResult(fileContentBytes, contentType);
         }
     }
 }

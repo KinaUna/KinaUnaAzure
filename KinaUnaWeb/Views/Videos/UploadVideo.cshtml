@@ -1,25 +1,38 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUnaWeb.Models.ItemViewModels.UploadVideoViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Upload video", PageNames.Videos, Model.LanguageId);
 }
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    <div class="add-item-container">
-        <h2 class="col-12">@ViewData["Title"]</h2>
-        <div class="space-20"></div>
-        <div class="col-auto" style="margin: 20px;">
-            <H4>@await LocaleManager.GetTranslation("The video has been uploaded", PageNames.Videos, Model.LanguageId)</H4>
-            <div><img width="100%" src="@Model.Video.ThumbLink" /></div>
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-video item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
         </div>
-        <div class="space-20"></div>
-        <div class="col-auto">
-            <a class="leave-page" asp-controller="Videos" asp-action="AddVideo">@await LocaleManager.GetTranslation("Return to upload video", PageNames.Videos, Model.LanguageId)</a>
-        </div>
-        <div class="space-20"></div>
-        <div class="col-auto">
-            <a class="leave-page" asp-controller="Videos" asp-action="Index" asp-route-childId="@Model.Video.ProgenyId">@await LocaleManager.GetTranslation("Return to video gallery", PageNames.Videos, Model.LanguageId)</a>
+        <div class="row m-0">
+            <div class="space-20"></div>
+            <div class="col-auto" style="margin: 20px;">
+                <H4>@await LocaleManager.GetTranslation("The video has been uploaded", PageNames.Videos, Model.LanguageId)</H4>
+                <div><img width="100%" src="@Model.Video.ThumbLink"/></div>
+            </div>
+            <div class="space-20"></div>
+            <div class="col-auto">
+                <div>
+                    <a class="btn add-item-button" data-add-item-type="video" data-add-item-progeny-id="0">@await LocaleManager.GetTranslation("Return to video upload", PageNames.Videos, Model.LanguageId)</a>
+                </div>
+                <div class="space-20"></div>
+                <div>
+                    <a class="leave-page" asp-controller="Videos" asp-action="Index" asp-route-childId="@Model.Video.ProgenyId">@await LocaleManager.GetTranslation("Go to video gallery", PageNames.Videos, Model.LanguageId)</a>
+                </div>
+            </div>
+            <div class="space-20"></div>
         </div>
     </div>
 </div>

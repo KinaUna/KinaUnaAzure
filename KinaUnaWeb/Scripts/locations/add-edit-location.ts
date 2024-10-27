@@ -36,18 +36,33 @@ async function setupDateTimePicker(): Promise<void> {
 function setupProgenySelectList(): void {
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId]);
-            //await setContextAutoSuggestList(currentProgenyId);
-        });
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
     }
 }
 
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+async function onProgenySelectListChanged(): Promise<void> {
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = parseInt(progenyIdSelect.value);
+        await setTagsAutoSuggestList([currentProgenyId]);
+        //await setContextAutoSuggestList(currentProgenyId);
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+function setupHereMaps() {
+    const fullScreenOverlay = document.getElementById('full-screen-overlay-div');
+    if (fullScreenOverlay !== null) {
+        if (fullScreenOverlay.querySelector('script') !== null) {
+            eval((fullScreenOverlay.querySelector('script') as HTMLElement).innerHTML);
+        }
+    }
+}
+
+export async function initializeAddEditLocation(): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
 
@@ -57,8 +72,11 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     //await setContextAutoSuggestList(currentProgenyId);
 
     setupProgenySelectList();
+    ($(".selectpicker") as any).selectpicker('refresh');
+
+    setupHereMaps();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
-});
+}

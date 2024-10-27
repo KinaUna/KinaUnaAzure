@@ -1,3 +1,4 @@
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
@@ -13,6 +14,15 @@ export function addNoteEventListeners(itemId) {
                 await displayNoteItem(itemId);
             });
         });
+    }
+}
+async function onNoteItemDivClicked(event) {
+    const noteElement = event.currentTarget;
+    if (noteElement !== null) {
+        const noteId = noteElement.dataset.noteId;
+        if (noteId) {
+            await displayNoteItem(noteId);
+        }
     }
 }
 /**
@@ -59,6 +69,7 @@ async function displayNoteItem(noteId) {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
             }
         }
         else {

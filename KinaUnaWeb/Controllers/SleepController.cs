@@ -91,7 +91,7 @@ namespace KinaUnaWeb.Controllers
             
             if (model.CurrentUser == null)
             {
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
@@ -99,7 +99,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_AddSleepPartial", model);
         }
 
         /// <summary>
@@ -116,8 +116,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.SleepItem.Author = model.CurrentUser.UserId;
@@ -125,9 +124,11 @@ namespace KinaUnaWeb.Controllers
 
             Sleep sleepToAdd = model.CreateSleep();
 
-            _ = await sleepHttpClient.AddSleep(sleepToAdd);
-            
-            return RedirectToAction("Index", "Sleep");
+            model.SleepItem = await sleepHttpClient.AddSleep(sleepToAdd);
+            model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            return PartialView("_SleepAddedPartial", model);
         }
 
         /// <summary>
@@ -144,15 +145,14 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.SetPropertiesFromSleepItem(sleep);
             model.SetRatingList();
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_EditSleepPartial", model);
         }
 
         /// <summary>
@@ -169,8 +169,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             if (!ModelState.IsValid) return RedirectToAction("Index", "Sleep");
@@ -183,8 +182,11 @@ namespace KinaUnaWeb.Controllers
                 model.SleepItem.SleepRating = 3;
             }
                 
-            await sleepHttpClient.UpdateSleep(model.SleepItem);
-            return RedirectToAction("Index", "Sleep");
+            model.SleepItem = await sleepHttpClient.UpdateSleep(model.SleepItem);
+            model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            return PartialView("_SleepUpdatedPartial", model);
         }
 
         /// <summary>
@@ -201,8 +203,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.SleepItem = sleep;
@@ -225,8 +226,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             await sleepHttpClient.DeleteSleepItem(sleep.SleepId);

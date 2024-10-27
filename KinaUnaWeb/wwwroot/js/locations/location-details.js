@@ -1,3 +1,4 @@
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
@@ -9,11 +10,21 @@ export function addLocationItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-location-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displayLocationItem(itemId);
-            });
+            element.addEventListener('click', onLocationItemDivClicked);
         });
     }
+}
+async function onLocationItemDivClicked(event) {
+    const locationElement = event.currentTarget;
+    if (locationElement !== null) {
+        const locationId = locationElement.dataset.locationId;
+        if (locationId) {
+            await displayLocationItem(locationId);
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Enable other scripts to call the DisplayLocationItem function.
@@ -59,6 +70,7 @@ async function displayLocationItem(locationId) {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
                 // Todo: If a map is loaded, center it on this location.
             }
         }

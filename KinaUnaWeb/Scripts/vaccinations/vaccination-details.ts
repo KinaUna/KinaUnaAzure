@@ -1,4 +1,5 @@
-﻿import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
+﻿import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 
 /**
@@ -10,11 +11,23 @@ export function addVaccinationItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-vaccination-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displayVaccinationItem(itemId);
-            });
+            element.addEventListener('click', onVaccinationItemDivClicked);
         });
     }
+}
+
+async function onVaccinationItemDivClicked(event: MouseEvent): Promise<void> {
+    const vaccinationElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
+    if (vaccinationElement !== null) {
+        const vaccinationId = vaccinationElement.dataset.vaccinationId;
+        if (vaccinationId) {
+            await displayVaccinationItem(vaccinationId);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -63,6 +76,8 @@ async function displayVaccinationItem(vaccinationId: string): Promise<void> {
                         });
                     });
                 }
+
+                setEditItemButtonEventListeners();
             }
         } else {
             console.error('Error getting vaccination item. Status: ' + response.status + ', Message: ' + response.statusText);

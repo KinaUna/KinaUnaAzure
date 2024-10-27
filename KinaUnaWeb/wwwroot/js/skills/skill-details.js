@@ -1,3 +1,4 @@
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
@@ -9,11 +10,21 @@ export function addSkillItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-skill-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displaySkillItem(itemId);
-            });
+            element.addEventListener('click', onSkillItemDivClicked);
         });
     }
+}
+async function onSkillItemDivClicked(event) {
+    const skillElement = event.currentTarget;
+    if (skillElement !== null) {
+        const skillId = skillElement.dataset.skillId;
+        if (skillId) {
+            await displaySkillItem(skillId);
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Enable other scripts to call the DisplaySkillItem function.
@@ -59,6 +70,7 @@ async function displaySkillItem(skillId) {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
             }
         }
         else {

@@ -102,6 +102,66 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddProgeny", "Progeny");
             }
 
+            if (itemType == "note")
+            {
+                return RedirectToAction("AddNote", "Notes");
+            }
+
+            if (itemType == "calendar")
+            {
+                return RedirectToAction("AddEvent", "Calendar");
+            }
+
+            if(itemType == "sleep")
+            {
+                return RedirectToAction("AddSleep", "Sleep");
+            }
+
+            if (itemType == "picture")
+            {
+                return RedirectToAction("AddPicture", "Pictures");
+            }
+
+            if (itemType == "video")
+            {
+                return RedirectToAction("AddVideo", "Videos");
+            }
+
+            if (itemType == "vocabulary")
+            {
+                return RedirectToAction("AddVocabulary", "Vocabulary");
+            }
+
+            if (itemType == "friend")
+            {
+                return RedirectToAction("AddFriend", "Friends");
+            }
+
+            if (itemType == "measurement")
+            {
+                return RedirectToAction("AddMeasurement", "Measurements");
+            }
+
+            if (itemType == "contact")
+            {
+                return RedirectToAction("AddContact", "Contacts");
+            }
+
+            if (itemType == "skill")
+            {
+                return RedirectToAction("AddSkill", "Skills");
+            }
+
+            if (itemType == "vaccination")
+            {
+                return RedirectToAction("AddVaccination", "Vaccinations");
+            }
+
+            if (itemType == "location")
+            {
+                return RedirectToAction("AddLocation", "Locations");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
@@ -118,7 +178,57 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("EditProgeny", "Progeny", new { progenyId = itemId });
             }
 
-            return PartialView("../Shared/_NotFoundPartial");
+            if (itemType == "note")
+            {
+                return RedirectToAction("EditNote", "Notes", new { itemId });
+            }
+
+            if (itemType == "calendar")
+            {
+                return RedirectToAction("EditEvent", "Calendar", new { itemId });
+            }
+
+            if (itemType == "sleep")
+            {
+                return RedirectToAction("EditSleep", "Sleep", new { itemId });
+            }
+
+            if (itemType == "vocabulary")
+            {
+                return RedirectToAction("EditVocabulary", "Vocabulary", new { itemId });
+            }
+
+            if (itemType == "friend")
+            {
+                return RedirectToAction("EditFriend", "Friends", new { itemId });
+            }
+
+            if (itemType == "measurement")
+            {
+                return RedirectToAction("EditMeasurement", "Measurements", new { itemId });
+            }
+
+            if (itemType == "contact")
+            {
+                return RedirectToAction("EditContact", "Contacts", new { itemId });
+            }
+
+            if (itemType == "skill")
+            {
+                return RedirectToAction("EditSkill", "Skills", new { itemId });
+            }
+
+            if (itemType == "vaccination")
+            {
+                return RedirectToAction("EditVaccination", "Vaccinations", new { itemId });
+            }
+
+            if (itemType == "location")
+            {
+                return RedirectToAction("EditLocation", "Locations", new { itemId });
+            }
+
+            return PartialView("../Shared/_NotFoundPartial", new { itemId });
         }
 
         [HttpGet]
@@ -127,6 +237,16 @@ namespace KinaUnaWeb.Controllers
             if (itemType == "user")
             {
                 return RedirectToAction("DeleteAccess", "AccessManagement", new { accessId = itemId });
+            }
+
+            if (itemType == "progeny")
+            {
+                return RedirectToAction("DeleteProgeny", "Progeny", new { progenyId = itemId });
+            }
+
+            if (itemType == "note")
+            {
+                return RedirectToAction("DeleteNote", "Notes", new { noteId = itemId });
             }
 
             return PartialView("../Shared/_NotFoundPartial");

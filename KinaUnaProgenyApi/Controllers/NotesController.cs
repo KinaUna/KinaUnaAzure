@@ -60,7 +60,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             foreach (Note note in notesList)
             {
-                note.Content = imageStore.UpdateBlobLinks(note.Content);
+                note.Content = imageStore.UpdateBlobLinks(note.Content, note.NoteId);
             }
 
             return Ok(notesList);
@@ -76,6 +76,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetNoteItem(int id)
         {
             Note note = await noteService.GetNote(id);
+            if (note == null) return NotFound();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(note.ProgenyId, userEmail, note.AccessLevel);
@@ -84,7 +85,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return accessLevelResult.ToActionResult();
             }
 
-            note.Content = imageStore.UpdateBlobLinks(note.Content);
+            note.Content = imageStore.UpdateBlobLinks(note.Content, note.NoteId);
             return Ok(note);
 
         }
@@ -277,7 +278,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             foreach (Note note in itemsOnPage)
             {
-                note.Content = imageStore.UpdateBlobLinks(note.Content);
+                note.Content = imageStore.UpdateBlobLinks(note.Content, note.NoteId);
             }
 
             NotesListPage model = new()

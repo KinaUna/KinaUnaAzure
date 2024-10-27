@@ -31,25 +31,39 @@ async function setupDateTimePicker() {
 function setupProgenySelectList() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId]);
-            //await setContextAutoSuggestList(currentProgenyId);
-        });
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
     }
 }
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function () {
+async function onProgenySelectListChanged() {
+    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = parseInt(progenyIdSelect.value);
+        await setTagsAutoSuggestList([currentProgenyId]);
+        //await setContextAutoSuggestList(currentProgenyId);
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
+function setupHereMaps() {
+    const fullScreenOverlay = document.getElementById('full-screen-overlay-div');
+    if (fullScreenOverlay !== null) {
+        if (fullScreenOverlay.querySelector('script') !== null) {
+            eval(fullScreenOverlay.querySelector('script').innerHTML);
+        }
+    }
+}
+export async function initializeAddEditLocation() {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
     await setupDateTimePicker();
     await setTagsAutoSuggestList([currentProgenyId]);
     //await setContextAutoSuggestList(currentProgenyId);
     setupProgenySelectList();
+    $(".selectpicker").selectpicker('refresh');
+    setupHereMaps();
     return new Promise(function (resolve, reject) {
         resolve();
     });
-});
+}
 //# sourceMappingURL=add-edit-location.js.map

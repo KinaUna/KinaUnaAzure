@@ -31,21 +31,23 @@ async function setupDateTimePicker() {
 function setupProgenySelectList() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-        });
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
     }
 }
-/**
- * Initializes the page elements when it is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function () {
+function onProgenySelectListChanged() {
+    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = parseInt(progenyIdSelect.value);
+    }
+}
+export async function initializeAddEditMeasurement() {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
     await setupDateTimePicker();
     setupProgenySelectList();
+    $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve, reject) {
         resolve();
     });
-});
+}
 //# sourceMappingURL=add-edit-measurement.js.map

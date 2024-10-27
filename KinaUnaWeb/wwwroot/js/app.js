@@ -106,15 +106,16 @@ function collapsePopupsAndModals(clickover) {
  * Also collapses pop-ups and modals if clicking outside the pop-up or modal.
  */
 function setDocumentClickEventListeners() {
-    document.addEventListener('click', function (event) {
-        const clickover = event.target;
-        if (clickover !== null) {
-            let leavingPage = checkLeavePage(clickover);
-            closeMenuIfClickedOutsideOrLeaving(clickover, leavingPage);
-            collapsePopupsAndModals(clickover);
-        }
-    });
+    document.addEventListener('click', onDocumentClicked);
     setFullPageSpinnerEventListeners();
+}
+function onDocumentClicked(event) {
+    const clickover = event.target;
+    if (clickover !== null) {
+        let leavingPage = checkLeavePage(clickover);
+        closeMenuIfClickedOutsideOrLeaving(clickover, leavingPage);
+        collapsePopupsAndModals(clickover);
+    }
 }
 /**
  * Shows the select progeny dropdown when the picture of the current progeny is clicked.
@@ -133,14 +134,15 @@ function showSelectProgenyDropdownWhenCurrentProgenyClicked() {
 function setSelectProgenyButtonsEventListeners() {
     let selectProgenyButtons = document.querySelectorAll('.select-progeny-button');
     selectProgenyButtons.forEach(function (button) {
-        button.addEventListener('click', function (event) {
-            event.preventDefault();
-            let selectedButton = event.currentTarget;
-            selectedButton.classList.toggle('selected');
-            setSelectedProgenies();
-            getSelectedProgenies();
-        });
+        button.addEventListener('click', onSelectProgenyButtonClicked);
     });
+}
+function onSelectProgenyButtonClicked(event) {
+    event.preventDefault();
+    let selectedButton = event.currentTarget;
+    selectedButton.classList.toggle('selected');
+    setSelectedProgenies();
+    getSelectedProgenies();
 }
 function setSelectedProgenies() {
     let selectedProgenyButtons = document.querySelectorAll('.select-progeny-button.selected');
@@ -171,14 +173,15 @@ function setSelectedProgenies() {
 function setSetDefaultProgenyEventListeners() {
     let setDefaultProgenyButtons = document.querySelectorAll('.set-default-progeny-button');
     setDefaultProgenyButtons.forEach(function (button) {
-        button.addEventListener('click', async function (event) {
-            let selectedButton = event.currentTarget;
-            let selectedProgenyId = selectedButton.getAttribute('data-default-progeny-id');
-            if (selectedProgenyId !== null) {
-                await setDefaultProgeny(parseInt(selectedProgenyId));
-            }
-        });
+        button.addEventListener('click', onSetDefaultProgenyButtonClicked);
     });
+}
+async function onSetDefaultProgenyButtonClicked(event) {
+    let selectedButton = event.currentTarget;
+    let selectedProgenyId = selectedButton.getAttribute('data-default-progeny-id');
+    if (selectedProgenyId !== null) {
+        await setDefaultProgeny(parseInt(selectedProgenyId));
+    }
 }
 async function setDefaultProgeny(progenyId) {
     let request = new SetProgenyRequest();

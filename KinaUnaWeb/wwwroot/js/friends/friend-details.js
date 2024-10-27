@@ -1,3 +1,4 @@
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
@@ -9,11 +10,21 @@ export function addFriendItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-friend-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displayFriendItem(itemId);
-            });
+            element.addEventListener('click', onFriendItemDivClicked);
         });
     }
+}
+async function onFriendItemDivClicked(event) {
+    const friendElement = event.currentTarget;
+    if (friendElement !== null) {
+        const friendId = friendElement.dataset.friendId;
+        if (friendId) {
+            await displayFriendItem(friendId);
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Enable other scripts to call the DisplayFriendItem function.
@@ -59,6 +70,7 @@ async function displayFriendItem(friendId) {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
             }
         }
         else {

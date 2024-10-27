@@ -260,7 +260,7 @@ namespace KinaUnaWeb.Controllers
 
             if (model.CurrentUser == null)
             {
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
@@ -298,7 +298,8 @@ namespace KinaUnaWeb.Controllers
 
             model.SetAccessLevelList();
             model.SetProgenyList();
-            return View(model);
+
+            return PartialView("_AddLocationPartial", model);
         }
 
         /// <summary>
@@ -315,15 +316,22 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             Location locationItem = model.CreateLocation();
 
-            _ = await locationsHttpClient.AddLocation(locationItem);
-            
-            return RedirectToAction("Index", "Locations");
+            model.LocationItem = await locationsHttpClient.AddLocation(locationItem);
+            if (model.LocationItem.Date.HasValue)
+            {
+                model.LocationItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            if (model.LocationItem.DateAdded.HasValue)
+            {
+                model.LocationItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            return PartialView("_LocationAddedPartial", model);
         }
 
         /// <summary>
@@ -342,7 +350,7 @@ namespace KinaUnaWeb.Controllers
 
             if (model.CurrentUser == null)
             {
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             List<string> tagsList = [];
@@ -379,7 +387,7 @@ namespace KinaUnaWeb.Controllers
             model.SetTagList(tagsList);
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_EditLocationPartial", model);
         }
 
         /// <summary>
@@ -396,15 +404,22 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             Location location = model.CreateLocation();
 
-            _ = await locationsHttpClient.UpdateLocation(location);
+            model.LocationItem = await locationsHttpClient.UpdateLocation(location);
+            if (model.LocationItem.Date.HasValue)
+            {
+                model.LocationItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            } 
+            if (model.LocationItem.DateAdded.HasValue)
+            {
+                model.LocationItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
 
-            return RedirectToAction("Index", "Locations");
+            return PartialView("_LocationUpdatedPartial", model);
         }
 
         /// <summary>
@@ -424,8 +439,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
             return View(model);
         }
@@ -445,8 +459,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             _ = await locationsHttpClient.DeleteLocation(location.LocationId);

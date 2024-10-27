@@ -1,3 +1,4 @@
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
@@ -9,18 +10,28 @@ export function addVocabularyItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-vocabulary-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await DisplayVocabularyItem(itemId);
-            });
+            element.addEventListener('click', onVocabularyItemDivClicked);
         });
     }
+}
+async function onVocabularyItemDivClicked(event) {
+    const wordElement = event.currentTarget;
+    if (wordElement !== null) {
+        const wordId = wordElement.dataset.vocabularyId;
+        if (wordId) {
+            await displayVocabularyItem(wordId);
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Enable other scripts to call the DisplayVocabularyItem function.
  * @param {string} vocabularyId The id of the vocabulary item to display.
  */
 export async function popupVocabularyItem(vocabularyId) {
-    await DisplayVocabularyItem(vocabularyId);
+    await displayVocabularyItem(vocabularyId);
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -29,7 +40,7 @@ export async function popupVocabularyItem(vocabularyId) {
  * Displays a vocabulary item in a popup.
  * @param {string} vocabularyId The id of the vocabulary item to display.
  */
-async function DisplayVocabularyItem(vocabularyId) {
+async function displayVocabularyItem(vocabularyId) {
     startFullPageSpinner();
     let url = '/Vocabulary/ViewVocabularyItem?vocabularyId=' + vocabularyId + "&partialView=true";
     await fetch(url, {
@@ -59,6 +70,7 @@ async function DisplayVocabularyItem(vocabularyId) {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
             }
         }
         else {

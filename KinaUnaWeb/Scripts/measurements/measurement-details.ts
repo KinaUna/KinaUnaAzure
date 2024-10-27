@@ -1,4 +1,5 @@
-﻿import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
+﻿import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 
 /**
@@ -10,11 +11,23 @@ export function addMeasurementItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-measurement-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displayMeasurementItem(itemId);
-            });
+            element.addEventListener('click', onMeasurmentItemDivClicked);
         });
     }
+}
+
+async function onMeasurmentItemDivClicked(event: MouseEvent): Promise<void> {
+    const measurementElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
+    if (measurementElement !== null) {
+        const measurementId = measurementElement.dataset.measurementId;
+        if (measurementId) {
+            await displayMeasurementItem(measurementId);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -63,6 +76,7 @@ async function displayMeasurementItem(measurementId: string): Promise<void> {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
             }
         } else {
             console.error('Error getting measurement item. Status: ' + response.status + ', Message: ' + response.statusText);

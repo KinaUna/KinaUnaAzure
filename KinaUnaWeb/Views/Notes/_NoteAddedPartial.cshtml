@@ -1,0 +1,63 @@
+﻿@using System.Web
+@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.ItemViewModels.NoteViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = await LocaleManager.GetTranslation("New note added", PageNames.Notes, Model.LanguageId);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-notes item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">note</i></span>
+            </div>
+            <div class="col">
+                <div class="row text-white h5">
+                    <div class="col-auto">@Model.NoteItem.CreatedDate.ToString("dd-MMM-yyyy HH:mm")</div>
+                </div>
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        <div class="space-20"></div>
+                        @Model.NoteItem.Title
+                        <div class="space-10"></div>
+                    </div>
+                </div>
+                <div class="timeline-text row m-0 text-white-75">
+                    <div class="timeline-noteitem-text text-dark bg-white col-12 p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.NoteItem.Content))</div>
+                    @if (!string.IsNullOrEmpty(Model.NoteItem.Category))
+                    {
+                        List<string> categoriesList = Model.NoteItem.Category.Split(',').ToList();
+                        <div class="col-12 text-right">
+                            @foreach (string categoryString in categoriesList)
+                            {
+                                <span class="btn category-item tag-item-sm">@categoryString</span>
+                            }
+                        </div>
+                    }
+                </div>
+
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="col-12">
+                    <a data-edit-item-type="note" data-edit-item-item-id="@Model.NoteItem.NoteId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Notes" asp-action="DeleteNote" asp-route-itemId="@Model.NoteItem.NoteId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>

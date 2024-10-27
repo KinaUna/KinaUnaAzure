@@ -171,16 +171,7 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             UploadVideoViewModel model = new(baseModel);
-
-            if (!model.IsCurrentUserProgenyAdmin)
-            {
-                return RedirectToRoute(new
-                {
-                    controller = "Videos",
-                    action = "Index"
-                });
-            }
-
+            
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
                 model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
@@ -208,7 +199,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_AddVideoPartial", model);
         }
 
         /// <summary>
@@ -225,20 +216,16 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.IsCurrentUserProgenyAdmin)
             {
-                return RedirectToRoute(new
-                {
-                    controller = "Videos",
-                    action = "Index"
-                });
+                return PartialView("_AccessDeniedPartial");
             }
 
             Video videoToAdd = model.CreateVideo(true);
 
-            _ = await mediaHttpClient.AddVideo(videoToAdd);
+            model.Video = await mediaHttpClient.AddVideo(videoToAdd);
             
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView(model);
         }
 
         /// <summary>
@@ -256,14 +243,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.IsCurrentUserProgenyAdmin)
             {
-                return RedirectToRoute(new
-                {
-                    controller = "Videos",
-                    action = "Video",
-                    id = model.Video.VideoId,
-                    childId = model.Video.ProgenyId,
-                    sortBy = model.SortBy
-                });
+                return PartialView("_AccessDeniedPartial");
             }
 
             Video videoToUpdate = await mediaHttpClient.GetVideo(model.Video.VideoId, model.CurrentUser.Timezone);

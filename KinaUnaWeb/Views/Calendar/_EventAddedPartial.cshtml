@@ -1,0 +1,149 @@
+﻿@using System.Text.RegularExpressions
+@using KinaUnaWeb.Services
+@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Event added", PageNames.Calendar, Model.LanguageId);
+    Model.CalendarItem.StartTime ??= DateTime.MinValue;
+    Model.CalendarItem.EndTime ??= DateTime.MinValue;
+    string startDateString = Model.CalendarItem.StartTime.Value.ToString("dd MMM yyyy");
+    if (Model.CalendarItem.AllDay && Model.CalendarItem.StartTime.Value.Date != Model.CalendarItem.EndTime.Value.Date)
+    {
+        if (Model.CalendarItem.StartTime.Value.Year == Model.CalendarItem.EndTime.Value.Year)
+        {
+            startDateString = Model.CalendarItem.StartTime.Value.ToString("dd MMM");
+            if (Model.CalendarItem.StartTime.Value.Month == Model.CalendarItem.EndTime.Value.Month)
+            {
+                startDateString = Model.CalendarItem.StartTime.Value.ToString("dd");
+            }
+        }
+    }
+    string startTimeString = Model.CalendarItem.StartTime.Value.ToString("HH:mm");
+    string endDateString = Model.CalendarItem.EndTime.Value.ToString("dd MMM yyyy");
+    string endTimeString = Model.CalendarItem.EndTime.Value.ToString("HH:mm");
+
+    if (Model.CalendarItem.StartTime.Value.Date == Model.CalendarItem.EndTime.Value.Date)
+    {
+        endDateString = string.Empty;
+    }
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-calendar item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">event_note</i></span>
+            </div>
+            <div class="col mr-5">
+                <div class="row text-white h5">
+
+                    @if (Model.CalendarItem.AllDay)
+                    {
+                        if (string.IsNullOrEmpty(endDateString))
+                        {
+                            <div class="col-auto font-weight-bold">@startDateString</div>
+                        }
+                        else
+                        {
+                            <div class="col-auto"><span class="font-weight-bold">@startDateString</span> - <span class="font-weight-bold">@endDateString</span></div>
+                        }
+                    }
+                    else
+                    {
+                        if (Model.CalendarItem.StartTime.Value.Date == Model.CalendarItem.EndTime.Value.Date)
+                        {
+                            <div class="col-auto font-weight-bold">@startDateString</div>
+                            <div class="col-auto font-weight-normal">@startTimeString - @endTimeString</div>
+                        }
+                        else
+                        {
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col font-weight-bold">@startDateString</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col font-weight-normal text-right">@startTimeString</div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col font-weight-bold ">@endDateString</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col font-weight-normal ">@endTimeString</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        <div class="space-20"></div>
+                        @Model.CalendarItem.Title
+                    </div>
+                </div>
+                <div class="timeline-text row text-white-75">
+                    @if (!string.IsNullOrEmpty(Model.CalendarItem.Location))
+                    {
+                        <div class="col-12 calendar-event-popup-label">
+                            <div class="space-20"></div>
+                            <i class="material-icons" style="font-size: 18px;">location_on</i> @Model.CalendarItem.Location
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.CalendarItem.Notes))
+                    {
+                        <div class="col-12">
+                            <div class="space-20"></div>
+                            <div class="calendar-event-popup-label">
+                                <i class="material-icons" style="font-size: 18px;">note</i> @await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId)
+                            </div>
+                            <div class="space-10"></div>
+                            @{
+                                string notesWithBrTags = Regex.Replace(Model.CalendarItem.Notes, @"\r\n?|\n", "<br />");
+                            }
+                            <div>@Html.Raw(notesWithBrTags)</div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.CalendarItem.Context))
+                    {
+                        List<string> contextsList = Model.CalendarItem.Context.Split(',').ToList();
+                        <div class="col-12 mt-2 text-right">
+                            @foreach (string contextString in contextsList)
+                            {
+                                <span class="btn context-item tag-item-sm">@contextString</span>
+                            }
+                        </div>
+                    }
+                    @if (Model.CalendarItem.StartTime.Value > TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(Model.CurrentUser.Timezone)))
+                    {
+                        await Html.RenderPartialAsync("_CalendarRemindersPartial", Model);
+                    }
+                </div>
+            </div>
+
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    <a data-edit-item-type="calendar" data-edit-item-item-id="@Model.CalendarItem.EventId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Calendar" asp-action="DeleteEvent" asp-route-itemId="@Model.CalendarItem.EventId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

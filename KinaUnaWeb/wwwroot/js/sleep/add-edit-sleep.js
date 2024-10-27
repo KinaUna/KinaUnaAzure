@@ -68,15 +68,15 @@ async function setupDateTimePickers() {
     validateDatePickerStartEnd();
     const startZebraPicker = document.querySelector(startDateTimePickerId);
     if (startZebraPicker !== null) {
-        startZebraPicker.addEventListener('change', () => { validateDatePickerStartEnd(); });
-        startZebraPicker.addEventListener('blur', () => { validateDatePickerStartEnd(); });
-        startZebraPicker.addEventListener('focus', () => { validateDatePickerStartEnd(); });
+        startZebraPicker.addEventListener('change', validateDatePickerStartEnd);
+        startZebraPicker.addEventListener('blur', validateDatePickerStartEnd);
+        startZebraPicker.addEventListener('focus', validateDatePickerStartEnd);
     }
     const endZebraPicker = document.querySelector(endDateTimePickerId);
     if (endZebraPicker !== null) {
-        endZebraPicker.addEventListener('change', () => { validateDatePickerStartEnd(); });
-        endZebraPicker.addEventListener('blur', () => { validateDatePickerStartEnd(); });
-        endZebraPicker.addEventListener('focus', () => { validateDatePickerStartEnd(); });
+        endZebraPicker.addEventListener('change', validateDatePickerStartEnd);
+        endZebraPicker.addEventListener('blur', validateDatePickerStartEnd);
+        endZebraPicker.addEventListener('focus', validateDatePickerStartEnd);
     }
     return new Promise(function (resolve, reject) {
         resolve();
@@ -88,18 +88,23 @@ async function setupDateTimePickers() {
 function setupProgenySelectList() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-        });
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
     }
 }
-document.addEventListener('DOMContentLoaded', async function () {
+function onProgenySelectListChanged() {
+    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = parseInt(progenyIdSelect.value);
+    }
+}
+export async function initializeAddEditSleep() {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
     await setupDateTimePickers();
     setupProgenySelectList();
+    $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve) {
         resolve();
     });
-});
+}
 //# sourceMappingURL=add-edit-sleep.js.map
