@@ -222,7 +222,8 @@ namespace KinaUnaWeb.Controllers
             Note noteItem = model.CreateNote();
                 
             model.NoteItem = await notesHttpClient.AddNote(noteItem);
-            
+            model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
             return PartialView("_NoteAddedPartial", model);
         }
 
@@ -272,7 +273,8 @@ namespace KinaUnaWeb.Controllers
             Note editedNote = model.CreateNote();
 
             model.NoteItem = await notesHttpClient.UpdateNote(editedNote);
-            
+            model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
             return PartialView("_NoteUpdatedPartial", model);
         }
 

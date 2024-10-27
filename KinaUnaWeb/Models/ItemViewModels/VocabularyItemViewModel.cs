@@ -69,7 +69,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             VocabularyItem.AccessLevel = vocabularyItem.AccessLevel;
             VocabularyItem.Author = vocabularyItem.Author;
             VocabularyItem.Date = vocabularyItem.Date ?? TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-
+            VocabularyItem.ProgenyId = vocabularyItem.ProgenyId;
             VocabularyItem.DateAdded = vocabularyItem.DateAdded;
             VocabularyItem.Description = vocabularyItem.Description;
             VocabularyItem.Language = vocabularyItem.Language;

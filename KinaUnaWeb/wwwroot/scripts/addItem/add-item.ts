@@ -6,6 +6,7 @@ import { initializeAddEditPicture } from "../pictures/add-edit-picture.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
 import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
 import { initializeAddEditVideo } from "../videos/add-edit-video.js";
+import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
 
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
@@ -95,6 +96,10 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
 
         if (addItemType === 'video') {
             await initializeAddEditVideo();
+        }
+
+        if (addItemType === 'vocabulary') {
+            await initializeAddEditVocabulary();
         }
        
         hideBodyScrollbars();
@@ -187,6 +192,10 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
 
         if (editItemType === 'sleep') {
             await initializeAddEditSleep();
+        }
+
+        if (editItemType === 'vocabulary') {
+            await initializeAddEditVocabulary();
         }
 
         hideBodyScrollbars();

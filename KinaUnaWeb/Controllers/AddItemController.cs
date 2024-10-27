@@ -127,6 +127,12 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddVideo", "Videos");
             }
 
+            if (itemType == "vocabulary")
+            {
+                return RedirectToAction("AddVocabulary", "Vocabulary");
+            }
+
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
@@ -156,6 +162,11 @@ namespace KinaUnaWeb.Controllers
             if (itemType == "sleep")
             {
                 return RedirectToAction("EditSleep", "Sleep", new { itemId });
+            }
+
+            if (itemType == "vocabulary")
+            {
+                return RedirectToAction("EditVocabulary", "Vocabulary", new { itemId });
             }
 
             return PartialView("../Shared/_NotFoundPartial");

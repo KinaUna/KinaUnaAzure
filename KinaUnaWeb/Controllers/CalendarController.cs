@@ -168,7 +168,11 @@ namespace KinaUnaWeb.Controllers
             CalendarItem eventItem = model.CreateCalendarItem();
             
             model.CalendarItem = await calendarsHttpClient.AddCalendarItem(eventItem);
+            if (!model.CalendarItem.StartTime.HasValue || !model.CalendarItem.EndTime.HasValue) return PartialView("_EventAddedPartial", model);
             
+            model.CalendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.CalendarItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
             return PartialView("_EventAddedPartial", model);
         }
 
@@ -227,7 +231,11 @@ namespace KinaUnaWeb.Controllers
             CalendarItem editedEvent = model.CreateCalendarItem();
                 
             model.CalendarItem = await calendarsHttpClient.UpdateCalendarItem(editedEvent);
-            
+            if (!model.CalendarItem.StartTime.HasValue || !model.CalendarItem.EndTime.HasValue) return PartialView("_EventUpdatedPartial", model);
+
+            model.CalendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.CalendarItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
             return PartialView("_EventUpdatedPartial", model);
         }
 

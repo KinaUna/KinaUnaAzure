@@ -1,3 +1,4 @@
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 
@@ -10,11 +11,23 @@ export function addVocabularyItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-vocabulary-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await DisplayVocabularyItem(itemId);
-            });
+            element.addEventListener('click', onVocabularyItemDivClicked);
         });
     }
+}
+
+async function onVocabularyItemDivClicked(event: MouseEvent): Promise<void> {
+    const wordElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
+    if (wordElement !== null) {
+        const wordId = wordElement.dataset.vocabularyId;
+        if (wordId) {
+            await displayVocabularyItem(wordId);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -22,7 +35,7 @@ export function addVocabularyItemListeners(itemId: string): void {
  * @param {string} vocabularyId The id of the vocabulary item to display.
  */
 export async function popupVocabularyItem(vocabularyId: string): Promise<void> {
-    await DisplayVocabularyItem(vocabularyId);
+    await displayVocabularyItem(vocabularyId);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -33,7 +46,7 @@ export async function popupVocabularyItem(vocabularyId: string): Promise<void> {
  * Displays a vocabulary item in a popup.
  * @param {string} vocabularyId The id of the vocabulary item to display.
  */
-async function DisplayVocabularyItem(vocabularyId: string): Promise<void> {
+async function displayVocabularyItem(vocabularyId: string): Promise<void> {
     startFullPageSpinner();
     let url = '/Vocabulary/ViewVocabularyItem?vocabularyId=' + vocabularyId + "&partialView=true";
     await fetch(url, {
@@ -63,6 +76,7 @@ async function DisplayVocabularyItem(vocabularyId: string): Promise<void> {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
             }
         } else {
             console.error('Error getting vocabulary item. Status: ' + response.status + ', Message: ' + response.statusText);

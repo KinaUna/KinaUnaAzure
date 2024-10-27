@@ -125,7 +125,9 @@ namespace KinaUnaWeb.Controllers
             Sleep sleepToAdd = model.CreateSleep();
 
             model.SleepItem = await sleepHttpClient.AddSleep(sleepToAdd);
-            
+            model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
             return PartialView("_SleepAddedPartial", model);
         }
 
@@ -181,6 +183,8 @@ namespace KinaUnaWeb.Controllers
             }
                 
             model.SleepItem = await sleepHttpClient.UpdateSleep(model.SleepItem);
+            model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
             return PartialView("_SleepUpdatedPartial", model);
         }
