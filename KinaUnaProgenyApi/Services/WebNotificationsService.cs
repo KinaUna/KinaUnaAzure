@@ -526,7 +526,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     To = uaUserInfo.UserId,
                     From = currentUser.FullName(),
-                    Message = "Name: " + vaccinationItem.VaccinationName + "\r\nContext: " + vaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy"), // Todo: Translation of Name and Context
+                    Message = "Name: " + vaccinationItem.VaccinationName + "\r\nDate: " + vaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy"), // Todo: Translation of Name and Context
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,

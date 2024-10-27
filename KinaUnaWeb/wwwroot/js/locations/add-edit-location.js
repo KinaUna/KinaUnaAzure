@@ -45,6 +45,14 @@ async function onProgenySelectListChanged() {
         resolve();
     });
 }
+function setupHereMaps() {
+    const fullScreenOverlay = document.getElementById('full-screen-overlay-div');
+    if (fullScreenOverlay !== null) {
+        if (fullScreenOverlay.querySelector('script') !== null) {
+            eval(fullScreenOverlay.querySelector('script').innerHTML);
+        }
+    }
+}
 export async function initializeAddEditLocation() {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
@@ -53,6 +61,7 @@ export async function initializeAddEditLocation() {
     //await setContextAutoSuggestList(currentProgenyId);
     setupProgenySelectList();
     $(".selectpicker").selectpicker('refresh');
+    setupHereMaps();
     return new Promise(function (resolve, reject) {
         resolve();
     });

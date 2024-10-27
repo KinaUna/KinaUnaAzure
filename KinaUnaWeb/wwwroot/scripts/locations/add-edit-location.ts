@@ -53,6 +53,15 @@ async function onProgenySelectListChanged(): Promise<void> {
     });
 }
 
+function setupHereMaps() {
+    const fullScreenOverlay = document.getElementById('full-screen-overlay-div');
+    if (fullScreenOverlay !== null) {
+        if (fullScreenOverlay.querySelector('script') !== null) {
+            eval((fullScreenOverlay.querySelector('script') as HTMLElement).innerHTML);
+        }
+    }
+}
+
 export async function initializeAddEditLocation(): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
@@ -64,6 +73,8 @@ export async function initializeAddEditLocation(): Promise<void> {
 
     setupProgenySelectList();
     ($(".selectpicker") as any).selectpicker('refresh');
+
+    setupHereMaps();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

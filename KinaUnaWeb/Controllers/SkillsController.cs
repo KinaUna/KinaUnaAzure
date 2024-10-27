@@ -110,7 +110,7 @@ namespace KinaUnaWeb.Controllers
 
             if (model.CurrentUser == null)
             {
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
 
@@ -118,7 +118,7 @@ namespace KinaUnaWeb.Controllers
             model.SetProgenyList();
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_AddSkillPartial", model);
         }
 
         /// <summary>
@@ -135,15 +135,19 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             Skill skillItem = model.CreateSkill();
 
-            _ = await skillsHttpClient.AddSkill(skillItem);
-            
-            return RedirectToAction("Index", "Skills");
+            model.SkillItem = await skillsHttpClient.AddSkill(skillItem);
+            model.SkillItem.SkillAddedDate = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillAddedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            if (model.SkillItem.SkillFirstObservation.HasValue)
+            {
+                model.SkillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillFirstObservation.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            return PartialView("_SkillAddedPartial", model);
         }
 
         /// <summary>
@@ -160,8 +164,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             skill.SkillFirstObservation ??= DateTime.UtcNow;
@@ -170,7 +173,7 @@ namespace KinaUnaWeb.Controllers
             
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_EditSkillPartial", model);
         }
 
         /// <summary>
@@ -187,15 +190,19 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             Skill editedSkill = model.CreateSkill();
 
-            _ = await skillsHttpClient.UpdateSkill(editedSkill);
+            model.SkillItem = await skillsHttpClient.UpdateSkill(editedSkill);
+            model.SkillItem.SkillAddedDate = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillAddedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            if (model.SkillItem.SkillFirstObservation.HasValue)
+            {
+                model.SkillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillFirstObservation.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
 
-            return RedirectToAction("Index", "Skills");
+            return PartialView("_SkillUpdatedPartial", model);
         }
 
         /// <summary>
@@ -214,9 +221,9 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
+
             return View(model);
         }
 
@@ -235,8 +242,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             _ = await skillsHttpClient.DeleteSkill(skill.SkillId);

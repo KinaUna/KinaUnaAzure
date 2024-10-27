@@ -5,7 +5,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.ContactItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Contact added", PageNames.Contacts, Model.LanguageId);
     string websiteLink = Model.ContactItem.Website;
     if (!string.IsNullOrEmpty(Model.ContactItem.Website) && !Model.ContactItem.Website.StartsWith("https://"))
     {
@@ -18,7 +18,7 @@
     <div class="timeline-card-body bg-contact item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.ContactItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>

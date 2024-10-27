@@ -8,7 +8,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
     public class SkillViewModel: BaseItemsViewModel
     {
         public List<SelectListItem> ProgenyList { get; set; }
-        public Skill SkillItem { get; init; } = new Skill();
+        public Skill SkillItem { get; set; } = new Skill();
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }

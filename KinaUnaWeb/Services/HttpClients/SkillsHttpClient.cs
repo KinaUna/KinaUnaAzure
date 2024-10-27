@@ -81,7 +81,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string updateSkillsApiPath = "/api/Skills/" + skill.SkillId;
             HttpResponseMessage skillResponse = await _httpClient.PutAsync(updateSkillsApiPath, new StringContent(JsonConvert.SerializeObject(skill), System.Text.Encoding.UTF8, "application/json"));
-            if (skillResponse.IsSuccessStatusCode) return new Skill();
+            if (!skillResponse.IsSuccessStatusCode) return new Skill();
 
             string skillAsString = await skillResponse.Content.ReadAsStringAsync();
             skill = JsonConvert.DeserializeObject<Skill>(skillAsString);

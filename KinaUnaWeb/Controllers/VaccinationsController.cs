@@ -1,4 +1,5 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using System;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -74,7 +75,7 @@ namespace KinaUnaWeb.Controllers
             
             if (model.CurrentUser == null)
             {
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
@@ -82,7 +83,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_AddVaccinationPartial", model);
         }
 
         /// <summary>
@@ -99,15 +100,15 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
            
             model.VaccinationItem.Author = model.CurrentUser.UserId;
 
-            _ = await vaccinationsHttpClient.AddVaccination(model.VaccinationItem);
+            model.VaccinationItem = await vaccinationsHttpClient.AddVaccination(model.VaccinationItem);
+            model.VaccinationItem.VaccinationDate = TimeZoneInfo.ConvertTimeFromUtc(model.VaccinationItem.VaccinationDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
-            return RedirectToAction("Index", "Vaccinations");
+            return PartialView("_VaccinationAddedPartial", model);
         }
 
         /// <summary>
@@ -124,15 +125,14 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
             
             model.SetPropertiesFromVaccinationItem(vaccination);
 
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_EditVaccinationPartial", model);
         }
 
         /// <summary>
@@ -149,13 +149,13 @@ namespace KinaUnaWeb.Controllers
         
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
-            await vaccinationsHttpClient.UpdateVaccination(model.VaccinationItem);
+            model.VaccinationItem = await vaccinationsHttpClient.UpdateVaccination(model.VaccinationItem);
+            model.VaccinationItem.VaccinationDate = TimeZoneInfo.ConvertTimeFromUtc(model.VaccinationItem.VaccinationDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
-            return RedirectToAction("Index", "Vaccinations");
+            return PartialView("_VaccinationUpdatedPartial", model);
         }
 
         /// <summary>
@@ -172,8 +172,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.VaccinationItem = vaccination;
@@ -196,8 +195,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             _ = await vaccinationsHttpClient.DeleteVaccination(vaccination.VaccinationId);

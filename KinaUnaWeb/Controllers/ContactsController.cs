@@ -1,4 +1,5 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using System;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -82,8 +83,12 @@ namespace KinaUnaWeb.Controllers
             
             if (contact.AccessLevel < model.CurrentAccessLevel)
             {
-                // Todo: Show access denied instead of redirecting.
-                RedirectToAction("Index");
+                if (partialView)
+                {
+                    return PartialView("_AccessDeniedPartial");
+                }
+
+                return View("_AccessDeniedPartial");
             }
 
             if (contact.AddressIdNumber.HasValue)
@@ -274,7 +279,7 @@ namespace KinaUnaWeb.Controllers
 
             if (model.CurrentUser == null)
             {
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
@@ -282,7 +287,7 @@ namespace KinaUnaWeb.Controllers
             
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_AddContactPartial" , model);
         }
 
         /// <summary>
@@ -300,8 +305,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             Contact contactItem = model.CreateContact();
@@ -318,9 +322,18 @@ namespace KinaUnaWeb.Controllers
                 contactItem.PictureLink = Constants.ProfilePictureUrl;
             }
             
-            _ = await contactsHttpClient.AddContact(contactItem);
-            
-            return RedirectToAction("Index", "Contacts");
+            model.ContactItem = await contactsHttpClient.AddContact(contactItem);
+            if (model.ContactItem.DateAdded.HasValue)
+            {
+                model.ContactItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.ContactItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            if (model.ContactItem.AddressIdNumber.HasValue)
+            {
+                model.ContactItem.Address = await locationsHttpClient.GetAddress(model.ContactItem.AddressIdNumber.Value);
+            }
+
+            return PartialView("_ContactAddedPartial", model);
         }
 
         /// <summary>
@@ -337,8 +350,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             if (contact.AddressIdNumber != null)
@@ -352,7 +364,7 @@ namespace KinaUnaWeb.Controllers
             
             model.SetAccessLevelList();
 
-            return View(model);
+            return PartialView("_EditContactPartial", model);
         }
 
         /// <summary>
@@ -370,8 +382,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             Contact editedContact = model.CreateContact();
@@ -389,9 +400,18 @@ namespace KinaUnaWeb.Controllers
                 editedContact.PictureLink = originalContact.PictureLink;
             }
 
-            _ = await contactsHttpClient.UpdateContact(editedContact);
+            model.ContactItem = await contactsHttpClient.UpdateContact(editedContact);
+            if (model.ContactItem.DateAdded.HasValue)
+            {
+                model.ContactItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.ContactItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
 
-            return RedirectToAction("Index", "Contacts");
+            if (model.ContactItem.AddressIdNumber.HasValue)
+            {
+                model.ContactItem.Address = await locationsHttpClient.GetAddress(model.ContactItem.AddressIdNumber.Value);
+            }
+
+            return PartialView("_ContactUpdatedPartial", model);
         }
 
         /// <summary>
@@ -408,8 +428,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             model.ContactItem = contact;
@@ -433,8 +452,7 @@ namespace KinaUnaWeb.Controllers
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             _ = await contactsHttpClient.DeleteContact(contact.ContactId);
