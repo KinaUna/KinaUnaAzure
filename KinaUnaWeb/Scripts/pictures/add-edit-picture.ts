@@ -200,6 +200,9 @@ async function onSubmitAddPicturesForm(event: SubmitEvent): Promise<void> {
         itemNumber++;
     }
 
+    fileList = [];
+    notSupportedFiles = [];
+
     const uploadCompletedDiv = document.getElementById('upload-completed-div') as HTMLDivElement;
     if (uploadCompletedDiv !== null) {
         uploadCompletedDiv.classList.remove('d-none');
@@ -637,6 +640,9 @@ async function displayNotSupportedFile(file: File): Promise<void> {
 export async function initializeAddEditPicture(): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
+    fileList = [];
+    notSupportedFiles = [];
+    imagesLoaded = 0;
 
     await setupDateTimePicker();
     

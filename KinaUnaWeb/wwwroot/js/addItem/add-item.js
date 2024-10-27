@@ -286,6 +286,10 @@ function setSaveItemFormEventListener() {
 async function onSaveItemFormSubmit(event) {
     event.preventDefault();
     startFullPageSpinner();
+    let itemDetailsPopupDiv = document.querySelector('#item-details-div');
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.classList.add('d-none');
+    }
     let addItemForm = document.querySelector('#save-item-form');
     console.log(addItemForm);
     if (!addItemForm) {
@@ -295,9 +299,7 @@ async function onSaveItemFormSubmit(event) {
     }
     let formData = new FormData(addItemForm);
     let formAction = addItemForm.getAttribute('action');
-    let itemDetailsPopupDiv = document.querySelector('#item-details-div');
     if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.classList.add('d-none');
         itemDetailsPopupDiv.innerHTML = '';
     }
     if (formAction) {

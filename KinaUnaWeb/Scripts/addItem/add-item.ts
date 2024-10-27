@@ -332,7 +332,10 @@ function setSaveItemFormEventListener(): void {
 async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
     startFullPageSpinner();
-    
+    let itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.classList.add('d-none');
+    }
     let addItemForm = document.querySelector<HTMLFormElement>('#save-item-form');
     console.log(addItemForm);
     if (!addItemForm) {
@@ -344,9 +347,7 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
     let formData = new FormData(addItemForm);
     let formAction = addItemForm.getAttribute('action');
 
-    let itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
     if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.classList.add('d-none');
         itemDetailsPopupDiv.innerHTML = '';
     }
 

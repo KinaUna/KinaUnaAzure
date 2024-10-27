@@ -335,9 +335,9 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
     let itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
     if (itemDetailsPopupDiv) {
         itemDetailsPopupDiv.classList.add('d-none');
-        itemDetailsPopupDiv.innerHTML = '';
     }
     let addItemForm = document.querySelector<HTMLFormElement>('#save-item-form');
+    console.log(addItemForm);
     if (!addItemForm) {
         return new Promise<void>(function (resolve, reject) {
             resolve();
@@ -346,12 +346,18 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
 
     let formData = new FormData(addItemForm);
     let formAction = addItemForm.getAttribute('action');
+
+    if (itemDetailsPopupDiv) {
+        itemDetailsPopupDiv.innerHTML = '';
+    }
+
     if (formAction) {
         await fetch(formAction, {
             method: 'POST',
             body: formData
         }).then(async function (response) {
             if (response.ok) {
+                
                 if (itemDetailsPopupDiv) {
                     let modalContent = await response.text();
                     const fullScreenOverlay = document.createElement('div');

@@ -173,6 +173,8 @@ async function onSubmitAddPicturesForm(event) {
         await uploadPicture(formData, fileItem, itemNumber);
         itemNumber++;
     }
+    fileList = [];
+    notSupportedFiles = [];
     const uploadCompletedDiv = document.getElementById('upload-completed-div');
     if (uploadCompletedDiv !== null) {
         uploadCompletedDiv.classList.remove('d-none');
@@ -552,6 +554,9 @@ async function displayNotSupportedFile(file) {
 export async function initializeAddEditPicture() {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
+    fileList = [];
+    notSupportedFiles = [];
+    imagesLoaded = 0;
     await setupDateTimePicker();
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId]);

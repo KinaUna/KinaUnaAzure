@@ -14,7 +14,7 @@
                 @await LocaleManager.GetTranslation("Are you sure you want to delete this photo?", PageNames.Pictures, Model.LanguageId)
             </div>
             <div class="col-auto">
-                <img src="@Model.Picture.PictureLink600" class="img-responsive" style="max-width: 600px;" />
+                <img src="@Model.Picture.PictureLink600" class="img-responsive" style="max-width: 600px; width: 90%;" />
                 @if (Model.Picture.PictureTime.HasValue)
                 {
                     <div>@await LocaleManager.GetTranslation("Date and time:", PageNames.Pictures, Model.LanguageId) @Model.Picture.PictureTime.Value.ToString("dd-MMM-yyyy HH:mm")"</div>
