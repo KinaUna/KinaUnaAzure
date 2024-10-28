@@ -5,7 +5,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.SleepItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Sleep", PageNames.Sleep, Model.LanguageId);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Sleep copied", PageNames.Sleep, Model.LanguageId);
     string startDateString = Model.SleepItem.SleepStart.ToString("dd MMM yyyy");
     string startTimeString = Model.SleepItem.SleepStart.ToString("HH:mm");
     string endDateString = Model.SleepItem.SleepEnd.ToString("dd MMM yyyy");
@@ -69,12 +69,6 @@
                     </div>
                 </div>
                 <div class="timeline-text row m-0 text-white-75">
-                    @if (Model.CurrentUser.CanUserAddItems)
-                    {
-                        <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.SleepItem.SleepId" data-copy-item-type="sleep">
-                            <i class="material-icons kinauna-icon-medium">content_copy</i>
-                        </button>
-                    }
                     @await LocaleManager.GetTranslation("Duration:", PageNames.Sleep, Model.LanguageId) @Model.SleepItem.SleepDuration
                 </div>
 

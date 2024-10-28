@@ -338,7 +338,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
             NoteViewModel model = new(baseModel);
 
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (model.CurrentAccessLevel > note.AccessLevel)
             {
                 return PartialView("_AccessDeniedPartial");
             }

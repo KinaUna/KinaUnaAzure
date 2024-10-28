@@ -23,10 +23,10 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("CopyEvent", "Calendar", new { itemId });
             }
 
-            //if(itemType == "sleep")
-            //{
-            //    return RedirectToAction("CopySleep", "Sleep", new { itemId });
-            //}
+            if (itemType == "sleep")
+            {
+                return RedirectToAction("CopySleep", "Sleep", new { itemId });
+            }
 
             //if (itemType == "picture")
             //{
