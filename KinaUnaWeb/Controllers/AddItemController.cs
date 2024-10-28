@@ -15,8 +15,8 @@ using KinaUnaWeb.Models.HomeViewModels;
 namespace KinaUnaWeb.Controllers
 {
     /// <summary>
-    /// Controller for the AddItem view.
-    /// This used to handle adding new items to the database, but should now only be used to save attached/embedded files in Rich Text editors.
+    /// Controller for adding items.
+    /// This used to handle adding new items to the database.
     /// </summary>
     /// <param name="imageStore"></param>
     [Authorize]
