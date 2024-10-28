@@ -1,16 +1,5 @@
-﻿using KinaUnaWeb.Models;
-using KinaUnaWeb.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using KinaUna.Data.Models;
-using KinaUna.Data.Extensions;
-using KinaUnaWeb.Models.HomeViewModels;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -18,17 +7,16 @@ namespace KinaUnaWeb.Controllers
     /// Controller for the copying items.
     /// This used to handle copying items from one progeny to another or to the same progeny with different properties.
     /// </summary>
-    /// <param name="imageStore"></param>
     [Authorize]
-    public class CopyItemController(ImageStore imageStore) : Controller
+    public class CopyItemController : Controller
     {
         [HttpGet]
         public IActionResult GetCopyItemModalContent(string itemType, int itemId)
         {
-            //if (itemType == "note")
-            //{
-            //    return RedirectToAction("CopyNote", "Notes", new { itemId });
-            //}
+            if (itemType == "note")
+            {
+                return RedirectToAction("CopyNote", "Notes", new { itemId });
+            }
 
             if (itemType == "calendar")
             {

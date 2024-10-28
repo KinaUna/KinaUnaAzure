@@ -1,17 +1,17 @@
 ﻿@using System.Web
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
-@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUnaWeb.Models.ItemViewModels.NoteViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.NoteItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Notes", PageNames.Notes, Model.LanguageId);
+    string title = await LocaleManager.GetTranslation("Note copied", PageNames.Notes, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-notes item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.NoteItem.Progeny.PictureLink" class="item-details-title-picture"/>
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -27,17 +27,10 @@
             <div class="col">
                 <div class="row text-white h5">
                     <div class="col-auto">@Model.NoteItem.CreatedDate.ToString("dd-MMM-yyyy HH:mm")</div>
-                    <div class="col-auto ml-auto text-white-50">@Model.NoteItem.Owner</div>
                 </div>
                 <div class="timeline-title row">
                     <div class="col-12 h4">
                         <div class="space-20"></div>
-                        @if (Model.CurrentUser.CanUserAddItems)
-                        {
-                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.NoteItem.NoteId" data-copy-item-type="note">
-                                <i class="material-icons kinauna-icon-medium">content_copy</i>
-                            </button>
-                        }
                         @Model.NoteItem.Title
                         <div class="space-10"></div>
                     </div>
@@ -55,7 +48,7 @@
                         </div>
                     }
                 </div>
-                
+
             </div>
             @if (Model.IsCurrentUserProgenyAdmin)
             {

@@ -92,9 +92,12 @@
                 <div class="timeline-title row">
                     <div class="col-12 h4">
                         <div class="space-20"></div>
-                        <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.CalendarItem.EventId" data-copy-item-type="calendar">
-                            <i class="material-icons kinauna-icon-medium">content_copy</i>
-                        </button>
+                        @if (Model.CurrentUser.CanUserAddItems)
+                        {
+                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.CalendarItem.EventId" data-copy-item-type="calendar">
+                                <i class="material-icons kinauna-icon-medium">content_copy</i>
+                            </button>
+                        }
                         @Model.CalendarItem.Title
                     </div>
                 </div>
