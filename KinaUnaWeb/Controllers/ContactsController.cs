@@ -527,9 +527,12 @@ namespace KinaUnaWeb.Controllers
                 editedContact.PictureLink = originalContact.PictureLink;
             }
 
-            model.ContactItem.ContactId = 0;
-            model.ContactItem.AddressIdNumber = 0;
-            model.ContactItem.Address.AddressId = 0;
+            editedContact.ContactId = 0;
+            editedContact.AddressIdNumber = 0;
+            if (editedContact.Address != null)
+            {
+                editedContact.Address.AddressId = 0;
+            }
 
             model.ContactItem = await contactsHttpClient.AddContact(editedContact);
             if (model.ContactItem.DateAdded.HasValue)

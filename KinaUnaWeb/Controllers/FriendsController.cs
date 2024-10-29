@@ -556,8 +556,10 @@ namespace KinaUnaWeb.Controllers
                 editedFriend.PictureLink = originalFriend.PictureLink;
             }
 
-            model.FriendItem.FriendId = 0;
+            editedFriend.FriendId = 0;
+
             model.FriendItem = await friendsHttpClient.AddFriend(editedFriend);
+            
             model.FriendItem.FriendAddedDate = TimeZoneInfo.ConvertTimeFromUtc(model.FriendItem.FriendAddedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             if (model.FriendItem.FriendSince.HasValue)
             {

@@ -56,7 +56,7 @@
 }
 @if (!string.IsNullOrEmpty(Model.Location))
 {
-    <div style="font-size: 1.25rem;">@await LocaleManager.GetTranslation("Photo location:", PageNames.Home, Model.LanguageId) @Model.Location</div>
+    <div style="font-size: 1.25rem;"><i class="material-icons" style="font-size: 18px;">location_on</i> @Model.Location</div>
     <div class="space-20"></div>
 }
 @if (Model.PicTimeValid)
