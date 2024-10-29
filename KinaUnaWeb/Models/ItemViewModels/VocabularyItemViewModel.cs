@@ -26,6 +26,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SetBaseProperties(baseItemsViewModel);
         }
 
+        /// <summary>
+        /// Set the ProgenyList with the current ProgenyId selected.
+        /// </summary>
         public void SetProgenyList()
         {
             VocabularyItem.ProgenyId = CurrentProgenyId;
@@ -42,6 +45,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
         }
 
+        /// <summary>
+        /// Set the AccessLevelList with the current AccessLevel selected.
+        /// </summary>
         public void SetAccessLevelList()
         {
             AccessLevelList accessLevelList = new();
@@ -64,6 +70,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
         }
 
+        /// <summary>
+        /// Set the VocabularyItem properties from a VocabularyItem object.
+        /// </summary>
+        /// <param name="vocabularyItem">The VocabularyItem to copy properties from.</param>
         public void SetPropertiesFromVocabularyItem(VocabularyItem vocabularyItem)
         {
             VocabularyItem.AccessLevel = vocabularyItem.AccessLevel;

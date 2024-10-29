@@ -38,10 +38,10 @@ namespace KinaUnaWeb.Controllers
             //    return RedirectToAction("CopyVideo", "Videos", new { itemId });
             //}
 
-            //if (itemType == "vocabulary")
-            //{
-            //    return RedirectToAction("CopyVocabulary", "Vocabulary", new { itemId });
-            //}
+            if (itemType == "vocabulary")
+            {
+                return RedirectToAction("CopyVocabulary", "Vocabulary", new { itemId });
+            }
 
             //if (itemType == "friend")
             //{
