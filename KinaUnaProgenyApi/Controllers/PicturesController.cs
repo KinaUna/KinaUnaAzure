@@ -457,7 +457,13 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            model = await picturesService.ProcessPicture(model);
+            // If PictureLink1200 and PictureLink600 are empty, it's a new picture, so process the picture.
+            // If they're not empty, it is a copy of an existing picture, so don't process it.
+            if (string.IsNullOrEmpty(model.PictureLink1200) && string.IsNullOrEmpty(model.PictureLink600))
+            {
+                model = await picturesService.ProcessPicture(model);
+            }
+            
 
             CommentThread commentThread = await commentsService.AddCommentThread();
             model.CommentThreadNumber = commentThread.Id;
@@ -465,8 +471,8 @@ namespace KinaUnaProgenyApi.Controllers
             model.Author = User.GetUserId();
 
             model = await picturesService.AddPicture(model);
-            
-            await commentsService.SetCommentsList(model.CommentThreadNumber);
+
+            model.Comments = await commentsService.SetCommentsList(model.CommentThreadNumber);
 
             Progeny progeny = await progenyService.GetProgeny(model.ProgenyId);
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
@@ -479,7 +485,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
             await webNotificationsService.SendPictureNotification(model, userInfo, notificationTitle);
-
+            
             return Ok(model);
         }
 

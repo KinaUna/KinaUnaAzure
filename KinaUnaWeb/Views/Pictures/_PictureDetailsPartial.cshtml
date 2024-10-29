@@ -40,7 +40,13 @@
     
     <div id="item-details-content" class="item-details-content item-details-content-full-screen">
         <div>
-            <img src="@Model.Picture.Progeny.PictureLink" class="item-details-title-picture"/>
+            @if (Model.CurrentUser.CanUserAddItems)
+            {
+                <button class="btn btn-link p-3 text-white-50 float-right mr-5 copy-item-button" data-copy-item-item-id="@Model.Picture.PictureId" data-copy-item-type="picture">
+                    <i class="material-icons kinauna-icon-medium">content_copy</i>
+                </button>
+            }
+            <img src="@Model.Picture.Progeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
             <span class="h3 mr-3 align-bottom">@title @Model.PictureNumber @await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId) @Model.PictureCount</span>
         </div>
         <button type="button" class="btn btn-link item-details-close-button item-details-close-button-full-screen"><span>×</span></button>
@@ -59,7 +65,7 @@
             </div>
             <div class="space-20"></div>
             <div align="center" style="max-width: 100%">
-                <img src="@Model.Picture.PictureLink" class="picture-details-image" />
+                <img src="@Model.Picture.GetPictureUrl(1200)" class="picture-details-image" />
             </div>
             @if (!string.IsNullOrEmpty(@Model.Picture.Location))
             {

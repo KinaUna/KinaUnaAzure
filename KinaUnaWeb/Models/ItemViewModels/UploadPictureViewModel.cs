@@ -20,7 +20,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public double Longtitude1 { get; init; } // Todo: Fix typo in property name
         public double Latitude1 { get; init; }
         public string Altitude { get; init; }
-        public Picture Picture { get; init; } = new();
+        public Picture Picture { get; set; } = new();
 
         public UploadPictureViewModel()
         {

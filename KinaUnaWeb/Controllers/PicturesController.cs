@@ -105,8 +105,7 @@ namespace KinaUnaWeb.Controllers
             PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(id, sortBy, model.CurrentUser.Timezone, tagFilter);
 
             model.SetPropertiesFromPictureViewModel(pictureViewModel);
-            model.Picture.PictureLink = model.Picture.GetPictureUrl(1200);
-
+            
             model.TagFilter = tagFilter;
             model.SortBy = sortBy;
             
@@ -460,6 +459,66 @@ namespace KinaUnaWeb.Controllers
             // Todo: show confirmation info, instead of gallery page.
 
             return RedirectToAction("Index", "Pictures");
+        }
+
+        /// <summary>
+        /// Page for adding a new picture.
+        /// </summary>
+        /// <returns>View with UploadPictureViewModel.</returns>
+        public async Task<IActionResult> CopyPicture(int itemId)
+        {
+            Picture picture = await mediaHttpClient.GetPicture(itemId, Constants.DefaultTimezone);
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
+            UploadPictureViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > picture.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.Picture = await mediaHttpClient.GetPicture(itemId, model.CurrentUser.Timezone);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+
+            model.SetAccessLevelList();
+
+            return PartialView("_CopyPicturePartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost method for adding a new picture.
+        /// For ASP.NET form.
+        /// </summary>
+        /// <param name="model">UploadPictureViewModel with the Picture properties.</param>
+        /// <returns>View with UploadPictureViewModel.</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopyPicture(UploadPictureViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            Picture pictureToUpdate = await mediaHttpClient.GetPicture(model.Picture.PictureId, model.CurrentUser.Timezone);
+
+            if (!model.IsCurrentUserProgenyAdmin)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+            
+            pictureToUpdate.CopyPropertiesForUserUpdate(model.Picture);
+            pictureToUpdate.PictureId = 0;
+            pictureToUpdate.ProgenyId = model.Picture.ProgenyId;
+            pictureToUpdate.Owners = model.CurrentUser.UserEmail;
+
+            if (model.Picture.PictureTime != null)
+            {
+                pictureToUpdate.PictureTime = TimeZoneInfo.ConvertTimeToUtc(model.Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            model.Picture = await mediaHttpClient.AddPicture(pictureToUpdate);
+            
+            return PartialView("_PictureCopiedPartial", model);
         }
 
         /// <summary>

@@ -28,10 +28,10 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("CopySleep", "Sleep", new { itemId });
             }
 
-            //if (itemType == "picture")
-            //{
-            //    return RedirectToAction("CopyPicture", "Pictures", new { itemId });
-            //}
+            if (itemType == "picture")
+            {
+                return RedirectToAction("CopyPicture", "Pictures", new { itemId });
+            }
 
             //if (itemType == "video")
             //{

@@ -7,11 +7,13 @@ import { initializeAddEditMeasurement } from "../measurements/add-edit-measureme
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v8.js";
 import { initializeAddEditNote } from "../notes/add-edit-note.js";
 import { initializeAddEditPicture } from "../pictures/add-edit-picture.js";
+import { popupPictureDetails } from "../pictures/picture-details.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
 import { initializeAddEditSkill } from "../skills/add-edit-skill.js";
 import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
 import { initializeAddEditVaccination } from "../vaccinations/add-edit-vaccination.js";
 import { initializeAddEditVideo } from "../videos/add-edit-video.js";
+import { popupVideoDetails } from "../videos/video-details.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
 
 /**
@@ -200,6 +202,22 @@ async function onCopyItemButtonClicked(event: MouseEvent): Promise<void> {
  * @param editItemItemId
  */
 async function popupEditItemModal(editItemType: string, editItemItemId: string): Promise<void> {
+
+    // Picture and video items are handled differently.
+    if (editItemType === 'picture') {
+        await popupPictureDetails(editItemItemId);
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+    // Picture and video items are handled differently.
+    if (editItemType === 'video') {
+        await popupVideoDetails(editItemItemId);
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+
     let popup = document.getElementById('item-details-div');
     if (popup !== null) {
         popup.innerHTML = '';
@@ -274,7 +292,7 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
         if (editItemType === 'location') {
             await initializeAddEditLocation();
         }
-
+        
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -357,6 +375,10 @@ async function popupCopyItemModal(copyItemType: string, copyItemItemId: string):
 
         if (copyItemType === 'location') {
             await initializeAddEditLocation();
+        }
+
+        if (copyItemType === 'picture') {
+            await initializeAddEditPicture();
         }
 
         hideBodyScrollbars();

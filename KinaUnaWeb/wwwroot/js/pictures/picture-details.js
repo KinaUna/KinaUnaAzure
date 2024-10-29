@@ -4,6 +4,7 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
 import { PicturesPageParameters } from '../page-models-v8.js';
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 let pictureDetailsTouchStartX = 0;
 let pictureDetailsTouchStartY = 0;
 let pictureDetailsTouchEndX = 0;
@@ -373,8 +374,9 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
                 addCloseButtonEventListener();
                 addNavigationEventListeners();
                 addEditEventListeners();
-                addCommentEventListeners();
+                await addCommentEventListeners();
                 addShowMapButtonEventListener();
+                setEditItemButtonEventListeners();
             }
         }
         else {
