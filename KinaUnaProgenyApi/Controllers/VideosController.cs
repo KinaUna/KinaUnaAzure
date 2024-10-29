@@ -430,31 +430,24 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             Video vid = await videosService.GetVideoByLink(model.VideoLink, model.ProgenyId);
-            if (vid == null)
-            {
-                CommentThread commentThread = await commentsService.AddCommentThread();
-                model.CommentThreadNumber = commentThread.Id;
+            CommentThread commentThread = await commentsService.AddCommentThread();
+            model.CommentThreadNumber = commentThread.Id;
 
-                model = await videosService.AddVideo(model);
-                await videosService.SetVideoInCache(model.VideoId);
-                await commentsService.SetCommentsList(model.CommentThreadNumber);
+            model = await videosService.AddVideo(model);
+            await videosService.SetVideoInCache(model.VideoId);
+            await commentsService.SetCommentsList(model.CommentThreadNumber);
 
-                Progeny progeny = await progenyService.GetProgeny(model.ProgenyId);
-                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
-                string notificationTitle = "New Video added for " + progeny.NickName;
-                string notificationMessage = userInfo.FullName() + " added a new video for " + progeny.NickName;
+            Progeny progeny = await progenyService.GetProgeny(model.ProgenyId);
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
+            string notificationTitle = "New Video added for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " added a new video for " + progeny.NickName;
 
-                TimeLineItem timeLineItem = new();
-                timeLineItem.CopyVideoPropertiesForAdd(model);
-                _ = await timelineService.AddTimeLineItem(timeLineItem);
+            TimeLineItem timeLineItem = new();
+            timeLineItem.CopyVideoPropertiesForAdd(model);
+            _ = await timelineService.AddTimeLineItem(timeLineItem);
 
-                await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                await webNotificationsService.SendVideoNotification(model, userInfo, notificationTitle);
-                return Ok(model);
-            }
-
-            model = vid;
-
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendVideoNotification(model, userInfo, notificationTitle);
             return Ok(model);
         }
 

@@ -348,7 +348,7 @@
                         <input id="altitude" type="text" asp-for="Video.Altitude" value="@Model.Video.Altitude" class="form-control" />
                     </div>
                 </div>
-                @if (Model.LocationsList.Any())
+                @if (Model.ProgenyLocations.Any())
                 {
                     <div class="form-group">
                         <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Copy Location Latitude and Longitude from Existing Location", PageNames.Videos, Model.LanguageId)</label>

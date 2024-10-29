@@ -4,6 +4,7 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
 import { VideosPageParameters } from '../page-models-v8.js';
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 let videoDetailsTouchStartX = 0;
 let videoDetailsTouchStartY = 0;
 let videoDetailsTouchEndX = 0;
@@ -362,6 +363,7 @@ async function displayVideoDetails(videoId, isPopupVisible = false) {
                 addEditEventListeners();
                 addCommentEventListeners();
                 addShowMapButtonEventListener();
+                setEditItemButtonEventListeners();
             }
         }
         else {

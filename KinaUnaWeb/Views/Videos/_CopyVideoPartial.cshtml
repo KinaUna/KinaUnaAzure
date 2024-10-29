@@ -1,14 +1,16 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
 @using System.Globalization
+@using KinaUna.Data.Extensions
 @model KinaUnaWeb.Models.ItemViewModels.UploadVideoViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = await LocaleManager.GetTranslation("Add YouTube video", PageNames.Videos, Model.LanguageId);
-    string addVideoForString = await LocaleManager.GetTranslation("Add YouTube video for:", PageNames.Videos, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Copy video", PageNames.Videos, Model.LanguageId);
+    string copyVideoToString = await LocaleManager.GetTranslation("Copy video to:", PageNames.Videos, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+    bool allowYouTube = Context.Request.YouTubeCookieSet();
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
@@ -18,11 +20,11 @@
             <h2 class="col-12">@ViewData["Title"]</h2>
             <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             <div class="space-20"></div>
-            <form id="save-item-form" asp-controller="Videos" asp-action="UploadVideo" enctype="multipart/form-data" method="post">
+            <form id="save-item-form" asp-controller="Videos" asp-action="CopyVideo" enctype="multipart/form-data" method="post">
                 @if (Model.ProgenyList.Count > 1)
                 {
                     <div class="form-group">
-                        <label class="col-auto control-label">@addVideoForString </label>
+                        <label class="col-auto control-label">@copyVideoToString </label>
                         <div class="col-auto">
                             <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="Video.ProgenyId" asp-items="@Model.ProgenyList"></select>
                         </div>
@@ -31,7 +33,7 @@
                 else
                 {
                     <div class="form-group">
-                        <label class="control-label col-auto">@addVideoForString </label>
+                        <label class="control-label col-auto">@copyVideoToString </label>
                         <div class="col-auto">
                             <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                         </div>
@@ -40,10 +42,18 @@
 
                 }
                 <div class="form-group">
-                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Paste the link or embed code here:", PageNames.Videos, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <textarea class="form-control" asp-for="FileLink" rows="5" cols="40"></textarea>
-                    </div>
+                    @if (allowYouTube)
+                    {
+                        if (Model.Video.VideoType == 1)
+                        {
+                            <iframe src="@Model.Video.VideoLink" style="width: 90%; height: 40vh; border: none;" scrolling="no" allowfullscreen></iframe>
+                        }
+
+                        if (Model.Video.VideoType == 2)
+                        {
+                            <iframe src="@Model.Video.VideoLink?rel=0" style="width: 90%; height: 40vh; border: none;" allow="encrypted-media" allowfullscreen></iframe>
+                        }
+                    }
                 </div>
                 <div class="form-group">
                     <label class="col-12 control-label">@await LocaleManager.GetTranslation("Duration", PageNames.Videos, Model.LanguageId)</label>
@@ -147,6 +157,11 @@
                 <div class="form-group">
                     <div class="col-auto"></div>
                     <input asp-for="Video.Owners" class="form-control" value="@Model.Video.Owners" type="hidden" />
+                    <input asp-for="Video.VideoId" class="form-control" value="@Model.Video.VideoId" type="hidden"/>
+                    <input asp-for="Video.VideoLink" class="form-control" value="@Model.Video.VideoLink" type="hidden" />
+                    <input asp-for="Video.ThumbLink" class="form-control" value="@Model.Video.ThumbLink" type="hidden" />
+                    <input asp-for="Video.Author" class="form-control" value="@Model.Video.Author" type="hidden"/>
+                    <input asp-for="Video.VideoType" class="form-control" value="@Model.Video.VideoType" type="hidden"/>
                     <div class="col-auto">
                         <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
                         <a class="btn btn-danger leave-page" asp-controller="Videos" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
@@ -169,3 +184,17 @@
         </div>
     </div>
 </div>
+<script type="text/javascript">
+    var copyLocationList = [];        
+    @{
+        string myLoc = "";
+        string addLoc = "";
+        foreach (Location loc in Model.ProgenyLocations)
+        {
+            myLoc = myLoc + "let loc" + loc.LocationId + " = {id: " + loc.LocationId + ", name: \'" + loc.Name + "\', lat: " + loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng: " + loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "};";
+            addLoc = addLoc + "copyLocationList.push(loc" + loc.LocationId + ");";
+        }
+    }
+    @Html.Raw(myLoc)
+    @Html.Raw(addLoc)
+</script>

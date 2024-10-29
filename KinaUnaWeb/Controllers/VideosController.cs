@@ -3,7 +3,6 @@ using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -125,18 +124,12 @@ namespace KinaUnaWeb.Controllers
             if (model.IsCurrentUserProgenyAdmin)
             {
                 model.ProgenyLocations = [];
-                model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId);
-                model.LocationsList = [];
-                if (model.ProgenyLocations.Count != 0)
+                foreach (Progeny progeny in model.CurrentUser.ProgenyList)
                 {
-                    foreach (Location loc in model.ProgenyLocations)
+                    List<Location> locations = await locationsHttpClient.GetProgenyLocations(progeny.Id);
+                    if (locations != null)
                     {
-                        SelectListItem selectListItem = new()
-                        {
-                            Text = loc.Name,
-                            Value = loc.LocationId.ToString()
-                        };
-                        model.LocationsList.Add(selectListItem);
+                        model.ProgenyLocations.AddRange(locations);
                     }
                 }
             }
@@ -181,18 +174,12 @@ namespace KinaUnaWeb.Controllers
                 model.Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
                 model.ProgenyLocations = [];
-                model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId);
-                model.LocationsList = [];
-                if (model.ProgenyLocations.Count != 0)
+                foreach (Progeny progeny in model.CurrentUser.ProgenyList)
                 {
-                    foreach (Location loc in model.ProgenyLocations)
+                    List<Location> locations = await locationsHttpClient.GetProgenyLocations(progeny.Id);
+                    if (locations != null)
                     {
-                        SelectListItem selectListItem = new()
-                        {
-                            Text = loc.Name,
-                            Value = loc.LocationId.ToString()
-                        };
-                        model.LocationsList.Add(selectListItem);
+                        model.ProgenyLocations.AddRange(locations);
                     }
                 }
             }
@@ -328,6 +315,84 @@ namespace KinaUnaWeb.Controllers
             // Todo: show confirmation info, instead of gallery page.
             
             return RedirectToAction("Index", "Videos");
+        }
+
+        /// <summary>
+        /// Page for copying a video item.
+        /// </summary>
+        /// <returns>View with UploadVideoViewModel.</returns>
+        public async Task<IActionResult> CopyVideo(int itemId)
+        {
+            Video video = await mediaHttpClient.GetVideo(itemId, Constants.DefaultTimezone);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), video.ProgenyId);
+            UploadVideoViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > video.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
+            {
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.SetProgenyList();
+                model.Video = await mediaHttpClient.GetVideo(itemId, model.CurrentUser.Timezone);
+                model.Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+                model.ProgenyLocations = [];
+                foreach (Progeny progeny in model.CurrentUser.ProgenyList)
+                {
+                    List<Location> locations = await locationsHttpClient.GetProgenyLocations(progeny.Id);
+                    if (locations != null)
+                    {
+                        model.ProgenyLocations.AddRange(locations);
+                    }
+                }
+
+                if (model.Video.Duration != null)
+                {
+                    model.Video.DurationHours = model.Video.Duration.Value.Hours.ToString();
+                    model.Video.DurationMinutes = model.Video.Duration.Value.Minutes.ToString();
+                    model.Video.DurationSeconds = model.Video.Duration.Value.Seconds.ToString();
+                }
+            }
+
+            model.SetAccessLevelList();
+
+            return PartialView("_CopyVideoPartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost method for copying a Video.
+        /// </summary>
+        /// <param name="model">VideoViewModel with the properties of the Video to copy.</param>
+        /// <returns>PartialView with the added Video item.</returns>
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopyVideo(VideoItemViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Video.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.IsCurrentUserProgenyAdmin)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            Video videoToUpdate = await mediaHttpClient.GetVideo(model.Video.VideoId, model.CurrentUser.Timezone);
+            videoToUpdate.CopyPropertiesForUpdate(model.Video, true);
+            videoToUpdate.ProgenyId = model.Video.ProgenyId;
+            videoToUpdate.VideoId = 0;
+            
+            model.Video = await mediaHttpClient.AddVideo(videoToUpdate);
+
+            if (model.Video.VideoTime != null)
+            {
+                model.Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(model.Video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            return PartialView("_VideoCopiedPartial", model);
         }
 
         /// <summary>

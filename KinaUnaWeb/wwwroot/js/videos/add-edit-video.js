@@ -1,6 +1,7 @@
 import * as LocaleHelper from '../localization-v8.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v8.js';
 import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
+import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat;
@@ -51,26 +52,6 @@ async function onProgenySelectListChanged() {
     });
 }
 /**
- * Sets up the Copy Location button and adds an event listener to copy the selected location to the latitude and longitude fields.
- */
-function setupCopyLocationButton() {
-    copyLocationButton = document.querySelector('#copy-location-button');
-    if (copyLocationButton !== null) {
-        copyLocationButton.addEventListener('click', onCopyLocationButtonClicked);
-    }
-}
-function onCopyLocationButtonClicked() {
-    const latitudeInput = document.getElementById('latitude');
-    const longitudeInput = document.getElementById('longitude');
-    const locationSelect = document.getElementById('copy-location');
-    if (latitudeInput !== null && longitudeInput !== null && locationSelect !== null) {
-        let locId = parseInt(locationSelect.value);
-        let selectedLocation = copyLocationList.find((obj) => { return obj.id === locId; });
-        latitudeInput.setAttribute('value', selectedLocation.lat);
-        longitudeInput.setAttribute('value', selectedLocation.lng);
-    }
-}
-/**
  * Sets up the Edit button and adds an event listener to toggle show/hide edit section.
  */
 function setupEditButton() {
@@ -88,7 +69,7 @@ export async function initializeAddEditVideo() {
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId]);
     await setLocationAutoSuggestList([currentProgenyId]);
-    setupCopyLocationButton();
+    addCopyLocationButtonEventListener();
     setupEditButton();
     setAddItemButtonEventListeners();
     $(".selectpicker").selectpicker('refresh');

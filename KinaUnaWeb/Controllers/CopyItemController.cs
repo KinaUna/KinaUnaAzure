@@ -33,10 +33,10 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("CopyPicture", "Pictures", new { itemId });
             }
 
-            //if (itemType == "video")
-            //{
-            //    return RedirectToAction("CopyVideo", "Videos", new { itemId });
-            //}
+            if (itemType == "video")
+            {
+                return RedirectToAction("CopyVideo", "Videos", new { itemId });
+            }
 
             if (itemType == "vocabulary")
             {

@@ -233,6 +233,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Picture", "Pictures", new { id = itemId, partialView = true });
             }
 
+            if (itemType == "video")
+            {
+                return RedirectToAction("Video", "Videos", new { id = itemId, partialView = true });
+            }
+
             return PartialView("../Shared/_NotFoundPartial", new { itemId });
         }
 

@@ -381,6 +381,10 @@ async function popupCopyItemModal(copyItemType: string, copyItemItemId: string):
             await initializeAddEditPicture();
         }
 
+        if (copyItemType === 'video') {
+            await initializeAddEditVideo();
+        }
+
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();

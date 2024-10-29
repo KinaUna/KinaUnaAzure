@@ -243,7 +243,7 @@
                                 <input id="altitude" type="text" asp-for="Picture.Altitude" value="@Model.Picture.Altitude" class="form-control" />
                             </div>
                         </div>
-                        @if (Model.LocationsList.Any())
+                        @if (Model.ProgenyLocations.Any())
                         {
                             <div class="form-group">
                                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Copy location latitude and longitude from existing location", PageNames.Pictures, Model.LanguageId)</label>
@@ -290,7 +290,6 @@
                         <input name="partialView" class="form-control" value="@Model.PartialView" type="hidden"/>
                     </form>
                 </div>
-                @* <script src="/js/pictures/add-edit-picture.js" type="module" asp-append-version="true"></script> *@
             }
             <div class="space-20"></div>
             <div class="text-center">

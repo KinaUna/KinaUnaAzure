@@ -305,7 +305,7 @@
                     <input id="altitude" type="text" asp-for="Picture.Altitude" value="@Model.Picture.Altitude" class="form-control" />
                 </div>
             </div>
-            @if (Model.LocationsList.Any())
+            @if (Model.ProgenyLocations.Any())
             {
                 <div class="form-group">
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Copy location latitude and longitude from existing location", PageNames.Pictures, Model.LanguageId)</label>

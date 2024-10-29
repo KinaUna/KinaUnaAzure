@@ -1,6 +1,7 @@
 ﻿import * as LocaleHelper from '../localization-v8.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v8.js';
 import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
+import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
@@ -59,29 +60,6 @@ async function onProgenySelectListChanged(): Promise<void> {
     });
 }
 
-/**
- * Sets up the Copy Location button and adds an event listener to copy the selected location to the latitude and longitude fields.
- */
-function setupCopyLocationButton(): void {
-    copyLocationButton = document.querySelector<HTMLButtonElement>('#copy-location-button');
-    if (copyLocationButton !== null) {
-        copyLocationButton.addEventListener('click', onCopyLocationButtonClicked);
-    }
-}
-
-function onCopyLocationButtonClicked() {
-    const latitudeInput = document.getElementById('latitude') as HTMLInputElement;
-    const longitudeInput = document.getElementById('longitude') as HTMLInputElement;
-    const locationSelect = document.getElementById('copy-location') as HTMLSelectElement;
-
-    if (latitudeInput !== null && longitudeInput !== null && locationSelect !== null) {
-        let locId = parseInt(locationSelect.value);
-        let selectedLocation = copyLocationList.find((obj: { id: number; name: string; lat: number, lng: number }) => { return obj.id === locId });
-
-        latitudeInput.setAttribute('value', selectedLocation.lat);
-        longitudeInput.setAttribute('value', selectedLocation.lng);
-    }
-}
 
 /**
  * Sets up the Edit button and adds an event listener to toggle show/hide edit section.
@@ -103,7 +81,7 @@ export async function initializeAddEditVideo(): Promise<void> {
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId]);
     await setLocationAutoSuggestList([currentProgenyId]);
-    setupCopyLocationButton();
+    addCopyLocationButtonEventListener();
     setupEditButton();
     setAddItemButtonEventListeners();
     ($(".selectpicker") as any).selectpicker('refresh');

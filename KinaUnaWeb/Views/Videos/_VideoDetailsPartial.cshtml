@@ -34,9 +34,15 @@
 <div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div id="item-details-content-wrapper" class="item-details-content-wrapper m-0 full-screen bg-body">
     <div id="item-details-content" class="item-details-content item-details-content-full-screen">
-        <div>
-            <img src="@Model.Video.Progeny.PictureLink" class="item-details-title-picture"/>
-            <span class="h3 mr-3 align-bottom">@title @Model.Video.VideoNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.VideoCount</span>
+    <div>
+        @if (Model.CurrentUser.CanUserAddItems)
+        {
+            <button class="btn btn-link p-3 text-white-50 float-right mr-5 copy-item-button" data-copy-item-item-id="@Model.Video.VideoId" data-copy-item-type="video">
+                <i class="material-icons kinauna-icon-medium">content_copy</i>
+            </button>
+        }
+        <img src="@Model.Video.Progeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
+        <span class="h3 mr-3 align-bottom">@title @Model.Video.VideoNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.VideoCount</span>
     </div>
     <button type="button" class="btn btn-link item-details-close-button item-details-close-button-full-screen"><span>×</span></button>
     <div id="video-details-div">
@@ -286,7 +292,7 @@
                     <input id="altitude" type="text" asp-for="Video.Altitude" value="@Model.Video.Altitude" class="form-control"/>
                 </div>
             </div>
-            @if (Model.LocationsList.Any())
+            @if (Model.ProgenyLocations.Any())
             {
                 <div class="form-group">
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Copy location latitude and longitude from existing location", PageNames.Pictures, Model.LanguageId)</label>

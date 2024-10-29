@@ -4,6 +4,7 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
 import { VideosPageParameters } from '../page-models-v8.js';
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 
 let videoDetailsTouchStartX: number = 0;
 let videoDetailsTouchStartY: number = 0;
@@ -417,6 +418,7 @@ async function displayVideoDetails(videoId: string, isPopupVisible: boolean = fa
                 addEditEventListeners();
                 addCommentEventListeners();
                 addShowMapButtonEventListener();
+                setEditItemButtonEventListeners();
             }
         } else {
             console.error('Error getting video item. Status: ' + response.status + ', Message: ' + response.statusText);

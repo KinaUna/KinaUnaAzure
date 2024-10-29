@@ -3,7 +3,6 @@ using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -126,18 +125,13 @@ namespace KinaUnaWeb.Controllers
             }
             if (model.IsCurrentUserProgenyAdmin)
             {
-                model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId);
-                model.LocationsList = [];
-                if (model.ProgenyLocations.Count != 0)
+                model.ProgenyLocations = [];
+                foreach (Progeny progeny in model.CurrentUser.ProgenyList)
                 {
-                    foreach (Location loc in model.ProgenyLocations)
+                    List<Location> locations = await locationsHttpClient.GetProgenyLocations(progeny.Id);
+                    if (locations != null)
                     {
-                        SelectListItem selectListItem = new()
-                        {
-                            Text = loc.Name,
-                            Value = loc.LocationId.ToString()
-                        };
-                        model.LocationsList.Add(selectListItem);
+                        model.ProgenyLocations.AddRange(locations);
                     }
                 }
             }
@@ -510,14 +504,13 @@ namespace KinaUnaWeb.Controllers
             pictureToUpdate.PictureId = 0;
             pictureToUpdate.ProgenyId = model.Picture.ProgenyId;
             pictureToUpdate.Owners = model.CurrentUser.UserEmail;
+            
+            model.Picture = await mediaHttpClient.AddPicture(pictureToUpdate);
 
             if (model.Picture.PictureTime != null)
             {
-                pictureToUpdate.PictureTime = TimeZoneInfo.ConvertTimeToUtc(model.Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                model.Picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(model.Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
-
-            model.Picture = await mediaHttpClient.AddPicture(pictureToUpdate);
-            
             return PartialView("_PictureCopiedPartial", model);
         }
 
