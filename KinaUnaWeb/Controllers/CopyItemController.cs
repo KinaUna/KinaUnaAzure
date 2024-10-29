@@ -68,10 +68,10 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("CopyVaccination", "Vaccinations", new { itemId });
             }
 
-            //if (itemType == "location")
-            //{
-            //    return RedirectToAction("CopyLocation", "Locations", new { itemId });
-            //}
+            if (itemType == "location")
+            {
+                return RedirectToAction("CopyLocation", "Locations", new { itemId });
+            }
 
             return PartialView("../Shared/_NotFoundPartial");
         }
