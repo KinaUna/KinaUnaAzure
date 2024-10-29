@@ -48,10 +48,10 @@ namespace KinaUnaWeb.Controllers
             //    return RedirectToAction("CopyFriend", "Friends", new { itemId });
             //}
 
-            //if (itemType == "measurement")
-            //{
-            //    return RedirectToAction("CopyMeasurement", "Measurements", new { itemId });
-            //}
+            if (itemType == "measurement")
+            {
+                return RedirectToAction("CopyMeasurement", "Measurements", new { itemId });
+            }
 
             //if (itemType == "contact")
             //{

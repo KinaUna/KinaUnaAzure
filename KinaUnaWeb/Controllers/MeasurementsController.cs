@@ -177,7 +177,7 @@ namespace KinaUnaWeb.Controllers
             model.MeasurementItem = await measurementsHttpClient.UpdateMeasurement(editedMeasurement);
             model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.Date, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.MeasurementItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            return PartialView("_MeasurementUpdated", model);
+            return PartialView("_MeasurementUpdatedPartial", model);
         }
 
         /// <summary>
@@ -222,6 +222,58 @@ namespace KinaUnaWeb.Controllers
             _ = await measurementsHttpClient.DeleteMeasurement(measurement.MeasurementId);
 
             return RedirectToAction("Index", "Measurements");
+        }
+
+        /// <summary>
+        /// Page to copy a Measurement.
+        /// </summary>
+        /// <param name="itemId">The MeasurementId of the Measurement to copy.</param>
+        /// <returns>View with MeasurementViewModel.</returns>
+        [HttpGet]
+        public async Task<IActionResult> CopyMeasurement(int itemId)
+        {
+            Measurement measurement = await measurementsHttpClient.GetMeasurement(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
+            MeasurementViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > measurement.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+
+            model.SetPropertiesFromMeasurement(measurement, model.IsCurrentUserProgenyAdmin);
+
+            model.SetAccessLevelList();
+
+            return PartialView("_CopyMeasurementPartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost endpoint for copying a Measurement.
+        /// </summary>
+        /// <param name="model">MeasurementViewModel with the properties of the Measurement to copy.</param>
+        /// <returns>PartialView with the added Measurement.</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopyMeasurement(MeasurementViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.MeasurementItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            Measurement editedMeasurement = model.CreateMeasurement();
+
+            model.MeasurementItem = await measurementsHttpClient.AddMeasurement(editedMeasurement);
+            model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.Date, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.MeasurementItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            return PartialView("_MeasurementCopiedPartial", model);
         }
     }
 }

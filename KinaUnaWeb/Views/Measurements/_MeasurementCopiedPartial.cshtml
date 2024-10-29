@@ -5,13 +5,13 @@
 @model KinaUnaWeb.Models.ItemViewModels.MeasurementViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.MeasurementItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Measurements", PageNames.Measurements, Model.LanguageId);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Measurement copied", PageNames.Measurements, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-measurement item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.MeasurementItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -25,12 +25,6 @@
                 <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">straighten</i></span>
             </div>
             <div class="col">
-                @if (Model.CurrentUser.CanUserAddItems)
-                {
-                    <button class="btn btn-link p-3 text-white-50 float-right mr-5 copy-item-button" data-copy-item-item-id="@Model.MeasurementItem.MeasurementId" data-copy-item-type="measurement">
-                        <i class="material-icons kinauna-icon-medium">content_copy</i>
-                    </button>
-                }
                 <div class="timeline-title row">
                     <div class="col-12 h4">
                         @Model.MeasurementItem.Date.ToString("dd-MMM-yyyy")
