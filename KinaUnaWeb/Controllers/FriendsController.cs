@@ -474,5 +474,97 @@ namespace KinaUnaWeb.Controllers
 
             return RedirectToAction("Index", "Friends");
         }
+
+        /// <summary>
+        /// Page for copying a Friend.
+        /// </summary>
+        /// <param name="itemId">The FriendId of the Friend to copy.</param>
+        /// <returns>View with FriendViewModel.</returns>
+        [HttpGet]
+        public async Task<IActionResult> CopyFriend(int itemId)
+        {
+            Friend friend = await friendsHttpClient.GetFriend(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
+            FriendViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > friend.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+
+            friend.PictureLink = friend.GetProfilePictureUrl();
+
+            model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
+
+            List<string> tagsList = [];
+            List<Friend> friendsList1 = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId);
+            foreach (Friend friendItem in friendsList1)
+            {
+                if (string.IsNullOrEmpty(friendItem.Tags)) continue;
+
+                List<string> friendTagsList = [.. friendItem.Tags.Split(',')];
+                foreach (string tagstring in friendTagsList)
+                {
+                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                    {
+                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                    }
+                }
+            }
+
+            model.SetTagList(tagsList);
+            model.SetAccessLevelList();
+            model.SetFriendTypeList();
+
+            return PartialView("_CopyFriendPartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost endpoint for copying a Friend.
+        /// </summary>
+        /// <param name="model">FriendViewModel with the properties to copy.</param>
+        /// <returns>Partial view with the added Friend.</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequestSizeLimit(100_000_000)]
+        public async Task<IActionResult> CopyFriend(FriendViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            Friend editedFriend = model.CreateFriend();
+            Friend originalFriend = await friendsHttpClient.GetFriend(model.FriendItem.FriendId);
+
+            if (model.File != null && model.File.Name != string.Empty)
+            {
+
+                model.FileName = model.File.FileName;
+                await using Stream stream = model.File.OpenReadStream();
+                string fileFormat = Path.GetExtension(model.File.FileName);
+                editedFriend.PictureLink = await imageStore.SaveImage(stream, "friends", fileFormat);
+            }
+            else
+            {
+                editedFriend.PictureLink = originalFriend.PictureLink;
+            }
+
+            model.FriendItem.FriendId = 0;
+            model.FriendItem = await friendsHttpClient.AddFriend(editedFriend);
+            model.FriendItem.FriendAddedDate = TimeZoneInfo.ConvertTimeFromUtc(model.FriendItem.FriendAddedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            if (model.FriendItem.FriendSince.HasValue)
+            {
+                model.FriendItem.FriendSince = TimeZoneInfo.ConvertTimeFromUtc(model.FriendItem.FriendSince.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            return PartialView("_FriendCopiedPartial", model);
+        }
     }
 }

@@ -43,10 +43,10 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("CopyVocabulary", "Vocabulary", new { itemId });
             }
 
-            //if (itemType == "friend")
-            //{
-            //    return RedirectToAction("CopyFriend", "Friends", new { itemId });
-            //}
+            if (itemType == "friend")
+            {
+                return RedirectToAction("CopyFriend", "Friends", new { itemId });
+            }
 
             if (itemType == "measurement")
             {
