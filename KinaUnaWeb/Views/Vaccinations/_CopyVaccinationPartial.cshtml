@@ -1,0 +1,85 @@
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.VaccinationViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Copy vaccination", PageNames.Vaccinations, Model.LanguageId);
+    const string longDateTimeFormat = "dd-MMMM-yyyy";
+    const string zebraDateTimeFormat = "d-F-Y";
+    string copyVaccinationToString = await LocaleManager.GetTranslation("Copy vaccination to:", PageNames.Vaccinations, Model.LanguageId);
+}
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="add-item-container">
+            <h2 class="col-12">@ViewData["Title"]</h2>
+            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            <div class="space-20"></div>
+            <form id="save-item-form" asp-action="CopyVaccination" asp-controller="Vaccinations" role="form" method="post">
+                @if (Model.ProgenyList.Count > 1)
+                {
+                    <div class="form-group">
+                        <label class="col-auto control-label">@copyVaccinationToString </label>
+                        <div class="col-auto">
+                            <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="VaccinationItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label class="col-auto control-label">@copyVaccinationToString </label>
+                        <div class="col-auto">
+                            <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text"/>
+                        </div>
+                        <input asp-for="VaccinationItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden"/>
+                    </div>
+                }
+                <div class="form-group">
+                    <label asp-for="VaccinationItem.VaccinationName" class="col-auto control-label">@await LocaleManager.GetTranslation("Vaccination name", PageNames.Vaccinations, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="VaccinationItem.VaccinationName" class="form-control" value="@Model.VaccinationItem.VaccinationName"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="VaccinationItem.VaccinationDescription" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Vaccinations, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <textarea asp-for="VaccinationItem.VaccinationDescription" class="form-control" rows="4" value="@Model.VaccinationItem.VaccinationDescription"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="VaccinationItem.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Vaccinations, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <textarea asp-for="VaccinationItem.Notes" class="form-control" rows="4" value="@Model.VaccinationItem.Notes"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="VaccinationItem.VaccinationDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Date", PageNames.Vaccinations, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <div class="input-group date">
+                            <input id="vaccination-date-time-picker" type="text"
+                                   class="form-control" data-zdp_readonly_element="false" asp-for="VaccinationItem.VaccinationDate" value="@Model.VaccinationItem.VaccinationDate.ToString(longDateTimeFormat)"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="VaccinationItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="VaccinationItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                    </div>
+                </div>
+                <div class="space-20"></div>
+                <div>
+                    <div class="form-group">
+                        <div class="col-auto control-label"></div>
+                        <div class="col-auto">
+                            <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                            <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

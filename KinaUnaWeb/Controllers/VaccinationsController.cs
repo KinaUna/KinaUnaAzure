@@ -202,5 +202,55 @@ namespace KinaUnaWeb.Controllers
 
             return RedirectToAction("Index", "Vaccinations");
         }
+
+        /// <summary>
+        /// Page for copying a vaccination item.
+        /// </summary>
+        /// <param name="itemId">The VaccinationId of the Vaccination item to copy.</param>
+        /// <returns>PartialView with VaccinationViewModel.</returns>
+        [HttpGet]
+        public async Task<IActionResult> CopyVaccination(int itemId)
+        {
+            Vaccination vaccination = await vaccinationsHttpClient.GetVaccination(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId);
+            VaccinationViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > vaccination.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+
+            model.SetPropertiesFromVaccinationItem(vaccination);
+
+            model.SetAccessLevelList();
+
+            return PartialView("_CopyVaccinationPartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost method for copying a vaccination item.
+        /// </summary>
+        /// <param name="model">VaccinationViewModel with the properties of the Vaccination to add.</param>
+        /// <returns>PartialView with the added Vaccination item.</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopyVaccination(VaccinationViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VaccinationItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.VaccinationItem = await vaccinationsHttpClient.AddVaccination(model.VaccinationItem);
+            model.VaccinationItem.VaccinationDate = TimeZoneInfo.ConvertTimeFromUtc(model.VaccinationItem.VaccinationDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            return PartialView("_VaccinationCopiedPartial", model);
+        }
     }
 }

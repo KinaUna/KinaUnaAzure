@@ -63,10 +63,10 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("CopySkill", "Skills", new { itemId });
             }
 
-            //if (itemType == "vaccination")
-            //{
-            //    return RedirectToAction("CopyVaccination", "Vaccinations", new { itemId });
-            //}
+            if (itemType == "vaccination")
+            {
+                return RedirectToAction("CopyVaccination", "Vaccinations", new { itemId });
+            }
 
             //if (itemType == "location")
             //{

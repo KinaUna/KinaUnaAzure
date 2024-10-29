@@ -10,7 +10,6 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Services.HttpClients;
-using System.Diagnostics.Metrics;
 
 namespace KinaUnaWeb.Controllers
 {

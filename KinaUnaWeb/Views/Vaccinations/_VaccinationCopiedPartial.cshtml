@@ -5,14 +5,14 @@
 @model KinaUnaWeb.Models.ItemViewModels.VaccinationViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.VaccinationItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Vaccinations", PageNames.Vaccinations, Model.LanguageId);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Vaccination copied", PageNames.Vaccinations, Model.LanguageId);
 
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-vaccination item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.VaccinationItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -26,12 +26,6 @@
                 <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">local_pharmacy</i></span>
             </div>
             <div class="col">
-                @if (Model.CurrentUser.CanUserAddItems)
-                {
-                    <button class="btn btn-link p-3 text-white-50 float-right mr-5 copy-item-button" data-copy-item-item-id="@Model.VaccinationItem.VaccinationId" data-copy-item-type="vaccination">
-                        <i class="material-icons kinauna-icon-medium">content_copy</i>
-                    </button>
-                }
                 <div class="timeline-title row">
                     <div class="col-12 h4">
                         <div class="text-white">@Model.VaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy")</div>
