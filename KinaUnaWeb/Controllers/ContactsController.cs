@@ -459,5 +459,90 @@ namespace KinaUnaWeb.Controllers
 
             return RedirectToAction("Index", "Contacts");
         }
+
+        /// <summary>
+        /// Page for copying a Contact.
+        /// </summary>
+        /// <param name="itemId">The ContactId of the Contact to copy.</param>
+        /// <returns>View with ContactViewModel.</returns>
+        [HttpGet]
+        public async Task<IActionResult> CopyContact(int itemId)
+        {
+            Contact contact = await contactsHttpClient.GetContact(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), contact.ProgenyId);
+            ContactViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > contact.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+
+            if (contact.AddressIdNumber != null)
+            {
+                contact.Address = await locationsHttpClient.GetAddress(contact.AddressIdNumber.Value);
+            }
+
+            model.SetPropertiesFromContact(contact, model.IsCurrentUserProgenyAdmin);
+
+            model.ContactItem.PictureLink = model.ContactItem.GetProfilePictureUrl();
+
+            model.SetAccessLevelList();
+
+            return PartialView("_CopyContactPartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost endpoint for copying a Contact.
+        /// </summary>
+        /// <param name="model">ContactViewModel with the properties for the Contact to add.</param>
+        /// <returns>PartialView with the added Contact item.</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequestSizeLimit(100_000_000)]
+        public async Task<IActionResult> CopyContact(ContactViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.ContactItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            Contact editedContact = model.CreateContact();
+            Contact originalContact = await contactsHttpClient.GetContact(editedContact.ContactId);
+
+            if (model.File != null && model.File.Name != string.Empty)
+            {
+                model.FileName = model.File.FileName;
+                await using Stream stream = model.File.OpenReadStream();
+                string fileFormat = Path.GetExtension(model.File.FileName);
+                editedContact.PictureLink = await imageStore.SaveImage(stream, "contacts", fileFormat);
+            }
+            else
+            {
+                editedContact.PictureLink = originalContact.PictureLink;
+            }
+
+            model.ContactItem.ContactId = 0;
+            model.ContactItem.AddressIdNumber = 0;
+            model.ContactItem.Address.AddressId = 0;
+
+            model.ContactItem = await contactsHttpClient.AddContact(editedContact);
+            if (model.ContactItem.DateAdded.HasValue)
+            {
+                model.ContactItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.ContactItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            if (model.ContactItem.AddressIdNumber.HasValue)
+            {
+                model.ContactItem.Address = await locationsHttpClient.GetAddress(model.ContactItem.AddressIdNumber.Value);
+            }
+
+            return PartialView("_ContactCopiedPartial", model);
+        }
     }
 }

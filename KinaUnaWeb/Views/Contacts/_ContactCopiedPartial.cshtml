@@ -5,7 +5,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.ContactItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Contact copied", PageNames.Contacts, Model.LanguageId);
     string websiteLink = Model.ContactItem.Website;
     if (!string.IsNullOrEmpty(Model.ContactItem.Website) && !Model.ContactItem.Website.StartsWith("https://"))
     {
@@ -18,7 +18,7 @@
     <div class="timeline-card-body bg-contact item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.ContactItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -34,12 +34,6 @@
             <div class="col">
                 <div class="timeline-title row">
                     <div class="col-12 h4">
-                        @if (Model.CurrentUser.CanUserAddItems)
-                        {
-                            <button class="btn btn-link p-3 text-white-50 float-right mr-5 copy-item-button" data-copy-item-item-id="@Model.ContactItem.ContactId" data-copy-item-type="contact">
-                                <i class="material-icons kinauna-icon-medium">content_copy</i>
-                            </button>
-                        }
                         @Model.ContactItem.DisplayName
                         <div class="space-10"></div>
                     </div>
