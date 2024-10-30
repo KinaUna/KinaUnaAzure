@@ -177,6 +177,15 @@ export class PictureViewModel {
     sortBy: number = 1;
     tagFilter: string = '';
 }
+
+export class PictureViewModelRequest {
+    progenies: number[] = [];
+    pictureId: number = 0;
+    sortOrder: number = 1;
+    tagFilter: string = '';
+    timeZone : string = '';
+}
+
 export class PicturesPageParameters implements BasePageParameters {
     progenyId: number = 0;
     progenies : number[] = [];
@@ -245,6 +254,14 @@ export class VideosList {
     totalPages: number = 0;
     currentPageNumber: number = 0;
     tagsList: string[] = [];
+}
+
+export class VideoViewModelRequest {
+    progenies: number[] = [];
+    videoId: number = 0;
+    sortOrder: number = 1;
+    tagFilter: string = '';
+    timeZone: string = '';
 }
 
 export class KinaUnaTextParameters {

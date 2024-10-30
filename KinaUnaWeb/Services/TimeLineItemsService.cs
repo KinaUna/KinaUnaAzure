@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services.HttpClients;
 
@@ -51,7 +52,15 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    PictureViewModel picture = await mediaHttpClient.GetPictureViewModel(itemId, 1, model.CurrentUser.Timezone, model.TagFilter);
+                    PictureViewModelRequest pictureViewModelRequest = new PictureViewModelRequest
+                    {
+                        PictureId = itemId,
+                        SortOrder = 1,
+                        TimeZone = model.CurrentUser.Timezone,
+                        TagFilter = model.TagFilter
+                    };
+
+                    PictureViewModel picture = await mediaHttpClient.GetPictureViewModel(pictureViewModelRequest);
                     if (picture != null && picture.PictureId > 0)
                     {
                         string pictureUrl = "/Pictures/File?id=" + picture.PictureId + "&size=600";
@@ -67,7 +76,13 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    VideoViewModel video = await mediaHttpClient.GetVideoViewModel(itemId, 1, model.CurrentUser.Timezone);
+                    VideoViewModelRequest videoViewModelRequest = new VideoViewModelRequest
+                    {
+                        VideoId = itemId,
+                        SortOrder = 1,
+                        TimeZone = model.CurrentUser.Timezone
+                    };
+                    VideoViewModel video = await mediaHttpClient.GetVideoViewModel(videoViewModelRequest);
                     if (video != null && video.VideoId > 0)
                     {
                         video.CommentsCount = video.CommentsList.Count;

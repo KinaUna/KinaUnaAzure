@@ -106,7 +106,16 @@ namespace KinaUnaWeb.Controllers
                 HereMapsApiKey = _hereMapsApiKey,
                 PartialView = partialView
             };
-            PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(id, sortBy, model.CurrentUser.Timezone, tagFilter);
+            PictureViewModelRequest pictureViewModelRequest = new()
+            {
+                PictureId = id,
+                Progenies = [picture.ProgenyId],
+                SortOrder = sortBy,
+                TimeZone = model.CurrentUser.Timezone,
+                TagFilter = tagFilter
+            };
+
+            PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(pictureViewModelRequest);
 
             model.SetPropertiesFromPictureViewModel(pictureViewModel);
             
@@ -149,6 +158,69 @@ namespace KinaUnaWeb.Controllers
             }
 
             return View(model);
+        }
+
+        /// <summary>
+        /// Picture details page or PartialView.
+        /// </summary>
+        /// <param name="request">PictureViewModelRequest with the PictureId of the Picture to show, list of selected progenies, sort order and tag filter.</param>
+        /// <returns>View or PartialView with PictureItemViewModel.</returns>
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> PictureDetails([FromBody] PictureViewModelRequest request)
+        {
+            Picture picture = await mediaHttpClient.GetPicture(request.PictureId, Constants.DefaultTimezone);
+            if (picture == null)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
+            PictureItemViewModel model = new(baseModel)
+            {
+                HereMapsApiKey = _hereMapsApiKey,
+                PartialView = true
+            };
+            
+            request.TimeZone = model.CurrentUser.Timezone;
+            PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(request);
+
+            model.SetPropertiesFromPictureViewModel(pictureViewModel);
+
+            model.TagFilter = request.TagFilter;
+            model.SortBy = request.SortOrder;
+
+            if (model.CommentsCount > 0)
+            {
+                foreach (Comment comment in model.CommentsList)
+                {
+                    UserInfo commentAuthor = await userInfosHttpClient.GetUserInfoByUserId(comment.Author);
+                    if (commentAuthor == null) continue;
+                    if (commentAuthor.ProfilePicture != null)
+                    {
+                        comment.AuthorImage = commentAuthor.GetProfilePictureUrl();
+                    }
+
+                    comment.DisplayName = commentAuthor.FullName();
+
+                }
+            }
+            if (model.IsCurrentUserProgenyAdmin)
+            {
+                model.ProgenyLocations = [];
+                foreach (Progeny progeny in model.CurrentUser.ProgenyList)
+                {
+                    List<Location> locations = await locationsHttpClient.GetProgenyLocations(progeny.Id);
+                    if (locations != null)
+                    {
+                        model.ProgenyLocations.AddRange(locations);
+                    }
+                }
+            }
+
+            model.SetAccessLevelList();
+            model.Picture.Progeny.PictureLink = model.Picture.Progeny.GetProfilePictureUrl();
+            return PartialView("_PictureDetailsPartial", model);
         }
 
         /// <summary>

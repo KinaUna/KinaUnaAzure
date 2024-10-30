@@ -176,6 +176,15 @@ export class PictureViewModel {
         this.tagFilter = '';
     }
 }
+export class PictureViewModelRequest {
+    constructor() {
+        this.progenies = [];
+        this.pictureId = 0;
+        this.sortOrder = 1;
+        this.tagFilter = '';
+        this.timeZone = '';
+    }
+}
 export class PicturesPageParameters {
     constructor() {
         this.progenyId = 0;
@@ -250,6 +259,15 @@ export class VideosList {
         this.totalPages = 0;
         this.currentPageNumber = 0;
         this.tagsList = [];
+    }
+}
+export class VideoViewModelRequest {
+    constructor() {
+        this.progenies = [];
+        this.videoId = 0;
+        this.sortOrder = 1;
+        this.tagFilter = '';
+        this.timeZone = '';
     }
 }
 export class KinaUnaTextParameters {
