@@ -100,6 +100,7 @@ export function setupHereMapsPhotoLocations(languageId) {
         tileSize: pixelRatio === 1 ? 256 : 512,
         ppi: pixelRatio === 1 ? undefined : 320
     });
+    maptypes.vector.normal.map.setMin(2);
     let map = new H.Map(mapContainerDiv, maptypes.vector.normal.map, {
         pixelRatio: pixelRatio
     });

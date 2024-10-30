@@ -107,7 +107,7 @@ export class LocationsPageResponse implements BaseItemsPageResponseModel {
     pageNumber: number = 0;
     totalPages: number = 0;
     totalItems: number = 0;
-    locationsList: number[] = [];
+    locationsList: LocationItem[] = [];
     tagsList: string[] = [];
 }
 

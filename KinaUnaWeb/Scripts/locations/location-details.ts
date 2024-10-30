@@ -23,6 +23,31 @@ async function onLocationItemDivClicked(event: MouseEvent): Promise<void> {
         const locationId = locationElement.dataset.locationId;
         if (locationId) {
             await displayLocationItem(locationId);
+            if (map) {
+                // find location's marker on map and center it.
+                let locationMarker: any;
+                const mapObjects = map.getObjects();
+                const len = map.getObjects().length;
+                const locationIdParsed = parseInt(locationId);
+                for (let i = 0; i < len; i++) {
+                    if (mapObjects[i] instanceof H.map.Group) {
+                        let mapGroup = mapObjects[i] as H.map.Group;
+                        mapGroup.forEach((mapGroupItem) => {
+                            if (mapGroupItem instanceof H.map.Marker && mapGroupItem.getData() === locationIdParsed) {
+                                locationMarker = mapGroupItem as H.map.Marker;
+                            }
+                        });                        
+                    }
+                };
+
+                if (locationMarker instanceof H.map.Marker) {
+                    let markerPosition = locationMarker.getGeometry();
+                    if (markerPosition instanceof H.geo.Point) {
+                        map.setCenter(markerPosition);
+                        map.setZoom(14);
+                    };
+                }
+            }
         }
     }
 
