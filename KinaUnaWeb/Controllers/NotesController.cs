@@ -220,7 +220,7 @@ namespace KinaUnaWeb.Controllers
                 // Todo: Show that no children are available to add note for.
                 return RedirectToAction("Index");
             }
-
+            
             Note noteItem = model.CreateNote();
                 
             model.NoteItem = await notesHttpClient.AddNote(noteItem);
@@ -259,7 +259,7 @@ namespace KinaUnaWeb.Controllers
         /// HttpPost endpoint for updating an edited Note.
         /// </summary>
         /// <param name="model">NoteViewModel with the updated Note properties.</param>
-        /// <returns>Redirects to the Notes/Index page.</returns>
+        /// <returns>Note updated page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditNote(NoteViewModel model)
@@ -324,6 +324,63 @@ namespace KinaUnaWeb.Controllers
 
             _ = await notesHttpClient.DeleteNote(note.NoteId);
             return RedirectToAction("Index", "Notes");
+        }
+
+        /// <summary>
+        /// Copy Note page.
+        /// </summary>
+        /// <param name="itemId">The NoteId of the Note to copy.</param>
+        /// <returns>View with NoteViewModel.</returns>
+        [HttpGet]
+        public async Task<IActionResult> CopyNote(int itemId)
+        {
+            Note note = await notesHttpClient.GetNote(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
+            NoteViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > note.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.SetPropertiesFromNote(note);
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
+            {
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.SetProgenyList();
+            }
+
+            model.SetAccessLevelList();
+
+            model.PathName = model.CurrentUser.UserId;
+
+            return PartialView("_CopyNotePartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost endpoint for updating an edited Note.
+        /// </summary>
+        /// <param name="model">NoteViewModel with the updated Note properties.</param>
+        /// <returns>Note copied partial view</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopyNote(NoteViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.NoteItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            Note editedNote = model.CreateNote();
+
+            model.NoteItem = await notesHttpClient.AddNote(editedNote);
+            model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            return PartialView("_NoteCopiedPartial", model);
         }
 
         /// <summary>

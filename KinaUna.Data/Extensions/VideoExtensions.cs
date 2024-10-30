@@ -102,5 +102,66 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Copies the properties needed for copying a Video entity from one Video object to another.
+        /// </summary>
+        /// <param name="currentVideo"></param>
+        /// <param name="otherVideo"></param>
+        /// <param name="ownerEmail"></param>
+        /// <param name="progeny"></param>
+        /// <param name="parseDuration">If set to true the duration will be obtained from the string values in DurationHours, DurationMinutes, and DurationSeconds.</param>
+        public static void CopyPropertiesForCopy(this Video currentVideo, Video otherVideo, string ownerEmail, Progeny progeny, bool parseDuration = false)
+        {
+            currentVideo.VideoId = 0;
+            currentVideo.AccessLevel = otherVideo.AccessLevel;
+            currentVideo.ProgenyId = otherVideo.ProgenyId;
+            currentVideo.CommentThreadNumber = 0;
+            currentVideo.Duration = otherVideo.Duration;
+            currentVideo.DurationHours = otherVideo.DurationHours;
+            currentVideo.DurationMinutes = otherVideo.DurationMinutes;
+            currentVideo.DurationSeconds = otherVideo.DurationSeconds;
+            currentVideo.Owners = ownerEmail;
+            currentVideo.VideoNumber = otherVideo.VideoNumber;
+            currentVideo.VideoTime = otherVideo.VideoTime;
+            currentVideo.Progeny = progeny;
+            
+            if (parseDuration)
+            {
+                bool durationHoursParsed = int.TryParse(otherVideo.DurationHours, out int durHours);
+                bool durationMinutesParsed = int.TryParse(otherVideo.DurationMinutes, out int durMins);
+                bool durationSecondsParsed = int.TryParse(otherVideo.DurationSeconds, out int durSecs);
+                if (durHours + durMins + durSecs != 0 && durationHoursParsed && durationMinutesParsed && durationSecondsParsed)
+                {
+                    currentVideo.Duration = new TimeSpan(durHours, durMins, durSecs);
+                }
+            }
+
+
+            if (!string.IsNullOrEmpty(otherVideo.Tags))
+            {
+                currentVideo.Tags = otherVideo.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
+            }
+
+            if (!string.IsNullOrEmpty(otherVideo.Location))
+            {
+                currentVideo.Location = otherVideo.Location;
+            }
+
+            if (!string.IsNullOrEmpty(otherVideo.Longtitude))
+            {
+                currentVideo.Longtitude = otherVideo.Longtitude;
+            }
+
+            if (!string.IsNullOrEmpty(otherVideo.Latitude))
+            {
+                currentVideo.Latitude = otherVideo.Latitude;
+            }
+
+            if (!string.IsNullOrEmpty(otherVideo.Altitude))
+            {
+                currentVideo.Altitude = otherVideo.Altitude;
+            }
+        }
+
     }
 }

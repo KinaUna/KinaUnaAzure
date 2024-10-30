@@ -108,14 +108,21 @@
                         <input id="altitude" type="text" asp-for="Video.Altitude" value="@Model.Video.Altitude" class="form-control" />
                     </div>
                 </div>
-                @if (Model.LocationsList.Any())
+                @if (Model.ProgenyLocations.Any())
                 {
                     <div class="form-group">
                         <label class="col-lg-12 col-sm-2 control-label">@await LocaleManager.GetTranslation("Copy Location Latitude and Longitude from Existing Location", PageNames.Videos, Model.LanguageId)</label>
                         <div class="col-12">
                             <div class="row">
                                 <div class="col-lg-8 col-md-9 col-sm-8">
-                                    <select id="copy-location" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" asp-items="@Model.LocationsList"></select>
+                                    <select id="copy-location" class="selectpicker form-control-noline col pl-0" data-style="btn-kinaunaselect">
+                                        @foreach (Location loc in Model.ProgenyLocations)
+                                        {
+                                            <option value="@loc.LocationId" data-location-name="@loc.Name"
+                                                    data-latitude="@loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')"
+                                                    data-longitude="@loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.')">@loc.Name</option>
+                                        }
+                                    </select>
                                 </div>
                                 <div class="col-lg-4 col-md-3 col-sm-3">
                                     <button id="copy-location-button" type="button" class="btn btn-primary">@await LocaleManager.GetTranslation("Copy", PageNames.Videos, Model.LanguageId)</button>
@@ -162,18 +169,3 @@
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    var copyLocationList = [];        
-    @{
-        string myLoc = "";
-        string addLoc = "";
-        foreach (Location loc in Model.ProgenyLocations)
-        {
-            myLoc = myLoc + "let loc" + loc.LocationId + " = {id: " + loc.LocationId + ", name: \'" + loc.Name + "\', lat: " + loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng: " + loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "};";
-            addLoc = addLoc + "copyLocationList.push(loc" + loc.LocationId + ");";
-        }
-    }
-    @Html.Raw(myLoc)
-    @Html.Raw(addLoc)
-        </script>
-<script src="/js/videos/add-edit-video.js" type="module" asp-append-version="true"></script>

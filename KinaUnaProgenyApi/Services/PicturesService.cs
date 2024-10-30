@@ -543,11 +543,21 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _mediaContext.SaveChangesAsync();
             }
 
-            List<Picture> picturesWithThisImage = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.PictureLink == picture.PictureLink).ToListAsync();
-            if (picturesWithThisImage.Count == 0)
+            List<Picture> picturesWithThisImageLink = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.PictureLink == picture.PictureLink).ToListAsync();
+            if (picturesWithThisImageLink.Count == 0)
             {
                 _ = await _imageStore.DeleteImage(picture.PictureLink);
+            }
+
+            List<Picture> picturesWithThisImageLink600 = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.PictureLink600 == picture.PictureLink600).ToListAsync();
+            if (picturesWithThisImageLink600.Count == 0)
+            {
                 _ = await _imageStore.DeleteImage(picture.PictureLink600);
+            }
+
+            List<Picture> picturesWithThisImageLink1200 = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.PictureLink1200 == picture.PictureLink1200).ToListAsync();
+            if (picturesWithThisImageLink1200.Count == 0)
+            {
                 _ = await _imageStore.DeleteImage(picture.PictureLink1200);
             }
 

@@ -46,7 +46,7 @@
     </div>
     <div class="space-20"></div>
     <div align="center" style="max-width: 100%">
-        <img src="@Model.Picture.PictureLink" style="max-height: 90vh; max-width: 100%;" />
+        <img src="@Model.Picture.GetPictureUrl(1200)" style="max-height: 90vh; max-width: 100%;" />
     </div>
     <div>
         @{
@@ -305,7 +305,7 @@
                     <input id="altitude" type="text" asp-for="Picture.Altitude" value="@Model.Picture.Altitude" class="form-control" />
                 </div>
             </div>
-            @if (Model.LocationsList.Any())
+            @if (Model.ProgenyLocations.Any())
             {
                 <div class="form-group">
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Copy location latitude and longitude from existing location", PageNames.Pictures, Model.LanguageId)</label>

@@ -154,7 +154,7 @@ namespace KinaUnaWeb.Controllers
         /// Page for editing a Skill item.
         /// </summary>
         /// <param name="itemId">The SkillId of the Skill to edit.</param>
-        /// <returns>View with SkillViewModel.</returns>
+        /// <returns>PartialView with SkillViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> EditSkill(int itemId)
         {
@@ -180,7 +180,7 @@ namespace KinaUnaWeb.Controllers
         /// HttpPost for submitting edit Skill form.
         /// </summary>
         /// <param name="model">SkillViewModel with the updated properties of the Skill.</param>
-        /// <returns>Redirects to Skills/Index page.</returns>
+        /// <returns>PartialView with the updated Skill.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditSkill(SkillViewModel model)
@@ -248,6 +248,64 @@ namespace KinaUnaWeb.Controllers
             _ = await skillsHttpClient.DeleteSkill(skill.SkillId);
 
             return RedirectToAction("Index", "Skills");
+        }
+
+        /// <summary>
+        /// Page for copying a Skill item.
+        /// </summary>
+        /// <param name="itemId">The SkillId of the Skill to copy.</param>
+        /// <returns>PartialView with SkillViewModel.</returns>
+        [HttpGet]
+        public async Task<IActionResult> CopySkill(int itemId)
+        {
+            Skill skill = await skillsHttpClient.GetSkill(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
+            SkillViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > skill.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+            
+            skill.SkillFirstObservation ??= DateTime.UtcNow;
+
+            model.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
+
+            model.SetAccessLevelList();
+
+            return PartialView("_CopySkillPartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost for submitting copy Skill form.
+        /// </summary>
+        /// <param name="model">SkillViewModel with the properties of the Skill to add.</param>
+        /// <returns>PartialView with the added Skill.</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopySkill(SkillViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SkillItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            Skill editedSkill = model.CreateSkill();
+
+            model.SkillItem = await skillsHttpClient.AddSkill(editedSkill);
+            model.SkillItem.SkillAddedDate = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillAddedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            if (model.SkillItem.SkillFirstObservation.HasValue)
+            {
+                model.SkillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillFirstObservation.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            return PartialView("_SkillCopiedPartial", model);
         }
     }
 }

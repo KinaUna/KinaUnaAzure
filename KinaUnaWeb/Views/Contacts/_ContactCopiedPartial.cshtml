@@ -1,0 +1,260 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Contact copied", PageNames.Contacts, Model.LanguageId);
+    string websiteLink = Model.ContactItem.Website;
+    if (!string.IsNullOrEmpty(Model.ContactItem.Website) && !Model.ContactItem.Website.StartsWith("https://"))
+    {
+        websiteLink = "https://" + Model.ContactItem.Website;
+    }
+    string emailString = await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId);
+    string emailCopiedString = await LocaleManager.GetTranslation("Email copied to clipboard", PageNames.Contacts, Model.LanguageId);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-contact item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">contact_phone</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        @Model.ContactItem.DisplayName
+                        <div class="space-10"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <img class="img-thumbnail d-block" style="max-height: 300px; max-width: 100%; background: black;" src="@Model.ContactItem.GetProfilePictureUrl()" alt="Contact Picture" />
+                    </div>
+                </div>
+                <div class="space-20"></div>
+                <div class="row text-white">
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.FirstName))
+                    {
+                        <div class="col-12">
+                            <div><strong>@await LocaleManager.GetTranslation("First name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.FirstName</div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.MiddleName))
+                    {
+                        <div class="col-12">
+                            <div><strong>@await LocaleManager.GetTranslation("Middle name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.MiddleName</div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.LastName))
+                    {
+                        <div class="col-12">
+                            <div><strong>@await LocaleManager.GetTranslation("Last name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.LastName</div>
+                        </div>
+                    }
+                </div>
+                <div class="space-20"></div>
+                <div class="timeline-text row text-white-75">
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.MobileNumber))
+                    {
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId)</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span id="contact-mobile-number-@Model.ContactItem.ContactId" class="p-2">@Model.ContactItem.MobileNumber</span>
+                                            <button class="btn btn-link p-3 copy-content-button text-white-50" data-copy-content-id="contact-mobile-number-@Model.ContactItem.ContactId">
+                                                <i class="material-icons kinauna-icon-medium">content_copy</i>
+                                                <span class="toast-notification d-none">@await LocaleManager.GetTranslation("Mobile number copied to clipboard", PageNames.Contacts, Model.LanguageId)</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-auto">
+                                            <a class="btn btn-link p-3 text-white-50" href="tel:@Model.ContactItem.MobileNumber"><i class="material-icons kinauna-icon-medium">call</i></a>
+                                            <a class="btn btn-link p-3 text-white-50" href="sms:@Model.ContactItem.MobileNumber"><i class="material-icons kinauna-icon-medium">sms</i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-20"></div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.PhoneNumber))
+                    {
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId)</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span id="contact-phone-number-@Model.ContactItem.ContactId">@Model.ContactItem.PhoneNumber</span>
+                                            <button class="btn btn-link p-3 copy-content-button text-white-50" data-copy-content-id="contact-phone-number-@Model.ContactItem.ContactId">
+                                                <i class="material-icons">content_copy</i>
+                                                <span class="toast-notification d-none">@await LocaleManager.GetTranslation("Phone number copied to clipboard", PageNames.Contacts, Model.LanguageId)</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-auto">
+                                            <a class="btn btn-link p-3 text-white-50" href="tel:@Model.ContactItem.PhoneNumber"><i class="material-icons kinauna-icon-medium">call</i></a>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-20"></div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.Email1))
+                    {
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>@emailString</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span id="contact-email1-@Model.ContactItem.ContactId">@Model.ContactItem.Email1</span>
+                                            <button class="btn btn-link p-3 copy-content-button text-white-50" data-copy-content-id="contact-email1-@Model.ContactItem.ContactId">
+                                                <i class="material-icons">content_copy</i>
+                                                <span class="toast-notification d-none">@emailCopiedString</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-auto">
+                                            <a class="btn btn-link p-3 text-white-50" href="mailto:@Model.ContactItem.Email1"><i class="material-icons kinauna-icon-medium">outgoing_mail</i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-20"></div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.Email2))
+                    {
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>@emailString</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span id="contact-email2-@Model.ContactItem.ContactId">@Model.ContactItem.Email2</span>
+                                            <button class="btn btn-link p-3 copy-content-button text-white-50" data-copy-content-id="contact-email2-@Model.ContactItem.ContactId">
+                                                <i class="material-icons">content_copy</i>
+                                                <span class="toast-notification d-none">@emailCopiedString</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-auto">
+                                            <a class="btn btn-link p-3 text-white-50" href="mailto:@Model.ContactItem.Email2"><i class="material-icons kinauna-icon-medium">outgoing_mail</i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-20"></div>
+                        </div>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.AddressItem.AddressLine1 + Model.AddressItem.AddressLine2 + Model.AddressItem.City + Model.AddressItem.State + Model.AddressItem.PostalCode + Model.AddressItem.Country))
+                    {
+                        <div class="col-12">
+                            <div class="space-20"></div>
+                            <strong>@await LocaleManager.GetTranslation("Address:", PageNames.Contacts, Model.LanguageId)</strong>
+                            <div class="space-10"></div>
+                            @if (!string.IsNullOrEmpty(Model.AddressItem.AddressLine1))
+                            {
+                                @Model.AddressItem.AddressLine1
+                                <div class="space-10"></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.AddressItem.AddressLine2))
+                            {
+                                @Model.AddressItem.AddressLine2
+                                <div class="space-10"></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.AddressItem.City))
+                            {
+                                @Model.AddressItem.City
+                                <div class="space-10"></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.AddressItem.State))
+                            {
+                                @Model.AddressItem.State
+                                <div class="space-10"></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.AddressItem.PostalCode))
+                            {
+                                @Model.AddressItem.PostalCode
+                                <div class="space-10"></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.AddressItem.Country))
+                            {
+                                @Model.AddressItem.Country
+                                <div class="space-10"></div>
+                            }
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.Website + Model.ContactItem.Notes + Model.ContactItem.Context))
+                    {
+                        
+                        @if (!string.IsNullOrEmpty(Model.ContactItem.Website))
+                        {
+                            <div class="space-20"></div>
+                            <div class="col-12">
+                                <strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@websiteLink">@Model.ContactItem.Website</a>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.ContactItem.Notes))
+                        {
+                            <div class="col-12">
+                                <div class="space-20"></div>
+                                <strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.Notes
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.ContactItem.Context))
+                        {
+                            <div class="col-12">
+                                <div class="space-20"></div>
+                                <strong>@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.Context
+                            </div>
+                        }
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.Tags))
+                    {
+                        List<string> tagsList = Model.ContactItem.Tags.Split(',').ToList();
+                        <div class="space-20"></div>
+                        <div class="col-12 text-right">
+                            @foreach (string tagString in tagsList)
+                            {
+                                <a asp-action="Index" asp-route-childId="@Model.ContactItem.ProgenyId" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
+                            }
+                        </div>
+                    }
+                </div>
+
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="space-20"></div>
+                <div class="col-12">
+                    <a data-edit-item-type="contact" data-edit-item-item-id="@Model.ContactItem.ContactId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Contacts" asp-action="DeleteContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

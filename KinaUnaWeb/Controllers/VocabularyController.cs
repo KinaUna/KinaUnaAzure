@@ -126,7 +126,7 @@ namespace KinaUnaWeb.Controllers
         /// Page for editing a vocabulary item.
         /// </summary>
         /// <param name="itemId">The WordId of the VocabularyItem to edit.</param>
-        /// <returns>View with VocabularyItemViewModel.</returns>
+        /// <returns>PartialView with VocabularyItemViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> EditVocabulary(int itemId)
         {
@@ -150,7 +150,7 @@ namespace KinaUnaWeb.Controllers
         /// HttpPost method for editing a vocabulary item.
         /// </summary>
         /// <param name="model">VocabularyItemViewModel with the updated properties of the edited VocabularyItem.</param>
-        /// <returns>Redirects to Vocabulary/Index page.</returns>
+        /// <returns>PartialView with the updated VocabularyItemViewModel</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditVocabulary(VocabularyItemViewModel model)
@@ -220,6 +220,62 @@ namespace KinaUnaWeb.Controllers
             await wordsHttpClient.DeleteWord(vocabularyItem.WordId);
 
             return RedirectToAction("Index", "Vocabulary");
+        }
+
+        /// <summary>
+        /// Page for copying a vocabulary item.
+        /// </summary>
+        /// <param name="itemId">The WordId of the VocabularyItem to copy.</param>
+        /// <returns>PartialView with VocabularyItemViewModel.</returns>
+        [HttpGet]
+        public async Task<IActionResult> CopyVocabulary(int itemId)
+        {
+            VocabularyItem vocabularyItem = await wordsHttpClient.GetWord(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId);
+            VocabularyItemViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > vocabularyItem.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+
+            model.SetPropertiesFromVocabularyItem(vocabularyItem);
+
+            model.SetAccessLevelList();
+
+            return PartialView("_CopyVocabularyPartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost method for copying a vocabulary item.
+        /// </summary>
+        /// <param name="model">VocabularyItemViewModel with the properties of the copied VocabularyItem.</param>
+        /// <returns>PartialView with the copied VocabularyItemViewModel</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopyVocabulary(VocabularyItemViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VocabularyItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.VocabularyItem.Date ??= TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.VocabularyItem = await wordsHttpClient.AddWord(model.VocabularyItem);
+            if (model.VocabularyItem.Date.HasValue)
+            {
+                model.VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            model.VocabularyItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.DateAdded, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            return PartialView("_VocabularyCopiedPartial", model);
         }
     }
 }

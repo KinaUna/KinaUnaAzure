@@ -4,6 +4,7 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
 import { PicturesPageParameters } from '../page-models-v8.js';
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 
 let pictureDetailsTouchStartX: number = 0;
 let pictureDetailsTouchStartY: number = 0;
@@ -428,8 +429,9 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
                 addCloseButtonEventListener();
                 addNavigationEventListeners();
                 addEditEventListeners();
-                addCommentEventListeners();
+                await addCommentEventListeners();
                 addShowMapButtonEventListener();
+                setEditItemButtonEventListeners();
             }
         } else {
             console.error('Error getting picture item. Status: ' + response.status + ', Message: ' + response.statusText);

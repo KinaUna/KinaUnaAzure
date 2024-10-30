@@ -157,6 +157,41 @@ namespace KinaUna.Data.Extensions
         }
 
         /// <summary>
+        /// Copies the properties needed when users edits a Picture.
+        /// </summary>
+        /// <param name="currentPicture"></param>
+        /// <param name="otherPicture"></param>
+        /// <param name="ownerEmail"></param>
+        /// <param name="progeny"></param>
+        public static void CopyPropertiesForCopy(this Picture currentPicture, Picture otherPicture, string ownerEmail, Progeny progeny)
+        {
+            otherPicture.RemoveNullStrings();
+
+            currentPicture.PictureId = 0;
+            currentPicture.ProgenyId = otherPicture.ProgenyId;
+            currentPicture.Progeny = progeny;
+            currentPicture.Owners = ownerEmail;
+            currentPicture.AccessLevel = otherPicture.AccessLevel;
+            currentPicture.PictureTime = otherPicture.PictureTime;
+            currentPicture.Tags = otherPicture.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
+            currentPicture.Location = otherPicture.Location.TrimEnd(',', ' ');
+            if (!string.IsNullOrEmpty(otherPicture.Longtitude))
+            {
+                currentPicture.Longtitude = otherPicture.Longtitude.Replace(',', '.');
+            }
+
+            if (!string.IsNullOrEmpty(otherPicture.Latitude))
+            {
+                currentPicture.Latitude = otherPicture.Latitude.Replace(',', '.');
+            }
+
+            if (!string.IsNullOrEmpty(otherPicture.Altitude))
+            {
+                currentPicture.Altitude = otherPicture.Altitude.Replace(',', '.');
+            }
+        }
+
+        /// <summary>
         /// Applies placeholder properties to a Picture object, used when no picture is found.
         /// </summary>
         /// <param name="picture"></param>

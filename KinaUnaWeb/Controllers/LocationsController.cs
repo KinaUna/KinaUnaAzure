@@ -466,5 +466,96 @@ namespace KinaUnaWeb.Controllers
 
             return RedirectToAction("Index", "Locations");
         }
+
+        /// <summary>
+        /// Page to copy a location.
+        /// </summary>
+        /// <param name="itemId">The LocationId of the Location to copy.</param>
+        /// <returns>PartialView with LocationViewModel.</returns>
+        public async Task<IActionResult> CopyLocation(int itemId)
+        {
+            Location location = await locationsHttpClient.GetLocation(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
+            LocationViewModel model = new(baseModel)
+            {
+                HereMapsApiKey = _hereMapsApiKey
+            };
+
+            if (model.CurrentAccessLevel > location.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+
+            List<string> tagsList = [];
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
+            {
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+
+                List<Progeny> accessList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+                if (accessList.Count != 0)
+                {
+                    foreach (Progeny progeny in accessList)
+                    {
+                        List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id);
+                        foreach (Location locationItem in locList1)
+                        {
+                            if (string.IsNullOrEmpty(locationItem.Tags)) continue;
+
+                            List<string> locTags = [.. locationItem.Tags.Split(',')];
+                            foreach (string tagstring in locTags)
+                            {
+                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                                {
+                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            model.SetPropertiesFromLocation(location, model.CurrentUser.Timezone);
+
+            model.SetTagList(tagsList);
+            model.SetAccessLevelList();
+
+            return PartialView("_CopyLocationPartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost endpoint for copying a location.
+        /// </summary>
+        /// <param name="model">LocationViewModel with the properties of the Location to add.</param>
+        /// <returns>PartialView with the added Location item.</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopyLocation(LocationViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            Location location = model.CreateLocation();
+
+            model.LocationItem = await locationsHttpClient.AddLocation(location);
+            
+            if (model.LocationItem.Date.HasValue)
+            {
+                model.LocationItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            if (model.LocationItem.DateAdded.HasValue)
+            {
+                model.LocationItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            return PartialView("_LocationCopiedPartial", model);
+        }
     }
 }

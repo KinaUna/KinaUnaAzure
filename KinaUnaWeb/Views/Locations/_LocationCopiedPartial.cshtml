@@ -1,0 +1,102 @@
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Location copied", PageNames.Locations, Model.LanguageId);
+    Model.LocationItem.Date ??= DateTime.MinValue;
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-location item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">person_pin</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        <div class="space-20"></div>
+                        @Model.LocationItem.Name
+                    </div>
+                </div>
+                <div class="timeline-text row text-white-75">
+                    <div class="text-white col-12">@await LocaleManager.GetTranslation("Date:", PageNames.Locations, languageId) @Model.LocationItem.Date.Value.ToString("dd-MMM-yyyy")</div>
+                    <div class="space-20"></div>
+                    <div class="text-white col-12">@await LocaleManager.GetTranslation("Latitude:", PageNames.Locations, languageId) @Model.LocationItem.Latitude</div>
+                    <div class="text-white col-12">@await LocaleManager.GetTranslation("Longitude:", PageNames.Locations, languageId) @Model.LocationItem.Longitude</div>
+                    <div class="space-20"></div>
+                    @if (!string.IsNullOrEmpty(Model.LocationItem.StreetName))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Street:", PageNames.Locations, languageId) @Model.LocationItem.StreetName</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.LocationItem.HouseNumber))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("House number:", PageNames.Locations, languageId) @Model.LocationItem.HouseNumber</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.LocationItem.District))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("District:", PageNames.Locations, languageId) @Model.LocationItem.District</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.LocationItem.City))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("City:", PageNames.Locations, languageId) @Model.LocationItem.City</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.LocationItem.PostalCode))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Postal code:", PageNames.Locations, languageId) @Model.LocationItem.PostalCode</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.LocationItem.County))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("County:", PageNames.Locations, languageId) @Model.LocationItem.County</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.LocationItem.State))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("State:", PageNames.Locations, languageId) @Model.LocationItem.State</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.LocationItem.Country))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Country:", PageNames.Locations, languageId) @Model.LocationItem.Country</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.LocationItem.Notes))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Notes:", PageNames.Locations, languageId) @Model.LocationItem.Notes</div>
+                    }
+                    <div class="col-12 mt-4">
+                        @{
+                            if (!string.IsNullOrEmpty(Model.LocationItem.Tags))
+                            {
+                                List<string> tagsList = Model.LocationItem.Tags.Split(',').ToList();
+                                foreach (string tagString in tagsList)
+                                {
+                                    <a asp-action="Index" asp-route-childId="@Model.LocationItem.ProgenyId" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            { 
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    <a data-edit-item-type="location" data-edit-item-item-id="@Model.LocationItem.LocationId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Locations" asp-action="DeleteLocation" asp-route-itemId="@Model.LocationItem.LocationId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

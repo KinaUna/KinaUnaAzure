@@ -15,8 +15,8 @@ using KinaUnaWeb.Models.HomeViewModels;
 namespace KinaUnaWeb.Controllers
 {
     /// <summary>
-    /// Controller for the AddItem view.
-    /// This used to handle adding new items to the database, but should now only be used to save attached/embedded files in Rich Text editors.
+    /// Controller for adding items.
+    /// This used to handle adding new items to the database.
     /// </summary>
     /// <param name="imageStore"></param>
     [Authorize]
@@ -226,6 +226,16 @@ namespace KinaUnaWeb.Controllers
             if (itemType == "location")
             {
                 return RedirectToAction("EditLocation", "Locations", new { itemId });
+            }
+
+            if (itemType == "picture")
+            {
+                return RedirectToAction("Picture", "Pictures", new { id = itemId, partialView = true });
+            }
+
+            if (itemType == "video")
+            {
+                return RedirectToAction("Video", "Videos", new { id = itemId, partialView = true });
             }
 
             return PartialView("../Shared/_NotFoundPartial", new { itemId });

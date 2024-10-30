@@ -159,7 +159,7 @@ namespace KinaUnaWeb.Controllers
         /// HttpPost for submitting edit sleep form.
         /// </summary>
         /// <param name="model">SleepViewModel with the updated properties of the Sleep item.</param>
-        /// <returns>Redirects to Sleep/Index page.</returns>
+        /// <returns>Sleep updated page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditSleep(SleepViewModel model)
@@ -232,6 +232,67 @@ namespace KinaUnaWeb.Controllers
             await sleepHttpClient.DeleteSleepItem(sleep.SleepId);
 
             return RedirectToAction("Index", "Sleep");
+        }
+
+        /// <summary>
+        /// Page for copying a sleep item.
+        /// </summary>
+        /// <param name="itemId">The SleepId of the Sleep item to copy.</param>
+        /// <returns>PartialView with SleepViewModel.</returns>
+        [HttpGet]
+        public async Task<IActionResult> CopySleep(int itemId)
+        {
+            Sleep sleep = await sleepHttpClient.GetSleepItem(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
+            SleepViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > sleep.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+
+            model.SetPropertiesFromSleepItem(sleep);
+            model.SetRatingList();
+            model.SetAccessLevelList();
+
+            return PartialView("_CopySleepPartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost for submitting copy sleep form.
+        /// </summary>
+        /// <param name="model">SleepViewModel with the updated properties of the Sleep item.</param>
+        /// <returns>SleepCopied PartialView.</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopySleep(SleepViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SleepItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            if (!ModelState.IsValid) return RedirectToAction("Index", "Sleep");
+
+            model.SleepItem.Progeny = model.CurrentProgeny;
+            model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeToUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeToUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            if (model.SleepItem.SleepRating == 0)
+            {
+                model.SleepItem.SleepRating = 3;
+            }
+
+            model.SleepItem = await sleepHttpClient.UpdateSleep(model.SleepItem);
+            model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            return PartialView("_SleepCopiedPartial", model);
         }
     }
 }

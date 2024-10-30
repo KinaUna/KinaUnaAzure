@@ -288,6 +288,77 @@ namespace KinaUnaWeb.Controllers
         }
 
         /// <summary>
+        /// Copy page for a CalendarItem.
+        /// </summary>
+        /// <param name="itemId">The EventId of the CalendarItem to copy.</param>
+        /// <returns>View with CalendarItemViewModel.</returns>
+        [HttpGet]
+        public async Task<IActionResult> CopyEvent(int itemId)
+        {
+            CalendarItem eventItem = await calendarsHttpClient.GetCalendarItem(itemId);
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId);
+            CalendarItemViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > eventItem.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.SetCalendarItem(eventItem);
+
+            model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserEmail != null && model.CurrentUser.UserId != null)
+            {
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.SetProgenyList();
+            }
+
+            model.SetAccessLevelList();
+
+            List<CalendarReminder> calendarReminders = await calendarRemindersHttpClient.GetUsersCalendarRemindersForEvent(eventItem.EventId, model.CurrentUser.UserId);
+            if (calendarReminders == null) return PartialView("_EditEventPartial", model);
+
+            foreach (CalendarReminder calendarReminder in calendarReminders)
+            {
+                calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeFromUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            model.CalendarReminders = calendarReminders;
+
+            return PartialView("_CopyEventPartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost action to copy a CalendarItem.
+        /// </summary>
+        /// <param name="model">CalendarItemViewModel with the properties for copying the CalendarItem.</param>
+        /// <returns></returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopyEvent([FromForm] CalendarItemViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CalendarItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            CalendarItem editedEvent = model.CreateCalendarItem();
+
+            model.CalendarItem = await calendarsHttpClient.AddCalendarItem(editedEvent);
+            if (!model.CalendarItem.StartTime.HasValue || !model.CalendarItem.EndTime.HasValue) return PartialView("_EventCopiedPartial", model);
+
+            model.CalendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.CalendarItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            return PartialView("_EventCopiedPartial", model);
+        }
+
+        /// <summary>
         /// HttpPost action to get a list of upcoming CalendarItems.
         /// </summary>
         /// <param name="parameters">TimeLineParameters object.</param>

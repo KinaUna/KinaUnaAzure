@@ -50,14 +50,14 @@
                         <div class="space-20"></div>
                         <div id="select-photos-button-parent-div" class="btn btn-primary btn-round btn-file">
                             <label for="select-photos-button" class="mb-0">@await LocaleManager.GetTranslation("Select photo(s)", PageNames.Pictures, Model.LanguageId)</label>
-                            <input id="select-photos-button" type="file" name="Files" accept=".gif,.jpg,.jpeg,.png,.webp,.kinauna" multiple />
+                            <input id="select-photos-button" type="file" name="Files" accept="image/png, image/jpeg, image/gif, image/webp, text/vtt" multiple />
                         </div>
                     </div>
                 </div>
                 <div id="location-form-group" class="form-group">
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="location-input" type="text" asp-for="Picture.Location" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
+                        <input id="location-input" type="text" asp-for="Picture.Location" value="@Model.Picture.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
                     </div>
                 </div>
                 <div id="tags-form-group" class="form-group">

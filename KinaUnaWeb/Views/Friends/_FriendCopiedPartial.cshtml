@@ -1,0 +1,119 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Friend copied", PageNames.Friends, Model.LanguageId);
+    string personalFriend = await LocaleManager.GetTranslation("Personal friend", PageNames.Friends, Model.LanguageId);
+    string toyFriend = await LocaleManager.GetTranslation("Toy/animal friend", PageNames.Friends, Model.LanguageId);
+    string parentFriend = await LocaleManager.GetTranslation("Parent", PageNames.Friends, Model.LanguageId);
+    string familyFriend = await LocaleManager.GetTranslation("Family", PageNames.Friends, Model.LanguageId);
+    string caretakerFriend = await LocaleManager.GetTranslation("Caretaker", PageNames.Friends, Model.LanguageId);
+    List<string> typeList = new();
+    typeList.Add(personalFriend);
+    typeList.Add(toyFriend);
+    typeList.Add(parentFriend);
+    typeList.Add(familyFriend);
+    typeList.Add(caretakerFriend);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-friend item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">face</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        @Model.FriendItem.Name
+                        <div class="space-10"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <img class="img-thumbnail d-block lazyload" style="max-height: 300px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@Model.FriendItem.GetProfilePictureUrl()" alt="@Model.FriendItem.Name"/>
+                    </div>
+                </div>
+                <div class="row text-white">
+                    <div class="col-12">
+                        <strong>@await LocaleManager.GetTranslation("Friends since:", PageNames.Friends, Model.LanguageId) </strong>
+                        <span align="left">
+                            @if (Model.FriendItem.FriendSince != null)
+                            {
+                                @Model.FriendItem.FriendSince.Value.ToString("dd-MMM-yyyy")
+                            }
+                            else
+                            {
+                                <span>@await LocaleManager.GetTranslation("N/A", PageNames.Friends, Model.LanguageId)</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+                <div class="timeline-text row text-white-75">
+                    <div class="col-12">
+                        <strong>@await LocaleManager.GetTranslation("Description:", PageNames.Friends, Model.LanguageId)</strong> @Model.FriendItem.Description
+                    </div>
+                    <div class="col-12">
+                        <strong>@await LocaleManager.GetTranslation("Type:", PageNames.Friends, Model.LanguageId)</strong> @typeList[Model.FriendItem.Type]
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.FriendItem.Context))
+                    {
+                        <div class="col-12">
+                            <strong>@await LocaleManager.GetTranslation("Context:", PageNames.Friends, Model.LanguageId)</strong> @Model.FriendItem.Context
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.FriendItem.Notes))
+                    {
+                        <div class="col-12">
+                            <strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Friends, Model.LanguageId)</strong> @Model.FriendItem.Notes
+                        </div>
+                    }
+                    <div class="col-12 mt-4">
+                        @{
+                            if (!string.IsNullOrEmpty(Model.Tags))
+                            {
+                                List<string> tagsList = Model.Tags.Split(',').ToList();
+                                foreach (string tagString in tagsList)
+                                {
+                                    <a asp-action="Index" asp-route-childId="@Model.FriendItem.ProgenyId" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
+                                }
+                            }
+                        }
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.FriendItem.Tags))
+                    {
+                        List<string> tagsList = Model.FriendItem.Tags.Split(',').ToList();
+                        <div class="col-12 text-right">
+                            @foreach (string tagString in tagsList)
+                            {
+                                <a asp-action="Index" asp-route-childId="@Model.FriendItem.ProgenyId" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
+                            }
+                        </div>
+                    }
+                </div>
+
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="col-12">
+                    <a data-edit-item-type="friend" data-edit-item-item-id="@Model.FriendItem.FriendId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Friends" asp-action="DeleteFriend" asp-route-itemId="@Model.FriendItem.FriendSince" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>

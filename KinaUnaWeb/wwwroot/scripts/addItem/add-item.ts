@@ -7,11 +7,13 @@ import { initializeAddEditMeasurement } from "../measurements/add-edit-measureme
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v8.js";
 import { initializeAddEditNote } from "../notes/add-edit-note.js";
 import { initializeAddEditPicture } from "../pictures/add-edit-picture.js";
+import { popupPictureDetails } from "../pictures/picture-details.js";
 import { InitializeAddEditProgeny } from "../progeny/add-edit-progeny.js";
 import { initializeAddEditSkill } from "../skills/add-edit-skill.js";
 import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
 import { initializeAddEditVaccination } from "../vaccinations/add-edit-vaccination.js";
 import { initializeAddEditVideo } from "../videos/add-edit-video.js";
+import { popupVideoDetails } from "../videos/video-details.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
 
 /**
@@ -151,6 +153,11 @@ export function setEditItemButtonEventListeners(): void {
     editItemButtons.forEach(function (button) {
         button.addEventListener('click', onEditItemButtonClicked);
     });
+
+    let copyItemButtons = document.querySelectorAll<HTMLButtonElement>('.copy-item-button');
+    copyItemButtons.forEach(function (button) {
+        button.addEventListener('click', onCopyItemButtonClicked);
+    });
 }
 
 async function onEditItemButtonClicked(event: MouseEvent): Promise<void> {
@@ -171,12 +178,46 @@ async function onEditItemButtonClicked(event: MouseEvent): Promise<void> {
     });
 }
 
+async function onCopyItemButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    startFullPageSpinner();
+    let copyItemButton = event.currentTarget as HTMLButtonElement;
+    let copyItemType = copyItemButton.getAttribute('data-copy-item-type');
+    let copyItemItemId = copyItemButton.getAttribute('data-copy-item-item-id');
+
+    if (copyItemType !== null && copyItemItemId !== null && copyItemItemId !== '0') {
+        await popupCopyItemModal(copyItemType, copyItemItemId);
+    }
+
+    stopFullPageSpinner();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
 /**
- * Shows the edit item modal for the specified item type and progeny.
+ * Shows the edit item modal for the specified item type and item id.
  * @param editItemType
  * @param editItemItemId
  */
 async function popupEditItemModal(editItemType: string, editItemItemId: string): Promise<void> {
+
+    // Picture and video items are handled differently.
+    if (editItemType === 'picture') {
+        await popupPictureDetails(editItemItemId);
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+    // Picture and video items are handled differently.
+    if (editItemType === 'video') {
+        await popupVideoDetails(editItemItemId);
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+
     let popup = document.getElementById('item-details-div');
     if (popup !== null) {
         popup.innerHTML = '';
@@ -250,6 +291,98 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
 
         if (editItemType === 'location') {
             await initializeAddEditLocation();
+        }
+        
+        hideBodyScrollbars();
+        addCloseButtonEventListener();
+        addCancelButtonEventListener();
+        setSaveItemFormEventListener();
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/**
+ * Shows the copy item modal for the specified item type and item id.
+ * @param copyItemType
+ * @param copyItemItemId
+ */
+async function popupCopyItemModal(copyItemType: string, copyItemItemId: string): Promise<void> {
+    let popup = document.getElementById('item-details-div');
+    if (popup !== null) {
+        popup.innerHTML = '';
+        await fetch('/CopyItem/GetCopyItemModalContent?itemType=' + copyItemType + '&itemId=' + copyItemItemId, {
+            method: 'GET',
+            headers: {
+                'Accept': 'text/html',
+            }
+        }).then(async function (response) {
+            if (response.ok) {
+                let modalContent = await response.text();
+                const fullScreenOverlay = document.createElement('div');
+                fullScreenOverlay.classList.add('full-screen-bg');
+                fullScreenOverlay.id = 'full-screen-overlay-div';
+                fullScreenOverlay.innerHTML = modalContent;
+                popup.appendChild(fullScreenOverlay);
+            }
+        }).catch(function (error) {
+            console.error('Error getting copy item popup content:', error);
+        });
+
+        // hide main-modal
+        $('#main-modal').modal('hide');
+
+        // show item-details-div
+        popup.classList.remove('d-none');
+                
+        if (copyItemType === 'note') {
+            await initializeAddEditNote();
+        }
+
+        if (copyItemType === 'calendar') {
+            await initializeAddEditEvent();
+        }
+
+        if (copyItemType === 'sleep') {
+            await initializeAddEditSleep();
+        }
+
+        if (copyItemType === 'vocabulary') {
+            await initializeAddEditVocabulary();
+        }
+
+        if (copyItemType === 'friend') {
+            await initializeAddEditFriend();
+        }
+
+        if (copyItemType === 'measurement') {
+            await initializeAddEditMeasurement();
+        }
+
+        if (copyItemType === 'contact') {
+            await initializeAddEditContact();
+        }
+
+        if (copyItemType === 'skill') {
+            await initializeAddEditSkill();
+        }
+
+        if (copyItemType === 'vaccination') {
+            await initializeAddEditVaccination();
+        }
+
+        if (copyItemType === 'location') {
+            await initializeAddEditLocation();
+        }
+
+        if (copyItemType === 'picture') {
+            await initializeAddEditPicture();
+        }
+
+        if (copyItemType === 'video') {
+            await initializeAddEditVideo();
         }
 
         hideBodyScrollbars();

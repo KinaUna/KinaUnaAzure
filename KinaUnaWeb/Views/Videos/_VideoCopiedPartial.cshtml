@@ -1,0 +1,90 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model KinaUnaWeb.Models.ItemViewModels.VideoItemViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Video copied", PageNames.Videos, Model.LanguageId);
+    bool allowYouTube = Context.Request.YouTubeCookieSet();
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-video item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">photo_library</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        <div>
+                            @Model.Video.VideoTime?.ToString("dd-MMM-yyyy HH:mm")
+                        </div>
+                        <div class="space-10"></div>
+                    </div>
+                </div>
+                <div class="timeline-text text-white-50">
+                    @if (allowYouTube)
+                    {
+                        if (Model.Video.VideoType == 1)
+                        {
+                            <iframe src="@Model.Video.VideoLink" style="width: 90%; height: 40vh; border: none;" scrolling="no" allowfullscreen></iframe>
+                        }
+
+                        if (Model.Video.VideoType == 2)
+                        {
+                            <iframe src="@Model.Video.VideoLink?rel=0" style="width: 90%; height: 40vh; border: none;" allow="encrypted-media" allowfullscreen></iframe>
+                        }
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Video.Location))
+                    {
+                        <div style="color: lightblue;"><i class="material-icons" style="font-size: 18px;">location_on</i> @Model.Video.Location</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Tags))
+                    {
+                        List<string> tagsList = Model.Tags.Split(',').ToList();
+                        <div>
+                            @foreach (string tagString in tagsList)
+                            {
+                                <span class="btn tag-item tag-item-sm leave-page">@tagString</span>
+                            }
+                        </div>
+                    }
+                </div>
+
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="space-20"></div>
+                <div class="col-12">
+                    <a data-edit-item-type="video" data-edit-item-item-id="@Model.Video.VideoId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Videos" asp-action="DeleteVideo" asp-route-videoId="@Model.Video.VideoId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+@if (!allowYouTube)
+{
+    <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
+        <div class="space-20"></div>
+        <div>@await LocaleManager.GetTranslation("Cookie consent for Here maps or YouTube has not been granted. To use maps enable cookies for Here Maps. To allow YouTube content enable cookies for YouTube.", PageNames.Locations, Model.LanguageId)</div>
+        <div class="space-20"></div>
+        @if (Context.Request.ConsentCookieSet())
+        {
+            @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
+        }
+    </div>
+}

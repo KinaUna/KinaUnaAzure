@@ -5,19 +5,20 @@ import { popupLocationItem } from "./location-details.js";
 export function addCopyLocationButtonEventListener() {
     const copyLocationButton = document.querySelector('#copy-location-button');
     if (copyLocationButton !== null) {
-        copyLocationButton.addEventListener('click', function () {
-            const latitudeInput = document.getElementById('latitude');
-            const longitudeInput = document.getElementById('longitude');
-            const locationSelectList = document.getElementById('copy-location');
-            if (latitudeInput !== null && longitudeInput !== null && locationSelectList !== null) {
-                let latitude = locationSelectList.options[locationSelectList.selectedIndex].getAttribute('data-latitude');
-                let longitude = locationSelectList.options[locationSelectList.selectedIndex].getAttribute('data-longitude');
-                if (latitude !== null && longitude !== null) {
-                    latitudeInput.setAttribute('value', latitude);
-                    longitudeInput.setAttribute('value', longitude);
-                }
-            }
-        });
+        copyLocationButton.addEventListener('click', onCopyLocationButtonClicked);
+    }
+}
+function onCopyLocationButtonClicked() {
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+    const locationSelectList = document.getElementById('copy-location');
+    if (latitudeInput !== null && longitudeInput !== null && locationSelectList !== null) {
+        let latitude = locationSelectList.options[locationSelectList.selectedIndex].getAttribute('data-latitude');
+        let longitude = locationSelectList.options[locationSelectList.selectedIndex].getAttribute('data-longitude');
+        if (latitude !== null && longitude !== null) {
+            latitudeInput.setAttribute('value', latitude);
+            longitudeInput.setAttribute('value', longitude);
+        }
     }
 }
 /**

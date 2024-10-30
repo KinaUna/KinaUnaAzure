@@ -34,6 +34,12 @@
             <div class="col">
                 <div class="timeline-title row">
                     <div class="col-12 h4">
+                        @if (Model.CurrentUser.CanUserAddItems)
+                        {
+                            <button class="btn btn-link p-3 text-white-50 float-right mr-5 copy-item-button" data-copy-item-item-id="@Model.ContactItem.ContactId" data-copy-item-type="contact">
+                                <i class="material-icons kinauna-icon-medium">content_copy</i>
+                            </button>
+                        }
                         @Model.ContactItem.DisplayName
                         <div class="space-10"></div>
                     </div>

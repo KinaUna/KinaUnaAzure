@@ -1,0 +1,61 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model KinaUnaWeb.Models.ItemViewModels.VaccinationViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Vaccination copied", PageNames.Vaccinations, Model.LanguageId);
+
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-vaccination item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">local_pharmacy</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        <div class="text-white">@Model.VaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy")</div>
+                        <div class="space-10"></div>
+                        <div>@Model.VaccinationItem.VaccinationName</div>
+                    </div>
+                </div>
+                <div class="row text-white-75">
+                    @if (!string.IsNullOrEmpty(Model.VaccinationItem.VaccinationDescription))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Sounds like", PageNames.Vocabulary, Model.LanguageId): @Model.VaccinationItem.VaccinationDescription</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.VaccinationItem.VaccinationDescription))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Description", PageNames.Vocabulary, Model.LanguageId): @Model.VaccinationItem.VaccinationDescription</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.VaccinationItem.Notes))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId): @Model.VaccinationItem.Notes</div>
+                    }
+                </div>
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="space-20"></div>
+                <div class="col-12">
+                    <a data-edit-item-type="vaccination" data-edit-item-item-id="@Model.VaccinationItem.VaccinationId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@Model.VaccinationItem.VaccinationId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -3,7 +3,6 @@ using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -88,6 +87,11 @@ namespace KinaUnaWeb.Controllers
             Picture picture = await mediaHttpClient.GetPicture(id, Constants.DefaultTimezone);
             if (picture == null)
             {
+                if (partialView)
+                {
+                    return PartialView("_NotFoundPartial");
+                }
+
                 return RedirectToAction("Index");
             }
 
@@ -105,8 +109,7 @@ namespace KinaUnaWeb.Controllers
             PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(id, sortBy, model.CurrentUser.Timezone, tagFilter);
 
             model.SetPropertiesFromPictureViewModel(pictureViewModel);
-            model.Picture.PictureLink = model.Picture.GetPictureUrl(1200);
-
+            
             model.TagFilter = tagFilter;
             model.SortBy = sortBy;
             
@@ -127,18 +130,13 @@ namespace KinaUnaWeb.Controllers
             }
             if (model.IsCurrentUserProgenyAdmin)
             {
-                model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId);
-                model.LocationsList = [];
-                if (model.ProgenyLocations.Count != 0)
+                model.ProgenyLocations = [];
+                foreach (Progeny progeny in model.CurrentUser.ProgenyList)
                 {
-                    foreach (Location loc in model.ProgenyLocations)
+                    List<Location> locations = await locationsHttpClient.GetProgenyLocations(progeny.Id);
+                    if (locations != null)
                     {
-                        SelectListItem selectListItem = new()
-                        {
-                            Text = loc.Name,
-                            Value = loc.LocationId.ToString()
-                        };
-                        model.LocationsList.Add(selectListItem);
+                        model.ProgenyLocations.AddRange(locations);
                     }
                 }
             }
@@ -460,6 +458,67 @@ namespace KinaUnaWeb.Controllers
             // Todo: show confirmation info, instead of gallery page.
 
             return RedirectToAction("Index", "Pictures");
+        }
+
+        /// <summary>
+        /// Page for adding a new picture.
+        /// </summary>
+        /// <returns>View with UploadPictureViewModel.</returns>
+        public async Task<IActionResult> CopyPicture(int itemId)
+        {
+            Picture picture = await mediaHttpClient.GetPicture(itemId, Constants.DefaultTimezone);
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
+            UploadPictureViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > picture.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.Picture = await mediaHttpClient.GetPicture(itemId, model.CurrentUser.Timezone);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+
+            model.SetAccessLevelList();
+
+            return PartialView("_CopyPicturePartial", model);
+        }
+
+        /// <summary>
+        /// HttpPost method for adding a new picture.
+        /// For ASP.NET form.
+        /// </summary>
+        /// <param name="model">UploadPictureViewModel with the Picture properties.</param>
+        /// <returns>View with UploadPictureViewModel.</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopyPicture(UploadPictureViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            Picture pictureToCopy = await mediaHttpClient.GetPicture(model.Picture.PictureId, model.CurrentUser.Timezone);
+
+            if (!model.IsCurrentUserProgenyAdmin)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+            
+            pictureToCopy.CopyPropertiesForCopy(model.Picture, model.CurrentUser.UserEmail, model.CurrentProgeny);
+            
+            if (model.Picture.PictureTime != null)
+            {
+                pictureToCopy.PictureTime = TimeZoneInfo.ConvertTimeToUtc(model.Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            model.Picture = await mediaHttpClient.AddPicture(pictureToCopy);
+
+            if (model.Picture.PictureTime != null)
+            {
+                model.Picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(model.Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            return PartialView("_PictureCopiedPartial", model);
         }
 
         /// <summary>
