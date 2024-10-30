@@ -380,12 +380,15 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
-            Video videoToUpdate = await mediaHttpClient.GetVideo(model.Video.VideoId, model.CurrentUser.Timezone);
-            videoToUpdate.CopyPropertiesForUpdate(model.Video, true);
-            videoToUpdate.ProgenyId = model.Video.ProgenyId;
-            videoToUpdate.VideoId = 0;
+            Video videoToCopy = await mediaHttpClient.GetVideo(model.Video.VideoId, model.CurrentUser.Timezone);
+            videoToCopy.CopyPropertiesForCopy(model.Video, model.CurrentUser.UserEmail, model.CurrentProgeny, true);
             
-            model.Video = await mediaHttpClient.AddVideo(videoToUpdate);
+            if (model.Video.VideoTime != null)
+            {
+                videoToCopy.VideoTime = TimeZoneInfo.ConvertTimeToUtc(model.Video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            model.Video = await mediaHttpClient.AddVideo(videoToCopy);
 
             if (model.Video.VideoTime != null)
             {

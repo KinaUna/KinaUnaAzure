@@ -87,6 +87,11 @@ namespace KinaUnaWeb.Controllers
             Picture picture = await mediaHttpClient.GetPicture(id, Constants.DefaultTimezone);
             if (picture == null)
             {
+                if (partialView)
+                {
+                    return PartialView("_NotFoundPartial");
+                }
+
                 return RedirectToAction("Index");
             }
 
@@ -493,19 +498,21 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId);
             model.SetBaseProperties(baseModel);
 
-            Picture pictureToUpdate = await mediaHttpClient.GetPicture(model.Picture.PictureId, model.CurrentUser.Timezone);
+            Picture pictureToCopy = await mediaHttpClient.GetPicture(model.Picture.PictureId, model.CurrentUser.Timezone);
 
             if (!model.IsCurrentUserProgenyAdmin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
             
-            pictureToUpdate.CopyPropertiesForUserUpdate(model.Picture);
-            pictureToUpdate.PictureId = 0;
-            pictureToUpdate.ProgenyId = model.Picture.ProgenyId;
-            pictureToUpdate.Owners = model.CurrentUser.UserEmail;
+            pictureToCopy.CopyPropertiesForCopy(model.Picture, model.CurrentUser.UserEmail, model.CurrentProgeny);
             
-            model.Picture = await mediaHttpClient.AddPicture(pictureToUpdate);
+            if (model.Picture.PictureTime != null)
+            {
+                pictureToCopy.PictureTime = TimeZoneInfo.ConvertTimeToUtc(model.Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            model.Picture = await mediaHttpClient.AddPicture(pictureToCopy);
 
             if (model.Picture.PictureTime != null)
             {
