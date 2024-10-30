@@ -3,8 +3,9 @@ import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
-import { PicturesPageParameters } from '../page-models-v8.js';
+import { PicturesPageParameters, PictureViewModelRequest } from '../page-models-v8.js';
 import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
 
 let pictureDetailsTouchStartX: number = 0;
 let pictureDetailsTouchStartY: number = 0;
@@ -403,21 +404,29 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
         startLoadingItemsSpinner('item-details-content-wrapper', 0.25, 128, 128, 128);
     }
 
-    let tagFilter = '';
+    let pictureViewModelRequest = new PictureViewModelRequest();
+    pictureViewModelRequest.pictureId = parseInt(pictureId);
+    pictureViewModelRequest.progenies = getSelectedProgenies();
+    
     const picturePageParameters = getPicturePageParametersFromPageData();
     if (picturePageParameters) {
         if (picturePageParameters.tagFilter) {
-            tagFilter = picturePageParameters.tagFilter;
+            pictureViewModelRequest.tagFilter = picturePageParameters.tagFilter;
         }
+
+        if (picturePageParameters.sort) {
+            pictureViewModelRequest.sortOrder = picturePageParameters.sort;
+        }        
     }
     
-    let url = '/Pictures/Picture?id=' + pictureId + "&tagFilter=" + tagFilter + "&partialView=true";
+    let url = '/Pictures/PictureDetails';
     await fetch(url, {
-        method: 'GET',
+        method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
+        body: JSON.stringify(pictureViewModelRequest)
     }).then(async function (response) {
         if (response.ok) {
             const itemElementHtml = await response.text();

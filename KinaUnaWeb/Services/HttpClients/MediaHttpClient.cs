@@ -237,82 +237,38 @@ namespace KinaUnaWeb.Services.HttpClients
             HttpResponseMessage newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath).ConfigureAwait(false);
             return newCommentResponse.IsSuccessStatusCode;
         }
-
-        /// <summary>
-        /// Gets a PicturePageViewModel for a progeny that a user has access to.
-        /// </summary>
-        /// <param name="pageSize">The number of Pictures per page.</param>
-        /// <param name="id">The current page number.</param>
-        /// <param name="progenyId">The Id of the Progeny.</param>
-        /// <param name="sortBy">Sort order. 0 for oldest first, 1 (default) for newest first.</param>
-        /// <param name="tagFilter">Only include Pictures tagged with this string. If null or empty include all Pictures.</param>
-        /// <param name="timeZone">The time zone to use for PictureTime.</param>
-        /// <returns>PicturePageViewModel</returns>
-        public async Task<PicturePageViewModel> GetPicturePage(int pageSize, int id, int progenyId, int sortBy, string tagFilter, string timeZone)
-        {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
-
-            string pageApiPath = "/api/Pictures/Page?pageSize=" + pageSize + "&pageIndex=" + id + "&progenyId=" + progenyId + "&sortBy=" + sortBy;
-            if (tagFilter != "")
-            {
-                pageApiPath = pageApiPath + "&tagFilter=" + tagFilter;
-            }
-
-            HttpResponseMessage picturePageResponse = await _httpClient.GetAsync(pageApiPath);
-            if (!picturePageResponse.IsSuccessStatusCode) return new PicturePageViewModel();
-
-            string pageResponseString = await picturePageResponse.Content.ReadAsStringAsync();
-
-            PicturePageViewModel model = JsonConvert.DeserializeObject<PicturePageViewModel>(pageResponseString);
-            if (timeZone == "" || model == null || model.PicturesList.Count == 0) return model ?? new PicturePageViewModel();
-
-            foreach (Picture pic in model.PicturesList)
-            {
-                if (pic.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
-                {
-                    pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
-                        TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                }
-            }
-
-            return model;
-        }
-
+        
         /// <summary>
         /// Gets a PictureViewModel for the Picture with a given PictureId.
         /// PictureTime and Comment's time will be converted to the given time zone.
         /// </summary>
-        /// <param name="id">The PictureId for the Picture to get..</param>
-        /// <param name="sortBy">Sort order. 0 for oldest first, 1 (default) for newest first.</param>
-        /// <param name="timeZone">The time zone to use for PictureTime and Comment's time.</param>
-        /// <param name="tagFilter">Only include Pictures tagged with this string. If null or empty include all Pictures.</param>
+        /// <param name="request">PictureViewModelRequest object with PictureId, SortOrder, TimeZone, and TagFilter.</param>
         /// <returns>PictureVieModel.</returns>
-        public async Task<PictureViewModel> GetPictureViewModel(int id, int sortBy, string timeZone, string tagFilter = "")
+        public async Task<PictureViewModel> GetPictureViewModel(PictureViewModelRequest request)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string pageApiPath = "/api/Pictures/PictureViewModel/" + id + "?sortBy=" + sortBy + "&tagFilter=" + tagFilter;
-            HttpResponseMessage picturesResponse = await _httpClient.GetAsync(pageApiPath);
+            const string pageApiPath = "/api/Pictures/PictureViewModel/";
+            HttpResponseMessage picturesResponse = await _httpClient.PostAsync(pageApiPath, new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
             if (!picturesResponse.IsSuccessStatusCode) return new PictureViewModel();
 
             string picturesViewModelAsString = await picturesResponse.Content.ReadAsStringAsync();
             PictureViewModel pictureViewModel = JsonConvert.DeserializeObject<PictureViewModel>(picturesViewModelAsString);
-            if (timeZone == "" || pictureViewModel == null) return pictureViewModel ?? new PictureViewModel();
+            if (request.TimeZone == "" || pictureViewModel == null) return pictureViewModel ?? new PictureViewModel();
 
-            if (pictureViewModel.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
+            if (pictureViewModel.PictureTime.HasValue && !string.IsNullOrEmpty(request.TimeZone))
             {
                 pictureViewModel.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pictureViewModel.PictureTime.Value,
-                    TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                    TimeZoneInfo.FindSystemTimeZoneById(request.TimeZone));
             }
 
-            if (pictureViewModel.CommentsList.Count <= 0 || string.IsNullOrEmpty(timeZone)) return pictureViewModel;
+            if (pictureViewModel.CommentsList.Count <= 0 || string.IsNullOrEmpty(request.TimeZone)) return pictureViewModel;
 
             foreach (Comment cmnt in pictureViewModel.CommentsList)
             {
                 cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created,
-                    TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                    TimeZoneInfo.FindSystemTimeZoneById(request.TimeZone));
             }
 
             return pictureViewModel;

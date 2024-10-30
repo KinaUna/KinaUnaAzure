@@ -69,30 +69,14 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="commentId">The CommentId of the Comment to remove.</param>
         /// <returns>bool: True if the Comment was removed successfully.</returns>
         Task<bool> DeletePictureComment(int commentId);
-
-        /// <summary>
-        /// Gets a PicturePageViewModel for a progeny that a user has access to.
-        /// </summary>
-        /// <param name="pageSize">The number of Pictures per page.</param>
-        /// <param name="id">The current page number.</param>
-        /// <param name="progenyId">The Id of the Progeny.</param>
-        /// <param name="sortBy">Sort order. 0 for oldest first, 1 (default) for newest first.</param>
-        /// <param name="tagFilter">Only include Pictures tagged with this string. If null or empty include all Pictures.</param>
-        /// <param name="timeZone">The time zone to use for PictureTime.</param>
-        /// <returns>PicturePageViewModel</returns>
-        Task<PicturePageViewModel> GetPicturePage(int pageSize, int id, int progenyId, int sortBy,
-            string tagFilter, string timeZone);
-
+        
         /// <summary>
         /// Gets a PictureViewModel for the Picture with a given PictureId.
         /// PictureTime and Comment's time will be converted to the given time zone.
         /// </summary>
-        /// <param name="id">The PictureId for the Picture to get..</param>
-        /// <param name="sortBy">Sort order. 0 for oldest first, 1 (default) for newest first.</param>
-        /// <param name="timeZone">The time zone to use for PictureTime and Comment's time.</param>
-        /// <param name="tagFilter">Only include Pictures tagged with this string. If null or empty include all Pictures.</param>
+        /// <param name="request">PictureViewModelRequest object with PictureId, SortOrder, TimeZone, and TagFilter.</param>
         /// <returns>PictureVieModel.</returns>
-        Task<PictureViewModel> GetPictureViewModel(int id, int sortBy, string timeZone, string tagFilter = "");
+        Task<PictureViewModel> GetPictureViewModel(PictureViewModelRequest request);
 
         /// <summary>
         /// Gets a list of Locations that are obtained from Pictures.

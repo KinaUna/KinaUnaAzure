@@ -177,6 +177,15 @@ export class PictureViewModel {
     sortBy: number = 1;
     tagFilter: string = '';
 }
+
+export class PictureViewModelRequest {
+    progenies: number[] = [];
+    pictureId: number = 0;
+    sortOrder: number = 1;
+    tagFilter: string = '';
+    timeZone : string = '';
+}
+
 export class PicturesPageParameters implements BasePageParameters {
     progenyId: number = 0;
     progenies : number[] = [];

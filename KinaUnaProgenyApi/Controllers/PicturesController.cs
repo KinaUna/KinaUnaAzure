@@ -144,15 +144,13 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Gets a PictureViewModel for a Picture entity with the provided PictureId.
         /// </summary>
-        /// <param name="id">The PictureId of the entity to get.</param>
-        /// <param name="sortBy">Sort order, 0=oldest first, 1= newest first.</param>
-        /// <param name="tagFilter">Only include Picture items where the Tag property contains the tagFilter string. If tagFilter is an empty string, include all Picture items.</param>
+        /// <param name="request">PictureViewModelRequest object with the PictureId of the Picture entity, sortBy, tagFilter and list of progenies selected.</param>
         /// <returns>PictureViewModel for the Picture and current user.</returns>
-        [HttpGet]
-        [Route("[action]/{id:int}")]
-        public async Task<IActionResult> PictureViewModel(int id, [FromQuery] int sortBy = 1, [FromQuery] string tagFilter = "")
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> PictureViewModel([FromBody] PictureViewModelRequest request)
         {
-            Picture picture = await picturesService.GetPicture(id);
+            Picture picture = await picturesService.GetPicture(request.PictureId);
 
             if (picture == null) return NotFound();
 
@@ -171,13 +169,46 @@ namespace KinaUnaProgenyApi.Controllers
             model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
             model.TagsList = "";
             List<string> tagsList = [];
-            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId, accessLevelResult.Value);
+            List<Picture> pictureList = [];
+            foreach (int progenyId in request.Progenies)
+            {
+                CustomResult<int> accessLevelResultForProgeny = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+                if (!accessLevelResult.IsSuccess)
+                {
+                    continue;
+                }
+                
+                List<Picture> tempList = await picturesService.GetPicturesList(progenyId, accessLevelResultForProgeny.Value);
+
+                if (progenyId == picture.ProgenyId)
+                {
+                    tempList = [.. tempList.OrderBy(p => p.PictureTime)];
+                    int currentIndex = 0;
+                    int indexer = 0;
+                    foreach (Picture pic in tempList)
+                    {
+                        if (pic.PictureId == picture.PictureId)
+                        {
+                            currentIndex = indexer;
+                        }
+
+                        indexer++;
+                    }
+
+                    model.PictureNumber = currentIndex + 1;
+
+                    model.PictureCount = tempList.Count;
+                }
+
+                pictureList.AddRange(tempList);
+            }
+
             pictureList = [.. pictureList.OrderBy(p => p.PictureTime)];
             if (pictureList.Count != 0)
             {
-                if (!string.IsNullOrEmpty(tagFilter))
+                if (!string.IsNullOrEmpty(request.TagFilter))
                 {
-                    pictureList = [.. pictureList.Where(p => p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
+                    pictureList = [.. pictureList.Where(p => p.Tags != null && p.Tags.Contains(request.TagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
                 }
 
                 int currentIndex = 0;
@@ -202,10 +233,7 @@ namespace KinaUnaProgenyApi.Controllers
                         }
                     }
                 }
-
-                model.PictureNumber = currentIndex + 1;
-
-                model.PictureCount = pictureList.Count;
+                
                 if (currentIndex > 0)
                 {
                     model.PrevPicture = pictureList[currentIndex - 1].PictureId;
@@ -224,11 +252,10 @@ namespace KinaUnaProgenyApi.Controllers
                     model.NextPicture = pictureList.First().PictureId;
                 }
 
-                if (sortBy == 1)
+                if (request.SortOrder == 1)
                 {
                     (model.NextPicture, model.PrevPicture) = (model.PrevPicture, model.NextPicture);
                 }
-
             }
 
             model.SetTagsList(tagsList);

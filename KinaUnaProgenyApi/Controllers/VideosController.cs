@@ -428,8 +428,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-
-            Video vid = await videosService.GetVideoByLink(model.VideoLink, model.ProgenyId);
+            
             CommentThread commentThread = await commentsService.AddCommentThread();
             model.CommentThreadNumber = commentThread.Id;
 
