@@ -64,7 +64,9 @@ async function getPicturesLocationsList() {
 async function processLocationsList(locationsList) {
     if (map === null)
         return;
+    group.removeAll();
     group = new H.map.Group();
+    console.log(locationsList.length);
     for (const locationItem of locationsList) {
         let marker = new H.map.Marker({ lat: locationItem.latitude, lng: locationItem.longitude }, { icon: defaultIcon });
         group.addObject(marker);
@@ -82,6 +84,9 @@ async function getPicturesNearLocation(locationItem) {
     nearByPhotosRequest.locationItem = locationItem;
     nearByPhotosRequest.progenyId = photoLocationsProgenyId;
     nearByPhotosRequest.progenies = locationsPageParameters.progenies;
+    if (nearByPhotosRequest.numberOfPictures < 5) {
+        nearByPhotosRequest.numberOfPictures = 10;
+    }
     picturesShown = 0;
     await fetch('/Pictures/GetPicturesNearLocation/', {
         method: 'POST',

@@ -205,11 +205,11 @@ namespace KinaUnaWeb.Controllers
                 locationsList.Reverse();
             }
 
-            List<int> locationsIdList = locationsList.Select(l => l.LocationId).ToList();
+            // List<int> locationsIdList = locationsList.Select(l => l.LocationId).ToList();
 
             return Json(new LocationsPageResponse()
             {
-                LocationsList = locationsIdList,
+                LocationsList = locationsList,
                 PageNumber = parameters.CurrentPageNumber,
                 TotalItems = locationsList.Count,
                 TagsList = tagsList

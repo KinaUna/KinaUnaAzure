@@ -13,6 +13,7 @@ const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('
 const sortByDateSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-date-button');
 const sortByNameSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-name-button');
 declare let map: H.Map;
+let group: H.map.Group = new H.map.Group();
 
 /** Gets the page parameters from the data-locations-page attribute.
  */
@@ -66,10 +67,31 @@ async function getLocationsList(): Promise<void> {
                 locationListDiv.innerHTML = '';
             }
 
-            for await (const locationId of locationsPageResponse.locationsList) {
-                await getLocationElement(locationId);
-            }
+            let defaultMarkerIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
+            group.removeAll();
 
+            let lineString = new H.geo.LineString();
+            for await (const locationItem of locationsPageResponse.locationsList) {
+                await getLocationElement(locationItem.locationId);
+
+                // add marker to map
+                if (locationItem.latitude !== 0 && locationItem.longitude !== 0) {
+                    let location = { lat: locationItem.latitude, lng: locationItem.longitude };
+                    let marker = new H.map.Marker(location, {icon: defaultMarkerIcon});
+                    marker.setData(locationItem.locationId);
+                    map.addObject(marker);
+                    group.addObject(marker);
+                    lineString.pushPoint(location);
+                }
+            }
+            
+            map.addObject(group);
+            map.addObject(new H.map.Polyline(
+                lineString, { style: { lineWidth: 4 } }
+            ));
+
+            map.getViewModel().setLookAtData({ bounds: group.getBoundingBox() });
+            
             updateTagsListDiv(locationsPageResponse.tagsList, locationsPageParameters.sortTags);
             updateActiveTagFilterDiv();
         }
@@ -106,6 +128,8 @@ async function getLocationElement(id: number): Promise<void> {
             timelineItem.itemId = id.toString();
             timelineItem.itemType = 12;
             addTimelineItemEventListener(timelineItem);
+            // when clicking on item, center and zoom in on the marker
+
         }
     }).catch(function (error) {
         console.log('Error loading location element. Error: ' + error);
