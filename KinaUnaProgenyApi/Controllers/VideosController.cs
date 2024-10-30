@@ -155,12 +155,19 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(model);
         }
-        [HttpGet]
-        [Route("[action]/{id:int}")]
-        public async Task<IActionResult> VideoViewModel(int id, [FromQuery] int sortBy = 1, [FromQuery] string tagFilter = "")
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> VideoViewModel([FromBody] VideoViewModelRequest request)
         {
-            Video video = await videosService.GetVideo(id);
+            Video video = await videosService.GetVideo(request.VideoId);
+            
             if (video == null) return NotFound();
+
+            if (request.Progenies == null || request.Progenies.Count == 0)
+            {
+                request.Progenies = [video.ProgenyId];
+            }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(video.ProgenyId, userEmail, video.AccessLevel);
@@ -196,13 +203,48 @@ namespace KinaUnaProgenyApi.Controllers
             model.Altitude = video.Latitude;
             model.TagsList = "";
             List<string> tagsList = [];
-            List<Video> videosList = await videosService.GetVideosList(video.ProgenyId, accessLevelResult.Value);
+
+
+            List<Video> videosList = [];
+            foreach (int progenyId in request.Progenies)
+            {
+                CustomResult<int> accessLevelResultForProgeny = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
+                if (!accessLevelResult.IsSuccess)
+                {
+                    continue;
+                }
+
+                List<Video> tempList = await videosService.GetVideosList(progenyId, accessLevelResultForProgeny.Value);
+
+                if (progenyId == video.ProgenyId)
+                {
+                    tempList = [.. tempList.OrderBy(p => p.VideoTime)];
+                    int currentIndex = 0;
+                    int indexer = 0;
+                    foreach (Video vid in tempList)
+                    {
+                        if (vid.VideoId == video.VideoId)
+                        {
+                            currentIndex = indexer;
+                        }
+
+                        indexer++;
+                    }
+
+                    model.VideoNumber = currentIndex + 1;
+
+                    model.VideoCount = tempList.Count;
+                }
+
+                videosList.AddRange(tempList);
+            }
+
             videosList = [.. videosList.OrderBy(p => p.VideoTime)];
             if (videosList.Count != 0)
             {
-                if (!string.IsNullOrEmpty(tagFilter))
+                if (!string.IsNullOrEmpty(request.TagFilter))
                 {
-                    videosList = [.. videosList.Where(p => p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
+                    videosList = [.. videosList.Where(p => p.Tags != null && p.Tags.Contains(request.TagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
                 }
 
                 int currentIndex = 0;
@@ -225,8 +267,7 @@ namespace KinaUnaProgenyApi.Controllers
                         }
                     }
                 }
-                model.VideoNumber = currentIndex + 1;
-                model.VideoCount = videosList.Count;
+                
                 if (currentIndex > 0)
                 {
                     model.PrevVideo = videosList[currentIndex - 1].VideoId;
@@ -245,7 +286,7 @@ namespace KinaUnaProgenyApi.Controllers
                     model.NextVideo = videosList.First().VideoId;
                 }
 
-                if (sortBy == 1)
+                if (request.SortOrder == 1)
                 {
                     (model.NextVideo, model.PrevVideo) = (model.PrevVideo, model.NextVideo);
                 }

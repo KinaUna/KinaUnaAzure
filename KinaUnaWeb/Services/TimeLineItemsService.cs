@@ -76,7 +76,13 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    VideoViewModel video = await mediaHttpClient.GetVideoViewModel(itemId, 1, model.CurrentUser.Timezone);
+                    VideoViewModelRequest videoViewModelRequest = new VideoViewModelRequest
+                    {
+                        VideoId = itemId,
+                        SortOrder = 1,
+                        TimeZone = model.CurrentUser.Timezone
+                    };
+                    VideoViewModel video = await mediaHttpClient.GetVideoViewModel(videoViewModelRequest);
                     if (video != null && video.VideoId > 0)
                     {
                         video.CommentsCount = video.CommentsList.Count;

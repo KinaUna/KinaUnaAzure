@@ -261,6 +261,15 @@ export class VideosList {
         this.tagsList = [];
     }
 }
+export class VideoViewModelRequest {
+    constructor() {
+        this.progenies = [];
+        this.videoId = 0;
+        this.sortOrder = 1;
+        this.tagFilter = '';
+        this.timeZone = '';
+    }
+}
 export class KinaUnaTextParameters {
     constructor() {
         this.id = 0;

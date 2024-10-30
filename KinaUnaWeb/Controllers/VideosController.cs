@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models.TypeScriptModels.Videos;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.Extensions.Configuration;
@@ -41,7 +42,7 @@ namespace KinaUnaWeb.Controllers
         /// <param name="videoId">The Id of the video to show in a popup/modal, If 0, no popup is shown.</param>
         /// <returns>View with VideoListViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int id = 1, int pageSize = 16, int childId = 0, int sortBy = 2, string tagFilter = "", int year = 0, int month = 0, int day = 0, int videoId = 0)
+        public async Task<IActionResult> Index(int id = 1, int pageSize = 16, int childId = 0, int sortBy = 1, string tagFilter = "", int year = 0, int month = 0, int day = 0, int videoId = 0)
         {
             if (id < 1)
             {
@@ -103,7 +104,15 @@ namespace KinaUnaWeb.Controllers
                 PartialView = partialView
             };
 
-            VideoViewModel videoViewModel = await mediaHttpClient.GetVideoViewModel(id, sortBy, model.CurrentUser.Timezone, tagFilter);
+            VideoViewModelRequest videoViewModelRequest = new()
+            {
+                VideoId = id,
+                TimeZone = model.CurrentUser.Timezone,
+                TagFilter = tagFilter,
+                SortOrder = sortBy
+            };
+
+            VideoViewModel videoViewModel = await mediaHttpClient.GetVideoViewModel(videoViewModelRequest);
             
             model.SetPropertiesFromVideoViewModel(videoViewModel);
             
@@ -135,13 +144,71 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.SetAccessLevelList();
-            model.Video.Progeny.PictureLink = model.Video.Progeny.GetProfilePictureUrl();
+
             if (partialView)
             {
                 return PartialView("_VideoDetailsPartial", model);
             }
 
             return View(model);
+        }
+
+        /// <summary>
+        /// Video details PartialView.
+        /// </summary>
+        /// <param name="request">VideoViewModelRequest with the VideoId of the Video to show, progenies list, sort order, and tag filter.</param>
+        /// <returns>View or PartialView with VideoItemViewModel.</returns>
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> VideoDetails([FromBody] VideoViewModelRequest request)
+        {
+            Video video = await mediaHttpClient.GetVideo(request.VideoId, Constants.DefaultTimezone);
+            if (video == null)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), video.ProgenyId);
+            VideoItemViewModel model = new(baseModel)
+            {
+                HereMapsApiKey = _hereMapsApiKey,
+                PartialView = true
+            };
+            
+            VideoViewModel videoViewModel = await mediaHttpClient.GetVideoViewModel(request);
+
+            model.SetPropertiesFromVideoViewModel(videoViewModel);
+
+            if (model.CommentsCount > 0)
+            {
+                foreach (Comment comment in model.CommentsList)
+                {
+                    UserInfo commentAuthor = await userInfosHttpClient.GetUserInfoByUserId(comment.Author);
+                    if (commentAuthor == null) continue;
+                    if (commentAuthor.ProfilePicture != null)
+                    {
+                        comment.AuthorImage = commentAuthor.GetProfilePictureUrl();
+                    }
+
+                    comment.DisplayName = commentAuthor.FullName();
+                }
+            }
+            if (model.IsCurrentUserProgenyAdmin)
+            {
+                model.ProgenyLocations = [];
+                foreach (Progeny progeny in model.CurrentUser.ProgenyList)
+                {
+                    List<Location> locations = await locationsHttpClient.GetProgenyLocations(progeny.Id);
+                    if (locations != null)
+                    {
+                        model.ProgenyLocations.AddRange(locations);
+                    }
+                }
+            }
+
+            model.SetAccessLevelList();
+            
+            return PartialView("_VideoDetailsPartial", model);
         }
 
         /// <summary>

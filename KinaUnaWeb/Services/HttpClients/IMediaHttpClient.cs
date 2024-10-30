@@ -159,12 +159,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <summary>
         /// Gets a VideoViewModel for the Video with a given VideoId.
         /// </summary>
-        /// <param name="id">The VideoId for the Video to get the VideoViewModel for.</param>
-        /// <param name="sortBy">Sort order. 0 for oldest first, 1 (default) for newest first.</param>
-        /// <param name="timeZone">The time zone to use for VideoTime and Comment's time.</param>
-        /// <param name="tagFilter">Only include Videos tagged with this string. If null or empty include all Pictures.</param>
+        /// <param name="request">VideoViewModelRequest object with VideoId, TimeZone, progenies, sort order.</param>
         /// <returns>VideoViewModel</returns>
-        Task<VideoViewModel> GetVideoViewModel(int id, int sortBy, string timeZone, string tagFilter = "");
+        Task<VideoViewModel> GetVideoViewModel(VideoViewModelRequest request);
 
         /// <summary>
         /// Gets a list of all Pictures for a given progeny that a user has access to.

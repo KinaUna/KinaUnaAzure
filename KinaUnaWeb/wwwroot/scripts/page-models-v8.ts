@@ -256,6 +256,14 @@ export class VideosList {
     tagsList: string[] = [];
 }
 
+export class VideoViewModelRequest {
+    progenies: number[] = [];
+    videoId: number = 0;
+    sortOrder: number = 1;
+    tagFilter: string = '';
+    timeZone: string = '';
+}
+
 export class KinaUnaTextParameters {
     id: number = 0;
     textId: number = 0;

@@ -154,6 +154,11 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (picture == null) return NotFound();
 
+            if (request.Progenies == null || request.Progenies.Count == 0)
+            {
+                request.Progenies = [picture.ProgenyId];
+            }
+
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(picture.ProgenyId, userEmail, picture.AccessLevel);

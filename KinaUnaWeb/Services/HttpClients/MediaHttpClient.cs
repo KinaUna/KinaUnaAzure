@@ -370,36 +370,33 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <summary>
         /// Gets a VideoViewModel for the Video with a given VideoId.
         /// </summary>
-        /// <param name="id">The VideoId for the Video to get the VideoViewModel for.</param>
-        /// <param name="sortBy">Sort order. 0 for oldest first, 1 (default) for newest first.</param>
-        /// <param name="timeZone">The time zone to use for VideoTime and Comment's time.</param>
-        /// <param name="tagFilter">Only include Videos tagged with this string. If null or empty include all Pictures.</param>
+        /// <param name="request">VideoViewModelRequest object with VideoId, TimeZone, progenies, sort order.</param>
         /// <returns>VideoViewModel</returns>
-        public async Task<VideoViewModel> GetVideoViewModel(int id, int sortBy, string timeZone, string tagFilter = "")
+        public async Task<VideoViewModel> GetVideoViewModel(VideoViewModelRequest request)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string pageApiPath = "/api/Videos/VideoViewModel/" + id + "?sortBy=" + sortBy + "&tagFilter=" + tagFilter;
+            string pageApiPath = "/api/Videos/VideoViewModel";
 
-            HttpResponseMessage videoViewModelResponse = await _httpClient.GetAsync(pageApiPath);
+            HttpResponseMessage videoViewModelResponse = await _httpClient.PostAsync(pageApiPath, new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
             if (!videoViewModelResponse.IsSuccessStatusCode) return new VideoViewModel();
 
             string videoViewModelAsString = await videoViewModelResponse.Content.ReadAsStringAsync();
             VideoViewModel videoViewModel = JsonConvert.DeserializeObject<VideoViewModel>(videoViewModelAsString);
 
-            if (videoViewModel == null || string.IsNullOrEmpty(timeZone)) return videoViewModel ?? new VideoViewModel();
+            if (videoViewModel == null || string.IsNullOrEmpty(request.TimeZone)) return videoViewModel ?? new VideoViewModel();
 
             if (videoViewModel.VideoTime.HasValue)
             {
-                videoViewModel.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(videoViewModel.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                videoViewModel.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(videoViewModel.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(request.TimeZone));
             }
 
             if (videoViewModel.CommentsList.Count <= 0) return videoViewModel;
 
             foreach (Comment cmnt in videoViewModel.CommentsList)
             {
-                cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created, TimeZoneInfo.FindSystemTimeZoneById(request.TimeZone));
             }
 
             return videoViewModel;
