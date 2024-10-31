@@ -1,4 +1,4 @@
-import { setEditItemButtonEventListeners } from "../addItem/add-item.js";
+import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
 /**
@@ -68,7 +68,6 @@ async function displayProgenyDetails(progenyId) {
                 itemDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
                 itemDetailsPopupDiv.classList.remove('d-none');
-                setEditItemButtonEventListeners();
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
@@ -79,6 +78,8 @@ async function displayProgenyDetails(progenyId) {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
+                setDeleteItemButtonEventListeners();
             }
         }
     }).catch(function (error) {
