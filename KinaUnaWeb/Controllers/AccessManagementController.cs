@@ -172,7 +172,12 @@ namespace KinaUnaWeb.Controllers
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                return PartialView("_AccessDeniedPartial");
+                if (!model.CurrentUser.UserEmail.Equals(userAccess.UserId, System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return PartialView("_AccessDeniedPartial");
+                }
+
+                return PartialView("_DeleteMyAccessPartial", model);
             }
 
             return PartialView("_DeleteAccessPartial", model);
@@ -190,14 +195,16 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
             model.SetBaseProperties(baseModel);
             
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            UserAccess accessToDelete = await userAccessHttpClient.GetUserAccess(model.AccessId);
+            
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail) && !model.CurrentUser.UserEmail.Equals(accessToDelete.UserId, System.StringComparison.CurrentCultureIgnoreCase))
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
-            UserAccess accessToDelete = await userAccessHttpClient.GetUserAccess(model.AccessId);
+            
             if (accessToDelete.ProgenyId == model.CurrentProgenyId)
-            {
+            { 
                 await userAccessHttpClient.DeleteUserAccess(model.AccessId);
             }
 
@@ -208,6 +215,11 @@ namespace KinaUnaWeb.Controllers
             model.ProgenyName = model.CurrentProgeny.Name;
 
             model.SetAccessLevelList();
+
+            if (!model.CurrentUser.UserEmail.Equals(accessToDelete.UserId, System.StringComparison.CurrentCultureIgnoreCase))
+            {
+                return PartialView("_DeletedMyAccessPartial", model);
+            }
 
             return PartialView("_DeletedAccessPartial", model);
         }

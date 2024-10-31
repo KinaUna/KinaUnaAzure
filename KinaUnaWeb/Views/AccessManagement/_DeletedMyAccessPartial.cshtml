@@ -1,0 +1,25 @@
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = await LocaleManager.GetTranslation("Access removed", PageNames.AccessManagement, Model.LanguageId);
+    string removeAccessForString = await LocaleManager.GetTranslation("Access removed for", PageNames.AccessManagement, Model.LanguageId);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="add-item-container">
+            <div class="row">
+                <h3 class="col-12">@title</h3>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @removeAccessForString : @Model.CurrentProgeny.NickName
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

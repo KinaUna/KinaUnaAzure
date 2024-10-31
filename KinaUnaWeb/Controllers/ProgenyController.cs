@@ -50,8 +50,11 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
-            ProgenyDetailsViewModel model = new ProgenyDetailsViewModel(baseModel);
-            model.ProgenyInfo = await progenyHttpClient.GetProgenyInfo(progenyId);
+            ProgenyDetailsViewModel model = new(baseModel)
+            {
+                ProgenyInfo = await progenyHttpClient.GetProgenyInfo(progenyId)
+            };
+            model.UserAccess = model.CurrentProgenyAccessList.First(u => u.UserId.Equals(model.CurrentUser.UserEmail, System.StringComparison.CurrentCultureIgnoreCase));
 
             return PartialView("_ProgenyDetailsPartial", model);
         }

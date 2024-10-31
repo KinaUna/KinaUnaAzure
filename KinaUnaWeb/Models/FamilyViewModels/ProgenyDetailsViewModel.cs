@@ -13,5 +13,6 @@ namespace KinaUnaWeb.Models.FamilyViewModels
         }
         
         public ProgenyInfo ProgenyInfo { get; set; }
+        public UserAccess UserAccess { get; set; }
     }
 }

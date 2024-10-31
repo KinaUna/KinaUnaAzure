@@ -1,4 +1,4 @@
-﻿import { setEditItemButtonEventListeners } from "../addItem/add-item.js";
+﻿import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
 
@@ -74,7 +74,6 @@ async function displayProgenyDetails(progenyId: string): Promise<void> {
                 itemDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
                 itemDetailsPopupDiv.classList.remove('d-none');
-                setEditItemButtonEventListeners();
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
@@ -85,6 +84,8 @@ async function displayProgenyDetails(progenyId: string): Promise<void> {
                         });
                     });
                 }
+                setEditItemButtonEventListeners();
+                setDeleteItemButtonEventListeners();
             }
         }
     }).catch(function (error) {

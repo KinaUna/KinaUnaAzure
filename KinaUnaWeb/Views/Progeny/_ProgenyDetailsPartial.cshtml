@@ -177,6 +177,17 @@
                 </div>
 
             </div>
+            <div class="col-12">
+                <div class="space-20"></div>
+                <div class="row">
+                    <div class="col-12">
+                        <a data-delete-item-type="user" data-delete-item-item-id="@Model.UserAccess.AccessId" class="btn btn-warning delete-item-button float-right">
+                            <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Remove my access", PageNames.AddItem, Model.LanguageId)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             @if (Model.IsCurrentUserProgenyAdmin)
             {
                 <div class="space-100"></div>
@@ -186,5 +197,6 @@
                 </div>
             }
         </div>
+
     </div>
 </div>
