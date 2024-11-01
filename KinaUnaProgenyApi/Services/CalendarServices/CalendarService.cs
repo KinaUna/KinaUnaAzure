@@ -218,5 +218,24 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
             return allItems;
         }
+
+        /// <summary>
+        /// Assigns UIds to all CalendarItems that don't have one.
+        /// </summary>
+        /// <returns></returns>
+        public async Task CheckCalendarItemsForUId()
+        {
+            List<CalendarItem> allItems = await _context.CalendarDb.Where(c => string.IsNullOrWhiteSpace(c.UId)).ToListAsync();
+            if (allItems.Any())
+            {
+                foreach (CalendarItem calendarItem in allItems)
+                {
+                    calendarItem.UId = Guid.NewGuid().ToString();
+                    _ = _context.CalendarDb.Update(calendarItem);
+                }
+
+                _ = await _context.SaveChangesAsync();
+            }
+        }
     }
 }

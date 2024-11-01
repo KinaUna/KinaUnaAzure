@@ -53,5 +53,11 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// <param name="accessLevel">The required access level to view the event.</param>
         /// <returns>List of CalendarItems.</returns>
         Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context, int accessLevel);
+
+        /// <summary>
+        /// Assigns UIds to all CalendarItems that don't have one.
+        /// </summary>
+        /// <returns></returns>
+        Task CheckCalendarItemsForUId();
     }
 }

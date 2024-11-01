@@ -133,4 +133,24 @@ public class TaskRunnerService(IBackgroundTasksService backgroundTasksService, I
 
         return await UpdateTaskAfterRun(task);
     }
+
+    public async Task<CustomResult<KinaUnaBackgroundTask>> CheckCalendarItemsForUId(KinaUnaBackgroundTask task)
+    {
+        _ = await UpdateTaskBeforeRun(task);
+        try
+        {
+            // Create a new scope to get the required service, and inject the service into the scope.
+            await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
+            ICalendarService calendarService = scope.ServiceProvider.GetRequiredService<ICalendarService>();
+
+            await calendarService.CheckCalendarItemsForUId();
+        }
+        catch (Exception e)
+        {
+            _ = await UpdateTaskAfterRun(task);
+            return CustomResult<KinaUnaBackgroundTask>.ExceptionCaughtFailure(e, logger);
+        }
+
+        return await UpdateTaskAfterRun(task);
+    }
 }
