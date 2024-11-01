@@ -16,6 +16,8 @@ namespace KinaUna.Data.Models
         public DateTime CreatedTime { get; set; }
         public int ItemType { get; set; }
         public string ItemId { get; set; }
+
+        [MaxLength(256)]
         public string CreatedBy { get; set; }
         public int AccessLevel { get; set; }
     }

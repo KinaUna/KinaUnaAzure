@@ -13,7 +13,11 @@ namespace KinaUna.Data.Models
         public int Id { get; init; }
         public int TextId { get; set; }
         public int LanguageId { get; set; }
+
+        [MaxLength(1024)]
         public string Page { get; set; } = string.Empty;
+
+        [MaxLength(1024)]
         public string Title { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
         public DateTime Created { get; set; }

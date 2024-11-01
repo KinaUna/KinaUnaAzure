@@ -14,10 +14,16 @@ namespace KinaUna.Data.Models
         public int SkillId { get; set; }
 
         public string Name { get; set; }
+
+        [MaxLength(256)]
         public string Description { get; set; }
+
+        [MaxLength(256)]
         public string Category { get; set; }
         public DateTime? SkillFirstObservation { get; set; }
         public DateTime SkillAddedDate { get; set; }
+
+        [MaxLength(256)]
         public string Author { get; set; }
         public int ProgenyId { get; set; }
         [NotMapped]

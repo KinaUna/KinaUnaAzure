@@ -16,8 +16,12 @@ namespace KinaUna.Data.Models
         public DateTime SleepEnd { get; set; }
         public DateTime CreatedDate { get; set; }
         public int SleepRating { get; set; }
+
+        [MaxLength(4096)]
         public string SleepNotes { get; set; }
         public int AccessLevel { get; set; }
+
+        [MaxLength(256)]
         public string Author { get; set; }
 
         [NotMapped]

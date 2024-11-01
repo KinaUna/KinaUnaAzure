@@ -11,12 +11,18 @@ namespace KinaUna.Data.Models
     {
         [Key]
         public int VaccinationId { get; set; }
+
+        [MaxLength(256)]
         public string VaccinationName { get; set; }
+
+        [MaxLength(4096)]
         public string VaccinationDescription { get; set; }
         public DateTime VaccinationDate { get; set; }
         public string Notes { get; set; }
         public int ProgenyId { get; set; }
         public int AccessLevel { get; set; }
+
+        [MaxLength(256)]
         public string Author { get; set; }
 
         [NotMapped]
