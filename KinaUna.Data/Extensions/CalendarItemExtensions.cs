@@ -15,6 +15,7 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherCalendarItem"></param>
         public static void CopyPropertiesForUpdate(this CalendarItem currentCalendarItem, CalendarItem otherCalendarItem )
         {
+            currentCalendarItem.UId = otherCalendarItem.UId;
             currentCalendarItem.Author = otherCalendarItem.Author;
             currentCalendarItem.AccessLevel = otherCalendarItem.AccessLevel;
             currentCalendarItem.AllDay = otherCalendarItem.AllDay;
@@ -38,6 +39,7 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherCalendarItem"></param>
         public static void CopyPropertiesForAdd(this CalendarItem currentCalendarItem, CalendarItem otherCalendarItem)
         {
+            currentCalendarItem.UId = otherCalendarItem.UId;
             currentCalendarItem.AccessLevel = otherCalendarItem.AccessLevel;
             currentCalendarItem.Author = otherCalendarItem.Author;
             currentCalendarItem.Notes = otherCalendarItem.Notes;

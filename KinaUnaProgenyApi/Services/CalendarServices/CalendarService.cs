@@ -56,6 +56,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             CalendarItem calendarItemToAdd = new();
             calendarItemToAdd.CopyPropertiesForAdd(item);
 
+            if (string.IsNullOrWhiteSpace(calendarItemToAdd.UId))
+            {
+                calendarItemToAdd.UId = Guid.NewGuid().ToString();
+            }
             _ = _context.CalendarDb.Add(calendarItemToAdd);
             _ = await _context.SaveChangesAsync();
 
@@ -125,6 +129,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
             calendarItemToUpdate.CopyPropertiesForUpdate(item);
 
+            if (string.IsNullOrWhiteSpace(calendarItemToUpdate.UId))
+            {
+                calendarItemToUpdate.UId = Guid.NewGuid().ToString();
+            }
             _ = _context.CalendarDb.Update(calendarItemToUpdate);
             _ = await _context.SaveChangesAsync();
             _ = await SetCalendarItemInCache(calendarItemToUpdate.EventId);
