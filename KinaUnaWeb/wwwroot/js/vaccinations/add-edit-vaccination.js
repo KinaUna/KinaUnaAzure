@@ -9,7 +9,7 @@ let currentProgenyId;
  */
 async function setupDateTimePicker() {
     setMomentLocale();
-    zebraDateTimeFormat = getZebraDateTimeFormat();
+    zebraDateTimeFormat = getZebraDateTimeFormat('#add-vaccination-zebra-date-time-format-div');
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     const dateTimePicker = $('#vaccination-date-time-picker');
     dateTimePicker.Zebra_DatePicker({

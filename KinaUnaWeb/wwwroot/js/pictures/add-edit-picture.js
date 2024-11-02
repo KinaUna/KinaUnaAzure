@@ -18,7 +18,7 @@ let imagesLoaded = 0;
  */
 async function setupDateTimePicker() {
     setMomentLocale();
-    zebraDateTimeFormat = getZebraDateTimeFormat();
+    zebraDateTimeFormat = getZebraDateTimeFormat('#add-photo-zebra-date-time-format-div');
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     if (document.getElementById('picture-date-time-picker') !== null) {
         const dateTimePicker = $('#picture-date-time-picker');

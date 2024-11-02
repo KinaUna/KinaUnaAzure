@@ -51,8 +51,8 @@ export function setMomentLocale(): void {
 /** Gets the format to use with date-time-pickers from the zebra-date-time-format-div's data-zebra-date-time-format attribute's value.
   * @returns The date-time format string.
   */
-export function getZebraDateTimeFormat(): string {
-    const zebraDateTimeFormatDiv = document.querySelector<HTMLDivElement>('#zebra-date-time-format-div');
+export function getZebraDateTimeFormat(zebraDateTimeFormatElement: string = '#zebra-date-time-format-div'): string {
+    const zebraDateTimeFormatDiv = document.querySelector<HTMLDivElement>(zebraDateTimeFormatElement);
     if (zebraDateTimeFormatDiv !== null) {
         const zebraDateTimeFormatData = zebraDateTimeFormatDiv.dataset.zebraDateTimeFormat;
         if (zebraDateTimeFormatData) {

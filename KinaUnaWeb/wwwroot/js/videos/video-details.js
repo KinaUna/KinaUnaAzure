@@ -178,7 +178,7 @@ async function submitVideoEdit() {
  */
 async function setupDateTimePicker() {
     setMomentLocale();
-    const zebraDateTimeFormat = getZebraDateTimeFormat();
+    const zebraDateTimeFormat = getZebraDateTimeFormat('#add-video-zebra-date-time-format-div');
     const zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(getCurrentLanguageId());
     if (document.getElementById('video-date-time-picker') !== null) {
         const dateTimePicker = $('#video-date-time-picker');

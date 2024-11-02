@@ -9,7 +9,7 @@ let currentProgenyId;
  */
 async function setupDateTimePicker() {
     setMomentLocale();
-    zebraDateTimeFormat = getZebraDateTimeFormat();
+    zebraDateTimeFormat = getZebraDateTimeFormat('#add-measurement-zebra-date-time-format-div');
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     const dateTimePicker = $('#measurement-date-time-picker');
     dateTimePicker.Zebra_DatePicker({

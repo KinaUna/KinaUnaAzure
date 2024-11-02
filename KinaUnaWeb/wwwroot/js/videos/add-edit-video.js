@@ -13,7 +13,7 @@ let copyLocationButton;
  */
 async function setupDateTimePicker() {
     setMomentLocale();
-    zebraDateTimeFormat = getZebraDateTimeFormat();
+    zebraDateTimeFormat = getZebraDateTimeFormat('#add-video-zebra-date-time-format-div');
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     if (document.getElementById('video-date-time-picker') !== null) {
         const dateTimePicker = $('#video-date-time-picker');

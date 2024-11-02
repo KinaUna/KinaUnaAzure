@@ -46,7 +46,7 @@ function validateDatePickerStartEnd() {
 async function setupDateTimePickers(): Promise<void> {
     setMomentLocale();
     longDateTimeFormatMoment = getLongDateTimeFormatMoment();
-    zebraDateTimeFormat = getZebraDateTimeFormat();
+    zebraDateTimeFormat = getZebraDateTimeFormat('#add-sleep-zebra-date-time-format-div');
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     warningStartIsAfterEndString = await LocaleHelper.getTranslation('Warning: Start time is after End time.', 'Sleep', languageId);
 

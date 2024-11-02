@@ -213,7 +213,7 @@ function setupAccessLevelList(): void {
  */
 async function setupDateTimePicker(): Promise<void> {
     setMomentLocale();
-    const zebraDateTimeFormat = getZebraDateTimeFormat();
+    const zebraDateTimeFormat = getZebraDateTimeFormat('#add-photo-zebra-date-time-format-div');
     const zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(getCurrentLanguageId());
 
     if (document.getElementById('picture-date-time-picker') !== null) {

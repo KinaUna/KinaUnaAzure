@@ -7,7 +7,9 @@
     ViewData["Title"] = @Model.Name + " - " + await LocaleManager.GetTranslation("Edit family member", PageNames.Progeny, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
+    string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
 }
+<div id="add-progeny-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container">
