@@ -68,6 +68,12 @@ namespace KinaUna.Data.Models
         public string Author { get; set; } = string.Empty;
 
         /// <summary>
+        /// The Id of the RecurrenceRule for recurring events.
+        /// 0 = No recurrence.
+        /// </summary>
+        public int RecurrenceRuleId { get; set; }
+
+        /// <summary>
         /// String representation of the start time.
         /// </summary>
         [NotMapped]
