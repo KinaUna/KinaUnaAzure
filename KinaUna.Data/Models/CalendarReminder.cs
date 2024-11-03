@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace KinaUna.Data.Models
 {
@@ -15,6 +16,7 @@ namespace KinaUna.Data.Models
         /// <summary>
         /// The UserId of the user the reminder is for.
         /// </summary>
+        [MaxLength(256)]
         public string UserId { get; set; }
         /// <summary>
         /// The time to send a notification to remind the user.

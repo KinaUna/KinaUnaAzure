@@ -54,6 +54,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             CalendarItem.Context = eventItem.Context;
             CalendarItem.AccessLevel = eventItem.AccessLevel;
             CalendarItem.Author = eventItem.Author;
+            CalendarItem.UId = eventItem.UId;
 
             SetAccessLevelList();
         }
@@ -144,7 +145,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             eventItem.AllDay = CalendarItem.AllDay;
             eventItem.AccessLevel = CalendarItem.AccessLevel;
             eventItem.Author = CalendarItem.Author;
-
+            eventItem.UId = CalendarItem.UId;
             return eventItem;
         }
 

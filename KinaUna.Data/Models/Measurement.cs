@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
@@ -13,11 +14,17 @@ namespace KinaUna.Data.Models
         public double Weight { get; set; }
         public double Height { get; set; }
         public double Circumference { get; set; }
+
+        [MaxLength(256)]
         public string EyeColor { get; set; }
+
+        [MaxLength(256)]
         public string HairColor { get; set; }
         public DateTime Date { get; set; }
         public DateTime CreatedDate { get; set; }
         public int AccessLevel { get; set; }
+
+        [MaxLength(256)]
         public string Author { get; set; }
 
         [NotMapped]

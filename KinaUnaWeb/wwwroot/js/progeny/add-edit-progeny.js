@@ -7,7 +7,7 @@ let zebraDateTimeFormat;
  */
 async function setupDateTimePicker() {
     setMomentLocale();
-    zebraDateTimeFormat = getZebraDateTimeFormat();
+    zebraDateTimeFormat = getZebraDateTimeFormat('#add-progeny-zebra-date-time-format-div');
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(getCurrentLanguageId());
     if (document.getElementById('progeny-date-time-picker') !== null) {
         const dateTimePicker = $('#progeny-date-time-picker');

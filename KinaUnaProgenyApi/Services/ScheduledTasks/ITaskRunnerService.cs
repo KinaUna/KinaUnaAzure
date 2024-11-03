@@ -10,4 +10,5 @@ public interface ITaskRunnerService
     Task<CustomResult<KinaUnaBackgroundTask>> CheckPictureLinks(KinaUnaBackgroundTask task);
     Task<CustomResult<KinaUnaBackgroundTask>> CheckPicturePropertiesForNull(KinaUnaBackgroundTask task);
     Task<CustomResult<KinaUnaBackgroundTask>> SendCalendarReminders(KinaUnaBackgroundTask task);
+    Task<CustomResult<KinaUnaBackgroundTask>> CheckCalendarItemsForUId(KinaUnaBackgroundTask task);
 }

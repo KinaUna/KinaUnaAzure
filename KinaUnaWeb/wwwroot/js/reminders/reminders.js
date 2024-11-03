@@ -70,7 +70,7 @@ function reminderOffSetChanged() {
  */
 async function setupOffSetDateTimePicker() {
     setMomentLocale();
-    const zebraDateTimeFormat = getZebraDateTimeFormat();
+    const zebraDateTimeFormat = getZebraDateTimeFormat('#add-reminder-zebra-date-time-format-div');
     const zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(getCurrentLanguageId());
     const startDateTimePicker = $(reminderCustomOffsetDateTimePickerId);
     startDateTimePicker.Zebra_DatePicker({

@@ -16,7 +16,7 @@ declare var copyLocationList: any;
  */
 async function setupDateTimePicker(): Promise<void> {
     setMomentLocale();
-    zebraDateTimeFormat = getZebraDateTimeFormat();
+    zebraDateTimeFormat = getZebraDateTimeFormat('#add-video-zebra-date-time-format-div');
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
 
     if (document.getElementById('video-date-time-picker') !== null) {

@@ -10,11 +10,21 @@ namespace KinaUna.Data.Models
     {
         [Key]
         public int Id { get; set; }
+
+        [MaxLength(256)]
         public string Name { get; set; }
+
+        [MaxLength(256)]
         public string NickName { get; set; }
         public DateTime? BirthDay { get; set; }
+
+        [MaxLength(256)]
         public string TimeZone { get; set; }
+
+        [MaxLength(512)]
         public string PictureLink { get; set; }
+
+        [MaxLength(1024)]
         public string Admins { get; set; } // Comma separated list of emails.
 
     }
