@@ -1,13 +1,18 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for recurrence rule data.
+    /// Based on the iCalendar RFC 5545 standard.
+    /// </summary>
     public class RecurrenceRule
     {
         public int RecurrenceRuleId { get; set; }
         /// <summary>
         /// The frequency of the recurrence rule.
-        /// daily = 0, weekly = 1, monthly by day = 2, monthly by date = 3, yearly by day = 4, yearly by date = 5
+        /// Never= 0, daily = 1, weekly = 2, monthly by day = 3, monthly by date = 4, yearly by day = 5, yearly by date = 6
         /// </summary>
         public int Frequency { get; set; } = 0;
         /// <summary>
@@ -28,14 +33,23 @@ namespace KinaUna.Data.Models
         /// The day of the week for weekly recurrence.
         /// Day of the month for monthly by day and yearly by day.
         /// </summary>
+        [MaxLength(128)]
         public string ByDay { get; set; } = string.Empty;
         /// <summary>
         /// Day of the month for monthly by date and yearly by date.
         /// </summary>
+        [MaxLength(128)]
         public string ByMonthDay { get; set; } = string.Empty;
         /// <summary>
         /// The month of the year for yearly recurrence.
         /// </summary>
+        [MaxLength(128)]
         public string ByMonth { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Repeat end condition.
+        /// 0 = Never, 1 = On date, 2 = After count
+        /// </summary>
+        public int EndOption { get; set; } = 0; 
     }
 }

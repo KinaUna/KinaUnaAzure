@@ -18,6 +18,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public CalendarItem CalendarItem { get; set; } = new();
         public List<CalendarReminder> CalendarReminders { get; set; } = [];
         public List<SelectListItem> ReminderOffsetsList { get; set; } = [];
+        public List<SelectListItem> RecurrenceFrequencyList { get; set; } = [];
+        public List<SelectListItem> EndOptionsList { get; set; } = [];
 
         /// <summary>
         /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
@@ -55,8 +57,20 @@ namespace KinaUnaWeb.Models.ItemViewModels
             CalendarItem.AccessLevel = eventItem.AccessLevel;
             CalendarItem.Author = eventItem.Author;
             CalendarItem.UId = eventItem.UId;
+            CalendarItem.RecurrenceRuleId = eventItem.RecurrenceRuleId;
+
+            if (eventItem.RecurrenceRuleId != 0)
+            {
+                CalendarItem.RecurrenceRule = eventItem.RecurrenceRule;
+            }
+            else
+            {
+                CalendarItem.RecurrenceRule = new();
+            }
 
             SetAccessLevelList();
+            SetRecurrenceFrequencyList();
+            SetEndOptionsList();
         }
 
         /// <summary>
@@ -152,6 +166,39 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public void SetReminderOffsetList(List<SelectListItem> offsetItems)
         {
             ReminderOffsetsList = offsetItems;
+        }
+
+        public void SetRecurrenceFrequencyList()
+        {
+            List<SelectListItem> frequencyItems = new()
+            {
+                new SelectListItem { Value = "0", Text = "Never", Selected = false },
+                new SelectListItem { Value = "1", Text = "Daily", Selected = false },
+                new SelectListItem { Value = "2", Text = "Weekly", Selected = false },
+                new SelectListItem { Value = "3", Text = "Monthly", Selected = false },
+                new SelectListItem { Value = "4", Text = "Yearly", Selected = false }
+            };
+            
+            RecurrenceFrequencyList = frequencyItems;
+            
+            RecurrenceFrequencyList[CalendarItem.RecurrenceRule?.Frequency ?? 0].Selected = true;
+        }
+
+        public void SetEndOptionsList()
+        {
+            List<SelectListItem> endOptions = new()
+            {
+                new SelectListItem { Value = "0", Text = "Never", Selected = false },
+                new SelectListItem { Value = "1", Text = "On date", Selected = false },
+                new SelectListItem { Value = "2", Text = "After count", Selected = false }
+            };
+
+            EndOptionsList = endOptions;
+
+            if (CalendarItem.RecurrenceRule != null)
+            {
+                EndOptionsList[CalendarItem.RecurrenceRule.EndOption].Selected = true;
+            }
         }
     }
 }

@@ -9,6 +9,15 @@
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string longDateTimeFormatMoment = "DD-MMMM-YYYY HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+    foreach (SelectListItem frequencySelectItem in Model.RecurrenceFrequencyList)
+    {
+        frequencySelectItem.Text = await LocaleManager.GetTranslation(frequencySelectItem.Text, PageNames.Calendar, Model.LanguageId);
+    }
+
+    foreach (SelectListItem endOptionItem in Model.EndOptionsList)
+    {
+        endOptionItem.Text = await LocaleManager.GetTranslation(endOptionItem.Text, PageNames.Calendar, Model.LanguageId);
+    }
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="longDateTimeFormatDiv" class="d-none" data-long-date-time-format="@longDateTimeFormat"></div>
@@ -56,6 +65,12 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label asp-for="CalendarItem.AllDay" class="col-auto control-label">@await LocaleManager.GetTranslation("All day", PageNames.Calendar, Model.LanguageId)</label>
+                    <div class="col" style="max-width: 5em;">
+                        <input type="checkbox" asp-for="CalendarItem.AllDay" class="form-control" style="width: 2.25em; height: 2.25em; accent-color: #73b659;" checked="@Model.CalendarItem.AllDay" value="@Model.CalendarItem.AllDay" onchange="this.value=this.checked"/>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label asp-for="CalendarItem.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Calendar, Model.LanguageId)</label>
                     <div class="col-auto">
                         <textarea asp-for="CalendarItem.Notes" class="form-control" rows="4" value="@Model.CalendarItem.Notes"></textarea>
@@ -71,12 +86,6 @@
                     <label asp-for="CalendarItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Calendar, Model.LanguageId)</label>
                     <div class="col-auto">
                         <input id="context-input" asp-for="CalendarItem.Context" class="form-control" value="@Model.CalendarItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Calendar, Model.LanguageId)" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="CalendarItem.AllDay" class="col-auto control-label">@await LocaleManager.GetTranslation("All day", PageNames.Calendar, Model.LanguageId)</label>
-                    <div class="col" style="max-width: 5em;">
-                        <input type="checkbox" asp-for="CalendarItem.AllDay" class="form-control" style="width: 3em; height: 3em; accent-color: #73b659;" checked="@Model.CalendarItem.AllDay" value="@Model.CalendarItem.AllDay" onchange="this.value=this.checked" />
                     </div>
                 </div>
                 <div class="form-group">

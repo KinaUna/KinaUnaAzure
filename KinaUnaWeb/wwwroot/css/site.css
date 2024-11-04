@@ -3440,6 +3440,7 @@ noUi-handle:after, .noUi-handle:before {
     top: 0;
     left: 0;
     background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px) !important;
 }
 
 .item-details-popup {

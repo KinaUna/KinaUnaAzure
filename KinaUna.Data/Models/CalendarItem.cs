@@ -88,8 +88,8 @@ namespace KinaUna.Data.Models
         /// Progeny data for the progeny the event belongs to.
         /// </summary>
         [NotMapped]
-        public Progeny Progeny { get; set; }
-        
+        public Progeny Progeny { get; set; } = new Progeny();
+
         /// <summary>
         /// Read only flag. Used to determine if the event can be edited or deleted in Calendar views.
         /// </summary>
@@ -100,7 +100,7 @@ namespace KinaUna.Data.Models
         /// RecurrenceRule data for recurring events.
         /// </summary>
         [NotMapped]
-        public RecurrenceRule RecurrenceRule { get; set; }
+        public RecurrenceRule RecurrenceRule { get; set; } = new RecurrenceRule();
 
         /// <summary>
         /// Get the location string for the event. Needed for the ILocatable interface.

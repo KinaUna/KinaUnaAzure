@@ -101,6 +101,68 @@ async function onProgenySelectListChanged() {
         await setLocationAutoSuggestList([currentProgenyId]);
     }
 }
+function setupFrequencySelectList() {
+    const frequencySelect = document.querySelector('#event-repeat-frequency-select');
+    if (frequencySelect !== null) {
+        frequencySelect.addEventListener('change', onFrequencySelectListChanged);
+    }
+    const eventEndOptionsSelect = document.querySelector('#event-end-option-select');
+    if (eventEndOptionsSelect !== null) {
+        eventEndOptionsSelect.addEventListener('change', onEventEndOptionsSelectListChanged);
+    }
+}
+function onEventEndOptionsSelectListChanged() {
+    updateEventRepeatDetailsDiv();
+}
+function onFrequencySelectListChanged() {
+    const frequencySelect = document.querySelector('#event-repeat-frequency-select');
+    if (frequencySelect !== null) {
+        const frequencyValue = parseInt(frequencySelect.value);
+        const eventIntervalInputDiv = document.querySelector('#event-interval-input-div');
+        const eventRepeatDetailsDiv = document.querySelector('#event-repeat-details-div');
+        const eventRepeatUntilDiv = document.querySelector('#event-repeat-until-div');
+        if (frequencyValue === 0) {
+            eventIntervalInputDiv?.classList.add('d-none');
+            eventRepeatUntilDiv?.classList.add('d-none');
+            eventRepeatDetailsDiv?.classList.add('d-none');
+        }
+        else {
+            eventIntervalInputDiv?.classList.remove('d-none');
+            eventRepeatUntilDiv?.classList.remove('d-none');
+            eventRepeatDetailsDiv?.classList.remove('d-none');
+            updateEventRepeatDetailsDiv();
+        }
+        const eventRepeatDailyDiv = document.querySelector('#event-repeat-daily-div');
+        if (frequencyValue === 1) {
+            eventRepeatDailyDiv?.classList.remove('d-none');
+        }
+        else {
+            eventRepeatDailyDiv?.classList.add('d-none');
+        }
+    }
+}
+function updateEventRepeatDetailsDiv() {
+    const eventEndOptionsSelect = document.querySelector('#event-end-option-select');
+    if (eventEndOptionsSelect !== null) {
+        const eventEndOptionsValue = parseInt(eventEndOptionsSelect.value);
+        const eventRepeatUntilDateDiv = document.querySelector('#event-repeat-until-date-div');
+        const eventRepeatUntilCountDiv = document.querySelector('#event-repeat-until-count-div');
+        if (eventEndOptionsValue === 0) {
+            eventRepeatUntilDateDiv?.classList.add('d-none');
+            eventRepeatUntilCountDiv?.classList.add('d-none');
+        }
+        else {
+            if (eventEndOptionsValue === 1) {
+                eventRepeatUntilDateDiv?.classList.remove('d-none');
+                eventRepeatUntilCountDiv?.classList.add('d-none');
+            }
+            else {
+                eventRepeatUntilDateDiv?.classList.add('d-none');
+                eventRepeatUntilCountDiv?.classList.remove('d-none');
+            }
+        }
+    }
+}
 export async function initializeAddEditEvent() {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
@@ -109,6 +171,7 @@ export async function initializeAddEditEvent() {
     setupProgenySelectList();
     setupDateTimePickers();
     setupRemindersSection();
+    setupFrequencySelectList();
     $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve, reject) {
         resolve();
