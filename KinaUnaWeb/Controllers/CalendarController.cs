@@ -144,7 +144,13 @@ namespace KinaUnaWeb.Controllers
             }
             
             model.SetAccessLevelList();
-            
+            model.SetRecurrenceFrequencyList();
+            model.SetEndOptionsList();
+            model.CalendarItem.RecurrenceRule.ByDay = "1MO";
+            model.CalendarItem.RecurrenceRule.ByMonthDay = "1,2,3";
+            model.SetMonthlyByDayPrefixList();
+            model.SetMonthsSelectList();
+
             return PartialView("_AddEventPartial", model);
         }
 
@@ -423,9 +429,11 @@ namespace KinaUnaWeb.Controllers
         {
             UserInfo currentUser = await userInfosHttpClient.GetUserInfo(User.GetEmail());
 
-            CalendarReminder calendarReminder = new CalendarReminder();
-            calendarReminder.EventId = calendarReminderRequest.EventId;
-            calendarReminder.UserId = currentUser.UserId;
+            CalendarReminder calendarReminder = new()
+            {
+                EventId = calendarReminderRequest.EventId,
+                UserId = currentUser.UserId
+            };
 
             CalendarItem calendarItem = await calendarsHttpClient.GetCalendarItem(calendarReminderRequest.EventId);
             if (calendarItem == null)

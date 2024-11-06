@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -19,7 +20,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<CalendarReminder> CalendarReminders { get; set; } = [];
         public List<SelectListItem> ReminderOffsetsList { get; set; } = [];
         public List<SelectListItem> RecurrenceFrequencyList { get; set; } = [];
+        public List<SelectListItem> MonthsSelectList { get; set; } = [];
         public List<SelectListItem> EndOptionsList { get; set; } = [];
+        
+        public List<bool> MonthlyByDayPrefixList = [false, false, false, false, false, false]; // First, second, third, fourth, fifth, last.
 
         /// <summary>
         /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
@@ -71,6 +75,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SetAccessLevelList();
             SetRecurrenceFrequencyList();
             SetEndOptionsList();
+            SetMonthlyByDayPrefixList();
+            SetMonthsSelectList();
         }
 
         /// <summary>
@@ -170,34 +176,105 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetRecurrenceFrequencyList()
         {
-            List<SelectListItem> frequencyItems = new()
-            {
+            List<SelectListItem> frequencyItems =
+            [
                 new SelectListItem { Value = "0", Text = "Never", Selected = false },
                 new SelectListItem { Value = "1", Text = "Daily", Selected = false },
                 new SelectListItem { Value = "2", Text = "Weekly", Selected = false },
                 new SelectListItem { Value = "3", Text = "Monthly", Selected = false },
                 new SelectListItem { Value = "4", Text = "Yearly", Selected = false }
-            };
+            ];
             
             RecurrenceFrequencyList = frequencyItems;
             
             RecurrenceFrequencyList[CalendarItem.RecurrenceRule?.Frequency ?? 0].Selected = true;
         }
 
+        public void SetMonthsSelectList()
+        {
+            List<SelectListItem> monthsList =
+            [
+                new SelectListItem { Value = "1", Text = "January", Selected = false },
+                new SelectListItem { Value = "2", Text = "February", Selected = false },
+                new SelectListItem { Value = "3", Text = "March", Selected = false },
+                new SelectListItem { Value = "4", Text = "April", Selected = false },
+                new SelectListItem { Value = "5", Text = "May", Selected = false },
+                new SelectListItem { Value = "6", Text = "June", Selected = false },
+                new SelectListItem { Value = "7", Text = "July", Selected = false },
+                new SelectListItem { Value = "8", Text = "August", Selected = false },
+                new SelectListItem { Value = "9", Text = "September", Selected = false },
+                new SelectListItem { Value = "10", Text = "October", Selected = false },
+                new SelectListItem { Value = "11", Text = "November", Selected = false },
+                new SelectListItem { Value = "12", Text = "December", Selected = false }
+            ];
+            
+            MonthsSelectList = monthsList;
+            bool selectedMonthParsed = int.TryParse(CalendarItem.RecurrenceRule?.ByMonth, out int selectedMonth);
+            if (selectedMonthParsed && selectedMonth is > 0 and < 13)
+            {
+                MonthsSelectList[selectedMonth - 1].Selected = true;
+            }
+            else
+            {
+                MonthsSelectList[0].Selected = true;
+            }
+        }
+
         public void SetEndOptionsList()
         {
-            List<SelectListItem> endOptions = new()
-            {
+            List<SelectListItem> endOptions =
+            [
                 new SelectListItem { Value = "0", Text = "Never", Selected = false },
                 new SelectListItem { Value = "1", Text = "On date", Selected = false },
                 new SelectListItem { Value = "2", Text = "After count", Selected = false }
-            };
+            ];
 
             EndOptionsList = endOptions;
 
             if (CalendarItem.RecurrenceRule != null)
             {
                 EndOptionsList[CalendarItem.RecurrenceRule.EndOption].Selected = true;
+            }
+        }
+
+        public void SetMonthlyByDayPrefixList()
+        {
+            if (CalendarItem.RecurrenceRule == null) return;
+            
+            if (string.IsNullOrWhiteSpace(CalendarItem.RecurrenceRule.ByDay)) return;
+
+            string[] byDayParts = CalendarItem.RecurrenceRule.ByDay.Split(",");
+            foreach (string byDayPart in byDayParts)
+            {
+                if (byDayPart.StartsWith("1"))
+                {
+                    MonthlyByDayPrefixList[0] = true;
+                }
+
+                if (byDayPart.StartsWith("2"))
+                {
+                    MonthlyByDayPrefixList[1] = true;
+                }
+
+                if (byDayPart.StartsWith("3"))
+                {
+                    MonthlyByDayPrefixList[2] = true;
+                }
+
+                if (byDayPart.StartsWith("4"))
+                {
+                    MonthlyByDayPrefixList[3] = true;
+                }
+
+                if (byDayPart.StartsWith("5"))
+                {
+                    MonthlyByDayPrefixList[4] = true;
+                }
+
+                if (byDayPart.StartsWith("-1"))
+                {
+                    MonthlyByDayPrefixList[5] = true;
+                }
             }
         }
     }
