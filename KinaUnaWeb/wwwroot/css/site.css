@@ -3707,3 +3707,39 @@ noUi-handle:after, .noUi-handle:before {
     .weekday-icon.selected {
         background-color: #297535;
     }
+
+.yearly-month-day-number-icon {
+    color: white;
+    background-color: black;
+    margin: 12px;
+    border-radius: 32px;
+    border: none;
+    width: 3em;
+    height: 3em;
+}
+
+.yearly-month-day-number-icon:focus {
+    outline: none;
+}
+
+.yearly-month-day-number-icon.selected {
+    background-color: #297535;
+}
+
+.yearly-monthday-icon {
+    color: white;
+    background-color: black;
+    margin: 12px;
+    border-radius: 32px;
+    border: none;
+    width: 3em;
+    height: 3em;
+}
+
+    .yearly-monthday-icon:focus {
+        outline: none;
+    }
+
+    .yearly-monthday-icon.selected {
+        background-color: #297535;
+    }

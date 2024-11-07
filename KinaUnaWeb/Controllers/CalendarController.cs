@@ -142,7 +142,10 @@ namespace KinaUnaWeb.Controllers
                 model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
                 model.SetProgenyList();
             }
-            
+
+            model.CalendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.CalendarItem.EndTime = model.CalendarItem.StartTime + TimeSpan.FromMinutes(10);
+
             model.SetAccessLevelList();
             model.SetRecurrenceFrequencyList();
             model.SetEndOptionsList();

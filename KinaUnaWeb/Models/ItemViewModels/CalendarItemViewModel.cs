@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -216,7 +215,21 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
             else
             {
-                MonthsSelectList[0].Selected = true;
+                int indexOfStart = 0;
+                if (CalendarItem.StartTime.HasValue)
+                {
+                    indexOfStart = CalendarItem.StartTime.Value.Month - 1;
+                    MonthsSelectList[indexOfStart].Selected = true;
+                }
+                else
+                {
+                    MonthsSelectList[0].Selected = true;
+                }
+
+                if (CalendarItem.RecurrenceRule != null)
+                {
+                    CalendarItem.RecurrenceRule.ByMonth = MonthsSelectList[indexOfStart].Value;
+                }
             }
         }
 
