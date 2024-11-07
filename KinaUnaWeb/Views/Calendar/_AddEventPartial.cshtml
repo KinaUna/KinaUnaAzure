@@ -10,9 +10,15 @@
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string longDateTimeFormatMoment = "DD-MMMM-YYYY HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+    
     foreach (SelectListItem frequencySelectItem in Model.RecurrenceFrequencyList)
     {
         frequencySelectItem.Text = await LocaleManager.GetTranslation(frequencySelectItem.Text, PageNames.Calendar, Model.LanguageId);
+    }
+
+    foreach (SelectListItem endOptionItem in Model.EndOptionsList)
+    {
+        endOptionItem.Text = await LocaleManager.GetTranslation(endOptionItem.Text, PageNames.Calendar, Model.LanguageId);
     }
 
     foreach (SelectListItem monthSelectItem in Model.MonthsSelectList)
