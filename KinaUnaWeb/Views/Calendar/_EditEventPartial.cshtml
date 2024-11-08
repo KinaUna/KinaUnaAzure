@@ -138,6 +138,7 @@
                             </div>
                             <div class="col-auto">
                                 <input id="event-repeat-monthly-by-date-input-div" type="text" value="@Model.CalendarItem.RecurrenceRule.ByMonthDay" asp-for="CalendarItem.RecurrenceRule.ByMonthDay" hidden="hidden" />
+                                <input id="event-repeat-monthly-type-selected-input" type="text" hidden="hidden" asp-for="RepeatMonthlyType"/>
                             </div>
                         </div>
                         <div id="event-repeat-monthly-on-days-pattern-div" class="form-group col-auto d-none">
@@ -193,7 +194,7 @@
 
                             </div>
                         </div>
-                        <input id="event-repeat-monthly-days-input" type="text" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden" />
+                        <input id="event-repeat-monthly-days-input" type="text" asp-for="CalendarItem.RecurrenceRule.ByDay" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden" />
                     </div>
                     <div id="event-repeat-yearly-div" class="col-12 d-none">
                         <div class="form-group col-auto ml-2">
@@ -205,6 +206,7 @@
                         <div class="form-group">
                             <label class="control-label col-auto">Repeat month:</label>
                             <div class="row m-3">
+                                <input id="event-repeat-yearly-type-selected-input" type="text" hidden="hidden" asp-for="RepeatYearlyType" />
                                 <select id="event-repeat-yearly-month-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.MonthsSelectList.Count" asp-for="CalendarItem.RecurrenceRule.ByMonth" asp-items="@Model.MonthsSelectList"></select>
                             </div>
                         </div>
@@ -285,7 +287,7 @@
                         <div id="event-repeat-until-date-div" class="form-group">
                             <label class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat until", PageNames.Calendar, Model.LanguageId) </label>
                             <div class="col-auto">
-                                <input id="event-repeat-until-date-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.RecurrenceRule.Until" value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(Model.CurrentUser.Timezone)).ToString(longDateTimeFormat)" />
+                                <input id="event-repeat-until-date-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.RecurrenceRule.Until" value="@Model.CalendarItem.RecurrenceRule.Until?.ToString(longDateTimeFormat)" />
                             </div>
                         </div>
                         <div id="event-repeat-until-count-div" class="form-group">
@@ -330,6 +332,7 @@
                 <input asp-for="CalendarItem.EventId" value="@Model.CalendarItem.EventId" type="hidden" />
                 <input asp-for="CalendarItem.Author" value="@Model.CalendarItem.Author" type="hidden" />
                 <input asp-for="CalendarItem.UId" value="@Model.CalendarItem.UId" type="hidden"/>
+                <input asp-for="CalendarItem.RecurrenceRuleId" value="@Model.CalendarItem.RecurrenceRuleId" type="hidden"/>
                 <input asp-for="CalendarItem.RecurrenceRule.RecurrenceRuleId" value="@Model.CalendarItem.RecurrenceRule.RecurrenceRuleId" type="hidden" />
                 <div>
                     <div class="form-group">

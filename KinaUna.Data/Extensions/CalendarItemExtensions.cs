@@ -30,6 +30,8 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.StartString = otherCalendarItem.StartString;
             currentCalendarItem.Title = otherCalendarItem.Title;
             currentCalendarItem.Progeny = otherCalendarItem.Progeny;
+            currentCalendarItem.RecurrenceRuleId = otherCalendarItem.RecurrenceRuleId;
+            currentCalendarItem.RecurrenceRule = otherCalendarItem.RecurrenceRule;
         }
 
         /// <summary>

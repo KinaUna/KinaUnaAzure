@@ -65,6 +65,24 @@ namespace KinaUna.Data.Models
         /// Repeat end condition.
         /// 0 = Never, 1 = On date, 2 = After count
         /// </summary>
-        public int EndOption { get; set; } = 0; 
+        public int EndOption { get; set; } = 0;
+
+        public void EnsureStringsAreNotNull()
+        {
+            if (ByDay == null)
+            {
+                ByDay = string.Empty;
+            }
+
+            if (ByMonthDay == null)
+            {
+                ByMonthDay = string.Empty;
+            }
+
+            if (ByMonth == null)
+            {
+                ByMonth = string.Empty;
+            }
+        }
     }
 }

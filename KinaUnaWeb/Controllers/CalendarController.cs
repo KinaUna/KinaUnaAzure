@@ -149,8 +149,8 @@ namespace KinaUnaWeb.Controllers
             model.SetAccessLevelList();
             model.SetRecurrenceFrequencyList();
             model.SetEndOptionsList();
-            model.CalendarItem.RecurrenceRule.ByDay = "1MO";
-            model.CalendarItem.RecurrenceRule.ByMonthDay = "1,2,3";
+            model.CalendarItem.RecurrenceRule.ByDay = "";
+            model.CalendarItem.RecurrenceRule.ByMonthDay = "";
             model.SetMonthlyByDayPrefixList();
             model.SetMonthsSelectList();
 

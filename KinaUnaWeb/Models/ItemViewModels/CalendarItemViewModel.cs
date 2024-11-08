@@ -23,6 +23,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> EndOptionsList { get; set; } = [];
         
         public List<bool> MonthlyByDayPrefixList = [false, false, false, false, false, false]; // First, second, third, fourth, fifth, last.
+        public int RepeatMonthlyType { get; set; } = 0;
+        public int RepeatYearlyType { get; set; } = 0;
 
         /// <summary>
         /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
@@ -69,6 +71,19 @@ namespace KinaUnaWeb.Models.ItemViewModels
             else
             {
                 CalendarItem.RecurrenceRule = new();
+                if (CalendarItem.StartTime.HasValue)
+                {
+                    CalendarItem.RecurrenceRule.ByMonthDay = CalendarItem.StartTime.Value.Day.ToString();
+                }
+            }
+
+            if (CalendarItem.RecurrenceRule.Frequency == 4)
+            {
+                CalendarItem.RecurrenceRule.Frequency = 3;
+            }
+            else if (CalendarItem.RecurrenceRule.Frequency == 5 || CalendarItem.RecurrenceRule.Frequency == 6)
+            {
+                CalendarItem.RecurrenceRule.Frequency = 4;
             }
 
             SetAccessLevelList();
@@ -165,6 +180,30 @@ namespace KinaUnaWeb.Models.ItemViewModels
             eventItem.AccessLevel = CalendarItem.AccessLevel;
             eventItem.Author = CalendarItem.Author;
             eventItem.UId = CalendarItem.UId;
+            eventItem.RecurrenceRuleId = CalendarItem.RecurrenceRuleId;
+            eventItem.RecurrenceRule = CalendarItem.RecurrenceRule;
+            if (CalendarItem.RecurrenceRule.Frequency == 3)
+            {
+                if(RepeatMonthlyType == 0)
+                {
+                    eventItem.RecurrenceRule.Frequency = 3;
+                }
+                else
+                {
+                    eventItem.RecurrenceRule.Frequency = 4;
+                }
+            }else if (CalendarItem.RecurrenceRule.Frequency == 4)
+            {
+                if(RepeatYearlyType == 0)
+                {
+                    eventItem.RecurrenceRule.Frequency = 5;
+                }
+                else
+                {
+                    eventItem.RecurrenceRule.Frequency = 6;
+                }
+            }
+
             return eventItem;
         }
 

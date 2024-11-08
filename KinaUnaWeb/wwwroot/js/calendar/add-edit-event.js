@@ -68,6 +68,17 @@ async function setupDateTimePickers() {
         show_select_today: zebraDatePickerTranslations.todayString,
         select_other_months: true
     });
+    const repeatUntilDateTimePicker = $('#event-repeat-until-date-picker');
+    repeatUntilDateTimePicker.Zebra_DatePicker({
+        format: zebraDateTimeFormat,
+        open_icon_only: true,
+        onSelect: function (a, b, c) { validateDatePickerStartEnd(); },
+        days: zebraDatePickerTranslations.daysArray,
+        months: zebraDatePickerTranslations.monthsArray,
+        lang_clear_date: zebraDatePickerTranslations.clearString,
+        show_select_today: zebraDatePickerTranslations.todayString,
+        select_other_months: true
+    });
     validateDatePickerStartEnd();
     const startZebraPicker = document.querySelector(startDateTimePickerId);
     if (startZebraPicker !== null) {

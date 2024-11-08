@@ -77,6 +77,18 @@ async function setupDateTimePickers(): Promise<void> {
         select_other_months: true
     });
 
+    const repeatUntilDateTimePicker: any = $('#event-repeat-until-date-picker')
+    repeatUntilDateTimePicker.Zebra_DatePicker({
+        format: zebraDateTimeFormat,
+        open_icon_only: true,
+        onSelect: function (a: any, b: any, c: any) { validateDatePickerStartEnd(); },
+        days: zebraDatePickerTranslations.daysArray,
+        months: zebraDatePickerTranslations.monthsArray,
+        lang_clear_date: zebraDatePickerTranslations.clearString,
+        show_select_today: zebraDatePickerTranslations.todayString,
+        select_other_months: true
+    });
+
     validateDatePickerStartEnd();
 
     const startZebraPicker = document.querySelector<HTMLInputElement>(startDateTimePickerId);

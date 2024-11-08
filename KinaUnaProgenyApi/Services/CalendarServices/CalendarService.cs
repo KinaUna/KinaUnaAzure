@@ -56,6 +56,17 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             CalendarItem calendarItemToAdd = new();
             calendarItemToAdd.CopyPropertiesForAdd(item);
 
+            if (item.RecurrenceRule.Frequency != 0)
+            {
+                item.RecurrenceRule.ProgenyId = calendarItemToAdd.ProgenyId;
+                item.RecurrenceRule.EnsureStringsAreNotNull();
+
+                _ = _context.RecurrenceRulesDb.Add(item.RecurrenceRule);
+                _ = await _context.SaveChangesAsync();
+
+                calendarItemToAdd.RecurrenceRuleId = item.RecurrenceRule.RecurrenceRuleId;
+            }
+
             if (string.IsNullOrWhiteSpace(calendarItemToAdd.UId))
             {
                 calendarItemToAdd.UId = Guid.NewGuid().ToString();
@@ -95,6 +106,11 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             CalendarItem calendarItem = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
             if (calendarItem == null) return null;
 
+            if (calendarItem.RecurrenceRuleId > 0)
+            {
+                calendarItem.RecurrenceRule = await _context.RecurrenceRulesDb.AsNoTracking().SingleOrDefaultAsync(r => r.RecurrenceRuleId == calendarItem.RecurrenceRuleId);
+            }
+
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id, JsonConvert.SerializeObject(calendarItem), _cacheOptionsSliding);
 
             List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == calendarItem.ProgenyId).ToListAsync();
@@ -127,6 +143,47 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             CalendarItem calendarItemToUpdate = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
             if (calendarItemToUpdate == null) return null;
 
+            // If the item has a RecurrenceRule, add it to the database if it doesn't exist.
+            if (calendarItemToUpdate.RecurrenceRuleId == 0 && item.RecurrenceRule.Frequency != 0)
+            {
+                item.RecurrenceRule.ProgenyId = calendarItemToUpdate.ProgenyId;
+                item.RecurrenceRule.EnsureStringsAreNotNull();
+
+                _ = _context.RecurrenceRulesDb.Add(item.RecurrenceRule);
+                _ = await _context.SaveChangesAsync();
+                item.RecurrenceRuleId = item.RecurrenceRule.RecurrenceRuleId;
+            }
+
+            // If the item has a RecurrenceRule and the new item doesn't, remove the RecurrenceRule from the database.
+            if (calendarItemToUpdate.RecurrenceRuleId > 0 && item.RecurrenceRule.Frequency == 0)
+            {
+                RecurrenceRule recurrenceRule = await _context.RecurrenceRulesDb.SingleOrDefaultAsync(r => r.RecurrenceRuleId == calendarItemToUpdate.RecurrenceRuleId);
+                _ = _context.RecurrenceRulesDb.Remove(recurrenceRule);
+                _ = await _context.SaveChangesAsync();
+                item.RecurrenceRuleId = 0;
+            }
+
+            if (calendarItemToUpdate.RecurrenceRuleId > 0 && item.RecurrenceRule.Frequency > 0)
+            {
+                RecurrenceRule recurrenceRule = await _context.RecurrenceRulesDb.SingleOrDefaultAsync(r => r.RecurrenceRuleId == calendarItemToUpdate.RecurrenceRuleId);
+                recurrenceRule.Frequency = item.RecurrenceRule.Frequency;
+                recurrenceRule.Interval = item.RecurrenceRule.Interval;
+                recurrenceRule.Count = item.RecurrenceRule.Count;
+                recurrenceRule.Start = item.RecurrenceRule.Start;
+                recurrenceRule.Until = item.RecurrenceRule.Until;
+                recurrenceRule.ByDay = item.RecurrenceRule.ByDay;
+                recurrenceRule.ByMonthDay = item.RecurrenceRule.ByMonthDay;
+                recurrenceRule.ByMonth = item.RecurrenceRule.ByMonth;
+                recurrenceRule.EndOption = item.RecurrenceRule.EndOption;
+                recurrenceRule.ProgenyId = calendarItemToUpdate.ProgenyId;
+
+                recurrenceRule.EnsureStringsAreNotNull();
+
+                _ = _context.RecurrenceRulesDb.Update(recurrenceRule);
+                _ = await _context.SaveChangesAsync();
+            }
+
+
             calendarItemToUpdate.CopyPropertiesForUpdate(item);
 
             if (string.IsNullOrWhiteSpace(calendarItemToUpdate.UId))
@@ -149,6 +206,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         {
             CalendarItem calendarItemToDelete = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
             if (calendarItemToDelete == null) return null;
+
+            if (calendarItemToDelete.RecurrenceRuleId > 0)
+            {
+                RecurrenceRule recurrenceRule = await _context.RecurrenceRulesDb.SingleOrDefaultAsync(r => r.RecurrenceRuleId == calendarItemToDelete.RecurrenceRuleId);
+                _ = _context.RecurrenceRulesDb.Remove(recurrenceRule);
+                _ = await _context.SaveChangesAsync();
+            }
 
             _ = _context.CalendarDb.Remove(calendarItemToDelete);
             _ = await _context.SaveChangesAsync();
