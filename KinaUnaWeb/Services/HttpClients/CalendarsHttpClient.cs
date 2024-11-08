@@ -105,29 +105,7 @@ namespace KinaUnaWeb.Services.HttpClients
             HttpResponseMessage calendarResponse = await _httpClient.DeleteAsync(calendarApiPath).ConfigureAwait(false);
             return calendarResponse.IsSuccessStatusCode;
         }
-
-        /// <summary>
-        /// Gets the list of CalendarItem objects for a progeny that a user has access to.
-        /// </summary>
-        /// <param name="progenyId">The Id of the Progeny to get the list of CalendarItems for.</param>
-        /// <returns>List of CalendarItem objects. Start and end times are in UTC timezone.</returns>
-        public async Task<List<CalendarItem>> GetCalendarList(int progenyId)
-        {
-            List<CalendarItem> progenyCalendarList = [];
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
-
-            string calendarApiPath = "/api/Calendar/Progeny/" + progenyId;
-            HttpResponseMessage calendarResponse = await _httpClient.GetAsync(calendarApiPath).ConfigureAwait(false);
-            if (!calendarResponse.IsSuccessStatusCode) return progenyCalendarList;
-
-            string calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            progenyCalendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(calendarAsString);
-
-            return progenyCalendarList;
-        }
-
+        
         /// <summary>
         /// Gets the list of CalendarItem objects for a progeny that a user has access to.
         /// </summary>
@@ -146,39 +124,6 @@ namespace KinaUnaWeb.Services.HttpClients
             string calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             progenyCalendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(calendarAsString);
-
-            return progenyCalendarList;
-        }
-
-        /// <summary>
-        /// Gets the next 5 upcoming events in the progeny's calendar.
-        /// </summary>
-        /// <param name="progenyId">The Id of the Progeny to get CalendarItems for.</param>
-        /// <param name="timeZone">The user's time zone.</param>
-        /// <returns>List of CalendarItem objects. Start and end times are in the user's timezone.</returns>
-        public async Task<List<CalendarItem>> GetUpcomingEvents(int progenyId, string timeZone)
-        {
-            List<CalendarItem> progenyCalendarList = [];
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
-
-            string calendarApiPath = "/api/Calendar/Eventlist/" + progenyId;
-            HttpResponseMessage calendarResponse = await _httpClient.GetAsync(calendarApiPath).ConfigureAwait(false);
-            if (!calendarResponse.IsSuccessStatusCode) return progenyCalendarList;
-
-            string calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            progenyCalendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(calendarAsString);
-
-            if (progenyCalendarList.Count == 0) return progenyCalendarList;
-
-            foreach (CalendarItem eventItem in progenyCalendarList)
-            {
-                if (!eventItem.StartTime.HasValue || !eventItem.EndTime.HasValue) continue;
-
-                eventItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                eventItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-            }
 
             return progenyCalendarList;
         }

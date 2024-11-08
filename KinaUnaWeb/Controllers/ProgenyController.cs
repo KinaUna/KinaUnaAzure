@@ -294,7 +294,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<CalendarItem> eventsList = await calendarsHttpClient.GetCalendarList(model.Id);
+            List<CalendarItem> eventsList = await calendarsHttpClient.GetProgeniesCalendarList([model.Id]);
             if (eventsList.Count != 0)
             {
                 foreach (CalendarItem evt in eventsList)
