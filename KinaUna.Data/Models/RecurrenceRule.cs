@@ -55,6 +55,7 @@ namespace KinaUna.Data.Models
         /// </summary>
         [MaxLength(128)]
         public string ByMonthDay { get; set; } = string.Empty;
+
         /// <summary>
         /// The month of the year for yearly recurrence.
         /// </summary>

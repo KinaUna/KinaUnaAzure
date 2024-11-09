@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using IdentityModel.Client;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
@@ -117,8 +118,11 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
+            CalendarItemsRequest request = new CalendarItemsRequest();
+            request.ProgenyIds = progenyIds;
+
             string calendarApiPath = "/api/Calendar/Progenies/";
-            HttpResponseMessage calendarResponse = await _httpClient.PostAsync(calendarApiPath, new StringContent(JsonConvert.SerializeObject(progenyIds), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
+            HttpResponseMessage calendarResponse = await _httpClient.PostAsync(calendarApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
             if (!calendarResponse.IsSuccessStatusCode) return progenyCalendarList;
 
             string calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);

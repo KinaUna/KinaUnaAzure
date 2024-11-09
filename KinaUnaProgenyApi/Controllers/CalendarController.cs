@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
@@ -41,11 +38,11 @@ namespace KinaUnaProgenyApi.Controllers
     {
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> Progenies([FromBody] List<int> progenyIds)
+        public async Task<IActionResult> Progenies([FromBody] CalendarItemsRequest request)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             List<Progeny> progenyList = [];
-            foreach (int progenyId in progenyIds)
+            foreach (int progenyId in request.ProgenyIds)
             {
                 Progeny progeny = await progenyService.GetProgeny(progenyId);
                 if (progeny != null)

@@ -13,6 +13,33 @@ namespace KinaUna.Data.Extensions
         /// </summary>
         /// <param name="currentCalendarItem"></param>
         /// <param name="otherCalendarItem"></param>
+        public static void CopyPropertiesForRecurringEvent(this CalendarItem currentCalendarItem, CalendarItem otherCalendarItem)
+        {
+            currentCalendarItem.EventId = otherCalendarItem.EventId;
+            currentCalendarItem.UId = otherCalendarItem.UId;
+            currentCalendarItem.Author = otherCalendarItem.Author;
+            currentCalendarItem.AccessLevel = otherCalendarItem.AccessLevel;
+            currentCalendarItem.AllDay = otherCalendarItem.AllDay;
+            currentCalendarItem.Context = otherCalendarItem.Context;
+            currentCalendarItem.EndString = otherCalendarItem.EndString;
+            currentCalendarItem.EndTime = otherCalendarItem.EndTime;
+            currentCalendarItem.StartTime = otherCalendarItem.StartTime;
+            currentCalendarItem.IsReadonly = otherCalendarItem.IsReadonly;
+            currentCalendarItem.Location = otherCalendarItem.Location;
+            currentCalendarItem.Notes = otherCalendarItem.Notes;
+            currentCalendarItem.ProgenyId = otherCalendarItem.ProgenyId;
+            currentCalendarItem.StartString = otherCalendarItem.StartString;
+            currentCalendarItem.Title = otherCalendarItem.Title;
+            currentCalendarItem.Progeny = otherCalendarItem.Progeny;
+            currentCalendarItem.RecurrenceRuleId = otherCalendarItem.RecurrenceRuleId;
+            currentCalendarItem.RecurrenceRule = otherCalendarItem.RecurrenceRule;
+        }
+
+        /// <summary>
+        /// Copies the properties needed for updating a CalendarItem entity from one CalendarItem object to another.
+        /// </summary>
+        /// <param name="currentCalendarItem"></param>
+        /// <param name="otherCalendarItem"></param>
         public static void CopyPropertiesForUpdate(this CalendarItem currentCalendarItem, CalendarItem otherCalendarItem )
         {
             currentCalendarItem.UId = otherCalendarItem.UId;

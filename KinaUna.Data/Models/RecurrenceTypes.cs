@@ -1,4 +1,6 @@
-﻿namespace KinaUna.Data.Models
+﻿using System.Collections.Generic;
+
+namespace KinaUna.Data.Models
 {
     /// <summary>
     /// Types of recurrence rules.
@@ -10,5 +12,19 @@
         /// Never= 0, daily = 1, weekly = 2, monthly by day = 3, monthly by date = 4, yearly by day = 5, yearly by date = 6
         /// </summary>
         public enum RecurrenceFrequency {Never= 0, Daily = 1, Weekly = 2, MonthlyByDay = 3, MonthlyByDate = 4, YearlyByDay = 5, YearlyByDate = 6  }
+    }
+
+    public static class RecurrenceUnits
+    {
+        public static List<string> WeeklyDays = new List<string>
+        {
+            "SU",
+            "MO",
+            "TU",
+            "WE",
+            "TH",
+            "FR",
+            "SA"
+        };
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 
@@ -42,8 +43,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all CalendarItems for.</param>
         /// <param name="accessLevel">The required access level to view the event.</param>
+        /// <param name="start">Optional start date for the list.</param>
+        /// <param name="end">Optional end date for the list.</param>
         /// <returns>List of CalendarItems.</returns>
-        Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel);
+        Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel, DateTime? start = null, DateTime? end = null);
 
         /// <summary>
         /// Gets a list of CalendarItems for a Progeny with a specific context.

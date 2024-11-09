@@ -59,7 +59,8 @@ namespace KinaUnaWeb.Controllers
 
             calendarItems = [.. calendarItems.OrderBy(e => e.StartTime)];
             List<CalendarItem> resultList = [];
-
+            List<Progeny> progeniesList = [];
+            
             foreach (CalendarItem ev in calendarItems)
             {
                 if (!ev.StartTime.HasValue || !ev.EndTime.HasValue) continue;
@@ -72,12 +73,19 @@ namespace KinaUnaWeb.Controllers
                 // ToDo: Replace format string with configuration or user defined value
                 ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
                 ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
-
-                Progeny progeny = await progenyHttpClient.GetProgeny(ev.ProgenyId);
+                
+                Progeny progeny = progeniesList.FirstOrDefault(p => p.Id == ev.ProgenyId);
+                if (progeny == null)
+                {
+                    progeny = await progenyHttpClient.GetProgeny(ev.ProgenyId);
+                    progeniesList.Add(progeny);
+                }
+                
                 ev.IsReadonly = !progeny.IsInAdminList(currentUserInfo.UserEmail);
                 // Todo: Add color property
                 resultList.Add(ev);
             }
+
             return Json(resultList);
         }
         /// <summary>
