@@ -138,7 +138,7 @@
                             </div>
                             <div class="col-auto">
                                 <input id="event-repeat-monthly-by-date-input-div" type="text" value="@Model.CalendarItem.RecurrenceRule.ByMonthDay" asp-for="CalendarItem.RecurrenceRule.ByMonthDay" hidden="hidden" />
-                                <input id="event-repeat-monthly-type-selected-input" type="text" hidden="hidden" asp-for="RepeatMonthlyType"/>
+                                <input id="event-repeat-monthly-type-selected-input" type="text" hidden="hidden" asp-for="RepeatMonthlyType" value="@Model.RepeatMonthlyType"/>
                             </div>
                         </div>
                         <div id="event-repeat-monthly-on-days-pattern-div" class="form-group col-auto d-none">
@@ -194,7 +194,8 @@
 
                             </div>
                         </div>
-                        <input id="event-repeat-monthly-days-input" type="text" asp-for="CalendarItem.RecurrenceRule.ByDay" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden" />
+                        <input id="event-repeat-monthly-days-input" type="text" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden" />
+                        <input id="event-repeat-days-input" type="text" asp-for="CalendarItem.RecurrenceRule.ByDay" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden"/>
                     </div>
                     <div id="event-repeat-yearly-div" class="col-12 d-none">
                         <div class="form-group col-auto ml-2">
@@ -206,7 +207,7 @@
                         <div class="form-group">
                             <label class="control-label col-auto">Repeat month:</label>
                             <div class="row m-3">
-                                <input id="event-repeat-yearly-type-selected-input" type="text" hidden="hidden" asp-for="RepeatYearlyType" />
+                                <input id="event-repeat-yearly-type-selected-input" type="text" hidden="hidden" asp-for="RepeatYearlyType" value="@Model.RepeatYearlyType" />
                                 <select id="event-repeat-yearly-month-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.MonthsSelectList.Count" asp-for="CalendarItem.RecurrenceRule.ByMonth" asp-items="@Model.MonthsSelectList"></select>
                             </div>
                         </div>

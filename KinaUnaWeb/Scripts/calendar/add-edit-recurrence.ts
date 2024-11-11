@@ -63,6 +63,8 @@ function setRecurrenceElements(frequencyValue: number) {
 
     const eventRepeatWeeklyDiv = document.querySelector<HTMLDivElement>('#event-repeat-weekly-div');
     if (frequencyValue === 2) {
+        initializeRepeatWeekDaysInput();
+
         eventRepeatWeeklyDiv?.classList.remove('d-none');
         eventIntervalWeekSuffixDiv?.classList.remove('d-none');
     }
@@ -71,6 +73,11 @@ function setRecurrenceElements(frequencyValue: number) {
     }
     const eventRepeatMonthlyDiv = document.querySelector<HTMLDivElement>('#event-repeat-monthly-div');
     if (frequencyValue === 3) {
+        initializeRepeatMonthDaysInput();
+        initializeRepeatMonthDayNumberInput();
+        updateRepeatMonthlyDaysInput();
+        initializeRepeatMonthlyTypeRadioButtons();
+
         eventRepeatMonthlyDiv?.classList.remove('d-none');
         eventIntervalMonthSuffixDiv?.classList.remove('d-none');
     }
@@ -80,6 +87,9 @@ function setRecurrenceElements(frequencyValue: number) {
 
     const eventRepeatYearlyDiv = document.querySelector<HTMLDivElement>('#event-repeat-yearly-div');
     if (frequencyValue === 4) {
+        initializeRepeatYearDaysInput();
+        initializeRepeatYearlyTypeRadioButtons();
+
         eventRepeatYearlyDiv?.classList.remove('d-none');
         eventIntervalYearSuffixDiv?.classList.remove('d-none');
     }
@@ -284,7 +294,7 @@ function updateSelectedMonthDaysInput() {
 }
 
 function updateRecurrenceByDayInput() {
-    const byDayInput = document.querySelector<HTMLInputElement>('#event-recurrence-byday-input');
+    const byDayInput = document.querySelector<HTMLInputElement>('#event-repeat-days-input');
     const frequencySelect = document.querySelector<HTMLSelectElement>('#event-repeat-frequency-select');
     if (byDayInput !== null && frequencySelect !== null) {
         const frequencyValue = parseInt(frequencySelect.value);
@@ -347,15 +357,7 @@ function initializeRepeatMonthlyTypeRadioButtons() {
         const repeatByMonthSelectedType = document.querySelector<HTMLInputElement>('#event-repeat-monthly-type-selected-input');
 
         if (dayNumberTypeRadioButton !== null && dayPatternTypeRadioButton !== null) {
-            let byMonthDayStringArray: string[] = byMonthDayInput.value.split(',');
-            let byMonthDayIntArray: number[] = [];
-            byMonthDayStringArray.forEach((dayString) => {
-                let parsedDayNumber = parseInt(dayString);
-                if (!isNaN(parsedDayNumber) && parsedDayNumber !== 0) {
-                    byMonthDayIntArray.push(parsedDayNumber);
-                }
-            });
-            if (byMonthDayIntArray.length > 0) {
+            if (repeatByMonthSelectedType?.value === '0') {
                 dayNumberTypeRadioButton.checked = true;
                 dayPatternTypeRadioButton.checked = false;
                 repeatByMonthDayNumberDiv?.classList.remove('d-none');
@@ -449,7 +451,7 @@ function updateRepeatMonthlyDaysInput() {
     const selectedPrefixes: string[] = [];
     const selectedMonthDays: string[] = [];
 
-    if (frequencyValue === 2) {
+    if (frequencyValue === 3) {
         const monthlyByDayPrefixCheckboxes = document.querySelectorAll<HTMLInputElement>('.event-repeat-monthly-by-day-prefix-checkbox');
         
         monthlyByDayPrefixCheckboxes.forEach((monthlyByDayPrefixCheckbox) => {
@@ -484,7 +486,7 @@ function updateRepeatMonthlyDaysInput() {
         }
     }
 
-    if (frequencyValue === 3) {
+    if (frequencyValue === 4) {
         const monthlyByDayPrefixCheckboxes = document.querySelectorAll<HTMLInputElement>('.event-repeat-yearly-by-day-prefix-checkbox');
 
         monthlyByDayPrefixCheckboxes.forEach((monthlyByDayPrefixCheckbox) => {

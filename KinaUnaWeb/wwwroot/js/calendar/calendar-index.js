@@ -115,13 +115,13 @@ async function onNavigation(args) {
     maxDateMinusOneMonth.setMonth(maxDateMinusOneMonth.getMonth() - 1);
     if (currentDate < minDatePlusOneMonth || currentDate > maxDateMinusOneMonth) {
         // Default start date is 2 month before current date
-        let startDate = new Date();
+        let startDate = new Date(currentDate);
         startDate.setMonth(currentDate.getMonth() - 2);
         calendarRequest.startYear = startDate.getFullYear();
         calendarRequest.startMonth = startDate.getMonth() + 1;
         calendarRequest.startDay = startDate.getDate();
         // Default end date is 6 months after current date
-        let endDate = new Date();
+        let endDate = new Date(currentDate);
         endDate.setMonth(currentDate.getMonth() + 6);
         calendarRequest.endYear = endDate.getFullYear();
         calendarRequest.endMonth = endDate.getMonth() + 1;

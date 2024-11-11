@@ -64,6 +64,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             CalendarItem.UId = eventItem.UId;
             CalendarItem.RecurrenceRuleId = eventItem.RecurrenceRuleId;
 
+            
             if (eventItem.RecurrenceRuleId != 0)
             {
                 CalendarItem.RecurrenceRule = eventItem.RecurrenceRule;
@@ -77,14 +78,42 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 }
             }
 
+            int frequencyConverted = 0;
+            if (CalendarItem.RecurrenceRule.Frequency == 1)
+            {
+                frequencyConverted = 1;
+            }
+
+            if (CalendarItem.RecurrenceRule.Frequency == 2)
+            {
+                frequencyConverted = 2;
+            }
+
+            if (CalendarItem.RecurrenceRule.Frequency == 3)
+            {
+                frequencyConverted = 3;
+                RepeatMonthlyType = 1;
+            }
+            
             if (CalendarItem.RecurrenceRule.Frequency == 4)
             {
-                CalendarItem.RecurrenceRule.Frequency = 3;
+                frequencyConverted = 3;
+                RepeatMonthlyType = 0;
             }
-            else if (CalendarItem.RecurrenceRule.Frequency == 5 || CalendarItem.RecurrenceRule.Frequency == 6)
+            
+            if (CalendarItem.RecurrenceRule.Frequency == 5)
             {
-                CalendarItem.RecurrenceRule.Frequency = 4;
+                frequencyConverted = 4;
+                RepeatYearlyType = 1;
             }
+
+            if (CalendarItem.RecurrenceRule.Frequency == 6)
+            {
+                frequencyConverted = 4;
+                RepeatYearlyType = 0;
+            }
+
+            CalendarItem.RecurrenceRule.Frequency = frequencyConverted;
 
             SetAccessLevelList();
             SetRecurrenceFrequencyList();
@@ -184,7 +213,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             eventItem.RecurrenceRule = CalendarItem.RecurrenceRule;
             if (CalendarItem.RecurrenceRule.Frequency == 3)
             {
-                if(RepeatMonthlyType == 0)
+                if(RepeatMonthlyType == 1)
                 {
                     eventItem.RecurrenceRule.Frequency = 3;
                 }
@@ -194,7 +223,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 }
             }else if (CalendarItem.RecurrenceRule.Frequency == 4)
             {
-                if(RepeatYearlyType == 0)
+                if(RepeatYearlyType == 1)
                 {
                     eventItem.RecurrenceRule.Frequency = 5;
                 }

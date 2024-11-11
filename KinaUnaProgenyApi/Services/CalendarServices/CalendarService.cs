@@ -292,28 +292,33 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             foreach (RecurrenceRule recurrenceRule in recurrenceRules)
             {
                 CalendarItem calendarItem = await _context.CalendarDb.AsNoTracking().FirstOrDefaultAsync(c => c.ProgenyId == progenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
-                int recurrenceInstancesCount = 0;    
+                if (!calendarItem.StartTime.HasValue)
+                {
+                    continue;
+                }
+
+                int recurrenceInstancesCount = 0;
+
                 if (recurrenceRule.Frequency == 1)
                 {
                     // Daily
                     DateTime nextDate = recurrenceRule.Start.Date;
+                    if (recurrenceRule.EndOption == 2)
+                    {
+                        nextDate = calendarItem.StartTime.Value.Date;
+                    }
                     while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
                     {
-                        if (nextDate >= start)
+                        if (nextDate >= start || recurrenceRule.EndOption == 2)
                         {
-                                
-                            if (calendarItem.StartTime.HasValue)
+                            CalendarItem calendarItemToAdd = new();
+                            calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
+                            calendarItemToAdd.StartTime = new DateTime(nextDate.Year, nextDate.Month, nextDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
+                            calendarItemToAdd.EndTime = new DateTime(nextDate.Year, nextDate.Month, nextDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                            recurrenceInstancesCount++;
+                            if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                             {
-                                CalendarItem calendarItemToAdd = new();
-                                calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
-                                calendarItemToAdd.StartTime = new DateTime(nextDate.Year, nextDate.Month, nextDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
-                                calendarItemToAdd.EndTime = new DateTime(nextDate.Year, nextDate.Month, nextDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
-                                if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
-                                {
-                                    calendarItemToAdd.EventId = calendarItemToAdd.EventId;
-                                    recurringEvents.Add(calendarItemToAdd);
-                                    recurrenceInstancesCount++;
-                                }
+                                recurringEvents.Add(calendarItemToAdd);
                             }
                         }
 
@@ -324,24 +329,29 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 {
                     // Weekly
                     DateTime nextDate = recurrenceRule.Start.Date;
+                    if (recurrenceRule.EndOption == 2)
+                    {
+                        nextDate = calendarItem.StartTime.Value.Date;
+                    }
                     while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
                     {
-                        if (nextDate >= start)
+                        if (nextDate >= start || recurrenceRule.EndOption == 2)
                         {
                             List<string> weeklyDays = recurrenceRule.ByDay.Split(',').ToList();
                             for (int i = 0; i < 7; i++)
                             {
                                 if (!weeklyDays.Contains(RecurrenceUnits.WeeklyDays[i])) continue;
-                                if (!calendarItem.StartTime.HasValue) continue;
-                                        
+                                
                                 DateTime tempDate = nextDate.AddDays(i);
                                 CalendarItem calendarItemToAdd = new();
                                 calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
                                 calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
+                                calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                recurrenceInstancesCount++;
                                 if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                                 {
                                     recurringEvents.Add(calendarItemToAdd);
-                                    recurrenceInstancesCount++;
+                                    
                                 }
                             }
                         }
@@ -352,10 +362,15 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 else if (recurrenceRule.Frequency == 3)
                 {
                     // Monthly by day
-                    DateTime nextDate = recurrenceRule.Start.Date;
+                    DateTime nextDate = new DateTime(start.Year, start.Month, 1);
+                    if (recurrenceRule.EndOption == 2)
+                    {
+                        nextDate = new DateTime(calendarItem.StartTime.Value.Year, calendarItem.StartTime.Value.Month, 1);
+                    }
+
                     while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
                     {
-                        if (nextDate >= start)
+                        if (nextDate >= start || recurrenceRule.EndOption == 2)
                         {
                             List<string> weeklyDays = recurrenceRule.ByDay.Split(',').ToList();
                             foreach (string weeklyDay in weeklyDays)
@@ -364,29 +379,29 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                 string weeklyDayName = weeklyDay.Substring(weeklyDay.Length - 2);
 
                                 if (!int.TryParse(weeklyDayNumber, out int dayNumber)) continue;
-                                    
-                                for (int prefixNumber = 1; prefixNumber < 6; prefixNumber++)
-                                {
-                                    if (prefixNumber != dayNumber) continue;
-                                            
-                                    for (int weekDayIndex = 0; weekDayIndex < 7; weekDayIndex++)
-                                    {
-                                        if (RecurrenceUnits.WeeklyDays[weekDayIndex] != weeklyDayName) continue;
 
-                                        if (!calendarItem.StartTime.HasValue) continue;
-                                        DateTime tempDate = nextDate.AddDays((prefixNumber - 1) * 7 + weekDayIndex);
+                                if (dayNumber is > 0 and < 6)
+                                {
+                                    for (int dayNumberOfMonth = 1; dayNumberOfMonth <= DateTime.DaysInMonth(nextDate.Year, nextDate.Month); dayNumberOfMonth++)
+                                    {
+                                        DateTime tempDate = new DateTime(nextDate.Year, nextDate.Month, dayNumberOfMonth);
+                                        if ((int)tempDate.DayOfWeek != RecurrenceUnits.WeeklyDays.IndexOf(weeklyDayName)) continue;
+
+                                        int weekNumber = (dayNumberOfMonth - 1) / 7 + 1;
+                                        if (weekNumber != dayNumber) continue;
+                                        
                                         CalendarItem calendarItemToAdd = new();
                                         calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
-                                        calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute,
-                                            0);
+                                        calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
+                                        calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                        recurrenceInstancesCount++;
                                         if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                                         {
                                             recurringEvents.Add(calendarItemToAdd);
-                                            recurrenceInstancesCount++;
                                         }
                                     }
                                 }
-
+                                
                                 if (dayNumber != -1) continue;
                                         
                                 // Last day of the month.
@@ -395,15 +410,15 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                 {
                                     DateTime tempDate = lastDayOfMonth.AddDays(-weekDayIndex);
                                     if (RecurrenceUnits.WeeklyDays.IndexOf(weeklyDayName) != (int)tempDate.DayOfWeek) continue;
-                                    if (!calendarItem.StartTime.HasValue) continue;
-
+                                    
                                     CalendarItem calendarItemToAdd = new();
                                     calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
                                     calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
+                                    calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                    recurrenceInstancesCount++;
                                     if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                                     {
                                         recurringEvents.Add(calendarItemToAdd);
-                                        recurrenceInstancesCount++;
                                     }
                                 }
                             }
@@ -417,24 +432,28 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 {
                     // Monthly by date
                     DateTime nextDate = recurrenceRule.Start.Date;
+                    if (recurrenceRule.EndOption == 2)
+                    {
+                        nextDate = calendarItem.StartTime.Value.Date;
+                    }
                     while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
                     {
-                        if (nextDate >= start)
+                        if (nextDate >= start || recurrenceRule.EndOption == 2)
                         {
                             List<string> dayNumers = recurrenceRule.ByMonthDay.Split(',').ToList();
                             for (int i = 0; i < 31; i++)
                             {
                                 if (!dayNumers.Contains(i.ToString())) continue;
-                                if (!calendarItem.StartTime.HasValue) continue;
-                                    
+                                
                                 DateTime tempDate = new DateTime(nextDate.Year, nextDate.Month, i);
                                 CalendarItem calendarItemToAdd = new();
                                 calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
                                 calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
+                                calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                recurrenceInstancesCount++;
                                 if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                                 {
                                     recurringEvents.Add(calendarItemToAdd);
-                                    recurrenceInstancesCount++;
                                 }
                             }
                         }
@@ -446,9 +465,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 {
                     // Yearly by day
                     DateTime nextDate = recurrenceRule.Start.Date;
+                    if (recurrenceRule.EndOption == 2)
+                    {
+                        nextDate = calendarItem.StartTime.Value.Date;
+                    }
                     while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
                     {
-                        if (nextDate >= start)
+                        if (nextDate >= start || recurrenceRule.EndOption == 2)
                         {
                             // Get month from ByMonth
                             List<string> months = recurrenceRule.ByMonth.Split(',').ToList();
@@ -477,16 +500,16 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                             // If the day at the weekDayIndex doesn't match the weeklyDayName, continue.
                                             if (RecurrenceUnits.WeeklyDays[weekDayIndex] != weeklyDayName) continue;
 
-                                            if (!calendarItem.StartTime.HasValue) continue;
                                             DateTime tempDate = nextDate.AddDays((prefixNumber - 1) * 7 + weekDayIndex);
                                             CalendarItem calendarItemToAdd = new();
                                             calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
                                             calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute,
                                                 0);
+                                            calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                            recurrenceInstancesCount++;
                                             if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                                             {
                                                 recurringEvents.Add(calendarItemToAdd);
-                                                recurrenceInstancesCount++;
                                             }
                                         }
                                     }
@@ -499,11 +522,11 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                     {
                                         DateTime tempDate = lastDayOfMonth.AddDays(-weekDayIndex);
                                         if (RecurrenceUnits.WeeklyDays.IndexOf(weeklyDayName) != (int)tempDate.DayOfWeek) continue;
-                                        if (!calendarItem.StartTime.HasValue) continue;
-
+                                        
                                         CalendarItem calendarItemToAdd = new();
                                         calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
                                         calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
+                                        calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
                                         if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                                         {
                                             recurringEvents.Add(calendarItemToAdd);
@@ -522,9 +545,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 {
                     // Yearly by date
                     DateTime nextDate = recurrenceRule.Start.Date;
+                    if (recurrenceRule.EndOption == 2)
+                    {
+                        nextDate = calendarItem.StartTime.Value.Date;
+                    }
                     while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
                     {
-                        if (nextDate >= start)
+                        if (nextDate >= start || recurrenceRule.EndOption == 2)
                         {
                             // Get month from ByMonth
                             List<string> months = recurrenceRule.ByMonth.Split(',').ToList();
@@ -539,12 +566,12 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                 {
                                     // If the day number doesn't match the day of the month, continue.
                                     if (!dayNumbers.Contains(i.ToString())) continue;
-                                    if (!calendarItem.StartTime.HasValue) continue;
-
+                                    
                                     DateTime tempDate = new DateTime(nextDate.Year, monthNumber, i);
                                     CalendarItem calendarItemToAdd = new();
                                     calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
                                     calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
+                                    calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
                                     if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                                     {
                                         recurringEvents.Add(calendarItemToAdd);
