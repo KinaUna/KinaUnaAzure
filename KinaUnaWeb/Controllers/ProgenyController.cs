@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.FamilyViewModels;
 using KinaUnaWeb.Models.TypeScriptModels;
@@ -294,7 +295,10 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<CalendarItem> eventsList = await calendarsHttpClient.GetProgeniesCalendarList([model.Id]);
+            CalendarItemsRequest calendarItemsRequest = new CalendarItemsRequest();
+            calendarItemsRequest.ProgenyIds = [model.Id];
+
+            List<CalendarItem> eventsList = await calendarsHttpClient.GetProgeniesCalendarList(calendarItemsRequest);
             if (eventsList.Count != 0)
             {
                 foreach (CalendarItem evt in eventsList)

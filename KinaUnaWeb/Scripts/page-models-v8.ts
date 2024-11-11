@@ -447,6 +447,16 @@ export class CalendarItem {
     author: string = '';
 }
 
+export class CalendarItemsRequest {
+    progenyIds: number[] = [];
+    startYear: number = 0;
+    startMonth: number = 0;
+    startDay: number = 0;
+    endYear: number = 0;
+    endMonth: number = 0;
+    endDay: number = 0;
+}
+
 export class SetProgenyRequest {
     progenyId: number = 0;
     languageId: number = 0;

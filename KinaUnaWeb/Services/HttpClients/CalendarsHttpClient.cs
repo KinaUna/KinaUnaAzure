@@ -106,21 +106,18 @@ namespace KinaUnaWeb.Services.HttpClients
             HttpResponseMessage calendarResponse = await _httpClient.DeleteAsync(calendarApiPath).ConfigureAwait(false);
             return calendarResponse.IsSuccessStatusCode;
         }
-        
+
         /// <summary>
         /// Gets the list of CalendarItem objects for a progeny that a user has access to.
         /// </summary>
-        /// <param name="progenyIds">The list of Ids of the Progenies to get the list of CalendarItems for.</param>
+        /// <param name="request">CalendarItemsRequest object with the list of Ids of the Progenies to get the list of CalendarItems for, optional start and end dates for the query.</param>
         /// <returns>List of CalendarItem objects. Start and end times are in UTC timezone.</returns>
-        public async Task<List<CalendarItem>> GetProgeniesCalendarList(List<int> progenyIds)
+        public async Task<List<CalendarItem>> GetProgeniesCalendarList(CalendarItemsRequest request)
         {
             List<CalendarItem> progenyCalendarList = [];
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
-
-            CalendarItemsRequest request = new CalendarItemsRequest();
-            request.ProgenyIds = progenyIds;
-
+            
             string calendarApiPath = "/api/Calendar/Progenies/";
             HttpResponseMessage calendarResponse = await _httpClient.PostAsync(calendarApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
             if (!calendarResponse.IsSuccessStatusCode) return progenyCalendarList;

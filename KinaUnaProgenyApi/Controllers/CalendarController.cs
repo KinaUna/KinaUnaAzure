@@ -61,7 +61,7 @@ namespace KinaUnaProgenyApi.Controllers
             foreach (Progeny progeny in progenyList)
             {
                 UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, userEmail);
-                List<CalendarItem> progenyCalendarItems = await calendarService.GetCalendarList(progeny.Id, userAccess.AccessLevel);
+                List<CalendarItem> progenyCalendarItems = await calendarService.GetCalendarList(progeny.Id, userAccess.AccessLevel, request.StartDate, request.EndDate);
                 calendarList.AddRange(progenyCalendarItems);
             }
 

@@ -484,6 +484,17 @@ export class CalendarItem {
         this.author = '';
     }
 }
+export class CalendarItemsRequest {
+    constructor() {
+        this.progenyIds = [];
+        this.startYear = 0;
+        this.startMonth = 0;
+        this.startDay = 0;
+        this.endYear = 0;
+        this.endMonth = 0;
+        this.endDay = 0;
+    }
+}
 export class SetProgenyRequest {
     constructor() {
         this.progenyId = 0;

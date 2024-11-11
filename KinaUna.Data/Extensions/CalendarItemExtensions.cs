@@ -102,5 +102,26 @@ namespace KinaUna.Data.Extensions
 
             return timeLineItem;
         }
+
+        public static bool IsBeforeEnd(this RecurrenceRule rule, DateTime date, int count)
+        {
+            if (rule.EndOption == 0) return true;
+
+            if (rule.IsDateWithinRuleEnd(date) && rule.IsCountWithinRuleEnd(count)) return true;
+            
+            return false;
+        }
+
+        private static bool IsDateWithinRuleEnd(this RecurrenceRule rule, DateTime date)
+        {
+            if (rule.EndOption == 1 && rule.Until.HasValue) return rule.Until.Value >= date;
+            return true;
+        }
+
+        private static bool IsCountWithinRuleEnd(this RecurrenceRule rule, int count)
+        {
+            if (rule.EndOption == 2 && rule.Count > 0) return rule.Count > count;
+            return true;
+        }
     }
 }

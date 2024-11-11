@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -40,8 +41,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <summary>
         /// Gets the list of CalendarItem objects for a progeny that a user has access to.
         /// </summary>
-        /// <param name="progenyIds">The list of Ids of the Progenies to get the list of CalendarItems for.</param>
+        /// <param name="request">CalendarItemsRequest object with the list of Ids of the Progenies to get the list of CalendarItems for, optional start and end dates for the query.</param>
         /// <returns>List of CalendarItem objects. Start and end times are in UTC timezone.</returns>
-        Task<List<CalendarItem>> GetProgeniesCalendarList(List<int> progenyIds);
+        Task<List<CalendarItem>> GetProgeniesCalendarList(CalendarItemsRequest request);
     }
 }

@@ -2,7 +2,7 @@ import { getCurrentProgenyId } from '../data-tools-v8.js';
 import { showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as LocaleHelper from '../localization-v8.js';
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { CalendarItem, TimeLineType, TimelineItem } from '../page-models-v8.js';
+import { CalendarItem, CalendarItemsRequest, TimeLineType, TimelineItem } from '../page-models-v8.js';
 import { getSelectedProgenies } from '../settings-tools-v8.js';
 import { popupEventItem } from './calendar-details.js';
 
@@ -12,9 +12,11 @@ declare var isCurrentUserProgenyAdmin: boolean;
 let progeniesList: number[] = [];
 let selectedEventId: number = 0;
 let currentCulture = 'en';
+let calendarRequest: CalendarItemsRequest = new CalendarItemsRequest();
 
 async function getCalendarItems(): Promise<void> {
     startLoadingItemsSpinner('schedule');
+    calendarRequest.progenyIds = progeniesList;
 
     await fetch('/Calendar/GetCalendarList', {
         method: 'POST',
@@ -22,7 +24,7 @@ async function getCalendarItems(): Promise<void> {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(progeniesList)
+        body: JSON.stringify(calendarRequest)
     }).then(async function (getCalendarItemsResult) {
         if (getCalendarItemsResult.ok) {
             const calendarItems = (await getCalendarItemsResult.json()) as CalendarItem[];
@@ -144,10 +146,30 @@ function addSelectedProgeniesChangedEventListener() {
             progeniesList = getSelectedProgenies();
             await getCalendarItems();
         }
-
     });
 }
 
+function initializeCalendarItemsRequest(): void {
+    calendarRequest = new CalendarItemsRequest();
+    calendarRequest.progenyIds = progeniesList;
+
+    // Get current date and time
+    let currentDate = new Date();
+    // Default start date is 1 month before current date
+    let startDate = new Date();
+    startDate.setMonth(currentDate.getMonth() - 1);
+    calendarRequest.startYear = startDate.getFullYear();
+    calendarRequest.startMonth = startDate.getMonth() + 1;
+    calendarRequest.startDay = startDate.getDate();
+
+    // Default end date is 1 month after current date
+    let endDate = new Date();
+    endDate.setMonth(currentDate.getMonth() + 1);
+    calendarRequest.endYear = endDate.getFullYear();
+    calendarRequest.endMonth = endDate.getMonth() + 1;
+    calendarRequest.endDay = endDate.getDate();
+
+}
 /**
  * Initializes page elements when it is loaded.
  */
@@ -160,6 +182,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     
     progeniesList = getSelectedProgenies();
     startFullPageSpinner();
+    initializeCalendarItemsRequest();
     await getCalendarItems();
     stopFullPageSpinner();
     return new Promise<void>(function (resolve, reject) {

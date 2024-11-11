@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Calendar;
 using KinaUnaWeb.Models.TypeScriptModels.Timeline;
@@ -52,10 +53,13 @@ namespace KinaUnaWeb.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> GetCalendarList([FromBody] List<int> progenies)
+        public async Task<IActionResult> GetCalendarList([FromBody] CalendarItemsRequest request)
         {
             UserInfo currentUserInfo = await userInfosHttpClient.GetUserInfo(User.GetEmail());
-            List<CalendarItem> calendarItems = await calendarsHttpClient.GetProgeniesCalendarList(progenies);
+            request.StartDate = new DateTime(request.StartYear, request.StartMonth, request.StartDay);
+            request.EndDate = new DateTime(request.EndYear, request.EndMonth, request.EndDay);
+
+            List<CalendarItem> calendarItems = await calendarsHttpClient.GetProgeniesCalendarList(request);
 
             calendarItems = [.. calendarItems.OrderBy(e => e.StartTime)];
             List<CalendarItem> resultList = [];
@@ -385,16 +389,15 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> GetUpcomingEventsList([FromBody] TimelineParameters parameters)
         {
             TimelineList timelineList = new();
-            List<CalendarItem> upcomingCalendarItems;
-            if (parameters.Progenies.Count > 0)
+            CalendarItemsRequest request = new()
             {
-                upcomingCalendarItems = await calendarsHttpClient.GetProgeniesCalendarList(parameters.Progenies);
-            }
-            else
-            {
-                upcomingCalendarItems = await calendarsHttpClient.GetProgeniesCalendarList([parameters.ProgenyId]);
-            }
-             
+                ProgenyIds = parameters.Progenies,
+                StartDate = DateTime.UtcNow.Date,
+                EndDate = DateTime.UtcNow.Date.AddYears(1) // ToDo: Make this configurable
+            };
+            
+            List<CalendarItem> upcomingCalendarItems = await calendarsHttpClient.GetProgeniesCalendarList(request);
+
             upcomingCalendarItems = upcomingCalendarItems.Where(c => c.EndTime > DateTime.UtcNow).ToList();
             upcomingCalendarItems = [.. upcomingCalendarItems.OrderBy(c => c.StartTime)];
             
