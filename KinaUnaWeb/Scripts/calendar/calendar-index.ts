@@ -13,6 +13,9 @@ let progeniesList: number[] = [];
 let selectedEventId: number = 0;
 let currentCulture = 'en';
 let calendarRequest: CalendarItemsRequest = new CalendarItemsRequest();
+let currentDate = new Date();
+let minDate = new Date();
+let maxDate = new Date();
 
 async function getCalendarItems(): Promise<void> {
     startLoadingItemsSpinner('schedule');
@@ -124,6 +127,44 @@ async function loadLocale(): Promise<void> {
     });
 }
 
+async function onNavigation(args: any): Promise<void> {
+    currentDate = args.currentDate;
+
+    // if currentDate is before minDate plus 1 month, or after maxDate minus 1 month, get new calendar items
+    let minDatePlusOneMonth = new Date(minDate);
+    minDatePlusOneMonth.setMonth(minDatePlusOneMonth.getMonth() + 1);
+    let maxDateMinusOneMonth = new Date(maxDate);
+    maxDateMinusOneMonth.setMonth(maxDateMinusOneMonth.getMonth() - 1);
+
+    if (currentDate < minDatePlusOneMonth || currentDate > maxDateMinusOneMonth) {
+        // Default start date is 2 month before current date
+        let startDate = new Date();
+        startDate.setMonth(currentDate.getMonth() - 2);
+        calendarRequest.startYear = startDate.getFullYear();
+        calendarRequest.startMonth = startDate.getMonth() + 1;
+        calendarRequest.startDay = startDate.getDate();
+
+        // Default end date is 6 months after current date
+        let endDate = new Date();
+        endDate.setMonth(currentDate.getMonth() + 6);
+        calendarRequest.endYear = endDate.getFullYear();
+        calendarRequest.endMonth = endDate.getMonth() + 1;
+        calendarRequest.endDay = endDate.getDate();
+
+        minDate = new Date(startDate);
+        maxDate = new Date(endDate);
+
+        await getCalendarItems();
+ 
+    }
+    
+    
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
 /**
  * Adds event listners for clicking a cell, double-clicking a cell, click an event, and clicking edit or delete.
  * cellClick is the event sent when an empty time cell is clicked. This currently cancels the default behaviour and does nothing.
@@ -137,6 +178,7 @@ function addScheduleEventListeners(): void {
     scheduleInstance.addEventListener('cellDoubleClick', (args: any) => { onCellDoubleClick(args); });
     scheduleInstance.addEventListener('eventClick', (args: any) => { onEventClick(args); });
     scheduleInstance.addEventListener('popupOpen', (args: any) => { onPopupOpen(args); });
+    scheduleInstance.addEventListener('navigating', (args: any) => { onNavigation(args); });
 }
 
 function addSelectedProgeniesChangedEventListener() {
@@ -154,20 +196,23 @@ function initializeCalendarItemsRequest(): void {
     calendarRequest.progenyIds = progeniesList;
 
     // Get current date and time
-    let currentDate = new Date();
+    
     // Default start date is 1 month before current date
     let startDate = new Date();
-    startDate.setMonth(currentDate.getMonth() - 1);
+    startDate.setMonth(currentDate.getMonth() - 2);
     calendarRequest.startYear = startDate.getFullYear();
     calendarRequest.startMonth = startDate.getMonth() + 1;
     calendarRequest.startDay = startDate.getDate();
 
     // Default end date is 1 month after current date
     let endDate = new Date();
-    endDate.setMonth(currentDate.getMonth() + 1);
+    endDate.setMonth(currentDate.getMonth() + 6);
     calendarRequest.endYear = endDate.getFullYear();
     calendarRequest.endMonth = endDate.getMonth() + 1;
     calendarRequest.endDay = endDate.getDate();
+
+    minDate = new Date(startDate);
+    maxDate = new Date(endDate);
 
 }
 /**
