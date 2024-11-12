@@ -113,6 +113,8 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         {
 
             List<CalendarReminder> calendarReminders = await context.CalendarRemindersDb.AsNoTracking().Where(c => c.EventId == eventId && c.UserId == reminderUserId).ToListAsync();
+            if (calendarReminders.Count < 1) return calendarReminders;
+
             if(currentUserInfo.UserId != calendarReminders[0].UserId && !currentUserInfo.IsKinaUnaAdmin)
             {
                 return CustomError.UnauthorizedError("CalendarReminderService, GetUsersCalendarRemindersForEvent: User is not authorized to access this CalendarReminder item.");

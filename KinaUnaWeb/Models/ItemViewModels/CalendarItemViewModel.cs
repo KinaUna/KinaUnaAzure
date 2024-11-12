@@ -23,8 +23,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> EndOptionsList { get; set; } = [];
         
         public List<bool> MonthlyByDayPrefixList = [false, false, false, false, false, false]; // First, second, third, fourth, fifth, last.
-        public int RepeatMonthlyType { get; set; } = 0;
-        public int RepeatYearlyType { get; set; } = 0;
+        public int RepeatMonthlyType { get; set; }
+        public int RepeatYearlyType { get; set; }
 
         /// <summary>
         /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.

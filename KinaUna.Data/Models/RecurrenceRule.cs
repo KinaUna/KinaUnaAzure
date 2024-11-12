@@ -47,19 +47,19 @@ namespace KinaUna.Data.Models
         /// The day of the week for weekly recurrence.
         /// Day of the month for monthly by day and yearly by day.
         /// </summary>
-        [MaxLength(128)]
+        [MaxLength(1024)]
         public string ByDay { get; set; } = string.Empty;
         
         /// <summary>
         /// Day of the month for monthly by date and yearly by date.
         /// </summary>
-        [MaxLength(128)]
+        [MaxLength(1024)]
         public string ByMonthDay { get; set; } = string.Empty;
 
         /// <summary>
         /// The month of the year for yearly recurrence.
         /// </summary>
-        [MaxLength(128)]
+        [MaxLength(1024)]
         public string ByMonth { get; set; } = string.Empty;
 
         /// <summary>

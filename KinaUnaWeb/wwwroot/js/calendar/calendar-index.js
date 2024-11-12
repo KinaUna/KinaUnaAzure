@@ -148,6 +148,9 @@ function addScheduleEventListeners() {
     scheduleInstance.addEventListener('eventClick', (args) => { onEventClick(args); });
     scheduleInstance.addEventListener('popupOpen', (args) => { onPopupOpen(args); });
     scheduleInstance.addEventListener('navigating', (args) => { onNavigation(args); });
+    window.addEventListener('calendarDataChanged', async () => {
+        await getCalendarItems();
+    });
 }
 function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {

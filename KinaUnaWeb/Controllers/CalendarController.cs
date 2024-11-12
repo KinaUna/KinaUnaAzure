@@ -252,7 +252,7 @@ namespace KinaUnaWeb.Controllers
             CalendarItem editedEvent = model.CreateCalendarItem();
                 
             model.CalendarItem = await calendarsHttpClient.UpdateCalendarItem(editedEvent);
-            if (!model.CalendarItem.StartTime.HasValue || !model.CalendarItem.EndTime.HasValue) return PartialView("_EventUpdatedPartial", model);
+            if (!model.CalendarItem.StartTime.HasValue || !model.CalendarItem.EndTime.HasValue) return PartialView("_NotFoundPartial", model); // Todo: Show error message instead.
 
             model.CalendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.CalendarItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
