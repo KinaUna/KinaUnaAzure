@@ -104,8 +104,9 @@ function checkLeavePage(clickover: HTMLElement): boolean {
 function collapsePopupsAndModals(clickover: HTMLElement): void {
     const itemDetailsPopup = clickover.closest('.item-details-content');
     const zebraDatePicker = clickover.closest('.zebra-datepicker'); // Date pickers are outside the item-details-popup, but can be part of it.
+    const isFullScreenBackground = clickover.classList.contains('full-screen-bg');
 
-    if (itemDetailsPopup === null && zebraDatePicker !== null) {
+    if (isFullScreenBackground || (itemDetailsPopup === null && zebraDatePicker !== null)) {
         const itemDetailsPopups = document.querySelectorAll('.item-details-popup');
         
         itemDetailsPopups.forEach(function (popup) {
@@ -133,7 +134,7 @@ function setDocumentClickEventListeners(): void {
 
 function onDocumentClicked(event: MouseEvent) {
     const clickover = event.target as HTMLElement;
-
+    
     if (clickover !== null) {
         let leavingPage = checkLeavePage(clickover);
         closeMenuIfClickedOutsideOrLeaving(clickover, leavingPage);

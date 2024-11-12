@@ -553,7 +553,10 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
             body: formData
         }).then(async function (response) {
             if (response.ok) {
-                
+                if (formAction.includes('/Calendar/')){
+                    const calendarDataChangedEvent = new Event('calendarDataChanged');
+                    window.dispatchEvent(calendarDataChangedEvent);
+                }
                 if (itemDetailsPopupDiv) {
                     let modalContent = await response.text();
                     const fullScreenOverlay = document.createElement('div');

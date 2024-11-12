@@ -465,7 +465,6 @@ async function onSaveItemFormSubmit(event) {
             body: formData
         }).then(async function (response) {
             if (response.ok) {
-                console.log(formAction);
                 if (formAction.includes('/Calendar/')) {
                     const calendarDataChangedEvent = new Event('calendarDataChanged');
                     window.dispatchEvent(calendarDataChangedEvent);
