@@ -313,8 +313,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                         {
                             CalendarItem calendarItemToAdd = new();
                             calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
+                            TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
                             calendarItemToAdd.StartTime = new DateTime(nextDate.Year, nextDate.Month, nextDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
-                            calendarItemToAdd.EndTime = new DateTime(nextDate.Year, nextDate.Month, nextDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                            calendarItemToAdd.EndTime = calendarItemToAdd.StartTime.Value + calendarItemToAddDuration;
 
                             if (recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount))
                             {
@@ -355,8 +356,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
                                     CalendarItem calendarItemToAdd = new();
                                     calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
+                                    TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
                                     calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
-                                    calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                    calendarItemToAdd.EndTime = calendarItemToAdd.StartTime.Value + calendarItemToAddDuration;
 
                                     if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                                     if (!(calendarItemToAdd.StartTime > calendarItem.StartTime)) continue;
@@ -410,8 +412,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                     {
                                         CalendarItem calendarItemToAdd = new();
                                         calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
+                                        TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
                                         calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
-                                        calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                        calendarItemToAdd.EndTime = calendarItemToAdd.StartTime.Value + calendarItemToAddDuration;
 
                                         if (recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount))
                                         {
@@ -439,8 +442,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
                                         CalendarItem calendarItemToAdd = new();
                                         calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
+                                        TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
                                         calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
-                                        calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                        calendarItemToAdd.EndTime = calendarItemToAdd.StartTime + calendarItemToAddDuration;
 
                                         if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                                         if (!(calendarItemToAdd.StartTime > calendarItem.StartTime)) continue;
@@ -478,8 +482,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                 DateTime tempDate = new DateTime(nextDate.Year, nextDate.Month, i);
                                 CalendarItem calendarItemToAdd = new();
                                 calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
+                                TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
                                 calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
-                                calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                calendarItemToAdd.EndTime = calendarItemToAdd.StartTime + calendarItemToAddDuration;
 
                                 if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                                 if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;
@@ -542,8 +547,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                             {
                                                 CalendarItem calendarItemToAdd = new();
                                                 calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
+                                                TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
                                                 calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
-                                                calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                                calendarItemToAdd.EndTime = calendarItemToAdd.StartTime + calendarItemToAddDuration;
 
                                                 if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                                                 if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;
@@ -567,8 +573,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                                 
                                                 CalendarItem calendarItemToAdd = new();
                                                 calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
+                                                TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
                                                 calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
-                                                calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                                calendarItemToAdd.EndTime = calendarItemToAdd.StartTime + calendarItemToAddDuration;
 
                                                 if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                                                 if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;
@@ -621,8 +628,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                     DateTime tempDate = new DateTime(nextDate.Year, monthNumber, i);
                                     CalendarItem calendarItemToAdd = new();
                                     calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
+                                    TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
                                     calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0);
-                                    calendarItemToAdd.EndTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.EndTime.Value.Hour, calendarItem.EndTime.Value.Minute, 0);
+                                    calendarItemToAdd.EndTime = calendarItemToAdd.StartTime + calendarItemToAddDuration;
+
                                     recurrenceInstancesCount++;
                                     if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                                     if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;

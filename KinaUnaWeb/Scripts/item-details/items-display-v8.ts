@@ -131,11 +131,15 @@ export async function showPopupAtLoad(itemType: number): Promise<void> {
                         const popupEventYear = parseInt(popupEventIdDiv.dataset.popupEventDateYear);
                         const popupEventMonth = parseInt(popupEventIdDiv.dataset.popupEventDateMonth) - 1;
                         const popupEventDay = parseInt(popupEventIdDiv.dataset.popupEventDateDay);
-                        let scheduleInstance = document.querySelector<any>('.e-schedule').ej2_instances[0];
-                        scheduleInstance.selectedDate = new Date(popupEventYear, popupEventMonth, popupEventDay);
+                        if (popupEventYear && popupEventMonth && popupEventDay) {
+                            let scheduleInstance = document.querySelector<any>('.e-schedule').ej2_instances[0];
+                            scheduleInstance.selectedDate = new Date(popupEventYear, popupEventMonth, popupEventDay);
+                            await popupEventItem(eventId.toString(), popupEventYear.toString(), popupEventMonth.toString(), popupEventDay.toString());
+                        }
                     }
-
-                    await popupEventItem(eventId.toString());
+                    else {
+                        await popupEventItem(eventId.toString(), '0', '0', '0');
+                    }
 
                 }
             }

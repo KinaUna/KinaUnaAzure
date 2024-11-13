@@ -318,6 +318,9 @@ export class TimelineItem {
     progenyId: number = 0;
     itemType: number = 0;
     itemId: string = '0';
+    itemYear: number = 0;
+    itemMonth: number = 0;
+    itemDay: number = 0;
 }
 
 export class TimelineParameters {
@@ -360,6 +363,9 @@ export class TimeLineItemViewModel {
     typeId: number = 0;
     itemId: number = 0;
     tagFilter: string = '';
+    itemYear: number = 0;
+    itemMonth: number = 0;
+    itemDay: number = 0;
 }
 
 export class TimelineList {

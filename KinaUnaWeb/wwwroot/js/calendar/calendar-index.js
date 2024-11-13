@@ -37,8 +37,8 @@ async function getCalendarItems() {
  * Retrieves the details of a calendar event and displays them in a popup.
  * @param {number} eventId The id of the event to display.
  */
-async function DisplayEventItem(eventId) {
-    await popupEventItem(eventId.toString());
+async function DisplayEventItem(eventId, eventYear, eventMonth, eventDay) {
+    await popupEventItem(eventId.toString(), eventYear, eventMonth, eventDay);
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -61,7 +61,11 @@ function onEventClick(args) {
     let scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
     let event = scheduleObj.getEventDetails(args.element);
     selectedEventId = event.eventId;
-    DisplayEventItem(selectedEventId);
+    console.log(event.startTime);
+    let startYear = event.startTime.getFullYear();
+    let startMonth = event.startTime.getMonth() + 1;
+    let startDay = event.startTime.getDate();
+    DisplayEventItem(selectedEventId, startYear, startMonth, startDay);
 }
 /**
  * The event handler for clicking an empty cell in the Syncfusion Schedule component.

@@ -96,15 +96,21 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    CalendarItem evt = await calendarsHttpClient.GetCalendarItem(itemId);
-                    if (evt != null && evt.EventId > 0)
+                    CalendarItem eventItem = await calendarsHttpClient.GetCalendarItem(itemId);
+                    if (eventItem != null && eventItem.EventId > 0)
                     {
-                        if (!evt.StartTime.HasValue || !evt.EndTime.HasValue) return new TimeLineItemPartialViewModel("_TimeLineEventPartial", evt);
+                        if (!eventItem.StartTime.HasValue || !eventItem.EndTime.HasValue) return new TimeLineItemPartialViewModel("_TimeLineEventPartial", eventItem);
 
-                        evt.StartTime = TimeZoneInfo.ConvertTimeFromUtc(evt.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                        evt.EndTime = TimeZoneInfo.ConvertTimeFromUtc(evt.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                        evt.Progeny = await progenyHttpClient.GetProgeny(evt.ProgenyId);
-                        return new TimeLineItemPartialViewModel("_TimeLineEventPartial", evt);
+                        eventItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        eventItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        eventItem.Progeny = await progenyHttpClient.GetProgeny(eventItem.ProgenyId);
+
+                        if (eventItem.RecurrenceRuleId <= 0 || model.ItemYear <= 0 || model.ItemMonth <= 0 || model.ItemDay <= 0) return new TimeLineItemPartialViewModel("_TimeLineEventPartial", eventItem);
+                        
+                        TimeSpan eventDuration = eventItem.EndTime.Value - eventItem.StartTime.Value;
+                        eventItem.StartTime = new DateTime(model.ItemYear, model.ItemMonth, model.ItemDay, eventItem.StartTime.Value.Hour, eventItem.StartTime.Value.Minute, eventItem.StartTime.Value.Second);
+                        eventItem.EndTime = eventItem.StartTime.Value + eventDuration;
+                        return new TimeLineItemPartialViewModel("_TimeLineEventPartial", eventItem);
                     }
                 }
             }

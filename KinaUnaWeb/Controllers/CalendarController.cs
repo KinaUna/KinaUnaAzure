@@ -97,9 +97,12 @@ namespace KinaUnaWeb.Controllers
         /// </summary>
         /// <param name="eventId">The EventId of the CalendarItem to show.</param>
         /// <param name="partialView">If true, returns partial view. For inline fetching of HTML to show in a modal or popup.</param>
+        /// <param name="year">Optional year for recurring events..</param>
+        /// <param name="month">Optional month for recurring events.</param>
+        /// <param name="day">Optional day for recurring events.</param>
         /// <returns></returns>
         [AllowAnonymous]
-        public async Task<IActionResult> ViewEvent(int eventId, bool partialView = false)
+        public async Task<IActionResult> ViewEvent(int eventId, bool partialView = false, int year = 0, int month = 0, int day = 0)
         {
             if (!partialView)
             {
@@ -118,10 +121,18 @@ namespace KinaUnaWeb.Controllers
             }
             
             model.SetCalendarItem(eventItem);
+            // Year, month and day are used for recurring events, and is in the user's timezone, make sure to update the event's start and end times after converting from UTC.
+            if (model.CalendarItem.RecurrenceRuleId > 0 && year > 0 && month > 0 && day > 0 && model.CalendarItem.StartTime.HasValue && model.CalendarItem.EndTime.HasValue)
+            {
+                TimeSpan eventDuration = model.CalendarItem.EndTime.Value - model.CalendarItem.StartTime.Value;
+                model.CalendarItem.StartTime = new DateTime(year, month, day, model.CalendarItem.StartTime.Value.Hour, model.CalendarItem.StartTime.Value.Minute, model.CalendarItem.StartTime.Value.Second);
+                model.CalendarItem.EndTime = model.CalendarItem.StartTime.Value + eventDuration;
+            }
+
             model.CalendarItem.Progeny = model.CurrentProgeny;
             model.CalendarItem.Progeny.PictureLink = model.CalendarItem.Progeny.GetProfilePictureUrl();
             model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
-
+            
             List<CalendarReminder> calendarReminders = await calendarRemindersHttpClient.GetUsersCalendarRemindersForEvent(eventId, model.CurrentUser.UserId);
             if (calendarReminders == null) return PartialView("_CalendarItemDetailsPartial", model);
 
@@ -413,7 +424,10 @@ namespace KinaUnaWeb.Controllers
                     ProgenyId = eventItem.ProgenyId,
                     AccessLevel = eventItem.AccessLevel,
                     ItemId = eventItem.EventId.ToString(),
-                    ItemType = (int)KinaUnaTypes.TimeLineType.Calendar
+                    ItemType = (int)KinaUnaTypes.TimeLineType.Calendar,
+                    ItemYear = eventItem.StartTime?.Year ?? DateTime.UtcNow.Year,
+                    ItemMonth = eventItem.StartTime?.Month ?? DateTime.UtcNow.Month,
+                    ItemDay = eventItem.StartTime?.Day ?? DateTime.UtcNow.Day,
                 };
                 timelineList.TimelineItems.Add(eventTimelineItem);
             }

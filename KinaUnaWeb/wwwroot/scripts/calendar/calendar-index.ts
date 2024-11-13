@@ -47,8 +47,8 @@ async function getCalendarItems(): Promise<void> {
  * Retrieves the details of a calendar event and displays them in a popup.
  * @param {number} eventId The id of the event to display.
  */
-async function DisplayEventItem(eventId: number): Promise<void> {
-    await popupEventItem(eventId.toString());
+async function DisplayEventItem(eventId: number, eventYear: string, eventMonth: string, eventDay: string): Promise<void> {
+    await popupEventItem(eventId.toString(), eventYear, eventMonth, eventDay);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -74,8 +74,11 @@ function onEventClick(args: any) {
     let scheduleObj = document.querySelector<any>('.e-schedule').ej2_instances[0];
     let event = scheduleObj.getEventDetails(args.element);
     selectedEventId = event.eventId;
+    let startYear = args.date.getFullYear();
+    let startMonth = args.date.getMonth() + 1;
+    let startDay = args.date.getDate();
 
-    DisplayEventItem(selectedEventId);
+    DisplayEventItem(selectedEventId, startYear, startMonth, startDay);
 }
 
 /**

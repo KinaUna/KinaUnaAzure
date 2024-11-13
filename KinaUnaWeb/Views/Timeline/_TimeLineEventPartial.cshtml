@@ -29,7 +29,7 @@
         endDateString = string.Empty;
     }
 }
-<button class="item-btn calendar-event-item" data-calendar-event-id="@Model.EventId">
+<button class="item-btn calendar-event-item" data-calendar-event-id="@Model.EventId" data-event-year="@Model.StartTime.Value.Year" data-event-month="@Model.StartTime.Value.Month" data-event-day="@Model.StartTime.Value.Day">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-calendar">
             <div class="row">
