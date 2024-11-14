@@ -34,7 +34,15 @@
         <div class="timeline-card-body bg-calendar">
             <div class="row">
                 <div class="col-auto">
-                    <span class="timeline-icon"><i class="material-icons">event_note</i></span>
+                    @if (Model.RecurrenceRuleId == 0)
+                    {
+                        <span class="timeline-icon"><i class="material-icons">event_note</i></span>
+                    }
+                    else
+                    {
+                        <span class="timeline-icon"><i class="material-icons">event_repeat</i></span>
+                    }
+                    
                 </div>
                 <div class="col">
                     <div class="row timeline-title text-white">
@@ -79,6 +87,7 @@
                                     </div>
                                 }
                             }
+                            
                         </div>
                     </div>
                     <div class="timeline-title row">
