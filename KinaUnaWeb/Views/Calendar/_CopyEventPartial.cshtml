@@ -9,6 +9,7 @@
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string longDateTimeFormatMoment = "DD-MMMM-YYYY HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+    string repeatUntilZebraDateTimeFormat = "d-F-Y";
     string copyEventToString = await LocaleManager.GetTranslation("Copy event to:", PageNames.Calendar, Model.LanguageId);
     
     foreach (SelectListItem frequencySelectItem in Model.RecurrenceFrequencyList)
@@ -38,6 +39,7 @@
 <div id="longDateTimeFormatDiv" class="d-none" data-long-date-time-format="@longDateTimeFormat"></div>
 <div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
 <div id="add-event-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="add-event-repeat-until-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@repeatUntilZebraDateTimeFormat"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container">

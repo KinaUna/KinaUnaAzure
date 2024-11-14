@@ -25,7 +25,7 @@ async function onCalendarItemDivClicked(event: MouseEvent): Promise<void> {
         const eventYear = eventElement.dataset.eventYear;
         const eventMonth = eventElement.dataset.eventMonth;
         const eventDay = eventElement.dataset.eventDay;
-
+        
         if (eventId) {
             if (eventYear && eventMonth && eventDay) {
                 await displayEventItem(eventId, eventYear, eventMonth, eventDay);

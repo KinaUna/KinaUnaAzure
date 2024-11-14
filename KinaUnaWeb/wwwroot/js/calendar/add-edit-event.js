@@ -6,6 +6,7 @@ let zebraDatePickerTranslations;
 let languageId = 1;
 let longDateTimeFormatMoment;
 let zebraDateTimeFormat;
+let repeatUntilZebraDateTimeFormat;
 let warningStartIsAfterEndString = 'Warning: Start time is after End time.';
 let currentProgenyId;
 let startDateTimePickerId = '#event-start-date-time-picker';
@@ -44,6 +45,7 @@ async function setupDateTimePickers() {
     setMomentLocale();
     longDateTimeFormatMoment = getLongDateTimeFormatMoment();
     zebraDateTimeFormat = getZebraDateTimeFormat('#add-event-zebra-date-time-format-div');
+    repeatUntilZebraDateTimeFormat = getZebraDateTimeFormat('#add-event-repeat-until-zebra-date-time-format-div');
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     warningStartIsAfterEndString = await LocaleHelper.getTranslation('Warning: Start time is after End time.', 'Sleep', languageId);
     const startDateTimePicker = $(startDateTimePickerId);
@@ -70,7 +72,7 @@ async function setupDateTimePickers() {
     });
     const repeatUntilDateTimePicker = $('#event-repeat-until-date-picker');
     repeatUntilDateTimePicker.Zebra_DatePicker({
-        format: zebraDateTimeFormat,
+        format: repeatUntilZebraDateTimeFormat,
         open_icon_only: true,
         onSelect: function (a, b, c) { validateDatePickerStartEnd(); },
         days: zebraDatePickerTranslations.daysArray,
