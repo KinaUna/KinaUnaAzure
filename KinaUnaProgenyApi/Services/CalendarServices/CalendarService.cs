@@ -743,6 +743,23 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             return recurringEvents;
         }
 
+        /// <summary>
+        /// Gets the list of CalendarItems for a Progeny that are recurring events for the latest posts list.
+        /// Only includes items after 1900.
+        /// </summary>
+        /// <param name="progenyId">The id of the Progeny to get items for.</param>
+        /// <returns>List of CalendarItems.</returns>
+        public async Task<List<CalendarItem>> GetRecurringCalendarItemsLatestPosts(int progenyId)
+        {
+            List<CalendarItem> recurringEvents = [];
+            List<RecurrenceRule> recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId).ToListAsync();
+            if (recurrenceRules.Count == 0) return recurringEvents;
+            DateTime start = new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            recurringEvents = await GetRecurringEventsForProgeny(progenyId, start, DateTime.UtcNow.Date, false);
+
+            return recurringEvents;
+        }
+
         public async Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context, int accessLevel)
         {
             List<CalendarItem> allItems = await GetCalendarList(progenyId, accessLevel);

@@ -2,6 +2,7 @@
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.CalendarServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -14,6 +15,7 @@ namespace KinaUnaProgenyApi.Tests.Services
     {
         private readonly DateTime _sampleDateTime = new(2020, 1, 1, 10, 0, 0, DateTimeKind.Utc);
         private readonly Mock<ITimelineFilteringService> _timelineFilteringServiceMock = new();
+        private readonly Mock<ICalendarService> _calendarServiceMock = new();
         [Fact]
         public async Task GetTimeLineItem_Should_Return_TimeLineItem_Object_When_Id_Is_Valid()
         {
@@ -49,7 +51,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             
-            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
 
             TimeLineItem resultTimeLineItem1 = await timelineService.GetTimeLineItem(1);
             TimeLineItem resultTimeLineItem2 = await timelineService.GetTimeLineItem(1); // Uses cache
@@ -91,7 +93,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
 
             TimeLineItem resultTimeLineItem1 = await timelineService.GetTimeLineItem(2);
             TimeLineItem resultTimeLineItem2 = await timelineService.GetTimeLineItem(2); // Using cache
@@ -124,7 +126,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             // Mock TimelineFilteringService
             
-            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
 
             TimeLineItem timeLineItemToAdd = new()
             {
@@ -198,7 +200,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
 
             TimeLineItem timeLineItemToUpdate = await timelineService.GetTimeLineItem(1);
             timeLineItemToUpdate.AccessLevel = 5;
@@ -264,7 +266,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
 
             int timeLineItemItemsCountBeforeDelete = context.TimeLineDb.Count();
             TimeLineItem timeLineItemToDelete = await timelineService.GetTimeLineItem(1);
@@ -312,7 +314,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
 
             List<TimeLineItem> timeLineItemsList = await timelineService.GetTimeLineList(1);
             List<TimeLineItem> timeLineItemsList2 = await timelineService.GetTimeLineList(1); // Test cached result.
@@ -363,7 +365,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
 
             List<TimeLineItem> timeLineItemsList = await timelineService.GetTimeLineList(2);
             List<TimeLineItem> timeLineItemsList2 = await timelineService.GetTimeLineList(2); // Test cached result.
@@ -411,7 +413,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
 
             OnThisDayRequest onThisDayRequest = new()
             {
@@ -501,7 +503,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache);
+            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
 
             OnThisDayRequest onThisDayRequest = new()
             {
