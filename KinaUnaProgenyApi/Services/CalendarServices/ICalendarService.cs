@@ -49,6 +49,14 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel, DateTime? start = null, DateTime? end = null);
 
         /// <summary>
+        /// Gets the list of CalendarItems for a Progeny that are recurring events on this day.
+        /// Only includes items after 1900.
+        /// </summary>
+        /// <param name="progenyId">The id of the Progeny to get items for.</param>
+        /// <returns>List of CalendarItems.</returns>
+        Task<List<CalendarItem>> GetRecurringCalendarItemsOnThisDay(int progenyId);
+
+        /// <summary>
         /// Gets a list of CalendarItems for a Progeny with a specific context.
         /// </summary>
         /// <param name="progenyId">The id of the Progeny.</param>

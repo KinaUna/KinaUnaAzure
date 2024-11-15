@@ -7,6 +7,7 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class TimeLineController(IProgenyService progenyService, IUserAccessService userAccessService, ITimelineService timelineService, IUserInfoService userInfoService) : ControllerBase
+    public class TimeLineController(IProgenyService progenyService, IUserAccessService userAccessService, ITimelineService timelineService, IUserInfoService userInfoService, ICalendarService calendarService) : ControllerBase
     {
         /// <summary>
         /// Gets a list of TimeLineItems for a Progeny,
@@ -167,21 +168,35 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> ProgeniesYearAgo([FromBody] List<int> progeniesList)
+        public async Task<IActionResult> ProgeniesYearAgo([FromBody] List<int> progenies)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             List<TimeLineItem> timeLineList = [];
-            foreach (int progenyId in progeniesList)
+            foreach (int progenyId in progenies)
             {
                 UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
                 if (userAccess != null)
                 {
                     List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId);
                     progenyTimeLineList = [.. progenyTimeLineList
-                        .Where(t => t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day)];
+                        .Where(t => t.AccessLevel >= userAccess.AccessLevel 
+                                    && t.ProgenyTime.Year < DateTime.UtcNow.Year 
+                                    && t.ProgenyTime.Month == DateTime.UtcNow.Month 
+                                    && t.ProgenyTime.Day == DateTime.UtcNow.Day)];
                     timeLineList.AddRange(progenyTimeLineList);
+                    List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsOnThisDay(progenyId);
+                    foreach (CalendarItem calendarItem in calendarItems)
+                    {
+                        if (calendarItem.AccessLevel >= userAccess.AccessLevel && calendarItem.StartTime.HasValue)
+                        {
+                            TimeLineItem timeLineItem = new TimeLineItem();
+                            timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                            timeLineList.Add(timeLineItem);
+                        }
+                    }
                 }
             }
+
             timeLineList = timeLineList.OrderByDescending(t => t.ProgenyTime).ToList();
             
             return Ok(timeLineList.Count != 0 ? timeLineList : []);
