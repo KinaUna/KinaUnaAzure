@@ -290,7 +290,7 @@
                         <div id="event-repeat-until-date-div" class="form-group">
                             <label class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat until", PageNames.Calendar, Model.LanguageId) </label>
                             <div class="col-auto">
-                                <input id="event-repeat-until-date-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.RecurrenceRule.Until" value="@Model.CalendarItem.RecurrenceRule.Until?.ToString(longDateTimeFormat)" />
+                                <input id="event-repeat-until-date-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.RecurrenceRule.Until" value="@Model.CalendarItem.RecurrenceRule.Until?.ToString("dd-MMMM-yyyy")" />
                             </div>
                         </div>
                         <div id="event-repeat-until-count-div" class="form-group">

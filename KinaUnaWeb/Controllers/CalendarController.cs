@@ -404,7 +404,7 @@ namespace KinaUnaWeb.Controllers
             {
                 ProgenyIds = parameters.Progenies,
                 StartDate = DateTime.UtcNow.Date,
-                EndDate = DateTime.UtcNow.Date.AddYears(1) // ToDo: Make this configurable
+                EndDate = DateTime.UtcNow.Date.AddYears(10) // ToDo: Make this configurable
             };
             
             List<CalendarItem> upcomingCalendarItems = await calendarsHttpClient.GetProgeniesCalendarList(request);
