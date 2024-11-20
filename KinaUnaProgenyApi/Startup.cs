@@ -80,6 +80,7 @@ namespace KinaUnaProgenyApi
             services.AddSingleton<ITaskRunnerService, TaskRunnerService>();
             services.AddSingleton<IRepeatingTasksService, RepeatingTasksService>();
             services.AddScoped<ICalendarRemindersService, CalendarRemindersService>();
+            services.AddScoped<ICalendarRecurrencesService, CalendarRecurrencesService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();

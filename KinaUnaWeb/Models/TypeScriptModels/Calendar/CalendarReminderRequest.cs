@@ -19,6 +19,9 @@
         /// </summary>
         public string NotifyTimeString { get; set; }
 
+        /// <summary>
+        /// How many minutes before the event the reminder should be sent. 0 = custom user defined time.
+        /// </summary>
         public int NotifyTimeOffsetType { get; set; }
 
         /// <summary>

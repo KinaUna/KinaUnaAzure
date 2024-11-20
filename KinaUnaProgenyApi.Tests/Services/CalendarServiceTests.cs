@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace KinaUnaProgenyApi.Tests.Services
 {
@@ -48,7 +49,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new(context, memoryCache);
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
+            CalendarService calendarService = new(context, memoryCache, calendarRecurrencesService.Object);
 
             CalendarItem resultCalendarItem1 = await calendarService.GetCalendarItem(1);
             CalendarItem resultCalendarItem2 = await calendarService.GetCalendarItem(1); // Uses cache
@@ -91,7 +93,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new(context, memoryCache);
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
+            CalendarService calendarService = new(context, memoryCache, calendarRecurrencesService.Object);
 
             CalendarItem calendarItem = await calendarService.GetCalendarItem(2);
             CalendarItem calendarItem2 = await calendarService.GetCalendarItem(2);
@@ -124,7 +127,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new(context, memoryCache);
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
+            CalendarService calendarService = new(context, memoryCache, calendarRecurrencesService.Object);
 
             CalendarItem calendarItemToAdd = new()
             {
@@ -205,7 +209,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new(context, memoryCache);
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
+            CalendarService calendarService = new(context, memoryCache, calendarRecurrencesService.Object);
 
             CalendarItem calendarItemToUpdate = await calendarService.GetCalendarItem(1);
             calendarItemToUpdate.AccessLevel = 5;
@@ -275,7 +280,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new(context, memoryCache);
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
+            CalendarService calendarService = new(context, memoryCache, calendarRecurrencesService.Object);
 
             int calendarItemsCountBeforeDelete = context.CalendarDb.Count();
             CalendarItem calendarItemToDelete = await calendarService.GetCalendarItem(1);
@@ -328,7 +334,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new(context, memoryCache);
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
+            CalendarService calendarService = new(context, memoryCache, calendarRecurrencesService.Object);
 
             List<CalendarItem> calendarList = await calendarService.GetCalendarList(1, 0);
             List<CalendarItem> calendarList2 = await calendarService.GetCalendarList(1, 0); // Test cached result.
@@ -382,7 +389,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new(context, memoryCache);
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
+            CalendarService calendarService = new(context, memoryCache, calendarRecurrencesService.Object);
 
             List<CalendarItem> calendarList = await calendarService.GetCalendarList(2, 0);
             List<CalendarItem> calendarList2 = await calendarService.GetCalendarList(2, 0); // Test cached result.

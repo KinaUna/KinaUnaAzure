@@ -8,6 +8,12 @@
 @inject ILocaleManager LocaleManager;
 @inject IProgenyManager ChildManager
 @{
+    if (Context.Request.Host.Host.ToLower() == "www.kinauna.com" || Context.Request.Host.Host.ToLower() == "kinauna.com")
+    {
+        Context.Response.Redirect("https://web.kinauna.com");
+    }
+    
+
     KinaUnaLanguage kinaUnaLanguage = Context.Request.GetKinaUnaLanguage();
     int languageId = kinaUnaLanguage.Id;
     string languageCode = kinaUnaLanguage.Code;

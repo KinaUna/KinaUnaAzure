@@ -38,7 +38,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int? eventId, int childId = 0)
         {
-
+            // Todo: Add EventDate parameter for popup with recurring events.
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             CalendarListViewModel model = new(baseModel);
             
@@ -168,7 +168,7 @@ namespace KinaUnaWeb.Controllers
 
             model.CalendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.CalendarItem.EndTime = model.CalendarItem.StartTime + TimeSpan.FromMinutes(10);
-
+            model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
             model.SetAccessLevelList();
             model.SetRecurrenceFrequencyList();
             model.SetEndOptionsList();
@@ -462,21 +462,18 @@ namespace KinaUnaWeb.Controllers
                 EventId = calendarReminderRequest.EventId,
                 UserId = currentUser.UserId
             };
-
+            
             CalendarItem calendarItem = await calendarsHttpClient.GetCalendarItem(calendarReminderRequest.EventId);
             if (calendarItem == null)
             {
                 return BadRequest();
             }
 
-            //if (calendarItem.AccessLevel < currentUser.AccessLevel)
-            //{
-            //    return Unauthorized();
-            //}
-
+            
             if (calendarReminderRequest.NotifyTimeOffsetType != 0 && calendarItem.StartTime.HasValue)
             {
                 calendarReminder.NotifyTime = calendarItem.StartTime.Value.AddMinutes(-calendarReminderRequest.NotifyTimeOffsetType);
+                calendarReminder.NotifyTimeOffsetType = calendarReminderRequest.NotifyTimeOffsetType;
             }
             else
             {
@@ -487,11 +484,10 @@ namespace KinaUnaWeb.Controllers
                 }
 
                 calendarReminder.NotifyTime = notifyTime;
+                calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeToUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUser.Timezone));
             }
             
-
-            calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeToUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUser.Timezone));
-
+            calendarReminder.RecurrenceRuleId = calendarItem.RecurrenceRuleId;
             CalendarReminder newReminder = await calendarRemindersHttpClient.AddCalendarReminder(calendarReminder);
 
             newReminder.NotifyTime = TimeZoneInfo.ConvertTimeFromUtc(newReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUser.Timezone));

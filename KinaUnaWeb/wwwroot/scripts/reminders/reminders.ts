@@ -141,27 +141,27 @@ async function addReminder(): Promise<void> {
     if (reminderOffsetSelectElement === null) {
         return;
     }
-    console.log('add calendar reminder..1');
+    
     const customReminderOffsetDiv = document.querySelector<HTMLDivElement>('#custom-reminder-offset-div');
     if (customReminderOffsetDiv === null) {
         return;
     }
-    console.log('add calendar reminder..2');
+
     const customReminderOffsetPicker = document.querySelector<HTMLInputElement>(reminderCustomOffsetDateTimePickerId);
     if (customReminderOffsetPicker === null) {
         return;
     }
-    console.log('add calendar reminder..3');
+
     const calendarItemStartReferenceInput = document.querySelector<HTMLInputElement>('#calendar-item-start-reference');
     if (calendarItemStartReferenceInput === null) {
         return
     }
-    console.log('add calendar reminder..4');
+
     const eventIdDiv = document.querySelector<HTMLDivElement>('#event-id-div');
     if (eventIdDiv === null || !eventIdDiv.dataset.eventId) {
         return;
     }
-    console.log('add calendar reminder..5');
+
     const eventId = parseInt(eventIdDiv.dataset.eventId);
     const reminderOffset = reminderOffsetSelectElement.value;
 

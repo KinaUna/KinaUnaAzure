@@ -347,9 +347,6 @@
                         <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="CalendarItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
                     </div>
                 </div>
-                <div>
-                    @await Html.PartialAsync("_CalendarRemindersPartial", Model)
-                </div>
                 <div class="space-20"></div>
                 <input asp-for="CalendarItem.UId" value="@Model.CalendarItem.UId" type="hidden" />
                 <input asp-for="CalendarItem.RecurrenceRuleId" value="0" type="hidden"/>

@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
@@ -117,13 +116,8 @@ public class TaskRunnerService(IBackgroundTasksService backgroundTasksService, I
             await using AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
             ICalendarRemindersService calendarRemindersService = scope.ServiceProvider.GetRequiredService<ICalendarRemindersService>();
 
-            List<CalendarReminder> unsentReminders = await calendarRemindersService.GetExpiredCalendarReminders();
-
-            foreach (CalendarReminder calendarReminder in unsentReminders)
-            {
-                await calendarRemindersService.SendCalendarReminder(calendarReminder.CalendarReminderId);
-            }
-
+            await calendarRemindersService.SendExpiredCalendarReminders();
+            await calendarRemindersService.SendExpiredRecurringReminders();
         }
         catch (Exception e)
         {

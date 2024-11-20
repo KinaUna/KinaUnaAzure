@@ -18,11 +18,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
+        private readonly ICalendarRecurrencesService _calendarRecurrencesService;
 
-        public CalendarService(ProgenyDbContext context, IDistributedCache cache)
+        public CalendarService(ProgenyDbContext context, IDistributedCache cache, ICalendarRecurrencesService calendarRecurrencesService)
         {
             _context = context;
             _cache = cache;
+            _calendarRecurrencesService = calendarRecurrencesService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0)); // Expire after a week.
         }
@@ -163,8 +165,18 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 _ = _context.RecurrenceRulesDb.Remove(recurrenceRule);
                 _ = await _context.SaveChangesAsync();
                 item.RecurrenceRuleId = 0;
+
+                // Check if there are any reminders with the recurrence rule, if so remove the recurrence reference.
+                CalendarReminder reminder = await _context.CalendarRemindersDb.SingleOrDefaultAsync(cr => cr.EventId == item.EventId && cr.RecurrenceRuleId == calendarItemToUpdate.RecurrenceRuleId);
+                if (reminder != null)
+                {
+                    reminder.RecurrenceRuleId = 0;
+                    _ = _context.CalendarRemindersDb.Update(reminder);
+                    _ = await _context.SaveChangesAsync();
+                }
             }
 
+            // If the item has a RecurrenceRule and the new item has a RecurrenceRule, update the RecurrenceRule in the database.
             if (calendarItemToUpdate.RecurrenceRuleId > 0 && item.RecurrenceRule.Frequency > 0)
             {
                 RecurrenceRule recurrenceRule = await _context.RecurrenceRulesDb.SingleOrDefaultAsync(r => r.RecurrenceRuleId == calendarItemToUpdate.RecurrenceRuleId);
@@ -185,7 +197,19 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 _ = await _context.SaveChangesAsync();
             }
 
+            // Update the reminders for the event.
+            List<CalendarReminder> reminders = await _context.CalendarRemindersDb.Where(cr => cr.EventId == item.EventId).ToListAsync();
+            foreach (CalendarReminder calendarReminder in reminders)
+            {
+                if (item.StartTime == null || calendarItemToUpdate.StartTime == null) continue;
 
+                TimeSpan reminderOffSet = calendarReminder.NotifyTime - calendarItemToUpdate.StartTime.Value;
+                calendarReminder.NotifyTime = item.StartTime.Value.Add(reminderOffSet);
+
+                _ = _context.CalendarRemindersDb.Update(calendarReminder);
+                _ = await _context.SaveChangesAsync();
+            }
+            
             calendarItemToUpdate.CopyPropertiesForUpdate(item);
 
             if (string.IsNullOrWhiteSpace(calendarItemToUpdate.UId))
@@ -194,6 +218,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             }
             _ = _context.CalendarDb.Update(calendarItemToUpdate);
             _ = await _context.SaveChangesAsync();
+            
             _ = await SetCalendarItemInCache(calendarItemToUpdate.EventId);
 
             return calendarItemToUpdate;
@@ -213,6 +238,15 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             {
                 RecurrenceRule recurrenceRule = await _context.RecurrenceRulesDb.SingleOrDefaultAsync(r => r.RecurrenceRuleId == calendarItemToDelete.RecurrenceRuleId);
                 _ = _context.RecurrenceRulesDb.Remove(recurrenceRule);
+                _ = await _context.SaveChangesAsync();
+            }
+
+            // Check if there are any reminders for the event, if so remove them.
+            //Todo: Notify users with reminders that the event has been removed.
+            List<CalendarReminder> reminders = await _context.CalendarRemindersDb.Where(cr => cr.EventId == item.EventId).ToListAsync();
+            foreach (CalendarReminder calendarReminder in reminders)
+            {
+                _ = _context.CalendarRemindersDb.Remove(calendarReminder);
                 _ = await _context.SaveChangesAsync();
             }
 
@@ -295,425 +329,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// <returns>List of CalendarItems</returns>
         private async Task<List<CalendarItem>> GetRecurringEventsForProgeny(int progenyId, DateTime start, DateTime end, bool includeOriginal)
         {
-            List<CalendarItem> recurringEvents = [];
-            List<RecurrenceRule> recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId).ToListAsync();
-            if (recurrenceRules.Count == 0) return recurringEvents;
-
-            end = new DateTime(end.Year, end.Month, end.Day, 23, 59, 59, DateTimeKind.Utc);
-            foreach (RecurrenceRule recurrenceRule in recurrenceRules)
-            {
-                // If the recurrence rule has a start date in the future, continue.
-                if (recurrenceRule.Start.Date > end.Date)
-                {
-                    continue;
-                }
-
-                // If the recurrence rule has an end date before the start date, continue.
-                if (recurrenceRule.EndOption == 1 && (recurrenceRule.Until.HasValue && recurrenceRule.Until.Value.Date < start.Date))
-                {
-                    continue;
-                }
-
-                CalendarItem calendarItem = await _context.CalendarDb.AsNoTracking().FirstOrDefaultAsync(c => c.ProgenyId == progenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
-                if (!calendarItem.StartTime.HasValue)
-                {
-                    continue;
-                }
-
-                int recurrenceInstancesCount = 0;
-
-                if (recurrenceRule.Frequency == 1)
-                {
-                    // Daily
-                    DateTime nextDate = start.Date;
-                    if (recurrenceRule.EndOption == 2)
-                    {
-                        nextDate = calendarItem.StartTime.Value.Date;
-                    }
-                    while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
-                    {
-                        if (nextDate >= start || recurrenceRule.EndOption == 2)
-                        {
-                            CalendarItem calendarItemToAdd = new();
-                            calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
-                            TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
-                            calendarItemToAdd.StartTime = new DateTime(nextDate.Year, nextDate.Month, nextDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0, DateTimeKind.Utc);
-                            calendarItemToAdd.EndTime = calendarItemToAdd.StartTime.Value + calendarItemToAddDuration;
-
-                            if (recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount))
-                            {
-                                if (calendarItemToAdd.StartTime > calendarItem.StartTime)
-                                {
-                                    recurrenceInstancesCount++;
-
-                                    if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
-                                    {
-                                        // Don't add original CalendarItem as it is already included.
-                                        if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
-                                        {
-                                            continue;
-                                        }
-                                        recurringEvents.Add(calendarItemToAdd);
-                                    }
-                                }
-                            }
-                        }
-
-                        nextDate = nextDate.AddDays(recurrenceRule.Interval);
-                    }
-                }
-                else if (recurrenceRule.Frequency == 2)
-                {
-                    // Weekly
-                    DateTime nextDate = start.Date;
-                    if (recurrenceRule.EndOption == 2)
-                    {
-                        nextDate = calendarItem.StartTime.Value.Date;
-                    }
-                    while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
-                    {
-                        if (nextDate >= start || recurrenceRule.EndOption == 2)
-                        {
-                            List<string> weeklyDays = recurrenceRule.ByDay.Split(',').ToList();
-                            for (int dayNumberOfWeek = 1; dayNumberOfWeek <= 7; dayNumberOfWeek++)
-                            {
-                                foreach (string weeklyDay in weeklyDays)
-                                {
-                                    DateTime tempDate = nextDate.AddDays(dayNumberOfWeek);
-                                    if ((int)tempDate.DayOfWeek != RecurrenceUnits.WeeklyDays.IndexOf(weeklyDay)) continue;
-
-                                    CalendarItem calendarItemToAdd = new();
-                                    calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
-                                    TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
-                                    calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0, DateTimeKind.Utc);
-                                    calendarItemToAdd.EndTime = calendarItemToAdd.StartTime.Value + calendarItemToAddDuration;
-
-                                    if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
-                                    if (!(calendarItemToAdd.StartTime > calendarItem.StartTime)) continue;
-                                    recurrenceInstancesCount++;
-
-                                    if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
-                                    {
-                                        // Don't add original CalendarItem as it is already included.
-                                        if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
-                                        {
-                                            continue;
-                                        }
-                                        recurringEvents.Add(calendarItemToAdd);
-
-                                    }
-                                }
-                            }
-                        }
-
-                        nextDate = nextDate.AddDays(recurrenceRule.Interval * 7);
-                    }
-                }
-                else if (recurrenceRule.Frequency == 3)
-                {
-                    // Monthly by day
-                    DateTime nextDate = new DateTime(start.Year, start.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-                    if (recurrenceRule.EndOption == 2)
-                    {
-                        nextDate = new DateTime(calendarItem.StartTime.Value.Year, calendarItem.StartTime.Value.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-                    }
-
-                    while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
-                    {
-                        if (nextDate >= start || recurrenceRule.EndOption == 2)
-                        {
-                            // Get the day of the week and the week number from ByDay
-                            List<string> weeklyDays = recurrenceRule.ByDay.Split(',').ToList();
-
-                            for (int dayNumberOfMonth = 1; dayNumberOfMonth <= DateTime.DaysInMonth(nextDate.Year, nextDate.Month); dayNumberOfMonth++)
-                            {
-                                foreach (string weeklyDay in weeklyDays)
-                                {
-                                    string weeklyDayNumber = weeklyDay.Substring(0, weeklyDay.Length - 2);
-                                    string weeklyDayName = weeklyDay.Substring(weeklyDay.Length - 2);
-
-                                    if (!int.TryParse(weeklyDayNumber, out int dayNumber)) continue;
-
-                                    DateTime tempDate = new DateTime(nextDate.Year, nextDate.Month, dayNumberOfMonth, 0, 0, 0, DateTimeKind.Utc);
-
-                                    if ((int)tempDate.DayOfWeek != RecurrenceUnits.WeeklyDays.IndexOf(weeklyDayName)) continue;
-
-                                    int weekNumber = (dayNumberOfMonth - 1) / 7 + 1;
-                                    if (weekNumber != dayNumber && dayNumber != -1) continue;
-
-                                    if (dayNumber is > 0 and < 6)
-                                    {
-                                        CalendarItem calendarItemToAdd = new();
-                                        calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
-                                        TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
-                                        calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0, DateTimeKind.Utc);
-                                        calendarItemToAdd.EndTime = calendarItemToAdd.StartTime.Value + calendarItemToAddDuration;
-
-                                        if (recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount))
-                                        {
-                                            if (calendarItemToAdd.StartTime > calendarItem.StartTime)
-                                            {
-                                                recurrenceInstancesCount++;
-
-                                                if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
-                                                {
-                                                    // Don't add original CalendarItem as it is already included.
-                                                    if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
-                                                    {
-                                                        continue;
-                                                    }
-                                                    recurringEvents.Add(calendarItemToAdd);
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    if (dayNumber != -1) continue;
-
-                                    // Last day of the month.
-                                    DateTime lastDayOfMonth = new DateTime(nextDate.Year, nextDate.Month, DateTime.DaysInMonth(nextDate.Year, nextDate.Month), 0, 0, 0, DateTimeKind.Utc);
-                                    for (int weekDayIndex = 0; weekDayIndex < 7; weekDayIndex++)
-                                    {
-                                        DateTime tempLastDayOfMonth = lastDayOfMonth.AddDays(-weekDayIndex);
-                                        if (tempLastDayOfMonth.Date != tempDate.Date) continue;
-                                        if (RecurrenceUnits.WeeklyDays.IndexOf(weeklyDayName) != (int)tempLastDayOfMonth.DayOfWeek) continue;
-
-                                        CalendarItem calendarItemToAdd = new();
-                                        calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
-                                        TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
-                                        calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0, DateTimeKind.Utc);
-                                        calendarItemToAdd.EndTime = calendarItemToAdd.StartTime + calendarItemToAddDuration;
-
-                                        if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
-                                        if (!(calendarItemToAdd.StartTime > calendarItem.StartTime)) continue;
-                                        recurrenceInstancesCount++;
-
-                                        if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
-                                        {
-                                            // Don't add original CalendarItem as it is already included.
-                                            if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
-                                            {
-                                                continue;
-                                            }
-                                            recurringEvents.Add(calendarItemToAdd);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        nextDate = nextDate.AddMonths(recurrenceRule.Interval);
-                    }
-                }
-                else if (recurrenceRule.Frequency == 4)
-                {
-                    // Monthly by date
-                    DateTime nextDate = recurrenceRule.Start.Date;
-                    if (recurrenceRule.EndOption == 2)
-                    {
-                        nextDate = calendarItem.StartTime.Value.Date;
-                    }
-                    while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
-                    {
-                        if (nextDate >= start || recurrenceRule.EndOption == 2)
-                        {
-                            List<string> dayNumers = recurrenceRule.ByMonthDay.Split(',').ToList();
-                            for (int i = 0; i < 31; i++)
-                            {
-                                if (!dayNumers.Contains(i.ToString())) continue;
-                                
-                                DateTime tempDate = new DateTime(nextDate.Year, nextDate.Month, i, 0, 0, 0, DateTimeKind.Utc);
-                                CalendarItem calendarItemToAdd = new();
-                                calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
-                                TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
-                                calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0, DateTimeKind.Utc);
-                                calendarItemToAdd.EndTime = calendarItemToAdd.StartTime + calendarItemToAddDuration;
-
-                                if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
-                                if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;
-                                recurrenceInstancesCount++;
-                                
-                                if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
-                                {
-                                    // Don't add original CalendarItem as it is already included.
-                                    if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
-                                    {
-                                        continue;
-                                    }
-                                    recurringEvents.Add(calendarItemToAdd);
-                                }
-                            }
-                        }
-
-                        nextDate = nextDate.AddMonths(recurrenceRule.Interval);
-                    }
-                }
-                else if (recurrenceRule.Frequency == 5)
-                {
-                    // Yearly by day
-                    DateTime nextDate = recurrenceRule.Start.Date;
-                    if (recurrenceRule.EndOption == 2)
-                    {
-                        nextDate = calendarItem.StartTime.Value.Date;
-                    }
-                    while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
-                    {
-                        if (nextDate >= start || recurrenceRule.EndOption == 2)
-                        {
-                            // Get month from ByMonth
-                            List<string> months = recurrenceRule.ByMonth.Split(',').ToList();
-                            foreach (string byMonthItemAsString in months)
-                            {
-                                // if the byMonth value doesn't match the month of the nextDate, continue.
-                                if (!int.TryParse(byMonthItemAsString, out int monthNumber)) continue;
-
-                                for (int monthIndex = 0; monthIndex < 12; monthIndex++)
-                                {
-                                    DateTime monthCheckDateTime = nextDate.AddMonths(monthIndex);
-                                    if (monthCheckDateTime.Month != monthNumber) continue;
-                                    
-                                    // Get the day of the week and the week number from ByDay
-                                    List<string> weeklyDays = recurrenceRule.ByDay.Split(',').ToList();
-
-                                    for (int dayNumberOfMonth = 1; dayNumberOfMonth <= DateTime.DaysInMonth(monthCheckDateTime.Year, monthCheckDateTime.Month); dayNumberOfMonth++)
-                                    {
-                                        foreach (string weeklyDay in weeklyDays)
-                                        {
-                                            string weeklyDayNumber = weeklyDay.Substring(0, weeklyDay.Length - 2);
-                                            string weeklyDayName = weeklyDay.Substring(weeklyDay.Length - 2);
-
-                                            if (!int.TryParse(weeklyDayNumber, out int dayNumber)) continue;
-
-                                            DateTime tempDate = new DateTime(monthCheckDateTime.Year, monthCheckDateTime.Month, dayNumberOfMonth, 0, 0, 0, DateTimeKind.Utc);
-
-                                            if ((int)tempDate.DayOfWeek != RecurrenceUnits.WeeklyDays.IndexOf(weeklyDayName)) continue;
-
-                                            int weekNumber = (dayNumberOfMonth - 1) / 7 + 1;
-                                            if (weekNumber != dayNumber && dayNumber != -1) continue;
-
-                                            if (dayNumber is > 0 and < 6)
-                                            {
-                                                CalendarItem calendarItemToAdd = new();
-                                                calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
-                                                TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
-                                                calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0, DateTimeKind.Utc);
-                                                calendarItemToAdd.EndTime = calendarItemToAdd.StartTime + calendarItemToAddDuration;
-
-                                                if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
-                                                if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;
-                                                recurrenceInstancesCount++;
-
-                                                if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
-                                                {
-                                                    // Don't add original CalendarItem as it is already included.
-                                                    if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
-                                                    {
-                                                        continue;
-                                                    }
-                                                    recurringEvents.Add(calendarItemToAdd);
-                                                }
-                                            }
-
-                                            if (dayNumber != -1) continue;
-
-                                            // Last day of the month.
-                                            DateTime lastDayOfMonth = new DateTime(monthCheckDateTime.Year, monthCheckDateTime.Month, DateTime.DaysInMonth(monthCheckDateTime.Year, monthCheckDateTime.Month), 0, 0, 0, DateTimeKind.Utc);
-                                            for (int weekDayIndex = 0; weekDayIndex < 7; weekDayIndex++)
-                                            {
-                                                DateTime tempLastDayOfMonth = lastDayOfMonth.AddDays(-weekDayIndex);
-                                                if (tempLastDayOfMonth != tempDate) continue;
-                                                if (RecurrenceUnits.WeeklyDays.IndexOf(weeklyDayName) != (int)tempLastDayOfMonth.DayOfWeek) continue;
-                                                
-                                                CalendarItem calendarItemToAdd = new();
-                                                calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
-                                                TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
-                                                calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0, DateTimeKind.Utc);
-                                                calendarItemToAdd.EndTime = calendarItemToAdd.StartTime + calendarItemToAddDuration;
-
-                                                if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
-                                                if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;
-                                                recurrenceInstancesCount++;
-
-                                                if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
-                                                {
-                                                    // Don't add original CalendarItem as it is already included.
-                                                    if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
-                                                    {
-                                                        continue;
-                                                    }
-                                                    recurringEvents.Add(calendarItemToAdd);
-                                                }
-                                            }
-
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-                        
-
-                        nextDate = nextDate.AddYears(recurrenceRule.Interval);
-                    }
-                    
-                }
-                else if (recurrenceRule.Frequency == 6)
-                {
-                    // Yearly by date
-                    DateTime nextDate = recurrenceRule.Start.Date;
-                    if (recurrenceRule.EndOption == 2)
-                    {
-                        nextDate = calendarItem.StartTime.Value.Date;
-                    }
-                    while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
-                    {
-                        if (nextDate >= start || recurrenceRule.EndOption == 2)
-                        {
-                            // Get month from ByMonth
-                            List<string> months = recurrenceRule.ByMonth.Split(',').ToList();
-                            foreach (string month in months)
-                            {
-                                // If the byMonth value doesn't match the month of the nextDate, continue.
-                                if (!int.TryParse(month, out int monthNumber)) continue;
-
-                                // Get the days of the month numbers from ByMonthDay
-                                List<string> dayNumbers = recurrenceRule.ByMonthDay.Split(',').ToList();
-                                for (int i = 0; i < 31; i++)
-                                {
-                                    // If the day number doesn't match the day of the month, continue.
-                                    if (!dayNumbers.Contains(i.ToString())) continue;
-                                    
-                                    DateTime tempDate = new DateTime(nextDate.Year, monthNumber, i, 0, 0, 0, DateTimeKind.Utc);
-                                    CalendarItem calendarItemToAdd = new();
-                                    calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
-                                    TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
-                                    calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0, DateTimeKind.Utc);
-                                    calendarItemToAdd.EndTime = calendarItemToAdd.StartTime + calendarItemToAddDuration;
-
-                                    recurrenceInstancesCount++;
-                                    if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
-                                    if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;
-
-                                    if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
-                                    {
-                                        // Don't add original CalendarItem as it is already included.
-                                        if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
-                                        {
-                                            continue;
-                                        }
-                                        recurringEvents.Add(calendarItemToAdd);
-                                        
-                                    }
-                                }
-                            }
-                        }
-
-                        nextDate = nextDate.AddYears(recurrenceRule.Interval);
-                    }
-
-                }
-            }
-
+            List<CalendarItem> recurringEvents = await _calendarRecurrencesService.GetRecurringEventsForProgeny(progenyId, start, end, includeOriginal);
             return recurringEvents;
         }
 
