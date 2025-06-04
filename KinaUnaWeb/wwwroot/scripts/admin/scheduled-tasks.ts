@@ -1,4 +1,3 @@
-import { task } from 'grunt';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 
 let currentScheduledTasks: BackgroundTaskDto[] = [];
