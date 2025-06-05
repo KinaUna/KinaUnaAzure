@@ -102,19 +102,17 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
                     if (recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount))
                     {
-                        if (calendarItemToAdd.StartTime > calendarItem.StartTime)
+                        if (calendarItemToAdd.StartTime >= calendarItem.StartTime)
                         {
                             recurrenceInstancesCount++;
 
                             if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                             {
                                 // Don't add original CalendarItem as it is already included.
-                                if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
+                                if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
                                 {
-                                    continue;
+                                    recurringEvents.Add(calendarItemToAdd);
                                 }
-
-                                recurringEvents.Add(calendarItemToAdd);
                             }
                         }
                     }
@@ -172,12 +170,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                             if (!(calendarItemToAdd.StartTime <= end) || !(calendarItemToAdd.StartTime >= start)) continue;
 
                             // Don't add original CalendarItem as it is already included.
-                            if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
+                            if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
                             {
-                                continue;
+                                recurringEvents.Add(calendarItemToAdd);
                             }
-
-                            recurringEvents.Add(calendarItemToAdd);
                         }
                     }
                 }
@@ -250,12 +246,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                             if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                                             {
                                                 // Don't add original CalendarItem as it is already included.
-                                                if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
+                                                if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
                                                 {
-                                                    continue;
+                                                    recurringEvents.Add(calendarItemToAdd);
                                                 }
-
-                                                recurringEvents.Add(calendarItemToAdd);
                                             }
                                         }
                                     }
@@ -287,12 +281,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                 if (!(calendarItemToAdd.StartTime <= end) || !(calendarItemToAdd.StartTime >= start)) continue;
 
                                 // Don't add original CalendarItem as it is already included.
-                                if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
+                                if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
                                 {
-                                    continue;
+                                    recurringEvents.Add(calendarItemToAdd);
                                 }
-
-                                recurringEvents.Add(calendarItemToAdd);
                             }
                         }
                     }
@@ -349,12 +341,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                             if (!(calendarItemToAdd.StartTime <= end) || !(calendarItemToAdd.StartTime >= start)) continue;
 
                             // Don't add original CalendarItem as it is already included.
-                            if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
+                            if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
                             {
-                                continue;
+                                recurringEvents.Add(calendarItemToAdd);
                             }
-
-                            recurringEvents.Add(calendarItemToAdd);
                         }
                     }
                 }
@@ -434,11 +424,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                         if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                                         {
                                             // Don't add original CalendarItem as it is already included.
-                                            if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
+                                            if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
                                             {
-                                                continue;
+                                                recurringEvents.Add(calendarItemToAdd);
                                             }
-                                            recurringEvents.Add(calendarItemToAdd);
                                         }
                                     }
 
@@ -465,11 +454,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                         if (!(calendarItemToAdd.StartTime <= end) || !(calendarItemToAdd.StartTime >= start)) continue;
 
                                         // Don't add original CalendarItem as it is already included.
-                                        if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
+                                        if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
                                         {
-                                            continue;
+                                            recurringEvents.Add(calendarItemToAdd);
                                         }
-                                        recurringEvents.Add(calendarItemToAdd);
                                     }
 
                                 }
@@ -539,12 +527,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                 if (!(calendarItemToAdd.StartTime <= end) || !(calendarItemToAdd.StartTime >= start)) continue;
 
                                 // Don't add original CalendarItem as it is already included.
-                                if (!includeOriginal && calendarItemToAdd.StartTime == calendarItem.StartTime)
+                                if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
                                 {
-                                    continue;
+                                    recurringEvents.Add(calendarItemToAdd);
                                 }
-
-                                recurringEvents.Add(calendarItemToAdd);
                             }
                         }
                     }
