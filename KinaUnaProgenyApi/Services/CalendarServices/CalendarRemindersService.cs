@@ -54,7 +54,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
         public async Task<CustomResult<CalendarReminder>> UpdateCalendarReminder(CalendarReminder calendarReminder, UserInfo userInfo)
         {
-            CalendarReminder existingCalendarReminder = await context.CalendarRemindersDb.AsNoTracking().FirstOrDefaultAsync(c => c.CalendarReminderId == calendarReminder.CalendarReminderId);
+            CalendarReminder existingCalendarReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(c => c.CalendarReminderId == calendarReminder.CalendarReminderId);
             if (existingCalendarReminder == null)
             {
                 return CustomError.NotFoundError($"CalendarReminderService, UpdateCalendarReminder: CalendarReminder with id {calendarReminder.CalendarReminderId} not found.");
@@ -68,7 +68,8 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             existingCalendarReminder.NotifyTimeOffsetType = calendarReminder.NotifyTimeOffsetType;
             existingCalendarReminder.NotifyTime = calendarReminder.NotifyTime;
             existingCalendarReminder.Notified = calendarReminder.Notified;
-
+            existingCalendarReminder.NotifiedDate = calendarReminder.NotifiedDate;
+            
             _ = context.CalendarRemindersDb.Update(existingCalendarReminder);
             _ = await context.SaveChangesAsync();
 

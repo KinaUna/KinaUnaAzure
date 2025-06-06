@@ -7,7 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Moq;
 
-namespace KinaUnaProgenyApi.Tests.Services
+namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
 {
     public class CalendarServiceTests
     {

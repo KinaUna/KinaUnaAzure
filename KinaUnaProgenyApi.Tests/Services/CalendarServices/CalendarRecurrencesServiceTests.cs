@@ -3,7 +3,7 @@ using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using Microsoft.EntityFrameworkCore;
 
-namespace KinaUnaProgenyApi.Tests.Services
+namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
 {
     public class CalendarRecurrencesServiceTests
     {
