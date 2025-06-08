@@ -147,7 +147,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             {
                 if (nextDate >= start || recurrenceRule.EndOption == 2)
                 {
-                    List<string> weeklyDays = recurrenceRule.ByDay.Split(',').ToList();
+                    List<string> weeklyDays = [.. recurrenceRule.ByDay.Split(',')];
                     for (int dayNumberOfWeek = 1; dayNumberOfWeek <= 7; dayNumberOfWeek++)
                     {
                         foreach (string weeklyDay in weeklyDays)
@@ -209,7 +209,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 if (nextDate >= start || recurrenceRule.EndOption == 2)
                 {
                     // Get the day of the week and the week number from ByDay
-                    List<string> weeklyDays = recurrenceRule.ByDay.Split(',').ToList();
+                    List<string> weeklyDays = [.. recurrenceRule.ByDay.Split(',')];
 
                     for (int dayNumberOfMonth = 1; dayNumberOfMonth <= DateTime.DaysInMonth(nextDate.Year, nextDate.Month); dayNumberOfMonth++)
                     {
@@ -320,7 +320,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             {
                 if (nextDate >= start || recurrenceRule.EndOption == 2)
                 {
-                    List<string> dayNumers = recurrenceRule.ByMonthDay.Split(',').ToList();
+                    List<string> dayNumers = [.. recurrenceRule.ByMonthDay.Split(',')];
                     for (int i = 0; i < 31; i++)
                     {
                         if (!dayNumers.Contains(i.ToString())) continue;
@@ -379,7 +379,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 if (nextDate >= start || recurrenceRule.EndOption == 2)
                 {
                     // Get month from ByMonth
-                    List<string> months = recurrenceRule.ByMonth.Split(',').ToList();
+                    List<string> months = [.. recurrenceRule.ByMonth.Split(',')];
                     foreach (string byMonthItemAsString in months)
                     {
                         // if the byMonth value doesn't match the month of the nextDate, continue.
@@ -391,18 +391,18 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                             if (monthCheckDateTime.Month != monthNumber) continue;
 
                             // Get the day of the week and the week number from ByDay
-                            List<string> weeklyDays = recurrenceRule.ByDay.Split(',').ToList();
+                            List<string> weeklyDays = [.. recurrenceRule.ByDay.Split(',')];
 
                             for (int dayNumberOfMonth = 1; dayNumberOfMonth <= DateTime.DaysInMonth(monthCheckDateTime.Year, monthCheckDateTime.Month); dayNumberOfMonth++)
                             {
                                 foreach (string weeklyDay in weeklyDays)
                                 {
-                                    string weeklyDayNumber = weeklyDay.Substring(0, weeklyDay.Length - 2);
-                                    string weeklyDayName = weeklyDay.Substring(weeklyDay.Length - 2);
+                                    string weeklyDayNumber = weeklyDay[..^2];
+                                    string weeklyDayName = weeklyDay[^2..];
 
                                     if (!int.TryParse(weeklyDayNumber, out int dayNumber)) continue;
 
-                                    DateTime tempDate = new DateTime(monthCheckDateTime.Year, monthCheckDateTime.Month, dayNumberOfMonth, 0, 0, 0, DateTimeKind.Utc);
+                                    DateTime tempDate = new(monthCheckDateTime.Year, monthCheckDateTime.Month, dayNumberOfMonth, 0, 0, 0, DateTimeKind.Utc);
 
                                     if ((int)tempDate.DayOfWeek != RecurrenceUnits.WeeklyDays.IndexOf(weeklyDayName)) continue;
 
@@ -498,20 +498,20 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 if (nextDate >= start || recurrenceRule.EndOption == 2)
                 {
                     // Get month from ByMonth
-                    List<string> months = recurrenceRule.ByMonth.Split(',').ToList();
+                    List<string> months = [.. recurrenceRule.ByMonth.Split(',')];
                     foreach (string month in months)
                     {
                         // If the byMonth value doesn't match the month of the nextDate, continue.
                         if (!int.TryParse(month, out int monthNumber)) continue;
 
                         // Get the days of the month numbers from ByMonthDay
-                        List<string> dayNumbers = recurrenceRule.ByMonthDay.Split(',').ToList();
+                        List<string> dayNumbers = [.. recurrenceRule.ByMonthDay.Split(',')];
                         for (int i = 0; i < 31; i++)
                         {
                             // If the day number doesn't match the day of the month, continue.
                             if (!dayNumbers.Contains(i.ToString())) continue;
 
-                            DateTime tempDate = new DateTime(nextDate.Year, monthNumber, i, 0, 0, 0, DateTimeKind.Utc);
+                            DateTime tempDate = new(nextDate.Year, monthNumber, i, 0, 0, 0, DateTimeKind.Utc);
                             CalendarItem calendarItemToAdd = new();
                             calendarItemToAdd.CopyPropertiesForRecurringEvent(calendarItem);
                             if (calendarItemToAdd.StartTime != null && calendarItemToAdd.EndTime != null)

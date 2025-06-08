@@ -277,13 +277,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
             if (start != null && end != null)
             {
-                calendarList = calendarList.Where(c => c.StartTime >= start && c.StartTime <= end && c.AccessLevel >= accessLevel).ToList();
+                calendarList = [.. calendarList.Where(c => c.StartTime >= start && c.StartTime <= end && c.AccessLevel >= accessLevel)];
                 List<CalendarItem> recurringEvents = await GetRecurringEventsForProgeny(progenyId, start.Value, end.Value, false);
                 calendarList.AddRange(recurringEvents);
             }
             else
             {
-                calendarList = calendarList.Where(c => c.AccessLevel >= accessLevel).ToList();
+                calendarList = [.. calendarList.Where(c => c.AccessLevel >= accessLevel)];
             }
 
             return calendarList;
@@ -348,7 +348,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             
             for (int i = 1900; i < today.Year; i++)
             {
-                DateTime onThisDayDateTime = new DateTime(i, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc);
+                DateTime onThisDayDateTime = new(i, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc);
                 List<CalendarItem> itemsForYear = await GetRecurringEventsForProgeny(progenyId, onThisDayDateTime, onThisDayDateTime, false);
                 if (itemsForYear.Count > 0)
                 {
@@ -370,7 +370,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             List<CalendarItem> recurringEvents = [];
             List<RecurrenceRule> recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId).ToListAsync();
             if (recurrenceRules.Count == 0) return recurringEvents;
-            DateTime start = new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            DateTime start = new(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             recurringEvents = await GetRecurringEventsForProgeny(progenyId, start, DateTime.UtcNow.Date, false);
 
             return recurringEvents;
@@ -394,7 +394,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         public async Task CheckCalendarItemsForUId()
         {
             List<CalendarItem> allItems = await _context.CalendarDb.Where(c => string.IsNullOrWhiteSpace(c.UId)).ToListAsync();
-            if (allItems.Any())
+            if (allItems.Count != 0)
             {
                 foreach (CalendarItem calendarItem in allItems)
                 {

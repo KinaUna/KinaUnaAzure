@@ -10,7 +10,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
 {
     public class CalendarRemindersServiceTests
     {
-        private ProgenyDbContext GetDatabaseContext(string dbName)
+        private static ProgenyDbContext GetDatabaseContext(string dbName)
         {
             DbContextOptions<ProgenyDbContext> options = new DbContextOptionsBuilder<ProgenyDbContext>()
                 .UseInMemoryDatabase(dbName)
@@ -49,21 +49,21 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             string dbName = $"GetAllCalendarReminders_{Guid.NewGuid()}";
             ProgenyDbContext context = GetDatabaseContext(dbName);
 
-            List<CalendarReminder> reminders = new List<CalendarReminder>
-            {
+            List<CalendarReminder> reminders =
+            [
                 new() { CalendarReminderId = 1, EventId = 1, UserId = "user1" },
                 new() { CalendarReminderId = 2, EventId = 2, UserId = "user2" },
                 new() { CalendarReminderId = 3, EventId = 3, UserId = "user1" }
-            };
+            ];
 
             context.CalendarRemindersDb.AddRange(reminders);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             List<CalendarReminder>? result = await service.GetAllCalendarReminders();
@@ -83,7 +83,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             UserInfo userInfo = GetTestUserInfo();
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 1,
                 EventId = 1,
@@ -95,11 +95,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarRemindersDb.Add(reminder);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<CalendarReminder>? result = await service.GetCalendarReminder(1, userInfo);
@@ -118,11 +118,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             UserInfo userInfo = GetTestUserInfo();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<CalendarReminder>? result = await service.GetCalendarReminder(999, userInfo);
@@ -141,7 +141,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             UserInfo userInfo = GetTestUserInfo();
             UserInfo otherUserInfo = new() { UserId = "otherUserId", IsKinaUnaAdmin = false };
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 1,
                 EventId = 1,
@@ -153,11 +153,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarRemindersDb.Add(reminder);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<CalendarReminder>? result = await service.GetCalendarReminder(1, otherUserInfo);
@@ -176,7 +176,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             UserInfo userInfo = GetTestUserInfo();
             UserInfo adminUserInfo = GetAdminUserInfo();
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 1,
                 EventId = 1,
@@ -188,11 +188,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarRemindersDb.Add(reminder);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<CalendarReminder>? result = await service.GetCalendarReminder(1, adminUserInfo);
@@ -210,7 +210,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             UserInfo userInfo = GetTestUserInfo();
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 0, // New reminder
                 EventId = 1,
@@ -219,11 +219,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 NotifyTimeOffsetType = 15
             };
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<CalendarReminder>? result = await service.AddCalendarReminder(reminder, userInfo);
@@ -247,7 +247,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             UserInfo userInfo = GetTestUserInfo();
             UserInfo otherUserInfo = new() { UserId = "otherUserId", IsKinaUnaAdmin = false };
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 0,
                 EventId = 1,
@@ -256,11 +256,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 NotifyTimeOffsetType = 15
             };
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<CalendarReminder>? result = await service.AddCalendarReminder(reminder, otherUserInfo);
@@ -278,7 +278,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             UserInfo userInfo = GetTestUserInfo();
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 1, // Existing reminder ID
                 EventId = 1,
@@ -290,11 +290,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarRemindersDb.Add(reminder);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<CalendarReminder>? result = await service.AddCalendarReminder(reminder, userInfo);
@@ -312,7 +312,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             UserInfo userInfo = GetTestUserInfo();
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 1,
                 EventId = 1,
@@ -325,14 +325,14 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarRemindersDb.Add(reminder);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Create updated reminder
-            CalendarReminder updatedReminder = new CalendarReminder
+            CalendarReminder updatedReminder = new()
             {
                 CalendarReminderId = 1,
                 EventId = 1,
@@ -365,7 +365,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             UserInfo userInfo = GetTestUserInfo();
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 999, // Non-existent ID
                 EventId = 1,
@@ -374,11 +374,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 NotifyTimeOffsetType = 15
             };
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<CalendarReminder>? result = await service.UpdateCalendarReminder(reminder, userInfo);
@@ -397,7 +397,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             UserInfo userInfo = GetTestUserInfo();
             UserInfo otherUserInfo = new() { UserId = "otherUserId", IsKinaUnaAdmin = false };
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 1,
                 EventId = 1,
@@ -409,11 +409,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarRemindersDb.Add(reminder);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act - try to update with a different user
             CustomResult<CalendarReminder>? result = await service.UpdateCalendarReminder(reminder, otherUserInfo);
@@ -431,7 +431,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             UserInfo userInfo = GetTestUserInfo();
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 1,
                 EventId = 1,
@@ -443,11 +443,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarRemindersDb.Add(reminder);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<CalendarReminder>? result = await service.DeleteCalendarReminder(reminder, userInfo);
@@ -468,7 +468,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             UserInfo userInfo = GetTestUserInfo();
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 999, // Non-existent ID
                 EventId = 1,
@@ -477,11 +477,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 NotifyTimeOffsetType = 15
             };
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<CalendarReminder>? result = await service.DeleteCalendarReminder(reminder, userInfo);
@@ -500,7 +500,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             UserInfo userInfo = GetTestUserInfo();
             UserInfo otherUserInfo = new() { UserId = "otherUserId", IsKinaUnaAdmin = false };
 
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 1,
                 EventId = 1,
@@ -512,11 +512,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarRemindersDb.Add(reminder);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act - try to delete with a different user
             CustomResult<CalendarReminder>? result = await service.DeleteCalendarReminder(reminder, otherUserInfo);
@@ -534,24 +534,24 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             UserInfo userInfo = GetTestUserInfo();
 
-            List<CalendarReminder> reminders = new List<CalendarReminder>
-            {
+            List<CalendarReminder> reminders =
+            [
                 new() { CalendarReminderId = 1, EventId = 1, UserId = userInfo.UserId, Notified = false },
                 new() { CalendarReminderId = 2, EventId = 2, UserId = userInfo.UserId, Notified = true },
                 new() { CalendarReminderId = 3, EventId = 3, UserId = userInfo.UserId, Notified = false },
                 new() { CalendarReminderId = 4, EventId = 4, UserId = "otherUserId", Notified = false }
-            };
+            ];
 
             context.CalendarRemindersDb.AddRange(reminders);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
-            CalendarRemindersForUserRequest request = new CalendarRemindersForUserRequest
+            CalendarRemindersForUserRequest request = new()
             {
                 UserId = userInfo.UserId,
                 FilterNotified = false
@@ -574,23 +574,23 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             UserInfo userInfo = GetTestUserInfo();
 
-            List<CalendarReminder> reminders = new List<CalendarReminder>
-            {
+            List<CalendarReminder> reminders =
+            [
                 new() { CalendarReminderId = 1, EventId = 1, UserId = userInfo.UserId, Notified = false },
                 new() { CalendarReminderId = 2, EventId = 2, UserId = userInfo.UserId, Notified = true },
                 new() { CalendarReminderId = 3, EventId = 3, UserId = userInfo.UserId, Notified = false }
-            };
+            ];
 
             context.CalendarRemindersDb.AddRange(reminders);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
-            CalendarRemindersForUserRequest request = new CalendarRemindersForUserRequest
+            CalendarRemindersForUserRequest request = new()
             {
                 UserId = userInfo.UserId,
                 FilterNotified = true // Filter out notified reminders
@@ -614,21 +614,21 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             UserInfo userInfo = GetTestUserInfo();
             UserInfo otherUserInfo = new() { UserId = "otherUserId", IsKinaUnaAdmin = false };
 
-            List<CalendarReminder> reminders = new List<CalendarReminder>
-            {
+            List<CalendarReminder> reminders =
+            [
                 new() { CalendarReminderId = 1, EventId = 1, UserId = userInfo.UserId, Notified = false }
-            };
+            ];
 
             context.CalendarRemindersDb.AddRange(reminders);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
-            CalendarRemindersForUserRequest request = new CalendarRemindersForUserRequest
+            CalendarRemindersForUserRequest request = new()
             {
                 UserId = userInfo.UserId // Requesting userInfo's reminders
             };
@@ -650,21 +650,21 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             UserInfo userInfo = GetTestUserInfo();
 
             int eventId = 1;
-            List<CalendarReminder> reminders = new List<CalendarReminder>
-            {
+            List<CalendarReminder> reminders =
+            [
                 new() { CalendarReminderId = 1, EventId = eventId, UserId = userInfo.UserId, Notified = false },
                 new() { CalendarReminderId = 2, EventId = eventId, UserId = userInfo.UserId, Notified = true },
                 new() { CalendarReminderId = 3, EventId = 2, UserId = userInfo.UserId, Notified = false }
-            };
+            ];
 
             context.CalendarRemindersDb.AddRange(reminders);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<List<CalendarReminder>>? result = await service.GetUsersCalendarRemindersForEvent(eventId, userInfo.UserId, userInfo);
@@ -683,11 +683,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             UserInfo userInfo = GetTestUserInfo();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             CustomResult<List<CalendarReminder>>? result = await service.GetUsersCalendarRemindersForEvent(999, userInfo.UserId, userInfo);
@@ -707,19 +707,19 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             UserInfo otherUserInfo = new() { UserId = "otherUserId", IsKinaUnaAdmin = false };
 
             int eventId = 1;
-            List<CalendarReminder> reminders = new List<CalendarReminder>
-            {
+            List<CalendarReminder> reminders =
+            [
                 new() { CalendarReminderId = 1, EventId = eventId, UserId = userInfo.UserId, Notified = false }
-            };
+            ];
 
             context.CalendarRemindersDb.AddRange(reminders);
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<IEmailSender> emailSender = new();
+            Mock<IPushMessageSender> pushMessageSender = new();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act - try to get with a different user
             CustomResult<List<CalendarReminder>>? result = await service.GetUsersCalendarRemindersForEvent(eventId, userInfo.UserId, otherUserInfo);
@@ -737,11 +737,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             
             // Create progeny
-            Progeny progeny = new Progeny { Id = 1, NickName = "TestChild" };
+            Progeny progeny = new() { Id = 1, NickName = "TestChild" };
             context.ProgenyDb.Add(progeny);
 
             // Create user
-            UserInfo userInfo = new UserInfo
+            UserInfo userInfo = new()
             {
                 UserId = "testUserId",
                 UserEmail = "test@example.com",
@@ -750,7 +750,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.UserInfoDb.Add(userInfo);
 
             // Create event
-            CalendarItem calendarItem = new CalendarItem
+            CalendarItem calendarItem = new()
             {
                 EventId = 1,
                 ProgenyId = 1,
@@ -761,8 +761,8 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarDb.Add(calendarItem);
 
             // Create reminders
-            List<CalendarReminder> reminders = new List<CalendarReminder>
-            {
+            List<CalendarReminder> reminders =
+            [
                 new() {
                     CalendarReminderId = 1, 
                     EventId = 1, 
@@ -771,22 +771,22 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                     Notified = false,
                     RecurrenceRuleId = 1 // Make sure it's included in ExpiredCalendarReminders query
                 }
-            };
+            ];
             context.CalendarRemindersDb.AddRange(reminders);
             
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
+            Mock<IEmailSender> emailSender = new();
             emailSender.Setup(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
+            Mock<IPushMessageSender> pushMessageSender = new();
             pushMessageSender.Setup(x => x.SendMessage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             await service.SendExpiredCalendarReminders();
@@ -811,11 +811,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             ProgenyDbContext context = GetDatabaseContext(dbName);
             
             // Create progeny
-            Progeny progeny = new Progeny { Id = 1, NickName = "TestChild" };
+            Progeny progeny = new() { Id = 1, NickName = "TestChild" };
             context.ProgenyDb.Add(progeny);
 
             // Create user
-            UserInfo userInfo = new UserInfo
+            UserInfo userInfo = new()
             {
                 UserId = "testUserId",
                 UserEmail = "test@example.com",
@@ -824,7 +824,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.UserInfoDb.Add(userInfo);
 
             // Create recurrence rule
-            RecurrenceRule recurrenceRule = new RecurrenceRule
+            RecurrenceRule recurrenceRule = new()
             {
                 RecurrenceRuleId = 1,
                 ProgenyId = 1,
@@ -834,7 +834,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.RecurrenceRulesDb.Add(recurrenceRule);
 
             // Create event
-            CalendarItem calendarItem = new CalendarItem
+            CalendarItem calendarItem = new()
             {
                 EventId = 1,
                 ProgenyId = 1,
@@ -846,7 +846,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarDb.Add(calendarItem);
 
             // Create reminders
-            CalendarReminder reminder = new CalendarReminder
+            CalendarReminder reminder = new()
             {
                 CalendarReminderId = 1,
                 EventId = 1,
@@ -860,23 +860,23 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             
             await context.SaveChangesAsync();
 
-            Mock<IEmailSender> emailSender = new Mock<IEmailSender>();
+            Mock<IEmailSender> emailSender = new();
             emailSender.Setup(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
-            Mock<IPushMessageSender> pushMessageSender = new Mock<IPushMessageSender>();
+            Mock<IPushMessageSender> pushMessageSender = new();
             pushMessageSender.Setup(x => x.SendMessage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
-            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
+            Mock<ICalendarRecurrencesService> calendarRecurrencesService = new();
             // Setup to return a recurring event instance that should trigger a reminder
             calendarRecurrencesService.Setup(x => x.GetCalendarItemsForRecurrenceRule(
                     It.IsAny<RecurrenceRule>(), 
                     It.IsAny<DateTime>(), 
                     It.IsAny<DateTime>(), 
                     It.IsAny<bool>()))
-                .ReturnsAsync(new List<CalendarItem>
-                {
+                .ReturnsAsync(
+                [
                     new()
                     {
                         EventId = 101, // New event ID for the instance
@@ -886,9 +886,9 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                         EndTime = DateTime.UtcNow.AddHours(1),
                         RecurrenceRuleId = 1
                     }
-                });
+                ]);
 
-            CalendarRemindersService service = new CalendarRemindersService(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
+            CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 
             // Act
             await service.SendExpiredRecurringReminders();

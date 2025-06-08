@@ -435,11 +435,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             Assert.NotEmpty(results);
             
             // Verify we get the expected dates (Mondays: Jan 2, 9) and (Wednesdays: Jan 4, 11)
-            List<DateTime> dates = results.Select(r =>
+            List<DateTime> dates = [.. results.Select(r =>
             {
                 Debug.Assert(r.StartTime != null, "r.StartTime != null");
                 return r.StartTime.Value.Date;
-            }).OrderBy(d => d).ToList();
+            }).OrderBy(d => d)];
             
             Assert.Contains(new DateTime(2023, 1, 2, 0, 0, 0, DateTimeKind.Utc), dates); // Monday
             Assert.Contains(new DateTime(2023, 1, 4, 0, 0, 0, DateTimeKind.Utc), dates); // Wednesday
@@ -500,11 +500,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             Assert.NotEmpty(results);
             
             // Should include the second Monday of each month (Feb 13, Mar 13, Apr 10, May 8, Jun 12)
-            List<DateTime> dates = results.Select(r =>
+            List<DateTime> dates = [.. results.Select(r =>
             {
                 Debug.Assert(r.StartTime != null, "r.StartTime != null");
                 return r.StartTime.Value.Date;
-            }).OrderBy(d => d).ToList();
+            }).OrderBy(d => d)];
             
             Assert.Contains(new DateTime(2023, 2, 13, 0, 0, 0, DateTimeKind.Utc), dates);
             Assert.Contains(new DateTime(2023, 3, 13, 0, 0, 0, DateTimeKind.Utc), dates);
@@ -566,11 +566,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             Assert.NotEmpty(results);
             
             // Should include the 15th of each month (Feb 15, Mar 15, Apr 15, May 15) - skipping Jan 15 as it's the original
-            List<DateTime> dates = results.Select(r =>
+            List<DateTime> dates = [.. results.Select(r =>
             {
                 Debug.Assert(r.StartTime != null, "r.StartTime != null");
                 return r.StartTime.Value.Date;
-            }).OrderBy(d => d).ToList();
+            }).OrderBy(d => d)];
             
             Assert.Contains(new DateTime(2023, 2, 15, 0, 0, 0, DateTimeKind.Utc), dates);
             Assert.Contains(new DateTime(2023, 3, 15, 0, 0, 0, DateTimeKind.Utc), dates);
@@ -632,11 +632,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             
             // Verify we have the correct dates for Thanksgiving (3rd Thursday in November)
             // 2021: Nov 18, 2022: Nov 17, 2023: Nov 16
-            List<DateTime> dates = results.Select(r =>
+            List<DateTime> dates = [.. results.Select(r =>
             {
                 Debug.Assert(r.StartTime != null, "r.StartTime != null");
                 return r.StartTime.Value.Date;
-            }).OrderBy(d => d).ToList();
+            }).OrderBy(d => d)];
             
             Assert.Contains(new DateTime(2021, 11, 18, 0, 0, 0, DateTimeKind.Utc), dates);
             Assert.Contains(new DateTime(2022, 11, 17, 0, 0, 0, DateTimeKind.Utc), dates);
@@ -696,11 +696,11 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             Assert.NotEmpty(results);
             
             // Verify we have the correct dates for July 4th each year
-            List<DateTime> dates = results.Select(r =>
+            List<DateTime> dates = [.. results.Select(r =>
             {
                 Debug.Assert(r.StartTime != null, "r.StartTime != null");
                 return r.StartTime.Value.Date;
-            }).OrderBy(d => d).ToList();
+            }).OrderBy(d => d)];
             
             Assert.Contains(new DateTime(2021, 7, 4, 0, 0, 0, DateTimeKind.Utc), dates);
             Assert.Contains(new DateTime(2022, 7, 4, 0, 0, 0, DateTimeKind.Utc), dates);

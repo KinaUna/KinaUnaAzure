@@ -70,20 +70,11 @@ namespace KinaUna.Data.Models
 
         public void EnsureStringsAreNotNull()
         {
-            if (ByDay == null)
-            {
-                ByDay = string.Empty;
-            }
+            ByDay ??= string.Empty;
 
-            if (ByMonthDay == null)
-            {
-                ByMonthDay = string.Empty;
-            }
+            ByMonthDay ??= string.Empty;
 
-            if (ByMonth == null)
-            {
-                ByMonth = string.Empty;
-            }
+            ByMonth ??= string.Empty;
         }
     }
 }

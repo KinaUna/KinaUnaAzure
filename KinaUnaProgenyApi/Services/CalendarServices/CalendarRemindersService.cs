@@ -105,7 +105,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             List<CalendarReminder> calendarReminders = await context.CalendarRemindersDb.AsNoTracking().Where(c => c.UserId == request.UserId).ToListAsync();
             if (request.FilterNotified)
             {
-                calendarReminders = calendarReminders.Where(c => !c.Notified).ToList();
+                calendarReminders = [.. calendarReminders.Where(c => !c.Notified)];
             }
 
             return calendarReminders;
