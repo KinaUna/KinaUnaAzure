@@ -202,8 +202,8 @@ namespace KinaUnaProgenyApi.Services
                     }
                     else
                     {
-                        picture.PictureWidth = image.Width;
-                        picture.PictureHeight = image.Height;
+                        picture.PictureWidth = (int)image.Width;
+                        picture.PictureHeight = (int)image.Height;
 
                     }
 
@@ -221,7 +221,7 @@ namespace KinaUnaProgenyApi.Services
                         const int newWidth = 600;
                         int newHeight = (600 / picture.PictureWidth) * picture.PictureHeight;
 
-                        image.Resize(newWidth, newHeight);
+                        image.Resize(newWidth, (uint)newHeight);
                     }
 
                     image.Strip();
@@ -250,7 +250,7 @@ namespace KinaUnaProgenyApi.Services
                     const int newWidth = 1200;
                     int newHeight = (1200 / picture.PictureWidth) * picture.PictureHeight;
 
-                    image.Resize(newWidth, newHeight);
+                    image.Resize(newWidth, (uint)newHeight);
                 }
 
                 image.Strip();
@@ -302,14 +302,14 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            int newWidth = (180 / image.Height) * image.Width;
+            int newWidth = (int)((180 / image.Height) * image.Width);
             int newHeight = 180;
             if (image.Width > image.Height)
             {
                 newWidth = 180;
-                newHeight = (180 / image.Width) * image.Height;
+                newHeight = (int)((180 / image.Width) * image.Height);
             }
-            image.Resize(newWidth, newHeight);
+            image.Resize((uint)newWidth, (uint)newHeight);
             image.Strip();
 
             using MemoryStream memStream = new();
@@ -340,14 +340,14 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            int newWidth = (180 / image.Height) * image.Width;
+            int newWidth = (int)((180 / image.Height) * image.Width);
             int newHeight = 180;
             if (image.Width > image.Height)
             {
                 newWidth = 180;
-                newHeight = (180 / image.Width) * image.Height;
+                newHeight = (int)((180 / image.Width) * image.Height);
             }
-            image.Resize(newWidth, newHeight);
+            image.Resize((uint)newWidth, (uint)newHeight);
             image.Strip();
 
             using MemoryStream memStream = new();
@@ -405,14 +405,14 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            int newWidth = (180 / image.Height) * image.Width;
+            int newWidth = (int)((180 / image.Height) * image.Width);
             int newHeight = 180;
             if (image.Width > image.Height)
             {
                 newWidth = 180;
-                newHeight = (180 / image.Width) * image.Height;
+                newHeight = (int)((180 / image.Width) * image.Height);
             }
-            image.Resize(newWidth, newHeight);
+            image.Resize((uint)newWidth, (uint)newHeight);
             image.Strip();
 
             using MemoryStream memStream = new();
@@ -443,14 +443,14 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            int newWidth = (180 / image.Height) * image.Width;
+            int newWidth = (int)((180 / image.Height) * image.Width);
             int newHeight = 180;
             if (image.Width > image.Height)
             {
                 newWidth = 180;
-                newHeight = (180 / image.Width) * image.Height;
+                newHeight = (int)((180 / image.Width) * image.Height);
             }
-            image.Resize(newWidth, newHeight);
+            image.Resize((uint)newWidth, (uint)newHeight);
             image.Strip();
 
             using MemoryStream memStream = new();

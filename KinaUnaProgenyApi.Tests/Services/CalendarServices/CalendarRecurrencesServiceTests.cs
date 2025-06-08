@@ -437,7 +437,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             // Verify we get the expected dates (Mondays: Jan 2, 9) and (Wednesdays: Jan 4, 11)
             List<DateTime> dates = [.. results.Select(r =>
             {
-                Debug.Assert(r.StartTime != null, "r.StartTime != null");
+                Debug.Assert(r.StartTime != null);
                 return r.StartTime.Value.Date;
             }).OrderBy(d => d)];
             
@@ -502,7 +502,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             // Should include the second Monday of each month (Feb 13, Mar 13, Apr 10, May 8, Jun 12)
             List<DateTime> dates = [.. results.Select(r =>
             {
-                Debug.Assert(r.StartTime != null, "r.StartTime != null");
+                Debug.Assert(r.StartTime != null);
                 return r.StartTime.Value.Date;
             }).OrderBy(d => d)];
             
@@ -568,7 +568,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             // Should include the 15th of each month (Feb 15, Mar 15, Apr 15, May 15) - skipping Jan 15 as it's the original
             List<DateTime> dates = [.. results.Select(r =>
             {
-                Debug.Assert(r.StartTime != null, "r.StartTime != null");
+                Debug.Assert(r.StartTime != null);
                 return r.StartTime.Value.Date;
             }).OrderBy(d => d)];
             
@@ -634,7 +634,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             // 2021: Nov 18, 2022: Nov 17, 2023: Nov 16
             List<DateTime> dates = [.. results.Select(r =>
             {
-                Debug.Assert(r.StartTime != null, "r.StartTime != null");
+                Debug.Assert(r.StartTime != null);
                 return r.StartTime.Value.Date;
             }).OrderBy(d => d)];
             
@@ -698,7 +698,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             // Verify we have the correct dates for July 4th each year
             List<DateTime> dates = [.. results.Select(r =>
             {
-                Debug.Assert(r.StartTime != null, "r.StartTime != null");
+                Debug.Assert(r.StartTime != null);
                 return r.StartTime.Value.Date;
             }).OrderBy(d => d)];
             
