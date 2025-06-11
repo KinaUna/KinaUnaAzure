@@ -19,7 +19,6 @@ using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaWeb.Controllers
 {
-    [AllowAnonymous]
     public class HomeController(
         IMediaHttpClient mediaHttpClient,
         IWebHostEnvironment env,
