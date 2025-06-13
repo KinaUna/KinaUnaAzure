@@ -99,10 +99,10 @@ namespace KinaUna.IDP
         public static List<Client> GetClients(IConfiguration configuration)
         {
             string webServerUrl = configuration.GetValue<string>("WebServer");
-            string webBlazorServerUrl = configuration.GetValue<string>("WebBlazorServer");
+            // string webBlazorServerUrl = configuration.GetValue<string>("WebBlazorServer");
             string webServerAzureUrl = configuration.GetValue<string>("WebServerAzure");
             string webServerLocal = configuration.GetValue<string>("WebServerLocal");
-            string webBlazorServerLocal = configuration.GetValue<string>("WebBlazorServerLocal");
+            // string webBlazorServerLocal = configuration.GetValue<string>("WebBlazorServerLocal");
             string secretString = configuration.GetValue<string>("SecretString");
             List<string> corsList =
             [
