@@ -74,7 +74,6 @@ function onEventClick(args: any) {
     let scheduleObj = document.querySelector<any>('.e-schedule').ej2_instances[0];
     let event = scheduleObj.getEventDetails(args.element);
     selectedEventId = event.eventId;
-    console.log(event.startTime);
     let startYear = event.startTime.getFullYear();
     let startMonth = event.startTime.getMonth() + 1;
     let startDay = event.startTime.getDate();
