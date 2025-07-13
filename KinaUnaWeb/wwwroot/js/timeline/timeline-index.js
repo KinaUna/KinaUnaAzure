@@ -100,6 +100,9 @@ async function renderTimelineItem(timelineItem) {
     const timeLineItemViewModel = new TimeLineItemViewModel();
     timeLineItemViewModel.typeId = timelineItem.itemType;
     timeLineItemViewModel.itemId = parseInt(timelineItem.itemId);
+    timeLineItemViewModel.itemYear = timelineItem.itemYear;
+    timeLineItemViewModel.itemMonth = timelineItem.itemMonth;
+    timeLineItemViewModel.itemDay = timelineItem.itemDay;
     const getTimelineElementResponse = await fetch('/Timeline/GetTimelineItemElement', {
         method: 'POST',
         body: JSON.stringify(timeLineItemViewModel),

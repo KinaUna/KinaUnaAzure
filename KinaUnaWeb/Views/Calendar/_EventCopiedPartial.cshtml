@@ -2,7 +2,6 @@
 @using KinaUnaWeb.Services
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
-@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -46,7 +45,14 @@
                 </div>
             </div>
             <div class="col-auto">
-                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">event_note</i></span>
+                @if (Model.CalendarItem.RecurrenceRuleId == 0)
+                {
+                    <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">event_note</i></span>
+                }
+                else
+                {
+                    <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">event_repeat</i></span>
+                }
             </div>
             <div class="col mr-5">
                 <div class="row text-white h5">

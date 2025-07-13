@@ -19,8 +19,16 @@ async function onCalendarItemDivClicked(event) {
     const eventElement = event.currentTarget;
     if (eventElement !== null) {
         const eventId = eventElement.dataset.calendarEventId;
+        const eventYear = eventElement.dataset.eventYear;
+        const eventMonth = eventElement.dataset.eventMonth;
+        const eventDay = eventElement.dataset.eventDay;
         if (eventId) {
-            await displayEventItem(eventId);
+            if (eventYear && eventMonth && eventDay) {
+                await displayEventItem(eventId, eventYear, eventMonth, eventDay);
+            }
+            else {
+                await displayEventItem(eventId, '0', '0', '0');
+            }
         }
     }
 }
@@ -28,8 +36,8 @@ async function onCalendarItemDivClicked(event) {
  * Enable other scripts to call the DisplayEventItem function.
  * @param {string} eventId The id of the event to display.
  */
-export async function popupEventItem(eventId) {
-    await displayEventItem(eventId);
+export async function popupEventItem(eventId, eventYear, eventMonth, eventDay) {
+    await displayEventItem(eventId, eventYear, eventMonth, eventDay);
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -38,9 +46,9 @@ export async function popupEventItem(eventId) {
  * Retrieves the details of a calendar event and displays them in a popup.
  * @param {string} eventId The id of the event to display.
  */
-async function displayEventItem(eventId) {
+async function displayEventItem(eventId, eventYear, eventMonth, eventDay) {
     startFullPageSpinner();
-    let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";
+    let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true" + "&year=" + eventYear + "&month=" + eventMonth + "&day=" + eventDay;
     await fetch(url, {
         method: 'GET',
         headers: {

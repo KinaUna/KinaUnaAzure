@@ -118,41 +118,41 @@ namespace KinaUna.IDP
                 }
             }
 
-            if (environment.IsDevelopment())
-            {
-                services.AddCors(options =>
-                {
-                    options.AddDefaultPolicy(builder =>
-                    {
-                        builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324", "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397", "https://nuuk2020.kinauna.io:44397",
-                                "https://nuuk2015.kinauna.io", "https://nuuk2020.kinauna.io")
-                            .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-                    });
+            //if (environment.IsDevelopment())
+            //{
+            //    services.AddCors(options =>
+            //    {
+            //        options.AddDefaultPolicy(builder =>
+            //        {
+            //            builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324", "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397", "https://nuuk2020.kinauna.io:44397",
+            //                    "https://nuuk2015.kinauna.io", "https://nuuk2020.kinauna.io")
+            //                .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+            //        });
 
-                    options.AddPolicy("KinaUnaCors",
-                        builder =>
-                        {
-                            builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324", "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397", "https://nuuk2020.kinauna.io:44397",
-                                    "https://nuuk2015.kinauna.io", "https://nuuk2020.kinauna.io")
-                                .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-                        });
-                });
-            }
-            else
-            {
-                services.AddCors(options =>
-                {
-                    options.AddDefaultPolicy(builder =>
-                        {
-                            builder.WithOrigins(Constants.WebAppUrl, "https://" + Constants.AppRootDomain);
-                        });
-                    options.AddPolicy("KinaUnaCors",
-                        builder =>
-                        {
-                            builder.WithOrigins("https://*." + Constants.AppRootDomain, "https://*.kinauna.com").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-                        });
-                });
-            }
+            //        options.AddPolicy("KinaUnaCors",
+            //            builder =>
+            //            {
+            //                builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324", "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397", "https://nuuk2020.kinauna.io:44397",
+            //                        "https://nuuk2015.kinauna.io", "https://nuuk2020.kinauna.io")
+            //                    .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+            //            });
+            //    });
+            //}
+            //else
+            //{
+            //    services.AddCors(options =>
+            //    {
+            //        options.AddDefaultPolicy(builder =>
+            //            {
+            //                builder.WithOrigins(Constants.WebAppUrl, "https://" + Constants.AppRootDomain);
+            //            });
+            //        options.AddPolicy("KinaUnaCors",
+            //            builder =>
+            //            {
+            //                builder.WithOrigins("https://*." + Constants.AppRootDomain, "https://*.kinauna.com").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+            //            });
+            //    });
+            //}
 
             services.AddDistributedMemoryCache();
 
@@ -187,7 +187,7 @@ namespace KinaUna.IDP
                 .AddInMemoryCaching()
                 .AddClientStoreCache<IdentityServer4.EntityFramework.Stores.ClientStore>()
                 .AddResourceStoreCache<IdentityServer4.EntityFramework.Stores.ResourceStore>()
-                .AddCorsPolicyCache<IdentityServer4.EntityFramework.Services.CorsPolicyService>()
+                //.AddCorsPolicyCache<IdentityServer4.EntityFramework.Services.CorsPolicyService>()
                 //.AddProfileServiceCache<ProfileService>()
                 .Services.AddTransient<IProfileService, ProfileService>();
 
@@ -210,27 +210,27 @@ namespace KinaUna.IDP
                         options.Cookie.Domain = "web." + Constants.AppRootDomain;
 
                     }
-                })
-                .AddApple(options =>
-                {
-                    options.ClientId = Configuration["AppleClientId"] ?? throw new InvalidOperationException("AppleClientId missing in configuration."); 
-                    options.KeyId = Configuration["AppleKeyId"];
-                    options.TeamId = Configuration["AppleTeamId"] ?? throw new InvalidOperationException("AppleTeamId missing in configuration");
-                    options.UsePrivateKey((keyId) => environment.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
-                    options.SaveTokens = true;
-                })
-                .AddGoogle("Google", "Google", options =>
-                {
-                    options.ClientId = Configuration["GoogleClientId"] ?? throw new InvalidOperationException("GoogleClientId missing in configuration.");
-                    options.ClientSecret = Configuration["GoogleClientSecret"] ?? throw new InvalidOperationException("GoogleClientSecret missing in configuration.");
-                    options.SaveTokens = true;
-                })
-                .AddMicrosoftAccount("Microsoft", "Microsoft", microsoftOptions =>
-                {
-                    microsoftOptions.ClientId = Configuration["MicrosoftClientId"] ?? throw new InvalidOperationException("MicrosoftClientId missing in configuration.");
-                    microsoftOptions.ClientSecret = Configuration["MicrosoftClientSecret"] ?? throw new InvalidOperationException("MicrosoftClientSecret missing in configuration");
-                    microsoftOptions.SaveTokens = true;
                 });
+                //.AddApple(options =>
+                //{
+                //    options.ClientId = Configuration["AppleClientId"] ?? throw new InvalidOperationException("AppleClientId missing in configuration."); 
+                //    options.KeyId = Configuration["AppleKeyId"];
+                //    options.TeamId = Configuration["AppleTeamId"] ?? throw new InvalidOperationException("AppleTeamId missing in configuration");
+                //    options.UsePrivateKey((keyId) => environment.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
+                //    options.SaveTokens = true;
+                //})
+                //.AddGoogle("Google", "Google", options =>
+                //{
+                //    options.ClientId = Configuration["GoogleClientId"] ?? throw new InvalidOperationException("GoogleClientId missing in configuration.");
+                //    options.ClientSecret = Configuration["GoogleClientSecret"] ?? throw new InvalidOperationException("GoogleClientSecret missing in configuration.");
+                //    options.SaveTokens = true;
+                //})
+                //.AddMicrosoftAccount("Microsoft", "Microsoft", microsoftOptions =>
+                //{
+                //    microsoftOptions.ClientId = Configuration["MicrosoftClientId"] ?? throw new InvalidOperationException("MicrosoftClientId missing in configuration.");
+                //    microsoftOptions.ClientSecret = Configuration["MicrosoftClientSecret"] ?? throw new InvalidOperationException("MicrosoftClientSecret missing in configuration");
+                //    microsoftOptions.SaveTokens = true;
+                //});
             
             services.AddApplicationInsightsTelemetry();
         }
@@ -268,7 +268,8 @@ namespace KinaUna.IDP
             app.UseRequestLocalization(localizationOptions);
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseCors("KinaUnaCors");
+            //app.UseCors("KinaUnaCors");
+            
             app.UseIdentityServer();
             app.UseAuthentication();
             app.UseAuthorization();

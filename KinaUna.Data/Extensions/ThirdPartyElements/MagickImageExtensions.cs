@@ -253,23 +253,23 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
             {
                 Number w = profile.GetValue(ExifTag.PixelXDimension)?.Value ?? new Number(0);
 
-                pictureWidth = (uint)w != 0 ? Convert.ToInt32((uint)w) : image.Width;
+                pictureWidth = (uint)w != 0 ? Convert.ToInt32((uint)w) : (int)image.Width;
             }
             catch (FormatException)
             {
-                pictureWidth = image.Width;
+                pictureWidth = (int)image.Width;
             }
             catch (OverflowException)
             {
-                pictureWidth = image.Width;
+                pictureWidth = (int)image.Width;
             }
             catch (ArgumentNullException)
             {
-                pictureWidth = image.Width;
+                pictureWidth = (int)image.Width;
             }
             catch (NullReferenceException)
             {
-                pictureWidth = image.Width;
+                pictureWidth = (int)image.Width;
             }
 
             return pictureWidth;
@@ -289,23 +289,23 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
             try
             {
                 Number h = profile.GetValue(ExifTag.PixelYDimension)?.Value ?? new Number(0);
-                pictureHeight = (uint)h != 0 ? Convert.ToInt32((uint)h) : image.Height;
+                pictureHeight = (uint)h != 0 ? Convert.ToInt32((uint)h) : (int)image.Height;
             }
             catch (FormatException)
             {
-                pictureHeight = image.Height;
+                pictureHeight = (int)image.Height;
             }
             catch (OverflowException)
             {
-                pictureHeight = image.Height;
+                pictureHeight = (int)image.Height;
             }
             catch (ArgumentNullException)
             {
-                pictureHeight = image.Height;
+                pictureHeight = (int)image.Height;
             }
             catch (NullReferenceException)
             {
-                pictureHeight = image.Height;
+                pictureHeight = (int)image.Height;
             }
 
             return pictureHeight;

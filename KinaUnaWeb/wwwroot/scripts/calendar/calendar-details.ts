@@ -22,8 +22,18 @@ async function onCalendarItemDivClicked(event: MouseEvent): Promise<void> {
     const eventElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
     if (eventElement !== null) {
         const eventId = eventElement.dataset.calendarEventId;
+        const eventYear = eventElement.dataset.eventYear;
+        const eventMonth = eventElement.dataset.eventMonth;
+        const eventDay = eventElement.dataset.eventDay;
+        
         if (eventId) {
-            await displayEventItem(eventId);
+            if (eventYear && eventMonth && eventDay) {
+                await displayEventItem(eventId, eventYear, eventMonth, eventDay);
+            }
+            else {
+                await displayEventItem(eventId, '0', '0', '0');
+            }
+            
         }
     }
 }
@@ -31,8 +41,8 @@ async function onCalendarItemDivClicked(event: MouseEvent): Promise<void> {
  * Enable other scripts to call the DisplayEventItem function.
  * @param {string} eventId The id of the event to display.
  */
-export async function popupEventItem(eventId: string): Promise<void> {
-    await displayEventItem(eventId);
+export async function popupEventItem(eventId: string, eventYear: string, eventMonth: string, eventDay: string): Promise<void> {
+    await displayEventItem(eventId, eventYear, eventMonth, eventDay);
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -43,9 +53,9 @@ export async function popupEventItem(eventId: string): Promise<void> {
  * Retrieves the details of a calendar event and displays them in a popup.
  * @param {string} eventId The id of the event to display.
  */
-async function displayEventItem(eventId: string): Promise<void> {
+async function displayEventItem(eventId: string, eventYear: string, eventMonth: string, eventDay: string): Promise<void> {
     startFullPageSpinner();
-    let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";
+    let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true" + "&year=" + eventYear + "&month=" + eventMonth + "&day=" + eventDay;
     await fetch(url, {
         method: 'GET',
         headers: {

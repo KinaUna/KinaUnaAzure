@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Calendar;
 using KinaUnaWeb.Models.TypeScriptModels.Timeline;
@@ -37,7 +38,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int? eventId, int childId = 0)
         {
-
+            // Todo: Add EventDate parameter for popup with recurring events.
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             CalendarListViewModel model = new(baseModel);
             
@@ -52,14 +53,18 @@ namespace KinaUnaWeb.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> GetCalendarList([FromBody] List<int> progenies)
+        public async Task<IActionResult> GetCalendarList([FromBody] CalendarItemsRequest request)
         {
             UserInfo currentUserInfo = await userInfosHttpClient.GetUserInfo(User.GetEmail());
-            List<CalendarItem> calendarItems = await calendarsHttpClient.GetProgeniesCalendarList(progenies);
+            request.StartDate = new DateTime(request.StartYear, request.StartMonth, request.StartDay);
+            request.EndDate = new DateTime(request.EndYear, request.EndMonth, request.EndDay);
+
+            List<CalendarItem> calendarItems = await calendarsHttpClient.GetProgeniesCalendarList(request);
 
             calendarItems = [.. calendarItems.OrderBy(e => e.StartTime)];
             List<CalendarItem> resultList = [];
-
+            List<Progeny> progeniesList = [];
+            
             foreach (CalendarItem ev in calendarItems)
             {
                 if (!ev.StartTime.HasValue || !ev.EndTime.HasValue) continue;
@@ -72,12 +77,19 @@ namespace KinaUnaWeb.Controllers
                 // ToDo: Replace format string with configuration or user defined value
                 ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
                 ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
-
-                Progeny progeny = await progenyHttpClient.GetProgeny(ev.ProgenyId);
+                
+                Progeny progeny = progeniesList.FirstOrDefault(p => p.Id == ev.ProgenyId);
+                if (progeny == null)
+                {
+                    progeny = await progenyHttpClient.GetProgeny(ev.ProgenyId);
+                    progeniesList.Add(progeny);
+                }
+                
                 ev.IsReadonly = !progeny.IsInAdminList(currentUserInfo.UserEmail);
                 // Todo: Add color property
                 resultList.Add(ev);
             }
+
             return Json(resultList);
         }
         /// <summary>
@@ -85,9 +97,12 @@ namespace KinaUnaWeb.Controllers
         /// </summary>
         /// <param name="eventId">The EventId of the CalendarItem to show.</param>
         /// <param name="partialView">If true, returns partial view. For inline fetching of HTML to show in a modal or popup.</param>
+        /// <param name="year">Optional year for recurring events..</param>
+        /// <param name="month">Optional month for recurring events.</param>
+        /// <param name="day">Optional day for recurring events.</param>
         /// <returns></returns>
         [AllowAnonymous]
-        public async Task<IActionResult> ViewEvent(int eventId, bool partialView = false)
+        public async Task<IActionResult> ViewEvent(int eventId, bool partialView = false, int year = 0, int month = 0, int day = 0)
         {
             if (!partialView)
             {
@@ -106,10 +121,18 @@ namespace KinaUnaWeb.Controllers
             }
             
             model.SetCalendarItem(eventItem);
+            // Year, month and day are used for recurring events, and is in the user's timezone, make sure to update the event's start and end times after converting from UTC.
+            if (model.CalendarItem.RecurrenceRuleId > 0 && year > 0 && month > 0 && day > 0 && model.CalendarItem.StartTime.HasValue && model.CalendarItem.EndTime.HasValue)
+            {
+                TimeSpan eventDuration = model.CalendarItem.EndTime.Value - model.CalendarItem.StartTime.Value;
+                model.CalendarItem.StartTime = new DateTime(year, month, day, model.CalendarItem.StartTime.Value.Hour, model.CalendarItem.StartTime.Value.Minute, model.CalendarItem.StartTime.Value.Second);
+                model.CalendarItem.EndTime = model.CalendarItem.StartTime.Value + eventDuration;
+            }
+
             model.CalendarItem.Progeny = model.CurrentProgeny;
             model.CalendarItem.Progeny.PictureLink = model.CalendarItem.Progeny.GetProfilePictureUrl();
             model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
-
+            
             List<CalendarReminder> calendarReminders = await calendarRemindersHttpClient.GetUsersCalendarRemindersForEvent(eventId, model.CurrentUser.UserId);
             if (calendarReminders == null) return PartialView("_CalendarItemDetailsPartial", model);
 
@@ -142,9 +165,18 @@ namespace KinaUnaWeb.Controllers
                 model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
                 model.SetProgenyList();
             }
-            
+
+            model.CalendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.CalendarItem.EndTime = model.CalendarItem.StartTime + TimeSpan.FromMinutes(10);
+            model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
             model.SetAccessLevelList();
-            
+            model.SetRecurrenceFrequencyList();
+            model.SetEndOptionsList();
+            model.CalendarItem.RecurrenceRule.ByDay = "";
+            model.CalendarItem.RecurrenceRule.ByMonthDay = "";
+            model.SetMonthlyByDayPrefixList();
+            model.SetMonthsSelectList();
+
             return PartialView("_AddEventPartial", model);
         }
 
@@ -231,7 +263,7 @@ namespace KinaUnaWeb.Controllers
             CalendarItem editedEvent = model.CreateCalendarItem();
                 
             model.CalendarItem = await calendarsHttpClient.UpdateCalendarItem(editedEvent);
-            if (!model.CalendarItem.StartTime.HasValue || !model.CalendarItem.EndTime.HasValue) return PartialView("_EventUpdatedPartial", model);
+            if (!model.CalendarItem.StartTime.HasValue || !model.CalendarItem.EndTime.HasValue) return PartialView("_NotFoundPartial", model); // Todo: Show error message instead.
 
             model.CalendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.CalendarItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
@@ -368,16 +400,15 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> GetUpcomingEventsList([FromBody] TimelineParameters parameters)
         {
             TimelineList timelineList = new();
-            List<CalendarItem> upcomingCalendarItems;
-            if (parameters.Progenies.Count > 0)
+            CalendarItemsRequest request = new()
             {
-                upcomingCalendarItems = await calendarsHttpClient.GetProgeniesCalendarList(parameters.Progenies);
-            }
-            else
-            {
-                upcomingCalendarItems = await calendarsHttpClient.GetCalendarList(parameters.ProgenyId);
-            }
-             
+                ProgenyIds = parameters.Progenies,
+                StartDate = DateTime.UtcNow.Date,
+                EndDate = DateTime.UtcNow.Date.AddYears(10) // ToDo: Make this configurable
+            };
+            
+            List<CalendarItem> upcomingCalendarItems = await calendarsHttpClient.GetProgeniesCalendarList(request);
+
             upcomingCalendarItems = upcomingCalendarItems.Where(c => c.EndTime > DateTime.UtcNow).ToList();
             upcomingCalendarItems = [.. upcomingCalendarItems.OrderBy(c => c.StartTime)];
             
@@ -393,7 +424,10 @@ namespace KinaUnaWeb.Controllers
                     ProgenyId = eventItem.ProgenyId,
                     AccessLevel = eventItem.AccessLevel,
                     ItemId = eventItem.EventId.ToString(),
-                    ItemType = (int)KinaUnaTypes.TimeLineType.Calendar
+                    ItemType = (int)KinaUnaTypes.TimeLineType.Calendar,
+                    ItemYear = eventItem.StartTime?.Year ?? DateTime.UtcNow.Year,
+                    ItemMonth = eventItem.StartTime?.Month ?? DateTime.UtcNow.Month,
+                    ItemDay = eventItem.StartTime?.Day ?? DateTime.UtcNow.Day,
                 };
                 timelineList.TimelineItems.Add(eventTimelineItem);
             }
@@ -423,24 +457,23 @@ namespace KinaUnaWeb.Controllers
         {
             UserInfo currentUser = await userInfosHttpClient.GetUserInfo(User.GetEmail());
 
-            CalendarReminder calendarReminder = new CalendarReminder();
-            calendarReminder.EventId = calendarReminderRequest.EventId;
-            calendarReminder.UserId = currentUser.UserId;
-
+            CalendarReminder calendarReminder = new()
+            {
+                EventId = calendarReminderRequest.EventId,
+                UserId = currentUser.UserId
+            };
+            
             CalendarItem calendarItem = await calendarsHttpClient.GetCalendarItem(calendarReminderRequest.EventId);
             if (calendarItem == null)
             {
                 return BadRequest();
             }
 
-            //if (calendarItem.AccessLevel < currentUser.AccessLevel)
-            //{
-            //    return Unauthorized();
-            //}
-
+            
             if (calendarReminderRequest.NotifyTimeOffsetType != 0 && calendarItem.StartTime.HasValue)
             {
                 calendarReminder.NotifyTime = calendarItem.StartTime.Value.AddMinutes(-calendarReminderRequest.NotifyTimeOffsetType);
+                calendarReminder.NotifyTimeOffsetType = calendarReminderRequest.NotifyTimeOffsetType;
             }
             else
             {
@@ -451,11 +484,10 @@ namespace KinaUnaWeb.Controllers
                 }
 
                 calendarReminder.NotifyTime = notifyTime;
+                calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeToUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUser.Timezone));
             }
             
-
-            calendarReminder.NotifyTime = TimeZoneInfo.ConvertTimeToUtc(calendarReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUser.Timezone));
-
+            calendarReminder.RecurrenceRuleId = calendarItem.RecurrenceRuleId;
             CalendarReminder newReminder = await calendarRemindersHttpClient.AddCalendarReminder(calendarReminder);
 
             newReminder.NotifyTime = TimeZoneInfo.ConvertTimeFromUtc(newReminder.NotifyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUser.Timezone));

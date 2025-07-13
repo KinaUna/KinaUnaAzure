@@ -318,6 +318,9 @@ export class TimelineItem {
     progenyId: number = 0;
     itemType: number = 0;
     itemId: string = '0';
+    itemYear: number = 0;
+    itemMonth: number = 0;
+    itemDay: number = 0;
 }
 
 export class TimelineParameters {
@@ -360,6 +363,9 @@ export class TimeLineItemViewModel {
     typeId: number = 0;
     itemId: number = 0;
     tagFilter: string = '';
+    itemYear: number = 0;
+    itemMonth: number = 0;
+    itemDay: number = 0;
 }
 
 export class TimelineList {
@@ -445,6 +451,16 @@ export class CalendarItem {
     startString: string = '';
     endString: string = '';
     author: string = '';
+}
+
+export class CalendarItemsRequest {
+    progenyIds: number[] = [];
+    startYear: number = 0;
+    startMonth: number = 0;
+    startDay: number = 0;
+    endYear: number = 0;
+    endMonth: number = 0;
+    endDay: number = 0;
 }
 
 export class SetProgenyRequest {

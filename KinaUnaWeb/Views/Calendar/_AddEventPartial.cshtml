@@ -10,11 +10,36 @@
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string longDateTimeFormatMoment = "DD-MMMM-YYYY HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+    string repeatUntilZebraDateTimeFormat = "d-F-Y";
+    
+    foreach (SelectListItem frequencySelectItem in Model.RecurrenceFrequencyList)
+    {
+        frequencySelectItem.Text = await LocaleManager.GetTranslation(frequencySelectItem.Text, PageNames.Calendar, Model.LanguageId);
+    }
+
+    foreach (SelectListItem endOptionItem in Model.EndOptionsList)
+    {
+        endOptionItem.Text = await LocaleManager.GetTranslation(endOptionItem.Text, PageNames.Calendar, Model.LanguageId);
+    }
+
+    foreach (SelectListItem monthSelectItem in Model.MonthsSelectList)
+    {
+        monthSelectItem.Text = await LocaleManager.GetTranslation(monthSelectItem.Text, PageNames.CalendarTools, Model.LanguageId);
+    }
+
+    char mondayAbreviation = (await LocaleManager.GetTranslation("Monday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char tuesdayAbreviation = (await LocaleManager.GetTranslation("Tuesday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char wednesdayAbreviation = (await LocaleManager.GetTranslation("Wednesday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char thursdayAbreviation = (await LocaleManager.GetTranslation("Thursday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char fridayAbreviation = (await LocaleManager.GetTranslation("Friday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char saturdayAbreviation = (await LocaleManager.GetTranslation("Saturday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char sundayAbreviation = (await LocaleManager.GetTranslation("Sunday", PageNames.CalendarTools, Model.LanguageId))[0];
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="longDateTimeFormatDiv" class="d-none" data-long-date-time-format="@longDateTimeFormat"></div>
 <div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
 <div id="add-event-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="add-event-repeat-until-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@repeatUntilZebraDateTimeFormat"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container">
@@ -53,7 +78,7 @@
                         <div class="col input-group date">
                             <input id="event-start-date-time-picker" asp-format="@longDateTimeFormat" type="datetime" class="form-control" data-zdp_readonly_element="false"
                                    asp-for="CalendarItem.StartTime"
-                                   value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(@Model.CurrentUser.Timezone)).ToString(longDateTimeFormat)" />
+                                   value="@Model.CalendarItem.StartTime?.ToString(longDateTimeFormat)" />
                         </div>
                     </div>
                     <div class="form-group col-12 col-md-6">
@@ -61,9 +86,232 @@
                         <div class="col input-group date">
                             <input id="event-end-date-time-picker" asp-format="@longDateTimeFormat" type="datetime" class="form-control" data-zdp_readonly_element="false"
                                    asp-for="CalendarItem.EndTime"
-                                   value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow + TimeSpan.FromMinutes(10), TimeZoneInfo.FindSystemTimeZoneById(Model.CurrentUser.Timezone)).ToString(longDateTimeFormat)" />
+                                   value="@Model.CalendarItem.EndTime?.ToString(longDateTimeFormat)" />
                         </div>
                     </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="CalendarItem.AllDay" class="col-auto control-label">@await LocaleManager.GetTranslation("All day", PageNames.Calendar, Model.LanguageId)</label>
+                    <div class="col" style="max-width: 5em;">
+                        <input type="checkbox" asp-for="CalendarItem.AllDay" class="form-control" style="width: 2.25em; height: 2.25em; accent-color: #297535;" checked="@Model.CalendarItem.AllDay" value="@Model.CalendarItem.AllDay" onchange="this.value=this.checked" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat", PageNames.Calendar, Model.LanguageId) </label>
+                    <div class="col-auto">
+                        <select id="event-repeat-frequency-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" asp-for="CalendarItem.RecurrenceRule.Frequency" asp-items="@Model.RecurrenceFrequencyList"></select>
+                    </div>
+                </div>
+                <div id="event-interval-input-div" class="form-group col-12 d-none">
+                    <label class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat every", PageNames.Calendar, Model.LanguageId) </label>
+                    <div class="col-auto">
+                        <div class="row">
+                            <div class="col-6 col-sm-3 col-md-2 col-lg-2 col-xl-2">
+                                <input class="form-control d-inline" type="number" value="@Model.CalendarItem.RecurrenceRule.Interval" asp-for="CalendarItem.RecurrenceRule.Interval" />
+                            </div>
+                            <div class="col-7 mt-2">
+                                <span id="event-interval-day-suffix-div" class="d-none">@await LocaleManager.GetTranslation("day(s)", PageNames.Calendar, Model.LanguageId)</span>
+                                <span id="event-interval-week-suffix-div" class="d-none">@await LocaleManager.GetTranslation("week(s)", PageNames.Calendar, Model.LanguageId)</span>
+                                <span id="event-interval-month-suffix-div" class="d-none">@await LocaleManager.GetTranslation("month(s)", PageNames.Calendar, Model.LanguageId)</span>
+                                <span id="event-interval-year-suffix-div" class="d-none">@await LocaleManager.GetTranslation("year(s)", PageNames.Calendar, Model.LanguageId)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="event-repeat-details-div" class="d-none">
+                    <div id="event-repeat-daily-div" class="col-auto d-none">
+                    </div>
+                    <div id="event-repeat-weekly-div" class="form-group col-12 d-none">
+                        <label class="control-label col-auto w-100">Repeat on days:</label>
+                        <button class="weekday-icon selected" data-weekday="MO" type="button">@mondayAbreviation</button>
+                        <button class="weekday-icon selected" data-weekday="TU" type="button">@tuesdayAbreviation</button>
+                        <button class="weekday-icon selected" data-weekday="WE" type="button">@wednesdayAbreviation</button>
+                        <button class="weekday-icon selected" data-weekday="TH" type="button">@thursdayAbreviation</button>
+                        <button class="weekday-icon selected" data-weekday="FR" type="button">@fridayAbreviation</button>
+                        <button class="weekday-icon selected" data-weekday="SA" type="button">@saturdayAbreviation</button>
+                        <button class="weekday-icon selected" data-weekday="SU" type="button">@sundayAbreviation</button>
+                        <input id="event-repeat-weekly-days-input" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden" />
+                    </div>
+                    <div id="event-repeat-monthly-div" class="col-12 d-none">
+                        <div class="form-group col-auto ml-2">
+                            <input id="event-repeat-monthly-day-number-type-radio" name="event-repeat-monthly-type" type="radio" value="1" checked="checked" style="scale: 2.0; accent-color: #297535;" />
+                            <label for="event-repeat-monthly-day-number-type-radio" class="m-2 mr-4">Day number(s) of month</label>
+                            <input id="event-repeat-monthly-day-pattern-type-radio" name="event-repeat-monthly-type" type="radio" value="2" style="scale: 2.0; accent-color: #297535;" />
+                            <label for="event-repeat-monthly-day-pattern-type-radio" class="m-2">Day name(s) of month</label>
+                        </div>
+                        <div id="event-repeat-monthly-on-day-number-div" class="form-group d-none">
+                            <label class="control-label col-auto">Repeat on day number:</label>
+                            <div class="row m-3">
+                                @for (int i = 1; i < 32; i++)
+                                {
+                                    <button class="month-day-number-icon" data-monthday="@i" type="button">@i</button>
+                                }
+                                <button class="month-day-number-icon" data-monthday="-1" type="button">@await LocaleManager.GetTranslation("Last day", PageNames.Calendar, Model.LanguageId)</button>
+                            </div>
+                            <div class="col-auto">
+                                <input id="event-repeat-monthly-by-date-input-div" type="text" value="@Model.CalendarItem.RecurrenceRule.ByMonthDay" asp-for="CalendarItem.RecurrenceRule.ByMonthDay" hidden="hidden" />
+                                <input id="event-repeat-monthly-type-selected-input" type="text" hidden="hidden" asp-for="RepeatMonthlyType" value="@Model.RepeatMonthlyType" />
+                            </div>
+                        </div>
+                        <div id="event-repeat-monthly-on-days-pattern-div" class="form-group col-auto d-none">
+                            <label class="control-label col-auto">Repeat on days:</label>
+                            <div class="row m-3">
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("First", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-monthly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[0]" value="1" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Second", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-monthly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[1]" value="2" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Third", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-monthly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[2]" value="3" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Fourth", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-monthly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[3]" value="4" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Fifth", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-monthly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[4]" value="5" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Last", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-monthly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[5]" value="-1" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="row m-3">
+                                    <button class="monthday-icon" data-weekday="MO" type="button">@mondayAbreviation</button>
+                                    <button class="monthday-icon" data-weekday="TU" type="button">@tuesdayAbreviation</button>
+                                    <button class="monthday-icon" data-weekday="WE" type="button">@wednesdayAbreviation</button>
+                                    <button class="monthday-icon" data-weekday="TH" type="button">@thursdayAbreviation</button>
+                                    <button class="monthday-icon" data-weekday="FR" type="button">@fridayAbreviation</button>
+                                    <button class="monthday-icon" data-weekday="SA" type="button">@saturdayAbreviation</button>
+                                    <button class="monthday-icon" data-weekday="SU" type="button">@sundayAbreviation</button>
+                                </div>
+
+                            </div>
+                        </div>
+                        <input id="event-repeat-monthly-days-input" type="text" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden" />
+                        <input id="event-repeat-days-input" type="text" asp-for="CalendarItem.RecurrenceRule.ByDay" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden" />
+                    </div>
+                    <div id="event-repeat-yearly-div" class="col-12 d-none">
+                        <div class="form-group col-auto ml-2">
+                            <input id="event-repeat-yearly-day-number-type-radio" name="event-repeat-yearly-type" type="radio" value="1" checked="checked" style="scale: 2.0; accent-color: #297535;" />
+                            <label for="event-repeat-yearly-day-number-type-radio" class="m-2 mr-4">Day number(s) of month</label>
+                            <input id="event-repeat-yearly-day-pattern-type-radio" name="event-repeat-yearly-type" type="radio" value="2" style="scale: 2.0; accent-color: #297535;" />
+                            <label for="event-repeat-yearly-day-pattern-type-radio" class="m-2">Day name(s) of month</label>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-auto">Repeat month:</label>
+                            <div class="row m-3">
+                                <input id="event-repeat-yearly-type-selected-input" type="text" hidden="hidden" asp-for="RepeatYearlyType" value="@Model.RepeatYearlyType" />
+                                <select id="event-repeat-yearly-month-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.MonthsSelectList.Count" asp-for="CalendarItem.RecurrenceRule.ByMonth" asp-items="@Model.MonthsSelectList"></select>
+                            </div>
+                        </div>
+                        <div id="event-repeat-yearly-on-day-number-div" class="form-group d-none">
+
+                            <label class="control-label col-auto">Repeat on day number:</label>
+                            <div class="row m-3">
+                                @for (int i = 1; i < 32; i++)
+                                {
+                                    <button class="yearly-month-day-number-icon" data-monthday="@i" type="button">@i</button>
+                                }
+                                <button class="yearly-month-day-number-icon" data-monthday="-1" type="button">@await LocaleManager.GetTranslation("Last day", PageNames.Calendar, Model.LanguageId)</button>
+                            </div>
+
+                        </div>
+                        <div id="event-repeat-yearly-on-pattern-div" class="form-group d-none">
+                            <label class="control-label col-auto">Repeat on days:</label>
+                            <div class="row m-3">
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("First", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-yearly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[0]" value="1" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Second", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-yearly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[1]" value="2" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Third", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-yearly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[2]" value="3" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Fourth", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-yearly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[3]" value="4" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Fifth", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-yearly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[4]" value="5" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Last", PageNames.Calendar, Model.LanguageId)</label>
+                                    <div class="col" style="max-width: 5em;">
+                                        <input type="checkbox" class="form-control event-repeat-yearly-by-day-prefix-checkbox" checked="@Model.MonthlyByDayPrefixList[5]" value="-1" style="width: 2.25em; height: 2.25em; accent-color: #297535;" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="row m-3">
+                                    <button class="yearly-monthday-icon" data-weekday="MO" type="button">@mondayAbreviation</button>
+                                    <button class="yearly-monthday-icon" data-weekday="TU" type="button">@tuesdayAbreviation</button>
+                                    <button class="yearly-monthday-icon" data-weekday="WE" type="button">@wednesdayAbreviation</button>
+                                    <button class="yearly-monthday-icon" data-weekday="TH" type="button">@thursdayAbreviation</button>
+                                    <button class="yearly-monthday-icon" data-weekday="FR" type="button">@fridayAbreviation</button>
+                                    <button class="yearly-monthday-icon" data-weekday="SA" type="button">@saturdayAbreviation</button>
+                                    <button class="yearly-monthday-icon" data-weekday="SU" type="button">@sundayAbreviation</button>
+                                </div>
+
+                            </div>
+                        </div>
+                        <input id="event-repeat-yearly-days-input" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden" />
+                    </div>
+                    <div id="event-repeat-until-div" class="col-12 d-none">
+                        <div class="form-group">
+                            <label class="control-label col-auto">@await LocaleManager.GetTranslation("Ends", PageNames.Calendar, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <select id="event-end-option-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" asp-for="CalendarItem.RecurrenceRule.EndOption" asp-items="@Model.EndOptionsList"></select>
+                            </div>
+                        </div>
+                        <div id="event-repeat-until-date-div" class="form-group">
+                            <label class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat until", PageNames.Calendar, Model.LanguageId) </label>
+                            <div class="col-auto">
+                                <input id="event-repeat-until-date-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.RecurrenceRule.Until" value="@Model.CalendarItem.RecurrenceRule.Until?.ToString("dd-MMMM-yyyy")" />
+                            </div>
+                        </div>
+                        <div id="event-repeat-until-count-div" class="form-group">
+                            <label class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat count", PageNames.Calendar, Model.LanguageId) </label>
+                            <div class="col-auto">
+                                <input class="form-control d-inline" type="number" value="@Model.CalendarItem.RecurrenceRule.Count" asp-for="CalendarItem.RecurrenceRule.Count" />
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="space-20"></div>
                 </div>
                 <div class="form-group">
                     <label asp-for="CalendarItem.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Calendar, Model.LanguageId)</label>
@@ -84,18 +332,12 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label asp-for="CalendarItem.AllDay" class="col-auto control-label">@await LocaleManager.GetTranslation("All day", PageNames.Calendar, Model.LanguageId)</label>
-                    <div class="col" style="max-width: 5em;">
-                        <input type="checkbox" asp-for="CalendarItem.AllDay" class="form-control" style="width: 3em; height: 3em; accent-color: #73b659;" checked="@Model.CalendarItem.AllDay" value="@Model.CalendarItem.AllDay" onchange="this.value=this.checked" />
-                    </div>
-                </div>
-                <div class="form-group">
                     <label asp-for="CalendarItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
                     <div class="col-auto">
                         <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="CalendarItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
                     </div>
                 </div>
-
+                <input id="event-recurrence-byday-input" asp-for="CalendarItem.RecurrenceRule.ByDay" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden"/>
                 <div>
                     <div class="form-group">
                         <div class="col-auto control-label"></div>

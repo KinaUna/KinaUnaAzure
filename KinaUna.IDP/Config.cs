@@ -99,10 +99,8 @@ namespace KinaUna.IDP
         public static List<Client> GetClients(IConfiguration configuration)
         {
             string webServerUrl = configuration.GetValue<string>("WebServer");
-            string webBlazorServerUrl = configuration.GetValue<string>("WebBlazorServer");
             string webServerAzureUrl = configuration.GetValue<string>("WebServerAzure");
             string webServerLocal = configuration.GetValue<string>("WebServerLocal");
-            string webBlazorServerLocal = configuration.GetValue<string>("WebBlazorServerLocal");
             string secretString = configuration.GetValue<string>("SecretString");
             List<string> corsList =
             [
@@ -116,50 +114,13 @@ namespace KinaUna.IDP
             [
                 new Client
                 {
-                    ClientName = "KinaUnaWebBlazor",
-                    ClientId = "kinaunawebblazorclient",
-                    ClientUri = webBlazorServerUrl,
-                    RequirePkce = false,
-                    AllowPlainTextPkce = false,
-                    RequireConsent = false,
-                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
-                    AccessTokenType = AccessTokenType.Reference,
-                    AccessTokenLifetime = 2592000,
-                    AllowOfflineAccess = true,
-                    AlwaysIncludeUserClaimsInIdToken = false,
-                    UpdateAccessTokenClaimsOnRefresh = true,
-                    RedirectUris =
-                    [
-                        webServerUrl + "/signin-oidc"
-
-                    ],
-                    PostLogoutRedirectUris =
-                    [
-                        webServerUrl + "/signout-callback-oidc"
-                    ],
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.OfflineAccess,
-                        IdentityServerConstants.StandardScopes.Email,
-                        Constants.ProgenyApiName,
-                        Constants.MediaApiName
-                    },
-                    ClientSecrets =
-                    {
-                        new Secret(secretString.Sha256())
-                    }
-                },
-                new Client
-                {
                     ClientName = "KinaUnaWeb",
                     ClientId = "kinaunawebclient",
                     ClientUri = webServerUrl,
-                    RequirePkce = false,
+                    RequirePkce = true,
                     AllowPlainTextPkce = false,
                     RequireConsent = false,
-                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AllowedGrantTypes = GrantTypes.CodeAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,
                     IdentityTokenLifetime = 2592000,
                     AuthorizationCodeLifetime = 2592000,
@@ -198,55 +159,18 @@ namespace KinaUna.IDP
                 },
                 new Client
                 {
-                    ClientName = "KinaUnaWebBlazorLocal",
-                    ClientId = "kinaunawebblazorclientlocal",
-                    ClientUri = webBlazorServerLocal,
-                    RequirePkce = false,
-                    AllowPlainTextPkce = false,
-                    RequireConsent = false,
-                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
-                    AccessTokenType = AccessTokenType.Reference,
-                    AccessTokenLifetime = 2592000,
-                    AllowOfflineAccess = true,
-                    AlwaysIncludeUserClaimsInIdToken = false,
-                    UpdateAccessTokenClaimsOnRefresh = true,
-                    RedirectUris =
-                    [
-                        webBlazorServerLocal + "/signin-oidc"
-
-                    ],
-                    PostLogoutRedirectUris =
-                    [
-                        webBlazorServerLocal + "/signout-callback-oidc"
-                    ],
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.OfflineAccess,
-                        IdentityServerConstants.StandardScopes.Email,
-                        Constants.ProgenyApiName,
-                        Constants.MediaApiName
-                    },
-                    ClientSecrets =
-                    {
-                        new Secret(secretString.Sha256())
-                    }
-                },
-                new Client
-                {
                     ClientName = "KinaUnaWebLocal",
                     ClientId = "kinaunawebclientlocal",
                     ClientUri = webServerLocal,
-                    RequirePkce = false,
+                    RequirePkce = true,
                     AllowPlainTextPkce = false,
                     RequireConsent = false,
-                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AllowedGrantTypes = GrantTypes.CodeAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,
                     AccessTokenLifetime = 2592000,
                     AllowOfflineAccess = true,
                     AlwaysIncludeUserClaimsInIdToken = false,
-                    UpdateAccessTokenClaimsOnRefresh = true,
+                    UpdateAccessTokenClaimsOnRefresh = false,
                     RedirectUris =
                     [
                         webServerLocal + "/signin-oidc"
@@ -279,10 +203,10 @@ namespace KinaUna.IDP
                     ClientName = "KinaUnaWebAzure",
                     ClientId = "kinaunawebclientAzure",
                     ClientUri = webServerAzureUrl,
-                    RequirePkce = false,
+                    RequirePkce = true,
                     AllowPlainTextPkce = false,
                     RequireConsent = false,
-                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AllowedGrantTypes = GrantTypes.CodeAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,
                     IdentityTokenLifetime = 2592000,
                     AuthorizationCodeLifetime = 2592000,
@@ -290,7 +214,6 @@ namespace KinaUna.IDP
                     AllowOfflineAccess = true,
                     AlwaysIncludeUserClaimsInIdToken = false,
                     RefreshTokenExpiration = TokenExpiration.Sliding,
-                    //AbsoluteRefreshTokenLifetime = ...
                     UpdateAccessTokenClaimsOnRefresh = true,
                     AllowedCorsOrigins = corsList,
                     RedirectUris =
@@ -319,127 +242,6 @@ namespace KinaUna.IDP
                     {
                         new Secret(secretString.Sha256())
                     }
-                },
-                new Client
-                {
-                    ClientName = "KinaUnaXamarin",
-                    ClientId = "kinaunaxamarin",
-                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
-                    RedirectUris = {"kinaunaxamarinclients://callback"},
-                    PostLogoutRedirectUris = {"kinaunaxamarinclients://callback"},
-                    RequireClientSecret = false,
-                    RequireConsent = false,
-                    RequirePkce = true,
-                    AllowedScopes = {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.Email,
-                        "firstname",
-                        "middlename",
-                        "lastname",
-                        "roles",
-                        "timezone",
-                        "viewchild",
-                        "joindate",
-                        Constants.ProgenyApiName,
-                        Constants.MediaApiName
-                    },
-                    AccessTokenLifetime = 2592000,
-                    AllowOfflineAccess = true,
-                    AlwaysIncludeUserClaimsInIdToken = false,
-                    RefreshTokenExpiration = TokenExpiration.Sliding,
-                    UpdateAccessTokenClaimsOnRefresh = true,
-                    RefreshTokenUsage = TokenUsage.ReUse
-                    
-                },
-                new Client
-                {
-                    ClientName = "KinaUnaXamarin2",
-                    ClientId = "kinaunaxamarin2",
-                    AllowedGrantTypes = GrantTypes.Code,
-                    RedirectUris = {"kinaunaxamarinclients://callback"},
-                    PostLogoutRedirectUris = {"kinaunaxamarinclients://callback"},
-                    RequireClientSecret = false,
-                    RequireConsent = false,
-                    RequirePkce = true,
-                    AllowedScopes = {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.Email,
-                        "firstname",
-                        "middlename",
-                        "lastname",
-                        "roles",
-                        "timezone",
-                        "viewchild",
-                        "joindate",
-                        Constants.ProgenyApiName,
-                        Constants.MediaApiName
-                    },
-                    AccessTokenLifetime = 2592000,
-                    AllowOfflineAccess = true,
-                    AlwaysIncludeUserClaimsInIdToken = false,
-                    RefreshTokenExpiration = TokenExpiration.Sliding,
-                    UpdateAccessTokenClaimsOnRefresh = true,
-                    RefreshTokenUsage = TokenUsage.ReUse
-
-                },
-                new Client
-                {
-                    ClientName = "KinaUnaXamarin3",
-                    ClientId = "kinaunaxamarin3",
-                    AllowedGrantTypes = GrantTypes.Code,
-                    RedirectUris = { "net.kinauna.xamarin://callback" },
-                    PostLogoutRedirectUris = { "net.kinauna.xamarin://callback" },
-                    RequireClientSecret = false,
-                    RequireConsent = false,
-                    RequirePkce = true,
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.Email,
-                        "firstname",
-                        "middlename",
-                        "lastname",
-                        "roles",
-                        "timezone",
-                        "viewchild",
-                        "joindate",
-                        Constants.ProgenyApiName,
-                        Constants.MediaApiName
-                    },
-                    AccessTokenLifetime = 2592000,
-                    AllowOfflineAccess = true,
-                    AlwaysIncludeUserClaimsInIdToken = false,
-                    RefreshTokenExpiration = TokenExpiration.Sliding,
-                    UpdateAccessTokenClaimsOnRefresh = true,
-                    RefreshTokenUsage = TokenUsage.ReUse
-
-                },
-                new Client
-                {
-                    ClientName = "KinaUnaMaui",
-                    ClientId = "kinaunamaui",
-                    AllowedGrantTypes = GrantTypes.Code,
-                    RedirectUris = { "kinaunamaui://callback" },
-                    PostLogoutRedirectUris = { "kinaunamaui://callback" },
-                    RequireClientSecret = false,
-                    RequireConsent = false,
-                    RequirePkce = true,
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Email,
-                        Constants.ProgenyApiName,
-                        Constants.MediaApiName
-                    },
-                    AccessTokenLifetime = 2592000,
-                    AllowOfflineAccess = true,
-                    AlwaysIncludeUserClaimsInIdToken = false,
-                    RefreshTokenExpiration = TokenExpiration.Sliding,
-                    UpdateAccessTokenClaimsOnRefresh = true,
-                    RefreshTokenUsage = TokenUsage.ReUse
                 }
             ];
 

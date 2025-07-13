@@ -29,12 +29,20 @@
         endDateString = string.Empty;
     }
 }
-<button class="item-btn calendar-event-item" data-calendar-event-id="@Model.EventId">
+<button class="item-btn calendar-event-item" data-calendar-event-id="@Model.EventId" data-event-year="@Model.StartTime.Value.Year" data-event-month="@Model.StartTime.Value.Month" data-event-day="@Model.StartTime.Value.Day">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-calendar">
             <div class="row">
                 <div class="col-auto">
-                    <span class="timeline-icon"><i class="material-icons">event_note</i></span>
+                    @if (Model.RecurrenceRuleId == 0)
+                    {
+                        <span class="timeline-icon"><i class="material-icons">event_note</i></span>
+                    }
+                    else
+                    {
+                        <span class="timeline-icon"><i class="material-icons">event_repeat</i></span>
+                    }
+                    
                 </div>
                 <div class="col">
                     <div class="row timeline-title text-white">
@@ -79,6 +87,7 @@
                                     </div>
                                 }
                             }
+                            
                         </div>
                     </div>
                     <div class="timeline-title row">

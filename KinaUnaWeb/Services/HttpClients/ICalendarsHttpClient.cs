@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -36,27 +37,12 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="eventId">The EventId of the CalendarItem to remove.</param>
         /// <returns>bool: True if the CalendarItem object was successfully removed.</returns>
         Task<bool> DeleteCalendarItem(int eventId);
-
+        
         /// <summary>
         /// Gets the list of CalendarItem objects for a progeny that a user has access to.
         /// </summary>
-        /// <param name="progenyId">The Id of the Progeny to get the list of CalendarItems for.</param>
+        /// <param name="request">CalendarItemsRequest object with the list of Ids of the Progenies to get the list of CalendarItems for, optional start and end dates for the query.</param>
         /// <returns>List of CalendarItem objects. Start and end times are in UTC timezone.</returns>
-        Task<List<CalendarItem>> GetCalendarList(int progenyId);
-
-        /// <summary>
-        /// Gets the list of CalendarItem objects for a progeny that a user has access to.
-        /// </summary>
-        /// <param name="progenyIds">The list of Ids of the Progenies to get the list of CalendarItems for.</param>
-        /// <returns>List of CalendarItem objects. Start and end times are in UTC timezone.</returns>
-        Task<List<CalendarItem>> GetProgeniesCalendarList(List<int> progenyIds);
-
-        /// <summary>
-        /// Gets the next 5 upcoming events in the progeny's calendar.
-        /// </summary>
-        /// <param name="progenyId">The Id of the Progeny to get CalendarItems for.</param>
-        /// <param name="timeZone">The user's time zone.</param>
-        /// <returns>List of CalendarItem objects. Start and end times are in the user's timezone.</returns>
-        Task<List<CalendarItem>> GetUpcomingEvents(int progenyId, string timeZone);
+        Task<List<CalendarItem>> GetProgeniesCalendarList(CalendarItemsRequest request);
     }
 }

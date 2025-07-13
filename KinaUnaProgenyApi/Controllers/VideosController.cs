@@ -391,13 +391,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<Video> videosList = await videosService.GetVideosList(id, accessLevelResult.Value);
 
-            if (videosList.Count == 0)
-            {
-                Video tempPicture = new();
+            if (videosList.Count != 0) return Ok(videosList);
+            Video tempPicture = new();
 
-                videosList.Add(tempPicture);
-                return Ok(videosList);
-            }
+            videosList.Add(tempPicture);
 
             return Ok(videosList);
         }

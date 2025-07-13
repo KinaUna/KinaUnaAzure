@@ -68,6 +68,12 @@ namespace KinaUna.Data.Models
         public string Author { get; set; } = string.Empty;
 
         /// <summary>
+        /// The Id of the RecurrenceRule for recurring events.
+        /// 0 = No recurrence.
+        /// </summary>
+        public int RecurrenceRuleId { get; set; }
+
+        /// <summary>
         /// String representation of the start time.
         /// </summary>
         [NotMapped]
@@ -77,20 +83,29 @@ namespace KinaUna.Data.Models
         /// </summary>
         [NotMapped]
         public string EndString { get; set; } = string.Empty;
-
         
-
         /// <summary>
         /// Progeny data for the progeny the event belongs to.
         /// </summary>
         [NotMapped]
-        public Progeny Progeny { get; set; }
+        public Progeny Progeny { get; set; } = new Progeny();
+
         /// <summary>
         /// Read only flag. Used to determine if the event can be edited or deleted in Calendar views.
         /// </summary>
         [NotMapped]
         public bool IsReadonly { get; set; }
 
+        /// <summary>
+        /// RecurrenceRule data for recurring events.
+        /// </summary>
+        [NotMapped]
+        public RecurrenceRule RecurrenceRule { get; set; } = new RecurrenceRule();
+
+        /// <summary>
+        /// Get the location string for the event. Needed for the ILocatable interface.
+        /// </summary>
+        /// <returns></returns>
         public string GetLocationString()
         {
             return Location;

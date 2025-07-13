@@ -24,7 +24,6 @@ namespace KinaUnaWeb.Controllers
     /// <param name="configuration"></param>
     /// <param name="authHttpClient">Http client for IDP API.</param>
     /// <param name="userInfosHttpClient">Http client for UserInfos API endpoints.</param>
-    [AllowAnonymous]
     public class AccountController(ImageStore imageStore, IConfiguration configuration, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
         : Controller
     {
@@ -64,6 +63,7 @@ namespace KinaUnaWeb.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
+        [AllowAnonymous]
         public async Task Login()
         {
             // clear any existing external cookie to ensure a clean login process
@@ -83,6 +83,7 @@ namespace KinaUnaWeb.Controllers
         /// </summary>
         /// <returns>Redirect to Home/Index page.</returns>
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult LoginCallback()
         {
             return RedirectToAction(nameof(HomeController.Index), "Home");
@@ -93,6 +94,7 @@ namespace KinaUnaWeb.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
+        [AllowAnonymous]
         public async Task LogOut()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -103,6 +105,7 @@ namespace KinaUnaWeb.Controllers
         /// HttpGet Log out action. Signs out the user and redirects to the IDP log out page.
         /// </summary>
         /// <returns></returns>
+        [AllowAnonymous]
         public async Task CheckOut()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -113,6 +116,7 @@ namespace KinaUnaWeb.Controllers
         /// Access denied page. Shows a message that the user does not have access to the requested page.
         /// </summary>
         /// <returns>View.</returns>
+        [AllowAnonymous]
         public IActionResult AccessDenied()
         {
             return View();
@@ -223,6 +227,7 @@ namespace KinaUnaWeb.Controllers
         /// <param name="oldEmail">The email address before the change.</param>
         /// <param name="newEmail">The new email address.</param>
         /// <returns>View with UserInfoViewModel.</returns>
+        [Authorize]
         public async Task<IActionResult> ChangeEmail(string oldEmail, string newEmail = "")
         {
             string userEmail = User.GetEmail();

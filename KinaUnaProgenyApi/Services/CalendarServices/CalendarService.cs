@@ -18,11 +18,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
+        private readonly ICalendarRecurrencesService _calendarRecurrencesService;
 
-        public CalendarService(ProgenyDbContext context, IDistributedCache cache)
+        public CalendarService(ProgenyDbContext context, IDistributedCache cache, ICalendarRecurrencesService calendarRecurrencesService)
         {
             _context = context;
             _cache = cache;
+            _calendarRecurrencesService = calendarRecurrencesService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0)); // Expire after a week.
         }
@@ -55,6 +57,18 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         {
             CalendarItem calendarItemToAdd = new();
             calendarItemToAdd.CopyPropertiesForAdd(item);
+
+            if (item.RecurrenceRule.Frequency != 0)
+            {
+                item.RecurrenceRule.Start = item.StartTime ?? DateTime.UtcNow;
+                item.RecurrenceRule.ProgenyId = calendarItemToAdd.ProgenyId;
+                item.RecurrenceRule.EnsureStringsAreNotNull();
+
+                _ = _context.RecurrenceRulesDb.Add(item.RecurrenceRule);
+                _ = await _context.SaveChangesAsync();
+
+                calendarItemToAdd.RecurrenceRuleId = item.RecurrenceRule.RecurrenceRuleId;
+            }
 
             if (string.IsNullOrWhiteSpace(calendarItemToAdd.UId))
             {
@@ -95,6 +109,11 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             CalendarItem calendarItem = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
             if (calendarItem == null) return null;
 
+            if (calendarItem.RecurrenceRuleId > 0)
+            {
+                calendarItem.RecurrenceRule = await _context.RecurrenceRulesDb.AsNoTracking().SingleOrDefaultAsync(r => r.RecurrenceRuleId == calendarItem.RecurrenceRuleId);
+            }
+
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id, JsonConvert.SerializeObject(calendarItem), _cacheOptionsSliding);
 
             List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == calendarItem.ProgenyId).ToListAsync();
@@ -127,6 +146,70 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             CalendarItem calendarItemToUpdate = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
             if (calendarItemToUpdate == null) return null;
 
+            // If the item has a RecurrenceRule, add it to the database if it doesn't exist.
+            if (calendarItemToUpdate.RecurrenceRuleId == 0 && item.RecurrenceRule.Frequency != 0)
+            {
+                item.RecurrenceRule.ProgenyId = calendarItemToUpdate.ProgenyId;
+                item.RecurrenceRule.Start = item.StartTime ?? DateTime.UtcNow;
+                item.RecurrenceRule.EnsureStringsAreNotNull();
+
+                _ = _context.RecurrenceRulesDb.Add(item.RecurrenceRule);
+                _ = await _context.SaveChangesAsync();
+                item.RecurrenceRuleId = item.RecurrenceRule.RecurrenceRuleId;
+            }
+
+            // If the item has a RecurrenceRule and the new item doesn't, remove the RecurrenceRule from the database.
+            if (calendarItemToUpdate.RecurrenceRuleId > 0 && item.RecurrenceRule.Frequency == 0)
+            {
+                RecurrenceRule recurrenceRule = await _context.RecurrenceRulesDb.SingleOrDefaultAsync(r => r.RecurrenceRuleId == calendarItemToUpdate.RecurrenceRuleId);
+                _ = _context.RecurrenceRulesDb.Remove(recurrenceRule);
+                _ = await _context.SaveChangesAsync();
+                item.RecurrenceRuleId = 0;
+
+                // Check if there are any reminders with the recurrence rule, if so remove the recurrence reference.
+                CalendarReminder reminder = await _context.CalendarRemindersDb.SingleOrDefaultAsync(cr => cr.EventId == item.EventId && cr.RecurrenceRuleId == calendarItemToUpdate.RecurrenceRuleId);
+                if (reminder != null)
+                {
+                    reminder.RecurrenceRuleId = 0;
+                    _ = _context.CalendarRemindersDb.Update(reminder);
+                    _ = await _context.SaveChangesAsync();
+                }
+            }
+
+            // If the item has a RecurrenceRule and the new item has a RecurrenceRule, update the RecurrenceRule in the database.
+            if (calendarItemToUpdate.RecurrenceRuleId > 0 && item.RecurrenceRule.Frequency > 0)
+            {
+                RecurrenceRule recurrenceRule = await _context.RecurrenceRulesDb.SingleOrDefaultAsync(r => r.RecurrenceRuleId == calendarItemToUpdate.RecurrenceRuleId);
+                recurrenceRule.Frequency = item.RecurrenceRule.Frequency;
+                recurrenceRule.Interval = item.RecurrenceRule.Interval;
+                recurrenceRule.Count = item.RecurrenceRule.Count;
+                recurrenceRule.Start = item.StartTime ?? DateTime.UtcNow;
+                recurrenceRule.Until = item.RecurrenceRule.Until;
+                recurrenceRule.ByDay = item.RecurrenceRule.ByDay;
+                recurrenceRule.ByMonthDay = item.RecurrenceRule.ByMonthDay;
+                recurrenceRule.ByMonth = item.RecurrenceRule.ByMonth;
+                recurrenceRule.EndOption = item.RecurrenceRule.EndOption;
+                recurrenceRule.ProgenyId = calendarItemToUpdate.ProgenyId;
+
+                recurrenceRule.EnsureStringsAreNotNull();
+
+                _ = _context.RecurrenceRulesDb.Update(recurrenceRule);
+                _ = await _context.SaveChangesAsync();
+            }
+
+            // Update the reminders for the event.
+            List<CalendarReminder> reminders = await _context.CalendarRemindersDb.Where(cr => cr.EventId == item.EventId).ToListAsync();
+            foreach (CalendarReminder calendarReminder in reminders)
+            {
+                if (item.StartTime == null || calendarItemToUpdate.StartTime == null) continue;
+
+                TimeSpan reminderOffSet = calendarReminder.NotifyTime - calendarItemToUpdate.StartTime.Value;
+                calendarReminder.NotifyTime = item.StartTime.Value.Add(reminderOffSet);
+
+                _ = _context.CalendarRemindersDb.Update(calendarReminder);
+                _ = await _context.SaveChangesAsync();
+            }
+            
             calendarItemToUpdate.CopyPropertiesForUpdate(item);
 
             if (string.IsNullOrWhiteSpace(calendarItemToUpdate.UId))
@@ -135,6 +218,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             }
             _ = _context.CalendarDb.Update(calendarItemToUpdate);
             _ = await _context.SaveChangesAsync();
+            
             _ = await SetCalendarItemInCache(calendarItemToUpdate.EventId);
 
             return calendarItemToUpdate;
@@ -150,6 +234,22 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             CalendarItem calendarItemToDelete = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
             if (calendarItemToDelete == null) return null;
 
+            if (calendarItemToDelete.RecurrenceRuleId > 0)
+            {
+                RecurrenceRule recurrenceRule = await _context.RecurrenceRulesDb.SingleOrDefaultAsync(r => r.RecurrenceRuleId == calendarItemToDelete.RecurrenceRuleId);
+                _ = _context.RecurrenceRulesDb.Remove(recurrenceRule);
+                _ = await _context.SaveChangesAsync();
+            }
+
+            // Check if there are any reminders for the event, if so remove them.
+            //Todo: Notify users with reminders that the event has been removed.
+            List<CalendarReminder> reminders = await _context.CalendarRemindersDb.Where(cr => cr.EventId == item.EventId).ToListAsync();
+            foreach (CalendarReminder calendarReminder in reminders)
+            {
+                _ = _context.CalendarRemindersDb.Remove(calendarReminder);
+                _ = await _context.SaveChangesAsync();
+            }
+
             _ = _context.CalendarDb.Remove(calendarItemToDelete);
             _ = await _context.SaveChangesAsync();
 
@@ -164,8 +264,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all CalendarItems for.</param>
         /// <param name="accessLevel">The required access level to view the event.</param>
+        /// <param name="start">Optional start date for the list.</param>
+        /// <param name="end">Optional end date for the list.</param>
         /// <returns>List of CalendarItems.</returns>
-        public async Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel)
+        public async Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel, DateTime? start = null, DateTime? end = null)
         {
             List<CalendarItem> calendarList = await GetCalendarListFromCache(progenyId);
             if (calendarList == null || calendarList.Count == 0)
@@ -173,11 +275,20 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 calendarList = await SetCalendarListInCache(progenyId);
             }
 
-            calendarList = calendarList.Where(c => c.AccessLevel >= accessLevel).ToList();
+            if (start != null && end != null)
+            {
+                calendarList = [.. calendarList.Where(c => c.StartTime >= start && c.StartTime <= end && c.AccessLevel >= accessLevel)];
+                List<CalendarItem> recurringEvents = await GetRecurringEventsForProgeny(progenyId, start.Value, end.Value, false);
+                calendarList.AddRange(recurringEvents);
+            }
+            else
+            {
+                calendarList = [.. calendarList.Where(c => c.AccessLevel >= accessLevel)];
+            }
 
             return calendarList;
         }
-
+        
         /// <summary>
         /// Gets a List of all CalendarItems for a Progeny from the cache.
         /// </summary>
@@ -208,6 +319,63 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             return calendarList;
         }
 
+        /// <summary>
+        /// Gets a list of CalendarItems generated from recurring events for a Progeny.
+        /// </summary>
+        /// <param name="progenyId"></param>
+        /// <param name="start">DateTime with the start date. Results include this day.</param>
+        /// <param name="end">DateTime with the end date. Results include this day.</param>
+        /// <param name="includeOriginal">Include the original event in the list.</param>
+        /// <returns>List of CalendarItems</returns>
+        private async Task<List<CalendarItem>> GetRecurringEventsForProgeny(int progenyId, DateTime start, DateTime end, bool includeOriginal)
+        {
+            List<CalendarItem> recurringEvents = await _calendarRecurrencesService.GetRecurringEventsForProgeny(progenyId, start, end, includeOriginal);
+            return recurringEvents;
+        }
+
+        /// <summary>
+        /// Gets the list of CalendarItems for a Progeny that are recurring events on this day.
+        /// Only includes items after 1900.
+        /// </summary>
+        /// <param name="progenyId">The id of the Progeny to get items for.</param>
+        /// <returns>List of CalendarItems.</returns>
+        public async Task<List<CalendarItem>> GetRecurringCalendarItemsOnThisDay(int progenyId)
+        {
+            List<CalendarItem> recurringEvents = [];
+            List<RecurrenceRule> recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId).ToListAsync();
+            if (recurrenceRules.Count == 0) return recurringEvents;
+            DateTime today = DateTime.UtcNow.Date;
+            
+            for (int i = 1900; i < today.Year; i++)
+            {
+                DateTime onThisDayDateTime = new(i, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc);
+                List<CalendarItem> itemsForYear = await GetRecurringEventsForProgeny(progenyId, onThisDayDateTime, onThisDayDateTime, false);
+                if (itemsForYear.Count > 0)
+                {
+                    recurringEvents.AddRange(itemsForYear);
+                }
+            }
+
+            return recurringEvents;
+        }
+
+        /// <summary>
+        /// Gets the list of CalendarItems for a Progeny that are recurring events for the latest posts list.
+        /// Only includes items after 1900.
+        /// </summary>
+        /// <param name="progenyId">The id of the Progeny to get items for.</param>
+        /// <returns>List of CalendarItems.</returns>
+        public async Task<List<CalendarItem>> GetRecurringCalendarItemsLatestPosts(int progenyId)
+        {
+            List<CalendarItem> recurringEvents = [];
+            List<RecurrenceRule> recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId).ToListAsync();
+            if (recurrenceRules.Count == 0) return recurringEvents;
+            DateTime start = new(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            recurringEvents = await GetRecurringEventsForProgeny(progenyId, start, DateTime.UtcNow.Date, false);
+
+            return recurringEvents;
+        }
+
         public async Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context, int accessLevel)
         {
             List<CalendarItem> allItems = await GetCalendarList(progenyId, accessLevel);
@@ -226,7 +394,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         public async Task CheckCalendarItemsForUId()
         {
             List<CalendarItem> allItems = await _context.CalendarDb.Where(c => string.IsNullOrWhiteSpace(c.UId)).ToListAsync();
-            if (allItems.Any())
+            if (allItems.Count != 0)
             {
                 foreach (CalendarItem calendarItem in allItems)
                 {

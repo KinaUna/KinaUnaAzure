@@ -1,21 +1,26 @@
 import { showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as LocaleHelper from '../localization-v8.js';
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { TimeLineType } from '../page-models-v8.js';
+import { CalendarItemsRequest, TimeLineType } from '../page-models-v8.js';
 import { getSelectedProgenies } from '../settings-tools-v8.js';
 import { popupEventItem } from './calendar-details.js';
 let progeniesList = [];
 let selectedEventId = 0;
 let currentCulture = 'en';
+let calendarRequest = new CalendarItemsRequest();
+let currentDate = new Date();
+let minDate = new Date();
+let maxDate = new Date();
 async function getCalendarItems() {
     startLoadingItemsSpinner('schedule');
+    calendarRequest.progenyIds = progeniesList;
     await fetch('/Calendar/GetCalendarList', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(progeniesList)
+        body: JSON.stringify(calendarRequest)
     }).then(async function (getCalendarItemsResult) {
         if (getCalendarItemsResult.ok) {
             const calendarItems = (await getCalendarItemsResult.json());
@@ -32,8 +37,8 @@ async function getCalendarItems() {
  * Retrieves the details of a calendar event and displays them in a popup.
  * @param {number} eventId The id of the event to display.
  */
-async function DisplayEventItem(eventId) {
-    await popupEventItem(eventId.toString());
+async function DisplayEventItem(eventId, eventYear, eventMonth, eventDay) {
+    await popupEventItem(eventId.toString(), eventYear, eventMonth, eventDay);
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -56,7 +61,10 @@ function onEventClick(args) {
     let scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
     let event = scheduleObj.getEventDetails(args.element);
     selectedEventId = event.eventId;
-    DisplayEventItem(selectedEventId);
+    let startYear = event.startTime.getFullYear();
+    let startMonth = event.startTime.getMonth() + 1;
+    let startDay = event.startTime.getDate();
+    DisplayEventItem(selectedEventId, startYear, startMonth, startDay);
 }
 /**
  * The event handler for clicking an empty cell in the Syncfusion Schedule component.
@@ -101,6 +109,34 @@ async function loadLocale() {
         resolve();
     });
 }
+async function onNavigation(args) {
+    currentDate = args.currentDate;
+    // if currentDate is before minDate plus 1 month, or after maxDate minus 1 month, get new calendar items
+    let minDatePlusOneMonth = new Date(minDate);
+    minDatePlusOneMonth.setMonth(minDatePlusOneMonth.getMonth() + 1);
+    let maxDateMinusOneMonth = new Date(maxDate);
+    maxDateMinusOneMonth.setMonth(maxDateMinusOneMonth.getMonth() - 1);
+    if (currentDate < minDatePlusOneMonth || currentDate > maxDateMinusOneMonth) {
+        // Default start date is 2 month before current date
+        let startDate = new Date(currentDate);
+        startDate.setMonth(currentDate.getMonth() - 2);
+        calendarRequest.startYear = startDate.getFullYear();
+        calendarRequest.startMonth = startDate.getMonth() + 1;
+        calendarRequest.startDay = startDate.getDate();
+        // Default end date is 6 months after current date
+        let endDate = new Date(currentDate);
+        endDate.setMonth(currentDate.getMonth() + 6);
+        calendarRequest.endYear = endDate.getFullYear();
+        calendarRequest.endMonth = endDate.getMonth() + 1;
+        calendarRequest.endDay = endDate.getDate();
+        minDate = new Date(startDate);
+        maxDate = new Date(endDate);
+        await getCalendarItems();
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
 /**
  * Adds event listners for clicking a cell, double-clicking a cell, click an event, and clicking edit or delete.
  * cellClick is the event sent when an empty time cell is clicked. This currently cancels the default behaviour and does nothing.
@@ -114,6 +150,10 @@ function addScheduleEventListeners() {
     scheduleInstance.addEventListener('cellDoubleClick', (args) => { onCellDoubleClick(args); });
     scheduleInstance.addEventListener('eventClick', (args) => { onEventClick(args); });
     scheduleInstance.addEventListener('popupOpen', (args) => { onPopupOpen(args); });
+    scheduleInstance.addEventListener('navigating', (args) => { onNavigation(args); });
+    window.addEventListener('calendarDataChanged', async () => {
+        await getCalendarItems();
+    });
 }
 function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
@@ -123,6 +163,25 @@ function addSelectedProgeniesChangedEventListener() {
             await getCalendarItems();
         }
     });
+}
+function initializeCalendarItemsRequest() {
+    calendarRequest = new CalendarItemsRequest();
+    calendarRequest.progenyIds = progeniesList;
+    // Get current date and time
+    // Default start date is 1 month before current date
+    let startDate = new Date();
+    startDate.setMonth(currentDate.getMonth() - 2);
+    calendarRequest.startYear = startDate.getFullYear();
+    calendarRequest.startMonth = startDate.getMonth() + 1;
+    calendarRequest.startDay = startDate.getDate();
+    // Default end date is 1 month after current date
+    let endDate = new Date();
+    endDate.setMonth(currentDate.getMonth() + 6);
+    calendarRequest.endYear = endDate.getFullYear();
+    calendarRequest.endMonth = endDate.getMonth() + 1;
+    calendarRequest.endDay = endDate.getDate();
+    minDate = new Date(startDate);
+    maxDate = new Date(endDate);
 }
 /**
  * Initializes page elements when it is loaded.
@@ -134,6 +193,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     setLocale();
     progeniesList = getSelectedProgenies();
     startFullPageSpinner();
+    initializeCalendarItemsRequest();
     await getCalendarItems();
     stopFullPageSpinner();
     return new Promise(function (resolve, reject) {

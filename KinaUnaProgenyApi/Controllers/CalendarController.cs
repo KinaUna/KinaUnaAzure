@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
@@ -39,35 +36,13 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
-        /// <summary>
-        /// Retrieves the list of all CalendarItems for a given Progeny.
-        /// </summary>
-        /// <param name="id">The ProgenyId of the Progeny</param>
-        /// <returns>List of CalendarItems. Start and end times are in the UTC timezone.</returns>
-        // GET api/calendar/progeny/[id]
-        [HttpGet]
-        [Route("[action]/{id:int}")]
-        public async Task<IActionResult> Progeny(int id)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, accessLevelResult.Value);
-            
-            return Ok(calendarList);
-        }
-
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> Progenies([FromBody] List<int> progenyIds)
+        public async Task<IActionResult> Progenies([FromBody] CalendarItemsRequest request)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             List<Progeny> progenyList = [];
-            foreach (int progenyId in progenyIds)
+            foreach (int progenyId in request.ProgenyIds)
             {
                 Progeny progeny = await progenyService.GetProgeny(progenyId);
                 if (progeny != null)
@@ -86,42 +61,13 @@ namespace KinaUnaProgenyApi.Controllers
             foreach (Progeny progeny in progenyList)
             {
                 UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, userEmail);
-                List<CalendarItem> progenyCalendarItems = await calendarService.GetCalendarList(progeny.Id, userAccess.AccessLevel);
+                List<CalendarItem> progenyCalendarItems = await calendarService.GetCalendarList(progeny.Id, userAccess.AccessLevel, request.StartDate, request.EndDate);
                 calendarList.AddRange(progenyCalendarItems);
             }
 
             return Ok(calendarList);
         }
-
-        /// <summary>
-        /// Retrieves the list of CalendarItems for a given Progeny within a given date interval.
-        /// </summary>
-        /// <param name="id">The ProgenyId of the Progeny</param>
-        /// <param name="start">string: The start of the interval in UTC timezone, in the format 'dd-MM-yyy'</param>
-        /// <param name="end">string: The end of the interval in UTC timezone, in the format 'dd-MM-yyy'</param>
-        /// <returns>List of CalendarItems with all the Progeny's CalendarItems within the interval. Start and End times are in UTC timezone.</returns>
-        [HttpGet]
-        [Route("[action]/{id:int}")]
-        public async Task<IActionResult> ProgenyInterval(int id, [FromQuery] string start, [FromQuery] string end)
-        {
-            bool startParsed = DateTime.TryParseExact(start, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime startDate);
-            bool endParsed = DateTime.TryParseExact(end, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime endDate);
-
-            if (!startParsed || !endParsed) return BadRequest();
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id, accessLevelResult.Value);
-            calendarList = calendarList.Where(c => c.EndTime > startDate && c.StartTime < endDate).ToList();
-
-            return Ok(calendarList);
-        }
-
+        
         /// <summary>
         /// Retrieves a single CalendarItem with a given id.
         /// </summary>
@@ -287,31 +233,6 @@ namespace KinaUnaProgenyApi.Controllers
 
             return NoContent();
 
-        }
-
-        /// <summary>
-        /// Retrieves the first upcoming CalendarItems for a given Progeny.
-        /// Default number of items is set in Constants.DefaultUpcomingCalendarItemsCount.
-        /// </summary>
-        /// <param name="progenyId">The ProgenyId of the Progeny to get CalendarItems for.</param>
-        /// <returns>List of CalendarItems. Start and end times are in UTC timezone.</returns>
-        [HttpGet]
-        [Route("[action]/{progenyId:int}")]
-        public async Task<IActionResult> EventList(int progenyId)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-            
-            List<CalendarItem> calendarList = await calendarService.GetCalendarList(progenyId, accessLevelResult.Value); 
-            calendarList = calendarList.Where(c => c.EndTime > DateTime.UtcNow).ToList();
-            calendarList = [.. calendarList.OrderBy(e => e.StartTime)];
-            calendarList = calendarList.Take(Constants.DefaultUpcomingCalendarItemsCount).ToList();
-            
-            return Ok(calendarList);
         }
     }
 }

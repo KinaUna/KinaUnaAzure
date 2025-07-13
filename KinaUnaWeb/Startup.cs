@@ -105,35 +105,35 @@ namespace KinaUnaWeb
 
             services.Configure<AuthConfigurations>(config => { config.StsServer = authorityServerUrl; config.ProtectedApiUrl = progenyServerUrl + " " + mediaServerUrl;});
             
-            services.AddCors(o =>
-            {
-                if (_env.IsDevelopment())
-                {
-                    o.AddDefaultPolicy(builder =>
-                    {
-                        builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324",
-                            "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397",
-                            "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io",
-                            "https://nuuk2020.kinauna.io").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-                    });
-                }
+            //services.AddCors(o =>
+            //{
+            //    if (_env.IsDevelopment())
+            //    {
+            //        o.AddDefaultPolicy(builder =>
+            //        {
+            //            builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324",
+            //                "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397",
+            //                "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io",
+            //                "https://nuuk2020.kinauna.io").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+            //        });
+            //    }
 
-                o.AddPolicy("KinaUnaCors", builder =>
-                {
-                    if (_env.IsDevelopment())
-                    {
-                        builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324",
-                                "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397",
-                                "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io",
-                                "https://nuuk2020.kinauna.io").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-                    }
-                    else
-                    {
-                        builder.WithOrigins("https://*." + Constants.AppRootDomain)
-                            .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-                    }
-                });
-            });
+            //    o.AddPolicy("KinaUnaCors", builder =>
+            //    {
+            //        if (_env.IsDevelopment())
+            //        {
+            //            builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324",
+            //                    "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397",
+            //                    "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io",
+            //                    "https://nuuk2020.kinauna.io").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+            //        }
+            //        else
+            //        {
+            //            builder.WithOrigins("https://*." + Constants.AppRootDomain)
+            //                .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+            //        }
+            //    });
+            //});
             
             services.AddControllersWithViews(options =>
             {
@@ -169,8 +169,8 @@ namespace KinaUnaWeb
                     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     options.Authority = authorityServerUrl;
                     options.ClientId = authenticationServerClientId;
-                    options.ResponseType = "code id_token";
-                    options.UsePkce = false;
+                    options.ResponseType = OidcConstants.ResponseTypes.Code;
+                    options.UsePkce = true;
                     options.RequireHttpsMetadata = true;
                     options.Scope.Add("openid");
                     options.Scope.Add("profile");
@@ -195,7 +195,7 @@ namespace KinaUnaWeb
                     options.ClaimActions.MapUniqueJsonKey("viewchild", "viewchild");
                     options.ClaimActions.MapUniqueJsonKey("joindate", "joindate");
                     options.ClaimActions.MapUniqueJsonKey("preferred_username", "preferred_username");
-
+                    options.MapInboundClaims = false; // Prevents IdentityModel from mapping claims automatically, we want to use the original claim types from IdentityServer
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         NameClaimType = JwtClaimTypes.Email,
@@ -250,7 +250,7 @@ namespace KinaUnaWeb
                 app.UseHsts();
             }
 
-            app.UseCors("KinaUnaCors");
+            // app.UseCors("KinaUnaCors");
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();

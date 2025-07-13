@@ -120,27 +120,22 @@ async function addReminder() {
     if (reminderOffsetSelectElement === null) {
         return;
     }
-    console.log('add calendar reminder..1');
     const customReminderOffsetDiv = document.querySelector('#custom-reminder-offset-div');
     if (customReminderOffsetDiv === null) {
         return;
     }
-    console.log('add calendar reminder..2');
     const customReminderOffsetPicker = document.querySelector(reminderCustomOffsetDateTimePickerId);
     if (customReminderOffsetPicker === null) {
         return;
     }
-    console.log('add calendar reminder..3');
     const calendarItemStartReferenceInput = document.querySelector('#calendar-item-start-reference');
     if (calendarItemStartReferenceInput === null) {
         return;
     }
-    console.log('add calendar reminder..4');
     const eventIdDiv = document.querySelector('#event-id-div');
     if (eventIdDiv === null || !eventIdDiv.dataset.eventId) {
         return;
     }
-    console.log('add calendar reminder..5');
     const eventId = parseInt(eventIdDiv.dataset.eventId);
     const reminderOffset = reminderOffsetSelectElement.value;
     if (reminderOffset && calendarItemStartReferenceInput !== null) {

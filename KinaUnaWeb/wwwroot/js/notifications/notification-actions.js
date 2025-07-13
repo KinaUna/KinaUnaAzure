@@ -59,7 +59,7 @@ async function notificationItemClick(btn) {
             let notificationLinkSplit = notificationLinkWithoutPath.split('&');
             let eventId = notificationLinkSplit[0];
             if (eventId !== null) {
-                await popupEventItem(eventId);
+                await popupEventItem(eventId, '0', '0', '0'); // Todo: Check for recurrence.
                 stopFullPageSpinner();
                 return new Promise(function (resolve, reject) {
                     resolve();

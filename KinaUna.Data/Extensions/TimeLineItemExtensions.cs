@@ -50,7 +50,29 @@ namespace KinaUna.Data.Extensions
             return true;
 
         }
-        
+
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a calendar item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="calendarItem"></param>
+        /// <returns>bool: True if the calendar item has valid data</returns>
+        public static bool CopyCalendarItemPropertiesForRecurringEvent(this TimeLineItem currentTimeLineItem, CalendarItem calendarItem)
+        {
+            if (currentTimeLineItem == null || !calendarItem.StartTime.HasValue || !calendarItem.EndTime.HasValue) return false;
+
+            currentTimeLineItem.ProgenyId = calendarItem.ProgenyId;
+            currentTimeLineItem.ProgenyTime = calendarItem.StartTime.Value;
+            currentTimeLineItem.AccessLevel = calendarItem.AccessLevel;
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Calendar;
+            currentTimeLineItem.ItemId = calendarItem.EventId.ToString();
+            currentTimeLineItem.ItemYear = calendarItem.StartTime.Value.Year;
+            currentTimeLineItem.ItemMonth = calendarItem.StartTime.Value.Month;
+            currentTimeLineItem.ItemDay = calendarItem.StartTime.Value.Day;
+            return true;
+
+        }
+
         /// <summary>
         /// Copies the properties needed for updating the timeline item when user access has been added.
         /// This should not be used to add a timeline item to the database, but for notifications only.

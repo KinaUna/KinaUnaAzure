@@ -203,16 +203,16 @@ namespace KinaUnaProgenyApi.Services
 
             if (image.Width > maxWidthAndHeight)
             {
-                int newHeight = (maxWidthAndHeight / image.Width) * image.Height;
+                int newHeight = (int)((maxWidthAndHeight / image.Width) * image.Height);
 
-                image.Resize(maxWidthAndHeight, newHeight);
+                image.Resize(maxWidthAndHeight, (uint)newHeight);
             }
 
             if (image.Height > maxWidthAndHeight)
             {
-                int newWidth = (maxWidthAndHeight / image.Width) * image.Height;
+                int newWidth = (int)((maxWidthAndHeight / image.Width) * image.Height);
 
-                image.Resize(newWidth, maxWidthAndHeight);
+                image.Resize((uint)newWidth, maxWidthAndHeight);
             }
 
             image.Strip();

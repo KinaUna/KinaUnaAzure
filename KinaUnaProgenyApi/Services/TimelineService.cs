@@ -8,6 +8,7 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Helpers;
+using KinaUnaProgenyApi.Services.CalendarServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -18,14 +19,16 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly ITimelineFilteringService _timelineFilteringService;
+        private readonly ICalendarService _calendarService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public TimelineService(ProgenyDbContext context, ITimelineFilteringService timelineFilteringService, IDistributedCache cache)
+        public TimelineService(ProgenyDbContext context, ITimelineFilteringService timelineFilteringService, IDistributedCache cache, ICalendarService calendarService)
         {
             _context = context;
             _timelineFilteringService = timelineFilteringService;
+            _calendarService = calendarService;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -382,6 +385,17 @@ namespace KinaUnaProgenyApi.Services
                 int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
                 progenyTimeLineItems = progenyTimeLineItems.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
                 allTimeLineItems.AddRange(progenyTimeLineItems);
+
+                List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(progenyId);
+                foreach (CalendarItem calendarItem in calendarItems)
+                {
+                    if (calendarItem.AccessLevel >= accessLevel && calendarItem.StartTime.HasValue)
+                    {
+                        TimeLineItem timeLineItem = new TimeLineItem();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        allTimeLineItems.Add(timeLineItem);
+                    }
+                }
             }
 
             if (allTimeLineItems.Count == 0)

@@ -1,10 +1,12 @@
 import * as LocaleHelper from '../localization-v8.js';
 import { setContextAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkStartBeforeEndTime, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools-v8.js';
 import { setupRemindersSection } from '../reminders/reminders.js';
+import { setupRecurrenceSection } from './add-edit-recurrence.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let longDateTimeFormatMoment;
 let zebraDateTimeFormat;
+let repeatUntilZebraDateTimeFormat;
 let warningStartIsAfterEndString = 'Warning: Start time is after End time.';
 let currentProgenyId;
 let startDateTimePickerId = '#event-start-date-time-picker';
@@ -43,6 +45,7 @@ async function setupDateTimePickers() {
     setMomentLocale();
     longDateTimeFormatMoment = getLongDateTimeFormatMoment();
     zebraDateTimeFormat = getZebraDateTimeFormat('#add-event-zebra-date-time-format-div');
+    repeatUntilZebraDateTimeFormat = getZebraDateTimeFormat('#add-event-repeat-until-zebra-date-time-format-div');
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     warningStartIsAfterEndString = await LocaleHelper.getTranslation('Warning: Start time is after End time.', 'Sleep', languageId);
     const startDateTimePicker = $(startDateTimePickerId);
@@ -59,6 +62,17 @@ async function setupDateTimePickers() {
     const endDateTimePicker = $(endDateTimePickerId);
     endDateTimePicker.Zebra_DatePicker({
         format: zebraDateTimeFormat,
+        open_icon_only: true,
+        onSelect: function (a, b, c) { validateDatePickerStartEnd(); },
+        days: zebraDatePickerTranslations.daysArray,
+        months: zebraDatePickerTranslations.monthsArray,
+        lang_clear_date: zebraDatePickerTranslations.clearString,
+        show_select_today: zebraDatePickerTranslations.todayString,
+        select_other_months: true
+    });
+    const repeatUntilDateTimePicker = $('#event-repeat-until-date-picker');
+    repeatUntilDateTimePicker.Zebra_DatePicker({
+        format: repeatUntilZebraDateTimeFormat,
         open_icon_only: true,
         onSelect: function (a, b, c) { validateDatePickerStartEnd(); },
         days: zebraDatePickerTranslations.daysArray,
@@ -109,6 +123,7 @@ export async function initializeAddEditEvent() {
     setupProgenySelectList();
     setupDateTimePickers();
     setupRemindersSection();
+    setupRecurrenceSection();
     $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve, reject) {
         resolve();

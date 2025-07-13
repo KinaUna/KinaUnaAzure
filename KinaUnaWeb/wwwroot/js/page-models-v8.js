@@ -327,6 +327,9 @@ export class TimelineItem {
         this.progenyId = 0;
         this.itemType = 0;
         this.itemId = '0';
+        this.itemYear = 0;
+        this.itemMonth = 0;
+        this.itemDay = 0;
     }
 }
 export class TimelineParameters {
@@ -373,6 +376,9 @@ export class TimeLineItemViewModel {
         this.typeId = 0;
         this.itemId = 0;
         this.tagFilter = '';
+        this.itemYear = 0;
+        this.itemMonth = 0;
+        this.itemDay = 0;
     }
 }
 export class TimelineList {
@@ -482,6 +488,17 @@ export class CalendarItem {
         this.startString = '';
         this.endString = '';
         this.author = '';
+    }
+}
+export class CalendarItemsRequest {
+    constructor() {
+        this.progenyIds = [];
+        this.startYear = 0;
+        this.startMonth = 0;
+        this.startDay = 0;
+        this.endYear = 0;
+        this.endMonth = 0;
+        this.endDay = 0;
     }
 }
 export class SetProgenyRequest {

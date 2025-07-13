@@ -94,6 +94,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<int>("ProgenyId")
                         .HasColumnType("int");
 
+                    b.Property<int>("RecurrenceRuleId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("datetime2");
 
@@ -124,8 +127,17 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<bool>("Notified")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime>("NotifiedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("NotifyTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("NotifyTimeOffsetType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecurrenceRuleId")
+                        .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .HasMaxLength(256)
@@ -697,6 +709,52 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.HasKey("Id");
 
                     b.ToTable("PushDevices");
+                });
+
+            modelBuilder.Entity("KinaUna.Data.Models.RecurrenceRule", b =>
+                {
+                    b.Property<int>("RecurrenceRuleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RecurrenceRuleId"));
+
+                    b.Property<string>("ByDay")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<string>("ByMonth")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<string>("ByMonthDay")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EndOption")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Frequency")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Interval")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProgenyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Start")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("Until")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("RecurrenceRuleId");
+
+                    b.ToTable("RecurrenceRulesDb");
                 });
 
             modelBuilder.Entity("KinaUna.Data.Models.Skill", b =>

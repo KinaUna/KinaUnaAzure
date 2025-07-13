@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 
@@ -42,9 +43,27 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all CalendarItems for.</param>
         /// <param name="accessLevel">The required access level to view the event.</param>
+        /// <param name="start">Optional start date for the list.</param>
+        /// <param name="end">Optional end date for the list.</param>
         /// <returns>List of CalendarItems.</returns>
-        Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel);
+        Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel, DateTime? start = null, DateTime? end = null);
 
+        /// <summary>
+        /// Gets the list of CalendarItems for a Progeny that are recurring events on this day.
+        /// Only includes items after 1900.
+        /// </summary>
+        /// <param name="progenyId">The id of the Progeny to get items for.</param>
+        /// <returns>List of CalendarItems.</returns>
+        Task<List<CalendarItem>> GetRecurringCalendarItemsOnThisDay(int progenyId);
+
+        /// <summary>
+        /// Gets the list of CalendarItems for a Progeny that are recurring events for the latest posts list.
+        /// Only includes items after 1900.
+        /// </summary>
+        /// <param name="progenyId">The id of the Progeny to get items for.</param>
+        /// <returns>List of CalendarItems.</returns>
+        Task<List<CalendarItem>> GetRecurringCalendarItemsLatestPosts(int progenyId);
+        
         /// <summary>
         /// Gets a list of CalendarItems for a Progeny with a specific context.
         /// </summary>
