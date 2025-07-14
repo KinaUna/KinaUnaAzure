@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KinaUnaProgenyApi.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KinaUnaWeb.Tests", "KinaUnaWeb.Tests\KinaUnaWeb.Tests.csproj", "{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KinaUna.OpenIddict", "KinaUna.OpenIddict\KinaUna.OpenIddict.csproj", "{B3F8116A-805C-48FD-8E5A-F54D2F959EDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,14 @@ Global
 		{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}.Release|x64.ActiveCfg = Release|Any CPU
 		{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}.Release|x64.Build.0 = Release|Any CPU
+		{B3F8116A-805C-48FD-8E5A-F54D2F959EDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3F8116A-805C-48FD-8E5A-F54D2F959EDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3F8116A-805C-48FD-8E5A-F54D2F959EDD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B3F8116A-805C-48FD-8E5A-F54D2F959EDD}.Debug|x64.Build.0 = Debug|Any CPU
+		{B3F8116A-805C-48FD-8E5A-F54D2F959EDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3F8116A-805C-48FD-8E5A-F54D2F959EDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3F8116A-805C-48FD-8E5A-F54D2F959EDD}.Release|x64.ActiveCfg = Release|Any CPU
+		{B3F8116A-805C-48FD-8E5A-F54D2F959EDD}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
