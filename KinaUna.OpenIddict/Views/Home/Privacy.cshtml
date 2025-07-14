@@ -1,6 +1,19 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
+﻿@using KinaUna.Data
+@using KinaUna.Data.Models
+@using KinaUna.OpenIddict.Services
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Privacy", PageNames.Account, languageId);
+    KinaUnaText privacyText = await LocaleManager.GetPageTextByTitle("__Privacy", "Privacy", Model.LanguageId);
 }
-<h1>@ViewData["Title"]</h1>
-
-<p>Use this page to detail your site's privacy policy.</p>
+<h2 class="title">@ViewData["Title"]</h2>
+<div>
+    <H4>
+        <img src="https://web.kinauna.com/images/KinaUnaLogo_246x80.png"/>
+    </H4>
+    <br/>
+    <div style="max-width: 600px;" id="impressumTextDiv">
+        @Html.Raw(privacyText.Text ?? "")
+    </div>
+</div>

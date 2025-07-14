@@ -130,7 +130,7 @@
     <PackageReference Include="System.Windows.Extensions" Version="9.0.7" />
     <PackageReference Include="WebPush" Version="1.0.12" />
     <PackageReference Include="Microsoft.Identity.Web" Version="3.10.0" />
-    <PackageReference Include="xunit.analyzers" Version="1.22.0">
+    <PackageReference Include="xunit.analyzers" Version="1.23.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
