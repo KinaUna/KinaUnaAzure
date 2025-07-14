@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.47.0" />
+    <PackageReference Include="Azure.Extensions.AspNetCore.DataProtection.Blobs" Version="1.5.1" />
     <PackageReference Include="IdentityModel" Version="4.6.0" />
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.7" />
@@ -18,7 +19,7 @@
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
     <PackageReference Include="System.Memory.Data" Version="9.0.7" />
     <PackageReference Include="System.Text.Encodings.Web" Version="9.0.7" />
-    <PackageReference Include="xunit.analyzers" Version="1.22.0">
+    <PackageReference Include="xunit.analyzers" Version="1.23.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
