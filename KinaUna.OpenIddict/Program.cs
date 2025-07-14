@@ -31,6 +31,15 @@ builder.Services.AddDbContext<MediaDbContext>(options =>
             sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
         }));
 
+// Register the ApplicationDbContext database context with dependency injection.
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration["DefaultConnection"],
+        sqlServerOptionsAction: sqlOptions =>
+        {
+            sqlOptions.MigrationsAssembly("KinaUna.IDP");
+            //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+            sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+        }));
 
 string storageConnectionString = builder.Configuration["BlobStorageConnectionString"] ?? throw new InvalidOperationException("BlobStorageConnectionString was not found in the configuration data.");
 new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
@@ -47,7 +56,32 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options => { options.LoginPath = "/account/login"; });
 
+builder.Services.AddOpenIddict()
+    .AddCore(options =>
+    {
+        options.UseEntityFrameworkCore().UseDbContext<ApplicationDbContext>();
+        options.UseQuartz(); // For token cleanup
+    })
+    .AddServer(options =>
+    {
+        // Todo: Find out if more configuration is needed here.
+        options.SetTokenEndpointUris("connect/token");
 
+        options.AllowAuthorizationCodeFlow()
+            .AllowClientCredentialsFlow()
+            .AllowRefreshTokenFlow();
+
+        options.SetAccessTokenLifetime(TimeSpan.FromSeconds(2592000))
+            .SetRefreshTokenLifetime(TimeSpan.FromDays(30));
+
+        options.RegisterScopes("openid", "profile", "email", "offline_access",
+            "roles", "timezone", "viewchild", "joindate",
+            Constants.ProgenyApiName, Constants.MediaApiName);
+
+        // Todo: Find out if more configuration is needed here.
+        options.UseAspNetCore()
+            .EnableTokenEndpointPassthrough();
+    });
 
 WebApplication app = builder.Build();
 
@@ -82,14 +116,15 @@ CookieRequestCultureProvider provider = new()
 localizationOptions.RequestCultureProviders.Insert(0, provider);
 app.UseRequestLocalization(localizationOptions);
 
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapStaticAssets();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+app.UseEndpoints(options =>
+{
+    _ = options.MapControllers();
+    _ = options.MapDefaultControllerRoute();
+});
 
 app.Run();
