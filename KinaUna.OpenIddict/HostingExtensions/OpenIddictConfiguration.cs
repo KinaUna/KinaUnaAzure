@@ -3,6 +3,10 @@ using KinaUna.OpenIddict.Services;
 using OpenIddict.Abstractions;
 using System.Security.Cryptography.X509Certificates;
 using KinaUna.Data;
+using KinaUna.Data.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using Quartz;
 
 namespace KinaUna.OpenIddict.HostingExtensions
 {
@@ -10,6 +14,37 @@ namespace KinaUna.OpenIddict.HostingExtensions
     {
         public static IServiceCollection ConfigureOpenIddict(this IServiceCollection services, string serverEncryptionCertificateThumbprint, string serverSigningCertificateThumbprint)
         {
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/login";
+                    options.LogoutPath = "/logout";
+                    options.ExpireTimeSpan = TimeSpan.FromDays(60);
+                    options.SlidingExpiration = true;
+                });
+
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+                {
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireDigit = false;
+                    options.SignIn.RequireConfirmedEmail = true;
+                    options.User.RequireUniqueEmail = true;
+                })
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+            services.AddQuartz(options =>
+            {
+                options.UseSimpleTypeLoader();
+                options.UseInMemoryStore();
+            });
+
+            // Register the Quartz.NET service and configure it to block shutdown until jobs are complete.
+            services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
+
+
             services.AddOpenIddict()
                 .AddCore(options =>
                 {
