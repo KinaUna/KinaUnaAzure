@@ -85,6 +85,13 @@ namespace KinaUna.OpenIddict.HostingExtensions
                         OpenIddictConstants.Scopes.OfflineAccess, Constants.ProgenyApiName, Constants.MediaApiName);
 
 
+                    // The certificates used need to be added to the certificate store.
+                    // For Azure App Service the certificates must be uploaded to the App Service.
+                    // For Azure Windows App Services the certificates must be made accessible: https://learn.microsoft.com/en-us/azure/app-service/configure-ssl-certificate-in-code?tabs=windows#make-the-certificate-accessible
+                    // For local development, the certificates can be added to the CurrentUser store.
+                    options.AddEncryptionCertificate(serverEncryptionCertificateThumbprint, StoreName.My, StoreLocation.CurrentUser);
+                    options.AddSigningCertificate(serverSigningCertificateThumbprint, StoreName.My, StoreLocation.CurrentUser);
+
                     // Todo: Find out if more configuration is needed here.
                     options.UseAspNetCore()
                         .EnableAuthorizationEndpointPassthrough()

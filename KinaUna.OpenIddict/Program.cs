@@ -1,10 +1,11 @@
-using System.Globalization;
 using Azure.Storage.Blobs;
 using KinaUna.Data;
 using KinaUna.OpenIddict.HostingExtensions;
 using KinaUna.OpenIddict.Services;
+using KinaUna.OpenIddict.Services.Interfaces;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,11 @@ string serverEncryptionCertificateThumbprint = builder.Configuration["ServerEncr
 string serverSigningCertificateThumbprint = builder.Configuration["ServerSigningCertificateThumbprint"] ?? throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
 
 builder.Services.ConfigureOpenIddict(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint);
+
+// Add to Program.cs after OpenIddict configuration
+builder.Services.AddScoped<IClientConfigProvider, ConfigurationClientConfigProvider>();
+builder.Services.AddScoped<IOpenIddictSeedService, OpenIddictSeedService>();
+builder.Services.AddHostedService<OpenIddictSeeder>();
 
 WebApplication app = builder.Build();
 
