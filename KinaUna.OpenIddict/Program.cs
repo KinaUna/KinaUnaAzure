@@ -1,16 +1,15 @@
 using System.Globalization;
-using System.Security.Cryptography.X509Certificates;
 using Azure.Storage.Blobs;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using KinaUna.OpenIddict.HostingExtensions;
 using KinaUna.OpenIddict.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
-using OpenIddict.Abstractions;
 using Quartz;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -95,54 +94,14 @@ builder.Services.AddQuartz(options =>
 // Register the Quartz.NET service and configure it to block shutdown until jobs are complete.
 builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
 
-builder.Services.AddOpenIddict()
-    .AddCore(options =>
-    {
-        options.UseEntityFrameworkCore().UseDbContext<ApplicationDbContext>();
-        options.UseQuartz(); // For token cleanup
-    })
-    .AddServer(options =>
-    {
-        // Todo: Find out if more configuration is needed here.
-        options.SetIntrospectionEndpointUris("connect/introspect")
-            .SetEndSessionEndpointUris("connect/logout")
-            .SetTokenEndpointUris("connect/token")
-            .SetUserInfoEndpointUris("connect/userinfo")
-            .SetEndUserVerificationEndpointUris("connect/verify");
-        
-        options.AllowAuthorizationCodeFlow()
-            .AllowClientCredentialsFlow()
-            .AllowRefreshTokenFlow();
 
-        options.SetAccessTokenLifetime(TimeSpan.FromSeconds(300))
-            .SetRefreshTokenLifetime(TimeSpan.FromDays(30));
+string serverEncryptionCertificateThumbprint = builder.Configuration["ServerEncryptionCertificateThumbprint"]
+                                               ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
+string serverSigningCertificateThumbprint = builder.Configuration["ServerSigningCertificateThumbprint"] 
+                                            ?? throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
 
-        options.RegisterScopes(OpenIddictConstants.Scopes.Email, OpenIddictConstants.Scopes.Profile, OpenIddictConstants.Scopes.Roles,
-            OpenIddictConstants.Scopes.OfflineAccess, Constants.ProgenyApiName, Constants.MediaApiName);
-
-        // Todo: Find out if more configuration is needed here.
-        options.UseAspNetCore()
-            .EnableAuthorizationEndpointPassthrough()
-            .EnableEndSessionEndpointPassthrough()
-            .EnableTokenEndpointPassthrough()
-            .EnableUserInfoEndpointPassthrough()
-            .EnableStatusCodePagesIntegration();
-    })
-    .AddValidation(options =>
-    {
-        // The certificates used need to be added to the certificate store.
-        // For Azure App Service the certificates must be uploaded to the App Service.
-        // For Azure Windows App Services the certificates must be made accessible: https://learn.microsoft.com/en-us/azure/app-service/configure-ssl-certificate-in-code?tabs=windows#make-the-certificate-accessible
-        // For local development, the certificates can be added to the CurrentUser store.
-        options.AddEncryptionCertificate(builder.Configuration["ServerEncryptionCertificateThumbprint"] 
-                                         ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data."), StoreName.My, StoreLocation.CurrentUser);
-        options.AddSigningCertificate(builder.Configuration["ServerSigningCertificateThumbprint"]
-                                      ?? throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data."), StoreName.My, StoreLocation.CurrentUser);
-        options.UseAspNetCore();
-    });
-
-// Seed the database with initial data.
-builder.Services.AddHostedService<OpenIddictSeeder>();
+// Register the OpenIddict services and configure them.
+builder.Services.ConfigureOpenIddict(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint);
 
 WebApplication app = builder.Build();
 
