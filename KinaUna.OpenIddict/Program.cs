@@ -39,13 +39,17 @@ builder.Services.AddDbContext<MediaDbContext>(options =>
 
 // Register the ApplicationDbContext database context with dependency injection.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
     options.UseSqlServer(builder.Configuration["AuthDefaultConnection"],
         sqlServerOptionsAction: sqlOptions =>
         {
             sqlOptions.MigrationsAssembly("KinaUna.IDP");
             //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
             sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-        }));
+        });
+    options.UseOpenIddict(); // Add this line to enable OpenIddict support
+});
+
 
 string storageConnectionString = builder.Configuration["BlobStorageConnectionString"] ?? throw new InvalidOperationException("BlobStorageConnectionString was not found in the configuration data.");
 new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
@@ -110,7 +114,7 @@ builder.Services.AddOpenIddict()
             .AllowClientCredentialsFlow()
             .AllowRefreshTokenFlow();
 
-        options.SetAccessTokenLifetime(TimeSpan.FromSeconds(2592000))
+        options.SetAccessTokenLifetime(TimeSpan.FromSeconds(300))
             .SetRefreshTokenLifetime(TimeSpan.FromDays(30));
 
         options.RegisterScopes(OpenIddictConstants.Scopes.Email, OpenIddictConstants.Scopes.Profile, OpenIddictConstants.Scopes.Roles,
@@ -136,6 +140,9 @@ builder.Services.AddOpenIddict()
                                       ?? throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data."), StoreName.My, StoreLocation.CurrentUser);
         options.UseAspNetCore();
     });
+
+// Seed the database with initial data.
+builder.Services.AddHostedService<OpenIddictSeeder>();
 
 WebApplication app = builder.Build();
 
