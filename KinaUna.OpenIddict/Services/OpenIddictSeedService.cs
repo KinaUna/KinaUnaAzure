@@ -5,22 +5,12 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace KinaUna.OpenIddict.Services
 {
-    public class OpenIddictSeedService : IOpenIddictSeedService
+    public class OpenIddictSeedService(
+        IOpenIddictApplicationManager applicationManager,
+        IOpenIddictScopeManager scopeManager,
+        IClientConfigProvider clientConfigProvider)
+        : IOpenIddictSeedService
     {
-        private readonly IOpenIddictApplicationManager _applicationManager;
-        private readonly IOpenIddictScopeManager _scopeManager;
-        private readonly IClientConfigProvider _clientConfigProvider;
-
-        public OpenIddictSeedService(
-            IOpenIddictApplicationManager applicationManager, 
-            IOpenIddictScopeManager scopeManager,
-            IClientConfigProvider clientConfigProvider)
-        {
-            _applicationManager = applicationManager;
-            _scopeManager = scopeManager;
-            _clientConfigProvider = clientConfigProvider;
-        }
-
         public async Task SeedAsync(CancellationToken cancellationToken = default)
         {
             // Create scopes first
@@ -41,9 +31,9 @@ namespace KinaUna.OpenIddict.Services
 
             foreach (var apiScope in apiScopes)
             {
-                if (await _scopeManager.FindByNameAsync(apiScope.Name, cancellationToken) == null)
+                if (await scopeManager.FindByNameAsync(apiScope.Name, cancellationToken) == null)
                 {
-                    await _scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+                    await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
                     {
                         Name = apiScope.Name,
                         DisplayName = apiScope.DisplayName,
@@ -55,13 +45,13 @@ namespace KinaUna.OpenIddict.Services
 
         private async Task CreateWebClientsAsync(CancellationToken cancellationToken)
         {
-            var webClients = _clientConfigProvider.GetClientConfigs();
+            IEnumerable<ClientConfig> webClients = clientConfigProvider.GetClientConfigs();
 
-            foreach (var clientConfig in webClients)
+            foreach (ClientConfig clientConfig in webClients)
             {
-                if (await _applicationManager.FindByClientIdAsync(clientConfig.ClientId, cancellationToken) == null)
+                if (await applicationManager.FindByClientIdAsync(clientConfig.ClientId, cancellationToken) == null)
                 {
-                    await _applicationManager.CreateAsync(new OpenIddictApplicationDescriptor
+                    await applicationManager.CreateAsync(new OpenIddictApplicationDescriptor
                     {
                         ClientId = clientConfig.ClientId,
                         ClientSecret = clientConfig.Secret,

@@ -3,24 +3,17 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace KinaUna.OpenIddict.Services
 {
-    public class ConfigurationClientConfigProvider : IClientConfigProvider
+    public class ConfigurationClientConfigProvider(IConfiguration configuration) : IClientConfigProvider
     {
-        private readonly IConfiguration _configuration;
-
-        public ConfigurationClientConfigProvider(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
         public IEnumerable<ClientConfig> GetClientConfigs()
         {
-            string webServerUrl = _configuration.GetValue<string>("WebServer") ?? 
+            string webServerUrl = configuration.GetValue<string>("WebServer") ?? 
                 throw new InvalidOperationException("WebServer not found in configuration data.");
-            string webServerAzureUrl = _configuration.GetValue<string>("WebServerAzure") ?? 
+            string webServerAzureUrl = configuration.GetValue<string>("WebServerAzure") ?? 
                 throw new InvalidOperationException("WebServerAzure not found in configuration data.");
-            string webServerLocal = _configuration.GetValue<string>("WebServerLocal") ?? 
+            string webServerLocal = configuration.GetValue<string>("WebServerLocal") ?? 
                 throw new InvalidOperationException("WebServerLocal not found in configuration data.");
-            string secretString = _configuration.GetValue<string>("OpenIddictSecretString") ?? 
+            string secretString = configuration.GetValue<string>("OpenIddictSecretString") ?? 
                 throw new InvalidOperationException("OpenIddictSecretString not found in configuration data.");
 
             return new[]

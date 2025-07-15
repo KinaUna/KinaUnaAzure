@@ -18,7 +18,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
         /// <param name="mediaDefaultConnection">The connection string for the Media database context.</param>
         /// <param name="authDefaultConnection">The connection string for the Application database context.</param>
         /// <returns>The updated <see cref="IServiceCollection"/> with the configured database contexts.</returns>
-        public static IServiceCollection ConfigureDatabases(this IServiceCollection services, string progenyDefaultConnection, string mediaDefaultConnection, string authDefaultConnection)
+        public static void ConfigureDatabases(this IServiceCollection services, string progenyDefaultConnection, string mediaDefaultConnection, string authDefaultConnection)
         {
             // Register the ProgenyDbContext database context with dependency injection.
             services.AddDbContext<ProgenyDbContext>(options =>
@@ -52,8 +52,6 @@ namespace KinaUna.OpenIddict.HostingExtensions
                     });
                 options.UseOpenIddict(); // Add this line to enable OpenIddict support
             });
-
-            return services;
         }
     }
 }

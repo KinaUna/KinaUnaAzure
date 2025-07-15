@@ -11,19 +11,19 @@ namespace KinaUna.OpenIddict.Tests.Services
         public async Task SeedAsync_CreatesScopes_WhenTheyDoNotExist()
         {
             // Arrange
-            var mockAppManager = new Mock<IOpenIddictApplicationManager>();
-            var mockScopeManager = new Mock<IOpenIddictScopeManager>();
-            var mockConfigProvider = new Mock<IClientConfigProvider>();
+            Mock<IOpenIddictApplicationManager> mockAppManager = new();
+            Mock<IOpenIddictScopeManager> mockScopeManager = new();
+            Mock<IClientConfigProvider> mockConfigProvider = new();
             
-            // Setup the scope manager to return null (scope doesn't exist)
+            // Set up the scope manager to return null (scope doesn't exist)
             mockScopeManager.Setup(m => m.FindByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((string)null);
+                .ReturnsAsync(null as string);
             
-            // Setup the client config provider
+            // Set up the client config provider
             mockConfigProvider.Setup(p => p.GetClientConfigs())
-                .Returns(Array.Empty<ClientConfig>());
+                .Returns([]);
             
-            var service = new OpenIddictSeedService(
+            OpenIddictSeedService service = new(
                 mockAppManager.Object,
                 mockScopeManager.Object,
                 mockConfigProvider.Object);
@@ -41,19 +41,19 @@ namespace KinaUna.OpenIddict.Tests.Services
         public async Task SeedAsync_DoesNotCreateScopes_WhenTheyAlreadyExist()
         {
             // Arrange
-            var mockAppManager = new Mock<IOpenIddictApplicationManager>();
-            var mockScopeManager = new Mock<IOpenIddictScopeManager>();
-            var mockConfigProvider = new Mock<IClientConfigProvider>();
+            Mock<IOpenIddictApplicationManager> mockAppManager = new();
+            Mock<IOpenIddictScopeManager> mockScopeManager = new();
+            Mock<IClientConfigProvider> mockConfigProvider = new();
             
-            // Setup the scope manager to return a non-null value (scope exists)
+            // Set up the scope manager to return a non-null value (scope exists)
             mockScopeManager.Setup(m => m.FindByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new object());
             
-            // Setup the client config provider
+            // Set up the client config provider
             mockConfigProvider.Setup(p => p.GetClientConfigs())
-                .Returns(Array.Empty<ClientConfig>());
+                .Returns([]);
             
-            var service = new OpenIddictSeedService(
+            OpenIddictSeedService service = new(
                 mockAppManager.Object,
                 mockScopeManager.Object,
                 mockConfigProvider.Object);

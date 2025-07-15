@@ -21,11 +21,11 @@ namespace KinaUna.OpenIddict.HostingExtensions
         /// in the environment where the application is running.</remarks>
         /// <param name="services">The <see cref="IServiceCollection"/> to which the OpenIddict services are added.</param>
         /// <param name="serverEncryptionCertificateThumbprint">The thumbprint of the certificate used for encrypting tokens. This certificate must be accessible in the
-        /// certificate store.</param>
+        ///     certificate store.</param>
         /// <param name="serverSigningCertificateThumbprint">The thumbprint of the certificate used for signing tokens. This certificate must be accessible in the
-        /// certificate store.</param>
+        ///     certificate store.</param>
         /// <returns>The updated <see cref="IServiceCollection"/> with OpenIddict services configured.</returns>
-        public static IServiceCollection ConfigureOpenIddict(this IServiceCollection services, string serverEncryptionCertificateThumbprint, string serverSigningCertificateThumbprint)
+        public static void ConfigureOpenIddict(this IServiceCollection services, string serverEncryptionCertificateThumbprint, string serverSigningCertificateThumbprint)
         {
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -115,8 +115,6 @@ namespace KinaUna.OpenIddict.HostingExtensions
 
             // Seed the database with initial data.
             services.AddHostedService<OpenIddictSeeder>();
-
-            return services;
         }
     }
 }
