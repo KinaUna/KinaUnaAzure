@@ -67,7 +67,8 @@ namespace KinaUna.OpenIddict.HostingExtensions
                 .AddServer(options =>
                 {
                     // Todo: Find out if more configuration is needed here.
-                    options.SetIntrospectionEndpointUris("connect/introspect")
+                    options.SetAuthorizationEndpointUris("connect/authorize")
+                        .SetIntrospectionEndpointUris("connect/introspect")
                         .SetEndSessionEndpointUris("connect/logout")
                         .SetTokenEndpointUris("connect/token")
                         .SetUserInfoEndpointUris("connect/userinfo")
