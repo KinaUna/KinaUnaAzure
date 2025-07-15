@@ -10,7 +10,7 @@ using Quartz;
 
 namespace KinaUna.OpenIddict.HostingExtensions
 {
-    internal static class OpenIddictConfiguration
+    public static class OpenIddictConfiguration
     {
         /// <summary>
         /// Configures OpenIddict services for authentication and authorization in the application.
