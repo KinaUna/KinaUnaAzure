@@ -5,6 +5,19 @@ namespace KinaUna.OpenIddict.HostingExtensions
 {
     internal static class DatabaseConfiguration
     {
+        /// <summary>
+        /// Configures the database contexts for dependency injection with specified connection strings.
+        /// </summary>
+        /// <remarks>This method registers the <see cref="ProgenyDbContext"/>, <see
+        /// cref="MediaDbContext"/>, and <see cref="ApplicationDbContext"/> with SQL Server support and connection
+        /// resiliency enabled. The connection resiliency is configured to retry failed connections up to 15 times with
+        /// a maximum delay of 30 seconds between retries. The <see cref="ApplicationDbContext"/> is also configured to
+        /// support OpenIddict.</remarks>
+        /// <param name="services">The <see cref="IServiceCollection"/> to which the database contexts are added.</param>
+        /// <param name="progenyDefaultConnection">The connection string for the Progeny database context.</param>
+        /// <param name="mediaDefaultConnection">The connection string for the Media database context.</param>
+        /// <param name="authDefaultConnection">The connection string for the Application database context.</param>
+        /// <returns>The updated <see cref="IServiceCollection"/> with the configured database contexts.</returns>
         public static IServiceCollection ConfigureDatabases(this IServiceCollection services, string progenyDefaultConnection, string mediaDefaultConnection, string authDefaultConnection)
         {
             // Register the ProgenyDbContext database context with dependency injection.

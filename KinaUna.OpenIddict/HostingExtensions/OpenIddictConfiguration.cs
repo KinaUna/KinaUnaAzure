@@ -12,6 +12,19 @@ namespace KinaUna.OpenIddict.HostingExtensions
 {
     internal static class OpenIddictConfiguration
     {
+        /// <summary>
+        /// Configures OpenIddict services for authentication and authorization in the application.
+        /// </summary>
+        /// <remarks>This method sets up authentication using cookies, configures ASP.NET Identity, and
+        /// integrates Quartz.NET for job scheduling. It also configures OpenIddict to support various OAuth 2.0 flows
+        /// and endpoints, and sets token lifetimes. Certificates for encryption and signing must be properly configured
+        /// in the environment where the application is running.</remarks>
+        /// <param name="services">The <see cref="IServiceCollection"/> to which the OpenIddict services are added.</param>
+        /// <param name="serverEncryptionCertificateThumbprint">The thumbprint of the certificate used for encrypting tokens. This certificate must be accessible in the
+        /// certificate store.</param>
+        /// <param name="serverSigningCertificateThumbprint">The thumbprint of the certificate used for signing tokens. This certificate must be accessible in the
+        /// certificate store.</param>
+        /// <returns>The updated <see cref="IServiceCollection"/> with OpenIddict services configured.</returns>
         public static IServiceCollection ConfigureOpenIddict(this IServiceCollection services, string serverEncryptionCertificateThumbprint, string serverSigningCertificateThumbprint)
         {
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
