@@ -6,6 +6,7 @@ using KinaUna.OpenIddict.Services.Interfaces;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
+using KinaUna.OpenIddict.HostingExtensions.Interfaces;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +37,21 @@ builder.Services.AddControllersWithViews();
 string serverEncryptionCertificateThumbprint = builder.Configuration["ServerEncryptionCertificateThumbprint"] ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
 string serverSigningCertificateThumbprint = builder.Configuration["ServerSigningCertificateThumbprint"] ?? throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
 
-builder.Services.ConfigureOpenIddict(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint);
+// Replace the direct call to ConfigureOpenIddict with:
+builder.Services.AddSingleton<IOpenIddictConfigurator>(_ => 
+    new OpenIddictConfiguration(
+        serverEncryptionCertificateThumbprint,
+        serverSigningCertificateThumbprint));
+
+// Then resolve and use it
+builder.Services.AddSingleton<IOpenIddictConfigurator, OpenIddictConfiguration>(_ => 
+    new OpenIddictConfiguration(
+        serverEncryptionCertificateThumbprint, 
+        serverSigningCertificateThumbprint));
+
+IOpenIddictConfigurator openIddictConfigurator = builder.Services.BuildServiceProvider()
+    .GetRequiredService<IOpenIddictConfigurator>();
+openIddictConfigurator.ConfigureServices(builder.Services);
 
 // Add to Program.cs after OpenIddict configuration
 builder.Services.AddScoped<IClientConfigProvider, ConfigurationClientConfigProvider>();
