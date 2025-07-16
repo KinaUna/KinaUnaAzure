@@ -101,7 +101,7 @@ namespace KinaUna.OpenIddict.Services
                         // Token settings
                         Settings =
                         {
-                            [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromSeconds(300).ToString(),
+                            [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromSeconds(AccessTokenLifetimeSeconds).ToString(),
                             [Settings.TokenLifetimes.RefreshToken] = TimeSpan.FromDays(30).ToString()
                         }
                     }, cancellationToken);
