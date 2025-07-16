@@ -66,7 +66,8 @@ namespace KinaUna.OpenIddict.HostingExtensions
                     options.User.RequireUniqueEmail = true;
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddDefaultUI();
         }
 
         private void ConfigureQuartz(IServiceCollection services)
