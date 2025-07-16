@@ -11,6 +11,9 @@ namespace KinaUna.OpenIddict.Services
         IClientConfigProvider clientConfigProvider)
         : IOpenIddictSeedService
     {
+        private const int AccessTokenLifetimeSeconds = 3600; // 1 hour
+        private const int RefreshTokenLifetimeDays = 30;
+
         public async Task SeedAsync(CancellationToken cancellationToken = default)
         {
             // Create scopes first
@@ -92,7 +95,7 @@ namespace KinaUna.OpenIddict.Services
                         Settings =
                         {
                             [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromSeconds(AccessTokenLifetimeSeconds).ToString(),
-                            [Settings.TokenLifetimes.RefreshToken] = TimeSpan.FromDays(30).ToString()
+                            [Settings.TokenLifetimes.RefreshToken] = TimeSpan.FromDays(RefreshTokenLifetimeDays).ToString()
                         }
                     }, cancellationToken);
                 }
