@@ -36,8 +36,8 @@ namespace KinaUna.OpenIddict.Services
             await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
             ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             
-            // Ensure the database is created
-            await context.Database.EnsureCreatedAsync(cancellationToken);
+            // Apply pending migrations to ensure the database schema is up-to-date
+            await context.Database.MigrateAsync(cancellationToken);
             
             // Perform seeding
             await _seedService.SeedAsync(cancellationToken);
