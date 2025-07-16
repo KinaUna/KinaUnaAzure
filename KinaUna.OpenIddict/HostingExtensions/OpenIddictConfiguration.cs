@@ -113,9 +113,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
                 });
 
 
-            // Seed the database with initial data.
-            services.AddHostedService<OpenIddictSeeder>();
-
+            // Seed the database with initial data is handled elsewhere to avoid duplicate registration.
             return services;
         }
     }
