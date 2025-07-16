@@ -1,5 +1,6 @@
 ﻿using KinaUna.Data.Contexts;
 using KinaUna.OpenIddict.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace KinaUna.OpenIddict.Services
 {
