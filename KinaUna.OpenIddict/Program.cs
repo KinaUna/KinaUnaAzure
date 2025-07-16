@@ -1,35 +1,22 @@
-using System.Globalization;
 using Azure.Storage.Blobs;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using KinaUna.OpenIddict.HostingExtensions;
+using KinaUna.OpenIddict.Services;
+using KinaUna.OpenIddict.Services.Interfaces;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using KinaUna.OpenIddict.HostingExtensions.Interfaces;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add database context and other services.
 
-// Register the ProgenyDbContext database context with dependency injection.
-builder.Services.AddDbContext<ProgenyDbContext>(options =>
-    options.UseSqlServer(builder.Configuration["ProgenyDefaultConnection"],
-        sqlServerOptionsAction: sqlOptions =>
-        {
-            sqlOptions.MigrationsAssembly("KinaUna.IDP");
-            //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
-            sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-        }));
+string progenyDefaultConnection = builder.Configuration["ProgenyDefaultConnection"] ?? throw new InvalidOperationException("ProgenyDefaultConnection was not found in the configuration data.");
+string mediaDefaultConnection = builder.Configuration["MediaDefaultConnection"] ?? throw new InvalidOperationException("MediaDefaultConnection was not found in the configuration data.");
+string authDefaultConnection = builder.Configuration["AuthDefaultConnection"] ?? throw new InvalidOperationException("AuthDefaultConnection was not found in the configuration data.");
 
-// Register the MediaDbContext database context with dependency injection.
-builder.Services.AddDbContext<MediaDbContext>(options =>
-    options.UseSqlServer(builder.Configuration["MediaDefaultConnection"],
-        sqlServerOptionsAction: sqlOptions =>
-        {
-            sqlOptions.MigrationsAssembly("KinaUna.IDP");
-            //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
-            sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-        }));
+builder.Services.ConfigureDatabases(progenyDefaultConnection, mediaDefaultConnection, authDefaultConnection);
 
 
 string storageConnectionString = builder.Configuration["BlobStorageConnectionString"] ?? throw new InvalidOperationException("BlobStorageConnectionString was not found in the configuration data.");
@@ -39,15 +26,37 @@ builder.Services.AddDataProtection()
     .SetApplicationName("KinaUnaWebApp")
     .PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml");
 
-builder.Services.AddDistributedMemoryCache();
 
-// Add services to the container.
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddTransient<ILocaleManager, LocaleManager>();
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options => { options.LoginPath = "/account/login"; });
 
+// Register the OpenIddict services and configure them.
+string serverEncryptionCertificateThumbprint = builder.Configuration["ServerEncryptionCertificateThumbprint"] ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
+string serverSigningCertificateThumbprint = builder.Configuration["ServerSigningCertificateThumbprint"] ?? throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
 
+// Replace the direct call to ConfigureOpenIddict with:
+builder.Services.AddSingleton<IOpenIddictConfigurator>(_ => 
+    new OpenIddictConfiguration(
+        serverEncryptionCertificateThumbprint,
+        serverSigningCertificateThumbprint));
+
+// Then resolve and use it
+builder.Services.AddSingleton<IOpenIddictConfigurator, OpenIddictConfiguration>(_ => 
+    new OpenIddictConfiguration(
+        serverEncryptionCertificateThumbprint, 
+        serverSigningCertificateThumbprint));
+
+IOpenIddictConfigurator openIddictConfigurator = builder.Services.BuildServiceProvider()
+    .GetRequiredService<IOpenIddictConfigurator>();
+openIddictConfigurator.ConfigureServices(builder.Services);
+
+// Add to Program.cs after OpenIddict configuration
+builder.Services.AddScoped<IClientConfigProvider, ConfigurationClientConfigProvider>();
+builder.Services.AddScoped<IOpenIddictSeedService, OpenIddictSeedService>();
+builder.Services.AddHostedService<OpenIddictSeeder>();
 
 WebApplication app = builder.Build();
 
@@ -82,14 +91,15 @@ CookieRequestCultureProvider provider = new()
 localizationOptions.RequestCultureProviders.Insert(0, provider);
 app.UseRequestLocalization(localizationOptions);
 
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapStaticAssets();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+app.UseEndpoints(options =>
+{
+    _ = options.MapControllers();
+    _ = options.MapDefaultControllerRoute();
+});
 
 app.Run();
