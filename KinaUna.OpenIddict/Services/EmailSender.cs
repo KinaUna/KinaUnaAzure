@@ -72,7 +72,7 @@ namespace KinaUna.OpenIddict.Services
         /// </summary>
         /// <param name="email">The new email address of the user.</param>
         /// <param name="link">The confirmation link.</param>
-        /// <param name="languageId">The id of the KinaUnaLanguage text should be shown in.</param>
+        /// <param name="languageId">The ID of the language for displaying text.</param>
         /// <returns></returns>
         public async Task SendEmailUpdateConfirmationAsync(string? email, string link, int languageId = 1)
         {
