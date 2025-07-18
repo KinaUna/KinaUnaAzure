@@ -33,11 +33,11 @@ namespace KinaUna.OpenIddict.Models.AccountViewModels
         public RegisterViewModel()
         {
             ReadOnlyCollection<TimeZoneInfo> tzs = TimeZoneInfo.GetSystemTimeZones();
-            TimezoneList = tzs.Select(tz => new SelectListItem()
+            TimezoneList = [.. tzs.Select(tz => new SelectListItem()
             {
                 Text = tz.DisplayName,
                 Value = tz.Id
-            }).ToArray();
+            })];
         }
     }
 }

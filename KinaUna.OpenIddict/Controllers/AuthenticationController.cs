@@ -20,7 +20,7 @@ namespace KinaUna.OpenIddict.Controllers
             // Multiple strategies exist to handle OAuth 2.0/OpenID Connect callbacks, each with their pros and cons:
             //
             //   * Directly using the tokens to perform the necessary action(s) on behalf of the user, which is suitable
-            //     for applications that don't need a long-term access to the user's resources or don't want to store
+            //     for applications that don't need long-term access to the user's resources or don't want to store
             //     access/refresh tokens in a database or in an authentication cookie (which has security implications).
             //     It is also suitable for applications that don't need to authenticate users but only need to perform
             //     action(s) on their behalf by making API calls using the access token returned by the remote server.
@@ -33,7 +33,7 @@ namespace KinaUna.OpenIddict.Controllers
             //
             //   * Storing the external claims/tokens in an authentication cookie, which doesn't require having
             //     a user database but may be affected by the cookie size limits enforced by most browser vendors
-            //     (e.g Safari for macOS and Safari for iOS/iPadOS enforce a per-domain 4KB limit for all cookies).
+            //     (e.g. Safari for macOS and Safari for iOS/iPadOS enforce a per-domain 4KB limit for all cookies).
             //
             //     Note: this is the approach used here, but the external claims are first filtered to only persist
             //     a few claims like the user identifier. The same approach is used to store the access/refresh tokens.

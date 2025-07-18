@@ -141,7 +141,7 @@ namespace KinaUna.OpenIddict.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code, string newEmail = "", string oldEmail = "", string client = "KinaUna", string language = "")
+        public async Task<IActionResult> ConfirmEmail(string userId, string code, string oldEmail = "", string language = "")
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(code))
             {
@@ -189,7 +189,7 @@ namespace KinaUna.OpenIddict.Controllers
                     }
 
                     List<Progeny> progenyList = await progContext.ProgenyDb.ToListAsync();
-                    progenyList = progenyList.Where(p => p.IsInAdminList(oldEmail)).ToList();
+                    progenyList = [.. progenyList.Where(p => p.IsInAdminList(oldEmail))];
                     if (progenyList.Count != 0)
                     {
                         foreach (Progeny prog in progenyList)
