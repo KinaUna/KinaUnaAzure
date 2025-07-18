@@ -222,7 +222,8 @@ namespace KinaUna.OpenIddict.Controllers
 
             return RedirectToAction("VerificationMailSent");
 
-            // Todo: Show error page.
+            // Show error page with a meaningful message.
+            return View("Error", new ErrorViewModel { ErrorMessage = "An unexpected error occurred during email confirmation." });
         }
 
         [HttpGet]
