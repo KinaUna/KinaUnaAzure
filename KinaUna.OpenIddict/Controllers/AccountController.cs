@@ -145,8 +145,8 @@ namespace KinaUna.OpenIddict.Controllers
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(code))
             {
-                // Todo: Show error page.
-                return RedirectToAction("Index", "Home");
+                ViewData["ErrorMessage"] = "Invalid or missing user ID or confirmation code.";
+                return View("Error");
             }
             ApplicationUser? user = await userManager.FindByIdAsync(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
             if (string.IsNullOrWhiteSpace(user.UserName))
