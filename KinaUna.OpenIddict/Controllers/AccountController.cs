@@ -145,8 +145,7 @@ namespace KinaUna.OpenIddict.Controllers
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(code))
             {
-                ViewData["ErrorMessage"] = "Invalid or missing user ID or confirmation code.";
-                return View("Error");
+                return RedirectToAction("Error", "Home", new { errorMessage = "Invalid or missing user ID or confirmation code." });
             }
             ApplicationUser? user = await userManager.FindByIdAsync(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
             if (string.IsNullOrWhiteSpace(user.UserName))
@@ -217,13 +216,15 @@ namespace KinaUna.OpenIddict.Controllers
 
             string code1 = await userManager.GenerateEmailConfirmationTokenAsync(user);
             string callbackUrl = Url.EmailConfirmationLink(user.Id, code1, Request.Scheme, kinaUnaLanguage.Id);
-            if (string.IsNullOrWhiteSpace(callbackUrl)) return RedirectToAction("Index", "Home");
-            if (user.Email != null) await emailSender.SendEmailConfirmationAsync(user.Email, callbackUrl, kinaUnaLanguage.Id);
+            if (string.IsNullOrWhiteSpace(callbackUrl))
+            {
+                return RedirectToAction("Error", "Home", new { errorMessage = "An unexpected error occurred during email confirmation callback url generation." });
+            }
+
+            if (user.Email == null) return RedirectToAction("Error", "Home", new { errorMessage = "An unexpected error occurred during email confirmation." });
+            await emailSender.SendEmailConfirmationAsync(user.Email, callbackUrl, kinaUnaLanguage.Id);
 
             return RedirectToAction("VerificationMailSent");
-
-            // Show error page with a meaningful message.
-            return View("Error", new ErrorViewModel { ErrorMessage = "An unexpected error occurred during email confirmation." });
         }
 
         [HttpGet]
@@ -246,7 +247,7 @@ namespace KinaUna.OpenIddict.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            if (model.Email != null)
+            if (string.IsNullOrWhiteSpace(model.Email))
             {
                 ApplicationUser? user = await userManager.FindByEmailAsync(model.Email);
                 if (user == null || !(await userManager.IsEmailConfirmedAsync(user)))
@@ -471,10 +472,10 @@ namespace KinaUna.OpenIddict.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            ApplicationUser user = await userManager.FindByIdAsync(userId);
+            ApplicationUser? user = await userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return RedirectToAction("Error", "Home", new { message = $"Unable to load user with ID '{userId}'." });
+                return RedirectToAction("Error", "Home", new { errorMessage = $"Unable to load user with ID '{userId}'." });
             }
             IdentityResult result = await userManager.ConfirmEmailAsync(user, code);
             if (!result.Succeeded) return View(model);

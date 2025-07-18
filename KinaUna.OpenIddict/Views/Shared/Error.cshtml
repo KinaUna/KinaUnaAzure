@@ -5,6 +5,12 @@
 
 <h1 class="text-danger">Error.</h1>
 <h2 class="text-danger">An error occurred while processing your request.</h2>
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <p>
+        <strong>Error message:</strong> <code>@Model.ErrorMessage</code>
+    </p>
+}
 
 @if (Model.ShowRequestId)
 {
