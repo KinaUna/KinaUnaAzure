@@ -471,7 +471,11 @@ namespace KinaUna.OpenIddict.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            ApplicationUser user = await userManager.FindByIdAsync(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'."); // Todo: Show error page.
+            ApplicationUser user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return RedirectToAction("Error", "Home", new { message = $"Unable to load user with ID '{userId}'." });
+            }
             IdentityResult result = await userManager.ConfirmEmailAsync(user, code);
             if (!result.Succeeded) return View(model);
 
