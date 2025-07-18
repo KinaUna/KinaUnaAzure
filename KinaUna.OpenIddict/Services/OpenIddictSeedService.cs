@@ -76,7 +76,6 @@ namespace KinaUna.OpenIddict.Services
                             // Scopes
                             Permissions.Scopes.Profile,
                             Permissions.Scopes.Email,
-                            Permissions.Scopes.Roles,
                             
                             // Custom scopes
                             Permissions.Prefixes.Scope + Constants.ProgenyApiName,

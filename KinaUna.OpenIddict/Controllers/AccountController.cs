@@ -44,7 +44,7 @@ namespace KinaUna.OpenIddict.Controllers
 
             if (ModelState.IsValid)
             {
-                List<Claim> claims = [new(ClaimTypes.Name, model.Username)];
+                List<Claim> claims = [new(ClaimTypes.Email, model.Email)];
 
                 ClaimsIdentity claimsIdentity = new(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 

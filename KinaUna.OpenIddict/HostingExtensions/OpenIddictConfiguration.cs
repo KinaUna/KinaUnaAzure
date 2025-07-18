@@ -11,21 +11,6 @@ using KinaUna.OpenIddict.HostingExtensions.Interfaces;
 
 namespace KinaUna.OpenIddict.HostingExtensions
 {
-    // Extension method preserved for backward compatibility
-    public static class OpenIddictConfigurationExtensions
-    {
-        public static void ConfigureOpenIddict(this IServiceCollection services, 
-            string serverEncryptionCertificateThumbprint, 
-            string serverSigningCertificateThumbprint)
-        {
-            OpenIddictConfiguration configurator = new(
-                serverEncryptionCertificateThumbprint,
-                serverSigningCertificateThumbprint);
-                
-            configurator.ConfigureServices(services);
-        }
-    }
-
     public class OpenIddictConfiguration(
         string serverEncryptionCertificateThumbprint,
         string serverSigningCertificateThumbprint,
@@ -131,9 +116,9 @@ namespace KinaUna.OpenIddict.HostingExtensions
 
         private void ConfigureScopes(OpenIddictServerBuilder options)
         {
-            options.RegisterScopes(OpenIddictConstants.Scopes.Email, 
-                OpenIddictConstants.Scopes.Profile, 
-                OpenIddictConstants.Scopes.Roles,
+            options.RegisterScopes(OpenIddictConstants.Scopes.Email,
+                OpenIddictConstants.Scopes.OpenId,
+                OpenIddictConstants.Scopes.Profile,
                 OpenIddictConstants.Scopes.OfflineAccess, 
                 Constants.ProgenyApiName, 
                 Constants.MediaApiName);
