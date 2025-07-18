@@ -11,21 +11,6 @@ using KinaUna.OpenIddict.HostingExtensions.Interfaces;
 
 namespace KinaUna.OpenIddict.HostingExtensions
 {
-    // Extension method preserved for backward compatibility
-    public static class OpenIddictConfigurationExtensions
-    {
-        public static void ConfigureOpenIddict(this IServiceCollection services, 
-            string serverEncryptionCertificateThumbprint, 
-            string serverSigningCertificateThumbprint)
-        {
-            OpenIddictConfiguration configurator = new(
-                serverEncryptionCertificateThumbprint,
-                serverSigningCertificateThumbprint);
-                
-            configurator.ConfigureServices(services);
-        }
-    }
-
     public class OpenIddictConfiguration(
         string serverEncryptionCertificateThumbprint,
         string serverSigningCertificateThumbprint,
@@ -42,7 +27,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
             ConfigureOpenIddict(services);
         }
 
-        private void ConfigureAuthentication(IServiceCollection services)
+        private static void ConfigureAuthentication(IServiceCollection services)
         {
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -54,7 +39,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
                 });
         }
 
-        private void ConfigureIdentity(IServiceCollection services)
+        private static void ConfigureIdentity(IServiceCollection services)
         {
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
                 {
@@ -69,7 +54,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
                 .AddDefaultTokenProviders();
         }
 
-        private void ConfigureQuartz(IServiceCollection services)
+        private static void ConfigureQuartz(IServiceCollection services)
         {
             services.AddQuartz(options =>
             {
@@ -106,7 +91,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
             services.AddHostedService<OpenIddictSeeder>();
         }
 
-        private void ConfigureEndpoints(OpenIddictServerBuilder options)
+        private static void ConfigureEndpoints(OpenIddictServerBuilder options)
         {
             options.SetAuthorizationEndpointUris("connect/authorize")
                 .SetIntrospectionEndpointUris("connect/introspect")
@@ -116,24 +101,24 @@ namespace KinaUna.OpenIddict.HostingExtensions
                 .SetEndUserVerificationEndpointUris("connect/verify");
         }
 
-        private void ConfigureFlows(OpenIddictServerBuilder options)
+        private static void ConfigureFlows(OpenIddictServerBuilder options)
         {
             options.AllowAuthorizationCodeFlow()
                 .AllowClientCredentialsFlow()
                 .AllowRefreshTokenFlow();
         }
 
-        private void ConfigureTokenLifetimes(OpenIddictServerBuilder options)
+        private static void ConfigureTokenLifetimes(OpenIddictServerBuilder options)
         {
             options.SetAccessTokenLifetime(TimeSpan.FromSeconds(300))
                 .SetRefreshTokenLifetime(TimeSpan.FromDays(30));
         }
 
-        private void ConfigureScopes(OpenIddictServerBuilder options)
+        private static void ConfigureScopes(OpenIddictServerBuilder options)
         {
-            options.RegisterScopes(OpenIddictConstants.Scopes.Email, 
-                OpenIddictConstants.Scopes.Profile, 
-                OpenIddictConstants.Scopes.Roles,
+            options.RegisterScopes(OpenIddictConstants.Scopes.Email,
+                OpenIddictConstants.Scopes.OpenId,
+                OpenIddictConstants.Scopes.Profile,
                 OpenIddictConstants.Scopes.OfflineAccess, 
                 Constants.ProgenyApiName, 
                 Constants.MediaApiName);
@@ -148,7 +133,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
             options.AddSigningCertificate(signingCertificate);
         }
 
-        private void ConfigureAspNetCore(OpenIddictServerBuilder options)
+        private static void ConfigureAspNetCore(OpenIddictServerBuilder options)
         {
             options.UseAspNetCore()
                 .EnableAuthorizationEndpointPassthrough()

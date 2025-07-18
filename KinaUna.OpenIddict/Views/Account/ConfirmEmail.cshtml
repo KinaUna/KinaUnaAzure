@@ -1,0 +1,17 @@
+﻿@using KinaUna.Data
+@using KinaUna.OpenIddict.Services
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Confirm email", PageNames.Account, languageId);
+}
+<h2>@ViewData["Title"]</h2>
+<div>
+    <p>
+        @await LocaleManager.GetTranslation("Thank you for confirming your email.", PageNames.Account, languageId)
+    </p>
+</div>
+<div>
+    <br/>@await LocaleManager.GetTranslation("You can now log in to KinaUna", PageNames.Account, languageId)<br/>
+    <a class="btn btn-success" href="@Constants.WebAppUrl">@await LocaleManager.GetTranslation("Go to the KinaUna Web App", PageNames.Account, languageId)</a><br/>
+</div>

@@ -39,19 +39,18 @@ string serverSigningCertificateThumbprint = builder.Configuration["ServerSigning
 
 // Replace the direct call to ConfigureOpenIddict with:
 builder.Services.AddSingleton<IOpenIddictConfigurator>(_ => 
-    new OpenIddictConfiguration(
-        serverEncryptionCertificateThumbprint,
-        serverSigningCertificateThumbprint));
+    new OpenIddictConfiguration(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint));
 
 // Then resolve and use it
 builder.Services.AddSingleton<IOpenIddictConfigurator, OpenIddictConfiguration>(_ => 
-    new OpenIddictConfiguration(
-        serverEncryptionCertificateThumbprint, 
-        serverSigningCertificateThumbprint));
+    new OpenIddictConfiguration(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint));
 
-IOpenIddictConfigurator openIddictConfigurator = builder.Services.BuildServiceProvider()
-    .GetRequiredService<IOpenIddictConfigurator>();
-openIddictConfigurator.ConfigureServices(builder.Services);
+builder.Services.AddSingleton<IOpenIddictConfigurator>(_ =>
+{
+    OpenIddictConfiguration config = new(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint);
+    config.ConfigureServices(builder.Services);
+    return config;
+});
 
 // Add to Program.cs after OpenIddict configuration
 builder.Services.AddScoped<IClientConfigProvider, ConfigurationClientConfigProvider>();
