@@ -154,9 +154,9 @@ namespace KinaUnaWeb
             app.UseCookiePolicy();
             CultureInfo[] supportedCultures =
             [
-                new CultureInfo("en-US"),
-                new CultureInfo("da-DK"),
-                new CultureInfo("de-DE"),
+                new("en-US"),
+                new("da-DK"),
+                new("de-DE"),
             ];
 
             RequestLocalizationOptions localizationOptions = new()
@@ -187,8 +187,7 @@ namespace KinaUnaWeb
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-
-            // app.UseCors("KinaUnaCors");
+            
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
