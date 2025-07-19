@@ -34,7 +34,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
                 {
                     options.LoginPath = "/login";
                     options.LogoutPath = "/logout";
-                    options.ExpireTimeSpan = TimeSpan.FromDays(60);
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(50);
                     options.SlidingExpiration = true;
                 });
         }
