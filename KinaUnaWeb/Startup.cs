@@ -108,7 +108,7 @@ namespace KinaUnaWeb
 
             string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
             string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            string authenticationServerClientSecret = Configuration.GetValue<string>("AuthenticationServerClientSecret");
+            string authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretString");
             string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer"); 
             string mediaServerUrl = Configuration.GetValue<string>("MediaApiServer");
 
@@ -117,6 +117,7 @@ namespace KinaUnaWeb
                                                            throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
             string serverSigningCertificateThumbprint = Configuration["ServerSigningCertificateThumbprint"] ??
                                                         throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
+            
             services.AddSingleton<IOpenIddictConfigurator>(_ =>
             {
                 OpenIddictConfiguration config = new(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint, authenticationServerClientId, authenticationServerClientSecret, authorityServerUrl);
