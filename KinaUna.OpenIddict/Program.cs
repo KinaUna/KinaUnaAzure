@@ -30,20 +30,27 @@ builder.Services.AddDataProtection()
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<ILocaleManager, LocaleManager>();
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews().AddViewLocalization();
+
+IMvcBuilder mvcBuilder = builder.Services.AddRazorPages();
+
+if (builder.Environment.IsDevelopment())
+{
+    mvcBuilder.AddRazorRuntimeCompilation();
+}
 
 
 // Register the OpenIddict services and configure them.
 string serverEncryptionCertificateThumbprint = builder.Configuration["ServerEncryptionCertificateThumbprint"] ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
 string serverSigningCertificateThumbprint = builder.Configuration["ServerSigningCertificateThumbprint"] ?? throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
 
-// Replace the direct call to ConfigureOpenIddict with:
-builder.Services.AddSingleton<IOpenIddictConfigurator>(_ => 
-    new OpenIddictConfiguration(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint));
+//// Replace the direct call to ConfigureOpenIddict with:
+//builder.Services.AddSingleton<IOpenIddictConfigurator>(_ => 
+//    new OpenIddictConfiguration(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint));
 
-// Then resolve and use it
-builder.Services.AddSingleton<IOpenIddictConfigurator, OpenIddictConfiguration>(_ => 
-    new OpenIddictConfiguration(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint));
+//// Then resolve and use it
+//builder.Services.AddSingleton<IOpenIddictConfigurator, OpenIddictConfiguration>(_ => 
+//    new OpenIddictConfiguration(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint));
 
 builder.Services.AddSingleton<IOpenIddictConfigurator>(_ =>
 {

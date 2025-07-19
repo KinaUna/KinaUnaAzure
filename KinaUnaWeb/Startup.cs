@@ -1,8 +1,11 @@
-﻿using IdentityModel;
+﻿using Azure.Storage.Blobs;
+using KinaUna.Data;
+using KinaUna.Data.Contexts;
+using KinaUna.Data.Models;
+using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Services;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using KinaUnaWeb.Services.HttpClients;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -10,22 +13,17 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
-using System.Threading.Tasks;
-using KinaUna.Data.Models;
-using KinaUnaWeb.Hubs;
+using KinaUnaWeb.HostingExtensions;
+using KinaUnaWeb.HostingExtensions.Interfaces;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
-using KinaUna.Data;
-using KinaUnaWeb.Services.HttpClients;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Hosting;
-using Azure.Storage.Blobs;
-using Microsoft.ApplicationInsights.Extensibility.Implementation;
 
 namespace KinaUnaWeb
 {
@@ -51,17 +49,25 @@ namespace KinaUnaWeb
                 options.MinimumSameSitePolicy = SameSiteMode.Lax;
                 options.Secure = CookieSecurePolicy.Always;
             });
-            
+
+            string authOpenIddictClientConnection = Configuration["AuthOpenIddictClientConnection"] ?? throw new InvalidOperationException("AuthOpenIddictClientConnection was not found in the configuration data.");
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseSqlServer(authOpenIddictClientConnection,
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                    });
+                options.UseOpenIddict(); // Add this line to enable OpenIddict support
+            });
+
             string storageConnectionString = Configuration["BlobStorageConnectionString"];
             new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
 
             services.AddDataProtection()
                 .SetApplicationName("KinaUnaWebApp")
                 .PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml");
-
-            string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
-            string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            string authenticationServerClientSecret = Configuration.GetValue<string>("AuthenticationServerClientSecret");
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddTransient<ILocaleManager, LocaleManager>();
@@ -99,41 +105,27 @@ namespace KinaUnaWeb
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
             services.AddHttpClient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddDistributedMemoryCache();
-            
+
+            string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
+            string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
+            string authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretString");
             string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer"); 
             string mediaServerUrl = Configuration.GetValue<string>("MediaApiServer");
 
-            services.Configure<AuthConfigurations>(config => { config.StsServer = authorityServerUrl; config.ProtectedApiUrl = progenyServerUrl + " " + mediaServerUrl;});
+            // Register the OpenIddict services and configure them.
+            string serverEncryptionCertificateThumbprint = Configuration["ServerEncryptionCertificateThumbprint"] ??
+                                                           throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
+            string serverSigningCertificateThumbprint = Configuration["ServerSigningCertificateThumbprint"] ??
+                                                        throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
             
-            //services.AddCors(o =>
-            //{
-            //    if (_env.IsDevelopment())
-            //    {
-            //        o.AddDefaultPolicy(builder =>
-            //        {
-            //            builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324",
-            //                "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397",
-            //                "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io",
-            //                "https://nuuk2020.kinauna.io").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-            //        });
-            //    }
+            services.AddSingleton<IOpenIddictConfigurator>(_ =>
+            {
+                OpenIddictConfiguration config = new(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint, authenticationServerClientId, authenticationServerClientSecret, authorityServerUrl);
+                config.ConfigureServices(services);
+                return config;
+            });
 
-            //    o.AddPolicy("KinaUnaCors", builder =>
-            //    {
-            //        if (_env.IsDevelopment())
-            //        {
-            //            builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324",
-            //                    "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397",
-            //                    "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io",
-            //                    "https://nuuk2020.kinauna.io").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-            //        }
-            //        else
-            //        {
-            //            builder.WithOrigins("https://*." + Constants.AppRootDomain)
-            //                .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-            //        }
-            //    });
-            //});
+            services.Configure<AuthConfigurations>(config => { config.StsServer = authorityServerUrl; config.ProtectedApiUrl = progenyServerUrl + " " + mediaServerUrl;});
             
             services.AddControllersWithViews(options =>
             {
@@ -141,68 +133,15 @@ namespace KinaUnaWeb
                     .RequireAuthenticatedUser()
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
-            }).AddNewtonsoftJson().AddViewLocalization()
-            .AddRazorRuntimeCompilation();
+            }).AddNewtonsoftJson().AddViewLocalization();
 
-            services.AddAuthentication(options =>
-                {
-                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-            }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-                {
-                    options.Cookie.Name = "KinaUnaCookie";
-                    options.SlidingExpiration = true;
-                    options.Events.OnSigningIn = (context) =>
-                    {
-                        context.CookieOptions.Expires = DateTimeOffset.UtcNow.AddDays(30);
-                        return Task.CompletedTask;
-                    };
+            IMvcBuilder mvcBuilder = services.AddRazorPages();
 
-                    if (!_env.IsDevelopment())
-                    {
-                        options.Cookie.Domain = "web." + Constants.AppRootDomain;
-
-                    }
-                })
-                .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
-                {
-                    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    options.Authority = authorityServerUrl;
-                    options.ClientId = authenticationServerClientId;
-                    options.ResponseType = OidcConstants.ResponseTypes.Code;
-                    options.UsePkce = true;
-                    options.RequireHttpsMetadata = true;
-                    options.Scope.Add("openid");
-                    options.Scope.Add("profile");
-                    options.Scope.Add("email");
-                    options.Scope.Add("roles");
-                    options.Scope.Add("timezone");
-                    options.Scope.Add("joindate");
-                    options.Scope.Add("viewchild");
-                    options.Scope.Add(Constants.ProgenyApiName);
-                    options.Scope.Add(Constants.MediaApiName);
-                    options.Scope.Add("offline_access");
-                    options.SaveTokens = true;
-                    options.ClientSecret = authenticationServerClientSecret;
-                    options.GetClaimsFromUserInfoEndpoint = true;
-                    options.ClaimActions.Remove("amr");
-                    options.ClaimActions.DeleteClaim("sid");
-                    options.ClaimActions.DeleteClaim("idp");
-                    options.ClaimActions.MapUniqueJsonKey("role", "role");
-                    options.ClaimActions.MapUniqueJsonKey("timezone", "timezone");
-                    options.ClaimActions.MapUniqueJsonKey("email", "email");
-                    options.ClaimActions.MapUniqueJsonKey("email_verified", "email_verified");
-                    options.ClaimActions.MapUniqueJsonKey("viewchild", "viewchild");
-                    options.ClaimActions.MapUniqueJsonKey("joindate", "joindate");
-                    options.ClaimActions.MapUniqueJsonKey("preferred_username", "preferred_username");
-                    options.MapInboundClaims = false; // Prevents IdentityModel from mapping claims automatically, we want to use the original claim types from IdentityServer
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        NameClaimType = JwtClaimTypes.Email,
-                        RoleClaimType = JwtClaimTypes.Role
-                    };
-                    
-                });
+            if (_env.IsDevelopment())
+            {
+                mvcBuilder.AddRazorRuntimeCompilation();
+            }
+            
             services.AddAuthorization();
             services.AddSignalR().AddMessagePackProtocol().AddNewtonsoftJsonProtocol();
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
@@ -216,9 +155,9 @@ namespace KinaUnaWeb
             app.UseCookiePolicy();
             CultureInfo[] supportedCultures =
             [
-                new CultureInfo("en-US"),
-                new CultureInfo("da-DK"),
-                new CultureInfo("de-DE"),
+                new("en-US"),
+                new("da-DK"),
+                new("de-DE"),
             ];
 
             RequestLocalizationOptions localizationOptions = new()
@@ -249,8 +188,7 @@ namespace KinaUnaWeb
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-
-            // app.UseCors("KinaUnaCors");
+            
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
