@@ -50,7 +50,7 @@ namespace KinaUnaWeb
                 options.Secure = CookieSecurePolicy.Always;
             });
 
-            string authOpenIddictClientConnection = Configuration["AuthOpenIddictClientConnection"] ?? throw new InvalidOperationException("AuthDefaultConnection was not found in the configuration data.");
+            string authOpenIddictClientConnection = Configuration["AuthOpenIddictClientConnection"] ?? throw new InvalidOperationException("AuthOpenIddictClientConnection was not found in the configuration data.");
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseSqlServer(authOpenIddictClientConnection,
