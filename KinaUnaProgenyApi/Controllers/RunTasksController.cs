@@ -1,17 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
-using KinaUnaProgenyApi.Services.ScheduledTasks;
-using KinaUna.Data.Extensions;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.ScheduledTasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using OpenIddict.Validation.AspNetCore;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers;
 
-[Authorize(AuthenticationSchemes = "Bearer")]
+[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 [Produces("application/json")]
 [Route("api/[controller]")]
 [ApiController]

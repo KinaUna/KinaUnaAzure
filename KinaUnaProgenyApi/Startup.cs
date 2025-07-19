@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using IdentityServer4.AccessTokenValidation;
+using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
@@ -8,15 +8,15 @@ using KinaUnaProgenyApi.Services.ScheduledTasks;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenIddict.Validation.AspNetCore;
 
 namespace KinaUnaProgenyApi
 {
-    public class Startup(IConfiguration configuration)
+    public class Startup(IConfiguration configuration, IHostEnvironment env)
     {
         private IConfiguration Configuration { get; } = configuration;
 
@@ -26,8 +26,8 @@ namespace KinaUnaProgenyApi
 
             string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
             string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            string authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];
-
+            string authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretString");
+            
             services.AddDbContext<ProgenyDbContext>(options =>
                 options.UseSqlServer(Configuration["ProgenyDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
 
@@ -85,23 +85,56 @@ namespace KinaUnaProgenyApi
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();
 
-            services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddIdentityServerAuthentication(options =>
+            services.AddOpenIddict()
+                .AddValidation(options =>
                 {
-                    options.Authority = authorityServerUrl;
-                    options.ApiName = authenticationServerClientId;
-                    options.ApiSecret = authenticationServerClientSecret;
-                    options.RequireHttpsMetadata = true;
-                    options.EnableCaching = true;
-                    options.CacheDuration = TimeSpan.FromSeconds(600);
+                    // Note: the validation handler uses OpenID Connect discovery
+                    // to retrieve the address of the introspection endpoint.
+                    options.SetIssuer(authorityServerUrl);
+                    options.AddAudiences(Constants.ProgenyApiName);
+
+                    // Configure the validation handler to use introspection and register the client
+                    // credentials used when communicating with the remote introspection endpoint.
+                    options.UseIntrospection()
+                        .SetClientId(authenticationServerClientId)
+                        .SetClientSecret(authenticationServerClientSecret);
+
+                    // Register the System.Net.Http integration.
+                    options.UseSystemNetHttp();
+
+                    // Register the ASP.NET Core host.
+                    options.UseAspNetCore();
                 });
+
+
+            // Configure CORS to allow requests from the specified origin.
+            // If development, allow any origin.
+            if (env.IsDevelopment())
+            {
+                services.AddCors(options => options.AddDefaultPolicy(policy =>
+                    policy.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .WithOrigins(Constants.DevelopmentCorsList)));
+            }
+            // If production, restrict to the specified origin.
+            else
+            {
+                // In production, only allow requests from the specified origin.
+                // This is important for security reasons.
+                services.AddCors(options => options.AddDefaultPolicy(policy =>
+                    policy.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .WithOrigins(Constants.ProductionCorsList)));
+            }
+
+            services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
             services.AddAuthorization();
             services.AddApplicationInsightsTelemetry();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
-            if (env.IsDevelopment())
+            if (_env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -110,6 +143,7 @@ namespace KinaUnaProgenyApi
                 app.UseHsts();
             }
 
+            app.UseCors();
             app.UseHttpsRedirection();
             app.UseRouting();
 
