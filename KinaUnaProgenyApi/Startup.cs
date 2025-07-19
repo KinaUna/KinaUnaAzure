@@ -143,6 +143,7 @@ namespace KinaUnaProgenyApi
                 app.UseHsts();
             }
 
+            app.UseCors();
             app.UseHttpsRedirection();
             app.UseRouting();
 

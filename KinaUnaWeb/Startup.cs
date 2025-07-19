@@ -161,7 +161,27 @@ namespace KinaUnaWeb
             {
                 mvcBuilder.AddRazorRuntimeCompilation();
             }
-            
+
+            // Configure CORS to allow requests from the specified origin.
+            // If development, allow any origin.
+            if (_env.IsDevelopment())
+            {
+                services.AddCors(options => options.AddDefaultPolicy(policy =>
+                    policy.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowAnyOrigin()));
+            }
+            // If production, restrict to the specified origin.
+            else
+            {
+                // In production, only allow requests from the specified origin.
+                // This is important for security reasons.
+                services.AddCors(options => options.AddDefaultPolicy(policy =>
+                    policy.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .WithOrigins("https://web.kinauna.com", "https://auth.kinauna.com", "https://progenyapi.kinauna.com", "https://mediaapi.kinauna.com")));
+            }
+
             services.AddAuthorization();
             services.AddSignalR().AddMessagePackProtocol().AddNewtonsoftJsonProtocol();
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
@@ -208,7 +228,8 @@ namespace KinaUnaWeb
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-            
+
+            app.UseCors();
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
