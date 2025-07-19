@@ -134,7 +134,7 @@ namespace KinaUnaProgenyApi
 
         public void Configure(IApplicationBuilder app)
         {
-            if (env.IsDevelopment())
+            if (_env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
