@@ -134,7 +134,7 @@ namespace KinaUnaWeb
                 services.AddCors(options => options.AddDefaultPolicy(policy =>
                     policy.AllowAnyHeader()
                         .AllowAnyMethod()
-                        .AllowAnyOrigin()));
+                        .WithOrigins(Constants.DevelopmentCorsList)));
             }
             // If production, restrict to the specified origin.
             else
@@ -144,7 +144,7 @@ namespace KinaUnaWeb
                 services.AddCors(options => options.AddDefaultPolicy(policy =>
                     policy.AllowAnyHeader()
                         .AllowAnyMethod()
-                        .WithOrigins("https://web.kinauna.com", "https://auth.kinauna.com", "https://progenyapi.kinauna.com", "https://mediaapi.kinauna.com")));
+                        .WithOrigins(Constants.ProductionCorsList)));
             }
 
             services.AddControllersWithViews(options =>
