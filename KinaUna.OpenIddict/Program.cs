@@ -64,6 +64,26 @@ builder.Services.AddScoped<IClientConfigProvider, ConfigurationClientConfigProvi
 builder.Services.AddScoped<IOpenIddictSeedService, OpenIddictSeedService>();
 builder.Services.AddHostedService<OpenIddictSeeder>();
 
+// Configure CORS to allow requests from the specified origin.
+// If development, allow any origin.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+        policy.AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithOrigins(Constants.DevelopmentCorsList)));
+}
+// If production, restrict to the specified origin.
+else
+{
+    // In production, only allow requests from the specified origin.
+    // This is important for security reasons.
+    builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+        policy.AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithOrigins(Constants.ProductionCorsList)));
+}
+
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -74,6 +94,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseCors();
 app.UseHttpsRedirection();
 app.UseRouting();
 
