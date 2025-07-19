@@ -162,25 +162,7 @@ namespace KinaUnaWeb
                 mvcBuilder.AddRazorRuntimeCompilation();
             }
 
-            // Configure CORS to allow requests from the specified origin.
-            // If development, allow any origin.
-            if (_env.IsDevelopment())
-            {
-                services.AddCors(options => options.AddDefaultPolicy(policy =>
-                    policy.AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .WithOrigins(Constants.DevelopmentCorsList)));
-            }
-            // If production, restrict to the specified origin.
-            else
-            {
-                // In production, only allow requests from the specified origin.
-                // This is important for security reasons.
-                services.AddCors(options => options.AddDefaultPolicy(policy =>
-                    policy.AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .WithOrigins(Constants.ProductionCorsList)));
-            }
+            // Removed duplicate CORS configuration block. Logic is now consolidated above.
 
             services.AddAuthorization();
             services.AddSignalR().AddMessagePackProtocol().AddNewtonsoftJsonProtocol();
