@@ -126,7 +126,27 @@ namespace KinaUnaWeb
             });
 
             services.Configure<AuthConfigurations>(config => { config.StsServer = authorityServerUrl; config.ProtectedApiUrl = progenyServerUrl + " " + mediaServerUrl;});
-            
+
+            // Configure CORS to allow requests from the specified origin.
+            // If development, allow any origin.
+            if (_env.IsDevelopment())
+            {
+                services.AddCors(options => options.AddDefaultPolicy(policy =>
+                    policy.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowAnyOrigin()));
+            }
+            // If production, restrict to the specified origin.
+            else
+            {
+                // In production, only allow requests from the specified origin.
+                // This is important for security reasons.
+                services.AddCors(options => options.AddDefaultPolicy(policy =>
+                    policy.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .WithOrigins("https://web.kinauna.com", "https://auth.kinauna.com", "https://progenyapi.kinauna.com", "https://mediaapi.kinauna.com")));
+            }
+
             services.AddControllersWithViews(options =>
             {
                 AuthorizationPolicy policy = new AuthorizationPolicyBuilder()
