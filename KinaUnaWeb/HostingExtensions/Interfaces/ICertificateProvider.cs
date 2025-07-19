@@ -25,7 +25,7 @@ namespace KinaUnaWeb.HostingExtensions.Interfaces
                 X509Certificate2Collection currentCerts = certCollection.Find(X509FindType.FindByTimeValid, DateTime.Now, false);
                 X509Certificate2Collection signingCert = currentCerts.Find(X509FindType.FindByThumbprint, thumbprint, false);
                 if (signingCert.Count == 0)
-                    throw new CryptographicException($"Certificate with thumbprint {thumbprint} not found in the current user's certificate store.");
+                    throw new CryptographicException($"Certificate with thumbprint {thumbprint} not found in the current user's certificate store. Please verify that the certificate is installed and ensure you are checking the correct certificate store location (e.g., CurrentUser or LocalMachine).");
                 // Return the first certificate in the collection, has the thumbprint and is current.
                 return signingCert[0];
             }
