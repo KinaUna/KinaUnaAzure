@@ -1,15 +1,17 @@
-﻿using System;
+﻿using IdentityModel.Client;
+using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaWeb.Models.ItemViewModels;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using IdentityModel.Client;
-using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
-using KinaUnaWeb.Models.ItemViewModels;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -21,11 +23,17 @@ namespace KinaUnaWeb.Services.HttpClients
     {
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public MediaHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public MediaHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _apiTokenClient = apiTokenClient;
-            string clientUri = configuration.GetValue<string>("MediaApiServer");
+            _httpContextAccessor = httpContextAccessor;
+            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>("ProgenyApiServerLocal");
+            }
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -41,7 +49,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>Picture object with the given PictureId. Picture object with PictureId = 0 if the Picture isn't found.</returns>
         public async Task<Picture> GetPicture(int pictureId, string timeZone)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string pictureApiPath = "/api/Pictures/" + pictureId;
@@ -68,7 +77,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>Picture object.</returns>
         public async Task<Picture> GetRandomPicture(int progenyId, string timeZone)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string pictureApiPath = "api/Pictures/Random/" + progenyId;
@@ -97,7 +107,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of Picture objects.</returns>
         public async Task<List<Picture>> GetPictureList(int progenyId, string timeZone)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string pictureApiPath = "/api/Pictures/Progeny/" + progenyId;
@@ -128,7 +139,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of Picture objects.</returns>
         public async Task<List<Picture>> GetProgenyPictureList(int progenyId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string pictureApiPath = "/api/Pictures/ProgenyPicturesList/" + progenyId;
@@ -148,7 +160,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The added Picture.</returns>
         public async Task<Picture> AddPicture(Picture picture)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string newPictureApiPath = "/api/Pictures/";
@@ -177,7 +190,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated Picture object.</returns>
         public async Task<Picture> UpdatePicture(Picture picture)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string updatePictureApiPath = "/api/Pictures/" + picture.PictureId;
@@ -197,7 +211,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the Picture was deleted successfully.</returns>
         public async Task<bool> DeletePicture(int pictureId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string deletePictureApiPath = "/api/Pictures/" + pictureId;
@@ -213,7 +228,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the Comment was successfully added.</returns>
         public async Task<bool> AddPictureComment(Comment comment)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string newCommentApiPath = "/api/Comments/";
@@ -229,7 +245,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the Comment was removed successfully.</returns>
         public async Task<bool> DeletePictureComment(int commentId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string deleteCommentApiPath = "/api/Comments/" + commentId;
@@ -246,7 +263,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>PictureVieModel.</returns>
         public async Task<PictureViewModel> GetPictureViewModel(PictureViewModelRequest request)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string pageApiPath = "/api/Pictures/PictureViewModel/";
@@ -282,7 +300,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>PictureViewModel.</returns>
         public async Task<PictureViewModel> GetPictureElement(int pictureId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string pageApiPath = "/api/Pictures/PictureElement/" + pictureId;
@@ -297,7 +316,8 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<PicturesLocationsResponse> GetPictureLocations(PicturesLocationsRequest picturesLocationsRequest)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string picturesApiPath = "/api/Pictures/GetPictureLocations/";
@@ -311,7 +331,8 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string locationApiPath = "/api/Pictures/GetPicturesNearLocation/";
@@ -335,8 +356,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>VideoPageViewModel</returns>
         public async Task<VideoPageViewModel> GetVideoPage(int pageSize, int id, int progenyId, int sortBy, string tagFilter, string timeZone)
         {
-
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string pageApiPath = "/api/Videos/Page?pageSize=" + pageSize + "&pageIndex=" + id + "&progenyId=" + progenyId + "&sortBy=" + sortBy;
@@ -374,7 +395,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>VideoViewModel</returns>
         public async Task<VideoViewModel> GetVideoViewModel(VideoViewModelRequest request)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string pageApiPath = "/api/Videos/VideoViewModel";
@@ -410,7 +432,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>Video object with the given VideoId. Video object with VideoId = 0 if the Video isn't found.</returns>
         public async Task<Video> GetVideo(int videoId, string timeZone)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string videoApiPath = "/api/Videos/" + videoId;
@@ -442,7 +465,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of Video objects.</returns>
         public async Task<List<Video>> GetVideoList(int progenyId, string timeZone)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string videoApiPath = "/api/Videos/Progeny/" + progenyId;
@@ -472,7 +496,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of Video objects.</returns>
         public async Task<List<Video>> GetProgenyVideoList(int progenyId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string videoApiPath = "/api/Videos/ProgenyVideosList/" + progenyId;
@@ -492,7 +517,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The added Video object.</returns>
         public async Task<Video> AddVideo(Video video)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string newVideoApiPath = "/api/Videos/";
@@ -512,7 +538,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated Video object.</returns>
         public async Task<Video> UpdateVideo(Video video)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string updateVideoApiPath = "/api/Videos/" + video.VideoId;
@@ -531,7 +558,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the Video was successfully removed.</returns>
         public async Task<bool> DeleteVideo(int videoId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string deleteVideoApiPath = "/api/videos/" + videoId;
@@ -547,7 +575,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the comment was successfully added.</returns>
         public async Task<bool> AddVideoComment(Comment comment)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string newCommentApiPath = "/api/comments/";
@@ -562,7 +591,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the Comment was successfully removed.</returns>
         public async Task<bool> DeleteVideoComment(int commentId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string deleteCommentApiPath = "/api/comments/" + commentId;
@@ -578,7 +608,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>VideoViewModel.</returns>
         public async Task<VideoViewModel> GetVideoElement(int videoId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string pageApiPath = "/api/Videos/VideoElement/" + videoId;

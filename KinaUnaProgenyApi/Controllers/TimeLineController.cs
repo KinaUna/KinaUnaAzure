@@ -7,7 +7,6 @@ using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpenIddict.Validation.AspNetCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +21,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="userAccessService"></param>
     /// <param name="timelineService"></param>
     /// <param name="userInfoService"></param>
-    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

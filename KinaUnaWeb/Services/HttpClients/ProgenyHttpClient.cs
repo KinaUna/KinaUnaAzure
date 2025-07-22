@@ -8,6 +8,8 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -19,12 +21,18 @@ namespace KinaUnaWeb.Services.HttpClients
     {
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ProgenyHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public ProgenyHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClient;
+            _httpContextAccessor = httpContextAccessor;
             _apiTokenClient = apiTokenClient;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>("ProgenyApiServerLocal");
+            }
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -45,7 +53,8 @@ namespace KinaUnaWeb.Services.HttpClients
                 progenyId = Constants.DefaultChildId;
             }
 
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             Progeny progeny = new();
@@ -86,7 +95,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>Progeny: The Progeny object that was added.</returns>
         public async Task<Progeny> AddProgeny(Progeny progeny)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string newProgenyApiPath = "/api/Progeny/";
@@ -106,7 +116,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated Progeny object.</returns>
         public async Task<Progeny> UpdateProgeny(Progeny progeny)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string updateProgenyApiPath = "/api/Progeny/" + progeny.Id;
@@ -125,7 +136,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if successfully removed.</returns>
         public async Task<bool> DeleteProgeny(int progenyId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string progenyApiPath = "/api/Progeny/" + progenyId;
@@ -140,9 +152,10 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The ProgenyInfo object for the given Progeny.</returns>
         public async Task<ProgenyInfo> GetProgenyInfo(int progenyId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
-
+            
             ProgenyInfo progenyInfo = new();
             string progenyInfoApiPath = "/api/Progeny/GetProgenyInfo/" + progenyId;
 
@@ -164,7 +177,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated ProgenyInfo object.</returns>
         public async Task<ProgenyInfo> UpdateProgenyInfo(ProgenyInfo progenyInfo)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string updateProgenyInfoApiPath = "/api/Progeny/UpdateProgenyInfo/" + progenyInfo.ProgenyId;
@@ -183,7 +197,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of Progeny objects.</returns>
         public async Task<List<Progeny>> GetProgenyAdminList(string email)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string accessApiPath = "/api/Access/AdminListByUserPost/";
@@ -205,7 +220,8 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList)
         {
             List<TimeLineItem> yearAgoPosts = [];
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string yearAgoApiPath = "/api/Timeline/ProgeniesYearAgo/";

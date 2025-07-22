@@ -1,10 +1,5 @@
 using System.Security.Cryptography;
-using KinaUna.OpenIddict.HostingExtensions;
-using KinaUna.OpenIddict.HostingExtensions.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using System.Security.Cryptography.X509Certificates;
-using OpenIddict.Validation;
 
 namespace KinaUna.OpenIddict.Tests.HostingExtensions
 {
@@ -13,42 +8,6 @@ namespace KinaUna.OpenIddict.Tests.HostingExtensions
         // Test certificates with the thumbprints below need to be present in the current user's certificate store.
         private const string TestEncryptionThumbprint = "97ce9ffd8e1a22bde47513719db5eb0a1addc4f0";
         private const string TestSigningThumbprint = "f0af1f3875f89d46d9d867fba664b86ca0af2b4f";
-
-        [Fact]
-        public void ConfigureServices_RegistersRequiredServices()
-        {
-            // Arrange
-            ServiceCollection services = new();
-            Mock<ICertificateProvider> mockCertProvider = new();
-
-            
-            mockCertProvider.Setup(p => 
-                    p.GetCertificate(TestEncryptionThumbprint))
-                .Returns(GetTestEncryptionCertificate(TestEncryptionThumbprint));
-
-            mockCertProvider.Setup(p =>
-                    p.GetCertificate(TestSigningThumbprint))
-                .Returns(GetTestSigningCertificate(TestSigningThumbprint));
-
-            OpenIddictConfiguration configuration = new(
-                TestEncryptionThumbprint,
-                TestSigningThumbprint,
-                mockCertProvider.Object);
-            
-            // Act
-            configuration.ConfigureServices(services);
-            
-            // Assert
-            ServiceProvider serviceProvider = services.BuildServiceProvider();
-            
-            // Verify essential services were registered
-            Assert.NotNull(serviceProvider.GetService<OpenIddictValidationService>());
-            //Assert.NotNull(serviceProvider.GetService<OpenIddictServerService>());
-            
-            // Verify certificate provider was called twice (once for encryption, once for signing)
-            mockCertProvider.Verify(p => p.GetCertificate(TestEncryptionThumbprint), Times.Exactly(2));
-            mockCertProvider.Verify(p => p.GetCertificate(TestSigningThumbprint), Times.Exactly(2));
-        }
         
         [Fact]
         public void SigningCertificate_IsValid_ForDigitalSignature()

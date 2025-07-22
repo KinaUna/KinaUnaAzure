@@ -4,7 +4,6 @@ using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpenIddict.Validation.AspNetCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -19,7 +18,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="azureNotifications"></param>
     /// <param name="imageStore"></param>
     /// <param name="notificationsService"></param>
-    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

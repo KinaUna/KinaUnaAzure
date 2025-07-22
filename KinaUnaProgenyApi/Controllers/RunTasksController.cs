@@ -5,14 +5,13 @@ using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpenIddict.Validation.AspNetCore;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers;
 
-[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+[Authorize(Policy = "UserOrClient")]
 [Produces("application/json")]
 [Route("api/[controller]")]
 [ApiController]

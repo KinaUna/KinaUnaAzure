@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using IdentityModel.Client;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -18,12 +20,18 @@ namespace KinaUnaWeb.Services.HttpClients
     {
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CalendarsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public CalendarsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _httpClient = httpClient;
+            _httpContextAccessor = httpContextAccessor;
             _apiTokenClient = apiTokenClient;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>("ProgenyApiServerLocal");
+            }
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -37,7 +45,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>CalendarItem. Start and end times are in UTC timezone.</returns>
         public async Task<CalendarItem> GetCalendarItem(int eventId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             CalendarItem calendarItem = new();
@@ -59,7 +68,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The CalendarItem object that was added. Start and end times are in UTC timezone.</returns>
         public async Task<CalendarItem> AddCalendarItem(CalendarItem eventItem)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string calendarApiPath = "/api/Calendar/";
@@ -79,7 +89,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated CalendarItem object.Start and end times are in UTC timezone.</returns>
         public async Task<CalendarItem> UpdateCalendarItem(CalendarItem eventItem)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string updateCalendarApiPath = "/api/Calendar/" + eventItem.EventId;
@@ -99,7 +110,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the CalendarItem object was successfully removed.</returns>
         public async Task<bool> DeleteCalendarItem(int eventId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string calendarApiPath = "/api/Calendar/" + eventId;
@@ -115,9 +127,10 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<List<CalendarItem>> GetProgeniesCalendarList(CalendarItemsRequest request)
         {
             List<CalendarItem> progenyCalendarList = [];
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
-            
+
             string calendarApiPath = "/api/Calendar/Progenies/";
             HttpResponseMessage calendarResponse = await _httpClient.PostAsync(calendarApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
             if (!calendarResponse.IsSuccessStatusCode) return progenyCalendarList;

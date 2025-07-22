@@ -7,6 +7,7 @@ using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
@@ -20,9 +21,15 @@ namespace KinaUnaWeb.Services.HttpClients
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthHttpClient(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public AuthHttpClient(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
+            // Todo: Update to use separate configuration for Development and Production environments.
+            // Todo: Update to use OpenIdDict.
             string clientUri = configuration.GetValue<string>("AuthenticationServer");
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>("AuthenticationServerLocal");
+            }
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));

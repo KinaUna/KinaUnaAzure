@@ -1,13 +1,15 @@
-﻿using System;
+﻿using IdentityModel.Client;
+using KinaUna.Data.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using IdentityModel.Client;
-using KinaUna.Data.Models;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -18,12 +20,18 @@ namespace KinaUnaWeb.Services.HttpClients
     {
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ContactsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public ContactsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _httpClient = httpClient;
+            _httpContextAccessor = httpContextAccessor;
             _apiTokenClient = apiTokenClient;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>("ProgenyApiServerLocal");
+            }
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -37,7 +45,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>Contact with the given ContactId. If not found, a new Contact with ContactId = 0.</returns>
         public async Task<Contact> GetContact(int contactId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             Contact contactItem = new();
@@ -59,7 +68,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>Contact: The Contact object that was added.</returns>
         public async Task<Contact> AddContact(Contact contact)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string contactsApiPath = "/api/Contacts/";
@@ -79,7 +89,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>Contact: The updated Contact object.</returns>
         public async Task<Contact> UpdateContact(Contact contact)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string updateContactApiPath = "/api/Contacts/" + contact.ContactId;
@@ -95,7 +106,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the Contact was successfully removed.</returns>
         public async Task<bool> DeleteContact(int contactId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string contactApiPath = "/api/Contacts/" + contactId;
@@ -113,7 +125,8 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<List<Contact>> GetContactsList(int progenyId, string tagFilter = "")
         {
             List<Contact> progenyContactsList = [];
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string contactsApiPath = "/api/Contacts/Progeny/" + progenyId;

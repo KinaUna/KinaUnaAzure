@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Contexts;
+﻿using System.Reflection;
+using KinaUna.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUna.OpenIddict.HostingExtensions
@@ -25,7 +26,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
                 options.UseSqlServer(progenyDefaultConnection,
                     sqlServerOptionsAction: sqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly("KinaUna.IDP");
+                        sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
                         //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
@@ -35,7 +36,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
                 options.UseSqlServer(mediaDefaultConnection,
                     sqlServerOptionsAction: sqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly("KinaUna.IDP");
+                        sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
                         //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
@@ -46,7 +47,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
                 options.UseSqlServer(authDefaultConnection,
                     sqlServerOptionsAction: sqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly("KinaUna.IDP");
+                        sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
                         //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     });

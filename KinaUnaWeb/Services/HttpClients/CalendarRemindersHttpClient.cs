@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using IdentityModel.Client;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -15,12 +17,18 @@ namespace KinaUnaWeb.Services.HttpClients
     {
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CalendarRemindersHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public CalendarRemindersHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _httpClient = httpClient;
+            _httpContextAccessor = httpContextAccessor;
             _apiTokenClient = apiTokenClient;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>("ProgenyApiServerLocal");
+            }
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -29,7 +37,8 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<CalendarReminder> GetCalendarReminder(int reminderId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             CalendarReminder calendarReminder = new();
@@ -46,7 +55,8 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<CalendarReminder> AddCalendarReminder(CalendarReminder calendarReminder)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string calendarRemindersApiPath = "/api/CalendarReminders/AddCalendarReminder";
@@ -60,7 +70,8 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<CalendarReminder> UpdateCalendarReminder(CalendarReminder calendarReminder)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string calendarRemindersApiPath = "/api/CalendarReminders/UpdateCalendarReminder";
@@ -74,7 +85,8 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<CalendarReminder> DeleteCalendarReminder(CalendarReminder calendarReminder)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string calendarRemindersApiPath = "/api/CalendarReminders/DeleteCalendarReminder/" + calendarReminder.CalendarReminderId;
@@ -94,7 +106,8 @@ namespace KinaUnaWeb.Services.HttpClients
                 FilterNotified = filterNotified
             };
 
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string calendarRemindersApiPath = "/api/CalendarReminders/GetCalendarRemindersForUser";
@@ -108,7 +121,8 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<List<CalendarReminder>> GetUsersCalendarRemindersForEvent(int eventId, string userId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             CalendarRemindersForUserRequest request = new()

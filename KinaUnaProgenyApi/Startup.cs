@@ -1,18 +1,19 @@
-﻿using System;
-using System.Reflection;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUnaProgenyApi.AuthorizationHandlers;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Validation.AspNetCore;
+using System;
 
 namespace KinaUnaProgenyApi
 {
@@ -23,23 +24,29 @@ namespace KinaUnaProgenyApi
         public void ConfigureServices(IServiceCollection services)
         {
             TelemetryDebugWriter.IsTracingDisabled = true;
-
-            string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
-            string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            string authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretString");
             
             services.AddDbContext<ProgenyDbContext>(options =>
-                options.UseSqlServer(Configuration["ProgenyDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
+                options.UseSqlServer(Configuration["ProgenyDefaultConnection"],
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
+                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                    }));
 
             services.AddDbContext<MediaDbContext>(options =>
-                options.UseSqlServer(Configuration["MediaDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
+                options.UseSqlServer(Configuration["MediaDefaultConnection"],
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                    }));
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration["DataProtectionConnection"],
                     sqlServerOptionsAction: sqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
-                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
@@ -85,18 +92,39 @@ namespace KinaUnaProgenyApi
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();
 
+            // Register the OpenIddict services and configure them.
+            string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
+            string progenyApiClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
+            // string webServerClientId = Configuration.GetValue<string>("WebServerClientId");
+            //string webServerApiClientId = Configuration.GetValue<string>("WebServerApiClientId");
+            string authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretString");
+            if (env.IsDevelopment())
+            {
+                authorityServerUrl = Configuration.GetValue<string>("AuthenticationServerLocal");
+                progenyApiClientId = Configuration.GetValue<string>("AuthenticationServerClientIdLocal");
+                //webServerClientId = Configuration.GetValue<string>("WebClientIdLocal");
+                //webServerApiClientId = Configuration.GetValue<string>("WebServerApiClientIdLocal");
+                authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretStringLocal");
+            }
             services.AddOpenIddict()
                 .AddValidation(options =>
                 {
                     // Note: the validation handler uses OpenID Connect discovery
                     // to retrieve the address of the introspection endpoint.
                     options.SetIssuer(authorityServerUrl);
-                    options.AddAudiences(Constants.ProgenyApiName);
+                    if (env.IsDevelopment())
+                    {
+                        options.AddAudiences(Constants.ProgenyApiName + "local");
+                    }
+                    else
+                    {
+                        options.AddAudiences(Constants.ProgenyApiName);
+                    }
 
                     // Configure the validation handler to use introspection and register the client
                     // credentials used when communicating with the remote introspection endpoint.
                     options.UseIntrospection()
-                        .SetClientId(authenticationServerClientId)
+                        .SetClientId(progenyApiClientId)
                         .SetClientSecret(authenticationServerClientSecret);
 
                     // Register the System.Net.Http integration.
@@ -127,8 +155,57 @@ namespace KinaUnaProgenyApi
                         .WithOrigins(Constants.ProductionCorsList)));
             }
 
-            services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-            services.AddAuthorization();
+            services.AddAuthentication(options => { options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme; });
+
+            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            //    .AddJwtBearer(options =>
+            //    {
+            //        options.Authority = authorityServerUrl;
+            //        options.TokenValidationParameters = new TokenValidationParameters
+            //        {
+            //            ValidateAudience = false
+            //        };
+
+            //        // Add this block to hook into token validation events
+            //        options.Events = new JwtBearerEvents
+            //        {
+            //            OnTokenValidated = context =>
+            //            {
+            //                // 🔴 <- SET BREAKPOINT HERE
+            //                var claims = context.Principal?.Claims.ToList();
+
+            //                // Optional: Log claims to confirm it's hit
+            //                foreach (var claim in claims)
+            //                {
+            //                    Console.WriteLine($"Claim: {claim.Type} = {claim.Value}");
+            //                }
+
+            //                return Task.CompletedTask;
+            //            },
+            //            OnAuthenticationFailed = context =>
+            //            {
+            //                // Optional: log or break on failure
+            //                Console.WriteLine($"Auth failed: {context.Exception.Message}");
+            //                return Task.CompletedTask;
+            //            }
+            //        };
+            //    });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("UserOrClient", policy =>
+                {
+                    policy.Requirements.Add(new UserOrClientRequirement());
+                });
+            });
+
+            services.AddSingleton<IAuthorizationHandler, UserOrClientHandler>();
+            
+            //services.Configure<AuthenticationOptions>(options =>
+            //{
+            //    options.DefaultAuthenticateScheme = "Bearer";
+            //    options.DefaultChallengeScheme = "Bearer";
+            //});
             services.AddApplicationInsightsTelemetry();
         }
 

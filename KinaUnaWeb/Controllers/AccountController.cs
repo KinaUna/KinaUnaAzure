@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 using Microsoft.Extensions.Configuration;
@@ -24,7 +26,7 @@ namespace KinaUnaWeb.Controllers
     /// <param name="configuration"></param>
     /// <param name="authHttpClient">Http client for IDP API.</param>
     /// <param name="userInfosHttpClient">Http client for UserInfos API endpoints.</param>
-    public class AccountController(ImageStore imageStore, IConfiguration configuration, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
+    public class AccountController(ImageStore imageStore, IConfiguration configuration, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient, ITokenService tokenService)
         : Controller
     {
         /// <summary>
@@ -37,81 +39,16 @@ namespace KinaUnaWeb.Controllers
             return View();
         }
 
-        /// <summary>
-        /// Sign in action. Redirects to the IDP login page.
-        /// </summary>
-        /// <param name="returnUrl"></param>
-        /// <returns></returns>
         [AllowAnonymous]
-        public async Task SignIn(string returnUrl)
+        public IActionResult LogOut()
         {
-            // clear any existing external cookie to ensure a clean login process
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+            // Sign out the user from the application and the IDP server.
+            _ = HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            _ = HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
 
-            // see IdentityServer4 QuickStartUI AccountController ExternalLogin
-            await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme,
-                new AuthenticationProperties()
-                {
-                    RedirectUri = returnUrl
-                });
-
+            // Redirect to the home page.
+            return RedirectToAction("Index", "Home");
         }
-
-        /// <summary>
-        /// Post sign in action. Redirects to the IDP login page.
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        [AllowAnonymous]
-        public async Task Login()
-        {
-            // clear any existing external cookie to ensure a clean login process
-            await HttpContext.SignOutAsync( OpenIdConnectDefaults.AuthenticationScheme);
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-            // see IdentityServer4 QuickStartUI AccountController ExternalLogin
-            await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme,
-                new AuthenticationProperties()
-                {
-                    RedirectUri = Url.Action("LoginCallback"),
-                });
-        }
-
-        /// <summary>
-        /// Callback action for the IDP login. Redirects to the Home/Index page.
-        /// </summary>
-        /// <returns>Redirect to Home/Index page.</returns>
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult LoginCallback()
-        {
-            return RedirectToAction(nameof(HomeController.Index), "Home");
-        }
-
-        /// <summary>
-        /// HttpPost Log out action. Signs out the user and redirects to the IDP log out page.
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        [AllowAnonymous]
-        public async Task LogOut()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
-        }
-
-        /// <summary>
-        /// HttpGet Log out action. Signs out the user and redirects to the IDP log out page.
-        /// </summary>
-        /// <returns></returns>
-        [AllowAnonymous]
-        public async Task CheckOut()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
-        }
-
         /// <summary>
         /// Access denied page. Shows a message that the user does not have access to the requested page.
         /// </summary>

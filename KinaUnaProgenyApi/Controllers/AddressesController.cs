@@ -2,7 +2,6 @@
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpenIddict.Validation.AspNetCore;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
@@ -11,7 +10,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// API endpoints for Addresses.
     /// </summary>
     /// <param name="locationService"></param>
-    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

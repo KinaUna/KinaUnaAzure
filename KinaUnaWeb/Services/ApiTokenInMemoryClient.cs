@@ -1,16 +1,16 @@
 ﻿using IdentityModel.Client;
+using KinaUna.Data;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using KinaUna.Data;
-using Microsoft.AspNetCore.Authentication;
 
 namespace KinaUnaWeb.Services
 {
@@ -33,6 +33,7 @@ namespace KinaUnaWeb.Services
         private readonly IOptions<AuthConfigurations> _authConfigurations;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
+        private readonly IHostEnvironment _env;
 
         private class AccessTokenItem
         {
@@ -42,7 +43,9 @@ namespace KinaUnaWeb.Services
 
         private readonly ConcurrentDictionary<string, AccessTokenItem> _accessTokens = new();
 
-        public ApiTokenInMemoryClient(IOptions<AuthConfigurations> authConfigurations, IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
+        public ApiTokenInMemoryClient(IOptions<AuthConfigurations> authConfigurations, IHttpClientFactory httpClientFactory,
+            ILoggerFactory loggerFactory, IHttpContextAccessor httpContextAccessor, IConfiguration configuration,
+            IHostEnvironment env)
         {
             _authConfigurations = authConfigurations;
             _httpClient = httpClientFactory.CreateClient();
@@ -50,6 +53,7 @@ namespace KinaUnaWeb.Services
             _logger = loggerFactory.CreateLogger<ApiTokenInMemoryClient>();
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
+            _env = env;
         }
 
         /// <summary>
@@ -140,27 +144,62 @@ namespace KinaUnaWeb.Services
         /// <returns>String with the access token.</returns>
         public async Task<string> GetProgenyAndMediaApiToken(bool apiTokenOnly = false)
         {
+            string accessToken;
+            string authenticationServer;
+            string authenticationServerClientId;
+            string authenticationServerSecret;
+            string scope = Constants.ProgenyApiName;
+
+            if (_env.IsDevelopment())
+            {
+                authenticationServer = _configuration.GetValue<string>("AuthenticationServerLocal");
+                authenticationServerClientId = _configuration.GetValue<string>("WebServerClientIdLocal");
+                authenticationServerSecret = _configuration.GetValue<string>("OpenIddictSecretStringLocal");
+                scope = Constants.ProgenyApiName + "local";
+            }
+            else
+            {
+                authenticationServer = _configuration.GetValue<string>("AuthenticationServer");
+                authenticationServerClientId = _configuration.GetValue<string>("WebServerClientId");
+                authenticationServerSecret = _configuration.GetValue<string>("OpenIddictSecretString");
+            }
+
             if (!apiTokenOnly)
             {
-                HttpContext currentContext = _httpContextAccessor.HttpContext;
-
-                if (currentContext != null)
+                if (_httpContextAccessor.HttpContext != null)
                 {
-                    string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+                    string userAccessToken = await _httpContextAccessor.HttpContext.GetTokenAsync("access_token");
 
-                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
+                    if (!string.IsNullOrWhiteSpace(userAccessToken))
                     {
-                        return contextAccessToken;
+                        // Exchange user token for API token
+                        TokenResponse tokenExchangeResponse = await _httpClient.RequestTokenExchangeTokenAsync(new TokenExchangeTokenRequest
+                        {
+                            Address = authenticationServer + "/connect/token",
+                            ClientId = authenticationServerClientId,
+                            ClientSecret = authenticationServerSecret,
+                            SubjectToken = userAccessToken,
+                            SubjectTokenType = "urn:ietf:params:oauth:token-type:access_token",
+                            Scope = scope
+                        });
+
+                        accessToken = tokenExchangeResponse.AccessToken;
+                        return accessToken;
                     }
                 }
             }
 
-            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
+            // No user: use client credentials
+            TokenResponse tokenResponse = await _httpClient.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            {
+                Address = authenticationServer + "/connect/token",
+                ClientId = authenticationServerClientId,
+                ClientSecret = authenticationServerSecret,
+                Scope = scope
+            });
 
-            string accessToken = await GetApiToken(
-            authenticationServerClientId,
-                Constants.ProgenyApiName + " " + Constants.MediaApiName,
-                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
+            accessToken = tokenResponse.AccessToken;
+
             return accessToken;
         }
     }

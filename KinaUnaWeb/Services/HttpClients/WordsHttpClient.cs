@@ -5,7 +5,9 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using IdentityModel.Client;
 using KinaUna.Data.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -16,13 +18,19 @@ namespace KinaUnaWeb.Services.HttpClients
     public class WordsHttpClient : IWordsHttpClient
     {
         private readonly HttpClient _httpClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
 
-        public WordsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public WordsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _httpClient = httpClient;
+            _httpContextAccessor = httpContextAccessor;
             _apiTokenClient = apiTokenClient;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>("ProgenyApiServerLocal");
+            }
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -38,7 +46,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>VocabularyItem object with the given WordId. If not found or an error occurs, a new VocabularyItem with WordId=0 is returned.</returns>
         public async Task<VocabularyItem> GetWord(int wordId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string vocabularyApiPath = "/api/Vocabulary/" + wordId;
@@ -57,7 +66,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The added VocabularyItem object.</returns>
         public async Task<VocabularyItem> AddWord(VocabularyItem word)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             const string vocabularyApiPath = "/api/Vocabulary/";
@@ -76,7 +86,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated VocabularyItem object. If the item is not found or an error occurs a new VocabularyItem with WordId=0 is returned.</returns>
         public async Task<VocabularyItem> UpdateWord(VocabularyItem word)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string updateVocabularyApiPath = "/api/Vocabulary/" + word.WordId;
@@ -95,7 +106,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the VocabularyItem was successfully deleted.</returns>
         public async Task<bool> DeleteWord(int wordId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string vocabularyApiPath = "/api/Vocabulary/" + wordId;
@@ -111,7 +123,8 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<List<VocabularyItem>> GetWordsList(int progenyId)
         {
             List<VocabularyItem> progenyWordsList = [];
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
             _httpClient.SetBearerToken(accessToken);
 
             string vocabularyApiPath = "/api/Vocabulary/Progeny/" + progenyId;

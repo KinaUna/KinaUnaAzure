@@ -31,8 +31,13 @@ namespace KinaUna.OpenIddict.Controllers
         [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            return View();
+            LoginViewModel model = new()
+            {
+                Email = string.Empty,
+                Password = string.Empty,
+                ReturnUrl = returnUrl
+            };
+            return View(model);
         }
 
         [HttpPost]
@@ -40,21 +45,47 @@ namespace KinaUna.OpenIddict.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            ViewData["ReturnUrl"] = model.ReturnUrl;
-
-            if (ModelState.IsValid)
+            // Attempt to log in user
+            if (!ModelState.IsValid)
             {
-                List<Claim> claims = [new(ClaimTypes.Email, model.Email)];
+                return View(model);
+            }
+            
+            ApplicationUser? user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return View(model);
+            }
+            if (!user.EmailConfirmed)
+            {
+                ModelState.AddModelError(string.Empty, "You must confirm your email before logging in.");
+                return View(model);
+            }
+            if (user.LockoutEnabled && user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+            {
+                ModelState.AddModelError(string.Empty, "Your account is locked. Please try again later.");
+                return View(model);
+            }
 
-                ClaimsIdentity claimsIdentity = new(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-                await HttpContext.SignInAsync(new ClaimsPrincipal(claimsIdentity));
-
+            Microsoft.AspNetCore.Identity.SignInResult result = await signInManager.PasswordSignInAsync(user, model.Password, true, lockoutOnFailure: false);
+            if (result.Succeeded)
+            {
+                // Sign in successful, redirect to return URL or home page
                 if (Url.IsLocalUrl(model.ReturnUrl))
                 {
+                    // Create authentication properties to ensure the cookie is properly set
+                    var authProperties = new AuthenticationProperties
+                    {
+                        IsPersistent = true,
+                        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
+                    };
+                    
+                    // Explicitly sign in with the created properties
+                    await signInManager.SignInAsync(user, authProperties);
+                    
                     return Redirect(model.ReturnUrl);
                 }
-
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
 

@@ -39,11 +39,9 @@ namespace KinaUnaWeb.Controllers
             
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             HomeFeedViewModel model = new(baseModel);
-            
-            if (model.CurrentProgeny.Name == "401")
+           if (model.CurrentProgeny.Name == "401")
             {
-                string returnUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
-                return RedirectToAction("CheckOut", "Account", new{returnUrl});
+                return RedirectToAction("LogOut", "Account");
             }
 
             model.SetBirthTimeData();

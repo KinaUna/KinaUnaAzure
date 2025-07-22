@@ -33,7 +33,7 @@
         {
             if (userInfo.UserId == "401") // The current user's account is not valid, log out.
             {
-                Context.Response.Redirect("/Account/CheckOut?returnUrl=" + returnUrl);
+                Context.Response.Redirect("/Account/LogOut");
             }
             else
             {
@@ -52,7 +52,7 @@
             }
             else
             {
-                Context.Response.Redirect("/Account/SignIn?returnUrl=" + returnUrl);
+                Context.Response.Redirect("/Account/LogOut");
             }
         }
     }
@@ -199,9 +199,9 @@
                 else
                 {
                     <li class="nav-item ml-lg-auto">
-                            <form id="login-form" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post">
+                            <a id="login-form" class="form-inline-fullwidth" asp-controller="Authentication" asp-action="LogIn">
                             <button id="login-button" type="submit" class="btn btn-link nav-link text-left btn-block"><i class="material-icons ml-2 mr-1">exit_to_app</i> @await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, languageId)</button>
-                        </form>
+                        </a>
                     </li>
                 }
             </ul>

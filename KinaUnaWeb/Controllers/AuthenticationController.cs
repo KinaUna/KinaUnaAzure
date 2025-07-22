@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace KinaUnaWeb.Controllers
@@ -14,6 +15,7 @@ namespace KinaUnaWeb.Controllers
     // Reference: https://github.com/openiddict/openiddict-samples/blob/dev/samples/Velusia/Velusia.Client/Controllers/AuthenticationController.cs
     public class AuthenticationController : Controller
     {
+        [AllowAnonymous]
         [HttpGet("~/login")]
         public ActionResult LogIn(string returnUrl)
         {
@@ -27,6 +29,7 @@ namespace KinaUnaWeb.Controllers
             return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
         }
 
+        [AllowAnonymous]
         [HttpPost("~/logout"), ValidateAntiForgeryToken]
         public async Task<ActionResult> LogOut(string returnUrl)
         {
@@ -66,10 +69,11 @@ namespace KinaUnaWeb.Controllers
             // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
             return SignOut(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
         }
-        
+
         // Note: this controller uses the same callback action for all providers
         // but for users who prefer using a different action per provider,
         // the following action can be split into separate actions.
+        [AllowAnonymous]
         [HttpGet("~/callback/login/{provider}"), HttpPost("~/callback/login/{provider}"), IgnoreAntiforgeryToken]
         public async Task<ActionResult> LogInCallback()
         {
@@ -188,6 +192,7 @@ namespace KinaUnaWeb.Controllers
         // Note: this controller uses the same callback action for all providers
         // but for users who prefer using a different action per provider,
         // the following action can be split into separate actions.
+        [AllowAnonymous]
         [HttpGet("~/callback/logout/{provider}"), HttpPost("~/callback/logout/{provider}"), IgnoreAntiforgeryToken]
         public async Task<ActionResult> LogOutCallback()
         {
