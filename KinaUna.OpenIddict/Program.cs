@@ -50,15 +50,25 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<ILocaleManager, LocaleManager>();
 
-string authenticationServerClientSecret = builder.Configuration.GetValue<string>("OpenIddictSecretString") 
-                                          ?? throw new InvalidOperationException("OpenIddictSecretString was not found in the configuration data.");
-string authApiName = Constants.AuthApiName;
+string authenticationServerClientId = builder.Configuration.GetValue<string>(AuthConstants.AuthenticationServerClientIdKey) 
+                                      ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerClientIdKey + " was not found in the configuration data.");
+string authenticationServerClientSecret = builder.Configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey) 
+                                          ?? throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + " was not found in the configuration data.");
 if (builder.Environment.IsDevelopment())
 {
     // In development, use the local URLs for the Progeny API and Web Server.
-    authenticationServerClientSecret = builder.Configuration.GetValue<string>("OpenIddictSecretStringLocal") 
-                                       ?? throw new InvalidOperationException("OpenIddictSecretStringLocal was not found in the configuration data.");
-    authApiName = Constants.AuthApiName + "local";
+    authenticationServerClientId = builder.Configuration.GetValue<string>(AuthConstants.AuthenticationServerClientIdKey + "Local") 
+                                      ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerClientIdKey + "Local was not found in the configuration data.");
+    authenticationServerClientSecret = builder.Configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey + "Local") 
+                                       ?? throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + "Local was not found in the configuration data.");
+}
+
+if (builder.Environment.IsStaging())
+{
+    authenticationServerClientId = builder.Configuration.GetValue<string>(AuthConstants.AuthenticationServerClientIdKey + "Azure")
+                                   ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerClientIdKey + "Azure was not found in the configuration data.");
+    authenticationServerClientSecret = builder.Configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey + "Azure")
+                                       ?? throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + "Azure was not found in the configuration data.");
 }
 //Register the OpenIddict services and configure them.
 builder.Services.AddAuthentication(options =>
@@ -114,7 +124,6 @@ builder.Services.AddOpenIddict()
     {
         // Token endpoint
         options.SetAuthorizationEndpointUris("connect/authorize")
-            //.SetDeviceEndpointUris("connect/device")
             .SetIntrospectionEndpointUris("connect/introspect")
             .SetEndSessionEndpointUris("connect/logout")
             .SetTokenEndpointUris("connect/token")
@@ -134,12 +143,12 @@ builder.Services.AddOpenIddict()
             Scopes.OpenId,
             Scopes.Roles,
             Scopes.OfflineAccess,
-            Constants.ProgenyApiName,
-            Constants.ProgenyApiName + "azure",
-            Constants.ProgenyApiName + "local",
-            Constants.AuthApiName,
-            Constants.AuthApiName + "azure",
-            Constants.AuthApiName + "local");
+            AuthConstants.ProgenyApiName,
+            AuthConstants.ProgenyApiName + "azure",
+            AuthConstants.ProgenyApiName + "local",
+            AuthConstants.AuthApiName,
+            AuthConstants.AuthApiName + "azure",
+            AuthConstants.AuthApiName + "local");
         
         options.AddEncryptionCertificate(encryptionCertificate);
         options.AddSigningCertificate(signingCertificate);
@@ -160,7 +169,7 @@ builder.Services.AddOpenIddict()
     .AddValidation(options =>
     {
         options.UseLocalServer();
-        options.SetClientId(authApiName);
+        options.SetClientId(authenticationServerClientId);
         options.SetClientSecret(authenticationServerClientSecret);
         options.UseAspNetCore();
     });
@@ -180,15 +189,24 @@ if (builder.Environment.IsDevelopment())
             .AllowAnyMethod()
             .WithOrigins(Constants.DevelopmentCorsList)));
 }
-// If production, restrict to the specified origin.
 else
 {
-    // In production, only allow requests from the specified origin.
-    // This is important for security reasons.
-    builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
-        policy.AllowAnyHeader()
-            .AllowAnyMethod()
-            .WithOrigins(Constants.ProductionCorsList)));
+    if (builder.Environment.IsStaging())
+    {
+        builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+            policy.AllowAnyHeader()
+                .AllowAnyMethod()
+                .WithOrigins(Constants.StagingCorsList)));
+    }
+    else
+    {
+        // In production, only allow requests from the specified origin.
+        // This is important for security reasons.
+        builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+            policy.AllowAnyHeader()
+                .AllowAnyMethod()
+                .WithOrigins(Constants.ProductionCorsList)));
+    }
 }
 
 builder.Services.AddControllersWithViews().AddViewLocalization();
@@ -211,8 +229,11 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+else
+{
+    app.UseDeveloperExceptionPage();
+}
 
-app.UseDeveloperExceptionPage();
 app.UseStatusCodePagesWithReExecute("/error");
 
 app.UseCors();
@@ -221,9 +242,9 @@ app.UseRouting();
 
 CultureInfo[] supportedCultures =
 [
-    new CultureInfo("en-US"),
-    new CultureInfo("da-DK"),
-    new CultureInfo("de-DE"),
+    new("en-US"),
+    new("da-DK"),
+    new("de-DE"),
 ];
 
 app.UseCookiePolicy();
@@ -246,7 +267,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseFileServer();
-//app.UseStaticFiles();
 app.UseEndpoints(options =>
 {
     _ = options.MapControllers();

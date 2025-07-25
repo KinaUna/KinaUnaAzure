@@ -60,18 +60,29 @@ namespace KinaUnaWeb.Services
 
             if (env.IsDevelopment())
             {
-                _authenticationServer = configuration.GetValue<string>("AuthenticationServerLocal");
-                _authenticationServerClientId = configuration.GetValue<string>("WebServerClientIdLocal");
-                _authenticationServerSecret = configuration.GetValue<string>("OpenIddictSecretStringLocal");
-                _scope = scope + " " + Constants.ProgenyApiName + "local " + Constants.AuthApiName + "local";
+                _authenticationServer = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local");
+                _authenticationServerClientId = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Local");
+                _authenticationServerSecret = configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey + "Local");
+                _scope = scope + " " + AuthConstants.ProgenyApiName + "local " + AuthConstants.AuthApiName + "local";
             }
             else
             {
-                _authenticationServer = configuration.GetValue<string>("AuthenticationServer");
-                _authenticationServerClientId = configuration.GetValue<string>("WebServerClientId");
-                _authenticationServerSecret = configuration.GetValue<string>("OpenIddictSecretString");
-                _scope = scope + " " + Constants.ProgenyApiName + " " + Constants.AuthApiName;
+                if (env.IsStaging())
+                {
+                    _authenticationServer = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure");
+                    _authenticationServerClientId = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Azure");
+                    _authenticationServerSecret = configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey + "Azure");
+                    _scope = scope + " " + AuthConstants.ProgenyApiName + "azure " + AuthConstants.AuthApiName + "azure";
+                }
+                else
+                {
+                    _authenticationServer = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey);
+                    _authenticationServerClientId = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey);
+                    _authenticationServerSecret = configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey);
+                    _scope = scope + " " + AuthConstants.ProgenyApiName + " " + AuthConstants.AuthApiName;
+                }
             }
+            
         }
 
         /// <summary>
@@ -89,7 +100,7 @@ namespace KinaUnaWeb.Services
             // Check if the userId is null or empty, and return a token for API access
             if (string.IsNullOrWhiteSpace(userId))
             {
-                userId = Constants.ProgenyApiName; // Use a constant for API access
+                userId = AuthConstants.ProgenyApiName; // Use a constant for API access
             }
 
             TokenInfo newToken = null;
@@ -114,7 +125,7 @@ namespace KinaUnaWeb.Services
             }
 
             // If userId was null or empty, return a token for API access
-            if (userId == Constants.ProgenyApiName)
+            if (userId == AuthConstants.ProgenyApiName)
             {
                 newToken = await ApiTokenAsync();
             }

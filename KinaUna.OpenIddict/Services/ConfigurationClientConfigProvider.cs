@@ -26,31 +26,73 @@ namespace KinaUna.OpenIddict.Services
         /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="OpenIddictApplicationDescriptor"/> objects, each containing
         /// the configuration details for a web client.</returns>
         /// <exception cref="InvalidOperationException">Thrown if any required configuration value is missing, such as "AuthenticationServer", "WebServer", or
-        /// "OpenIddictSecretString".</exception>
+        /// "SecretString".</exception>
         public IEnumerable<OpenIddictApplicationDescriptor> GetWebClientConfigs()
         {
-            string authorityServerUrl = configuration.GetValue<string>("AuthenticationServer") ??
-                                        throw new InvalidOperationException("AuthenticationServer was not found in the configuration data.");
-            string authorityServerUrlLocal = configuration.GetValue<string>("AuthenticationServerLocal") ??
-                                        throw new InvalidOperationException("AuthenticationServerLocal was not found in the configuration data.");
-            string webServerUrl = configuration.GetValue<string>("WebServer") ??
-                                  throw new InvalidOperationException("WebServer not found in configuration data.");
-            // string webServerAzureUrl = configuration.GetValue<string>("WebServerAzure") ??
-            //                           throw new InvalidOperationException("WebServerAzure not found in configuration data.");
-            string webServerLocal = configuration.GetValue<string>("WebServerLocal") ??
-                                    throw new InvalidOperationException("WebServerLocal not found in configuration data.");
-            string secretString = configuration.GetValue<string>("OpenIddictSecretString") ??
-                                  throw new InvalidOperationException("OpenIddictSecretString not found in configuration data.");
-            string secretStringLocal = configuration.GetValue<string>("OpenIddictSecretStringLocal") ??
-                                  throw new InvalidOperationException("OpenIddictSecretStringLocal not found in configuration data.");
+            string authorityServerUrl = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ??
+                                        throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
+            string authorityServerUrlLocal = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local") ??
+                                        throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Local was not found in the configuration data.");
+            string authorityServerUrlAzure = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure") ??
+                                        throw new InvalidOperationException("AuthenticationServerAzure was not found in the configuration data.");
+
+            string authorityServerClientId = configuration.GetValue<string>(AuthConstants.AuthenticationServerClientIdKey) ??
+                                        throw new InvalidOperationException(AuthConstants.AuthenticationServerClientIdKey + " was not found in the configuration data.");
+            string authorityServerClientIdLocal = configuration.GetValue<string>(AuthConstants.AuthenticationServerClientIdKey + "Local") ??
+                                        throw new InvalidOperationException(AuthConstants.AuthenticationServerClientIdKey + "Local was not found in the configuration data.");
+            string authorityServerClientIdAzure = configuration.GetValue<string>(AuthConstants.AuthenticationServerClientIdKey + "Azure") ??
+                                                  throw new InvalidOperationException(AuthConstants.AuthenticationServerClientIdKey + "Azure was not found in the configuration data.");
+
+            string authorityServerApiClientId = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey) ??
+                                                 throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + " was not found in the configuration data.");
+            string authorityServerApiClientIdLocal = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Local") ??
+                                                throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Local was not found in the configuration data.");
+            string authorityServerApiClientIdAzure = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Azure") ??
+                                                     throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Azure was not found in the configuration data.");
+
+
+            string authorityServerClientSecret = configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey) ??
+                                                 throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + " was not found in the configuration data.");
+            string authorityServerClientSecretLocal = configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey + "Local") ??
+                                                 throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + "Local was not found in the configuration data.");
+            string authorityServerClientSecretAzure = configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey + "Azure") ??
+                                                      throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + "Azure was not found in the configuration data.");
+
+            string webServerUrl = configuration.GetValue<string>(AuthConstants.WebServerUrlKey) ??
+                                  throw new InvalidOperationException(AuthConstants.WebServerUrlKey + " was not found in configuration data.");
+            string webServerUrlLocal = configuration.GetValue<string>(AuthConstants.WebServerUrlKey + "Local") ??
+                                  throw new InvalidOperationException(AuthConstants.WebServerUrlKey + "Local was not found in configuration data.");
+            string webServerUrlAzure = configuration.GetValue<string>(AuthConstants.WebServerUrlKey + "Azure") ??
+                                  throw new InvalidOperationException(AuthConstants.WebServerUrlKey + "Azure was not found in configuration data.");
+
+            string webServerClientId = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey) ??
+                                       throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + " was not found in configuration data.");
+            string webServerClientIdLocal = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Local") ??
+                                            throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + "Local was not found in configuration data.");
+            string webServerClientIdAzure = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Azure") ??
+                                            throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + "Azure was not found in configuration data.");
+
+            string webServerApiClientId = configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey) ??
+                                          throw new InvalidOperationException(AuthConstants.WebServerApiClientIdKey + " was not found in configuration data.");
+            string webServerApiClientIdLocal = configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey + "Local") ??
+                                               throw new InvalidOperationException(AuthConstants.WebServerApiClientIdKey + "Local was not found in configuration data.");
+            string webServerApiClientIdAzure = configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey + "Azure") ??
+                                               throw new InvalidOperationException(AuthConstants.WebServerApiClientIdKey + "Azure was not found in configuration data.");
+
+            string webServerClientSecret = configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey) ??
+                                  throw new InvalidOperationException(AuthConstants.WebServerClientSecretKey +" was not found in configuration data.");
+            string webServerClientSecretLocal = configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey + "Local") ??
+                                           throw new InvalidOperationException(AuthConstants.WebServerClientSecretKey + "Local was not found in configuration data.");
+            string webServerClientSecretAzure = configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey + "Azure") ??
+                                                throw new InvalidOperationException(AuthConstants.WebServerClientSecretKey + "Azure was not found in configuration data.");
 
             return
             [
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = "authclient",
+                    ClientId = authorityServerClientId,
                     DisplayName = "KinaUna Auth Client",
-                    ClientSecret = secretString,
+                    ClientSecret = authorityServerClientSecret,
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
                     {
@@ -69,8 +111,8 @@ namespace KinaUna.OpenIddict.Services
                         Permissions.Scopes.Profile,
 
                         // Custom scopes
-                        Permissions.Prefixes.Scope + Constants.ProgenyApiName,
-                        Permissions.Prefixes.Scope + Constants.AuthApiName
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName,
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName
                     },
                     RedirectUris = { new Uri($"{authorityServerUrl}/callback/login") },
                     PostLogoutRedirectUris = { new Uri($"{authorityServerUrl}/callback/logout") },
@@ -89,9 +131,38 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = "kinaunawebclient",
+                    ClientId = authorityServerApiClientId,
+                    DisplayName = "KinaUnaAuthApiClient",
+                    ClientSecret = authorityServerClientSecret,
+                    ConsentType = ConsentTypes.Implicit,
+                    Permissions =
+                    {
+                        Permissions.GrantTypes.TokenExchange,
+                        Permissions.Endpoints.Token,
+                        Permissions.GrantTypes.ClientCredentials,
+                        Permissions.GrantTypes.RefreshToken,
+
+                        // Scopes
+                        Permissions.Scopes.Roles,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+
+                        // Custom scopes
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName,
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName
+                    },
+                    // Token settings
+                    Settings =
+                    {
+                        [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromSeconds(AccessTokenLifetimeSeconds).ToString(),
+                        [Settings.TokenLifetimes.RefreshToken] = TimeSpan.FromDays(RefreshTokenLifetimeDays).ToString()
+                    }
+                },
+                new OpenIddictApplicationDescriptor
+                {
+                    ClientId = webServerClientId,
                     DisplayName = "KinaUnaWeb",
-                    ClientSecret = secretString,
+                    ClientSecret = webServerClientSecret,
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
                     {
@@ -110,8 +181,8 @@ namespace KinaUna.OpenIddict.Services
                         Permissions.Scopes.Profile,
                         
                         // Custom scopes
-                        Permissions.Prefixes.Scope + Constants.ProgenyApiName, 
-                        Permissions.Prefixes.Scope + Constants.AuthApiName
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName, 
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName
                     },
                     RedirectUris = { new Uri($"{webServerUrl}/callback/login") },
                     PostLogoutRedirectUris = { new Uri($"{webServerUrl}/callback/logout") },
@@ -129,9 +200,9 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = "kinaunawebapiclient",
+                    ClientId = webServerApiClientId,
                     DisplayName = "KinaUnaWebApiClient",
-                    ClientSecret = secretString,
+                    ClientSecret = webServerClientSecret,
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
                     {
@@ -146,8 +217,8 @@ namespace KinaUna.OpenIddict.Services
                         Permissions.Scopes.Profile,
 
                         // Custom scopes
-                        Permissions.Prefixes.Scope + Constants.ProgenyApiName,
-                        Permissions.Prefixes.Scope + Constants.AuthApiName
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName,
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName
                     },
                     // Token settings
                     Settings =
@@ -158,9 +229,9 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = "authclientlocal",
+                    ClientId = authorityServerClientIdLocal,
                     DisplayName = "KinaUna Auth Client Local",
-                    ClientSecret = secretString,
+                    ClientSecret = authorityServerClientSecretLocal,
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
                     {
@@ -179,8 +250,8 @@ namespace KinaUna.OpenIddict.Services
                         Permissions.Scopes.Profile,
 
                         // Custom scopes
-                        Permissions.Prefixes.Scope + Constants.ProgenyApiName + "local",
-                        Permissions.Prefixes.Scope + Constants.AuthApiName + "local"
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName + "local",
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName + "local"
                     },
                     RedirectUris = { new Uri($"{authorityServerUrlLocal}/callback/login") },
                     PostLogoutRedirectUris = { new Uri($"{authorityServerUrlLocal}/callback/logout") },
@@ -198,9 +269,38 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = "kinaunawebclientlocal",
+                    ClientId = authorityServerApiClientIdLocal,
+                    DisplayName = "KinaUnaAuthApiClientLocal",
+                    ClientSecret = authorityServerClientSecretLocal,
+                    ConsentType = ConsentTypes.Implicit,
+                    Permissions =
+                    {
+                        Permissions.GrantTypes.TokenExchange,
+                        Permissions.Endpoints.Token,
+                        Permissions.GrantTypes.ClientCredentials,
+                        Permissions.GrantTypes.RefreshToken,
+
+                        // Scopes
+                        Permissions.Scopes.Roles,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+
+                        // Custom scopes
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName,
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName
+                    },
+                    // Token settings
+                    Settings =
+                    {
+                        [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromSeconds(AccessTokenLifetimeSeconds).ToString(),
+                        [Settings.TokenLifetimes.RefreshToken] = TimeSpan.FromDays(RefreshTokenLifetimeDays).ToString()
+                    }
+                },
+                new OpenIddictApplicationDescriptor
+                {
+                    ClientId = webServerClientIdLocal,
                     DisplayName = "KinaUnaWebLocal",
-                    ClientSecret = secretStringLocal,
+                    ClientSecret = webServerClientSecretLocal,
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
                     {
@@ -219,11 +319,11 @@ namespace KinaUna.OpenIddict.Services
                         Permissions.Scopes.Profile,
 
                         // Custom scopes
-                        Permissions.Prefixes.Scope + Constants.ProgenyApiName + "local",
-                        Permissions.Prefixes.Scope + Constants.AuthApiName + "local"
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName + "local",
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName + "local"
                     },
-                    RedirectUris = { new Uri($"{webServerLocal}/callback/login") },
-                    PostLogoutRedirectUris = { new Uri($"{webServerLocal}/callback/logout") },
+                    RedirectUris = { new Uri($"{webServerUrlLocal}/callback/login") },
+                    PostLogoutRedirectUris = { new Uri($"{webServerUrlLocal}/callback/logout") },
                     
                     Requirements =
                     {
@@ -238,9 +338,9 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = "kinaunawebapiclientlocal",
+                    ClientId = webServerApiClientIdLocal,
                     DisplayName = "KinaUnaWebApiClientLocal",
-                    ClientSecret = secretStringLocal,
+                    ClientSecret = webServerClientSecretLocal,
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
                     {
@@ -255,8 +355,147 @@ namespace KinaUna.OpenIddict.Services
                         Permissions.Scopes.Profile,
                         
                         // Custom scopes
-                        Permissions.Prefixes.Scope + Constants.ProgenyApiName + "local",
-                        Permissions.Prefixes.Scope + Constants.AuthApiName + "local"
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName + "local",
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName + "local"
+                        // Permissions.Prefixes.Scope + Scopes.OfflineAccess
+                    },
+                    // Token settings
+                    Settings =
+                    {
+                        [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromSeconds(AccessTokenLifetimeSeconds).ToString(),
+                        [Settings.TokenLifetimes.RefreshToken] = TimeSpan.FromDays(RefreshTokenLifetimeDays).ToString()
+                    }
+                },
+                new OpenIddictApplicationDescriptor
+                {
+                    ClientId = authorityServerClientIdAzure,
+                    DisplayName = "KinaUna Auth Client Azure",
+                    ClientSecret = authorityServerClientSecretAzure,
+                    ConsentType = ConsentTypes.Implicit,
+                    Permissions =
+                    {
+                        Permissions.GrantTypes.TokenExchange,
+                        Permissions.Endpoints.Token,
+                        Permissions.Endpoints.Authorization,
+                        Permissions.Endpoints.EndSession,
+                        Permissions.GrantTypes.ClientCredentials,
+                        Permissions.GrantTypes.AuthorizationCode,
+                        Permissions.GrantTypes.RefreshToken,
+                        Permissions.ResponseTypes.Code,
+
+                        // Scopes
+                        Permissions.Scopes.Roles,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+
+                        // Custom scopes
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName + "local",
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName + "local"
+                    },
+                    RedirectUris = { new Uri($"{authorityServerUrlAzure}/callback/login") },
+                    PostLogoutRedirectUris = { new Uri($"{authorityServerUrlAzure}/callback/logout") },
+
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
+                    },
+                    // Token settings
+                    Settings =
+                    {
+                        [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromSeconds(AccessTokenLifetimeSeconds).ToString(),
+                        [Settings.TokenLifetimes.RefreshToken] = TimeSpan.FromDays(RefreshTokenLifetimeDays).ToString()
+                    }
+                },
+                new OpenIddictApplicationDescriptor
+                {
+                    ClientId = authorityServerApiClientIdAzure,
+                    DisplayName = "KinaUnaAuthApiClientAzure",
+                    ClientSecret = authorityServerClientSecretAzure,
+                    ConsentType = ConsentTypes.Implicit,
+                    Permissions =
+                    {
+                        Permissions.GrantTypes.TokenExchange,
+                        Permissions.Endpoints.Token,
+                        Permissions.GrantTypes.ClientCredentials,
+                        Permissions.GrantTypes.RefreshToken,
+
+                        // Scopes
+                        Permissions.Scopes.Roles,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+
+                        // Custom scopes
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName,
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName
+                    },
+                    // Token settings
+                    Settings =
+                    {
+                        [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromSeconds(AccessTokenLifetimeSeconds).ToString(),
+                        [Settings.TokenLifetimes.RefreshToken] = TimeSpan.FromDays(RefreshTokenLifetimeDays).ToString()
+                    }
+                },
+                new OpenIddictApplicationDescriptor
+                {
+                    ClientId = webServerClientIdAzure,
+                    DisplayName = "KinaUnaWebAzure",
+                    ClientSecret = webServerClientSecretAzure,
+                    ConsentType = ConsentTypes.Implicit,
+                    Permissions =
+                    {
+                        Permissions.GrantTypes.TokenExchange,
+                        Permissions.Endpoints.Token,
+                        Permissions.Endpoints.Authorization,
+                        Permissions.Endpoints.EndSession,
+                        Permissions.GrantTypes.ClientCredentials,
+                        Permissions.GrantTypes.AuthorizationCode,
+                        Permissions.GrantTypes.RefreshToken,
+                        Permissions.ResponseTypes.Code,
+
+                        // Scopes
+                        Permissions.Scopes.Roles,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+
+                        // Custom scopes
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName + "azure",
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName + "azure"
+                    },
+                    RedirectUris = { new Uri($"{webServerUrlAzure}/callback/login") },
+                    PostLogoutRedirectUris = { new Uri($"{webServerUrlAzure}/callback/logout") },
+
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
+                    },
+                    // Token settings
+                    Settings =
+                    {
+                        [Settings.TokenLifetimes.AccessToken] = TimeSpan.FromSeconds(AccessTokenLifetimeSeconds).ToString(),
+                        [Settings.TokenLifetimes.RefreshToken] = TimeSpan.FromDays(RefreshTokenLifetimeDays).ToString()
+                    }
+                },
+                new OpenIddictApplicationDescriptor
+                {
+                    ClientId = webServerApiClientIdAzure,
+                    DisplayName = "KinaUnaWebApiClientAzure",
+                    ClientSecret = webServerClientSecretAzure,
+                    ConsentType = ConsentTypes.Implicit,
+                    Permissions =
+                    {
+                        Permissions.GrantTypes.TokenExchange,
+                        Permissions.Endpoints.Token,
+                        Permissions.GrantTypes.ClientCredentials,
+                        Permissions.GrantTypes.RefreshToken,
+                        
+                        // Scopes
+                        Permissions.Scopes.Roles,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+                        
+                        // Custom scopes
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName + "azure",
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName + "azure"
                         // Permissions.Prefixes.Scope + Scopes.OfflineAccess
                     },
                     // Token settings
@@ -281,16 +520,40 @@ namespace KinaUna.OpenIddict.Services
         /// <exception cref="InvalidOperationException">Thrown if the configuration data does not contain the required secret strings.</exception>
         public IEnumerable<OpenIddictApplicationDescriptor> GetApiClientConfigs()
         {
-            string secretString = configuration.GetValue<string>("OpenIddictSecretString") ??
-                                  throw new InvalidOperationException("OpenIddictSecretString not found in configuration data.");
-            string secretStringLocal = configuration.GetValue<string>("OpenIddictSecretStringLocal") ??
-                                  throw new InvalidOperationException("OpenIddictSecretStringLocal not found in configuration data.");
+            string progenyApiClient = configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey) 
+                                      ?? throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + " was not found in the configuration data.");
+            string progenyApiClientLocal = configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey + "Local") 
+                                           ?? throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + "Local was not found in the configuration data.");
+            string progenyApiClientAzure = configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey + "Azure") ??
+                                            throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + "Azure was not found in the configuration data.");
+
+            string progenyApiClientSecret = configuration.GetValue<string>(AuthConstants.ProgenyApiClientSecretKey) ??
+                                            throw new InvalidOperationException(AuthConstants.ProgenyApiClientSecretKey + " was not found in the configuration data.");
+            string progenyApiClientSecretLocal = configuration.GetValue<string>(AuthConstants.ProgenyApiClientSecretKey + "Local") ??
+                                            throw new InvalidOperationException(AuthConstants.ProgenyApiClientSecretKey + "Local was not found in the configuration data.");
+            string progenyApiClientSecretAzure = configuration.GetValue<string>(AuthConstants.ProgenyApiClientSecretKey + "Azure") ??
+                                                 throw new InvalidOperationException(AuthConstants.ProgenyApiClientSecretKey + "Azure was not found in the configuration data.");
+
+            string authApiClient = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey) ??
+                                      throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + " was not found in the configuration data.");
+            string authApiClientLocal = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Local") 
+                                        ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Local was not found in the configuration data.");
+            string authApiClientAzure = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Azure") 
+                                        ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Azure was not found in the configuration data.");
+
+            string authClientSecret = configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey) ??
+                                      throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + " was not found in the configuration data.");
+            string authClientSecretLocal = configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey + "Local") ??
+                                      throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + "Local was not found in the configuration data.");
+            string authClientSecretAzure = configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey + "Azure") ??
+                                      throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + "Azure was not found in the configuration data.");
+
             return
             [
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = Constants.AuthApiName,
-                    ClientSecret = secretString,
+                    ClientId = authApiClient,
+                    ClientSecret = authClientSecret,
                     DisplayName = "KinaUna Auth API",
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
@@ -301,8 +564,8 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = Constants.AuthApiName + "local",
-                    ClientSecret = secretString,
+                    ClientId = authApiClientLocal,
+                    ClientSecret = authClientSecretLocal,
                     DisplayName = "KinaUna Auth API Local",
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
@@ -313,8 +576,20 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = Constants.ProgenyApiName,
-                    ClientSecret = secretString,
+                    ClientId = authApiClientAzure,
+                    ClientSecret = authClientSecretAzure,
+                    DisplayName = "KinaUna Auth API Azure",
+                    ConsentType = ConsentTypes.Implicit,
+                    Permissions =
+                    {
+                        Permissions.Endpoints.Introspection,
+                    },
+                    //BaseUrl = "https://kinaunaauth.azurewebsites.net"
+                },
+                new OpenIddictApplicationDescriptor
+                {
+                    ClientId = progenyApiClient,
+                    ClientSecret = progenyApiClientSecret,
                     DisplayName = "KinaUna Progeny API",
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
@@ -325,10 +600,10 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = Constants.ProgenyApiName + "local",
+                    ClientId = progenyApiClientLocal,
                     DisplayName = "KinaUna Progeny API Local",
                     ConsentType = ConsentTypes.Implicit,
-                    ClientSecret = secretStringLocal,
+                    ClientSecret = progenyApiClientSecretLocal,
                     Permissions =
                     {
                         Permissions.Endpoints.Introspection,
@@ -337,10 +612,10 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = Constants.ProgenyApiName + "azure",
+                    ClientId = progenyApiClientAzure,
                     DisplayName = "KinaUna Progeny API Azure",
                     ConsentType = ConsentTypes.Implicit,
-                    ClientSecret = secretString,
+                    ClientSecret = progenyApiClientSecretAzure,
                     Permissions =
                     {
                         Permissions.Endpoints.Introspection,

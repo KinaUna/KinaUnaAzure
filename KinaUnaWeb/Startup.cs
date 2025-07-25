@@ -88,21 +88,35 @@ namespace KinaUnaWeb
             services.AddMemoryCache();
             services.AddSingleton<ITokenService, TokenService>();
 
-            string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
-            string webServerClientId = Configuration.GetValue<string>("WebServerClientId");
-            string webServerUrl = Configuration.GetValue<string>("WebServer");
-            string authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretString");
-            string progenyApiName = Constants.ProgenyApiName;
-            string authApiName = Constants.AuthApiName;
-            // Todo: Configure these URLs for Azure client too.
+            string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
+            string webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey) ?? throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + " was not found in the configuration data.");
+            string webServerUrl = Configuration.GetValue<string>(AuthConstants.WebServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.WebServerUrlKey + " was not found in the configuration data.");
+            string authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey) ?? throw new InvalidOperationException(AuthConstants.WebServerClientSecretKey + " was not found in the configuration data.");
+            string progenyApiName = AuthConstants.ProgenyApiName;
+            string authApiName = AuthConstants.AuthApiName;
+
             if (env.IsDevelopment())
             {
-                authorityServerUrl = Configuration.GetValue<string>("AuthenticationServerLocal");
-                webServerClientId = Configuration.GetValue<string>("WebServerClientIdLocal");
-                webServerUrl = Configuration.GetValue<string>("WebServerLocal");
-                authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretStringLocal");
-                progenyApiName = Constants.ProgenyApiName + "local";
-                authApiName = Constants.AuthApiName + "local";
+                authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local") ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Local was not found in the configuration data.");
+                webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Local") ?? throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + "Local was not found in the configuration data.");
+                webServerUrl = Configuration.GetValue<string>(AuthConstants.WebServerUrlKey + "Local") ?? throw new InvalidOperationException(AuthConstants.WebServerUrlKey + "Local was not found in the configuration data.");
+                authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey + "Local") ?? throw new InvalidOperationException(AuthConstants.WebServerClientSecretKey + "Local was not found in the configuration data.");
+                progenyApiName = AuthConstants.ProgenyApiName + "local";
+                authApiName = AuthConstants.AuthApiName + "local";
+            }
+
+            if (env.IsStaging())
+            {
+                authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure") ??
+                                     throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Azure was not found in the configuration data.");
+                webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Azure") ??
+                                    throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + "Azure was not found in the configuration data.");
+                webServerUrl = Configuration.GetValue<string>(AuthConstants.WebServerUrlKey + "Azure") ??
+                               throw new InvalidOperationException(AuthConstants.WebServerUrlKey + "Azure was not found in the configuration data.");
+                authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey + "Azure") ??
+                                                   throw new InvalidOperationException(AuthConstants.WebServerClientSecretKey + "Azure was not found in the configuration data.");
+                progenyApiName = AuthConstants.ProgenyApiName + "azure";
+                authApiName = AuthConstants.AuthApiName + "azure";
             }
             
             services.AddAuthentication(options =>
@@ -200,12 +214,23 @@ namespace KinaUnaWeb
             // If production, restrict to the specified origin.
             else
             {
-                // In production, only allow requests from the specified origin.
-                // This is important for security reasons.
-                services.AddCors(options => options.AddDefaultPolicy(policy =>
-                    policy.AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .WithOrigins(Constants.ProductionCorsList)));
+                if (env.IsStaging())
+                {
+                    services.AddCors(options => options.AddDefaultPolicy(policy =>
+                        policy.AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .WithOrigins(Constants.StagingCorsList)));
+                }
+                else
+                {
+                    // In production, only allow requests from the specified origin.
+                    // This is important for security reasons.
+                    services.AddCors(options => options.AddDefaultPolicy(policy =>
+                        policy.AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .WithOrigins(Constants.ProductionCorsList)));
+                }
+                
             }
             
             services.AddAuthorization();

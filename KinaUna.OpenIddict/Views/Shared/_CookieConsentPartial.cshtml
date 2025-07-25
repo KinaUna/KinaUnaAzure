@@ -72,6 +72,16 @@
 			{
 				cookieDomainName = "";
 			}
+            else
+            {
+                if (Env.IsStaging())
+                {
+								cookieDomainName = "domain=.azurewebsites.net;path=/";
+				}
+				else
+                        {
+                }
+            }
 			
 		}
 		$("#acceptEssentialCookies").click(function() {

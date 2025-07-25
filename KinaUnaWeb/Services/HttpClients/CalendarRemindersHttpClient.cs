@@ -1,14 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.Net.Http.Headers;
-using System.Net.Http;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Duende.IdentityModel.Client;
+﻿using Duende.IdentityModel.Client;
+using KinaUna.Data;
 using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -23,11 +24,17 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
             _tokenService = tokenService;
-            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            string clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey);
             if (env.IsDevelopment())
             {
-                clientUri = configuration.GetValue<string>("ProgenyApiServerLocal");
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Local");
             }
+
+            if (env.IsStaging())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Azure");
+            }
+
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));

@@ -32,10 +32,20 @@ namespace KinaUna.OpenIddict.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult SetLanguage(string culture, string returnUrl)
         {
+            CookieOptions cookieOptions = new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain };
+            if (env.IsDevelopment())
+            {
+                cookieOptions.Expires = DateTimeOffset.UtcNow.AddYears(1);
+            }
+            else if (env.IsStaging())
+            {
+                cookieOptions.Expires = DateTimeOffset.UtcNow.AddYears(1);
+                cookieOptions.Domain = ".azurewebsites.net";
+            }
             Response.Cookies.Append(
                 Constants.LanguageCookieName,
                 CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
-                env.IsDevelopment() ? new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) } : new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain }
+                cookieOptions
             );
 
             return Redirect(returnUrl);

@@ -6,7 +6,6 @@
     public static class Constants
     {
         public const string ApiVersion = "1.1.10";
-        public const bool ResetIdentityDb = true; // If set to true, the configuration in KinUna.IDP / Config.cs will be reapplied.
         public const string AppName = "KinaUna";
         public const string WebAppUrl = "https://web.kinauna.com";
         public const string AuthAppUrl = "https://auth.kinauna.com";
@@ -17,9 +16,7 @@
         public const string SupportEmail = "support@kinauna.com";
         public const string KeyVaultEndPoint = "https://kinauna.vault.azure.net";
         public const string LanguageCookieName = "KinaUnaLanguage";
-        public const string AuthApiName = "kinaunaauthapi";
-        public const string ProgenyApiName = "kinaunaprogenyapi";
-        public const string MediaApiName = "kinaunamediaapi";
+        
         public const string DefaultTimezone = "Romance Standard Time";
         public const int DefaultChildId = 2;
         public const string DefaultUserEmail = "testuser@niviaq.com";
@@ -30,8 +27,9 @@
         public const int DefaultUpcomingCalendarItemsCount = 8;
         public const string PlaceholderImageLink = "ab5fe7cb-2a66-4785-b39a-aa4eb7953c3d.png";
         public const string SystemAccountEmail = "system@kinauna.com";
-        public static readonly string[] ProductionCorsList = ["https://web.kinauna.com", "https://auth.kinauna.com", "https://progenyapi.kinauna.com", "https://mediaapi.kinauna.com"];
+        public static readonly string[] ProductionCorsList = ["https://web.kinauna.com", "https://auth.kinauna.com", "https://progenyapi.kinauna.com"];
         public static readonly string[] DevelopmentCorsList = ["https://localhost:44397", "https://localhost:44376", "https://localhost:44324"];
+        public static readonly string[] StagingCorsList = ["https://kinaunaweb.azurewebsites.net", "https://kinaunaauth.azurewebsites.net", "https://kinaunaprogenyapi.azurewebsites.net"];
     }
 
     /// <summary>

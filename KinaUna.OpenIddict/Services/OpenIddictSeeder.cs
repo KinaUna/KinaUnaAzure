@@ -53,7 +53,7 @@ namespace KinaUna.OpenIddict.Services
             // This can be controlled by an environment variable or configuration setting
             try
             {
-                bool? resetDatabaseEnv = configuration.GetValue<bool>("ResetOpenIddictDatabase");
+                bool? resetDatabaseEnv = configuration.GetValue<bool>(AuthConstants.ResetOpenIddictDatabaseKey);
                 if (resetDatabaseEnv.HasValue)
                 {
 
@@ -71,7 +71,7 @@ namespace KinaUna.OpenIddict.Services
                 await ResetOpenIdDictDatabase(provider);
             }
             // Create scopes first
-            await CreateScopesAsync(provider, cancellationToken);
+            await CreateScopesAsync(provider, configuration, cancellationToken);
 
             // Create API clients
             await CreateApiClientsAsync(provider, cancellationToken);
@@ -86,19 +86,34 @@ namespace KinaUna.OpenIddict.Services
         /// they are not found. It uses the <see cref="IOpenIddictScopeManager"/> to manage the scopes, ensuring that
         /// each scope is uniquely identified by its name.</remarks>
         /// <param name="provider">The service provider used to resolve the <see cref="IOpenIddictScopeManager"/> service.</param>
+        /// <param name="configuration">The configuration used to retrieve API client IDs and names.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns></returns>
-        private static async Task CreateScopesAsync(IServiceProvider provider, CancellationToken cancellationToken)
+        private static async Task CreateScopesAsync(IServiceProvider provider, IConfiguration configuration, CancellationToken cancellationToken)
         {
+            string progenyApiClient = configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey)
+                                      ?? throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + " was not found in the configuration data.");
+            string progenyApiClientLocal = configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey + "Local")
+                                           ?? throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + "Local was not found in the configuration data.");
+            string progenyApiClientAzure = configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey + "Azure") ??
+                                           throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + "Azure was not found in the configuration data.");
+
+            string authApiClient = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey) ??
+                                   throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + " was not found in the configuration data.");
+            string authApiClientLocal = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Local")
+                                        ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Local was not found in the configuration data.");
+            string authApiClientAzure = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Azure")
+                                        ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Azure was not found in the configuration data.");
+
             // API scopes
             var apiScopes = new[]
             {
-                new { Name = Constants.ProgenyApiName, DisplayName = "KinaUna Progeny API" },
-                new { Name = Constants.ProgenyApiName + "local", DisplayName = "KinaUna Progeny API Local" },
-                new { Name = Constants.ProgenyApiName + "azure", DisplayName = "KinaUna Progeny API Azure" },
-                new { Name = Constants.AuthApiName, DisplayName = "KinaUna Auth API" },
-                new { Name = Constants.AuthApiName + "local", DisplayName = "KinaUna Auth API Local" },
-                new { Name = Constants.AuthApiName + "azure", DisplayName = "KinaUna Auth API Azure" }
+                new { Name = AuthConstants.ProgenyApiName, DisplayName = "KinaUna Progeny API", Resources = progenyApiClient },
+                new { Name = AuthConstants.ProgenyApiName + "local", DisplayName = "KinaUna Progeny API Local", Resources = progenyApiClientLocal },
+                new { Name = AuthConstants.ProgenyApiName + "azure", DisplayName = "KinaUna Progeny API Azure", Resources = progenyApiClientAzure },
+                new { Name = AuthConstants.AuthApiName, DisplayName = "KinaUna Auth API", Resources = authApiClient },
+                new { Name = AuthConstants.AuthApiName + "local", DisplayName = "KinaUna Auth API Local", Resources = authApiClientLocal },
+                new { Name = AuthConstants.AuthApiName + "azure", DisplayName = "KinaUna Auth API Azure", Resources = authApiClientAzure }
             };
 
             
@@ -112,7 +127,7 @@ namespace KinaUna.OpenIddict.Services
                     {
                         Name = apiScope.Name,
                         DisplayName = apiScope.DisplayName,
-                        Resources = { apiScope.Name }
+                        Resources = { apiScope.Resources }
                     }, cancellationToken);
                 }
             }

@@ -222,11 +222,23 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                Response.Cookies.Append(
-                    Constants.LanguageCookieName,
-                    CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
-                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain }
-                );
+                if (env.IsStaging())
+                {
+                    Response.Cookies.Append(
+                        Constants.LanguageCookieName,
+                        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = ".azurewebsites.net" }
+                    );
+                }
+                else
+                {
+                    Response.Cookies.Append(
+                        Constants.LanguageCookieName,
+                        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain }
+                    );
+                }
+                
             }
             return Redirect(returnUrl);
         }
@@ -257,11 +269,23 @@ namespace KinaUnaWeb.Controllers
                 }
                 else
                 {
-                    Response.Cookies.Append(
-                    Constants.LanguageCookieName,
-                        cultureString,
-                        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain, IsEssential = true }
-                    );
+                    if (env.IsStaging())
+                    {
+                        Response.Cookies.Append(
+                            Constants.LanguageCookieName,
+                            cultureString,
+                            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = ".azurewebsite.net", IsEssential = true }
+                        );
+                    }
+                    else
+                    {
+                        Response.Cookies.Append(
+                            Constants.LanguageCookieName,
+                            cultureString,
+                            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain, IsEssential = true }
+                        );
+                    }
+                        
                 }
             }
             
