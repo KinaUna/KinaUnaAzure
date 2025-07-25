@@ -42,12 +42,11 @@ namespace KinaUnaProgenyApi.Controllers
         /// Gets all Skills for a given Progeny that a user can access.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get Skill items for.</param>
-        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
         /// <returns>List of Skill items.</returns>
         // GET api/skills/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
@@ -269,10 +268,9 @@ namespace KinaUnaProgenyApi.Controllers
                 skillsCounter++;
             }
 
-            List<Skill> itemsOnPage = allItems
+            List<Skill> itemsOnPage = [.. allItems
                 .Skip(pageSize * (pageIndex - 1))
-                .Take(pageSize)
-                .ToList();
+                .Take(pageSize)];
 
             SkillsListPage model = new()
             {

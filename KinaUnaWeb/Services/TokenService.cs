@@ -1,4 +1,9 @@
-﻿using IdentityModel.Client;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Net.Http;
+using System.Security.Authentication;
+using System.Threading.Tasks;
+using Duende.IdentityModel.Client;
 using KinaUna.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -6,11 +11,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Abstractions;
-using System;
-using System.Collections.Concurrent;
-using System.Net.Http;
-using System.Security.Authentication;
-using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services
 {

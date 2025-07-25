@@ -44,10 +44,9 @@ namespace KinaUnaProgenyApi.Models
                 vocabularyCounter++;
             }
 
-            List<VocabularyItem> itemsOnPage = vocabularyList
+            List<VocabularyItem> itemsOnPage = [.. vocabularyList
                 .Skip(pageSize * (pageIndex - 1))
-                .Take(pageSize)
-                .ToList();
+                .Take(pageSize)];
 
             VocabularyList = itemsOnPage;
             TotalPages = (int)Math.Ceiling(vocabularyList.Count / (double)pageSize);

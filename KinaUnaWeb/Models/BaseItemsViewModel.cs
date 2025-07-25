@@ -2,7 +2,6 @@
 using System.Linq;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models;
 
@@ -94,7 +93,7 @@ public class BaseItemsViewModel : BaseViewModel
                 }
             }
 
-            tagItems = tagItems.Remove(tagItems.Length - 1);
+            tagItems = tagItems[..^1];
         }
 
         tagItems += "]";

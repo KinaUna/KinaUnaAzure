@@ -169,6 +169,8 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="text">The KinaUnaText to add.</param>
         /// <returns>The added KinaUnaText.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons",
+            Justification = "String comparison does not work with database queries.")]
         private async Task<KinaUnaText> AddSystemPageText(KinaUnaText text)
         {
             KinaUnaText existingTextItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.Title.ToUpper() == text.Title.ToUpper() && t.Page.ToUpper() == text.Page.ToUpper() && t.LanguageId == text.LanguageId);

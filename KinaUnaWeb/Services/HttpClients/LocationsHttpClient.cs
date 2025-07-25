@@ -1,6 +1,4 @@
-﻿using IdentityModel.Client;
-using KinaUna.Data.Models;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -10,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Duende.IdentityModel.Client;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -165,7 +164,7 @@ namespace KinaUnaWeb.Services.HttpClients
             progenyLocationsList = JsonConvert.DeserializeObject<List<Location>>(locationsAsString);
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                progenyLocationsList = progenyLocationsList.Where(l => l.Tags != null && l.Tags.Contains(tagFilter)).ToList();
+                progenyLocationsList = [.. progenyLocationsList.Where(l => l.Tags != null && l.Tags.Contains(tagFilter))];
             }
 
             progenyLocationsList = [.. progenyLocationsList.OrderBy(l => l.Date)];

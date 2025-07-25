@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using IdentityModel;
+using OpenIddict.Abstractions;
 
 namespace KinaUna.Data.Extensions
 {
@@ -16,7 +16,7 @@ namespace KinaUna.Data.Extensions
         /// <returns>string: The User's email address.</returns>
         public static string GetEmail(this ClaimsPrincipal principal)
         {
-            string userEmailString = principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.Email))?.Value;
+            string userEmailString = principal?.FindFirst(x => x.Type.Equals(OpenIddictConstants.Claims.Email))?.Value;
             if (string.IsNullOrEmpty(userEmailString))
             {
                 userEmailString = Constants.DefaultUserEmail;
@@ -32,7 +32,7 @@ namespace KinaUna.Data.Extensions
         /// <returns>string: The User's User Id.</returns>
         public static string GetUserId(this ClaimsPrincipal principal)
         {
-            string userIdString = principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.Subject))?.Value;
+            string userIdString = principal?.FindFirst(x => x.Type.Equals(OpenIddictConstants.Claims.Subject))?.Value;
             if (string.IsNullOrEmpty(userIdString))
             {
                 userIdString = Constants.DefaultUserId;
@@ -49,7 +49,7 @@ namespace KinaUna.Data.Extensions
         /// <returns>string: The username.</returns>
         public static string GetUserUserName(this ClaimsPrincipal principal)
         {
-            string userNameString = principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.PreferredUserName))?.Value;
+            string userNameString = principal?.FindFirst(x => x.Type.Equals(OpenIddictConstants.Claims.PreferredUsername))?.Value;
             if (string.IsNullOrEmpty(userNameString))
             {
                 userNameString = "Unknown user name";

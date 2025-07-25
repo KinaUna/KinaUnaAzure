@@ -4,8 +4,7 @@ using System.Net.Http;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using IdentityModel.Client;
-using KinaUna.Data.Models;
+using Duende.IdentityModel.Client;
 using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
@@ -113,7 +112,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string calendarRemindersApiPath = "/api/CalendarReminders/GetCalendarRemindersForUser";
             HttpResponseMessage calendarRemindersResponse = await _httpClient.PostAsync(calendarRemindersApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
-            if (!calendarRemindersResponse.IsSuccessStatusCode) return new List<CalendarReminder>();
+            if (!calendarRemindersResponse.IsSuccessStatusCode) return [];
 
             string calendarRemindersAsString = await calendarRemindersResponse.Content.ReadAsStringAsync();
 
@@ -134,7 +133,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string calendarRemindersApiPath = "/api/CalendarReminders/GetUsersCalendarRemindersForEvent/";
             HttpResponseMessage calendarRemindersResponse = await _httpClient.PostAsync(calendarRemindersApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
-            if (!calendarRemindersResponse.IsSuccessStatusCode) return new List<CalendarReminder>();
+            if (!calendarRemindersResponse.IsSuccessStatusCode) return [];
 
             string calendarRemindersAsString = await calendarRemindersResponse.Content.ReadAsStringAsync();
 

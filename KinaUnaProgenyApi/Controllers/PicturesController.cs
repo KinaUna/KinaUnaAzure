@@ -113,10 +113,9 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Picture> itemsOnPage = allItems
+            List<Picture> itemsOnPage = [.. allItems
                 .Skip(pageSize * (pageIndex - 1))
-                .Take(pageSize)
-                .ToList();
+                .Take(pageSize)];
 
             foreach (Picture pic in itemsOnPage)
             {

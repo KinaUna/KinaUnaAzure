@@ -160,7 +160,7 @@ namespace KinaUnaProgenyApi.Services
                 vaccinationsList = await SetVaccinationListInCache(progenyId);
             }
 
-            vaccinationsList = vaccinationsList.Where(v => v.AccessLevel >= accessLevel).ToList();
+            vaccinationsList = [.. vaccinationsList.Where(v => v.AccessLevel >= accessLevel)];
             return vaccinationsList;
         }
 

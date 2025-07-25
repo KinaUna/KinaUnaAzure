@@ -156,7 +156,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         public async Task<List<UserAccess>> GetUsersUserAdminAccessList(string email)
         {
             List<UserAccess> userAccessList = await GetUsersUserAccessList(email);
-            userAccessList = userAccessList.Where(u => u.AccessLevel == 0).ToList();
+            userAccessList = [.. userAccessList.Where(u => u.AccessLevel == 0)];
 
             return userAccessList;
         }

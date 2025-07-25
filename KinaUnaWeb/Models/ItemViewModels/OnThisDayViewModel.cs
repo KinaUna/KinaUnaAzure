@@ -1,5 +1,4 @@
 ﻿using System;
-using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Models.ItemViewModels

@@ -268,10 +268,9 @@ namespace KinaUnaProgenyApi.Controllers
                 measurementsCounter++;
             }
 
-            List<Measurement> itemsOnPage = allItems
+            List<Measurement> itemsOnPage = [.. allItems
                 .Skip(pageSize * (pageIndex - 1))
-                .Take(pageSize)
-                .ToList();
+                .Take(pageSize)];
 
             MeasurementsListPage model = new()
             {

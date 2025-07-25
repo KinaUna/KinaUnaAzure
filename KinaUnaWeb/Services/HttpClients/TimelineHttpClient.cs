@@ -1,6 +1,4 @@
-﻿using IdentityModel.Client;
-using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
+﻿using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -11,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Duende.IdentityModel.Client;
 
 namespace KinaUnaWeb.Services.HttpClients
 {

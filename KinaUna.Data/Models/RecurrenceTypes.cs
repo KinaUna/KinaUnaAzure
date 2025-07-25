@@ -16,8 +16,8 @@ namespace KinaUna.Data.Models
 
     public static class RecurrenceUnits
     {
-        public static List<string> WeeklyDays = new List<string>
-        {
+        public static readonly List<string> WeeklyDays =
+        [
             "SU",
             "MO",
             "TU",
@@ -25,6 +25,6 @@ namespace KinaUna.Data.Models
             "TH",
             "FR",
             "SA"
-        };
+        ];
     }
 }

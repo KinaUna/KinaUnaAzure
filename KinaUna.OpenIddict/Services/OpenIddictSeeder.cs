@@ -17,7 +17,7 @@ namespace KinaUna.OpenIddict.Services
     /// </remarks>
     /// <param name="serviceProvider">The service provider used to create scopes and resolve dependencies.</param>
     
-    public class OpenIddictSeeder(IServiceProvider serviceProvider) : IHostedService
+    public class OpenIddictSeeder(IServiceProvider serviceProvider, IConfiguration configuration) : IHostedService
     {
         /// <summary>
         /// Asynchronously starts the application by ensuring the database is created and initializing OpenIddict scopes
@@ -30,11 +30,13 @@ namespace KinaUna.OpenIddict.Services
             await using AsyncServiceScope scope = serviceProvider.CreateAsyncScope();
             ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             
+
+
             // Apply pending migrations to ensure the database schema is up-to-date
             await context.Database.MigrateAsync(cancellationToken);
             
             // Perform seeding
-            await SeedAsync(scope.ServiceProvider, cancellationToken);
+            await SeedAsync(scope.ServiceProvider, configuration, cancellationToken);
         }
 
         /// <summary>
@@ -44,12 +46,30 @@ namespace KinaUna.OpenIddict.Services
         /// <returns>A completed task since no stop actions are required.</returns>
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         
-        private static async Task SeedAsync(IServiceProvider provider, CancellationToken cancellationToken = default)
+        private static async Task SeedAsync(IServiceProvider provider, IConfiguration configuration, CancellationToken cancellationToken = default)
         {
-            // Reset OpenIddict database to ensure a clean state
-            //Todo: Add a feature flag to control this behavior
-            //await ResetOpenIdDictDatabase(provider);
+            bool resetDatabase = false;
+            // Check if the database should be reset
+            // This can be controlled by an environment variable or configuration setting
+            try
+            {
+                bool? resetDatabaseEnv = configuration.GetValue<bool>("ResetOpenIddictDatabase");
+                if (resetDatabaseEnv.HasValue)
+                {
 
+                    resetDatabase = resetDatabaseEnv.Value;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if necessary
+                Console.WriteLine($"Error checking environment variable for resetting OpenIddict database: {ex.Message}");
+            }
+            if (resetDatabase)
+            {
+                // Uncomment the line below to reset the OpenIddict database
+                await ResetOpenIdDictDatabase(provider);
+            }
             // Create scopes first
             await CreateScopesAsync(provider, cancellationToken);
 

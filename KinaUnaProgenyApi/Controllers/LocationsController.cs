@@ -275,10 +275,9 @@ namespace KinaUnaProgenyApi.Controllers
                 locationCounter++;
             }
 
-            List<Location> itemsOnPage = allItems
+            List<Location> itemsOnPage = [.. allItems
                 .Skip(pageSize * (pageIndex - 1))
-                .Take(pageSize)
-                .ToList();
+                .Take(pageSize)];
 
             LocationsListPage model = new()
             {

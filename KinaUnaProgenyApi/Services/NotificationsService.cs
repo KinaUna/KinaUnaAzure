@@ -372,10 +372,10 @@ namespace KinaUnaProgenyApi.Services
 
             if (unreadOnly)
             {
-                notificationsList = notificationsList.Where(n => !n.IsRead).ToList();
+                notificationsList = [.. notificationsList.Where(n => !n.IsRead)];
             }
 
-            notificationsList = notificationsList.Skip(start).Take(count).ToList();
+            notificationsList = [.. notificationsList.Skip(start).Take(count)];
 
             return notificationsList;
 

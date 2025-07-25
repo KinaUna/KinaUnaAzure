@@ -162,7 +162,7 @@ namespace KinaUnaProgenyApi.Services
                 measurementsList = await SetMeasurementsListInCache(progenyId);
             }
 
-            measurementsList = measurementsList.Where(m => m.AccessLevel >= accessLevel).ToList();
+            measurementsList = [.. measurementsList.Where(m => m.AccessLevel >= accessLevel)];
 
             return measurementsList;
         }

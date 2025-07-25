@@ -7,7 +7,6 @@ using KinaUna.Data;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
-using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Services
 {

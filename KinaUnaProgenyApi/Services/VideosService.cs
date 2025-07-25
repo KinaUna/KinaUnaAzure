@@ -179,7 +179,7 @@ namespace KinaUnaProgenyApi.Services
                 videosList = await SetVideosListInCache(progenyId);
             }
 
-            videosList = videosList.Where(p => p.AccessLevel >= accessLevel).ToList();
+            videosList = [.. videosList.Where(p => p.AccessLevel >= accessLevel)];
 
             return videosList;
         }

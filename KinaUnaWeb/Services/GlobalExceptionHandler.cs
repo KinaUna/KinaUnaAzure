@@ -8,24 +8,17 @@ using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services
 {
-    internal sealed class GlobalExceptionHandler : IExceptionHandler
+    internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
     {
-        private readonly ILogger<GlobalExceptionHandler> _logger;
-
-        public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
-        {
-            _logger = logger;
-        }
-
         public async ValueTask<bool> TryHandleAsync(
             HttpContext httpContext,
             Exception exception,
             CancellationToken cancellationToken)
         {
-            _logger.LogError(
+            logger.LogError(
                 exception, "Exception occurred: {Message}", exception.Message);
 
-            ProblemDetails problemDetails = new ProblemDetails
+            ProblemDetails problemDetails = new()
             {
                 Status = StatusCodes.Status500InternalServerError,
                 Title = "Server error"

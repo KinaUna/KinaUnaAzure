@@ -3,15 +3,8 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 
 namespace KinaUna.OpenIddict.Extensions
 {
-    public sealed class FormValueRequiredAttribute : ActionMethodSelectorAttribute
+    public sealed class FormValueRequiredAttribute(string name) : ActionMethodSelectorAttribute
     {
-        private readonly string _name;
-
-        public FormValueRequiredAttribute(string name)
-        {
-            _name = name;
-        }
-
         public override bool IsValidForRequest(RouteContext context, ActionDescriptor action)
         {
             if (string.Equals(context.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase) ||
@@ -32,7 +25,7 @@ namespace KinaUna.OpenIddict.Extensions
                 return false;
             }
 
-            return !string.IsNullOrEmpty(context.HttpContext.Request.Form[_name]);
+            return !string.IsNullOrEmpty(context.HttpContext.Request.Form[name]);
         }
     }
 }

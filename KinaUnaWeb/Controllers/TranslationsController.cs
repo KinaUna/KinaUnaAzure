@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;

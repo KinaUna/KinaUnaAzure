@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.FamilyViewModels;
@@ -295,8 +294,10 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            CalendarItemsRequest calendarItemsRequest = new CalendarItemsRequest();
-            calendarItemsRequest.ProgenyIds = [model.Id];
+            CalendarItemsRequest calendarItemsRequest = new()
+            {
+                ProgenyIds = [model.Id]
+            };
 
             List<CalendarItem> eventsList = await calendarsHttpClient.GetProgeniesCalendarList(calendarItemsRequest);
             if (eventsList.Count != 0)
@@ -490,7 +491,7 @@ namespace KinaUnaWeb.Controllers
                 tagsList.AddRange(await autoSuggestsHttpClient.GetTagsList(progenyId));
             }
 
-            suggestionsList.Suggestions = tagsList.Distinct().ToList();
+            suggestionsList.Suggestions = [.. tagsList.Distinct()];
 
 
             return Json(suggestionsList);
@@ -515,7 +516,7 @@ namespace KinaUnaWeb.Controllers
                 contextsList.AddRange(await autoSuggestsHttpClient.GetContextsList(progenyId));
             }
 
-            suggestionsList.Suggestions = contextsList.Distinct().ToList();
+            suggestionsList.Suggestions = [.. contextsList.Distinct()];
 
 
             return Json(suggestionsList);
@@ -540,7 +541,7 @@ namespace KinaUnaWeb.Controllers
                 locationsList.AddRange(await autoSuggestsHttpClient.GetLocationsList(progenyId));
             }
 
-            suggestionsList.Suggestions = locationsList.Distinct().ToList();
+            suggestionsList.Suggestions = [.. locationsList.Distinct()];
 
 
             return Json(suggestionsList);
@@ -565,7 +566,7 @@ namespace KinaUnaWeb.Controllers
                 categoriesList.AddRange(await autoSuggestsHttpClient.GetCategoriesList(progenyId));
             }
 
-            suggestionsList.Suggestions = categoriesList.Distinct().ToList();
+            suggestionsList.Suggestions = [.. categoriesList.Distinct()];
 
 
             return Json(suggestionsList);
@@ -590,7 +591,7 @@ namespace KinaUnaWeb.Controllers
                 languagesList.AddRange(await autoSuggestsHttpClient.GetVocabularyLanguageList(progenyId));
             }
 
-            suggestionsList.Suggestions = languagesList.Distinct().ToList();
+            suggestionsList.Suggestions = [.. languagesList.Distinct()];
 
 
             return Json(suggestionsList);

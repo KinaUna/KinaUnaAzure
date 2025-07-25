@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models.TypeScriptModels.Videos;
 using KinaUnaWeb.Services.HttpClients;
@@ -560,7 +559,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
             
-            videosList.VideoItems = videosList.VideoItems.OrderBy(p => p.VideoTime).ToList();
+            videosList.VideoItems = [.. videosList.VideoItems.OrderBy(p => p.VideoTime)];
 
             if (!string.IsNullOrEmpty(parameters.TagFilter))
             {
@@ -614,13 +613,13 @@ namespace KinaUnaWeb.Controllers
             if (parameters.Sort == 1)
             {
 
-                videosList.VideoItems = videosList.VideoItems.Where(t => t.VideoTime <= startDate).OrderByDescending(p => p.VideoTime).ToList();
+                videosList.VideoItems = [.. videosList.VideoItems.Where(t => t.VideoTime <= startDate).OrderByDescending(p => p.VideoTime)];
             }
             else
             {
                 startDate = new DateTime(parameters.Year, parameters.Month, parameters.Day, 0, 0, 0);
                 startDate = TimeZoneInfo.ConvertTimeToUtc(startDate, TimeZoneInfo.FindSystemTimeZoneById(baseModel.CurrentUser.Timezone));
-                videosList.VideoItems = videosList.VideoItems.Where(t => t.VideoTime >= startDate).OrderBy(p => p.VideoTime).ToList();
+                videosList.VideoItems = [.. videosList.VideoItems.Where(t => t.VideoTime >= startDate).OrderBy(p => p.VideoTime)];
             }
 
             firstItemTime = TimeZoneInfo.ConvertTimeFromUtc(firstItemTime, TimeZoneInfo.FindSystemTimeZoneById(baseModel.CurrentUser.Timezone));
@@ -629,7 +628,7 @@ namespace KinaUnaWeb.Controllers
             int skip = (parameters.CurrentPageNumber - 1) * parameters.ItemsPerPage;
             videosList.AllItemsCount = videosList.VideoItems.Count;
             videosList.RemainingItemsCount = videosList.VideoItems.Count - skip - parameters.ItemsPerPage;
-            videosList.VideoItems = videosList.VideoItems.Skip(skip).Take(parameters.ItemsPerPage).ToList();
+            videosList.VideoItems = [.. videosList.VideoItems.Skip(skip).Take(parameters.ItemsPerPage)];
             videosList.TotalPages = (int)Math.Ceiling((double)videosList.AllItemsCount / parameters.ItemsPerPage);
             videosList.CurrentPageNumber = parameters.CurrentPageNumber;
 

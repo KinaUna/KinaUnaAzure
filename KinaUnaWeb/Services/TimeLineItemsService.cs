@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services.HttpClients;
@@ -52,7 +51,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    PictureViewModelRequest pictureViewModelRequest = new PictureViewModelRequest
+                    PictureViewModelRequest pictureViewModelRequest = new()
                     {
                         PictureId = itemId,
                         SortOrder = 1,
@@ -76,7 +75,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    VideoViewModelRequest videoViewModelRequest = new VideoViewModelRequest
+                    VideoViewModelRequest videoViewModelRequest = new()
                     {
                         VideoId = itemId,
                         SortOrder = 1,

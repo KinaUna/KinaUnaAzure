@@ -1,7 +1,5 @@
 ﻿using Azure.Storage.Blobs;
-using IdentityModel;
 using KinaUna.Data;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
@@ -94,7 +92,6 @@ namespace KinaUnaWeb
             string webServerClientId = Configuration.GetValue<string>("WebServerClientId");
             string webServerUrl = Configuration.GetValue<string>("WebServer");
             string authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretString");
-            // string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer"); 
             string progenyApiName = Constants.ProgenyApiName;
             string authApiName = Constants.AuthApiName;
             // Todo: Configure these URLs for Azure client too.
@@ -104,7 +101,6 @@ namespace KinaUnaWeb
                 webServerClientId = Configuration.GetValue<string>("WebServerClientIdLocal");
                 webServerUrl = Configuration.GetValue<string>("WebServerLocal");
                 authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretStringLocal");
-                // progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServerLocal");
                 progenyApiName = Constants.ProgenyApiName + "local";
                 authApiName = Constants.AuthApiName + "local";
             }
@@ -142,8 +138,8 @@ namespace KinaUnaWeb
                 options.MapInboundClaims = false; // Prevents IdentityModel from mapping claims automatically, we want to use the original claim types from IdentityServer
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    NameClaimType = JwtClaimTypes.Email,
-                    RoleClaimType = JwtClaimTypes.Role
+                    NameClaimType = OpenIddictConstants.Claims.Email,
+                    RoleClaimType = OpenIddictConstants.Claims.Role
                 };
 
                 options.CallbackPath = "/callback/login";

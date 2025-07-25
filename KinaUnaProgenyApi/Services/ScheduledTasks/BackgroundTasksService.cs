@@ -19,7 +19,7 @@ public class BackgroundTasksService(IServiceScopeFactory serviceScopeFactory, IL
         List<KinaUnaBackgroundTask> tasks = await context.BackgroundTasksDb.AsNoTracking().ToListAsync();
 
         if (tasks.Count != 0) return tasks;
-        KinaUnaBackgroundTask task = new KinaUnaBackgroundTask
+        KinaUnaBackgroundTask task = new()
         {
             TaskName = "Check Picture Extensions",
             TaskDescription = "Checks all pictures for file extensions, if a picture has no extension it will be added and the picture updated.",

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 

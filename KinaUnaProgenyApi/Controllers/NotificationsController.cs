@@ -101,7 +101,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             notifications = [.. notifications.OrderByDescending(n => n.Time)];
-            notifications = notifications.Skip(start).Take(count).ToList();
+            notifications = [.. notifications.Skip(start).Take(count)];
             foreach (MobileNotification notif in notifications)
             {
                 if (string.IsNullOrEmpty(notif.IconLink))
@@ -133,7 +133,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<MobileNotification> notifications = await notificationsService.GetUsersMobileNotifications(userId, language);
-            notifications = notifications.Where(n => n.Read == false).ToList();
+            notifications = [.. notifications.Where(n => n.Read == false)];
             if (notifications.Count == 0) return Ok(notifications);
 
             if (start > notifications.Count)
@@ -142,7 +142,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             notifications = [.. notifications.OrderByDescending(n => n.Time)];
-            notifications = notifications.Skip(start).Take(count).ToList();
+            notifications = [.. notifications.Skip(start).Take(count)];
             foreach (MobileNotification notif in notifications)
             {
                 if (string.IsNullOrEmpty(notif.IconLink))

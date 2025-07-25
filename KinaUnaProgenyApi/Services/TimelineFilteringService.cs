@@ -29,35 +29,35 @@ namespace KinaUnaProgenyApi.Services
             List<TimeLineItem> filteredTimeLineItems = [];
 
             List<string> tagsList = [.. tags.Split(',')];
-            tagsList = tagsList.Select(t => t.Trim()).ToList();
+            tagsList = [.. tagsList.Select(t => t.Trim())];
 
             int progenyId = timeLineItems.FirstOrDefault()?.ProgenyId ?? Constants.DefaultChildId;
 
             foreach (string tag in tagsList)
             {
                 List<Picture> allPictureItems = await picturesService.GetPicturesWithTag(progenyId, tag, accessLevel);
-                List<TimeLineItem> allTimeLinePictureItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Photo).ToList();
-                List<TimeLineItem> allTimeLinePictureItemsInTimeLineItems = allTimeLinePictureItems.Where(t => allPictureItems.Any(p => p.PictureId == int.Parse(t.ItemId))).ToList();
+                List<TimeLineItem> allTimeLinePictureItems = [.. timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Photo)];
+                List<TimeLineItem> allTimeLinePictureItemsInTimeLineItems = [.. allTimeLinePictureItems.Where(t => allPictureItems.Any(p => p.PictureId == int.Parse(t.ItemId)))];
                 filteredTimeLineItems.AddRange(allTimeLinePictureItemsInTimeLineItems);
 
                 List<Video> allVideoItems = await videosService.GetVideosWithTag(progenyId, tag, accessLevel);
-                List<TimeLineItem> allTimeLineVideoItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Video).ToList();
-                List<TimeLineItem> allTimeLineVideoItemsInTimeLineItems = allTimeLineVideoItems.Where(t => allVideoItems.Any(v => v.VideoId == int.Parse(t.ItemId))).ToList();
+                List<TimeLineItem> allTimeLineVideoItems = [.. timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Video)];
+                List<TimeLineItem> allTimeLineVideoItemsInTimeLineItems = [.. allTimeLineVideoItems.Where(t => allVideoItems.Any(v => v.VideoId == int.Parse(t.ItemId)))];
                 filteredTimeLineItems.AddRange(allTimeLineVideoItemsInTimeLineItems);
 
                 List<Friend> allFriendItems = await friendService.GetFriendsWithTag(progenyId, tag, accessLevel);
-                List<TimeLineItem> allTimeLineFriendItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Friend).ToList();
-                List<TimeLineItem> allTimeLineFriendItemsInTimeLineItems = allTimeLineFriendItems.Where(t => allFriendItems.Any(f => f.FriendId == int.Parse(t.ItemId))).ToList();
+                List<TimeLineItem> allTimeLineFriendItems = [.. timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Friend)];
+                List<TimeLineItem> allTimeLineFriendItemsInTimeLineItems = [.. allTimeLineFriendItems.Where(t => allFriendItems.Any(f => f.FriendId == int.Parse(t.ItemId)))];
                 filteredTimeLineItems.AddRange(allTimeLineFriendItemsInTimeLineItems);
 
                 List<Contact> allContactItems = await contactService.GetContactsWithTag(progenyId, tag, accessLevel);
-                List<TimeLineItem> allTimeLineContactItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact).ToList();
-                List<TimeLineItem> allTimeLineContactItemsInTimeLineItems = allTimeLineContactItems.Where(t => allContactItems.Any(c => c.ContactId == int.Parse(t.ItemId))).ToList();
+                List<TimeLineItem> allTimeLineContactItems = [.. timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact)];
+                List<TimeLineItem> allTimeLineContactItemsInTimeLineItems = [.. allTimeLineContactItems.Where(t => allContactItems.Any(c => c.ContactId == int.Parse(t.ItemId)))];
                 filteredTimeLineItems.AddRange(allTimeLineContactItemsInTimeLineItems);
 
                 List<Location> allLocationItems = await locationService.GetLocationsWithTag(progenyId, tag, accessLevel);
-                List<TimeLineItem> allTimeLineLocationItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Location).ToList();
-                List<TimeLineItem> allTimeLineLocationItemsInTimeLineItems = allTimeLineLocationItems.Where(t => allLocationItems.Any(l => l.LocationId == int.Parse(t.ItemId))).ToList();
+                List<TimeLineItem> allTimeLineLocationItems = [.. timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Location)];
+                List<TimeLineItem> allTimeLineLocationItemsInTimeLineItems = [.. allTimeLineLocationItems.Where(t => allLocationItems.Any(l => l.LocationId == int.Parse(t.ItemId)))];
                 filteredTimeLineItems.AddRange(allTimeLineLocationItemsInTimeLineItems);
 
             }
@@ -77,7 +77,7 @@ namespace KinaUnaProgenyApi.Services
             if (string.IsNullOrEmpty(categories)) return timeLineItems;
 
             List<string> categoriesList = [.. categories.Split(',')];
-            categoriesList = categoriesList.Select(t => t.Trim()).ToList();
+            categoriesList = [.. categoriesList.Select(t => t.Trim())];
 
             List<TimeLineItem> filteredTimeLineItems = [];
 
@@ -85,13 +85,13 @@ namespace KinaUnaProgenyApi.Services
             foreach (string category in categoriesList)
             {
                 List<Skill> allSkillItems = await skillService.GetSkillsWithCategory(progenyId, category, accessLevel);
-                List<TimeLineItem> allTimeLineSkillItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Skill).ToList();
-                List<TimeLineItem> allTimeLineSkillItemsInTimeLineItems = allTimeLineSkillItems.Where(t => allSkillItems.Any(s => s.SkillId == int.Parse(t.ItemId))).ToList();
+                List<TimeLineItem> allTimeLineSkillItems = [.. timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Skill)];
+                List<TimeLineItem> allTimeLineSkillItemsInTimeLineItems = [.. allTimeLineSkillItems.Where(t => allSkillItems.Any(s => s.SkillId == int.Parse(t.ItemId)))];
                 filteredTimeLineItems.AddRange(allTimeLineSkillItemsInTimeLineItems);
 
                 List<Note> allNoteItems = await noteService.GetNotesWithCategory(progenyId, category, accessLevel);
-                List<TimeLineItem> allTimeLineNoteItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Note).ToList();
-                List<TimeLineItem> allTimeLineNoteItemsInTimeLineItems = allTimeLineNoteItems.Where(t => allNoteItems.Any(n => n.NoteId == int.Parse(t.ItemId))).ToList();
+                List<TimeLineItem> allTimeLineNoteItems = [.. timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Note)];
+                List<TimeLineItem> allTimeLineNoteItemsInTimeLineItems = [.. allTimeLineNoteItems.Where(t => allNoteItems.Any(n => n.NoteId == int.Parse(t.ItemId)))];
                 filteredTimeLineItems.AddRange(allTimeLineNoteItemsInTimeLineItems);
             }
             
@@ -110,7 +110,7 @@ namespace KinaUnaProgenyApi.Services
             if (string.IsNullOrEmpty(contexts)) return timeLineItems;
 
             List<string> contextsList = [.. contexts.Split(',')];
-            contextsList = contextsList.Select(t => t.Trim()).ToList();
+            contextsList = [.. contextsList.Select(t => t.Trim())];
 
             List<TimeLineItem> filteredTimeLineItems = [];
 
@@ -119,18 +119,18 @@ namespace KinaUnaProgenyApi.Services
             foreach (string context in contextsList)
             {
                 List<CalendarItem> allCalendarItems = await calendarService.GetCalendarItemsWithContext(progenyId, context, accessLevel);
-                List<TimeLineItem> allTimeLineCalendarItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Calendar).ToList();
-                List<TimeLineItem> allTimeLineCalendarItemsInTimeLineItems = allTimeLineCalendarItems.Where(t => allCalendarItems.Any(c => c.EventId == int.Parse(t.ItemId))).ToList();
+                List<TimeLineItem> allTimeLineCalendarItems = [.. timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Calendar)];
+                List<TimeLineItem> allTimeLineCalendarItemsInTimeLineItems = [.. allTimeLineCalendarItems.Where(t => allCalendarItems.Any(c => c.EventId == int.Parse(t.ItemId)))];
                 filteredTimeLineItems.AddRange(allTimeLineCalendarItemsInTimeLineItems);
 
                 List<Friend> allFriendItems = await friendService.GetFriendsWithContext(progenyId, context, accessLevel);
-                List<TimeLineItem> allTimeLineFriendItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Friend).ToList();
-                List<TimeLineItem> allTimeLineFriendItemsInTimeLineItems = allTimeLineFriendItems.Where(t => allFriendItems.Any(f => f.FriendId == int.Parse(t.ItemId))).ToList();
+                List<TimeLineItem> allTimeLineFriendItems = [.. timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Friend)];
+                List<TimeLineItem> allTimeLineFriendItemsInTimeLineItems = [.. allTimeLineFriendItems.Where(t => allFriendItems.Any(f => f.FriendId == int.Parse(t.ItemId)))];
                 filteredTimeLineItems.AddRange(allTimeLineFriendItemsInTimeLineItems);
 
                 List<Contact> allContactItems = await contactService.GetContactsWithContext(progenyId, context, accessLevel);
-                List<TimeLineItem> allTimeLineContactItems = timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact).ToList();
-                List<TimeLineItem> allTimeLineContactItemsInTimeLineItems = allTimeLineContactItems.Where(t => allContactItems.Any(c => c.ContactId == int.Parse(t.ItemId))).ToList();
+                List<TimeLineItem> allTimeLineContactItems = [.. timeLineItems.Where(t => t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact)];
+                List<TimeLineItem> allTimeLineContactItemsInTimeLineItems = [.. allTimeLineContactItems.Where(t => allContactItems.Any(c => c.ContactId == int.Parse(t.ItemId)))];
                 filteredTimeLineItems.AddRange(allTimeLineContactItemsInTimeLineItems);
             }
             
@@ -148,7 +148,7 @@ namespace KinaUnaProgenyApi.Services
         {
             if (string.IsNullOrEmpty(keywords)) return timeLineItems;
             List<string> keywordsList = [.. keywords.Split(',')];
-            keywordsList = keywordsList.Select(t => t.Trim()).ToList();
+            keywordsList = [.. keywordsList.Select(t => t.Trim())];
 
             List<TimeLineItem> filteredTimeLineItems = [];
             foreach (TimeLineItem timeLineItem in timeLineItems)

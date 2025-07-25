@@ -35,7 +35,7 @@ namespace KinaUna.OpenIddict.Tests.HostingExtensions
             Assert.True(encryptionCertificate.NotBefore < DateTime.Now, "Encryption certificate validity period must have started");
         }
         
-        private bool IsValidForDigitalSignature(X509Certificate2 certificate)
+        private static bool IsValidForDigitalSignature(X509Certificate2 certificate)
         {
             // Check if the certificate has the Digital Signature key usage
             foreach (X509Extension extension in certificate.Extensions)
@@ -49,7 +49,7 @@ namespace KinaUna.OpenIddict.Tests.HostingExtensions
             return false;
         }
         
-        private bool IsValidForKeyEncipherment(X509Certificate2 certificate)
+        private static bool IsValidForKeyEncipherment(X509Certificate2 certificate)
         {
             // Check if the certificate has the Key Encipherment key usage
             foreach (X509Extension extension in certificate.Extensions)
@@ -63,9 +63,9 @@ namespace KinaUna.OpenIddict.Tests.HostingExtensions
             return false;
         }
         
-        private X509Certificate2 GetTestEncryptionCertificate(string thumbprint)
+        private static X509Certificate2 GetTestEncryptionCertificate(string thumbprint)
         {
-            X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+            X509Store store = new(StoreName.My, StoreLocation.CurrentUser);
             try
             {
                 store.Open(OpenFlags.ReadOnly);
@@ -87,9 +87,9 @@ namespace KinaUna.OpenIddict.Tests.HostingExtensions
             }
         }
 
-        private X509Certificate2 GetTestSigningCertificate(string thumbprint)
+        private static X509Certificate2 GetTestSigningCertificate(string thumbprint)
         {
-            X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+            X509Store store = new(StoreName.My, StoreLocation.CurrentUser);
             try
             {
                 store.Open(OpenFlags.ReadOnly);

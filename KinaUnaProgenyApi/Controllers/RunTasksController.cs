@@ -88,7 +88,7 @@ public class RunTasksController(IBackgroundTasksService backgroundTasksService, 
             return Unauthorized("User not admin.");
         }
 
-        List<string> taskList = new List<string>();
+        List<string> taskList = [];
         foreach (MethodInfo method in typeof(RunTasksController).GetMethods())
         {
             if (method.GetCustomAttributes(typeof(HttpPostAttribute), false).Length > 0)

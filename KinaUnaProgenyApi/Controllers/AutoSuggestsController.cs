@@ -220,7 +220,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
             
-            autoSuggestList = autoSuggestList.Distinct().ToList();
+            autoSuggestList = [.. autoSuggestList.Distinct()];
             autoSuggestList.Sort();
 
             return Ok(autoSuggestList);

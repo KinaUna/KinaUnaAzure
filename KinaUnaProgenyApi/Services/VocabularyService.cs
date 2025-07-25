@@ -161,7 +161,7 @@ namespace KinaUnaProgenyApi.Services
                 vocabularyList = await SetVocabularyListInCache(progenyId);
             }
 
-            vocabularyList = vocabularyList.Where(p => p.AccessLevel >= accessLevel).ToList();
+            vocabularyList = [.. vocabularyList.Where(p => p.AccessLevel >= accessLevel)];
 
             return vocabularyList;
         }

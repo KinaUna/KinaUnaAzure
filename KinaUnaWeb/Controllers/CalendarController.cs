@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Calendar;
@@ -40,10 +39,12 @@ namespace KinaUnaWeb.Controllers
         {
             // Todo: Add EventDate parameter for popup with recurring events.
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            CalendarListViewModel model = new(baseModel);
-            
-            // model.SetEventsList(await calendarsHttpClient.GetCalendarList(model.CurrentProgenyId, model.CurrentAccessLevel));
-            model.PopupEventId = eventId ?? 0;
+            CalendarListViewModel model = new(baseModel)
+            {
+                // model.SetEventsList(await calendarsHttpClient.GetCalendarList(model.CurrentProgenyId, model.CurrentAccessLevel));
+                PopupEventId = eventId ?? 0
+            };
+
             if (model.PopupEventId != 0)
             {
                 model.EventsList.Add(await calendarsHttpClient.GetCalendarItem(model.PopupEventId));
@@ -409,13 +410,13 @@ namespace KinaUnaWeb.Controllers
             
             List<CalendarItem> upcomingCalendarItems = await calendarsHttpClient.GetProgeniesCalendarList(request);
 
-            upcomingCalendarItems = upcomingCalendarItems.Where(c => c.EndTime > DateTime.UtcNow).ToList();
+            upcomingCalendarItems = [.. upcomingCalendarItems.Where(c => c.EndTime > DateTime.UtcNow)];
             upcomingCalendarItems = [.. upcomingCalendarItems.OrderBy(c => c.StartTime)];
             
             timelineList.AllItemsCount = upcomingCalendarItems.Count;
             timelineList.RemainingItemsCount = upcomingCalendarItems.Count - parameters.Skip - parameters.Count;
 
-            upcomingCalendarItems = upcomingCalendarItems.Skip(parameters.Skip).Take(parameters.Count).ToList();
+            upcomingCalendarItems = [.. upcomingCalendarItems.Skip(parameters.Skip).Take(parameters.Count)];
 
             foreach (CalendarItem eventItem in upcomingCalendarItems)
             {

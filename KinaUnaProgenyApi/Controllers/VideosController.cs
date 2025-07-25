@@ -128,10 +128,9 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Video> itemsOnPage = allItems
+            List<Video> itemsOnPage = [.. allItems
                 .Skip(pageSize * (pageIndex - 1))
-                .Take(pageSize)
-                .ToList();
+                .Take(pageSize)];
 
             foreach (Video vid in itemsOnPage)
             {
@@ -300,7 +299,7 @@ namespace KinaUnaProgenyApi.Controllers
                     tagItems = tagItems + "'" + tagstring + "',";
                 }
 
-                tagItems = tagItems.Remove(tagItems.Length - 1);
+                tagItems = tagItems[..^1];
                 tagItems += "]";
             }
 

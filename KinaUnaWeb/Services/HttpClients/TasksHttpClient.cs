@@ -1,6 +1,4 @@
-﻿using IdentityModel.Client;
-using KinaUna.Data.Models;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -9,6 +7,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Duende.IdentityModel.Client;
 
 namespace KinaUnaWeb.Services.HttpClients;
 
@@ -44,7 +43,7 @@ public class TasksHttpClient : ITasksHttpClient
 
         const string tasksApiPath = "/api/BackgroundTasks/GetTasks";
         HttpResponseMessage tasksResponseMessage = await _httpClient.GetAsync(tasksApiPath);
-        if (!tasksResponseMessage.IsSuccessStatusCode) return new List<KinaUnaBackgroundTask>();
+        if (!tasksResponseMessage.IsSuccessStatusCode) return [];
 
         string tasksListAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
 
@@ -59,7 +58,7 @@ public class TasksHttpClient : ITasksHttpClient
 
         const string tasksApiPath = "/api/BackgroundTasks/ResetAllTasks/";
         HttpResponseMessage tasksResponseMessage = await _httpClient.GetAsync(tasksApiPath);
-        if (!tasksResponseMessage.IsSuccessStatusCode) return new List<KinaUnaBackgroundTask>();
+        if (!tasksResponseMessage.IsSuccessStatusCode) return [];
 
         string tasksListAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
 
@@ -139,7 +138,7 @@ public class TasksHttpClient : ITasksHttpClient
         string tasksApiPath = "/api/BackgroundTasks/GetCommands/";
 
         HttpResponseMessage tasksResponseMessage = await _httpClient.GetAsync(tasksApiPath);
-        if (!tasksResponseMessage.IsSuccessStatusCode) return new List<string>();
+        if (!tasksResponseMessage.IsSuccessStatusCode) return [];
 
         string tasksAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
 

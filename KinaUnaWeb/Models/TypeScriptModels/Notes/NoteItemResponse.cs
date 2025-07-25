@@ -1,6 +1,4 @@
-﻿using KinaUna.Data.Models;
-
-namespace KinaUnaWeb.Models.TypeScriptModels.Notes
+﻿namespace KinaUnaWeb.Models.TypeScriptModels.Notes
 {
     public class NoteItemResponse
     {
