@@ -1,12 +1,14 @@
-﻿using System;
+﻿using Duende.IdentityModel.Client;
+using KinaUna.Data;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using IdentityModel.Client;
-using KinaUna.Data.Models;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -16,13 +18,24 @@ namespace KinaUnaWeb.Services.HttpClients
     public class NotesHttpClient : INotesHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly ITokenService _tokenService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public NotesHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public NotesHttpClient(HttpClient httpClient, IConfiguration configuration, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _httpClient = httpClient;
-            _apiTokenClient = apiTokenClient;
-            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            _httpContextAccessor = httpContextAccessor;
+            _tokenService = tokenService;
+            string clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey);
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Local");
+            }
+
+            if (env.IsStaging())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Azure");
+            }
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -38,8 +51,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The Note object with the given NoteId. If the Note cannot be found, a Note with NoteId = 0 is returned.</returns>
         public async Task<Note> GetNote(int noteId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             Note noteItem = new();
             string notesApiPath = "/api/Notes/" + noteId;
@@ -59,8 +73,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The added Note object.</returns>
         public async Task<Note> AddNote(Note note)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string notesApiPath = "/api/Notes/";
             HttpResponseMessage notesResponse = await _httpClient.PostAsync(notesApiPath, new StringContent(JsonConvert.SerializeObject(note), System.Text.Encoding.UTF8, "application/json"));
@@ -79,8 +94,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated Note object.</returns>
         public async Task<Note> UpdateNote(Note note)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateApiPath = "/api/Notes/" + note.NoteId;
             HttpResponseMessage noteResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(note), System.Text.Encoding.UTF8, "application/json"));
@@ -99,8 +115,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the Note was successfully removed.</returns>
         public async Task<bool> DeleteNote(int noteId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string notesApiPath = "/api/Notes/" + noteId;
             HttpResponseMessage noteResponse = await _httpClient.DeleteAsync(notesApiPath);
@@ -115,8 +132,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<List<Note>> GetNotesList(int progenyId)
         {
             List<Note> progenyNotesList = [];
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string notesApiPath = "/api/Notes/Progeny/" + progenyId;
             HttpResponseMessage notesResponse = await _httpClient.GetAsync(notesApiPath);

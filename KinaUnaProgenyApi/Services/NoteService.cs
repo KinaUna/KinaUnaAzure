@@ -166,7 +166,7 @@ namespace KinaUnaProgenyApi.Services
                 notesList = await SetNotesListInCache(progenyId);
             }
 
-            notesList = notesList.Where(p => p.AccessLevel >= accessLevel).ToList();
+            notesList = [.. notesList.Where(p => p.AccessLevel >= accessLevel)];
 
             return notesList;
         }

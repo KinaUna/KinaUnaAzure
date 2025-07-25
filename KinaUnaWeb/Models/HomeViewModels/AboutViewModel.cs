@@ -1,6 +1,4 @@
-﻿using KinaUna.Data.Models;
-
-namespace KinaUnaWeb.Models.HomeViewModels
+﻿namespace KinaUnaWeb.Models.HomeViewModels
 {
     public class AboutViewModel: BaseViewModel
     {

@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Headers;
+using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.OpenIddict.Models.HomeViewModels;
@@ -16,10 +17,19 @@ namespace KinaUna.OpenIddict.Services
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheExpirationLong = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1));
 
-        public LocaleManager(HttpClient httpClient, IConfiguration configuration, IDistributedCache cache)
+        public LocaleManager(HttpClient httpClient, IConfiguration configuration, IDistributedCache cache, IHostEnvironment env)
         {
             _cache = cache;
-            string clientUri = configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException();
+            string clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey) ?? throw new InvalidOperationException();
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Local") ?? throw new InvalidOperationException();
+            }
+
+            if (env.IsStaging())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Azure") ?? throw new InvalidOperationException();
+            }
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));

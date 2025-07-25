@@ -183,7 +183,11 @@ namespace KinaUna.Data.Extensions
                 {
                     try
                     {
-                        string[] userLanguages = request.GetTypedHeaders().AcceptLanguage.OrderByDescending(x => x.Quality ?? 1).Select(x => x.Value.ToString()).ToArray();
+                        string[] userLanguages = [.. request.GetTypedHeaders()
+                            .AcceptLanguage
+                            .OrderByDescending(x => x.Quality ?? 1)
+                            .Select(x => x.Value.ToString())];
+
                         string firstLang = userLanguages.FirstOrDefault();
 
                         if (firstLang != null && firstLang.StartsWith("de"))

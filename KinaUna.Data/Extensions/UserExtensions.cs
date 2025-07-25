@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using IdentityModel;
+using OpenIddict.Abstractions;
 
 namespace KinaUna.Data.Extensions
 {
@@ -16,7 +16,7 @@ namespace KinaUna.Data.Extensions
         /// <returns>string: The User's email address.</returns>
         public static string GetEmail(this ClaimsPrincipal principal)
         {
-            string userEmailString = principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.Email))?.Value;
+            string userEmailString = principal?.FindFirst(x => x.Type.Equals(OpenIddictConstants.Claims.Email))?.Value;
             if (string.IsNullOrEmpty(userEmailString))
             {
                 userEmailString = Constants.DefaultUserEmail;
@@ -32,7 +32,7 @@ namespace KinaUna.Data.Extensions
         /// <returns>string: The User's User Id.</returns>
         public static string GetUserId(this ClaimsPrincipal principal)
         {
-            string userIdString = principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.Subject))?.Value;
+            string userIdString = principal?.FindFirst(x => x.Type.Equals(OpenIddictConstants.Claims.Subject))?.Value;
             if (string.IsNullOrEmpty(userIdString))
             {
                 userIdString = Constants.DefaultUserId;
@@ -40,18 +40,7 @@ namespace KinaUna.Data.Extensions
 
             return userIdString;
         }
-
-        /// <summary>
-        /// Obtains the user's timezone from the ClaimsPrincipal.
-        /// Note: This is the timezone set for IdentityServer, not the timezone set in UserInfo.
-        /// </summary>
-        /// <param name="principal"></param>
-        /// <returns>string: The timezone</returns>
-        public static string GetUserTimeZone(this ClaimsPrincipal principal)
-        {
-            return principal?.FindFirst(x => x.Type.Equals("timezone" ))?.Value;
-        }
-
+        
         /// <summary>
         /// Obtains the user's username from the ClaimsPrincipal.
         /// Note: This is the username for the IdentityServer user account, not the username set in UserInfo.
@@ -60,7 +49,7 @@ namespace KinaUna.Data.Extensions
         /// <returns>string: The username.</returns>
         public static string GetUserUserName(this ClaimsPrincipal principal)
         {
-            string userNameString = principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.PreferredUserName))?.Value;
+            string userNameString = principal?.FindFirst(x => x.Type.Equals(OpenIddictConstants.Claims.PreferredUsername))?.Value;
             if (string.IsNullOrEmpty(userNameString))
             {
                 userNameString = "Unknown user name";

@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Contacts;
 using KinaUnaWeb.Services.HttpClients;
@@ -230,7 +229,7 @@ namespace KinaUnaWeb.Controllers
                 contactsList.Reverse();
             }
 
-            List<int> contactsIdList = contactsList.Select(c => c.ContactId).ToList();
+            List<int> contactsIdList = [.. contactsList.Select(c => c.ContactId)];
 
             return Json(new ContactsPageResponse()
             {

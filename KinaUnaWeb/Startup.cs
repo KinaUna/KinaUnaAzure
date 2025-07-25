@@ -1,11 +1,11 @@
 ﻿using Azure.Storage.Blobs;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -14,31 +14,24 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Abstractions;
 using System;
 using System.Globalization;
-using System.IdentityModel.Tokens.Jwt;
-using KinaUnaWeb.HostingExtensions;
-using KinaUnaWeb.HostingExtensions.Interfaces;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace KinaUnaWeb
 {
-    public class Startup
+    public class Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
-        private IConfiguration Configuration { get; }
-        private readonly IWebHostEnvironment _env;
+        private IConfiguration Configuration { get; } = configuration;
 
-        public Startup(IConfiguration configuration, IWebHostEnvironment env)
-        {
-            Configuration = configuration;
-            _env = env;
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-        }
-        
         public void ConfigureServices(IServiceCollection services)
         {
             TelemetryDebugWriter.IsTracingDisabled = true;
@@ -46,20 +39,8 @@ namespace KinaUnaWeb
             _ = services.Configure<CookiePolicyOptions>(options =>
             {
                 options.CheckConsentNeeded = delegate { return true; };
-                options.MinimumSameSitePolicy = SameSiteMode.Lax;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
                 options.Secure = CookieSecurePolicy.Always;
-            });
-
-            string authOpenIddictClientConnection = Configuration["AuthOpenIddictClientConnection"] ?? throw new InvalidOperationException("AuthOpenIddictClientConnection was not found in the configuration data.");
-            services.AddDbContext<ApplicationDbContext>(options =>
-            {
-                options.UseSqlServer(authOpenIddictClientConnection,
-                    sqlServerOptionsAction: sqlOptions =>
-                    {
-                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
-                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                    });
-                options.UseOpenIddict(); // Add this line to enable OpenIddict support
             });
 
             string storageConnectionString = Configuration["BlobStorageConnectionString"];
@@ -81,7 +62,6 @@ namespace KinaUnaWeb
             services.AddTransient<IPushMessageSender, PushMessageSender>();
             services.AddTransient<IWebNotificationsService, WebNotificationsService>();
             services.AddHttpClient<IWebNotificationsHttpClient, WebNotificationsHttpClient>();
-            services.AddSingleton<ApiTokenInMemoryClient>();
             services.AddHttpClient<IUserInfosHttpClient, UserInfosHttpClient>();
             services.AddHttpClient<ITimelineHttpClient, TimelineHttpClient>();
             services.AddHttpClient<IWordsHttpClient, WordsHttpClient>();
@@ -105,31 +85,126 @@ namespace KinaUnaWeb
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
             services.AddHttpClient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddDistributedMemoryCache();
+            services.AddMemoryCache();
+            services.AddSingleton<ITokenService, TokenService>();
 
-            string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
-            string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            string authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretString");
-            string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer"); 
-            string mediaServerUrl = Configuration.GetValue<string>("MediaApiServer");
+            string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
+            string webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey) ?? throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + " was not found in the configuration data.");
+            string webServerUrl = Configuration.GetValue<string>(AuthConstants.WebServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.WebServerUrlKey + " was not found in the configuration data.");
+            string authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey) ?? throw new InvalidOperationException(AuthConstants.WebServerClientSecretKey + " was not found in the configuration data.");
+            string progenyApiName = AuthConstants.ProgenyApiName;
+            string authApiName = AuthConstants.AuthApiName;
 
-            // Register the OpenIddict services and configure them.
-            string serverEncryptionCertificateThumbprint = Configuration["ServerEncryptionCertificateThumbprint"] ??
-                                                           throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
-            string serverSigningCertificateThumbprint = Configuration["ServerSigningCertificateThumbprint"] ??
-                                                        throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
-            
-            services.AddSingleton<IOpenIddictConfigurator>(_ =>
+            if (env.IsDevelopment())
             {
-                OpenIddictConfiguration config = new(serverEncryptionCertificateThumbprint, serverSigningCertificateThumbprint, authenticationServerClientId, authenticationServerClientSecret, authorityServerUrl);
-                config.ConfigureServices(services);
-                return config;
-            });
+                authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local") ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Local was not found in the configuration data.");
+                webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Local") ?? throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + "Local was not found in the configuration data.");
+                webServerUrl = Configuration.GetValue<string>(AuthConstants.WebServerUrlKey + "Local") ?? throw new InvalidOperationException(AuthConstants.WebServerUrlKey + "Local was not found in the configuration data.");
+                authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey + "Local") ?? throw new InvalidOperationException(AuthConstants.WebServerClientSecretKey + "Local was not found in the configuration data.");
+                progenyApiName = AuthConstants.ProgenyApiName + "local";
+                authApiName = AuthConstants.AuthApiName + "local";
+            }
 
-            services.Configure<AuthConfigurations>(config => { config.StsServer = authorityServerUrl; config.ProtectedApiUrl = progenyServerUrl + " " + mediaServerUrl;});
+            if (env.IsStaging())
+            {
+                authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure") ??
+                                     throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Azure was not found in the configuration data.");
+                webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Azure") ??
+                                    throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + "Azure was not found in the configuration data.");
+                webServerUrl = Configuration.GetValue<string>(AuthConstants.WebServerUrlKey + "Azure") ??
+                               throw new InvalidOperationException(AuthConstants.WebServerUrlKey + "Azure was not found in the configuration data.");
+                authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey + "Azure") ??
+                                                   throw new InvalidOperationException(AuthConstants.WebServerClientSecretKey + "Azure was not found in the configuration data.");
+                progenyApiName = AuthConstants.ProgenyApiName + "azure";
+                authApiName = AuthConstants.AuthApiName + "azure";
+            }
+            
+            services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+            }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+            {
+                options.Cookie.Name = ".kinauna.web.auth";
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.IsEssential = true;
+            }).AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+            {
+                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.Authority = authorityServerUrl; // OpenIddict server
+                options.ClientId = webServerClientId;
+                options.ClientSecret = authenticationServerClientSecret;
+                options.ResponseType = "code";
+                options.UsePkce = true;
+                options.SaveTokens = true;
+
+                options.Scope.Clear();
+                options.Scope.Add(progenyApiName);
+                options.Scope.Add(authApiName);
+                options.Scope.Add("profile");
+                options.Scope.Add("openid");
+                options.Scope.Add("email");
+                options.Scope.Add("roles");
+                options.Scope.Add(OpenIddictConstants.Scopes.OfflineAccess);
+
+                options.ClaimActions.Remove("amr");
+                options.GetClaimsFromUserInfoEndpoint = true;
+                options.MapInboundClaims = false; // Prevents IdentityModel from mapping claims automatically, we want to use the original claim types from IdentityServer
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = OpenIddictConstants.Claims.Email,
+                    RoleClaimType = OpenIddictConstants.Claims.Role
+                };
+
+                options.CallbackPath = "/callback/login";
+                options.SignedOutCallbackPath = "/callback/logout";
+
+                options.Events = new OpenIdConnectEvents
+                {
+                    OnTokenValidated = async ctx =>
+                    {
+                        ClaimsPrincipal claimsPrincipal = ctx.Principal;
+
+                        // Clone and keep the existing authentication properties
+                        AuthenticationProperties authProperties = ctx.Properties ?? new AuthenticationProperties();
+
+                        // Make the cookie persistent
+                        authProperties.IsPersistent = true;
+                        authProperties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(180);
+
+                        // Manually sign in using the OIDC principal and the same properties
+                        if (claimsPrincipal != null)
+                            await ctx.HttpContext.SignInAsync(
+                                CookieAuthenticationDefaults.AuthenticationScheme,
+                                claimsPrincipal,
+                                authProperties);
+
+                        // Do NOT call ctx.HandleResponse()
+                        // Let the middleware complete the normal flow (including token saving)
+                    },
+                    //Handle redirect to the Identity Provider(optional, but good practice)
+                    OnRedirectToIdentityProvider = context =>
+                    {
+                        context.ProtocolMessage.RedirectUri = webServerUrl + "/callback/login";
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+            
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.Name = ".KinaUna.Auth";
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromDays(180);
+                options.SlidingExpiration = true;
+                options.LoginPath = "/login";
+                options.AccessDeniedPath = "/Account/AccessDenied";
+            });
 
             // Configure CORS to allow requests from the specified origin.
             // If development, allow any origin.
-            if (_env.IsDevelopment())
+            if (env.IsDevelopment())
             {
                 services.AddCors(options => options.AddDefaultPolicy(policy =>
                     policy.AllowAnyHeader()
@@ -139,13 +214,26 @@ namespace KinaUnaWeb
             // If production, restrict to the specified origin.
             else
             {
-                // In production, only allow requests from the specified origin.
-                // This is important for security reasons.
-                services.AddCors(options => options.AddDefaultPolicy(policy =>
-                    policy.AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .WithOrigins(Constants.ProductionCorsList)));
+                if (env.IsStaging())
+                {
+                    services.AddCors(options => options.AddDefaultPolicy(policy =>
+                        policy.AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .WithOrigins(Constants.StagingCorsList)));
+                }
+                else
+                {
+                    // In production, only allow requests from the specified origin.
+                    // This is important for security reasons.
+                    services.AddCors(options => options.AddDefaultPolicy(policy =>
+                        policy.AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .WithOrigins(Constants.ProductionCorsList)));
+                }
+                
             }
+            
+            services.AddAuthorization();
 
             services.AddControllersWithViews(options =>
             {
@@ -157,14 +245,14 @@ namespace KinaUnaWeb
 
             IMvcBuilder mvcBuilder = services.AddRazorPages();
 
-            if (_env.IsDevelopment())
+            if (env.IsDevelopment())
             {
                 mvcBuilder.AddRazorRuntimeCompilation();
             }
 
-            // Removed duplicate CORS configuration block. Logic is now consolidated above.
+            services.AddExceptionHandler<AuthenticationExceptionHandler>();
+            services.AddProblemDetails();
 
-            services.AddAuthorization();
             services.AddSignalR().AddMessagePackProtocol().AddNewtonsoftJsonProtocol();
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddApplicationInsightsTelemetry();
@@ -201,7 +289,7 @@ namespace KinaUnaWeb
 
             app.UseRouting();
 
-            if (_env.IsDevelopment())
+            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -215,7 +303,8 @@ namespace KinaUnaWeb
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
-                        
+            app.UseExceptionHandler();
+            app.UseStaticFiles();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<WebNotificationHub>("/webnotificationhub");

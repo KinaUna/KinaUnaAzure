@@ -7,7 +7,6 @@ using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpenIddict.Validation.AspNetCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +21,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="userAccessService"></param>
     /// <param name="timelineService"></param>
     /// <param name="userInfoService"></param>
-    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -83,14 +82,14 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id);
-            timeLineList = timeLineList.Where(t => t.AccessLevel >= accessLevelResult.Value && t.ProgenyTime < DateTime.UtcNow).ToList();
+            timeLineList = [.. timeLineList.Where(t => t.AccessLevel >= accessLevelResult.Value && t.ProgenyTime < DateTime.UtcNow)];
 
             List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id);
             foreach (CalendarItem calendarItem in calendarItems)
             {
                 if (calendarItem.AccessLevel >= accessLevelResult.Value && calendarItem.StartTime.HasValue)
                 {
-                    TimeLineItem timeLineItem = new TimeLineItem();
+                    TimeLineItem timeLineItem = new();
                     timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
                     timeLineList.Add(timeLineItem);
                 }
@@ -111,7 +110,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (userAccess != null)
                 {
                     List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId);
-                    progenyTimeLineList = progenyTimeLineList.Where(t => t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime < DateTime.UtcNow).ToList();
+                    progenyTimeLineList = [.. progenyTimeLineList.Where(t => t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime < DateTime.UtcNow)];
                     timeLineList.AddRange(progenyTimeLineList);
 
                     List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(progenyId);
@@ -119,7 +118,7 @@ namespace KinaUnaProgenyApi.Controllers
                     {
                         if (calendarItem.AccessLevel >= userAccess.AccessLevel && calendarItem.StartTime.HasValue)
                         {
-                            TimeLineItem timeLineItem = new TimeLineItem();
+                            TimeLineItem timeLineItem = new();
                             timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
                             timeLineList.Add(timeLineItem);
                         }
@@ -157,7 +156,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (calendarItem.AccessLevel >= accessLevelResult.Value && calendarItem.StartTime.HasValue)
                 {
-                    TimeLineItem timeLineItem = new TimeLineItem();
+                    TimeLineItem timeLineItem = new();
                     timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
                     timeLineList.Add(timeLineItem);
                 }
@@ -224,7 +223,7 @@ namespace KinaUnaProgenyApi.Controllers
                     {
                         if (calendarItem.AccessLevel >= userAccess.AccessLevel && calendarItem.StartTime.HasValue)
                         {
-                            TimeLineItem timeLineItem = new TimeLineItem();
+                            TimeLineItem timeLineItem = new();
                             timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
                             timeLineList.Add(timeLineItem);
                         }
@@ -232,7 +231,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            timeLineList = timeLineList.OrderByDescending(t => t.ProgenyTime).ToList();
+            timeLineList = [.. timeLineList.OrderByDescending(t => t.ProgenyTime)];
             
             return Ok(timeLineList.Count != 0 ? timeLineList : []);
         }

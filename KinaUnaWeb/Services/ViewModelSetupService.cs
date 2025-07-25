@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -127,20 +126,20 @@ namespace KinaUnaWeb.Services
         /// <returns>List of SelectListItems.</returns>
         public async Task<List<SelectListItem>> CreateReminderOffsetSelectListItems(int languageId)
         {
-            List<SelectListItem> reminderOffsetList = new();
+            List<SelectListItem> reminderOffsetList = [];
             string minutesBeforeText = await _translationsHttpClient.GetTranslation("minutes before", PageNames.Calendar, languageId);
             string hourBeforeText = await _translationsHttpClient.GetTranslation("hour before", PageNames.Calendar, languageId);
             string dayBeforeText = await _translationsHttpClient.GetTranslation("day before", PageNames.Calendar, languageId);
             string customText = await _translationsHttpClient.GetTranslation("Custom...", PageNames.Calendar, languageId);
 
-            SelectListItem reminderOffset5Min = new SelectListItem { Value = "5", Text = $"5 {minutesBeforeText}" };
-            SelectListItem reminderOffset10Min = new SelectListItem { Value = "10", Text = $"10 {minutesBeforeText}" };
-            SelectListItem reminderOffset15Min = new SelectListItem { Value = "15", Text = $"15 {minutesBeforeText}" };
-            SelectListItem reminderOffset20Min = new SelectListItem { Value = "20", Text = $"20 {minutesBeforeText}" };
-            SelectListItem reminderOffset30Min = new SelectListItem { Value = "30", Text = $"30 {minutesBeforeText}", Selected = true};
-            SelectListItem reminderOffset1Hour = new SelectListItem { Value = "60", Text = $"1 {hourBeforeText}" };
-            SelectListItem reminderOffset1Day = new SelectListItem { Value = "1440", Text = $"1 {dayBeforeText}" };
-            SelectListItem reminderOffsetCustom = new SelectListItem { Value = "0", Text = customText };
+            SelectListItem reminderOffset5Min = new() { Value = "5", Text = $"5 {minutesBeforeText}" };
+            SelectListItem reminderOffset10Min = new() { Value = "10", Text = $"10 {minutesBeforeText}" };
+            SelectListItem reminderOffset15Min = new() { Value = "15", Text = $"15 {minutesBeforeText}" };
+            SelectListItem reminderOffset20Min = new() { Value = "20", Text = $"20 {minutesBeforeText}" };
+            SelectListItem reminderOffset30Min = new() { Value = "30", Text = $"30 {minutesBeforeText}", Selected = true};
+            SelectListItem reminderOffset1Hour = new() { Value = "60", Text = $"1 {hourBeforeText}" };
+            SelectListItem reminderOffset1Day = new() { Value = "1440", Text = $"1 {dayBeforeText}" };
+            SelectListItem reminderOffsetCustom = new() { Value = "0", Text = customText };
 
             reminderOffsetList.Add(reminderOffset5Min);
             reminderOffsetList.Add(reminderOffset10Min);

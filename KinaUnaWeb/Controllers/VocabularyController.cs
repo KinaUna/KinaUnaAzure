@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using System;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Services.HttpClients;

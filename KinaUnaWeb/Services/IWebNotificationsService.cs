@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using KinaUna.Data.Models;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services

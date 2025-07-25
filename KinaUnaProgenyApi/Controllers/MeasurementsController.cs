@@ -7,7 +7,6 @@ using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpenIddict.Validation.AspNetCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +24,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="measurementService"></param>
     /// <param name="progenyService"></param>
     /// <param name="webNotificationsService"></param>
-    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -269,10 +268,9 @@ namespace KinaUnaProgenyApi.Controllers
                 measurementsCounter++;
             }
 
-            List<Measurement> itemsOnPage = allItems
+            List<Measurement> itemsOnPage = [.. allItems
                 .Skip(pageSize * (pageIndex - 1))
-                .Take(pageSize)
-                .ToList();
+                .Take(pageSize)];
 
             MeasurementsListPage model = new()
             {

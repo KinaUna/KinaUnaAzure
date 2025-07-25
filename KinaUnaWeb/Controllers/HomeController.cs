@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Hosting;
@@ -39,11 +38,9 @@ namespace KinaUnaWeb.Controllers
             
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             HomeFeedViewModel model = new(baseModel);
-            
-            if (model.CurrentProgeny.Name == "401")
+           if (model.CurrentProgeny.Name == "401")
             {
-                string returnUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
-                return RedirectToAction("CheckOut", "Account", new{returnUrl});
+                return RedirectToAction("LogOut", "Account");
             }
 
             model.SetBirthTimeData();
@@ -225,11 +222,23 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                Response.Cookies.Append(
-                    Constants.LanguageCookieName,
-                    CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
-                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain }
-                );
+                if (env.IsStaging())
+                {
+                    Response.Cookies.Append(
+                        Constants.LanguageCookieName,
+                        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = ".azurewebsites.net" }
+                    );
+                }
+                else
+                {
+                    Response.Cookies.Append(
+                        Constants.LanguageCookieName,
+                        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain }
+                    );
+                }
+                
             }
             return Redirect(returnUrl);
         }
@@ -260,11 +269,23 @@ namespace KinaUnaWeb.Controllers
                 }
                 else
                 {
-                    Response.Cookies.Append(
-                    Constants.LanguageCookieName,
-                        cultureString,
-                        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain, IsEssential = true }
-                    );
+                    if (env.IsStaging())
+                    {
+                        Response.Cookies.Append(
+                            Constants.LanguageCookieName,
+                            cultureString,
+                            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = ".azurewebsite.net", IsEssential = true }
+                        );
+                    }
+                    else
+                    {
+                        Response.Cookies.Append(
+                            Constants.LanguageCookieName,
+                            cultureString,
+                            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain, IsEssential = true }
+                        );
+                    }
+                        
                 }
             }
             

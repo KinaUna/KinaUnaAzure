@@ -1,11 +1,14 @@
-﻿using IdentityModel.Client;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Duende.IdentityModel.Client;
+using KinaUna.Data;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -15,18 +18,30 @@ namespace KinaUnaWeb.Services.HttpClients
     public class AutoSuggestsHttpClient : IAutoSuggestsHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITokenService _tokenService;
 
-        public AutoSuggestsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public AutoSuggestsHttpClient(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IHostEnvironment env, ITokenService tokenService)
         {
             _httpClient = httpClient;
-            _apiTokenClient = apiTokenClient;
-            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            _httpContextAccessor = httpContextAccessor;
+            _tokenService = tokenService;
+            string clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey);
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Local");
+            }
+
+            if (env.IsStaging())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Azure");
+            }
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -36,8 +51,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetTagsList(int progenyId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<string> resultTagsList = [];
 
@@ -60,8 +76,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetContextsList(int progenyId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<string> resultContextsList = [];
 
@@ -84,8 +101,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetLocationsList(int progenyId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<string> resultLocationsList = [];
 
@@ -108,8 +126,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetCategoriesList(int progenyId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<string> resultCategoriesList = [];
 
@@ -132,8 +151,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetVocabularyLanguageList(int progenyId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<string> resultLanguagesList = [];
 

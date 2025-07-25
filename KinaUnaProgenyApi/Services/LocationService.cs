@@ -163,7 +163,7 @@ namespace KinaUnaProgenyApi.Services
                 locationsList = await SetLocationsListInCache(progenyId);
             }
 
-            locationsList = locationsList.Where(p => p.AccessLevel >= accessLevel).ToList();
+            locationsList = [.. locationsList.Where(p => p.AccessLevel >= accessLevel)];
             return locationsList;
         }
 

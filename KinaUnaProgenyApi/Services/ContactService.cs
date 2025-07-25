@@ -200,7 +200,7 @@ namespace KinaUnaProgenyApi.Services
                 contactsList = await SetContactsListInCache(progenyId);
             }
 
-            contactsList = contactsList.Where(p => p.AccessLevel >= accessLevel).ToList();
+            contactsList = [.. contactsList.Where(p => p.AccessLevel >= accessLevel)];
 
             return contactsList;
         }

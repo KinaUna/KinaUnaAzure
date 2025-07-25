@@ -268,8 +268,10 @@ namespace KinaUnaProgenyApi.Services
             
             if(progenyInfo == null)
             {
-                progenyInfo = new ProgenyInfo();
-                progenyInfo.ProgenyId = progenyId;
+                progenyInfo = new ProgenyInfo
+                {
+                    ProgenyId = progenyId
+                };
                 progenyInfo = await AddProgenyInfo(progenyInfo);
             }
             

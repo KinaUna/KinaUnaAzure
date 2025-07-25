@@ -1,36 +1,52 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.Net.Http.Headers;
-using System.Net.Http;
+﻿using Duende.IdentityModel.Client;
+using KinaUna.Data;
+using KinaUna.Data.Models.DTOs;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using IdentityModel.Client;
-using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
-using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
     public class CalendarRemindersHttpClient : ICalendarRemindersHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly ITokenService _tokenService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CalendarRemindersHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public CalendarRemindersHttpClient(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IHostEnvironment env, ITokenService tokenService)
         {
             _httpClient = httpClient;
-            _apiTokenClient = apiTokenClient;
-            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            _httpContextAccessor = httpContextAccessor;
+            _tokenService = tokenService;
+            string clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey);
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Local");
+            }
+
+            if (env.IsStaging())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Azure");
+            }
+
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
+            _tokenService = tokenService;
         }
 
         public async Task<CalendarReminder> GetCalendarReminder(int reminderId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             CalendarReminder calendarReminder = new();
             string calendarApiPath = "/api/CalendarReminders/GetCalendarReminder/" + reminderId;
@@ -46,8 +62,9 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<CalendarReminder> AddCalendarReminder(CalendarReminder calendarReminder)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string calendarRemindersApiPath = "/api/CalendarReminders/AddCalendarReminder";
             HttpResponseMessage calendarRemindersResponse = await _httpClient.PostAsync(calendarRemindersApiPath, new StringContent(JsonConvert.SerializeObject(calendarReminder), System.Text.Encoding.UTF8, "application/json"));
@@ -60,8 +77,9 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<CalendarReminder> UpdateCalendarReminder(CalendarReminder calendarReminder)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string calendarRemindersApiPath = "/api/CalendarReminders/UpdateCalendarReminder";
             HttpResponseMessage calendarRemindersResponse = await _httpClient.PutAsync(calendarRemindersApiPath, new StringContent(JsonConvert.SerializeObject(calendarReminder), System.Text.Encoding.UTF8, "application/json"));
@@ -74,8 +92,9 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<CalendarReminder> DeleteCalendarReminder(CalendarReminder calendarReminder)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string calendarRemindersApiPath = "/api/CalendarReminders/DeleteCalendarReminder/" + calendarReminder.CalendarReminderId;
             HttpResponseMessage calendarRemindersResponse = await _httpClient.DeleteAsync(calendarRemindersApiPath);
@@ -94,12 +113,13 @@ namespace KinaUnaWeb.Services.HttpClients
                 FilterNotified = filterNotified
             };
 
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string calendarRemindersApiPath = "/api/CalendarReminders/GetCalendarRemindersForUser";
             HttpResponseMessage calendarRemindersResponse = await _httpClient.PostAsync(calendarRemindersApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
-            if (!calendarRemindersResponse.IsSuccessStatusCode) return new List<CalendarReminder>();
+            if (!calendarRemindersResponse.IsSuccessStatusCode) return [];
 
             string calendarRemindersAsString = await calendarRemindersResponse.Content.ReadAsStringAsync();
 
@@ -108,8 +128,9 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<List<CalendarReminder>> GetUsersCalendarRemindersForEvent(int eventId, string userId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             CalendarRemindersForUserRequest request = new()
             {
@@ -119,7 +140,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string calendarRemindersApiPath = "/api/CalendarReminders/GetUsersCalendarRemindersForEvent/";
             HttpResponseMessage calendarRemindersResponse = await _httpClient.PostAsync(calendarRemindersApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
-            if (!calendarRemindersResponse.IsSuccessStatusCode) return new List<CalendarReminder>();
+            if (!calendarRemindersResponse.IsSuccessStatusCode) return [];
 
             string calendarRemindersAsString = await calendarRemindersResponse.Content.ReadAsStringAsync();
 

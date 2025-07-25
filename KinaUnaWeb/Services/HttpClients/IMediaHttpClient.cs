@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using KinaUnaWeb.Models.ItemViewModels;
 using System.Threading.Tasks;
-using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Services.HttpClients

@@ -1,6 +1,4 @@
-﻿using KinaUna.Data.Models;
-
-namespace KinaUnaWeb.Models.FamilyViewModels
+﻿namespace KinaUnaWeb.Models.FamilyViewModels
 {
     /// <summary>
     /// ViewModel for the Progeny Details view.

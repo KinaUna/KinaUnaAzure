@@ -3,16 +3,27 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace KinaUna.OpenIddict.HostingExtensions.Interfaces
 {
+    /// <summary>
+    /// Defines a contract for retrieving X.509 certificates based on their thumbprint.
+    /// </summary>
+    /// <remarks>Implementations of this interface are responsible for locating and returning the appropriate
+    /// X.509 certificate corresponding to the specified thumbprint.</remarks>
     public interface ICertificateProvider
     {
         X509Certificate2 GetCertificate(string thumbprint);
     }
 
+    /// <summary>
+    /// Provides functionality to retrieve X.509 certificates from the current user's certificate store.
+    /// </summary>
+    /// <remarks>This class implements the <see cref="ICertificateProvider"/> interface to provide a method
+    /// for obtaining certificates based on their thumbprint. It searches the current user's certificate store for a
+    /// valid certificate with the specified thumbprint.</remarks>
     public class DefaultCertificateProvider : ICertificateProvider
     {
         public X509Certificate2 GetCertificate(string thumbprint)
         {
-            X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+            X509Store store = new(StoreName.My, StoreLocation.CurrentUser);
             try
             {
                 store.Open(OpenFlags.ReadOnly);

@@ -3,9 +3,9 @@
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
-    ViewData["Title"] = await LocaleManager.GetTranslation("Registration confirmation sent", PageNames.Account, languageId);
+    string pageTitle = await LocaleManager.GetTranslation("Registration confirmation sent", PageNames.Account, languageId);
 }
-<h2 class="title">@ViewData["Title"]</h2>
+<h2 class="title">@pageTitle</h2>
 <div>
     @await LocaleManager.GetTranslation("Thank you for registering a new account.", PageNames.Account, languageId)<br/>
     @await LocaleManager.GetTranslation("An email has been sent to confirm your email address:", PageNames.Account, languageId) @ViewBag.userEmail<br/><br/>

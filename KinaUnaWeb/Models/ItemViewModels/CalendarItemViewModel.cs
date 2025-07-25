@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
@@ -327,27 +326,27 @@ namespace KinaUnaWeb.Models.ItemViewModels
             string[] byDayParts = CalendarItem.RecurrenceRule.ByDay.Split(",");
             foreach (string byDayPart in byDayParts)
             {
-                if (byDayPart.StartsWith("1"))
+                if (byDayPart.StartsWith('1'))
                 {
                     MonthlyByDayPrefixList[0] = true;
                 }
 
-                if (byDayPart.StartsWith("2"))
+                if (byDayPart.StartsWith('2'))
                 {
                     MonthlyByDayPrefixList[1] = true;
                 }
 
-                if (byDayPart.StartsWith("3"))
+                if (byDayPart.StartsWith('3'))
                 {
                     MonthlyByDayPrefixList[2] = true;
                 }
 
-                if (byDayPart.StartsWith("4"))
+                if (byDayPart.StartsWith('4'))
                 {
                     MonthlyByDayPrefixList[3] = true;
                 }
 
-                if (byDayPart.StartsWith("5"))
+                if (byDayPart.StartsWith('5'))
                 {
                     MonthlyByDayPrefixList[4] = true;
                 }

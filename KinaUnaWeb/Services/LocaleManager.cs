@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Models.HomeViewModels;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Http;

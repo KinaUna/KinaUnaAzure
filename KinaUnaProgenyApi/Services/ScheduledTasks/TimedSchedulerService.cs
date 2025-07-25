@@ -21,7 +21,7 @@ public class TimedSchedulerService(IBackgroundTasksService backgroundTasksServic
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using PeriodicTimer timer = new PeriodicTimer(_period);
+        using PeriodicTimer timer = new(_period);
 
         while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
         {

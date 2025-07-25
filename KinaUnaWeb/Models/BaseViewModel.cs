@@ -1,6 +1,4 @@
-﻿using KinaUna.Data.Models;
-
-namespace KinaUnaWeb.Models
+﻿namespace KinaUnaWeb.Models
 {
     /// <summary>
     /// Base ViewModel for all views.

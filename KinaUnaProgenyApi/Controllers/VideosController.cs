@@ -7,7 +7,6 @@ using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpenIddict.Validation.AspNetCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +25,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="userAccessService"></param>
     /// <param name="webNotificationsService"></param>
     /// <param name="timelineService"></param>
-    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -129,10 +128,9 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Video> itemsOnPage = allItems
+            List<Video> itemsOnPage = [.. allItems
                 .Skip(pageSize * (pageIndex - 1))
-                .Take(pageSize)
-                .ToList();
+                .Take(pageSize)];
 
             foreach (Video vid in itemsOnPage)
             {
@@ -301,7 +299,7 @@ namespace KinaUnaProgenyApi.Controllers
                     tagItems = tagItems + "'" + tagstring + "',";
                 }
 
-                tagItems = tagItems.Remove(tagItems.Length - 1);
+                tagItems = tagItems[..^1];
                 tagItems += "]";
             }
 

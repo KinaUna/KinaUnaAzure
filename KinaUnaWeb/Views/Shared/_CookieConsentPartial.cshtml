@@ -12,6 +12,13 @@
     {
         cookieDomainName = "path=/";
     }
+    else
+    {
+        if (Env.IsStaging())
+        {
+            cookieDomainName = "domain=.azurewebsites.net;path=/";
+        }
+    }
 
     bool hereMapsChecked = Context.Request.HereMapsCookieSet();
     bool youTubeChecked = Context.Request.YouTubeCookieSet();

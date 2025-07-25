@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Models.AdminViewModels;
@@ -271,7 +270,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.Translations = await translationsHttpClient.GetAllTranslations();
-            model.Translations = model.Translations.Where(t => t.Page.Trim().Equals(model.Page.Trim(), StringComparison.CurrentCultureIgnoreCase)).ToList();
+            model.Translations = [.. model.Translations.Where(t => t.Page.Trim().Equals(model.Page.Trim(), StringComparison.CurrentCultureIgnoreCase))];
             model.Translations = [.. model.Translations.OrderBy(t => t.Word).ThenBy(t => t.LanguageId)];
 
             model.LanguagesList = await languagesHttpClient.GetAllLanguages();
@@ -457,7 +456,6 @@ namespace KinaUnaWeb.Controllers
         /// <param name="UploadFiles">List of IFormFile objects with the file data.</param>
         /// <returns>Empty string. The file names are returned via the response headers.</returns>
         [HttpPost]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "ASP0019:Suggest using IHeaderDictionary.Append or the indexer", Justification = "From Syncfusion Sample")]
         // ReSharper disable once InconsistentNaming
         public async Task<ActionResult> SaveRtfFile(IList<IFormFile> UploadFiles)
         {
@@ -477,7 +475,7 @@ namespace KinaUnaWeb.Controllers
                         string resultName = imageStore.UriFor(filename, BlobContainers.KinaUnaTexts);
                         Response.Clear();
                         Response.ContentType = "application/json; charset=utf-8";
-                        Response.Headers.Add("name", resultName);
+                        Response.Headers.Append("name", resultName);
                         Response.StatusCode = 204;
 
                     }

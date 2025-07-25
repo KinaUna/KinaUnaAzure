@@ -159,7 +159,7 @@ namespace KinaUnaProgenyApi.Services
                 skillsList = await SetSkillsListInCache(progenyId);
             }
 
-            skillsList = skillsList.Where(p => p.AccessLevel >= accessLevel).ToList();
+            skillsList = [.. skillsList.Where(p => p.AccessLevel >= accessLevel)];
             return skillsList;
         }
 

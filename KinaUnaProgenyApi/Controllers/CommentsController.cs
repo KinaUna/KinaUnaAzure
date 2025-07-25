@@ -3,7 +3,6 @@ using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpenIddict.Validation.AspNetCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -17,7 +16,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="progenyService"></param>
     /// <param name="userInfoService"></param>
     /// <param name="webNotificationsService"></param>
-    [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

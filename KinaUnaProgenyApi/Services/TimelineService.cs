@@ -277,11 +277,11 @@ namespace KinaUnaProgenyApi.Services
             {
                 List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId);
                 int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                progenyTimeLineItems = progenyTimeLineItems.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
+                progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime <= DateTime.UtcNow)];
                 allTimeLineItems.AddRange(progenyTimeLineItems);
             }
             
-            allTimeLineItems = allTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow).ToList();
+            allTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
             if (allTimeLineItems.Count == 0)
             {
                 onThisDayResponse.TimeLineItems = [];
@@ -308,7 +308,7 @@ namespace KinaUnaProgenyApi.Services
                 anyFilter = true;
                 foreach (int progenyId in onThisDayRequest.Progenies)
                 {
-                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
                     int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
                     onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyTimeLineItems, onThisDayRequest.TagFilter, accessLevel));
                 }
@@ -319,7 +319,7 @@ namespace KinaUnaProgenyApi.Services
                 anyFilter = true;
                 foreach (int progenyId in onThisDayRequest.Progenies)
                 {
-                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
                     int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
                     onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyTimeLineItems, onThisDayRequest.CategoryFilter, accessLevel));
                 }
@@ -330,7 +330,7 @@ namespace KinaUnaProgenyApi.Services
                 anyFilter = true;
                 foreach (int progenyId in onThisDayRequest.Progenies)
                 {
-                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
                     int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
                     onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyTimeLineItems, onThisDayRequest.ContextFilter, accessLevel));
                 }
@@ -338,7 +338,7 @@ namespace KinaUnaProgenyApi.Services
 
             if (anyFilter)
             {
-                onThisDayResponse.TimeLineItems = onThisDayResponse.TimeLineItems.Distinct().ToList();
+                onThisDayResponse.TimeLineItems = [.. onThisDayResponse.TimeLineItems.Distinct()];
             }
             else
             {
@@ -352,7 +352,7 @@ namespace KinaUnaProgenyApi.Services
             }
 
             int filteredItemsCount = onThisDayResponse.TimeLineItems.Count;
-            onThisDayResponse.TimeLineItems = onThisDayResponse.TimeLineItems.Skip(onThisDayRequest.Skip).Take(onThisDayRequest.NumberOfItems).ToList();
+            onThisDayResponse.TimeLineItems = [.. onThisDayResponse.TimeLineItems.Skip(onThisDayRequest.Skip).Take(onThisDayRequest.NumberOfItems)];
             onThisDayResponse.RemainingItemsCount = filteredItemsCount - (onThisDayRequest.Skip + onThisDayRequest.NumberOfItems);
 
             if (onThisDayResponse.RemainingItemsCount < 0)
@@ -383,7 +383,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId);
                 int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                progenyTimeLineItems = progenyTimeLineItems.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime <= DateTime.UtcNow).ToList();
+                progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime <= DateTime.UtcNow)];
                 allTimeLineItems.AddRange(progenyTimeLineItems);
 
                 List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(progenyId);
@@ -391,7 +391,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     if (calendarItem.AccessLevel >= accessLevel && calendarItem.StartTime.HasValue)
                     {
-                        TimeLineItem timeLineItem = new TimeLineItem();
+                        TimeLineItem timeLineItem = new();
                         timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
                         allTimeLineItems.Add(timeLineItem);
                     }
@@ -422,7 +422,7 @@ namespace KinaUnaProgenyApi.Services
                 anyFilter = true;
                 foreach (int progenyId in timelineRequest.Progenies)
                 {
-                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
                     int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
                     timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyTimeLineItems, timelineRequest.TagFilter, accessLevel));
                 }
@@ -433,7 +433,7 @@ namespace KinaUnaProgenyApi.Services
                 anyFilter = true;
                 foreach (int progenyId in timelineRequest.Progenies)
                 {
-                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
                     int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
                     timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyTimeLineItems, timelineRequest.CategoryFilter, accessLevel));
                 }
@@ -444,7 +444,7 @@ namespace KinaUnaProgenyApi.Services
                 anyFilter = true;
                 foreach (int progenyId in timelineRequest.Progenies)
                 {
-                    List<TimeLineItem> progenyTimeLineItems = allTimeLineItems.Where(t => t.ProgenyId == progenyId).ToList();
+                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
                     int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
                     timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyTimeLineItems, timelineRequest.ContextFilter, accessLevel));
                 }
@@ -452,7 +452,7 @@ namespace KinaUnaProgenyApi.Services
 
             if (anyFilter)
             {
-                timelineResponse.TimeLineItems = timelineResponse.TimeLineItems.Distinct().ToList();
+                timelineResponse.TimeLineItems = [.. timelineResponse.TimeLineItems.Distinct()];
             }
             else
             {
@@ -466,7 +466,7 @@ namespace KinaUnaProgenyApi.Services
             }
 
             int filteredItemsCount = timelineResponse.TimeLineItems.Count;
-            timelineResponse.TimeLineItems = timelineResponse.TimeLineItems.Skip(timelineRequest.Skip).Take(timelineRequest.NumberOfItems).ToList();
+            timelineResponse.TimeLineItems = [.. timelineResponse.TimeLineItems.Skip(timelineRequest.Skip).Take(timelineRequest.NumberOfItems)];
             timelineResponse.RemainingItemsCount = filteredItemsCount - (timelineRequest.Skip + timelineRequest.NumberOfItems);
 
             if (timelineResponse.RemainingItemsCount < 0)

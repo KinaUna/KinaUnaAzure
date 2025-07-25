@@ -1,18 +1,16 @@
 ﻿using KinaUna.Data;
+using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.OpenIddict.Extensions;
 using KinaUna.OpenIddict.Models.AccountViewModels;
 using KinaUna.OpenIddict.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System.Security.Claims;
-using KinaUna.Data.Contexts;
-using KinaUna.Data.Extensions;
 
 namespace KinaUna.OpenIddict.Controllers
 {
@@ -25,14 +23,19 @@ namespace KinaUna.OpenIddict.Controllers
         ILocaleManager localeManager) : Controller
     {
         [TempData] private string? StatusMessage { get; set; }
-        [TempData] public string? ErrorMessage { get; set; }
 
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            return View();
+            LoginViewModel model = new()
+            {
+                Email = string.Empty,
+                Password = string.Empty,
+                ReturnUrl = returnUrl
+            };
+            
+            return View(model);
         }
 
         [HttpPost]
@@ -40,25 +43,46 @@ namespace KinaUna.OpenIddict.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            ViewData["ReturnUrl"] = model.ReturnUrl;
-
-            if (ModelState.IsValid)
+            // Attempt to log in user
+            if (!ModelState.IsValid)
             {
-                List<Claim> claims = [new(ClaimTypes.Email, model.Email)];
-
-                ClaimsIdentity claimsIdentity = new(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-                await HttpContext.SignInAsync(new ClaimsPrincipal(claimsIdentity));
-
-                if (Url.IsLocalUrl(model.ReturnUrl))
-                {
-                    return Redirect(model.ReturnUrl);
-                }
-
-                return RedirectToAction(nameof(HomeController.Index), "Home");
+                return View(model);
             }
 
-            return View(model);
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                // delete authentication cookie
+                await HttpContext.SignOutAsync();
+                await signInManager.SignOutAsync();
+            }
+
+            ApplicationUser? user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return View(model);
+            }
+
+            bool signInResult = await userManager.CheckPasswordAsync(user, model.Password);
+            if (!signInResult)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return View(model);
+            }
+            if (!user.EmailConfirmed)
+            {
+                ModelState.AddModelError(string.Empty, "You must confirm your email before logging in.");
+                return View(model);
+            }
+            if (user.LockoutEnabled && user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+            {
+                ModelState.AddModelError(string.Empty, "Your account is locked. Please try again later.");
+                return View(model);
+            }
+            
+            await signInManager.SignInAsync(user, true);
+            return Redirect(model.ReturnUrl?? "/");
+
         }
 
         public async Task<IActionResult> Logout()

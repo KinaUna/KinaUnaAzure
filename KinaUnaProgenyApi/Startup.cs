@@ -1,18 +1,19 @@
-﻿using System;
-using System.Reflection;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUnaProgenyApi.AuthorizationHandlers;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Validation.AspNetCore;
+using System;
 
 namespace KinaUnaProgenyApi
 {
@@ -23,23 +24,29 @@ namespace KinaUnaProgenyApi
         public void ConfigureServices(IServiceCollection services)
         {
             TelemetryDebugWriter.IsTracingDisabled = true;
-
-            string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
-            string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            string authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretString");
             
             services.AddDbContext<ProgenyDbContext>(options =>
-                options.UseSqlServer(Configuration["ProgenyDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
+                options.UseSqlServer(Configuration["ProgenyDefaultConnection"],
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
+                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                    }));
 
             services.AddDbContext<MediaDbContext>(options =>
-                options.UseSqlServer(Configuration["MediaDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
+                options.UseSqlServer(Configuration["MediaDefaultConnection"],
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                    }));
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration["DataProtectionConnection"],
                     sqlServerOptionsAction: sqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
-                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
@@ -85,18 +92,60 @@ namespace KinaUnaProgenyApi
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();
 
+            // Register the OpenIddict services and configure them.
+            string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
+            string progenyApiClientId = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey) ?? throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + " was not found in the configuration data.");
+            //string webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey) ?? throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + " was not found in the configuration data.");
+            //string webServerApiClientId = Configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey) ?? throw new InvalidOperationException(AuthConstants.WebServerApiClientIdKey + " was not found in the configuration data.");
+            //string authServerApiClientId = Configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey) ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + " was not found in the configuration data.");
+            string authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientSecretKey) ?? throw new InvalidOperationException(AuthConstants.ProgenyApiClientSecretKey + " was not found in the configuration data.");
+
+            if (env.IsDevelopment())
+            {
+                authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local") ??
+                                            throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Local was not found in the configuration data.");
+                progenyApiClientId = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey + "Local") ??
+                                            throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + "Local was not found in the configuration data.");
+                //webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Local") ??
+                //                           throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + "Local was not found in the configuration data.");
+                //webServerApiClientId = Configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey + "Local") ??
+                //                              throw new InvalidOperationException(AuthConstants.WebServerApiClientIdKey + "Local was not found in the configuration data.");
+                //authServerApiClientId = Configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Local") ??
+                //                               throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Local was not found in the configuration data.");
+                authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientSecretKey + "Local") ??
+                                                          throw new InvalidOperationException(AuthConstants.ProgenyApiClientSecretKey + "Local was not found in the configuration data.");
+            }
+
+            if (env.IsStaging())
+            {
+                authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure") ??
+                                     throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Azure was not found in the configuration data.");
+                progenyApiClientId = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey + "Azure") ??
+                                     throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + "Azure was not found in the configuration data.");
+                //webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Azure") ??
+                //                    throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + "Azure was not found in the configuration data.");
+                //webServerApiClientId = Configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey + "Azure") ??
+                //                       throw new InvalidOperationException(AuthConstants.WebServerApiClientIdKey + "Azure was not found in the configuration data.");
+                //authServerApiClientId = Configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Azure") ??
+                //                        throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Azure was not found in the configuration data.");
+                authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientSecretKey + "Azure") ??
+                                                   throw new InvalidOperationException(AuthConstants.ProgenyApiClientSecretKey + "Azure was not found in the configuration data.");
+            }
+
+            // Todo: Add Audience support.
+            //string[] audienceList = [webServerClientId, webServerApiClientId, authServerApiClientId];
             services.AddOpenIddict()
                 .AddValidation(options =>
                 {
                     // Note: the validation handler uses OpenID Connect discovery
                     // to retrieve the address of the introspection endpoint.
                     options.SetIssuer(authorityServerUrl);
-                    options.AddAudiences(Constants.ProgenyApiName);
-
+                    // options.AddAudiences(audienceList);
+                    
                     // Configure the validation handler to use introspection and register the client
                     // credentials used when communicating with the remote introspection endpoint.
                     options.UseIntrospection()
-                        .SetClientId(authenticationServerClientId)
+                        .SetClientId(progenyApiClientId)
                         .SetClientSecret(authenticationServerClientSecret);
 
                     // Register the System.Net.Http integration.
@@ -119,16 +168,33 @@ namespace KinaUnaProgenyApi
             // If production, restrict to the specified origin.
             else
             {
-                // In production, only allow requests from the specified origin.
-                // This is important for security reasons.
-                services.AddCors(options => options.AddDefaultPolicy(policy =>
-                    policy.AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .WithOrigins(Constants.ProductionCorsList)));
+                if (env.IsStaging())
+                {
+                    services.AddCors(options => options.AddDefaultPolicy(policy =>
+                        policy.AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .WithOrigins(Constants.StagingCorsList)));
+                }
+                else
+                {
+                    // In production, only allow requests from the specified origin.
+                    // This is important for security reasons.
+                    services.AddCors(options => options.AddDefaultPolicy(policy =>
+                        policy.AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .WithOrigins(Constants.ProductionCorsList)));
+                }
+                
             }
 
-            services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-            services.AddAuthorization();
+            services.AddAuthentication(options => { options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme; });
+            services.AddAuthorizationBuilder()
+                .AddPolicy("UserOrClient", policy =>
+                {
+                    policy.Requirements.Add(new UserOrClientRequirement());
+                });
+
+            services.AddSingleton<IAuthorizationHandler, UserOrClientHandler>();
             services.AddApplicationInsightsTelemetry();
         }
 

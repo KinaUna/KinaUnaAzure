@@ -7,5 +7,7 @@ namespace KinaUna.OpenIddict.Models
         public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
         public string? ErrorMessage { get; set; }
+        public string? Error { get; internal set; }
+        public string? ErrorDescription { get; internal set; }
     }
 }

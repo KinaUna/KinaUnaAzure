@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models.TypeScriptModels.Timeline
 {

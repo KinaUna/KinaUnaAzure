@@ -162,7 +162,7 @@ namespace KinaUnaProgenyApi.Services
                 sleepList = await SetSleepListInCache(progenyId);
             }
 
-            sleepList = sleepList.Where(s => s.AccessLevel >= accessLevel).ToList();
+            sleepList = [.. sleepList.Where(s => s.AccessLevel >= accessLevel)];
 
             return sleepList;
         }

@@ -4,9 +4,9 @@
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
-    ViewData["Title"] = await LocaleManager.GetTranslation("Confirm Delete Account", PageNames.Account, languageId);
+    string pageTitle = await LocaleManager.GetTranslation("Confirm Delete Account", PageNames.Account, languageId);
 }
-<h2>@ViewData["Title"]</h2>
+<h2>@pageTitle</h2>
 <div class="row">
     <div class="col-md-10">
         <div class="row">
