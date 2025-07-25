@@ -11,6 +11,7 @@ using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Models.TypeScriptModels.Notifications;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -20,10 +21,11 @@ namespace KinaUnaWeb.Controllers
     public class NotificationsController(
         IHubContext<WebNotificationHub> hubContext,
         IWebNotificationsService webNotificationsService,
-        IViewModelSetupService viewModelSetupService)
+        IViewModelSetupService viewModelSetupService,
+        IUserInfosHttpClient userInfosHttpClient)
         : Controller
     {
-        readonly JsonSerializerOptions _serializeOptions = new JsonSerializerOptions
+        readonly JsonSerializerOptions _serializeOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = true
@@ -81,13 +83,17 @@ namespace KinaUnaWeb.Controllers
 
             if (parameters.unreadOnly)
             {
-                webNotificationsList.NotificationsList = webNotificationsList.NotificationsList.Where(n => !n.IsRead).ToList();
+                webNotificationsList.NotificationsList = [.. webNotificationsList.NotificationsList.Where(n => !n.IsRead)];
             }
+
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(userId);
+
+            string timezoneId = userInfo.Timezone;
 
             foreach (WebNotification notif in webNotificationsList.NotificationsList)
             {
                 notif.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notif.DateTime,
-                    TimeZoneInfo.FindSystemTimeZoneById(User.GetUserTimeZone()));
+                    TimeZoneInfo.FindSystemTimeZoneById(timezoneId));
                 notif.DateTimeString = notif.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
                 notif.Icon = notif.GetIconUrl();
             }
@@ -107,8 +113,8 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
 
             model.WebNotification = await webNotificationsService.GetNotificationById(model.Id);
-
-            model.WebNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(model.WebNotification.DateTime, TimeZoneInfo.FindSystemTimeZoneById(User.GetUserTimeZone()));
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(model.WebNotification.To);
+            model.WebNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(model.WebNotification.DateTime, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
             model.WebNotification.DateTimeString = model.WebNotification.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
 
             model.WebNotification.Icon = model.WebNotification.GetIconUrl();
@@ -133,8 +139,8 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.WebNotification.Icon = model.WebNotification.GetIconUrl();
-
-            model.WebNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(model.WebNotification.DateTime, TimeZoneInfo.FindSystemTimeZoneById(User.GetUserTimeZone()));
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(model.WebNotification.To);
+            model.WebNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(model.WebNotification.DateTime, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
             model.WebNotification.DateTimeString = model.WebNotification.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
 
             return PartialView(model);
@@ -197,7 +203,7 @@ namespace KinaUnaWeb.Controllers
             string userId = User.GetUserId() ?? "NoUser";
 
             List<WebNotification> unreadWebNotifications = await webNotificationsService.GetUsersNotifications(userId);
-            unreadWebNotifications = unreadWebNotifications.Where(n => !n.IsRead).ToList();
+            unreadWebNotifications = [.. unreadWebNotifications.Where(n => !n.IsRead)];
 
             foreach (WebNotification notification in unreadWebNotifications)
             {

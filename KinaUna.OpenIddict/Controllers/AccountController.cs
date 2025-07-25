@@ -1,18 +1,16 @@
 ﻿using KinaUna.Data;
+using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.OpenIddict.Extensions;
 using KinaUna.OpenIddict.Models.AccountViewModels;
 using KinaUna.OpenIddict.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System.Security.Claims;
-using KinaUna.Data.Contexts;
-using KinaUna.Data.Extensions;
 
 namespace KinaUna.OpenIddict.Controllers
 {
@@ -25,7 +23,6 @@ namespace KinaUna.OpenIddict.Controllers
         ILocaleManager localeManager) : Controller
     {
         [TempData] private string? StatusMessage { get; set; }
-        [TempData] public string? ErrorMessage { get; set; }
 
         [HttpGet]
         [AllowAnonymous]
@@ -37,6 +34,7 @@ namespace KinaUna.OpenIddict.Controllers
                 Password = string.Empty,
                 ReturnUrl = returnUrl
             };
+            
             return View(model);
         }
 
@@ -50,9 +48,23 @@ namespace KinaUna.OpenIddict.Controllers
             {
                 return View(model);
             }
-            
+
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                // delete authentication cookie
+                await HttpContext.SignOutAsync();
+                await signInManager.SignOutAsync();
+            }
+
             ApplicationUser? user = await userManager.FindByEmailAsync(model.Email);
             if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return View(model);
+            }
+
+            bool signInResult = await userManager.CheckPasswordAsync(user, model.Password);
+            if (!signInResult)
             {
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
                 return View(model);
@@ -67,29 +79,10 @@ namespace KinaUna.OpenIddict.Controllers
                 ModelState.AddModelError(string.Empty, "Your account is locked. Please try again later.");
                 return View(model);
             }
+            
+            await signInManager.SignInAsync(user, true);
+            return Redirect(model.ReturnUrl?? "/");
 
-            Microsoft.AspNetCore.Identity.SignInResult result = await signInManager.PasswordSignInAsync(user, model.Password, true, lockoutOnFailure: false);
-            if (result.Succeeded)
-            {
-                // Sign in successful, redirect to return URL or home page
-                if (Url.IsLocalUrl(model.ReturnUrl))
-                {
-                    // Create authentication properties to ensure the cookie is properly set
-                    var authProperties = new AuthenticationProperties
-                    {
-                        IsPersistent = true,
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
-                    };
-                    
-                    // Explicitly sign in with the created properties
-                    await signInManager.SignInAsync(user, authProperties);
-                    
-                    return Redirect(model.ReturnUrl);
-                }
-                return RedirectToAction(nameof(HomeController.Index), "Home");
-            }
-
-            return View(model);
         }
 
         public async Task<IActionResult> Logout()

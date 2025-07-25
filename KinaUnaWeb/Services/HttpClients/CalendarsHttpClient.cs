@@ -19,14 +19,14 @@ namespace KinaUnaWeb.Services.HttpClients
     public class CalendarsHttpClient : ICalendarsHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CalendarsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
+        public CalendarsHttpClient(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IHostEnvironment env, ITokenService tokenService)
         {
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
-            _apiTokenClient = apiTokenClient;
+            _tokenService = tokenService;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
             if (env.IsDevelopment())
             {
@@ -45,9 +45,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>CalendarItem. Start and end times are in UTC timezone.</returns>
         public async Task<CalendarItem> GetCalendarItem(int eventId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             CalendarItem calendarItem = new();
             string calendarApiPath = "/api/Calendar/" + eventId;
@@ -68,9 +68,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The CalendarItem object that was added. Start and end times are in UTC timezone.</returns>
         public async Task<CalendarItem> AddCalendarItem(CalendarItem eventItem)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string calendarApiPath = "/api/Calendar/";
             HttpResponseMessage calendarResponse = await _httpClient.PostAsync(calendarApiPath, new StringContent(JsonConvert.SerializeObject(eventItem), System.Text.Encoding.UTF8, "application/json"));
@@ -89,9 +89,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated CalendarItem object.Start and end times are in UTC timezone.</returns>
         public async Task<CalendarItem> UpdateCalendarItem(CalendarItem eventItem)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateCalendarApiPath = "/api/Calendar/" + eventItem.EventId;
             HttpResponseMessage updateCalendarResponse = await _httpClient.PutAsync(updateCalendarApiPath, new StringContent(JsonConvert.SerializeObject(eventItem), System.Text.Encoding.UTF8, "application/json"));
@@ -110,9 +110,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the CalendarItem object was successfully removed.</returns>
         public async Task<bool> DeleteCalendarItem(int eventId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string calendarApiPath = "/api/Calendar/" + eventId;
             HttpResponseMessage calendarResponse = await _httpClient.DeleteAsync(calendarApiPath).ConfigureAwait(false);
@@ -127,9 +127,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<List<CalendarItem>> GetProgeniesCalendarList(CalendarItemsRequest request)
         {
             List<CalendarItem> progenyCalendarList = [];
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string calendarApiPath = "/api/Calendar/Progenies/";
             HttpResponseMessage calendarResponse = await _httpClient.PostAsync(calendarApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);

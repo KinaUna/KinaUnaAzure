@@ -19,13 +19,13 @@ namespace KinaUnaWeb.Services.HttpClients
     {
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly ITokenService _tokenService;
 
-        public UserAccessHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
+        public UserAccessHttpClient(HttpClient httpClient, IConfiguration configuration, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
-            _apiTokenClient = apiTokenClient;
+            _tokenService = tokenService;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
             if (env.IsDevelopment())
             {
@@ -45,9 +45,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The UserAccess object that was added. If an error occurs, a new UserAccess with AccessId = 0.</returns>
         public async Task<UserAccess> AddUserAccess(UserAccess userAccess)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string accessApiPath = "/api/Access/";
             HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(userAccess), System.Text.Encoding.UTF8, "application/json"));
@@ -65,9 +65,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated UserAccess object. If not found or an error occurs, a new UserAccess with AccessId = 0.</returns>
         public async Task<UserAccess> UpdateUserAccess(UserAccess userAccess)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateAccessApiPath = "/api/Access/" + userAccess.AccessId;
             HttpResponseMessage accessResponse = await _httpClient.PutAsync(updateAccessApiPath, new StringContent(JsonConvert.SerializeObject(userAccess), System.Text.Encoding.UTF8, "application/json"));
@@ -85,9 +85,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the UserAccess object was successfully deleted.</returns>
         public async Task<bool> DeleteUserAccess(int userAccessId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string accessApiPath = "/api/Access/" + userAccessId;
             HttpResponseMessage accessTokenResponse = await _httpClient.DeleteAsync(accessApiPath);
@@ -101,9 +101,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of UserAccess objects.</returns>
         public async Task<List<UserAccess>> GetProgenyAccessList(int progenyId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<UserAccess> accessList = [];
             string accessApiPath = "/api/Access/Progeny/" + progenyId;
@@ -123,9 +123,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of UserAccess objects.</returns>
         public async Task<List<UserAccess>> GetUserAccessList(string userEmail)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<UserAccess> accessList = [];
             string accessApiPath = "/api/Access/AccessListByUser/";
@@ -145,9 +145,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The UserAccess with the given AccessId. If not found or an error occurs, a new UserAccess with AccessId = 0.</returns>
         public async Task<UserAccess> GetUserAccess(int accessId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string accessApiPath = "/api/Access/" + accessId;
             HttpResponseMessage accessResponse = await _httpClient.GetAsync(accessApiPath);

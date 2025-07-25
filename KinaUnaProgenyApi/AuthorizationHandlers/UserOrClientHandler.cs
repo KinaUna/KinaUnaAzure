@@ -7,7 +7,7 @@ namespace KinaUnaProgenyApi.AuthorizationHandlers
     {
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserOrClientRequirement requirement)
         {
-            bool hasUser = context.User.HasClaim(c => c.Type == "sub") && (context.User?.Identity?.IsAuthenticated ?? false);
+            bool hasUser = context.User.HasClaim(c => c.Type == "sub") && (context.User.Identity?.IsAuthenticated ?? false);
             bool hasClient = context.User.HasClaim(c => c.Type == "client_id");
 
             // Check client_id value if it exists

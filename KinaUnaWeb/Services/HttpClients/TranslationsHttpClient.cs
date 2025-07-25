@@ -22,15 +22,15 @@ namespace KinaUnaWeb.Services.HttpClients
     {
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly ITokenService _tokenService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheExpirationLong = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(21));
 
-        public TranslationsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IDistributedCache cache, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
+        public TranslationsHttpClient(HttpClient httpClient, IConfiguration configuration, ITokenService tokenService, IDistributedCache cache, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
-            _apiTokenClient = apiTokenClient;
+            _tokenService = tokenService;
             _cache = cache;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
             if (env.IsDevelopment())
@@ -61,9 +61,9 @@ namespace KinaUnaWeb.Services.HttpClients
                 return languageList;
             }
 
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string admininfoApiPath = "/api/Languages/GetAllLanguages";
             HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);
@@ -110,9 +110,9 @@ namespace KinaUnaWeb.Services.HttpClients
             }
             else
             {
-                bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-                string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-                _httpClient.SetBearerToken(accessToken);
+                string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+                _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
                 string admininfoApiPath = "/api/Translations/PageTranslations/" + languageId + "/" + page;
                 HttpResponseMessage translationResponse = await _httpClient.GetAsync(admininfoApiPath);
@@ -157,9 +157,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<TextTranslation> AddTranslation(TextTranslation translation)
         {
             TextTranslation addedTranslation = new();
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string addApiPath = "/api/Translations/";
             HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(translation), System.Text.Encoding.UTF8, "application/json"));
@@ -186,9 +186,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<TextTranslation> UpdateTranslation(TextTranslation translation)
         {
             TextTranslation addedTranslation = new();
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string addApiPath = "/api/Translations/" + translation.Id;
             HttpResponseMessage updateResponse = await _httpClient.PutAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(translation), System.Text.Encoding.UTF8, "application/json"));
@@ -209,9 +209,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<TextTranslation> DeleteTranslation(TextTranslation translation)
         {
             TextTranslation deletedTranslation = new();
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string addApiPath = "/api/Translations/" + translation.Id;
             HttpResponseMessage deleteResponse = await _httpClient.DeleteAsync(addApiPath);
@@ -232,9 +232,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<TextTranslation> DeleteSingleItemTranslation(TextTranslation translation)
         {
             TextTranslation deletedTranslation = new();
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string addApiPath = "/api/Translations/DeleteSingleItem/" + translation.Id;
             HttpResponseMessage deleteResponse = await _httpClient.DeleteAsync(addApiPath);
@@ -268,9 +268,9 @@ namespace KinaUnaWeb.Services.HttpClients
             }
             else
             {
-                bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-                string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-                _httpClient.SetBearerToken(accessToken);
+                string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+                _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
                 string admininfoApiPath = "/api/Translations/GetAllTranslations/" + languageId;
                 HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);
@@ -300,9 +300,9 @@ namespace KinaUnaWeb.Services.HttpClients
             }
             else
             {
-                bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-                string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-                _httpClient.SetBearerToken(accessToken);
+                string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+                _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
                 string admininfoApiPath = "/api/Translations/GetTranslationById/" + id;
                 HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);

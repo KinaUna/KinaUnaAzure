@@ -40,18 +40,7 @@ namespace KinaUna.Data.Extensions
 
             return userIdString;
         }
-
-        /// <summary>
-        /// Obtains the user's timezone from the ClaimsPrincipal.
-        /// Note: This is the timezone set for IdentityServer, not the timezone set in UserInfo.
-        /// </summary>
-        /// <param name="principal"></param>
-        /// <returns>string: The timezone</returns>
-        public static string GetUserTimeZone(this ClaimsPrincipal principal)
-        {
-            return principal?.FindFirst(x => x.Type.Equals("timezone" ))?.Value;
-        }
-
+        
         /// <summary>
         /// Obtains the user's username from the ClaimsPrincipal.
         /// Note: This is the username for the IdentityServer user account, not the username set in UserInfo.

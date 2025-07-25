@@ -19,13 +19,13 @@ namespace KinaUnaWeb.Services.HttpClients
     {
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly ITokenService _tokenService;
 
-        public WebNotificationsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
+        public WebNotificationsHttpClient(HttpClient httpClient, IConfiguration configuration, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
-            _apiTokenClient = apiTokenClient;
+            _tokenService = tokenService;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
             if (env.IsDevelopment())
             {
@@ -46,9 +46,9 @@ namespace KinaUnaWeb.Services.HttpClients
         {
             List<PushDevices> pushDevicesList = [];
 
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string admininfoApiPath = "/api/Notifications/GetAllPushDevices";
             HttpResponseMessage devicesResponse = await _httpClient.GetAsync(admininfoApiPath);
@@ -69,9 +69,9 @@ namespace KinaUnaWeb.Services.HttpClients
         {
             PushDevices pushDevice = new();
 
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string apiPath = "/api/Notifications/GetPushDeviceById/" + id;
             HttpResponseMessage httpResponse = await _httpClient.GetAsync(apiPath);
@@ -90,9 +90,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<PushDevices> AddPushDevice(PushDevices device)
         {
             PushDevices addedPushDevice = new();
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string addApiPath = "/api/Notifications/AddPushDevice/";
             HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(device), System.Text.Encoding.UTF8, "application/json"));
@@ -111,9 +111,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<PushDevices> RemovePushDevice(PushDevices device)
         {
             PushDevices deletedPushDevice = new();
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string deleteApiPath = "/api/Notifications/RemovePushDevice/";
             HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteApiPath, new StringContent(JsonConvert.SerializeObject(device), System.Text.Encoding.UTF8, "application/json"));
@@ -133,9 +133,9 @@ namespace KinaUnaWeb.Services.HttpClients
         {
             List<PushDevices> pushDevicesList = [];
 
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string apiPath = "/api/Notifications/GetPushDevicesListByUserId/" + userId;
             HttpResponseMessage devicesResponse = await _httpClient.GetAsync(apiPath);
@@ -154,9 +154,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<PushDevices> GetPushDevice(PushDevices device)
         {
             PushDevices pushDevice = new();
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string apiPath = "/api/Notifications/GetPushDevice/";
             HttpResponseMessage deviceResponse = await _httpClient.PostAsync(apiPath, new StringContent(JsonConvert.SerializeObject(device), System.Text.Encoding.UTF8, "application/json"));
@@ -175,9 +175,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<WebNotification> AddWebNotification(WebNotification notification)
         {
             WebNotification addedNotification = new();
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string addApiPath = "/api/Notifications/AddWebNotification/";
             HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(notification), System.Text.Encoding.UTF8, "application/json"));
@@ -196,9 +196,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<WebNotification> UpdateWebNotification(WebNotification notification)
         {
             WebNotification addedNotification = new();
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string addApiPath = "/api/Notifications/UpdateWebNotification/";
             HttpResponseMessage addResponse = await _httpClient.PutAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(notification), System.Text.Encoding.UTF8, "application/json"));
@@ -217,9 +217,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<WebNotification> RemoveWebNotification(WebNotification notification)
         {
             WebNotification removedNotification = new();
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string removeApiPath = "/api/Notifications/RemoveWebNotification/";
             HttpResponseMessage removeResponse = await _httpClient.PostAsync(removeApiPath, new StringContent(JsonConvert.SerializeObject(notification), System.Text.Encoding.UTF8, "application/json"));
@@ -239,9 +239,9 @@ namespace KinaUnaWeb.Services.HttpClients
         {
             WebNotification notification = new();
 
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string apiPath = "/api/Notifications/GetWebNotificationById/" + id;
             HttpResponseMessage httpResponse = await _httpClient.GetAsync(apiPath);
@@ -261,9 +261,9 @@ namespace KinaUnaWeb.Services.HttpClients
         {
             List<WebNotification> usersWebNotifications = [];
 
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string apiPath = "/api/Notifications/GetUsersNotifications/" + userId;
             HttpResponseMessage notificationsResponse = await _httpClient.GetAsync(apiPath);
@@ -286,9 +286,9 @@ namespace KinaUnaWeb.Services.HttpClients
         {
             List<WebNotification> usersWebNotifications = [];
 
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string apiPath = "/api/Notifications/GetLatestWebNotifications/" + userId + "/" + start + "/" + count + "/" + unreadOnly;
             HttpResponseMessage notificationsResponse = await _httpClient.GetAsync(apiPath);
@@ -306,9 +306,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>Integer with the number of WebNotifications.</returns>
         public async Task<int> GetUsersNotificationsCount(string userId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string apiPath = "/api/Notifications/GetUsersNotificationsCount/" + userId;
             HttpResponseMessage notificationsResponse = await _httpClient.GetAsync(apiPath);

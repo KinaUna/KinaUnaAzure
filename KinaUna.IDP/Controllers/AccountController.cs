@@ -210,7 +210,6 @@ namespace KinaUna.IDP.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2254:Template should be a static expression", Justification = "<Pending>")]
         public async Task<IActionResult> Logout(LogoutViewModel model)
         {
             string idp = User.FindFirst(JwtClaimTypes.IdentityProvider)?.Value;
@@ -230,9 +229,9 @@ namespace KinaUna.IDP.Controllers
                         RedirectUri = url
                     });
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    logger.LogCritical(ex.Message);
+                    logger.LogCritical(message: e.Message);
                 }
             }
 
@@ -515,7 +514,7 @@ namespace KinaUna.IDP.Controllers
                     }
 
                     List<Progeny> progenyList = await progContext.ProgenyDb.ToListAsync();
-                    progenyList = progenyList.Where(p => p.IsInAdminList(oldEmail)).ToList();
+                    progenyList = [.. progenyList.Where(p => p.IsInAdminList(oldEmail))];
                     if (progenyList.Count != 0)
                     {
                         foreach (Progeny prog in progenyList)

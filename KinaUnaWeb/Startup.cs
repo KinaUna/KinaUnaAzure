@@ -1,8 +1,7 @@
 ﻿using Azure.Storage.Blobs;
+using IdentityModel;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
-using KinaUna.Data.Utilities;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
@@ -17,19 +16,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
-using OpenIddict.Client;
-using OpenIddict.Server.AspNetCore;
-using Quartz;
 using System;
 using System.Globalization;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace KinaUnaWeb
@@ -45,21 +41,8 @@ namespace KinaUnaWeb
             _ = services.Configure<CookiePolicyOptions>(options =>
             {
                 options.CheckConsentNeeded = delegate { return true; };
-                options.MinimumSameSitePolicy = SameSiteMode.Lax;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
                 options.Secure = CookieSecurePolicy.Always;
-            });
-
-            string authOpenIddictClientConnection = Configuration["AuthOpenIddictClientConnection"] ?? throw new InvalidOperationException("AuthOpenIddictClientConnection was not found in the configuration data.");
-            services.AddDbContext<ApplicationDbContext>(options =>
-            {
-                options.UseSqlServer(authOpenIddictClientConnection,
-                    sqlServerOptionsAction: sqlOptions =>
-                    {
-                        sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
-                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
-                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                    });
-                options.UseOpenIddict(); // Add this line to enable OpenIddict support
             });
 
             string storageConnectionString = Configuration["BlobStorageConnectionString"];
@@ -81,7 +64,6 @@ namespace KinaUnaWeb
             services.AddTransient<IPushMessageSender, PushMessageSender>();
             services.AddTransient<IWebNotificationsService, WebNotificationsService>();
             services.AddHttpClient<IWebNotificationsHttpClient, WebNotificationsHttpClient>();
-            services.AddScoped<ApiTokenInMemoryClient>();
             services.AddHttpClient<IUserInfosHttpClient, UserInfosHttpClient>();
             services.AddHttpClient<ITimelineHttpClient, TimelineHttpClient>();
             services.AddHttpClient<IWordsHttpClient, WordsHttpClient>();
@@ -105,153 +87,110 @@ namespace KinaUnaWeb
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
             services.AddHttpClient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddDistributedMemoryCache();
+            services.AddMemoryCache();
+            services.AddSingleton<ITokenService, TokenService>();
 
             string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
             string webServerClientId = Configuration.GetValue<string>("WebServerClientId");
-            // string webServerApiClientId = Configuration.GetValue<string>("WebServerApiClientId");
+            string webServerUrl = Configuration.GetValue<string>("WebServer");
             string authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretString");
-            string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer"); 
+            // string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer"); 
             string progenyApiName = Constants.ProgenyApiName;
+            string authApiName = Constants.AuthApiName;
             // Todo: Configure these URLs for Azure client too.
             if (env.IsDevelopment())
             {
                 authorityServerUrl = Configuration.GetValue<string>("AuthenticationServerLocal");
                 webServerClientId = Configuration.GetValue<string>("WebServerClientIdLocal");
-                // webServerApiClientId = Configuration.GetValue<string>("WebServerApiClientIdLocal");
+                webServerUrl = Configuration.GetValue<string>("WebServerLocal");
                 authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretStringLocal");
-                progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServerLocal");
+                // progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServerLocal");
                 progenyApiName = Constants.ProgenyApiName + "local";
+                authApiName = Constants.AuthApiName + "local";
             }
-            // Register the OpenIddict services and configure them.
-            string serverEncryptionCertificateThumbprint = Configuration["ServerEncryptionCertificateThumbprint"] ??
-                                                           throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
-            string serverSigningCertificateThumbprint = Configuration["ServerSigningCertificateThumbprint"] ??
-                                                        throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
-            X509Certificate2 encryptionCertificate = CertificateTools.GetCertificate(serverEncryptionCertificateThumbprint);
-            X509Certificate2 signingCertificate = CertificateTools.GetCertificate(serverSigningCertificateThumbprint);
-
-            services.AddHttpClient("oidc", client =>
+            
+            services.AddAuthentication(options =>
             {
-                client.BaseAddress = new Uri(authorityServerUrl);
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            });
-
-            services.AddScoped<ITokenService, TokenService>();
-
-            services.AddAuthentication(options => {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme;
-            }).AddCookie(options =>
+                options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+            }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
             {
-                options.LoginPath = "/login";
-                options.LogoutPath = "/logout";
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(50);
-                options.SlidingExpiration = true;
-                options.Cookie.SameSite = SameSiteMode.Lax;
+                options.Cookie.Name = ".kinauna.web.auth";
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.IsEssential = true;
+            }).AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+            {
+                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.Authority = authorityServerUrl; // OpenIddict server
+                options.ClientId = webServerClientId;
+                options.ClientSecret = authenticationServerClientSecret;
+                options.ResponseType = "code";
+                options.UsePkce = true;
+                options.SaveTokens = true;
+
+                options.Scope.Clear();
+                options.Scope.Add(progenyApiName);
+                options.Scope.Add(authApiName);
+                options.Scope.Add("profile");
+                options.Scope.Add("openid");
+                options.Scope.Add("email");
+                options.Scope.Add("roles");
+                options.Scope.Add(OpenIddictConstants.Scopes.OfflineAccess);
+
+                options.ClaimActions.Remove("amr");
+                options.GetClaimsFromUserInfoEndpoint = true;
+                options.MapInboundClaims = false; // Prevents IdentityModel from mapping claims automatically, we want to use the original claim types from IdentityServer
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = JwtClaimTypes.Email,
+                    RoleClaimType = JwtClaimTypes.Role
+                };
+
+                options.CallbackPath = "/callback/login";
+                options.SignedOutCallbackPath = "/callback/logout";
+
+                options.Events = new OpenIdConnectEvents
+                {
+                    OnTokenValidated = async ctx =>
+                    {
+                        ClaimsPrincipal claimsPrincipal = ctx.Principal;
+
+                        // Clone and keep the existing authentication properties
+                        AuthenticationProperties authProperties = ctx.Properties ?? new AuthenticationProperties();
+
+                        // Make the cookie persistent
+                        authProperties.IsPersistent = true;
+                        authProperties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(180);
+
+                        // Manually sign in using the OIDC principal and the same properties
+                        if (claimsPrincipal != null)
+                            await ctx.HttpContext.SignInAsync(
+                                CookieAuthenticationDefaults.AuthenticationScheme,
+                                claimsPrincipal,
+                                authProperties);
+
+                        // Do NOT call ctx.HandleResponse()
+                        // Let the middleware complete the normal flow (including token saving)
+                    },
+                    //Handle redirect to the Identity Provider(optional, but good practice)
+                    OnRedirectToIdentityProvider = context =>
+                    {
+                        context.ProtocolMessage.RedirectUri = webServerUrl + "/callback/login";
+                        return Task.CompletedTask;
+                    }
+                };
             });
             
-            services.AddQuartz(options =>
+            services.ConfigureApplicationCookie(options =>
             {
-                options.UseSimpleTypeLoader();
-                options.UseInMemoryStore();
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.Name = ".KinaUna.Auth";
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromDays(180);
+                options.SlidingExpiration = true;
+                options.LoginPath = "/login";
+                options.AccessDeniedPath = "/Account/AccessDenied";
             });
-
-            services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
-            services.AddOpenIddict()
-
-                // Register the OpenIddict core components.
-                .AddCore(options =>
-                {
-                    // Configure OpenIddict to use the Entity Framework Core stores and models.
-                    // Note: call ReplaceDefaultEntities() to replace the default OpenIddict entities.
-                    options.UseEntityFrameworkCore()
-                            .UseDbContext<ApplicationDbContext>();
-
-                    // Developers who prefer using MongoDB can remove the previous lines
-                    // and configure OpenIddict to use the specified MongoDB database:
-                    // options.UseMongoDb()
-                    //        .UseDatabase(new MongoClient().GetDatabase("openiddict"));
-
-                    // Enable Quartz.NET integration.
-                    options.UseQuartz();
-                })
-
-                // Register the OpenIddict client components.
-                .AddClient(options =>
-                {
-                    options.AllowClientCredentialsFlow()
-                        .AllowAuthorizationCodeFlow()
-                        .AllowRefreshTokenFlow();
-
-                    // Register the signing and encryption credentials used to protect
-                    // sensitive data like the state tokens produced by OpenIddict.
-                    options.AddEncryptionCertificate(encryptionCertificate);
-                    options.AddSigningCertificate(signingCertificate);
-
-                    // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
-                    options.UseAspNetCore()
-                        .EnableStatusCodePagesIntegration()
-                        .EnableRedirectionEndpointPassthrough()
-                        .EnablePostLogoutRedirectionEndpointPassthrough();
-
-                    // Register the System.Net.Http integration and use the identity of the current
-                    // assembly as a more specific user agent, which can be useful when dealing with
-                    // providers that use the user agent as a way to throttle requests (e.g Reddit).
-                    options.UseSystemNetHttp()
-                            .SetProductInformation(typeof(Startup).Assembly);
-
-                    // Add a client registration matching the client application definition in the server project.
-                    options.AddRegistration(new OpenIddictClientRegistration
-                    {
-                        Issuer = new Uri(authorityServerUrl, UriKind.Absolute),
-
-                        ClientId = webServerClientId,
-                        ClientSecret = authenticationServerClientSecret,
-                        Scopes =
-                        {
-                            OpenIddictConstants.Scopes.Email,
-                            OpenIddictConstants.Scopes.Profile,
-                            OpenIddictConstants.Scopes.Roles,
-                            OpenIddictConstants.Scopes.OfflineAccess,
-                            progenyApiName
-                        },
-
-                        // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
-                        // URI per provider, unless all the registered providers support returning a special "iss"
-                        // parameter containing their URL as part of authorization responses. For more information,
-                        // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
-                        RedirectUri = new Uri("callback/login/local", UriKind.Relative),
-                        PostLogoutRedirectUri = new Uri("callback/logout/local", UriKind.Relative)
-                    });
-                })
-                .AddValidation(options =>
-                {
-                    //options.AddEncryptionCertificate(encryptionCertificate);
-                    //options.AddSigningCertificate(signingCertificate);
-                    options.UseSystemNetHttp();
-                    options.SetIssuer(authorityServerUrl);
-
-                    //if (_env.IsDevelopment())
-                    //{
-                    //    options.AddAudiences("kinaunawebclientlocal", Constants.ProgenyApiName + "local");
-                    //}
-                    //else
-                    //{
-                    //    options.AddAudiences("kinaunawebclient", Constants.ProgenyApiName);
-                    //}
-                    options.UseAspNetCore();
-                });
-
-            services.AddHostedService<OpenIddictWorkerService>();
-
-            services.Configure<AuthConfigurations>(config =>
-            {
-                config.StsServer = authorityServerUrl;
-                config.ProtectedApiUrl = progenyServerUrl;
-            });
-
 
             // Configure CORS to allow requests from the specified origin.
             // If development, allow any origin.
@@ -272,6 +211,8 @@ namespace KinaUnaWeb
                         .AllowAnyMethod()
                         .WithOrigins(Constants.ProductionCorsList)));
             }
+            
+            services.AddAuthorization();
 
             services.AddControllersWithViews(options =>
             {
@@ -288,7 +229,9 @@ namespace KinaUnaWeb
                 mvcBuilder.AddRazorRuntimeCompilation();
             }
 
-            services.AddAuthorization();
+            services.AddExceptionHandler<AuthenticationExceptionHandler>();
+            services.AddProblemDetails();
+
             services.AddSignalR().AddMessagePackProtocol().AddNewtonsoftJsonProtocol();
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddApplicationInsightsTelemetry();
@@ -339,7 +282,8 @@ namespace KinaUnaWeb
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
-                        
+            app.UseExceptionHandler();
+            app.UseStaticFiles();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<WebNotificationHub>("/webnotificationhub");

@@ -1,106 +1,335 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using IdentityModel.Client;
+using KinaUna.Data;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using OpenIddict.Abstractions;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services
 {
-    public class KinaunaTokenResponse
+    public class TokenInfo
     {
-        public string AccessToken { get; set; }
-        public string RefreshToken { get; set; }   // only for auth code flow
-        public int ExpiresIn { get; set; }
         public string TokenType { get; set; }
+        public string AccessToken { get; set; }
+        public string RefreshToken { get; set; }
+        public DateTime AccessTokenExpiresAt { get; set; }
     }
 
+    public interface ITokenService
+    {
+        Task<TokenInfo> GetValidTokenAsync(string userId);
+        Task StoreTokenAsync(string userId, TokenInfo token);
+        Task RemoveTokenForUser(string userId);
+    }
+
+    /// <summary>
+    /// Provides functionality for managing and retrieving authentication tokens for API access.
+    /// </summary>
+    /// <remarks>The <see cref="TokenService"/> class is responsible for obtaining, refreshing, and storing API
+    /// authentication tokens for users. It supports token retrieval for both authenticated users and API access when no
+    /// user is specified. The service uses an <see cref="IHttpClientFactory"/> to make HTTP requests to the
+    /// authentication server and an <see cref="IHttpContextAccessor"/> to access the current HTTP context for token
+    /// management.</remarks>
     public class TokenService : ITokenService
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly string _authenticationServer;
+        private readonly string _authenticationServerClientId;
+        private readonly string _authenticationServerSecret;
+        private readonly string _scope;
 
-        public TokenService(IHttpClientFactory httpClientFactory, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        private readonly ConcurrentDictionary<string, TokenInfo> _accessTokens = new();
+        public TokenService(IHttpClientFactory httpClientFactory, IHostEnvironment env, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
+
+            string scope = OpenIddictConstants.Scopes.OfflineAccess + " " +
+                           OpenIddictConstants.Scopes.Email + " " +
+                           OpenIddictConstants.Scopes.Profile + " " +
+                           OpenIddictConstants.Scopes.Roles;
+
+
+            if (env.IsDevelopment())
+            {
+                _authenticationServer = configuration.GetValue<string>("AuthenticationServerLocal");
+                _authenticationServerClientId = configuration.GetValue<string>("WebServerClientIdLocal");
+                _authenticationServerSecret = configuration.GetValue<string>("OpenIddictSecretStringLocal");
+                _scope = scope + " " + Constants.ProgenyApiName + "local " + Constants.AuthApiName + "local";
+            }
+            else
+            {
+                _authenticationServer = configuration.GetValue<string>("AuthenticationServer");
+                _authenticationServerClientId = configuration.GetValue<string>("WebServerClientId");
+                _authenticationServerSecret = configuration.GetValue<string>("OpenIddictSecretString");
+                _scope = scope + " " + Constants.ProgenyApiName + " " + Constants.AuthApiName;
+            }
         }
 
-        public async Task<KinaunaTokenResponse> RedeemAuthorizationCodeAsync(string code, string redirectUri)
+        /// <summary>
+        /// Asynchronously retrieves a valid token for the specified user.
+        /// </summary>
+        /// <remarks>This method attempts to retrieve a valid token from the cache. If the token is not
+        /// found or is expired, it tries to refresh or exchange the token using available credentials.</remarks>
+        /// <param name="userId">The identifier of the user for whom the token is requested. If null or empty, a token for API access is
+        /// returned.</param>
+        /// <returns>A <see cref="TokenInfo"/> object representing the valid token for the user.</returns>
+        /// <exception cref="AuthenticationException">Thrown if the user is not authenticated, the HttpContext is null, or no valid token can be retrieved or
+        /// refreshed. This should trigger a logout in the global Exception handler.</exception>
+        public async Task<TokenInfo> GetValidTokenAsync(string userId)
         {
-            HttpClient client = _httpClientFactory.CreateClient("oidc");
-
-            var session = _httpContextAccessor.HttpContext?.Session;
-            string codeVerifier = session?.GetString("code_verifier")!;
-
-            HttpRequestMessage req = new(HttpMethod.Post, "/connect/token")
+            // Check if the userId is null or empty, and return a token for API access
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    ["grant_type"] = "authorization_code",
-                    ["code"] = code,
-                    ["redirect_uri"] = redirectUri,
-                    ["client_id"] = _configuration["Auth:ClientId_WebUi"],
-                    ["client_secret"] = _configuration["Auth:ClientSecret_WebUi"],
-                    // if you used PKCE:
-                    ["code_verifier"] = codeVerifier,
-                })
-            };
-
-            HttpResponseMessage resp = await client.SendAsync(req);
-            resp.EnsureSuccessStatusCode();
-
-            JsonElement? payloadNullable = await resp.Content.ReadFromJsonAsync<JsonElement?>();
-            if (payloadNullable == null)
-            {
-                throw new InvalidOperationException("Invalid token response");
+                userId = Constants.ProgenyApiName; // Use a constant for API access
             }
-            JsonElement payload = payloadNullable.Value;
 
-            return new KinaunaTokenResponse
+            TokenInfo newToken = null;
+            if (_accessTokens.TryGetValue(userId, out TokenInfo token))
             {
-                AccessToken = payload.GetProperty("access_token").GetString()!,
-                RefreshToken = payload.TryGetProperty("refresh_token", out var rt) ? rt.GetString()! : null,
-                ExpiresIn = payload.GetProperty("expires_in").GetInt32(),
-                TokenType = payload.GetProperty("token_type").GetString()!,
+                if (token != null && DateTime.UtcNow < token.AccessTokenExpiresAt.AddMinutes(-20))
+                    return token;
+
+                // If the token is expired or about to expire, refresh it
+                if (token != null && !string.IsNullOrWhiteSpace(token.RefreshToken))
+                {
+                    try
+                    {
+                        newToken = await RefreshTokenAsync(token.RefreshToken);
+                    }
+                    catch (AuthenticationException)
+                    {
+                        // If refresh fails, remove the token and continue to get a new one
+                        await RemoveTokenForUser(userId);
+                    }
+                }
+            }
+
+            // If userId was null or empty, return a token for API access
+            if (userId == Constants.ProgenyApiName)
+            {
+                newToken = await ApiTokenAsync();
+            }
+            
+
+            // If no valid token found, try to exchange the access token
+            if (newToken == null)
+            {
+                if (_httpContextAccessor.HttpContext == null)
+                {
+                    throw new AuthenticationException("HttpContext is null. Cannot retrieve token.");
+                }
+                if (_httpContextAccessor.HttpContext.User.Identity == null || !_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                {
+                    throw new AuthenticationException("User is not authenticated. Cannot retrieve token.");
+                }
+
+                // Try to get the access token from the current HttpContext
+                string accessToken = await _httpContextAccessor.HttpContext.GetTokenAsync("access_token");
+                if (!string.IsNullOrWhiteSpace(accessToken))
+                {
+                    // If the access token is available, exchange it for a new api token
+                    newToken = await ExchangeTokenAsync(accessToken);
+                }
+            }
+            
+            if (newToken == null)
+            {
+                throw new AuthenticationException("No valid token found or could not refresh the token.");
+            }
+
+            await StoreTokenAsync(userId, newToken);
+            return newToken;
+        }
+
+        /// <summary>
+        /// Asynchronously stores the specified token information for a given user.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user for whom the token is being stored. Cannot be null or empty.</param>
+        /// <param name="token">The token information to store. Cannot be null.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        public Task StoreTokenAsync(string userId, TokenInfo token)
+        {
+            _accessTokens.TryAdd(userId, token);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Removes the access token associated with the specified user.
+        /// </summary>
+        /// <remarks>This method checks if an access token exists for the specified user and removes it if
+        /// present.  It is a no-op if no token is associated with the user.</remarks>
+        /// <param name="userId">The unique identifier of the user whose access token is to be removed. Cannot be null or empty.</param>
+        /// <returns></returns>
+        public Task RemoveTokenForUser(string userId)
+        {
+            var tokensToRemove = _accessTokens.ContainsKey(userId);
+            if (tokensToRemove)
+            {
+                _accessTokens.TryRemove(userId, out _);
+            }
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Refreshes the access token using the provided refresh token.
+        /// </summary>
+        /// <remarks>This method communicates with the authentication server to request a new access token
+        /// using the provided refresh token. It updates the authentication properties with the new tokens and signs in
+        /// the user with the updated properties if the HTTP context is available.</remarks>
+        /// <param name="refreshToken">The refresh token used to obtain a new access token. Cannot be null or empty.</param>
+        /// <returns>A <see cref="TokenInfo"/> object containing the new access token, refresh token, and expiration time.</returns>
+        /// <exception cref="AuthenticationException">Thrown if the refresh token response contains an error, or if the response does not include a valid access
+        /// token, refresh token, or expiration time. This should trigger a logout in the global exception handler.</exception>
+        private async Task<TokenInfo> RefreshTokenAsync(string refreshToken)
+        {
+            HttpClient client = _httpClientFactory.CreateClient();
+
+            TokenResponse refreshTokenResponse = await client.RequestRefreshTokenAsync(new RefreshTokenRequest
+            {
+                Address = _authenticationServer + "/connect/token",
+                ClientId = _authenticationServerClientId,
+                ClientSecret = _authenticationServerSecret,
+                RefreshToken = refreshToken
+            });
+            if (refreshTokenResponse.IsError)
+            {
+                throw new AuthenticationException($"Status code: {refreshTokenResponse.IsError}, Error: {refreshTokenResponse.Error}");
+            }
+
+            // Set the new access token and refresh token
+            if (string.IsNullOrWhiteSpace(refreshTokenResponse.AccessToken))
+            {
+                throw new AuthenticationException("Refresh token response does not contain an access token.");
+            }
+            if (string.IsNullOrWhiteSpace(refreshTokenResponse.RefreshToken))
+            {
+                throw new AuthenticationException("Refresh token response does not contain a refresh token.");
+            }
+            if (refreshTokenResponse.ExpiresIn <= 0)
+            {
+                throw new AuthenticationException("Refresh token response does not contain a valid expiration time.");
+            }
+
+            // Replace tokens in cookie
+            string expiresAtNew = DateTime.UtcNow.AddSeconds(refreshTokenResponse.ExpiresIn).ToString("o");
+            if (_httpContextAccessor.HttpContext == null)
+                return new TokenInfo
+                {
+                    AccessToken = refreshTokenResponse.AccessToken,
+                    RefreshToken = refreshTokenResponse.RefreshToken,
+                    AccessTokenExpiresAt = DateTime.UtcNow.AddSeconds(refreshTokenResponse.ExpiresIn),
+                    TokenType = "Bearer"
+                };
+
+            // Get the current authentication properties
+            AuthenticateResult authInfo = await _httpContextAccessor.HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            if (authInfo.Properties == null)
+                return new TokenInfo
+                {
+                    AccessToken = refreshTokenResponse.AccessToken,
+                    RefreshToken = refreshTokenResponse.RefreshToken,
+                    AccessTokenExpiresAt = DateTime.UtcNow.AddSeconds(refreshTokenResponse.ExpiresIn),
+                    TokenType = "Bearer"
+                };
+            // Update the authentication properties with the new tokens
+            authInfo.Properties.UpdateTokenValue("access_token", refreshTokenResponse.AccessToken);
+            authInfo.Properties.UpdateTokenValue("refresh_token", refreshTokenResponse.RefreshToken);
+            authInfo.Properties.UpdateTokenValue("expires_at", expiresAtNew);
+
+            // Sign in the user with the updated authentication properties
+            if (authInfo.Principal != null)
+                await _httpContextAccessor.HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    authInfo.Principal,
+                    authInfo.Properties);
+
+            return new TokenInfo
+            {
+                AccessToken = refreshTokenResponse.AccessToken,
+                RefreshToken = refreshTokenResponse.RefreshToken,
+                AccessTokenExpiresAt = DateTime.UtcNow.AddSeconds(refreshTokenResponse.ExpiresIn),
+                TokenType = "Bearer"
             };
         }
 
-        public async Task<KinaunaTokenResponse> GetClientCredentialsTokenAsync()
+        /// <summary>
+        /// Exchanges a subject token for a new access token using the token exchange protocol.
+        /// </summary>
+        /// <remarks>This method uses the OAuth 2.0 token exchange protocol to obtain a new access token
+        /// from the authentication server. Ensure that the provided <paramref name="subjectToken"/> is valid and that
+        /// the client credentials are correctly configured.</remarks>
+        /// <param name="subjectToken">The subject token to be exchanged. This token must be a valid access token.</param>
+        /// <returns>A <see cref="TokenInfo"/> object containing the new access token, refresh token, and expiration details.</returns>
+        /// <exception cref="AuthenticationException">Thrown if the token exchange process fails, indicating an error with the authentication server response.
+        /// This should trigger a logout in the global exception handler.</exception>
+        private async Task<TokenInfo> ExchangeTokenAsync(string subjectToken)
         {
-            HttpClient client = _httpClientFactory.CreateClient("oidc");
-
-            HttpRequestMessage req = new(HttpMethod.Post, "/connect/token")
+            HttpClient client = _httpClientFactory.CreateClient();
+            TokenResponse tokenExchangeResponse = await client.RequestTokenExchangeTokenAsync(new TokenExchangeTokenRequest
             {
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    ["grant_type"] = "client_credentials",
-                    ["scope"] = "api.read",  // adjust as needed
-                    ["client_id"] = _configuration["Auth:ClientId_ApiClient"],
-                    ["client_secret"] = _configuration["Auth:ClientSecret_ApiClient"],
-                })
-            };
+                Address = _authenticationServer + "/connect/token",
+                ClientId = _authenticationServerClientId,
+                ClientSecret = _authenticationServerSecret,
+                SubjectToken = subjectToken,
+                SubjectTokenType = "urn:ietf:params:oauth:token-type:access_token",
+                Scope = _scope,
+            });
 
-            HttpResponseMessage resp = await client.SendAsync(req);
-            resp.EnsureSuccessStatusCode();
-
-            JsonElement? payloadNullable = await resp.Content.ReadFromJsonAsync<JsonElement?>();
-            if (payloadNullable == null)
+            if (tokenExchangeResponse.IsError)
             {
-                throw new InvalidOperationException("Invalid token response");
+                throw new AuthenticationException($"Status code: {tokenExchangeResponse.IsError}, Error: {tokenExchangeResponse.Error}");
             }
 
-            JsonElement payload = payloadNullable.Value;
-
-            return new KinaunaTokenResponse
+            return new TokenInfo
             {
-                AccessToken = payload.GetProperty("access_token").GetString()!,
-                ExpiresIn = payload.GetProperty("expires_in").GetInt32(),
-                TokenType = payload.GetProperty("token_type").GetString()!,
+                AccessToken = tokenExchangeResponse.AccessToken,
+                RefreshToken = tokenExchangeResponse.RefreshToken,
+                AccessTokenExpiresAt = DateTime.UtcNow.AddSeconds(tokenExchangeResponse.ExpiresIn),
+                TokenType = "Bearer"
+            };
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves an access token using client credentials.
+        /// </summary>
+        /// <remarks>This method requests an access token from the authentication server using the client
+        /// credentials flow. It throws an <see cref="AuthenticationException"/> if the token request fails.</remarks>
+        /// <returns>A <see cref="TokenInfo"/> object containing the access token, refresh token, expiration time, and token
+        /// type.</returns>
+        /// <exception cref="AuthenticationException">Thrown if the token request results in an error. The exception message includes the status code and error
+        /// details. This should trigger a logout in the global exception handler.</exception>
+        private async Task<TokenInfo> ApiTokenAsync()
+        {
+            // No user: use client credentials
+            HttpClient client = _httpClientFactory.CreateClient();
+            TokenResponse tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            {
+                Address = _authenticationServer + "/connect/token",
+                ClientId = _authenticationServerClientId,
+                ClientSecret = _authenticationServerSecret,
+                Scope = _scope
+            });
+
+            if (tokenResponse.IsError)
+            {
+                throw new AuthenticationException($"Status code: {tokenResponse.IsError}, Error: {tokenResponse.Error}");
+            }
+
+            return new TokenInfo
+            {
+                AccessToken = tokenResponse.AccessToken,
+                RefreshToken = tokenResponse.RefreshToken,
+                AccessTokenExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn),
+                TokenType = "Bearer"
             };
         }
     }

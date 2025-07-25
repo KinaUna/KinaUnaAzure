@@ -18,15 +18,15 @@ namespace KinaUnaWeb.Services.HttpClients
     public class UserInfosHttpClient : IUserInfosHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITokenService _tokenService;
 
-
-        public UserInfosHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env, IHttpContextAccessor httpContextAccessor)
+        public UserInfosHttpClient(HttpClient httpClient, IConfiguration configuration, IHostEnvironment env, IHttpContextAccessor httpContextAccessor, ITokenService tokenService)
         {
             _httpClient = httpClient;
-            _apiTokenClient = apiTokenClient;
             _httpContextAccessor = httpContextAccessor;
+            _tokenService = tokenService;
+
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
             if (env.IsDevelopment())
             {
@@ -46,9 +46,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The UserInfo with the given email address. If not found or an error occurs a new UserInfo with Id=0 is returned.</returns>
         public async Task<UserInfo> GetUserInfo(string email)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string userInfoApiPath = "api/UserInfo/UserInfoByEmail/";
             
@@ -67,9 +67,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The UserInfo with the given UserId. If not found or an error occurs a new UserInfo with Id=0 is returned.</returns>
         public async Task<UserInfo> GetUserInfoByUserId(string userId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string userInfoApiPath = "api/UserInfo/ByUserIdPost/";
             HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
@@ -87,9 +87,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The added UserInfo object. If an error occurs a new UserInfo with Id=0 is returned.</returns>
         public async Task<UserInfo> AddUserInfo(UserInfo userInfo)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string newUserInfoApiPath = "/api/UserInfo/";
             HttpResponseMessage newUserInfoResponse = await _httpClient.PostAsync(newUserInfoApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
@@ -107,9 +107,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>UserInfo: The updated UserInfo object. If not found or an error occurs a new UserInfo with Id=0 is returned.</returns>
         public async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string newUserInfoApiPath = "/api/UserInfo/0";
             HttpResponseMessage newUserInfoResponse = await _httpClient.PutAsync(newUserInfoApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
@@ -127,9 +127,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The deleted UserInfo object. If not found or an error occurs a new UserInfo with Id=0 is returned.</returns>
         public async Task<UserInfo> DeleteUserInfo(UserInfo userInfo)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             userInfo.Deleted = true;
 
@@ -150,9 +150,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>If the user is still active the UserInfo object of the user. If inactive a new UserInfo object with Id=0.</returns>
         public async Task<UserInfo> CheckCurrentUser(string userId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string userinfoApiPath = "/api/UserInfo/CheckCurrentUser/";
             HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userinfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
@@ -170,9 +170,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of UserInfo objects.</returns>
         public async Task<List<UserInfo>> GetDeletedUserInfos()
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string userInfoApiPath = "/api/UserInfo/GetDeletedUserInfos/";
             HttpResponseMessage userInfoResponse = await _httpClient.GetAsync(userInfoApiPath);
@@ -194,9 +194,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<UserInfo> RemoveUserInfoForGood(UserInfo userInfo)
         {
             UserInfo deletedUserInfo = new();
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string deleteApiPath = "/api/UserInfo/" + userInfo.UserId;
 
@@ -216,9 +216,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of UserInfo objects.</returns>
         public async Task GetAllUserInfos()
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string userInfosApiPath = "/api/UserInfo/GetAll";
             await _httpClient.GetAsync(userInfosApiPath);

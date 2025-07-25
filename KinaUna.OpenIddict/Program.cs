@@ -20,21 +20,25 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 _ = builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-    options.CheckConsentNeeded = delegate { return true; };
+    options.CheckConsentNeeded = delegate { return false; };
     options.MinimumSameSitePolicy = SameSiteMode.Lax;
     options.Secure = CookieSecurePolicy.Always;
 });
 
 // Add database context and other services.
 
-string progenyDefaultConnection = builder.Configuration["ProgenyDefaultConnection"] ?? throw new InvalidOperationException("ProgenyDefaultConnection was not found in the configuration data.");
-string mediaDefaultConnection = builder.Configuration["MediaDefaultConnection"] ?? throw new InvalidOperationException("MediaDefaultConnection was not found in the configuration data.");
-string authDefaultConnection = builder.Configuration["AuthDefaultConnection"] ?? throw new InvalidOperationException("AuthDefaultConnection was not found in the configuration data.");
+string progenyDefaultConnection = builder.Configuration["ProgenyDefaultConnection"] 
+                                  ?? throw new InvalidOperationException("ProgenyDefaultConnection was not found in the configuration data.");
+string mediaDefaultConnection = builder.Configuration["MediaDefaultConnection"] 
+                                ?? throw new InvalidOperationException("MediaDefaultConnection was not found in the configuration data.");
+string authDefaultConnection = builder.Configuration["AuthDefaultConnection"] 
+                               ?? throw new InvalidOperationException("AuthDefaultConnection was not found in the configuration data.");
 
 builder.Services.ConfigureDatabases(progenyDefaultConnection, mediaDefaultConnection, authDefaultConnection);
 
 
-string storageConnectionString = builder.Configuration["BlobStorageConnectionString"] ?? throw new InvalidOperationException("BlobStorageConnectionString was not found in the configuration data.");
+string storageConnectionString = builder.Configuration["BlobStorageConnectionString"] 
+                                 ?? throw new InvalidOperationException("BlobStorageConnectionString was not found in the configuration data.");
 new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
 
 builder.Services.AddDataProtection()
@@ -46,25 +50,24 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<ILocaleManager, LocaleManager>();
 
-builder.Services.AddControllersWithViews().AddViewLocalization();
-
-IMvcBuilder mvcBuilder = builder.Services.AddRazorPages();
-
+string authenticationServerClientSecret = builder.Configuration.GetValue<string>("OpenIddictSecretString") 
+                                          ?? throw new InvalidOperationException("OpenIddictSecretString was not found in the configuration data.");
+string authApiName = Constants.AuthApiName;
 if (builder.Environment.IsDevelopment())
 {
-    mvcBuilder.AddRazorRuntimeCompilation();
+    // In development, use the local URLs for the Progeny API and Web Server.
+    authenticationServerClientSecret = builder.Configuration.GetValue<string>("OpenIddictSecretStringLocal") 
+                                       ?? throw new InvalidOperationException("OpenIddictSecretStringLocal was not found in the configuration data.");
+    authApiName = Constants.AuthApiName + "local";
 }
-
-// Register the OpenIddict services and configure them.
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+//Register the OpenIddict services and configure them.
+builder.Services.AddAuthentication(options =>
     {
-        options.LoginPath = "/login";
-        options.LogoutPath = "/logout";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(50);
-        options.SlidingExpiration = true;
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    })
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,options =>
+    {
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.IsEssential = true;
     });
 
@@ -79,6 +82,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
         options.ClaimsIdentity.UserNameClaimType = Claims.Name;
         options.ClaimsIdentity.UserIdClaimType = Claims.Subject;
         options.ClaimsIdentity.RoleClaimType = Claims.Role;
+        options.ClaimsIdentity.EmailClaimType = Claims.Email;
+        options.SignIn.RequireConfirmedAccount = true;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -92,17 +97,12 @@ builder.Services.AddQuartz(options =>
 
 builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
 
-string serverEncryptionCertificateThumbprint =
-    builder.Configuration["ServerEncryptionCertificateThumbprint"] ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
-string serverSigningCertificateThumbprint =
-    builder.Configuration["ServerSigningCertificateThumbprint"] ?? throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
+string serverEncryptionCertificateThumbprint = builder.Configuration["ServerEncryptionCertificateThumbprint"] 
+                                               ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
+string serverSigningCertificateThumbprint = builder.Configuration["ServerSigningCertificateThumbprint"] 
+                                            ?? throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
 X509Certificate2 encryptionCertificate = CertificateTools.GetCertificate(serverEncryptionCertificateThumbprint);
 X509Certificate2 signingCertificate = CertificateTools.GetCertificate(serverSigningCertificateThumbprint);
-
-// string progenyServerUrl = builder.Configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer was not found in the configuration data.");
-// string webServerUrl = builder.Configuration.GetValue<string>("WebServer") ?? throw new InvalidOperationException("WebServer was not found in the configuration data.");
-// string progenyServerLocalUrl = builder.Configuration.GetValue<string>("ProgenyApiServerLocal") ?? throw new InvalidOperationException("ProgenyApiServerLocal was not found in the configuration data.");
-// string webServerLocalUrl = builder.Configuration.GetValue<string>("WebServerLocal") ?? throw new InvalidOperationException("WebServerLocal was not found in the configuration data.");
 
 builder.Services.AddOpenIddict()
     .AddCore(options =>
@@ -125,38 +125,47 @@ builder.Services.AddOpenIddict()
         options.AllowClientCredentialsFlow()
             .AllowAuthorizationCodeFlow()
             .AllowRefreshTokenFlow()
-            .RequireProofKeyForCodeExchange(); // PKCE
-        
+            .AllowTokenExchangeFlow()
+            .RequireProofKeyForCodeExchange();
+
         options.RegisterScopes(
             Scopes.Email,
-            Scopes.OpenId,
             Scopes.Profile,
+            Scopes.OpenId,
             Scopes.Roles,
             Scopes.OfflineAccess,
             Constants.ProgenyApiName,
             Constants.ProgenyApiName + "azure",
-            Constants.ProgenyApiName + "local");
-
-        //options.UseReferenceAccessTokens();
-        //options.UseReferenceRefreshTokens();
-
+            Constants.ProgenyApiName + "local",
+            Constants.AuthApiName,
+            Constants.AuthApiName + "azure",
+            Constants.AuthApiName + "local");
+        
         options.AddEncryptionCertificate(encryptionCertificate);
         options.AddSigningCertificate(signingCertificate);
         options.DisableAccessTokenEncryption();
-        
+
         options.SetAccessTokenLifetime(TimeSpan.FromHours(1))
             .SetRefreshTokenLifetime(TimeSpan.FromDays(30));
         options.UseAspNetCore()
             .EnableTokenEndpointPassthrough()
+            .EnableEndSessionEndpointPassthrough()
             .EnableAuthorizationEndpointPassthrough();
     })
     .AddValidation(options =>
     {
         options.UseLocalServer();
-        //options.AddEncryptionCertificate(encryptionCertificate);
-        //options.AddSigningCertificate(signingCertificate);
+        options.UseAspNetCore();
+    })
+    .AddValidation(options =>
+    {
+        options.UseLocalServer();
+        options.SetClientId(authApiName);
+        options.SetClientSecret(authenticationServerClientSecret);
         options.UseAspNetCore();
     });
+
+builder.Services.AddAuthorization();
 
 // Register the OpenIddict seeder service to initialize the OpenIddict database with necessary data.
 builder.Services.AddScoped<IClientConfigProvider, ConfigurationClientConfigProvider>();
@@ -182,6 +191,17 @@ else
             .WithOrigins(Constants.ProductionCorsList)));
 }
 
+builder.Services.AddControllersWithViews().AddViewLocalization();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+}
+else
+{
+    builder.Services.AddRazorPages();
+}
+
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -191,6 +211,9 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.UseDeveloperExceptionPage();
+app.UseStatusCodePagesWithReExecute("/error");
 
 app.UseCors();
 app.UseHttpsRedirection();
@@ -222,8 +245,8 @@ app.UseRequestLocalization(localizationOptions);
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-app.UseStaticFiles();
+app.UseFileServer();
+//app.UseStaticFiles();
 app.UseEndpoints(options =>
 {
     _ = options.MapControllers();

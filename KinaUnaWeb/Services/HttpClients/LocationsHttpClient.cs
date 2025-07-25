@@ -19,14 +19,14 @@ namespace KinaUnaWeb.Services.HttpClients
     public class LocationsHttpClient : ILocationsHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LocationsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
+        public LocationsHttpClient(HttpClient httpClient, IConfiguration configuration, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
-            _apiTokenClient = apiTokenClient;
+            _tokenService = tokenService;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
             if (env.IsDevelopment())
             {
@@ -47,9 +47,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>Location object with the given LocationId.</returns>
         public async Task<Location> GetLocation(int locationId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             Location locationItem = new();
             string locationsApiPath = "/api/Locations/" + locationId;
@@ -69,9 +69,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The Location object that was added.</returns>
         public async Task<Location> AddLocation(Location location)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string locationsApiPath = "/api/Locations/";
             HttpResponseMessage locationsResponse = await _httpClient.PostAsync(locationsApiPath, new StringContent(JsonConvert.SerializeObject(location), System.Text.Encoding.UTF8, "application/json"));
@@ -89,9 +89,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated Location object.</returns>
         public async Task<Location> UpdateLocation(Location location)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateApiPath = "/api/Locations/" + location.LocationId;
             HttpResponseMessage locationResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(location), System.Text.Encoding.UTF8, "application/json"));
@@ -110,9 +110,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the Location was successfully removed.</returns>
         public async Task<bool> DeleteLocation(int locationId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string locationsApiPath = "/api/Locations/" + locationId;
             HttpResponseMessage locationResponse = await _httpClient.DeleteAsync(locationsApiPath);
@@ -128,9 +128,9 @@ namespace KinaUnaWeb.Services.HttpClients
         {
             List<Location> progenyLocations = [];
 
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string locationsApiPath = "/api/Locations/Progeny/" + progenyId;
             HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath);
@@ -152,9 +152,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<List<Location>> GetLocationsList(int progenyId, string tagFilter = "")
         {
             List<Location> progenyLocationsList = [];
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string locationsApiPath = "/api/Locations/Progeny/" + progenyId;
             HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath);
@@ -180,9 +180,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The Address with the given AddressId. If it isn't found a new Address object with AddressId = 0.</returns>
         public async Task<Address> GetAddress(int addressId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             Address addressItem = new();
             string addressApiPath = "/api/Addresses/" + addressId;
@@ -203,9 +203,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The added Address object.</returns>
         public async Task<Address> AddAddress(Address address)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string addressApiPath = "/api/Addresses/";
             HttpResponseMessage addressResponse = await _httpClient.PostAsync(addressApiPath, new StringContent(JsonConvert.SerializeObject(address), System.Text.Encoding.UTF8, "application/json"));
@@ -224,9 +224,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated Address object.</returns>
         public async Task<Address> UpdateAddress(Address address)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateAddressApiPath = "/api/Addresses/" + address.AddressId;
             HttpResponseMessage addressResponse = await _httpClient.PutAsync(updateAddressApiPath, new StringContent(JsonConvert.SerializeObject(address), System.Text.Encoding.UTF8, "application/json"));

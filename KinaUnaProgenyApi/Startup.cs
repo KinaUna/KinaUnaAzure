@@ -94,33 +94,33 @@ namespace KinaUnaProgenyApi
 
             // Register the OpenIddict services and configure them.
             string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
-            string progenyApiClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            // string webServerClientId = Configuration.GetValue<string>("WebServerClientId");
+            string progenyApiClientId = Configuration.GetValue<string>("ProgenyApiClient");
+            //string webServerClientId = Configuration.GetValue<string>("WebServerClientId");
             //string webServerApiClientId = Configuration.GetValue<string>("WebServerApiClientId");
+            //string authServerApiClientId = Configuration.GetValue<string>("AuthApiClientId");
+
             string authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretString");
+            
             if (env.IsDevelopment())
             {
                 authorityServerUrl = Configuration.GetValue<string>("AuthenticationServerLocal");
-                progenyApiClientId = Configuration.GetValue<string>("AuthenticationServerClientIdLocal");
-                //webServerClientId = Configuration.GetValue<string>("WebClientIdLocal");
+                progenyApiClientId = Configuration.GetValue<string>("ProgenyApiClientLocal");
+                //webServerClientId = Configuration.GetValue<string>("WebServerClientIdLocal");
                 //webServerApiClientId = Configuration.GetValue<string>("WebServerApiClientIdLocal");
+                //authServerApiClientId = Configuration.GetValue<string>("AuthApiClientIdLocal");
                 authenticationServerClientSecret = Configuration.GetValue<string>("OpenIddictSecretStringLocal");
             }
+
+            // Todo: Add Audience support.
+            //string[] audienceList = [webServerClientId, webServerApiClientId, authServerApiClientId];
             services.AddOpenIddict()
                 .AddValidation(options =>
                 {
                     // Note: the validation handler uses OpenID Connect discovery
                     // to retrieve the address of the introspection endpoint.
                     options.SetIssuer(authorityServerUrl);
-                    if (env.IsDevelopment())
-                    {
-                        options.AddAudiences(Constants.ProgenyApiName + "local");
-                    }
-                    else
-                    {
-                        options.AddAudiences(Constants.ProgenyApiName);
-                    }
-
+                    // options.AddAudiences(audienceList);
+                    
                     // Configure the validation handler to use introspection and register the client
                     // credentials used when communicating with the remote introspection endpoint.
                     options.UseIntrospection()
@@ -156,41 +156,6 @@ namespace KinaUnaProgenyApi
             }
 
             services.AddAuthentication(options => { options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme; });
-
-            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            //    .AddJwtBearer(options =>
-            //    {
-            //        options.Authority = authorityServerUrl;
-            //        options.TokenValidationParameters = new TokenValidationParameters
-            //        {
-            //            ValidateAudience = false
-            //        };
-
-            //        // Add this block to hook into token validation events
-            //        options.Events = new JwtBearerEvents
-            //        {
-            //            OnTokenValidated = context =>
-            //            {
-            //                // 🔴 <- SET BREAKPOINT HERE
-            //                var claims = context.Principal?.Claims.ToList();
-
-            //                // Optional: Log claims to confirm it's hit
-            //                foreach (var claim in claims)
-            //                {
-            //                    Console.WriteLine($"Claim: {claim.Type} = {claim.Value}");
-            //                }
-
-            //                return Task.CompletedTask;
-            //            },
-            //            OnAuthenticationFailed = context =>
-            //            {
-            //                // Optional: log or break on failure
-            //                Console.WriteLine($"Auth failed: {context.Exception.Message}");
-            //                return Task.CompletedTask;
-            //            }
-            //        };
-            //    });
-
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("UserOrClient", policy =>
@@ -200,12 +165,6 @@ namespace KinaUnaProgenyApi
             });
 
             services.AddSingleton<IAuthorizationHandler, UserOrClientHandler>();
-            
-            //services.Configure<AuthenticationOptions>(options =>
-            //{
-            //    options.DefaultAuthenticateScheme = "Bearer";
-            //    options.DefaultChallengeScheme = "Bearer";
-            //});
             services.AddApplicationInsightsTelemetry();
         }
 

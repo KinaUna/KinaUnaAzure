@@ -15,14 +15,14 @@ namespace KinaUnaWeb.Services.HttpClients;
 public class TasksHttpClient : ITasksHttpClient
 {
     private readonly HttpClient _httpClient;
-    private readonly ApiTokenInMemoryClient _apiTokenClient;
+    private readonly ITokenService _tokenService;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public TasksHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
+    public TasksHttpClient(HttpClient httpClient, IConfiguration configuration, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
     {
         _httpClient = httpClient;
         _httpContextAccessor = httpContextAccessor;
-        _apiTokenClient = apiTokenClient;
+        _tokenService = tokenService;
         string clientUri = configuration.GetValue<string>("ProgenyApiServer");
         if (env.IsDevelopment())
         {
@@ -38,9 +38,9 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<List<KinaUnaBackgroundTask>> GetTasks()
     {
-        bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-        _httpClient.SetBearerToken(accessToken);
+        string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+        TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+        _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
         const string tasksApiPath = "/api/BackgroundTasks/GetTasks";
         HttpResponseMessage tasksResponseMessage = await _httpClient.GetAsync(tasksApiPath);
@@ -53,9 +53,9 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<List<KinaUnaBackgroundTask>> ResetTasks()
     {
-        bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-        _httpClient.SetBearerToken(accessToken);
+        string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+        TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+        _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
         const string tasksApiPath = "/api/BackgroundTasks/ResetAllTasks/";
         HttpResponseMessage tasksResponseMessage = await _httpClient.GetAsync(tasksApiPath);
@@ -68,9 +68,9 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<KinaUnaBackgroundTask> ExecuteTask(KinaUnaBackgroundTask task)
     {
-        bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-        _httpClient.SetBearerToken(accessToken);
+        string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+        TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+        _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
         string tasksApiPath = "/api/RunTasks/" + task.ApiEndpoint;
 
@@ -93,9 +93,9 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<KinaUnaBackgroundTask> AddTask(KinaUnaBackgroundTask task)
     {
-        bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-        _httpClient.SetBearerToken(accessToken);
+        string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+        TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+        _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
         string tasksApiPath = "/api/BackgroundTasks/";
         HttpResponseMessage tasksResponseMessage = await _httpClient.PostAsync(tasksApiPath, new StringContent(JsonConvert.SerializeObject(task), System.Text.Encoding.UTF8, "application/json"));
@@ -107,9 +107,9 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<KinaUnaBackgroundTask> UpdateTask(KinaUnaBackgroundTask task)
     {
-        bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-        _httpClient.SetBearerToken(accessToken);
+        string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+        TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+        _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
         string tasksApiPath = "/api/BackgroundTasks/" + task.TaskId;
         HttpResponseMessage tasksResponseMessage = await _httpClient.PutAsync(tasksApiPath, new StringContent(JsonConvert.SerializeObject(task), System.Text.Encoding.UTF8, "application/json"));
@@ -121,9 +121,9 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<bool> DeleteTask(int taskId)
     {
-        bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-        _httpClient.SetBearerToken(accessToken);
+        string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+        TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+        _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
         string tasksApiPath = "/api/BackgroundTasks/" + taskId;
         HttpResponseMessage tasksResponseMessage = await _httpClient.DeleteAsync(tasksApiPath);
@@ -132,9 +132,9 @@ public class TasksHttpClient : ITasksHttpClient
 
     public async Task<List<string>> GetCommands()
     {
-        bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-        string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-        _httpClient.SetBearerToken(accessToken);
+        string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+        TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+        _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
         string tasksApiPath = "/api/BackgroundTasks/GetCommands/";
 

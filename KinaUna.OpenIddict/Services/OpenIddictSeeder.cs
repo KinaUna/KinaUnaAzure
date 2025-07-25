@@ -44,12 +44,11 @@ namespace KinaUna.OpenIddict.Services
         /// <returns>A completed task since no stop actions are required.</returns>
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         
-        private async Task SeedAsync(IServiceProvider provider, CancellationToken cancellationToken = default)
+        private static async Task SeedAsync(IServiceProvider provider, CancellationToken cancellationToken = default)
         {
-            // Todo: Add flag to check if database should be reset.
-
             // Reset OpenIddict database to ensure a clean state
-            await ResetOpenIdDictDatabase(provider);
+            //Todo: Add a feature flag to control this behavior
+            //await ResetOpenIdDictDatabase(provider);
 
             // Create scopes first
             await CreateScopesAsync(provider, cancellationToken);
@@ -60,14 +59,26 @@ namespace KinaUna.OpenIddict.Services
             await CreateWebClientsAsync(provider, cancellationToken);
         }
 
-        private async Task CreateScopesAsync(IServiceProvider provider, CancellationToken cancellationToken)
+        /// <summary>
+        /// Asynchronously creates API scopes if they do not already exist in the OpenIddict scope manager.
+        /// </summary>
+        /// <remarks>This method checks for the existence of predefined API scopes and creates them if
+        /// they are not found. It uses the <see cref="IOpenIddictScopeManager"/> to manage the scopes, ensuring that
+        /// each scope is uniquely identified by its name.</remarks>
+        /// <param name="provider">The service provider used to resolve the <see cref="IOpenIddictScopeManager"/> service.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns></returns>
+        private static async Task CreateScopesAsync(IServiceProvider provider, CancellationToken cancellationToken)
         {
             // API scopes
             var apiScopes = new[]
             {
                 new { Name = Constants.ProgenyApiName, DisplayName = "KinaUna Progeny API" },
                 new { Name = Constants.ProgenyApiName + "local", DisplayName = "KinaUna Progeny API Local" },
-                new { Name = Constants.ProgenyApiName + "azure", DisplayName = "KinaUna Progeny API Azure" }
+                new { Name = Constants.ProgenyApiName + "azure", DisplayName = "KinaUna Progeny API Azure" },
+                new { Name = Constants.AuthApiName, DisplayName = "KinaUna Auth API" },
+                new { Name = Constants.AuthApiName + "local", DisplayName = "KinaUna Auth API Local" },
+                new { Name = Constants.AuthApiName + "azure", DisplayName = "KinaUna Auth API Azure" }
             };
 
             
@@ -87,7 +98,15 @@ namespace KinaUna.OpenIddict.Services
             }
         }
 
-        private async Task CreateApiClientsAsync(IServiceProvider provider, CancellationToken cancellationToken)
+        /// <summary>
+        /// Asynchronously creates API clients using the provided service provider and cancellation token.
+        /// </summary>
+        /// <remarks>This method retrieves API client configurations and creates new clients if they do
+        /// not already exist.</remarks>
+        /// <param name="provider">The service provider used to resolve dependencies required for creating API clients.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns></returns>
+        private static async Task CreateApiClientsAsync(IServiceProvider provider, CancellationToken cancellationToken)
         {
             IOpenIddictApplicationManager applicationManager = provider.GetRequiredService<IOpenIddictApplicationManager>();
             // Create Progeny API clients
@@ -101,8 +120,15 @@ namespace KinaUna.OpenIddict.Services
             }
         }
 
-
-        private async Task CreateWebClientsAsync(IServiceProvider provider, CancellationToken cancellationToken)
+        /// <summary>
+        /// Asynchronously creates web client applications based on the provided configurations.
+        /// </summary>
+        /// <remarks>This method retrieves web client configurations and creates new client applications
+        /// if they do not already exist in the application manager.</remarks>
+        /// <param name="provider">The service provider used to resolve required services.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns></returns>
+        private static async Task CreateWebClientsAsync(IServiceProvider provider, CancellationToken cancellationToken)
         {
             IOpenIddictApplicationManager applicationManager = provider.GetRequiredService<IOpenIddictApplicationManager>();
             IClientConfigProvider clientConfigProvider = provider.GetRequiredService<IClientConfigProvider>();
@@ -118,7 +144,14 @@ namespace KinaUna.OpenIddict.Services
             }
         }
 
-        private async Task ResetOpenIdDictDatabase(IServiceProvider provider)
+        /// <summary>
+        /// Resets the OpenIddict database by removing all existing applications, authorizations, scopes, and tokens. User data is not affected.
+        /// </summary>
+        /// <remarks>This method clears all entries in the OpenIddict database, effectively resetting its
+        /// state. It is intended for scenarios where a complete reset of the OpenIddict data is required.</remarks>
+        /// <param name="provider">The service provider used to resolve the OpenIddict managers.</param>
+        /// <returns></returns>
+        private static async Task ResetOpenIdDictDatabase(IServiceProvider provider)
         {
             // Clear existing applications
             IOpenIddictApplicationManager openIddictApplicationManager = provider.GetRequiredService<IOpenIddictApplicationManager>();
@@ -146,6 +179,13 @@ namespace KinaUna.OpenIddict.Services
             await foreach (object token in openIddictTokenManager.ListAsync())
             {
                 await openIddictTokenManager.DeleteAsync(token);
+            }
+
+            // Clear Authorization entries
+            IOpenIddictAuthorizationManager openIddictAuthorizationEntryManager = provider.GetRequiredService<IOpenIddictAuthorizationManager>();
+            await foreach (object authorizationEntry in openIddictAuthorizationEntryManager.ListAsync())
+            {
+                await openIddictAuthorizationEntryManager.DeleteAsync(authorizationEntry);
             }
         }
     }

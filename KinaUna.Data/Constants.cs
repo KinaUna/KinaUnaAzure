@@ -17,6 +17,7 @@
         public const string SupportEmail = "support@kinauna.com";
         public const string KeyVaultEndPoint = "https://kinauna.vault.azure.net";
         public const string LanguageCookieName = "KinaUnaLanguage";
+        public const string AuthApiName = "kinaunaauthapi";
         public const string ProgenyApiName = "kinaunaprogenyapi";
         public const string MediaApiName = "kinaunamediaapi";
         public const string DefaultTimezone = "Romance Standard Time";

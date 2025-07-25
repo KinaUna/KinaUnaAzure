@@ -1,32 +1,39 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using KinaUna.Data;
+using KinaUna.Data.Extensions;
+using KinaUna.Data.Models;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using OpenIddict.Client.AspNetCore;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using KinaUna.Data.Models;
-using Microsoft.Extensions.Configuration;
-using KinaUna.Data;
-using KinaUna.Data.Extensions;
-using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
     /// <summary>
-    /// Account Controller. Handles user account actions.
+    /// Provides account management functionalities, including user authentication, profile management, and account
+    /// settings.
     /// </summary>
-    /// <param name="imageStore">Image file management service.</param>
+    /// <remarks>The <c>AccountController</c> class handles various account-related actions such as logging
+    /// in, logging out, viewing and updating account information, and managing user authentication states.  It
+    /// integrates with external services for authentication and user information retrieval, and supports operations
+    /// like enabling/disabling push notifications and managing profile pictures.</remarks>
+    /// <param name="imageStore"></param>
     /// <param name="configuration"></param>
-    /// <param name="authHttpClient">Http client for IDP API.</param>
-    /// <param name="userInfosHttpClient">Http client for UserInfos API endpoints.</param>
-    public class AccountController(ImageStore imageStore, IConfiguration configuration, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient, ITokenService tokenService)
+    /// <param name="authHttpClient"></param>
+    /// <param name="userInfosHttpClient"></param>
+    /// <param name="tokenService"></param>
+    public class AccountController(ImageStore imageStore, IConfiguration configuration,
+        IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient, ITokenService tokenService)
         : Controller
     {
         /// <summary>
@@ -39,15 +46,66 @@ namespace KinaUnaWeb.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Logs out the current user from the application and the identity provider.
+        /// </summary>
+        /// <remarks>This method removes the user's cached tokens and signs the user out from both the 
+        /// application and the identity provider. It ensures that the return URL is local to  prevent open redirect
+        /// vulnerabilities.</remarks>
+        /// <param name="returnUrl">The URL to redirect to after logout. Must be a local URL to prevent open redirect attacks.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an  IActionResult that redirects
+        /// the user to the specified return URL or the  home page if the return URL is not local.</returns>
         [AllowAnonymous]
-        public IActionResult LogOut()
+        public async Task<IActionResult> LogOut(string returnUrl = "")
         {
-            // Sign out the user from the application and the IDP server.
-            _ = HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            _ = HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+            if (!string.IsNullOrWhiteSpace(User.GetUserId()))
+            {
+                // Remove the user's cached access token and refresh token.
+                await tokenService.RemoveTokenForUser(User.GetUserId());
+            }
+        
+            //// Sign out the user from the application and the IDP server.
+            //_ = HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            //_ = HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+
+            // Retrieve the identity stored in the local authentication cookie. If it's not available,
+            // this indicates that the user is already logged out locally (or has not logged in yet).
+            //
+            // For scenarios where the default authentication handler configured in the ASP.NET Core
+            // authentication options shouldn't be used, a specific scheme can be specified here.
+            AuthenticateResult result = await HttpContext.AuthenticateAsync();
+            if (result is not { Succeeded: true })
+            {
+                // Only allow local return URLs to prevent open redirect attacks.
+                return Redirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
+            }
+
+            // Remove the local authentication cookie before triggering a redirection to the remote server.
+            //
+            // For scenarios where the default sign-out handler configured in the ASP.NET Core
+            // authentication options shouldn't be used, a specific scheme can be specified here.
+            await HttpContext.SignOutAsync();
+
+            // If no properties were stored, redirect the user agent to the return URL.
+            if (result.Properties == null) return Redirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
+
+            AuthenticationProperties properties = new(new Dictionary<string, string>
+            {
+                // While not required, the specification encourages sending an id_token_hint
+                // parameter containing an identity token returned by the server for this user.
+                [OpenIddictClientAspNetCoreConstants.Properties.IdentityTokenHint] =
+                    result.Properties.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.BackchannelIdentityToken)
+            })
+            {
+                // Only allow local return URLs to prevent open redirect attacks.
+                RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
+            };
+
+            // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
+            return SignOut(properties, OpenIdConnectDefaults.AuthenticationScheme);
 
             // Redirect to the home page.
-            return RedirectToAction("Index", "Home");
+            //return RedirectToAction("Index", "Home");
         }
         /// <summary>
         /// Access denied page. Shows a message that the user does not have access to the requested page.

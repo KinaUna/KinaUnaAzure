@@ -17,14 +17,14 @@ namespace KinaUnaWeb.Services.HttpClients
     public class AutoSuggestsHttpClient : IAutoSuggestsHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITokenService _tokenService;
 
-        public AutoSuggestsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
+        public AutoSuggestsHttpClient(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IHostEnvironment env, ITokenService tokenService)
         {
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
-            _apiTokenClient = apiTokenClient;
+            _tokenService = tokenService;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
             if (env.IsDevelopment())
             {
@@ -35,6 +35,7 @@ namespace KinaUnaWeb.Services.HttpClients
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -44,9 +45,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetTagsList(int progenyId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<string> resultTagsList = [];
 
@@ -69,9 +70,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetContextsList(int progenyId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<string> resultContextsList = [];
 
@@ -94,9 +95,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetLocationsList(int progenyId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<string> resultLocationsList = [];
 
@@ -119,9 +120,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetCategoriesList(int progenyId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<string> resultCategoriesList = [];
 
@@ -144,9 +145,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of strings.</returns>
         public async Task<List<string>> GetVocabularyLanguageList(int progenyId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<string> resultLanguagesList = [];
 

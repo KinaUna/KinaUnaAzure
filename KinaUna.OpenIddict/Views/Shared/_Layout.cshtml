@@ -70,8 +70,9 @@
 }
 <html lang="@languageCode">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="color-scheme" content="light dark">
     <title>Kina Una Authentication Server</title>
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
     <link rel="shortcut icon" type="image/x-icon" href="~/favicon.ico" />
@@ -93,27 +94,35 @@
     @await RenderSectionAsync("Scripts", required: false)
 </head>
 <body>
-    <div id="topLanguageDiv" class="kinauna_purple_bg">
-        <div class="container">
-            <div class="row">
-                <div class="ml-3 mt-0 mb-1 mr-sm-1 mr-md-2 mr-lg-4 w-100">
-                    @*<a href="#" class="small mr-3"><span class="icon-question-circle-o mr-2"></span> <span class="d-none d-lg-inline-block">@await _localeManager.GetTranslation("Help", PageNames.Layout, languageId)</span></a>*@
+<div id="topLanguageDiv" class="kinauna-purple-bg">
+    <div class="container">
+        <div class="row">
+            <div class="ml-3 mt-0 mb-1 mr-sm-1 mr-md-2 mr-lg-4 w-100">
+                @*<a href="#" class="small mr-3"><span class="icon-question-circle-o mr-2"></span> <span class="d-none d-lg-inline-block">@await _localeManager.GetTranslation("Help", PageNames.Layout, languageId)</span></a>*@
 
-                    @await Html.PartialAsync("_LanguagePartial", await LocaleManager.GetLanguageModel(languageId))
-                </div>
+                @await Html.PartialAsync("_LanguagePartial", await LocaleManager.GetLanguageModel(languageId))
             </div>
         </div>
     </div>
-    <div class="main">
-        <div style="padding: 25px; background: white;">
-            <div class="container">
-                <partial name="_CookieConsentPartial" , model="@languageId" />
-                @RenderBody()
-            </div>
+</div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top" id="nav-main">
+    <div id="top-main-menu-container" class="container">
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leave-page" aria-label="Home" style="margin-right: 80px;">
+            <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
+        </a>
+        <div class="collapse navbar-collapse mt-5 mt-lg-1 ml-6 ml-sm-6 ml-md-6 ml-lg-0" id="navbar-main-content" style="min-height: 52px;">
+                <span>KinaUna Authentication Server</span>
         </div>
+
     </div>
-    <br />
-    @await Html.PartialAsync("_FooterPartial", languageId)
-    <script src="~/js/site.js"></script>
+</nav>
+<div id="body-content" class="main-container body-content">
+    <div id="kinauna-main-div" class="main kinauna-main" style="margin-top: 10px; padding-top: 10px; min-height: 250px;">
+        @RenderBody()
+    </div>
+</div>
+<br />
+@await Html.PartialAsync("_FooterPartial", languageId)
+<script src="~/js/site.js"></script>
 </body>
 </html>

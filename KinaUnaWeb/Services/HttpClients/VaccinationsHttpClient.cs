@@ -18,14 +18,14 @@ namespace KinaUnaWeb.Services.HttpClients
     public class VaccinationsHttpClient : IVaccinationsHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public VaccinationsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
+        public VaccinationsHttpClient(HttpClient httpClient, IConfiguration configuration, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
-            _apiTokenClient = apiTokenClient;
+            _tokenService = tokenService;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
             if (env.IsDevelopment())
             {
@@ -45,9 +45,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The Vaccination object with the given VaccinationId. If not found, a new Vaccination object with VaccinationId=0 is returned.</returns>
         public async Task<Vaccination> GetVaccination(int vaccinationId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string vaccinationsApiPath = "/api/Vaccinations/" + vaccinationId;
             HttpResponseMessage vaccinationResponse = await _httpClient.GetAsync(vaccinationsApiPath);
@@ -65,9 +65,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The added Vaccination object</returns>
         public async Task<Vaccination> AddVaccination(Vaccination vaccination)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string vaccinationsApiPath = "/api/Vaccinations/";
             HttpResponseMessage vaccinationResponse = await _httpClient.PostAsync(vaccinationsApiPath, new StringContent(JsonConvert.SerializeObject(vaccination), System.Text.Encoding.UTF8, "application/json"));
@@ -85,9 +85,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated Vaccination. If not found, a new Vaccination object with VaccinationId=0 is returned.</returns>
         public async Task<Vaccination> UpdateVaccination(Vaccination vaccination)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateVaccinationsApiPath = "/api/Vaccinations/" + vaccination.VaccinationId;
             HttpResponseMessage vaccinationResponse = await _httpClient.PutAsync(updateVaccinationsApiPath, new StringContent(JsonConvert.SerializeObject(vaccination), System.Text.Encoding.UTF8, "application/json"));
@@ -105,9 +105,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the Vaccination was successfully removed.</returns>
         public async Task<bool> DeleteVaccination(int vaccinationId)
         {
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string vaccinationsApiPath = "/api/Vaccinations/" + vaccinationId;
             HttpResponseMessage vaccinationResponse = await _httpClient.DeleteAsync(vaccinationsApiPath);
@@ -122,9 +122,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<List<Vaccination>> GetVaccinationsList(int progenyId)
         {
             List<Vaccination> progenyVaccinationsList = [];
-            bool isAuthenticated = _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(!isAuthenticated);
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string vaccinationsApiPath = "/api/Vaccinations/Progeny/" + progenyId;
             HttpResponseMessage vaccinationsResponse = await _httpClient.GetAsync(vaccinationsApiPath);
