@@ -1,8 +1,13 @@
-﻿@using Microsoft.Extensions.Primitives
-
+﻿@using KinaUna.Data
+@using KinaUna.OpenIddict.Services
+@using Microsoft.Extensions.Primitives
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
 <div class="ml-auto mr-auto mt-auto mb-auto">
     <h1>Log out</h1>
-    <p class="lead text-left">Are you sure you want to sign out?</p>
+    <p class="lead text-left">@await LocaleManager.GetTranslation("Are you sure you want to sign out?", PageNames.Account, languageId)</p>
 
     <form asp-controller="Authorization" asp-action="Logout" method="post">
         @* Flow the request parameters so they can be received by the LogoutPost action: *@
@@ -11,7 +16,7 @@
             <input type="hidden" name="@parameter.Key" value="@parameter.Value"/>
         }
 
-        <input class="btn btn-lg btn-success" name="Confirm" type="submit" value="Yes"/>
-        <a class="btn btn-lg btn-success" href="https://web.kinauna.com">No</a>
+        <input class="btn btn-lg btn-success" name="Confirm" type="submit" value="@await LocaleManager.GetTranslation("Yes", PageNames.Account, languageId)" />
+        <a class="btn btn-lg btn-success" href="https://web.kinauna.com">@await LocaleManager.GetTranslation("Cancel", PageNames.Account, languageId)</a>
     </form>
 </div>
