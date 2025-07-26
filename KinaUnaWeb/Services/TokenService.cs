@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Duende.IdentityModel.Client;
 using KinaUna.Data;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -42,7 +41,8 @@ namespace KinaUnaWeb.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string _authenticationServer;
-        private readonly string _authenticationServerClientId;
+        private readonly string _webClientId;
+        private readonly string _webApiClientId;
         private readonly string _authenticationServerSecret;
         private readonly string _scope;
 
@@ -61,7 +61,8 @@ namespace KinaUnaWeb.Services
             if (env.IsDevelopment())
             {
                 _authenticationServer = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local");
-                _authenticationServerClientId = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Local");
+                _webClientId = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Local");
+                _webApiClientId = configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey + "Local");
                 _authenticationServerSecret = configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey + "Local");
                 _scope = scope + " " + AuthConstants.ProgenyApiName + "local " + AuthConstants.AuthApiName + "local";
             }
@@ -70,14 +71,16 @@ namespace KinaUnaWeb.Services
                 if (env.IsStaging())
                 {
                     _authenticationServer = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure");
-                    _authenticationServerClientId = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Azure");
+                    _webClientId = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Azure");
+                    _webApiClientId = configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey + "Azure");
                     _authenticationServerSecret = configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey + "Azure");
                     _scope = scope + " " + AuthConstants.ProgenyApiName + "azure " + AuthConstants.AuthApiName + "azure";
                 }
                 else
                 {
                     _authenticationServer = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey);
-                    _authenticationServerClientId = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey);
+                    _webClientId = configuration.GetValue<string>(AuthConstants.WebServerClientIdKey);
+                    _webApiClientId = configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey);
                     _authenticationServerSecret = configuration.GetValue<string>(AuthConstants.WebServerClientSecretKey);
                     _scope = scope + " " + AuthConstants.ProgenyApiName + " " + AuthConstants.AuthApiName;
                 }
@@ -103,23 +106,33 @@ namespace KinaUnaWeb.Services
                 userId = AuthConstants.ProgenyApiName; // Use a constant for API access
             }
 
-            TokenInfo newToken = null;
-            if (_accessTokens.TryGetValue(userId, out TokenInfo token))
+            TokenInfo apiTokenInfo = null;
+            if (_accessTokens.TryGetValue(userId, out TokenInfo cachedTokenInfo))
             {
-                if (token != null && DateTime.UtcNow < token.AccessTokenExpiresAt.AddMinutes(-20))
-                    return token;
+                if (cachedTokenInfo != null && DateTime.UtcNow < cachedTokenInfo.AccessTokenExpiresAt.AddMinutes(-1))
+                    return cachedTokenInfo;
 
-                // If the token is expired or about to expire, refresh it
-                if (token != null && !string.IsNullOrWhiteSpace(token.RefreshToken))
+                if (userId != AuthConstants.ProgenyApiName)
                 {
-                    try
+                    // If the token is expired or about to expire, refresh it
+                    if (cachedTokenInfo != null && !string.IsNullOrWhiteSpace(cachedTokenInfo.RefreshToken))
                     {
-                        newToken = await RefreshTokenAsync(token.RefreshToken);
-                    }
-                    catch (AuthenticationException)
-                    {
-                        // If refresh fails, remove the token and continue to get a new one
-                        await RemoveTokenForUser(userId);
+                        try
+                        {
+                            TokenInfo refreshApiTokenInfo = await RefreshTokenAsync(cachedTokenInfo.RefreshToken);
+                            apiTokenInfo = await ExchangeTokenAsync(refreshApiTokenInfo.AccessToken);
+                            if (apiTokenInfo != null)
+                            {
+                                // Update the token in the cache
+                                await UpdateTokenAsync(userId, apiTokenInfo);
+                                return apiTokenInfo;
+                            }
+                        }
+                        catch (AuthenticationException)
+                        {
+                            // If refresh fails, remove the token and continue to get a new one
+                            await RemoveTokenForUser(userId);
+                        }
                     }
                 }
             }
@@ -127,12 +140,11 @@ namespace KinaUnaWeb.Services
             // If userId was null or empty, return a token for API access
             if (userId == AuthConstants.ProgenyApiName)
             {
-                newToken = await ApiTokenAsync();
+                apiTokenInfo = await ApiTokenAsync();
             }
-            
 
             // If no valid token found, try to exchange the access token
-            if (newToken == null)
+            if (apiTokenInfo == null)
             {
                 if (_httpContextAccessor.HttpContext == null)
                 {
@@ -148,17 +160,17 @@ namespace KinaUnaWeb.Services
                 if (!string.IsNullOrWhiteSpace(accessToken))
                 {
                     // If the access token is available, exchange it for a new api token
-                    newToken = await ExchangeTokenAsync(accessToken);
+                    apiTokenInfo = await ExchangeTokenAsync(accessToken);
                 }
             }
             
-            if (newToken == null)
+            if (apiTokenInfo == null)
             {
                 throw new AuthenticationException("No valid token found or could not refresh the token.");
             }
 
-            await StoreTokenAsync(userId, newToken);
-            return newToken;
+            await StoreTokenAsync(userId, apiTokenInfo);
+            return apiTokenInfo;
         }
 
         /// <summary>
@@ -170,6 +182,20 @@ namespace KinaUnaWeb.Services
         public Task StoreTokenAsync(string userId, TokenInfo token)
         {
             _accessTokens.TryAdd(userId, token);
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateTokenAsync(string userId, TokenInfo token)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
+            }
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token), "Token cannot be null.");
+            }
+            _accessTokens.AddOrUpdate(userId, token, (key, oldValue) => token);
             return Task.CompletedTask;
         }
 
@@ -207,7 +233,7 @@ namespace KinaUnaWeb.Services
             TokenResponse refreshTokenResponse = await client.RequestRefreshTokenAsync(new RefreshTokenRequest
             {
                 Address = _authenticationServer + "/connect/token",
-                ClientId = _authenticationServerClientId,
+                ClientId = _webClientId,
                 ClientSecret = _authenticationServerSecret,
                 RefreshToken = refreshToken
             });
@@ -229,39 +255,6 @@ namespace KinaUnaWeb.Services
             {
                 throw new AuthenticationException("Refresh token response does not contain a valid expiration time.");
             }
-
-            // Replace tokens in cookie
-            string expiresAtNew = DateTime.UtcNow.AddSeconds(refreshTokenResponse.ExpiresIn).ToString("o");
-            if (_httpContextAccessor.HttpContext == null)
-                return new TokenInfo
-                {
-                    AccessToken = refreshTokenResponse.AccessToken,
-                    RefreshToken = refreshTokenResponse.RefreshToken,
-                    AccessTokenExpiresAt = DateTime.UtcNow.AddSeconds(refreshTokenResponse.ExpiresIn),
-                    TokenType = "Bearer"
-                };
-
-            // Get the current authentication properties
-            AuthenticateResult authInfo = await _httpContextAccessor.HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            if (authInfo.Properties == null)
-                return new TokenInfo
-                {
-                    AccessToken = refreshTokenResponse.AccessToken,
-                    RefreshToken = refreshTokenResponse.RefreshToken,
-                    AccessTokenExpiresAt = DateTime.UtcNow.AddSeconds(refreshTokenResponse.ExpiresIn),
-                    TokenType = "Bearer"
-                };
-            // Update the authentication properties with the new tokens
-            authInfo.Properties.UpdateTokenValue("access_token", refreshTokenResponse.AccessToken);
-            authInfo.Properties.UpdateTokenValue("refresh_token", refreshTokenResponse.RefreshToken);
-            authInfo.Properties.UpdateTokenValue("expires_at", expiresAtNew);
-
-            // Sign in the user with the updated authentication properties
-            if (authInfo.Principal != null)
-                await _httpContextAccessor.HttpContext.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    authInfo.Principal,
-                    authInfo.Properties);
 
             return new TokenInfo
             {
@@ -288,7 +281,7 @@ namespace KinaUnaWeb.Services
             TokenResponse tokenExchangeResponse = await client.RequestTokenExchangeTokenAsync(new TokenExchangeTokenRequest
             {
                 Address = _authenticationServer + "/connect/token",
-                ClientId = _authenticationServerClientId,
+                ClientId = _webClientId,
                 ClientSecret = _authenticationServerSecret,
                 SubjectToken = subjectToken,
                 SubjectTokenType = "urn:ietf:params:oauth:token-type:access_token",
@@ -325,7 +318,7 @@ namespace KinaUnaWeb.Services
             TokenResponse tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
                 Address = _authenticationServer + "/connect/token",
-                ClientId = _authenticationServerClientId,
+                ClientId = _webApiClientId,
                 ClientSecret = _authenticationServerSecret,
                 Scope = _scope
             });
