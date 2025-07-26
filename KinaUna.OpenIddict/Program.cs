@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Localization;
 using Quartz;
 using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
+using Azure.Identity;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,12 @@ _ = builder.Services.Configure<CookiePolicyOptions>(options =>
     options.Secure = CookieSecurePolicy.Always;
 });
 
+if (builder.Environment.IsProduction() || builder.Environment.IsStaging())
+{
+    string keyVaultUrl = builder.Configuration["VaultUri"]
+                            ?? throw new InvalidOperationException("VaultUri was not found in the configuration data.");
+    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl), new DefaultAzureCredential());
+}
 // Add database context and other services.
 
 string progenyDefaultConnection = builder.Configuration["ProgenyDefaultConnection"] 

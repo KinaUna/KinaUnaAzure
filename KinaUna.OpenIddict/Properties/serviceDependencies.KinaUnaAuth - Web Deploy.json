@@ -1,0 +1,36 @@
+{
+  "dependencies": {
+    "mssql1": {
+      "ignored": "true",
+      "type": "mssql"
+    },
+    "secrets2": {
+      "ignored": "true",
+      "type": "secrets",
+      "connectionId": "VaultUri1",
+      "dynamicId": null
+    },
+    "appInsights1": {
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/KinaUnaAuth",
+      "type": "appInsights.azure",
+      "connectionId": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+      "dynamicId": null
+    },
+    "storage1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.Web/sites/KinaUnaAuth/providers/Microsoft.ServiceLinker/linkers/StorageConnection_60241D2EA9, /subscriptions/2a9afdaa-1e5a-4b6f-a1c0-c626b6b0e7aa/resourceGroups/KinaUna/providers/Microsoft.Web/sites/KinaUnaAuth/providers/Microsoft.ServiceLinker/linkers/StorageConnection_CA2EF53D78",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/kinaunastorage",
+      "type": "storage.azure",
+      "connectionId": "StorageConnection",
+      "dynamicId": null
+    },
+    "secrets1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.Web/sites/KinaUnaAuth/providers/Microsoft.ServiceLinker/linkers/VaultUri_71FA0E6CF4",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.KeyVault/vaults/kinauna",
+      "type": "secrets.keyVault",
+      "connectionId": "VaultUri"
+    }
+  }
+}

@@ -21,7 +21,7 @@
     <PackageReference Include="Microsoft.Bcl.Cryptography" Version="9.0.7" />
     <PackageReference Include="Microsoft.Build" Version="17.14.8" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.14.8" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.7" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.7" />
