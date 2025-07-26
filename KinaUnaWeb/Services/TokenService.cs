@@ -46,7 +46,9 @@ namespace KinaUnaWeb.Services
         private readonly string _authenticationServerSecret;
         private readonly string _scope;
 
+        // Todo: This won't scale well for many users, and isn't persisted when restarting the server, consider using a distributed cache or database.
         private readonly ConcurrentDictionary<string, TokenInfo> _accessTokens = new();
+
         public TokenService(IHttpClientFactory httpClientFactory, IHostEnvironment env, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _httpClientFactory = httpClientFactory;
@@ -185,7 +187,7 @@ namespace KinaUnaWeb.Services
             return Task.CompletedTask;
         }
 
-        public Task UpdateTokenAsync(string userId, TokenInfo token)
+        private Task UpdateTokenAsync(string userId, TokenInfo token)
         {
             if (string.IsNullOrWhiteSpace(userId))
             {
@@ -195,7 +197,7 @@ namespace KinaUnaWeb.Services
             {
                 throw new ArgumentNullException(nameof(token), "Token cannot be null.");
             }
-            _accessTokens.AddOrUpdate(userId, token, (key, oldValue) => token);
+            _accessTokens.AddOrUpdate(userId, token, (_, _) => token);
             return Task.CompletedTask;
         }
 
