@@ -1,3 +1,4 @@
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Localization;
 using Quartz;
 using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
-using Azure.Identity;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -160,18 +160,13 @@ builder.Services.AddOpenIddict()
         options.AddEncryptionCertificate(encryptionCertificate);
         options.AddSigningCertificate(signingCertificate);
         options.DisableAccessTokenEncryption();
-
+        
         options.SetAccessTokenLifetime(TimeSpan.FromHours(1))
             .SetRefreshTokenLifetime(TimeSpan.FromDays(30));
         options.UseAspNetCore()
             .EnableTokenEndpointPassthrough()
             .EnableEndSessionEndpointPassthrough()
             .EnableAuthorizationEndpointPassthrough();
-    })
-    .AddValidation(options =>
-    {
-        options.UseLocalServer();
-        options.UseAspNetCore();
     })
     .AddValidation(options =>
     {

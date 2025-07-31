@@ -26,6 +26,8 @@
         public const string AuthApiName = "kinaunaauthapi";
         public const string ProgenyApiName = "kinaunaprogenyapi";
 
+        public const int ProgenyApiTokenCacheDurationMinutes = 5;
+        public const int ProgenyApiTokenCacheSlidingExpirationMinutes = 2;
 
     }
 }

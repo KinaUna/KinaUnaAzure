@@ -57,6 +57,7 @@ namespace KinaUnaProgenyApi
             });
 
             services.AddDistributedMemoryCache();
+            services.AddMemoryCache();
             services.AddScoped<IImageStore, ImageStore>();
             services.AddScoped<IAzureNotifications, AzureNotifications>();
             services.AddScoped<INotificationsService, NotificationsService>();
@@ -91,7 +92,8 @@ namespace KinaUnaProgenyApi
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();
-
+            
+            
             // Register the OpenIddict services and configure them.
             string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
             string progenyApiClientId = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey) ?? throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + " was not found in the configuration data.");
@@ -148,6 +150,7 @@ namespace KinaUnaProgenyApi
                         .SetClientId(progenyApiClientId)
                         .SetClientSecret(authenticationServerClientSecret);
 
+                    
                     // Register the System.Net.Http integration.
                     options.UseSystemNetHttp();
 
@@ -155,6 +158,7 @@ namespace KinaUnaProgenyApi
                     options.UseAspNetCore();
                 });
 
+            
 
             // Configure CORS to allow requests from the specified origin.
             // If development, allow any origin.
@@ -188,13 +192,15 @@ namespace KinaUnaProgenyApi
             }
 
             services.AddAuthentication(options => { options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme; });
+            services.AddScoped<ITokenValidationService, CachedTokenValidationService>();
+            services.AddScoped<IAuthorizationHandler, UserOrClientHandler>();
             services.AddAuthorizationBuilder()
                 .AddPolicy("UserOrClient", policy =>
                 {
                     policy.Requirements.Add(new UserOrClientRequirement());
                 });
+            services.AddAuthorization();
 
-            services.AddSingleton<IAuthorizationHandler, UserOrClientHandler>();
             services.AddApplicationInsightsTelemetry();
         }
 
