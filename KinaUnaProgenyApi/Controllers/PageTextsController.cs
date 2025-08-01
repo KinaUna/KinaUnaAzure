@@ -13,7 +13,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// </summary>
     /// <param name="userInfoService"></param>
     /// <param name="kinaUnaTextService"></param>
-    [Authorize(Policy = "UserOrClient")]
+    [Authorize(Policy = "Client")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -110,6 +110,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="value">The KinaUnaText entity to add.</param>
         /// <returns>The added KinaUnaText object.</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] KinaUnaText value)
         {
@@ -129,6 +130,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="id">The id of the KinaUnaText entity to update.</param>
         /// <param name="value">The KinaUnaText object with the updated properties.</param>
         /// <returns>The updated KinaUnaText</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] KinaUnaText value)
         {
@@ -151,6 +153,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The id of the KinaUnaText to remove.</param>
         /// <returns>The deleted KinaUnaText object, or NotFound if it doesn't exist.</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -174,6 +177,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The id of the KinaUnaText to remove.</param>
         /// <returns>The deleted KinaUnaText object, or NotFound there are no entities found with the given id.</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpDelete("[action]/{id:int}")]
         public async Task<IActionResult> DeleteSingleItem(int id)
         {

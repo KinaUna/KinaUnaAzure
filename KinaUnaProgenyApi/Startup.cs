@@ -156,9 +156,10 @@ namespace KinaUnaProgenyApi
 
             services.AddAuthentication(options => { options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme; });
             services.AddAuthorizationBuilder()
-                .AddPolicy("UserOrClient", policy => { policy.Requirements.Add(new UserOrClientRequirement()); }); 
+                .AddPolicy("UserOrClient", policy => { policy.Requirements.Add(new UserOrClientRequirement()); })
+                .AddPolicy("Client", policy => { policy.Requirements.Add(new ClientRequirement()); }); 
             services.AddSingleton<IAuthorizationHandler, UserOrClientHandler>();
-
+            services.AddSingleton<IAuthorizationHandler, ClientHandler>();
             services.AddApplicationInsightsTelemetry();
         }
 

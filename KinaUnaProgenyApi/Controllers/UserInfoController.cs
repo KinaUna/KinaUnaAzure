@@ -472,6 +472,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Only KinaUnaAdmins are allowed to get all deleted UserInfo entities.
         /// </summary>
         /// <returns>List of UserInfo</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet("[action]/")]
         public async Task<IActionResult> GetDeletedUserInfos()
         {
@@ -485,6 +486,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        [Authorize(Policy = "Client")]
         [HttpPost("[action]")]
         public async Task<IActionResult> AddUserInfoToDeletedUserInfos([FromBody] UserInfo userInfo)
         {
@@ -500,6 +502,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(deletedUserInfo);
         }
 
+        [Authorize(Policy = "Client")]
         [HttpPost("[action]")]
         public async Task<IActionResult> UpdateDeletedUserInfo([FromBody] UserInfo userInfo)
         {
@@ -515,6 +518,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(updatedUserInfo);
         }
 
+        [Authorize(Policy = "Client")]
         [HttpPost("[action]")]
         public async Task<IActionResult> RemoveUserInfoFromDeletedUserInfos([FromBody] UserInfo userInfo)
         {

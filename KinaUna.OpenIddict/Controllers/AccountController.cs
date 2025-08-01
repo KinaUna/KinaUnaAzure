@@ -234,6 +234,7 @@ namespace KinaUna.OpenIddict.Controllers
         {
             return View();
         }
+
         [HttpGet]
         [AllowAnonymous]
         public IActionResult ForgotPassword()
@@ -362,6 +363,7 @@ namespace KinaUna.OpenIddict.Controllers
             return RedirectToAction(nameof(ChangePassword));
         }
 
+        [Authorize(Policy = "Client")]
         [HttpPost]
         public async Task<IActionResult> CheckDeleteKinaUnaAccount([FromBody] UserInfo userInfo)
         {
@@ -379,6 +381,7 @@ namespace KinaUna.OpenIddict.Controllers
             return Ok(confirmDeleteUserInfo);
         }
 
+        [Authorize(Policy = "Client")]
         [HttpPost]
         public async Task<IActionResult> IsApplicationUserValid([FromBody] UserInfo userInfo)
         {
@@ -386,6 +389,7 @@ namespace KinaUna.OpenIddict.Controllers
             return Ok(user != null ? userInfo : new UserInfo());
         }
 
+        [Authorize(Policy = "Client")]
         [HttpPost]
         public async Task<IActionResult> RemoveDeleteKinaUnaAccount([FromBody] UserInfo userInfo)
         {
@@ -401,6 +405,7 @@ namespace KinaUna.OpenIddict.Controllers
             return Ok(restoredDeleteUserInfo);
         }
 
+        [Authorize(Policy = "Client")]
         public async Task<IActionResult> DeleteAccount()
         {
             RegisterViewModel model = new();
@@ -438,6 +443,7 @@ namespace KinaUna.OpenIddict.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> ConfirmDeleteAccount(string? userId, string? code)
         {
             RegisterViewModel model = new();

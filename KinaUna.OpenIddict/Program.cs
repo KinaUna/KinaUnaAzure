@@ -4,10 +4,12 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data.Utilities;
+using KinaUna.OpenIddict.AuthorizationHandlers;
 using KinaUna.OpenIddict.HostingExtensions;
 using KinaUna.OpenIddict.Services;
 using KinaUna.OpenIddict.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -178,6 +180,9 @@ builder.Services.AddOpenIddict()
         options.UseAspNetCore();
     });
 
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Client", policy => { policy.Requirements.Add(new ClientRequirement()); });
+builder.Services.AddSingleton<IAuthorizationHandler, ClientHandler>();
 builder.Services.AddAuthorization();
 
 // Register the OpenIddict seeder service to initialize the OpenIddict database with necessary data.

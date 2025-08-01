@@ -275,7 +275,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(progenyList);
         }
-        
+
         /// <summary>
         /// Updates a user's email address across multiple related entities.
         /// </summary>
@@ -289,6 +289,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <returns>An <see cref="IActionResult"/> indicating the result of the operation. Returns <see cref="NotFoundResult"/>
         /// if the user with the specified ID and old email address cannot be found. Returns <see cref="OkResult"/> if
         /// the update is successful.</returns>
+        [Authorize(Policy = "Client")]
         [HttpPost("[action]")]
         public async Task<IActionResult> UpdateUsersEmail([FromBody] UpdateUserEmailModel model)
         {

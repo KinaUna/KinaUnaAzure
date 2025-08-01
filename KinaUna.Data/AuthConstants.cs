@@ -32,11 +32,19 @@ namespace KinaUna.Data
         public static readonly List<string> AllowedClients =
         [
             "kinaunawebclient",
-            "kinaunawebclientlocal",
-            "kinaunawebclientazure",
             "kinaunaauthclient",
-            "kinaunaauthclientlocal",
-            "kinaunaauthclientazure"
+            "kinaunaauthapiclient",
+            "kinaunaauthapionlyclient",
+            "kinaunawebapiclient",
+            "kinaunaprogenyapiclient"
+        ];
+
+        public static readonly List<string> AllowedApiOnlyClients =
+        [
+            "kinaunaauthapiclient",
+            "kinaunaauthapionlyclient",
+            "kinaunawebapiclient",
+            "kinaunaprogenyapiclient"
         ];
     }
 }

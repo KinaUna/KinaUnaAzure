@@ -1,16 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using KinaUna.Data;
 using Microsoft.AspNetCore.Authorization;
-using System.Threading.Tasks;
-using KinaUna.Data;
-using Microsoft.Extensions.Hosting;
 
-namespace KinaUnaProgenyApi.AuthorizationHandlers
+namespace KinaUna.OpenIddict.AuthorizationHandlers
 {
-    public class UserOrClientHandler(IHostEnvironment env) : AuthorizationHandler<UserOrClientRequirement>
+    public class ClientHandler(IHostEnvironment env) : AuthorizationHandler<ClientRequirement>
     {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserOrClientRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ClientRequirement requirement)
         {
-            bool hasUser = context.User.HasClaim(c => c.Type == "sub") && (context.User.Identity?.IsAuthenticated ?? false);
             bool hasClient = context.User.HasClaim(c => c.Type == "client_id");
 
             List<string> allowedClients = AuthConstants.AllowedApiOnlyClients;
@@ -30,7 +26,7 @@ namespace KinaUnaProgenyApi.AuthorizationHandlers
                 List<string> allowedStagingClients = new List<string>();
                 foreach (string client in AuthConstants.AllowedApiOnlyClients)
                 {
-                    allowedStagingClients.Add(client + "azure");
+                    allowedClients.Add(client + "azure");
                 }
 
                 allowedClients = allowedStagingClients;
@@ -39,7 +35,7 @@ namespace KinaUnaProgenyApi.AuthorizationHandlers
             // Check client_id value if it exists
             if (hasClient)
             {
-                string clientId = context.User.FindFirst(c => c.Type == "client_id")?.Value;
+                string? clientId = context.User.FindFirst(c => c.Type == "client_id")?.Value;
                 if (string.IsNullOrEmpty(clientId))
                 {
                     hasClient = false; // Only allow the specific client_id
@@ -51,7 +47,7 @@ namespace KinaUnaProgenyApi.AuthorizationHandlers
                 }
             }
 
-            if (hasUser || hasClient)
+            if (hasClient)
             {
                 context.Succeed(requirement);
             }

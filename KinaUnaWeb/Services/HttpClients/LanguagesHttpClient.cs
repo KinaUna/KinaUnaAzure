@@ -63,8 +63,7 @@ namespace KinaUnaWeb.Services.HttpClients
                 return languageList;
             }
 
-            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
-            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string admininfoApiPath = "/api/Languages/GetAllLanguages";
@@ -98,8 +97,7 @@ namespace KinaUnaWeb.Services.HttpClients
                 return language;
             }
 
-            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
-            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string admininfoApiPath = "/api/Languages/GetLanguage/" + languageId;

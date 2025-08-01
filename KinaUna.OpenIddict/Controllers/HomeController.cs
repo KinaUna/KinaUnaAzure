@@ -10,6 +10,7 @@ namespace KinaUna.OpenIddict.Controllers
 {
     public class HomeController(IWebHostEnvironment env) : Controller
     {
+        [AllowAnonymous]
         public IActionResult Index()
         {
             return View();
@@ -59,6 +60,7 @@ namespace KinaUna.OpenIddict.Controllers
             return Redirect(returnUrl);
         }
 
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error(string? errorMessage)
         {
