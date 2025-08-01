@@ -14,6 +14,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Validation.AspNetCore;
 using System;
+using System.Security.Cryptography.X509Certificates;
+using KinaUna.Data.Utilities;
 
 namespace KinaUnaProgenyApi
 {
@@ -134,6 +136,10 @@ namespace KinaUnaProgenyApi
                                                    throw new InvalidOperationException(AuthConstants.ProgenyApiClientSecretKey + "Azure was not found in the configuration data.");
             }
 
+            string serverEncryptionCertificateThumbprint = Configuration["ServerEncryptionCertificateThumbprint"]
+                                                           ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
+            X509Certificate2 encryptionCertificate = CertificateTools.GetCertificate(serverEncryptionCertificateThumbprint);
+            
             // Todo: Add Audience support.
             //string[] audienceList = [webServerClientId, webServerApiClientId, authServerApiClientId];
             services.AddOpenIddict()
@@ -143,14 +149,16 @@ namespace KinaUnaProgenyApi
                     // to retrieve the address of the introspection endpoint.
                     options.SetIssuer(authorityServerUrl);
                     // options.AddAudiences(audienceList);
-                    
+
                     // Configure the validation handler to use introspection and register the client
                     // credentials used when communicating with the remote introspection endpoint.
-                    options.UseIntrospection()
-                        .SetClientId(progenyApiClientId)
-                        .SetClientSecret(authenticationServerClientSecret);
+                    //options.UseIntrospection()
+                    //    .SetClientId(progenyApiClientId)
+                    //    .SetClientSecret(authenticationServerClientSecret);
 
-                    
+                    options.AddEncryptionCertificate(encryptionCertificate);
+
+
                     // Register the System.Net.Http integration.
                     options.UseSystemNetHttp();
 
@@ -192,14 +200,11 @@ namespace KinaUnaProgenyApi
             }
 
             services.AddAuthentication(options => { options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme; });
-            services.AddScoped<ITokenValidationService, CachedTokenValidationService>();
-            services.AddScoped<IAuthorizationHandler, UserOrClientHandler>();
+            // services.AddScoped<ITokenValidationService, CachedTokenValidationService>();
             services.AddAuthorizationBuilder()
-                .AddPolicy("UserOrClient", policy =>
-                {
-                    policy.Requirements.Add(new UserOrClientRequirement());
-                });
-            services.AddAuthorization();
+                .AddPolicy("UserOrClient", policy => { policy.Requirements.Add(new UserOrClientRequirement()); });
+
+            services.AddSingleton<IAuthorizationHandler, UserOrClientHandler>();
 
             services.AddApplicationInsightsTelemetry();
         }
