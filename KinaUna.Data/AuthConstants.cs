@@ -25,7 +25,5 @@
         // API Names
         public const string AuthApiName = "kinaunaauthapi";
         public const string ProgenyApiName = "kinaunaprogenyapi";
-
-
     }
 }

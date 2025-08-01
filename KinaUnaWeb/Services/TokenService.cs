@@ -24,7 +24,6 @@ namespace KinaUnaWeb.Services
     public interface ITokenService
     {
         Task<TokenInfo> GetValidTokenAsync(string userId);
-        Task StoreTokenAsync(string userId, TokenInfo token);
         Task RemoveTokenForUser(string userId);
     }
 
@@ -112,7 +111,9 @@ namespace KinaUnaWeb.Services
             if (_accessTokens.TryGetValue(userId, out TokenInfo cachedTokenInfo))
             {
                 if (cachedTokenInfo != null && DateTime.UtcNow < cachedTokenInfo.AccessTokenExpiresAt.AddMinutes(-1))
+                {
                     return cachedTokenInfo;
+                }
 
                 if (userId != AuthConstants.ProgenyApiName)
                 {
@@ -126,7 +127,7 @@ namespace KinaUnaWeb.Services
                             if (apiTokenInfo != null)
                             {
                                 // Update the token in the cache
-                                await UpdateTokenAsync(userId, apiTokenInfo);
+                                await AddOrUpdateTokenAsync(userId, apiTokenInfo);
                                 return apiTokenInfo;
                             }
                         }
@@ -161,8 +162,25 @@ namespace KinaUnaWeb.Services
                 string accessToken = await _httpContextAccessor.HttpContext.GetTokenAsync("access_token");
                 if (!string.IsNullOrWhiteSpace(accessToken))
                 {
-                    // If the access token is available, exchange it for a new api token
-                    apiTokenInfo = await ExchangeTokenAsync(accessToken);
+                    try
+                    {
+                        // If the access token is available, exchange it for a new api token
+                        apiTokenInfo = await ExchangeTokenAsync(accessToken);
+                    }
+                    catch (AuthenticationException ex)
+                    {
+                        // If the exchange fails, log the error and continue to get a new token
+                        string refreshToken = await _httpContextAccessor.HttpContext.GetTokenAsync("refresh_token");
+                        if (!string.IsNullOrWhiteSpace(refreshToken))
+                        {
+                            // Try to refresh the token using the refresh token
+                            TokenInfo refreshApiTokenInfo = await RefreshTokenAsync(refreshToken);
+                            apiTokenInfo = await ExchangeTokenAsync(refreshApiTokenInfo.AccessToken);
+                            await AddOrUpdateTokenAsync(userId, apiTokenInfo);
+                            return apiTokenInfo;
+                        }
+                        throw new AuthenticationException("Failed to exchange access token.", ex);
+                    }
                 }
             }
             
@@ -171,23 +189,19 @@ namespace KinaUnaWeb.Services
                 throw new AuthenticationException("No valid token found or could not refresh the token.");
             }
 
-            await StoreTokenAsync(userId, apiTokenInfo);
+            await AddOrUpdateTokenAsync(userId, apiTokenInfo);
             return apiTokenInfo;
         }
-
+        
         /// <summary>
-        /// Asynchronously stores the specified token information for a given user.
+        /// Adds or Updates the access token for a specified user asynchronously.
         /// </summary>
-        /// <param name="userId">The unique identifier of the user for whom the token is being stored. Cannot be null or empty.</param>
-        /// <param name="token">The token information to store. Cannot be null.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        public Task StoreTokenAsync(string userId, TokenInfo token)
-        {
-            _accessTokens.TryAdd(userId, token);
-            return Task.CompletedTask;
-        }
-
-        private Task UpdateTokenAsync(string userId, TokenInfo token)
+        /// <param name="userId">The unique identifier of the user whose token is to be updated. Cannot be null or empty.</param>
+        /// <param name="token">The new token information to associate with the user. Cannot be null.</param>
+        /// <returns>A task that represents the asynchronous update operation.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="userId"/> is null or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="token"/> is null.</exception>
+        private Task AddOrUpdateTokenAsync(string userId, TokenInfo token)
         {
             if (string.IsNullOrWhiteSpace(userId))
             {
