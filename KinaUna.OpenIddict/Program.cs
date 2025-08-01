@@ -56,6 +56,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<ILocaleManager, LocaleManager>();
+builder.Services.AddSingleton<ITokenService, TokenService>();
 
 string authenticationServerClientId = builder.Configuration.GetValue<string>(AuthConstants.AuthenticationServerClientIdKey) 
                                       ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerClientIdKey + " was not found in the configuration data.");
