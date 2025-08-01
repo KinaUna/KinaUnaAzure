@@ -56,25 +56,26 @@ builder.Services.AddHttpClient();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<ILocaleManager, LocaleManager>();
+builder.Services.AddTransient<IProgenyApiHttpClient, ProgenyApiHttpClient>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
 
-string authenticationServerClientId = builder.Configuration.GetValue<string>(AuthConstants.AuthenticationServerClientIdKey) 
-                                      ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerClientIdKey + " was not found in the configuration data.");
+string authenticationServerClientId = builder.Configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey) 
+                                      ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + " was not found in the configuration data.");
 string authenticationServerClientSecret = builder.Configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey) 
                                           ?? throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + " was not found in the configuration data.");
 if (builder.Environment.IsDevelopment())
 {
     // In development, use the local URLs for the Progeny API and Web Server.
-    authenticationServerClientId = builder.Configuration.GetValue<string>(AuthConstants.AuthenticationServerClientIdKey + "Local") 
-                                      ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerClientIdKey + "Local was not found in the configuration data.");
+    authenticationServerClientId = builder.Configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Local") 
+                                      ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Local was not found in the configuration data.");
     authenticationServerClientSecret = builder.Configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey + "Local") 
                                        ?? throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + "Local was not found in the configuration data.");
 }
 
 if (builder.Environment.IsStaging())
 {
-    authenticationServerClientId = builder.Configuration.GetValue<string>(AuthConstants.AuthenticationServerClientIdKey + "Azure")
-                                   ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerClientIdKey + "Azure was not found in the configuration data.");
+    authenticationServerClientId = builder.Configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Azure")
+                                   ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Azure was not found in the configuration data.");
     authenticationServerClientSecret = builder.Configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey + "Azure")
                                        ?? throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + "Azure was not found in the configuration data.");
 }

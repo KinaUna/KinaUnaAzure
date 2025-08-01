@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Extensions;
+﻿using KinaUna.Data;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -68,7 +69,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             string userId = User.GetUserId();
 
-            if (await userInfoService.IsAdminUserId(userId))
+            if (await userInfoService.IsAdminUserId(userId) || AuthConstants.AllowedClients.Contains(userId))
             {
                 translation = await textTranslationService.AddTranslation(translationItem);
             }
@@ -105,6 +106,13 @@ namespace KinaUnaProgenyApi.Controllers
             if (value.LanguageId == 0)
             {
                 value.LanguageId = 1;
+            }
+
+            string userId = User.GetUserId();
+
+            if (!await userInfoService.IsAdminUserId(userId) || AuthConstants.AllowedClients.Contains(userId))
+            {
+                return Ok(value);
             }
 
             TextTranslation existingTranslation = await textTranslationService.GetTranslationByWord(value.Word, value.Page, value.LanguageId);

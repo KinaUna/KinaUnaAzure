@@ -4,11 +4,8 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Duende.IdentityModel.Client;
 using KinaUna.Data;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -19,12 +16,10 @@ namespace KinaUnaWeb.Services.HttpClients
     public class AuthHttpClient : IAuthHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITokenService _tokenService;
 
-        public AuthHttpClient(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
+        public AuthHttpClient(HttpClient httpClient, IConfiguration configuration, IHostEnvironment env, ITokenService tokenService)
         {
-            // Todo: Update to use separate configuration for Development and Production environments.
-            // Todo: Update to use OpenIdDict.
             string clientUri = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey);
             if (env.IsDevelopment())
             {
@@ -41,7 +36,7 @@ namespace KinaUnaWeb.Services.HttpClients
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
             _httpClient = httpClient;
-            _httpContextAccessor = httpContextAccessor;
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -53,6 +48,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>If a deleted UserInfo is found it is returned, else a new UserInfo with an empty string for UserId is returned.</returns>
         public async Task<UserInfo> CheckDeleteUser(UserInfo userInfo)
         {
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
             const string deleteAccountPath = "/Account/CheckDeleteKinaUnaAccount/";
 
             HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
@@ -76,20 +74,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The UserInfo that was soft-deleted and needs to be restored. If it doesn't exist in the DeletedUsers table a new UserInfo with an empty string for UserId is returned.</returns>
         public async Task<UserInfo> RemoveDeleteUser(UserInfo userInfo)
         {
-            string accessToken = "";
-            HttpContext currentContext = _httpContextAccessor.HttpContext;
-
-            if (currentContext != null)
-            {
-                string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
-
-                if (!string.IsNullOrWhiteSpace(contextAccessToken))
-                {
-                    accessToken = contextAccessToken;
-                }
-            }
-
-            _httpClient.SetBearerToken(accessToken);
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
             const string deleteAccountPath = "/Account/RemoveDeleteKinaUnaAccount/";
 
             HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
@@ -119,6 +105,8 @@ namespace KinaUnaWeb.Services.HttpClients
                 UserId = userId
             };
 
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
             HttpResponseMessage checkResponse = await _httpClient.PostAsync(checkAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
             if (!checkResponse.IsSuccessStatusCode) return false;
 

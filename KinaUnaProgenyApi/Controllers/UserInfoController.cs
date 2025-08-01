@@ -484,5 +484,47 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(deletedUsersList);
 
         }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AddUserInfoToDeletedUserInfos([FromBody] UserInfo userInfo)
+        {
+            if (userInfo == null || userInfo.Id == 0)
+            {
+                return BadRequest("Invalid UserInfo object.");
+            }
+            UserInfo deletedUserInfo = await userInfoService.AddUserInfoToDeletedUserInfos(userInfo);
+            if (deletedUserInfo == null)
+            {
+                return NotFound();
+            }
+            return Ok(deletedUserInfo);
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> UpdateDeletedUserInfo([FromBody] UserInfo userInfo)
+        {
+            if (userInfo == null || userInfo.Id == 0)
+            {
+                return BadRequest("Invalid UserInfo object.");
+            }
+            UserInfo updatedUserInfo = await userInfoService.UpdateDeletedUserInfo(userInfo);
+            if (updatedUserInfo == null)
+            {
+                return NotFound();
+            }
+            return Ok(updatedUserInfo);
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> RemoveUserInfoFromDeletedUserInfos([FromBody] UserInfo userInfo)
+        {
+            UserInfo deletedUserInfo = await userInfoService.RemoveUserInfoFromDeletedUserInfos(userInfo);
+            if (deletedUserInfo == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(deletedUserInfo);
+        }
     }
 }

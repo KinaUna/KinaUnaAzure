@@ -28,7 +28,7 @@ namespace KinaUna.OpenIddict.Services
             if (env.IsDevelopment())
             {
                 _authenticationServer = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local") ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Local was not found in the configuration data.");
-                _authApiClientId = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Local") ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Local was not found in the configuration data.");
+                _authApiClientId = configuration.GetValue<string>(AuthConstants.AuthApiOnlyClientIdKey + "Local") ?? throw new InvalidOperationException(AuthConstants.AuthApiOnlyClientIdKey + "Local was not found in the configuration data.");
                 _authenticationServerSecret = configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey + "Local") ?? throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + "Local was not found in the configuration data.");
                 _scope = scope + " " + AuthConstants.ProgenyApiName + "local " + AuthConstants.AuthApiName + "local";
             }
@@ -37,14 +37,14 @@ namespace KinaUna.OpenIddict.Services
                 if (env.IsStaging())
                 {
                     _authenticationServer = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure") ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Azure was not found in the configuration data.");
-                    _authApiClientId = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Azure") ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Azure was not found in the configuration data.");
+                    _authApiClientId = configuration.GetValue<string>(AuthConstants.AuthApiOnlyClientIdKey + "Azure") ?? throw new InvalidOperationException(AuthConstants.AuthApiOnlyClientIdKey + "Azure was not found in the configuration data.");
                     _authenticationServerSecret = configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey + "Azure") ?? throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + "Azure was not found in the configuration data.");
                     _scope = scope + " " + AuthConstants.ProgenyApiName + "azure " + AuthConstants.AuthApiName + "azure";
                 }
                 else
                 {
                     _authenticationServer = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
-                    _authApiClientId = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey) ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + " was not found in the configuration data.");
+                    _authApiClientId = configuration.GetValue<string>(AuthConstants.AuthApiOnlyClientIdKey) ?? throw new InvalidOperationException(AuthConstants.AuthApiOnlyClientIdKey + " was not found in the configuration data.");
                     _authenticationServerSecret = configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey) ?? throw new InvalidOperationException(AuthConstants.AuthServerClientSecretKey + " was not found in the configuration data.");
                     _scope = scope + " " + AuthConstants.ProgenyApiName + " " + AuthConstants.AuthApiName;
                 }
@@ -79,7 +79,7 @@ namespace KinaUna.OpenIddict.Services
                 ClientSecret = _authenticationServerSecret,
                 Scope = _scope
             });
-
+            
             if (tokenResponse.IsError)
             {
                 throw new AuthenticationException($"Status code: {tokenResponse.IsError}, Error: {tokenResponse.Error}");

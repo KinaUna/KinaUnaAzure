@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace KinaUna.OpenIddict.Controllers
 {
@@ -18,9 +17,9 @@ namespace KinaUna.OpenIddict.Controllers
         SignInManager<ApplicationUser> signInManager,
         IEmailSender emailSender,
         IConfiguration configuration,
-        ProgenyDbContext progContext,
         ApplicationDbContext context,
-        ILocaleManager localeManager) : Controller
+        ILocaleManager localeManager,
+        IProgenyApiHttpClient progenyApiHttpClient) : Controller
     {
         [TempData] private string? StatusMessage { get; set; }
 
@@ -196,33 +195,11 @@ namespace KinaUna.OpenIddict.Controllers
                 _ = await userManager.UpdateAsync(user!);
 
                 if (!string.IsNullOrEmpty(oldEmail) && !string.IsNullOrEmpty(user?.Email))
-                {
-
-                    // Todo: use api to update access lists instead.
-                    List<UserAccess> userAccessList = await progContext.UserAccessDb.Where(u => u.UserId.Equals(oldEmail, StringComparison.CurrentCultureIgnoreCase)).ToListAsync();
-                    if (userAccessList.Count != 0)
-                    {
-                        foreach (UserAccess ua in userAccessList)
-                        {
-                            ua.UserId = user.Email;
-                        }
-
-                        progContext.UserAccessDb.UpdateRange(userAccessList);
-                        _ = await progContext.SaveChangesAsync();
-                    }
-
-                    List<Progeny> progenyList = await progContext.ProgenyDb.ToListAsync();
-                    progenyList = [.. progenyList.Where(p => p.IsInAdminList(oldEmail))];
-                    if (progenyList.Count != 0)
-                    {
-                        foreach (Progeny prog in progenyList)
-                        {
-                            string adminList = prog.Admins.ToUpper();
-                            prog.Admins = adminList.Replace(oldEmail.ToUpper(), user.Email!.ToUpper());
-                        }
-                        progContext.ProgenyDb.UpdateRange(progenyList);
-                        _ = await progContext.SaveChangesAsync();
-                    }
+                { 
+                    // Update user access lists
+                    bool updateAccessListsSucceeded = await progenyApiHttpClient.UpdateAccessListsWithNewUserEmail(user.Id, oldEmail, user.Email);
+                    if (updateAccessListsSucceeded) return View();
+                    ModelState.AddModelError(string.Empty, "Error updating access lists with new email. Please try again later.");
                 }
                 else
                 {
@@ -385,11 +362,11 @@ namespace KinaUna.OpenIddict.Controllers
             return RedirectToAction(nameof(ChangePassword));
         }
 
-        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> CheckDeleteKinaUnaAccount([FromBody] UserInfo userInfo)
         {
-            UserInfo? deletedUserInfo = await progContext.DeletedUsers.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == userInfo.UserId);
+            List<UserInfo> deletedUsers = await progenyApiHttpClient.GetDeletedUserInfos();
+            UserInfo? deletedUserInfo =  deletedUsers.Find(u => u.UserId == userInfo.UserId);
             if (deletedUserInfo == null) return Ok(new UserInfo());
 
             UserInfo confirmDeleteUserInfo = new()
@@ -402,7 +379,6 @@ namespace KinaUna.OpenIddict.Controllers
             return Ok(confirmDeleteUserInfo);
         }
 
-        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> IsApplicationUserValid([FromBody] UserInfo userInfo)
         {
@@ -416,19 +392,13 @@ namespace KinaUna.OpenIddict.Controllers
             ApplicationUser? user = await userManager.Users.SingleOrDefaultAsync(u => u.Id == User.GetUserId());
             if (user == null || user.Id == Constants.DefaultUserId || user.Id != userInfo.UserId) return Ok(new UserInfo());
 
-            UserInfo? deletedUserInfo = await progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == userInfo.UserId);
+            List<UserInfo> deletedUsers = await progenyApiHttpClient.GetDeletedUserInfos();
+            UserInfo? deletedUserInfo = deletedUsers.Find(u => u.UserId == userInfo.UserId);
             if (deletedUserInfo == null) return Ok(new UserInfo());
 
-            UserInfo restoredDeleteUserInfo = new()
-            {
-                UserId = deletedUserInfo.UserId,
-                DeletedTime = deletedUserInfo.DeletedTime,
-                Deleted = deletedUserInfo.Deleted
-            };
-
-            _ = progContext.DeletedUsers.Remove(deletedUserInfo);
+            UserInfo? restoredDeleteUserInfo = await progenyApiHttpClient.RemoveUserInfoFromDeletedUserInfos(deletedUserInfo);
+            
             return Ok(restoredDeleteUserInfo);
-
         }
 
         public async Task<IActionResult> DeleteAccount()
@@ -454,35 +424,16 @@ namespace KinaUna.OpenIddict.Controllers
 
             await emailSender.SendEmailDeleteAsync(model.Email, callbackUrl, model.LanguageId);
 
-            UserInfo? userInfo = await progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == user.Id);
-            if (userInfo != null && !string.IsNullOrEmpty(userInfo.UserId))
-            {
-                userInfo.UserName = user.UserName;
-                userInfo.UserId = user.Id;
-                userInfo.UserEmail = user.Email;
-                userInfo.Deleted = false;
-                userInfo.DeletedTime = DateTime.UtcNow;
-                userInfo.UpdatedTime = DateTime.UtcNow;
-                userInfo.ProfilePicture = JsonConvert.SerializeObject(user);
-                _ = progContext.DeletedUsers.Update(userInfo);
-            }
-            else
-            {
-                userInfo = new UserInfo
-                {
-                    UserName = user.UserName,
-                    UserId = user.Id,
-                    UserEmail = user.Email,
-                    Deleted = false,
-                    DeletedTime = DateTime.UtcNow,
-                    UpdatedTime = DateTime.UtcNow,
-                    ProfilePicture = JsonConvert.SerializeObject(user)
-                };
-                _ = progContext.DeletedUsers.Add(userInfo);
-            }
+            UserInfo? userInfo = await progenyApiHttpClient.GetUserInfoByUserId(user.Id);
 
-            _ = await progContext.SaveChangesAsync();
-
+            if (!string.IsNullOrEmpty(userInfo.UserId))
+            {
+                userInfo = await progenyApiHttpClient.AddUserInfoToDeletedUserInfos(userInfo);
+            }
+            if (userInfo == null || string.IsNullOrEmpty(userInfo.UserId))
+            {
+                ModelState.AddModelError(string.Empty, "Error adding user info to deleted users. Please try again later.");
+            }
 
             return View(model);
         }
@@ -504,14 +455,23 @@ namespace KinaUna.OpenIddict.Controllers
             IdentityResult result = await userManager.ConfirmEmailAsync(user, code);
             if (!result.Succeeded) return View(model);
 
-            UserInfo? userInfo = await progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == user.Id);
+            List<UserInfo> deletedUsers = await progenyApiHttpClient.GetDeletedUserInfos();
+            UserInfo? userInfo = deletedUsers.Find(u => u.UserId == user.Id);
             if (userInfo == null) return View(model);
 
             userInfo.Deleted = true;
             userInfo.DeletedTime = DateTime.UtcNow;
             userInfo.UpdatedTime = DateTime.UtcNow;
-            _ = progContext.DeletedUsers.Update(userInfo);
-            _ = await progContext.SaveChangesAsync();
+
+            userInfo = await progenyApiHttpClient.UpdateDeletedUserInfo(userInfo);
+
+            if (string.IsNullOrEmpty(userInfo.UserId))
+            {
+                ModelState.AddModelError(string.Empty, "Error updating user info in deleted users. Please try again later.");
+                return View(model);
+            }
+            // Update user info in the database
+
             _ = await userManager.DeleteAsync(user);
             await signInManager.SignOutAsync();
 
