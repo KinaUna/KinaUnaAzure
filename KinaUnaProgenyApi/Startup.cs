@@ -32,7 +32,6 @@ namespace KinaUnaProgenyApi
                     sqlServerOptionsAction: sqlOptions =>
                     {
                         sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
-                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
@@ -59,7 +58,6 @@ namespace KinaUnaProgenyApi
             });
 
             services.AddDistributedMemoryCache();
-            services.AddMemoryCache();
             services.AddScoped<IImageStore, ImageStore>();
             services.AddScoped<IAzureNotifications, AzureNotifications>();
             services.AddScoped<INotificationsService, NotificationsService>();
@@ -98,42 +96,17 @@ namespace KinaUnaProgenyApi
             
             // Register the OpenIddict services and configure them.
             string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
-            string progenyApiClientId = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey) ?? throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + " was not found in the configuration data.");
-            //string webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey) ?? throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + " was not found in the configuration data.");
-            //string webServerApiClientId = Configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey) ?? throw new InvalidOperationException(AuthConstants.WebServerApiClientIdKey + " was not found in the configuration data.");
-            //string authServerApiClientId = Configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey) ?? throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + " was not found in the configuration data.");
-            string authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientSecretKey) ?? throw new InvalidOperationException(AuthConstants.ProgenyApiClientSecretKey + " was not found in the configuration data.");
-
+            
             if (env.IsDevelopment())
             {
                 authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local") ??
                                             throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Local was not found in the configuration data.");
-                progenyApiClientId = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey + "Local") ??
-                                            throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + "Local was not found in the configuration data.");
-                //webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Local") ??
-                //                           throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + "Local was not found in the configuration data.");
-                //webServerApiClientId = Configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey + "Local") ??
-                //                              throw new InvalidOperationException(AuthConstants.WebServerApiClientIdKey + "Local was not found in the configuration data.");
-                //authServerApiClientId = Configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Local") ??
-                //                               throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Local was not found in the configuration data.");
-                authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientSecretKey + "Local") ??
-                                                          throw new InvalidOperationException(AuthConstants.ProgenyApiClientSecretKey + "Local was not found in the configuration data.");
             }
 
             if (env.IsStaging())
             {
                 authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure") ??
                                      throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Azure was not found in the configuration data.");
-                progenyApiClientId = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientIdKey + "Azure") ??
-                                     throw new InvalidOperationException(AuthConstants.ProgenyApiClientIdKey + "Azure was not found in the configuration data.");
-                //webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey + "Azure") ??
-                //                    throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + "Azure was not found in the configuration data.");
-                //webServerApiClientId = Configuration.GetValue<string>(AuthConstants.WebServerApiClientIdKey + "Azure") ??
-                //                       throw new InvalidOperationException(AuthConstants.WebServerApiClientIdKey + "Azure was not found in the configuration data.");
-                //authServerApiClientId = Configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Azure") ??
-                //                        throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Azure was not found in the configuration data.");
-                authenticationServerClientSecret = Configuration.GetValue<string>(AuthConstants.ProgenyApiClientSecretKey + "Azure") ??
-                                                   throw new InvalidOperationException(AuthConstants.ProgenyApiClientSecretKey + "Azure was not found in the configuration data.");
             }
 
             string serverEncryptionCertificateThumbprint = Configuration["ServerEncryptionCertificateThumbprint"]
@@ -141,32 +114,14 @@ namespace KinaUnaProgenyApi
             X509Certificate2 encryptionCertificate = CertificateTools.GetCertificate(serverEncryptionCertificateThumbprint);
             
             // Todo: Add Audience support.
-            //string[] audienceList = [webServerClientId, webServerApiClientId, authServerApiClientId];
             services.AddOpenIddict()
                 .AddValidation(options =>
                 {
-                    // Note: the validation handler uses OpenID Connect discovery
-                    // to retrieve the address of the introspection endpoint.
                     options.SetIssuer(authorityServerUrl);
-                    // options.AddAudiences(audienceList);
-
-                    // Configure the validation handler to use introspection and register the client
-                    // credentials used when communicating with the remote introspection endpoint.
-                    //options.UseIntrospection()
-                    //    .SetClientId(progenyApiClientId)
-                    //    .SetClientSecret(authenticationServerClientSecret);
-
                     options.AddEncryptionCertificate(encryptionCertificate);
-
-
-                    // Register the System.Net.Http integration.
-                    options.UseSystemNetHttp();
-
-                    // Register the ASP.NET Core host.
+                    options.UseSystemNetHttp(); 
                     options.UseAspNetCore();
                 });
-
-            
 
             // Configure CORS to allow requests from the specified origin.
             // If development, allow any origin.
@@ -200,10 +155,8 @@ namespace KinaUnaProgenyApi
             }
 
             services.AddAuthentication(options => { options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme; });
-            // services.AddScoped<ITokenValidationService, CachedTokenValidationService>();
             services.AddAuthorizationBuilder()
-                .AddPolicy("UserOrClient", policy => { policy.Requirements.Add(new UserOrClientRequirement()); });
-
+                .AddPolicy("UserOrClient", policy => { policy.Requirements.Add(new UserOrClientRequirement()); }); 
             services.AddSingleton<IAuthorizationHandler, UserOrClientHandler>();
 
             services.AddApplicationInsightsTelemetry();

@@ -1,10 +1,21 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.AuthorizationHandlers
 {
     public class UserOrClientHandler : AuthorizationHandler<UserOrClientRequirement>
     {
+        private readonly List<string> _allowedClients =
+        [
+            "kinaunawebclient",
+            "kinaunawebclientlocal",
+            "kinaunawebclientazure",
+            "kinaunaauthclient",
+            "kinaunaauthclientlocal",
+            "kinaunaauthclientazure"
+        ];
+
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserOrClientRequirement requirement)
         {
             bool hasUser = context.User.HasClaim(c => c.Type == "sub") && (context.User.Identity?.IsAuthenticated ?? false);
@@ -19,7 +30,7 @@ namespace KinaUnaProgenyApi.AuthorizationHandlers
                     hasClient = false; // Only allow the specific client_id
                 }
                 // Check if the client_id is one of the allowed values
-                else if (clientId != "kinaunawebclient" && clientId != "kinaunawebclientlocal" && clientId != "kinaunawebclientazure")
+                else if (!_allowedClients.Contains(clientId))
                 {
                     hasClient = false; // Only allow the specific client_id
                 }
