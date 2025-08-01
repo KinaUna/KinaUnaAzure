@@ -439,7 +439,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="id">The PictureId of the Picture to get the file for.</param>
         /// <param name="size">The size of the image to get a file for, 600 = 600 pixels wide, 1200 = 1200 pixes wide, any other number gets the original image file.</param>
         /// <returns>FileContentResult with the image file, if the current user has the access rights for the Picture, else a placeholder image file.</returns>
-        [AllowAnonymous]
         public async Task<FileContentResult> File([FromQuery] int id, [FromQuery] int size)
         {
             Picture picture = await picturesService.GetPicture(id);
