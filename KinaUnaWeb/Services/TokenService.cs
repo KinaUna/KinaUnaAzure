@@ -179,7 +179,7 @@ namespace KinaUnaWeb.Services
                             await AddOrUpdateTokenAsync(userId, apiTokenInfo);
                             return apiTokenInfo;
                         }
-                        throw new AuthenticationException($"Failed to exchange access token: {ex.Message}", ex);
+                        throw new AuthenticationException("Failed to exchange access token.", ex);
                     }
                 }
             }
