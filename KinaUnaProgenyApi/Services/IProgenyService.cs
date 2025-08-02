@@ -1,5 +1,6 @@
-﻿using System.Threading.Tasks;
-using KinaUna.Data.Models;
+﻿using KinaUna.Data.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -68,5 +69,14 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="imageId">The current file name.</param>
         /// <returns>The new file name of the resized image.</returns>
         Task<string> ResizeImage(string imageId);
+
+        /// <summary>
+        /// Retrieves a list of all progeny records.
+        /// </summary>
+        /// <remarks>This method performs an asynchronous operation to fetch all progeny data. The caller
+        /// should await the returned task to ensure the operation completes before accessing the result.</remarks>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Progeny"/>
+        /// objects representing all progeny records. If no records are found, the list will be empty.</returns>
+        Task<List<Progeny>> GetAllProgenies();
     }
 }

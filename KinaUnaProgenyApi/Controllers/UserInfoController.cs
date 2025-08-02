@@ -472,6 +472,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Only KinaUnaAdmins are allowed to get all deleted UserInfo entities.
         /// </summary>
         /// <returns>List of UserInfo</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet("[action]/")]
         public async Task<IActionResult> GetDeletedUserInfos()
         {
@@ -483,6 +484,51 @@ namespace KinaUnaProgenyApi.Controllers
             List<UserInfo> deletedUsersList = await userInfoService.GetDeletedUserInfos();
             return Ok(deletedUsersList);
 
+        }
+
+        [Authorize(Policy = "Client")]
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AddUserInfoToDeletedUserInfos([FromBody] UserInfo userInfo)
+        {
+            if (userInfo == null || userInfo.Id == 0)
+            {
+                return BadRequest("Invalid UserInfo object.");
+            }
+            UserInfo deletedUserInfo = await userInfoService.AddUserInfoToDeletedUserInfos(userInfo);
+            if (deletedUserInfo == null)
+            {
+                return NotFound();
+            }
+            return Ok(deletedUserInfo);
+        }
+
+        [Authorize(Policy = "Client")]
+        [HttpPost("[action]")]
+        public async Task<IActionResult> UpdateDeletedUserInfo([FromBody] UserInfo userInfo)
+        {
+            if (userInfo == null || userInfo.Id == 0)
+            {
+                return BadRequest("Invalid UserInfo object.");
+            }
+            UserInfo updatedUserInfo = await userInfoService.UpdateDeletedUserInfo(userInfo);
+            if (updatedUserInfo == null)
+            {
+                return NotFound();
+            }
+            return Ok(updatedUserInfo);
+        }
+
+        [Authorize(Policy = "Client")]
+        [HttpPost("[action]")]
+        public async Task<IActionResult> RemoveUserInfoFromDeletedUserInfos([FromBody] UserInfo userInfo)
+        {
+            UserInfo deletedUserInfo = await userInfoService.RemoveUserInfoFromDeletedUserInfos(userInfo);
+            if (deletedUserInfo == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(deletedUserInfo);
         }
     }
 }

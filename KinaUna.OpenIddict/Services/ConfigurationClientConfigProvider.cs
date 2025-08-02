@@ -43,12 +43,12 @@ namespace KinaUna.OpenIddict.Services
             string authorityServerClientIdAzure = configuration.GetValue<string>(AuthConstants.AuthenticationServerClientIdKey + "Azure") ??
                                                   throw new InvalidOperationException(AuthConstants.AuthenticationServerClientIdKey + "Azure was not found in the configuration data.");
 
-            string authorityServerApiClientId = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey) ??
-                                                 throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + " was not found in the configuration data.");
-            string authorityServerApiClientIdLocal = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Local") ??
-                                                throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Local was not found in the configuration data.");
-            string authorityServerApiClientIdAzure = configuration.GetValue<string>(AuthConstants.AuthApiClientIdKey + "Azure") ??
-                                                     throw new InvalidOperationException(AuthConstants.AuthApiClientIdKey + "Azure was not found in the configuration data.");
+            string authorityServerApiOnlyClientId = configuration.GetValue<string>(AuthConstants.AuthApiOnlyClientIdKey) ??
+                                                 throw new InvalidOperationException(AuthConstants.AuthApiOnlyClientIdKey + " was not found in the configuration data.");
+            string authorityServerApiOnlyClientIdLocal = configuration.GetValue<string>(AuthConstants.AuthApiOnlyClientIdKey + "Local") ??
+                                                throw new InvalidOperationException(AuthConstants.AuthApiOnlyClientIdKey + "Local was not found in the configuration data.");
+            string authorityServerApiOnlyClientIdAzure = configuration.GetValue<string>(AuthConstants.AuthApiOnlyClientIdKey + "Azure") ??
+                                                     throw new InvalidOperationException(AuthConstants.AuthApiOnlyClientIdKey + "Azure was not found in the configuration data.");
 
 
             string authorityServerClientSecret = configuration.GetValue<string>(AuthConstants.AuthServerClientSecretKey) ??
@@ -131,7 +131,7 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = authorityServerApiClientId,
+                    ClientId = authorityServerApiOnlyClientId,
                     DisplayName = "KinaUnaAuthApiClient",
                     ClientSecret = authorityServerClientSecret,
                     ConsentType = ConsentTypes.Implicit,
@@ -150,6 +150,10 @@ namespace KinaUna.OpenIddict.Services
                         // Custom scopes
                         Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName,
                         Permissions.Prefixes.Scope + AuthConstants.AuthApiName
+                    },
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
                     },
                     // Token settings
                     Settings =
@@ -220,6 +224,10 @@ namespace KinaUna.OpenIddict.Services
                         Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName,
                         Permissions.Prefixes.Scope + AuthConstants.AuthApiName
                     },
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
+                    },
                     // Token settings
                     Settings =
                     {
@@ -269,7 +277,7 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = authorityServerApiClientIdLocal,
+                    ClientId = authorityServerApiOnlyClientIdLocal,
                     DisplayName = "KinaUnaAuthApiClientLocal",
                     ClientSecret = authorityServerClientSecretLocal,
                     ConsentType = ConsentTypes.Implicit,
@@ -286,8 +294,12 @@ namespace KinaUna.OpenIddict.Services
                         Permissions.Scopes.Profile,
 
                         // Custom scopes
-                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName,
-                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName + "local",
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName + "local"
+                    },
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
                     },
                     // Token settings
                     Settings =
@@ -357,7 +369,10 @@ namespace KinaUna.OpenIddict.Services
                         // Custom scopes
                         Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName + "local",
                         Permissions.Prefixes.Scope + AuthConstants.AuthApiName + "local"
-                        // Permissions.Prefixes.Scope + Scopes.OfflineAccess
+                    },
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
                     },
                     // Token settings
                     Settings =
@@ -389,8 +404,8 @@ namespace KinaUna.OpenIddict.Services
                         Permissions.Scopes.Profile,
 
                         // Custom scopes
-                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName + "local",
-                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName + "local"
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName + "azure",
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName + "azure"
                     },
                     RedirectUris = { new Uri($"{authorityServerUrlAzure}/callback/login") },
                     PostLogoutRedirectUris = { new Uri($"{authorityServerUrlAzure}/callback/logout") },
@@ -408,7 +423,7 @@ namespace KinaUna.OpenIddict.Services
                 },
                 new OpenIddictApplicationDescriptor
                 {
-                    ClientId = authorityServerApiClientIdAzure,
+                    ClientId = authorityServerApiOnlyClientIdAzure,
                     DisplayName = "KinaUnaAuthApiClientAzure",
                     ClientSecret = authorityServerClientSecretAzure,
                     ConsentType = ConsentTypes.Implicit,
@@ -425,8 +440,8 @@ namespace KinaUna.OpenIddict.Services
                         Permissions.Scopes.Profile,
 
                         // Custom scopes
-                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName,
-                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName
+                        Permissions.Prefixes.Scope + AuthConstants.ProgenyApiName + "azure",
+                        Permissions.Prefixes.Scope + AuthConstants.AuthApiName + "azure"
                     },
                     // Token settings
                     Settings =

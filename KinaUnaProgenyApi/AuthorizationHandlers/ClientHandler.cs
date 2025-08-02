@@ -1,16 +1,15 @@
 ﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
 using KinaUna.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaProgenyApi.AuthorizationHandlers
 {
-    public class UserOrClientHandler(IHostEnvironment env) : AuthorizationHandler<UserOrClientRequirement>
+    public class ClientHandler(IHostEnvironment env) : AuthorizationHandler<ClientRequirement>
     {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserOrClientRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ClientRequirement requirement)
         {
-            bool hasUser = context.User.HasClaim(c => c.Type == "sub") && (context.User.Identity?.IsAuthenticated ?? false);
             bool hasClient = context.User.HasClaim(c => c.Type == "client_id");
 
             List<string> allowedClients = AuthConstants.AllowedApiOnlyClients;
@@ -51,7 +50,7 @@ namespace KinaUnaProgenyApi.AuthorizationHandlers
                 }
             }
 
-            if (hasUser || hasClient)
+            if (hasClient)
             {
                 context.Succeed(requirement);
             }

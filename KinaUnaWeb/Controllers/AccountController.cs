@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -31,7 +32,7 @@ namespace KinaUnaWeb.Controllers
     /// <param name="userInfosHttpClient"></param>
     /// <param name="tokenService"></param>
     public class AccountController(ImageStore imageStore, IConfiguration configuration,
-        IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient, ITokenService tokenService)
+        IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient, ITokenService tokenService, IHostEnvironment env)
         : Controller
     {
         /// <summary>
@@ -158,7 +159,18 @@ namespace KinaUnaWeb.Controllers
                 model.UserName = model.UserEmail;
             }
 
-            model.ChangeLink = configuration["AuthenticationServer"] + "/Account/ChangePassword";
+            string authServerUrl = configuration["AuthServerUrl"];
+            if (env.IsDevelopment())
+            {
+                authServerUrl = configuration["AuthServerUrlLocal"];
+            }
+
+            if (env.IsStaging())
+            {
+                authServerUrl = configuration["AuthServerUrlAzure"];
+            }
+
+            model.ChangeLink = authServerUrl + "/Account/ChangePassword";
             
             return View(model);
         }
@@ -233,6 +245,16 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await userInfosHttpClient.GetUserInfo(userEmail);
             _ = DateTime.TryParse(User.FindFirst("joindate")?.Value, out DateTime joinDate);
             
+            string authServerUrl = configuration["AuthServerUrl"];
+            if (env.IsDevelopment())
+            {
+                authServerUrl = configuration["AuthServerUrlLocal"];
+            }
+            if (env.IsStaging())
+            {
+                authServerUrl = configuration["AuthServerUrlAzure"];
+            }
+
             UserInfoViewModel model = new()
             {
                 Id = userinfo.Id,
@@ -248,7 +270,7 @@ namespace KinaUnaWeb.Controllers
                 PhoneNumber = User.FindFirst("phone_number")?.Value ?? "",
                 ProfilePicture = userinfo.ProfilePicture,
                 LanguageId = Request.GetLanguageIdFromCookie(),
-                ChangeLink = configuration["AuthenticationServer"] + "/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail
+                ChangeLink = authServerUrl + "/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail
             };
 
             return View(model);
@@ -348,7 +370,18 @@ namespace KinaUnaWeb.Controllers
 
             _ = await userInfosHttpClient.DeleteUserInfo(userInfo);
 
-            model.ChangeLink = configuration["AuthenticationServer"] + "/Account/DeleteAccount";
+            string authServerUrl = configuration["AuthServerUrl"];
+            if (env.IsDevelopment())
+            {
+                authServerUrl = configuration["AuthServerUrlLocal"];
+            }
+
+            if (env.IsStaging())
+            {
+                authServerUrl = configuration["AuthServerUrlAzure"];
+            }
+
+            model.ChangeLink = authServerUrl + "/Account/DeleteAccount";
 
             return Redirect(model.ChangeLink);
         }

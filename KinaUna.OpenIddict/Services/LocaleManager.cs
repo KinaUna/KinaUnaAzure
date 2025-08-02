@@ -1,10 +1,11 @@
-﻿using System.Net.Http.Headers;
+﻿using Duende.IdentityModel.Client;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.OpenIddict.Models.HomeViewModels;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
 
 namespace KinaUna.OpenIddict.Services
 {
@@ -14,10 +15,11 @@ namespace KinaUna.OpenIddict.Services
     public class LocaleManager : ILocaleManager
     {
         private readonly HttpClient _httpClient;
+        private readonly ITokenService _tokenService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheExpirationLong = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1));
 
-        public LocaleManager(HttpClient httpClient, IConfiguration configuration, IDistributedCache cache, IHostEnvironment env)
+        public LocaleManager(HttpClient httpClient, IConfiguration configuration, IDistributedCache cache, IHostEnvironment env, ITokenService tokenService)
         {
             _cache = cache;
             string clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey) ?? throw new InvalidOperationException();
@@ -35,6 +37,7 @@ namespace KinaUna.OpenIddict.Services
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
             _httpClient = httpClient;
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -88,6 +91,8 @@ namespace KinaUna.OpenIddict.Services
             }
             else
             {
+                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync();
+                _httpClient.SetBearerToken(tokenInfo.AccessToken);
                 string translationsApiPath = "/api/Translations/PageTranslations/" + languageId + "/" + page;
                 HttpResponseMessage translationResponse = await _httpClient.GetAsync(translationsApiPath);
 
@@ -140,6 +145,8 @@ namespace KinaUna.OpenIddict.Services
             }
 
             const string getAllLanguagesPath = "/api/Languages/GetAllLanguages";
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync();
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
             HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(getAllLanguagesPath);
 
             if (admininfoResponse.IsSuccessStatusCode)
@@ -165,6 +172,8 @@ namespace KinaUna.OpenIddict.Services
         {
             TextTranslation? addedTranslation = new();
             const string addTranslationApiPath = "/api/Translations/";
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync();
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
             HttpResponseMessage addResponse = await _httpClient.PostAsync(addTranslationApiPath, new StringContent(JsonConvert.SerializeObject(translation), System.Text.Encoding.UTF8, "application/json"));
             if (!addResponse.IsSuccessStatusCode) return addedTranslation;
 
@@ -192,6 +201,8 @@ namespace KinaUna.OpenIddict.Services
         {
             KinaUnaText? text = new();
             string pageTextsApiPath = "/api/PageTexts/ByTitle/" + title + "/" + page + "/" + languageId;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync();
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
             HttpResponseMessage pageTextsResponse = await _httpClient.GetAsync(pageTextsApiPath);
 
             if (!pageTextsResponse.IsSuccessStatusCode) return text;

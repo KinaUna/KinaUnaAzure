@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -326,6 +326,81 @@ namespace KinaUnaProgenyApi.Services
         {
             List<UserInfo> deletedUserInfos = await _context.UserInfoDb.AsNoTracking().Where(u => u.Deleted).ToListAsync();
             return deletedUserInfos;
+        }
+
+
+        public async Task<UserInfo> AddUserInfoToDeletedUserInfos(UserInfo userInfo)
+        {
+            UserInfo userInfoToAddToDelete = await _context.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == userInfo.UserId);
+            
+            if (userInfoToAddToDelete != null && !string.IsNullOrEmpty(userInfoToAddToDelete.UserId))
+            {
+                userInfoToAddToDelete.UserName = userInfo.UserName;
+                userInfoToAddToDelete.UserId = userInfo.UserId;
+                userInfoToAddToDelete.UserEmail = userInfo.UserEmail;
+                userInfoToAddToDelete.Deleted = false;
+                userInfoToAddToDelete.DeletedTime = DateTime.UtcNow;
+                userInfoToAddToDelete.UpdatedTime = DateTime.UtcNow;
+                userInfoToAddToDelete.ProfilePicture = JsonConvert.SerializeObject(userInfo);
+                _ = _context.DeletedUsers.Update(userInfoToAddToDelete);
+            }
+            else
+            {
+                userInfoToAddToDelete = new UserInfo
+                {
+                    UserName = userInfo.UserName,
+                    UserId = userInfo.UserId,
+                    UserEmail = userInfo.UserEmail,
+                    Deleted = false,
+                    DeletedTime = DateTime.UtcNow,
+                    UpdatedTime = DateTime.UtcNow,
+                    ProfilePicture = JsonConvert.SerializeObject(userInfo)
+                };
+                _ = _context.DeletedUsers.Add(userInfoToAddToDelete);
+            }
+
+            _ = await _context.SaveChangesAsync();
+
+            return userInfoToAddToDelete;
+        }
+
+        /// <summary>
+        /// Removes the specified user information from the collection of deleted user information.
+        /// </summary>
+        /// <remarks>This does not update the original userinfo entity. This method performs an asynchronous operation to remove the specified user
+        /// information from the collection  of deleted user information. If the user information is not found, the
+        /// method completes successfully and  returns <see langword="null"/>.</remarks>
+        /// <param name="userInfo">The user information to be removed. This parameter cannot be <see langword="null"/>.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation. The task result contains the  <see
+        /// cref="UserInfo"/> object that was removed, or <see langword="null"/> if the specified user information  was
+        /// not found in the collection.</returns>
+        public async Task<UserInfo> RemoveUserInfoFromDeletedUserInfos(UserInfo userInfo)
+        {
+            UserInfo deletedUserInfo = _context.DeletedUsers.SingleOrDefault(u => u.UserId == userInfo.UserId);
+            if (deletedUserInfo == null)
+            {
+                return null;
+            }
+            
+            _ = _context.DeletedUsers.Remove(deletedUserInfo);
+            _ = await _context.SaveChangesAsync();
+
+            return deletedUserInfo;
+
+        }
+
+        public async Task<UserInfo> UpdateDeletedUserInfo(UserInfo userInfo)
+        {
+            UserInfo userInfoToUpdate = await _context.DeletedUsers.SingleOrDefaultAsync(ui => ui.Id == userInfo.Id);
+            if (userInfoToUpdate == null) return null;
+
+            userInfoToUpdate.Deleted = userInfo.Deleted;
+            userInfoToUpdate.DeletedTime = userInfo.DeletedTime;
+            userInfoToUpdate.UpdatedTime = userInfo.UpdatedTime;
+            _ = _context.DeletedUsers.Update(userInfoToUpdate);
+            _ = await _context.SaveChangesAsync();
+
+            return userInfoToUpdate;
         }
 
         /// <summary>

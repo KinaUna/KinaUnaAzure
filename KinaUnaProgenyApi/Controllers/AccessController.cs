@@ -7,6 +7,7 @@ using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
@@ -276,26 +277,49 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         /// <summary>
-        /// Updates the UserAccess entities when a user changes their email address.
+        /// Updates a user's email address across multiple related entities.
         /// </summary>
-        /// <param name="oldEmail">The email address before the change.</param>
-        /// <param name="newEmail">The email address after the change.</param>
-        /// <returns>List of UserAccess with the updated email address.</returns>
-        [HttpGet("[action]/{oldEmail}/{newEmail}")]
-        public async Task<IActionResult> UpdateAccessListEmailChange(string oldEmail, string newEmail)
+        /// <remarks>This method updates the user's email address in the following places: <list
+        /// type="bullet"> <item><description>The user's access list, replacing the old email with the new
+        /// email.</description></item> <item><description>The admin list of any related entities (e.g., progenies)
+        /// where the old email is present.</description></item> </list> If no related entities are found for the old
+        /// email, the method completes successfully without making further updates.</remarks>
+        /// <param name="model">An instance of <see cref="UpdateUserEmailModel"/> containing the user's ID, the old email address, and the
+        /// new email address to update.</param>
+        /// <returns>An <see cref="IActionResult"/> indicating the result of the operation. Returns <see cref="NotFoundResult"/>
+        /// if the user with the specified ID and old email address cannot be found. Returns <see cref="OkResult"/> if
+        /// the update is successful.</returns>
+        [Authorize(Policy = "Client")]
+        [HttpPost("[action]")]
+        public async Task<IActionResult> UpdateUsersEmail([FromBody] UpdateUserEmailModel model)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!userEmail.Equals(oldEmail, System.StringComparison.CurrentCultureIgnoreCase)) return NotFound();
-
-            List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(oldEmail);
-            
+            UserInfo userInfo = await userInfoService.GetUserInfoByUserId(model.UserId);
+            if (!model.OldEmail.Equals(userInfo.UserEmail, System.StringComparison.CurrentCultureIgnoreCase))
+            {
+                return NotFound("User with given id and email could not be found.");
+            }
+            List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(model.OldEmail);
             foreach (UserAccess userAccess in userAccessList)
             {
-                userAccess.UserId = newEmail;
+                userAccess.UserId = model.NewEmail;
                 await userAccessService.UpdateUserAccess(userAccess);
             }
 
-            return Ok(userAccessList);
+
+
+            List<Progeny> progenyList = await progenyService.GetAllProgenies();
+            progenyList = [.. progenyList.Where(p => p.IsInAdminList(model.OldEmail))];
+            
+            if (progenyList.Count == 0) return Ok();
+
+            foreach (Progeny prog in progenyList)
+            {
+                string adminList = prog.Admins.ToUpper();
+                prog.Admins = adminList.Replace(model.OldEmail.ToUpper(), model.NewEmail.ToUpper());
+                await progenyService.UpdateProgeny(prog);
+            }
+
+            return Ok();
         }
     }
 }

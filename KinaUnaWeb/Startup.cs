@@ -49,7 +49,8 @@ namespace KinaUnaWeb
             services.AddDataProtection()
                 .SetApplicationName("KinaUnaWebApp")
                 .PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml");
-
+            services.AddDistributedMemoryCache();
+            services.AddMemoryCache();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddTransient<ILocaleManager, LocaleManager>();
             services.AddHttpClient();
@@ -84,8 +85,6 @@ namespace KinaUnaWeb
             services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
             services.AddHttpClient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
-            services.AddDistributedMemoryCache();
-            services.AddMemoryCache();
             services.AddSingleton<ITokenService, TokenService>();
 
             string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");

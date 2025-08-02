@@ -13,11 +13,10 @@ namespace KinaUnaProgenyApi.Controllers
     /// </summary>
     /// <param name="userInfoService"></param>
     /// <param name="kinaUnaTextService"></param>
-    [Authorize(Policy = "UserOrClient")]
+    [Authorize(Policy = "Client")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class PageTextsController(IUserInfoService userInfoService, IKinaUnaTextService kinaUnaTextService) : ControllerBase
     {
         /// <summary>
@@ -27,7 +26,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="page">The page where the text appears.</param>
         /// <param name="languageId">The LanguageId of the KinaUnaText to get.</param>
         /// <returns>KinaUnaText object with the provided title, page, and languageId properties.</returns>
-        [AllowAnonymous]
         [HttpGet("[action]/{title}/{page}/{languageId:int}")]
         public async Task<IActionResult> ByTitle(string title, string page, int languageId)
         {
@@ -40,7 +38,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The id property of the KinaUnaText entity to get.</param>
         /// <returns>The KinaUnaText object with the provided id.</returns>
-        [AllowAnonymous]
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetTextById(int id)
         {
@@ -55,7 +52,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="textId">The TextId of the KinaUnaText to retrieve.</param>
         /// <param name="languageId"> The LanguageId of the KinaUnaText to retrieve.</param>
         /// <returns>The KinaUnaText with the provided TextId and LanguageId.</returns>
-        [AllowAnonymous]
         [HttpGet("[action]/{textId:int}/{languageId:int}")]
         public async Task<IActionResult> GetTextByTextId(int textId, int languageId)
         {
@@ -70,7 +66,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="page">The page to retrieve KinaUnaText entities for.</param>
         /// <param name="languageId">The LanguageId of the KinaUnaTexts.</param>
         /// <returns>List of KinaUnaText objects that belong to the page.</returns>
-        [AllowAnonymous]
         [HttpGet]
         [Route("[action]/{page}/{languageId:int}")]
         public async Task<IActionResult> PageTexts(string page, int languageId)
@@ -87,7 +82,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="languageId">The LanguageId to retrieve KinaUnaTexts for.</param>
         /// <returns>A list with all the KinaUnaTexts in the provided language.</returns>
-        [AllowAnonymous]
         [HttpGet]
         [Route("[action]/{languageId:int}")]
         public async Task<IActionResult> GetAllTexts(int languageId)
@@ -102,7 +96,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// If a text is missing in a language, it will be added with a copy of the first translation found.
         /// </summary>
         /// <returns>Ok</returns>
-        [AllowAnonymous]
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> CheckLanguages()
@@ -117,7 +110,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="value">The KinaUnaText entity to add.</param>
         /// <returns>The added KinaUnaText object.</returns>
-        [AllowAnonymous]
+        [Authorize(Policy = "UserOrClient")]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] KinaUnaText value)
         {
@@ -137,6 +130,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="id">The id of the KinaUnaText entity to update.</param>
         /// <param name="value">The KinaUnaText object with the updated properties.</param>
         /// <returns>The updated KinaUnaText</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] KinaUnaText value)
         {
@@ -159,6 +153,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The id of the KinaUnaText to remove.</param>
         /// <returns>The deleted KinaUnaText object, or NotFound if it doesn't exist.</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -182,6 +177,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The id of the KinaUnaText to remove.</param>
         /// <returns>The deleted KinaUnaText object, or NotFound there are no entities found with the given id.</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpDelete("[action]/{id:int}")]
         public async Task<IActionResult> DeleteSingleItem(int id)
         {

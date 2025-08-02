@@ -10,6 +10,7 @@ namespace KinaUna.OpenIddict.Controllers
 {
     public class HomeController(IWebHostEnvironment env) : Controller
     {
+        [AllowAnonymous]
         public IActionResult Index()
         {
             return View();
@@ -32,7 +33,7 @@ namespace KinaUna.OpenIddict.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult SetLanguage(string culture, string returnUrl)
         {
-            CookieOptions cookieOptions = new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain };
+            CookieOptions cookieOptions = new() { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain };
             if (env.IsDevelopment())
             {
                 cookieOptions.Expires = DateTimeOffset.UtcNow.AddYears(1);
@@ -59,6 +60,7 @@ namespace KinaUna.OpenIddict.Controllers
             return Redirect(returnUrl);
         }
 
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error(string? errorMessage)
         {

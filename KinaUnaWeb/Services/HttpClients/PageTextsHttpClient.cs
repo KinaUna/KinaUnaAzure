@@ -63,8 +63,7 @@ namespace KinaUnaWeb.Services.HttpClients
                 return languageList;
             }
 
-            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
-            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string languageApiPath = "/api/Languages/GetAllLanguages";
@@ -101,8 +100,7 @@ namespace KinaUnaWeb.Services.HttpClients
             }
             else
             {
-                string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
-                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
                 _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
                 string pageTextsApiPath = "/api/PageTexts/ByTitle/" + title + "/" + page + "/" + languageId;
@@ -184,8 +182,7 @@ namespace KinaUnaWeb.Services.HttpClients
             }
             else
             {
-                string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
-                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
                 _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
                 string pageTextsApiPath = "/api/PageTexts/GetTextById/" + id;
@@ -218,8 +215,7 @@ namespace KinaUnaWeb.Services.HttpClients
             }
             else
             {
-                string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
-                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
                 _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
                 string pageTextsApiPath = "/api/PageTexts/GetTextByTextId/" + textId + "/" + languageId;
@@ -273,8 +269,7 @@ namespace KinaUnaWeb.Services.HttpClients
             }
             else
             {
-                string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
-                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
                 _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
                 string admininfoApiPath = "/api/PageTexts/GetAllTexts/" + languageId;

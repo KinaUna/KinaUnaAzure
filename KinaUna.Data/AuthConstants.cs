@@ -1,10 +1,13 @@
-﻿namespace KinaUna.Data
+﻿using System.Collections.Generic;
+
+namespace KinaUna.Data
 {
     public static class AuthConstants
     {
         // Authentication Server Constants
         public const string AuthenticationServerUrlKey = "AuthServerUrl";
         public const string AuthenticationServerClientIdKey = "AuthServerClientId";
+        public const string AuthApiOnlyClientIdKey = "AuthApiOnlyClientId";
         public const string AuthApiClientIdKey = "AuthApiClientId";
         public const string AuthServerUrl = "AuthServerUrl";
         public const string AuthServerClientSecretKey = "AuthClientSecret";
@@ -25,5 +28,23 @@
         // API Names
         public const string AuthApiName = "kinaunaauthapi";
         public const string ProgenyApiName = "kinaunaprogenyapi";
+
+        public static readonly List<string> AllowedClients =
+        [
+            "kinaunawebclient",
+            "kinaunaauthclient",
+            "kinaunaauthapiclient",
+            "kinaunaauthapionlyclient",
+            "kinaunawebapiclient",
+            "kinaunaprogenyapiclient"
+        ];
+
+        public static readonly List<string> AllowedApiOnlyClients =
+        [
+            "kinaunaauthapiclient",
+            "kinaunaauthapionlyclient",
+            "kinaunawebapiclient",
+            "kinaunaprogenyapiclient"
+        ];
     }
 }

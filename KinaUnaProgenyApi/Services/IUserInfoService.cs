@@ -73,10 +73,42 @@ namespace KinaUnaProgenyApi.Services
         Task<List<UserInfo>> GetDeletedUserInfos();
 
         /// <summary>
+        /// Updates the information of a deleted user.
+        /// </summary>
+        /// <remarks>This method updates the details of a user who has been marked as deleted. Ensure that
+        /// the provided <paramref name="userInfo"/> object contains valid and complete information before calling this
+        /// method.</remarks>
+        /// <param name="userInfo">The <see cref="UserInfo"/> object containing the updated information for the deleted user. This parameter
+        /// cannot be null.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the updated <see
+        /// cref="UserInfo"/> object.</returns>
+        Task<UserInfo> UpdateDeletedUserInfo(UserInfo userInfo);
+
+        /// <summary>
+        /// Removes the specified user information from the collection of deleted user information.
+        /// </summary>
+        /// <remarks>This does not update the original userinfo entity. This method performs an asynchronous operation to remove the specified user
+        /// information from the collection  of deleted user information. If the user information is not found, the
+        /// method completes successfully and  returns <see langword="null"/>.</remarks>
+        /// <param name="userInfo">The user information to be removed. This parameter cannot be <see langword="null"/>.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation. The task result contains the  <see
+        /// cref="UserInfo"/> object that was removed, or <see langword="null"/> if the specified user information  was
+        /// not found in the collection.</returns>
+        Task<UserInfo> RemoveUserInfoFromDeletedUserInfos(UserInfo userInfo);
+
+        /// <summary>
         /// Checks if the user is a KinaUna admin.
         /// </summary>
         /// <param name="userId">The user's UserId.</param>
         /// <returns>Boolean, true if the user is a KinaUna admin.</returns>
         Task<bool> IsAdminUserId(string userId);
+
+        /// <summary>
+        /// Adds the specified user information to the collection of deleted user information.
+        /// </summary>
+        /// <param name="userInfo">The user information to add. This parameter cannot be null.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the  <see cref="UserInfo"/>
+        /// object that was added to the collection.</returns>
+        Task<UserInfo> AddUserInfoToDeletedUserInfos(UserInfo userInfo);
     }
 }
