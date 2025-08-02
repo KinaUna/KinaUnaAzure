@@ -79,7 +79,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
                     tagItems = tagItems + "'" + tagstring + "',";
                 }
 
-                tagItems = tagItems.Remove(tagItems.Length - 1);
+                tagItems = tagItems[..^1];
 
             }
 

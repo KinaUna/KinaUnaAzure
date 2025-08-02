@@ -1,6 +1,5 @@
 ﻿using System;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {

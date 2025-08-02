@@ -22,7 +22,7 @@ namespace KinaUnaProgenyApi.Services
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly IImageStore _imageStore;
-        
+
         public ProgenyService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, ILocationService locationService)
         {
             _context = context;
@@ -76,7 +76,7 @@ namespace KinaUnaProgenyApi.Services
             if (progenyToUpdate == null) return null;
 
             string oldPictureLink = progenyToUpdate.PictureLink;
-            
+
             progenyToUpdate.Admins = progeny.Admins;
             progenyToUpdate.BirthDay = progeny.BirthDay;
             progenyToUpdate.Name = progeny.Name;
@@ -140,7 +140,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 return null;
             }
-            
+
             Progeny progeny = JsonConvert.DeserializeObject<Progeny>(cachedProgeny);
             return progeny;
         }
@@ -265,14 +265,16 @@ namespace KinaUnaProgenyApi.Services
             if (progeny == null) return null;
 
             ProgenyInfo progenyInfo = await _context.ProgenyInfoDb.AsNoTracking().SingleOrDefaultAsync(p => p.ProgenyId == progenyId);
-            
-            if(progenyInfo == null)
+
+            if (progenyInfo == null)
             {
-                progenyInfo = new ProgenyInfo();
-                progenyInfo.ProgenyId = progenyId;
+                progenyInfo = new ProgenyInfo
+                {
+                    ProgenyId = progenyId
+                };
                 progenyInfo = await AddProgenyInfo(progenyInfo);
             }
-            
+
             if (progenyInfo.AddressIdNumber != 0)
             {
                 progenyInfo.Address = await _locationService.GetAddressItem(progenyInfo.AddressIdNumber);
@@ -389,11 +391,25 @@ namespace KinaUnaProgenyApi.Services
             {
                 await _locationService.RemoveAddressItem(progenyInfoToDelete.AddressIdNumber);
             }
-            
+
             _ = _context.ProgenyInfoDb.Remove(progenyInfoToDelete);
             _ = await _context.SaveChangesAsync();
 
             return progenyInfoToDelete;
+        }
+
+        public async Task<List<Progeny>> GetAllProgenies()
+        {
+            List<Progeny> progenies = await _context.ProgenyDb.AsNoTracking().ToListAsync();
+            foreach (Progeny progeny in progenies)
+            {
+                if (string.IsNullOrEmpty(progeny.PictureLink))
+                {
+                    progeny.PictureLink = Constants.ProfilePictureUrl;
+                }
+            }
+
+            return progenies;
         }
     }
 }

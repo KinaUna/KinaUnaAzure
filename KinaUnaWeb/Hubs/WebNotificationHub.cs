@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
@@ -16,7 +15,7 @@ namespace KinaUnaWeb.Hubs
     [AllowAnonymous]
     public class WebNotificationHub(IUserInfosHttpClient userInfosHttpClient, IWebNotificationsService notificationsService) : Hub
     {
-        readonly JsonSerializerOptions _serializeOptions = new JsonSerializerOptions
+        readonly JsonSerializerOptions _serializeOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = true
@@ -45,7 +44,7 @@ namespace KinaUnaWeb.Hubs
             {
                 List<WebNotification> notifications = await notificationsService.GetLatestNotifications(userId, 0, 10, true);
 
-                notifications = notifications.OrderByDescending(n => n.DateTime).Skip(start).Take(count).ToList();
+                notifications = [.. notifications.OrderByDescending(n => n.DateTime).Skip(start).Take(count)];
 
                 if (notifications.Count != 0)
                 {

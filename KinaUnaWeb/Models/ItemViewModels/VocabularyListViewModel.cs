@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {

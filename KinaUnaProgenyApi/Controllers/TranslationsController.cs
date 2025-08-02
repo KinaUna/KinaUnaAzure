@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -13,18 +15,17 @@ namespace KinaUnaProgenyApi.Controllers
     /// </summary>
     /// <param name="userInfoService"></param>
     /// <param name="textTranslationService"></param>
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Policy = "Client")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class TranslationsController(IUserInfoService userInfoService, ITextTranslationService textTranslationService) : ControllerBase
+    public class TranslationsController(IUserInfoService userInfoService, ITextTranslationService textTranslationService, IHostEnvironment env) : ControllerBase
     {
         /// <summary>
         /// Get all translations for a specific language.
         /// </summary>
         /// <param name="languageId">The LanguageId of the language to get translations for.</param>
         /// <returns>List of all TextTranslation entities for the language.</returns>
-        [AllowAnonymous]
         [HttpGet("[action]/{languageId:int}")]
         public async Task<IActionResult> GetAllTranslations(int languageId)
         {
@@ -38,7 +39,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The Id of the TextTranslation item to get.</param>
         /// <returns>TextTranslation object with the given Id.</returns>
-        [AllowAnonymous]
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetTranslationById(int id)
         {
@@ -54,7 +54,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="page">The page the Word appears on.</param>
         /// <param name="languageId">The LanguageId to translate the Word into.</param>
         /// <returns>The TextTranslation.</returns>
-        [AllowAnonymous]
         [HttpGet("[action]/{word}/{page}/{languageId:int}")]
         public async Task<IActionResult> GetTranslationByWord(string word, string page, int languageId)
         {
@@ -69,16 +68,8 @@ namespace KinaUnaProgenyApi.Controllers
                 Translation = word
             };
 
-            string userId = User.GetUserId();
-
-            if (await userInfoService.IsAdminUserId(userId))
-            {
-                translation = await textTranslationService.AddTranslation(translationItem);
-            }
-            else
-            {
-                translation = translationItem;
-            }
+            translation = await textTranslationService.AddTranslation(translationItem);
+            
             return Ok(translation);
         }
 
@@ -88,7 +79,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="languageId">The LanguageId of the language to get translations for.</param>
         /// <param name="page">The page to get translations for.</param>
         /// <returns>List of TextTranslations.</returns>
-        [AllowAnonymous]
         [HttpGet]
         [Route("[action]/{languageId:int}/{page}")]
         public async Task<IActionResult> PageTranslations(int languageId, string page)
@@ -103,13 +93,43 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="value">TextTranslation to add.</param>
         /// <returns>The added TextTranslation.</returns>
-        [AllowAnonymous]
+        [Authorize(Policy = "UserOrClient")]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] TextTranslation value)
         {
             if (value.LanguageId == 0)
             {
                 value.LanguageId = 1;
+            }
+
+            string userId = User.GetUserId();
+
+            List<string> allowedClients = AuthConstants.AllowedApiOnlyClients;
+            if (env.IsDevelopment())
+            {
+                List<string> allowedDevelopmentClients = [];
+                foreach (string client in AuthConstants.AllowedApiOnlyClients)
+                {
+                    allowedDevelopmentClients.Add(client + "local");
+                }
+
+                allowedClients = allowedDevelopmentClients;
+            }
+
+            if (env.IsStaging())
+            {
+                List<string> allowedStagingClients = [];
+                foreach (string client in AuthConstants.AllowedApiOnlyClients)
+                {
+                    allowedStagingClients.Add(client + "azure");
+                }
+
+                allowedClients = allowedStagingClients;
+            }
+
+            if (!await userInfoService.IsAdminUserId(userId) && !allowedClients.Contains(userId))
+            {
+                return Ok(value);
             }
 
             TextTranslation existingTranslation = await textTranslationService.GetTranslationByWord(value.Word, value.Page, value.LanguageId);
@@ -127,6 +147,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="id">The Id of the TextTranslation.</param>
         /// <param name="value">TextTranslation object with the properties to update.</param>
         /// <returns>The updated TextTranslation object.</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] TextTranslation value)
         {
@@ -149,6 +170,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The Id of the TextTranslation to delete.</param>
         /// <returns>The deleted TextTranslation object.</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -170,9 +192,13 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The Id of the TextTranslation entity to delete.</param>
         /// <returns>The deleted TextTranslation object.</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpDelete("[action]/{id:int}")]
         public async Task<IActionResult> DeleteSingleItem(int id)
         {
+            string userId = User.GetUserId();
+            if (!await userInfoService.IsAdminUserId(userId)) return Unauthorized();
+
             TextTranslation translation = await textTranslationService.DeleteSingleTranslation(id);
             if (translation != null)
             {

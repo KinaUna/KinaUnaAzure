@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
@@ -8,10 +6,12 @@ using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
 {
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

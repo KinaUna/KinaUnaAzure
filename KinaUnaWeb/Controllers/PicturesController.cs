@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Linq;
@@ -685,7 +684,7 @@ namespace KinaUnaWeb.Controllers
             }
             
 
-            picturesList.PictureItems = picturesList.PictureItems.OrderBy(p => p.PictureTime).ToList();
+            picturesList.PictureItems = [.. picturesList.PictureItems.OrderBy(p => p.PictureTime)];
 
             if (!string.IsNullOrEmpty(parameters.TagFilter))
             {
@@ -739,13 +738,13 @@ namespace KinaUnaWeb.Controllers
             if (parameters.Sort == 1)
             {
 
-                picturesList.PictureItems = picturesList.PictureItems.Where(t => t.PictureTime <= startDate).OrderByDescending(p => p.PictureTime).ToList();
+                picturesList.PictureItems = [.. picturesList.PictureItems.Where(t => t.PictureTime <= startDate).OrderByDescending(p => p.PictureTime)];
             }
             else
             {
                 startDate = new DateTime(parameters.Year, parameters.Month, parameters.Day, 0, 0, 0);
                 startDate = TimeZoneInfo.ConvertTimeToUtc(startDate, TimeZoneInfo.FindSystemTimeZoneById(baseModel.CurrentUser.Timezone));
-                picturesList.PictureItems = picturesList.PictureItems.Where(t => t.PictureTime >= startDate).OrderBy(p => p.PictureTime).ToList();
+                picturesList.PictureItems = [.. picturesList.PictureItems.Where(t => t.PictureTime >= startDate).OrderBy(p => p.PictureTime)];
             }
 
             firstItemTime = TimeZoneInfo.ConvertTimeFromUtc(firstItemTime, TimeZoneInfo.FindSystemTimeZoneById(baseModel.CurrentUser.Timezone));
@@ -754,7 +753,7 @@ namespace KinaUnaWeb.Controllers
             int skip = (parameters.CurrentPageNumber - 1) * parameters.ItemsPerPage;
             picturesList.AllItemsCount = picturesList.PictureItems.Count;
             picturesList.RemainingItemsCount = picturesList.PictureItems.Count - skip - parameters.ItemsPerPage;
-            picturesList.PictureItems = picturesList.PictureItems.Skip(skip).Take(parameters.ItemsPerPage).ToList();
+            picturesList.PictureItems = [.. picturesList.PictureItems.Skip(skip).Take(parameters.ItemsPerPage)];
             picturesList.TotalPages = (int)Math.Ceiling((double)picturesList.AllItemsCount / parameters.ItemsPerPage);
             picturesList.CurrentPageNumber = parameters.CurrentPageNumber;
             

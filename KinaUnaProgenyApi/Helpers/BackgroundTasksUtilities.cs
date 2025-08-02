@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Helpers
         public static List<string> GetCommands()
         {
             List<MethodInfo> methods = GetTaskRunnerServiceMethods();
-            return methods.Select(m => m.Name).ToList();
+            return [.. methods.Select(m => m.Name)];
         }
     }
 }

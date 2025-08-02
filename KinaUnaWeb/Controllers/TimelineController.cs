@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Timeline;
 using KinaUnaWeb.Services.HttpClients;
@@ -85,18 +84,18 @@ namespace KinaUnaWeb.Controllers
                     if (parameters.SortBy == 1)
                     {
 
-                        timelineList.TimelineItems = timelineList.TimelineItems.Where(t => t.ProgenyTime <= startDate).ToList();
+                        timelineList.TimelineItems = [.. timelineList.TimelineItems.Where(t => t.ProgenyTime <= startDate)];
                     }
                     else
                     {
                         startDate = new(parameters.Year, parameters.Month, parameters.Day, 0, 0, 0);
-                        timelineList.TimelineItems = timelineList.TimelineItems.Where(t => t.ProgenyTime >= startDate).ToList();
+                        timelineList.TimelineItems = [.. timelineList.TimelineItems.Where(t => t.ProgenyTime >= startDate)];
                     }
                 }
 
                 timelineList.AllItemsCount = timelineList.TimelineItems.Count;
                 timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count;
-                timelineList.TimelineItems = timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count).ToList();
+                timelineList.TimelineItems = [.. timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count)];
             }
             else
             {
@@ -124,7 +123,7 @@ namespace KinaUnaWeb.Controllers
             };
             timelineList.AllItemsCount = timelineList.TimelineItems.Count;
             timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count;
-            timelineList.TimelineItems = timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count).ToList();
+            timelineList.TimelineItems = [.. timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count)];
 
             return Json(timelineList);
 

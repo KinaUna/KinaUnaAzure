@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 

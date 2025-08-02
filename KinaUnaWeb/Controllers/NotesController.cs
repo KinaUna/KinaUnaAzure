@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Notes;
 using KinaUnaWeb.Services.HttpClients;
@@ -122,8 +121,8 @@ namespace KinaUnaWeb.Controllers
                 notes.Reverse();
             }
 
-            notes = notes.Skip(parameters.ItemsPerPage * (parameters.CurrentPageNumber -1)).Take(parameters.ItemsPerPage).ToList();
-            List<int> notesList = notes.Select(n => n.NoteId).ToList();
+            notes = [.. notes.Skip(parameters.ItemsPerPage * (parameters.CurrentPageNumber - 1)).Take(parameters.ItemsPerPage)];
+            List<int> notesList = [.. notes.Select(n => n.NoteId)];
             return Json(new NotesPageResponse()
             {
                 PageNumber = parameters.CurrentPageNumber,

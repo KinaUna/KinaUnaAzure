@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
@@ -9,6 +7,8 @@ using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -22,7 +22,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="vocabularyService"></param>
     /// <param name="progenyService"></param>
     /// <param name="webNotificationsService"></param>
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

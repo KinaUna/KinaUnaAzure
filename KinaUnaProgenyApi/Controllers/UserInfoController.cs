@@ -1,16 +1,16 @@
-﻿using System;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -22,7 +22,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="userInfoService"></param>
     /// <param name="userAccessService"></param>
     /// <param name="notificationsService"></param>
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -472,6 +472,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Only KinaUnaAdmins are allowed to get all deleted UserInfo entities.
         /// </summary>
         /// <returns>List of UserInfo</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet("[action]/")]
         public async Task<IActionResult> GetDeletedUserInfos()
         {
@@ -483,6 +484,51 @@ namespace KinaUnaProgenyApi.Controllers
             List<UserInfo> deletedUsersList = await userInfoService.GetDeletedUserInfos();
             return Ok(deletedUsersList);
 
+        }
+
+        [Authorize(Policy = "Client")]
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AddUserInfoToDeletedUserInfos([FromBody] UserInfo userInfo)
+        {
+            if (userInfo == null || userInfo.Id == 0)
+            {
+                return BadRequest("Invalid UserInfo object.");
+            }
+            UserInfo deletedUserInfo = await userInfoService.AddUserInfoToDeletedUserInfos(userInfo);
+            if (deletedUserInfo == null)
+            {
+                return NotFound();
+            }
+            return Ok(deletedUserInfo);
+        }
+
+        [Authorize(Policy = "Client")]
+        [HttpPost("[action]")]
+        public async Task<IActionResult> UpdateDeletedUserInfo([FromBody] UserInfo userInfo)
+        {
+            if (userInfo == null || userInfo.Id == 0)
+            {
+                return BadRequest("Invalid UserInfo object.");
+            }
+            UserInfo updatedUserInfo = await userInfoService.UpdateDeletedUserInfo(userInfo);
+            if (updatedUserInfo == null)
+            {
+                return NotFound();
+            }
+            return Ok(updatedUserInfo);
+        }
+
+        [Authorize(Policy = "Client")]
+        [HttpPost("[action]")]
+        public async Task<IActionResult> RemoveUserInfoFromDeletedUserInfos([FromBody] UserInfo userInfo)
+        {
+            UserInfo deletedUserInfo = await userInfoService.RemoveUserInfoFromDeletedUserInfos(userInfo);
+            if (deletedUserInfo == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(deletedUserInfo);
         }
     }
 }

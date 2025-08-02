@@ -1,45 +1,53 @@
-﻿using System;
-using System.Reflection;
-using IdentityServer4.AccessTokenValidation;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUnaProgenyApi.AuthorizationHandlers;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenIddict.Validation.AspNetCore;
+using System;
+using System.Security.Cryptography.X509Certificates;
+using KinaUna.Data.Utilities;
 
 namespace KinaUnaProgenyApi
 {
-    public class Startup(IConfiguration configuration)
+    public class Startup(IConfiguration configuration, IHostEnvironment env)
     {
         private IConfiguration Configuration { get; } = configuration;
 
         public void ConfigureServices(IServiceCollection services)
         {
             TelemetryDebugWriter.IsTracingDisabled = true;
-
-            string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
-            string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            string authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];
-
+            
             services.AddDbContext<ProgenyDbContext>(options =>
-                options.UseSqlServer(Configuration["ProgenyDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
+                options.UseSqlServer(Configuration["ProgenyDefaultConnection"],
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                    }));
 
             services.AddDbContext<MediaDbContext>(options =>
-                options.UseSqlServer(Configuration["MediaDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
+                options.UseSqlServer(Configuration["MediaDefaultConnection"],
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                    }));
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration["DataProtectionConnection"],
                     sqlServerOptionsAction: sqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
-                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
@@ -84,22 +92,78 @@ namespace KinaUnaProgenyApi
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();
+            
+            
+            // Register the OpenIddict services and configure them.
+            string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
+            
+            if (env.IsDevelopment())
+            {
+                authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local") ??
+                                            throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Local was not found in the configuration data.");
+            }
 
-            services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddIdentityServerAuthentication(options =>
+            if (env.IsStaging())
+            {
+                authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure") ??
+                                     throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Azure was not found in the configuration data.");
+            }
+
+            string serverEncryptionCertificateThumbprint = Configuration["ServerEncryptionCertificateThumbprint"]
+                                                           ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
+            X509Certificate2 encryptionCertificate = CertificateTools.GetCertificate(serverEncryptionCertificateThumbprint);
+            
+            // Todo: Add Audience support.
+            services.AddOpenIddict()
+                .AddValidation(options =>
                 {
-                    options.Authority = authorityServerUrl;
-                    options.ApiName = authenticationServerClientId;
-                    options.ApiSecret = authenticationServerClientSecret;
-                    options.RequireHttpsMetadata = true;
-                    options.EnableCaching = true;
-                    options.CacheDuration = TimeSpan.FromSeconds(600);
+                    options.SetIssuer(authorityServerUrl);
+                    options.AddEncryptionCertificate(encryptionCertificate);
+                    options.UseSystemNetHttp(); 
+                    options.UseAspNetCore();
                 });
-            services.AddAuthorization();
+
+            // Configure CORS to allow requests from the specified origin.
+            // If development, allow any origin.
+            if (env.IsDevelopment())
+            {
+                services.AddCors(options => options.AddDefaultPolicy(policy =>
+                    policy.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .WithOrigins(Constants.DevelopmentCorsList)));
+            }
+            // If production, restrict to the specified origin.
+            else
+            {
+                if (env.IsStaging())
+                {
+                    services.AddCors(options => options.AddDefaultPolicy(policy =>
+                        policy.AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .WithOrigins(Constants.StagingCorsList)));
+                }
+                else
+                {
+                    // In production, only allow requests from the specified origin.
+                    // This is important for security reasons.
+                    services.AddCors(options => options.AddDefaultPolicy(policy =>
+                        policy.AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .WithOrigins(Constants.ProductionCorsList)));
+                }
+                
+            }
+
+            services.AddAuthentication(options => { options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme; });
+            services.AddAuthorizationBuilder()
+                .AddPolicy("UserOrClient", policy => { policy.Requirements.Add(new UserOrClientRequirement()); })
+                .AddPolicy("Client", policy => { policy.Requirements.Add(new ClientRequirement()); }); 
+            services.AddSingleton<IAuthorizationHandler, UserOrClientHandler>();
+            services.AddSingleton<IAuthorizationHandler, ClientHandler>();
             services.AddApplicationInsightsTelemetry();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             if (env.IsDevelopment())
             {
@@ -110,6 +174,7 @@ namespace KinaUnaProgenyApi
                 app.UseHsts();
             }
 
+            app.UseCors();
             app.UseHttpsRedirection();
             app.UseRouting();
 

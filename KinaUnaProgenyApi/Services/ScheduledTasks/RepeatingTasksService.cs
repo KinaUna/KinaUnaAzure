@@ -23,7 +23,7 @@ namespace KinaUnaProgenyApi.Services.ScheduledTasks
             MethodInfo? method = methods.FirstOrDefault(m => string.Equals(m.Name, task.ApiEndpoint, StringComparison.CurrentCultureIgnoreCase));
 
             // If it does, invoke the method, passing in the RepeatingTask object.
-            _ = method?.Invoke(taskRunnerService, new object[] { task });
+            _ = method?.Invoke(taskRunnerService, [task]);
         }
     }
     

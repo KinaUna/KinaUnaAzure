@@ -2,12 +2,10 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using IdentityModel.Client;
-using KinaUna.Data.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
+using Duende.IdentityModel.Client;
+using KinaUna.Data;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -18,17 +16,27 @@ namespace KinaUnaWeb.Services.HttpClients
     public class AuthHttpClient : IAuthHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITokenService _tokenService;
 
-        public AuthHttpClient(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public AuthHttpClient(HttpClient httpClient, IConfiguration configuration, IHostEnvironment env, ITokenService tokenService)
         {
-            string clientUri = configuration.GetValue<string>("AuthenticationServer");
+            string clientUri = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey);
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local");
+            }
+
+            if (env.IsStaging())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure");
+            }
+
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
             _httpClient = httpClient;
-            _httpContextAccessor = httpContextAccessor;
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -40,6 +48,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>If a deleted UserInfo is found it is returned, else a new UserInfo with an empty string for UserId is returned.</returns>
         public async Task<UserInfo> CheckDeleteUser(UserInfo userInfo)
         {
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
             const string deleteAccountPath = "/Account/CheckDeleteKinaUnaAccount/";
 
             HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
@@ -63,20 +74,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The UserInfo that was soft-deleted and needs to be restored. If it doesn't exist in the DeletedUsers table a new UserInfo with an empty string for UserId is returned.</returns>
         public async Task<UserInfo> RemoveDeleteUser(UserInfo userInfo)
         {
-            string accessToken = "";
-            HttpContext currentContext = _httpContextAccessor.HttpContext;
-
-            if (currentContext != null)
-            {
-                string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
-
-                if (!string.IsNullOrWhiteSpace(contextAccessToken))
-                {
-                    accessToken = contextAccessToken;
-                }
-            }
-
-            _httpClient.SetBearerToken(accessToken);
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
             const string deleteAccountPath = "/Account/RemoveDeleteKinaUnaAccount/";
 
             HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
@@ -106,6 +105,8 @@ namespace KinaUnaWeb.Services.HttpClients
                 UserId = userId
             };
 
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
             HttpResponseMessage checkResponse = await _httpClient.PostAsync(checkAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
             if (!checkResponse.IsSuccessStatusCode) return false;
 

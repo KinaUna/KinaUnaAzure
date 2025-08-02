@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -13,7 +13,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// </summary>
     /// <param name="languagesService"></param>
     /// <param name="userInfoService"></param>
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Policy = "Client")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -23,7 +23,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves all language supported by the application.
         /// </summary>
         /// <returns>List of all KinaUnaLanguage entities in the database.</returns>
-        [AllowAnonymous]
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> GetAllLanguages()
@@ -37,7 +36,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="languageId">The Id of the KinaUnaLanguage entity to get.</param>
         /// <returns>The KinaUnaLanguage object with the provided id.</returns>
-        [AllowAnonymous]
         [HttpGet]
         [Route("[action]/{languageId:int}")]
         public async Task<IActionResult> GetLanguage(int languageId)
@@ -51,7 +49,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="language">The KinaUnaLanguage object to add.</param>
         /// <returns>The added KinaUnaLanguage object.</returns>
-        [Authorize]
+        [Authorize(Policy = "UserOrClient")]
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> AddLanguage([FromBody] KinaUnaLanguage language)
@@ -71,7 +69,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="languageId">The Id of the KinaUnaLanguage entity to update.</param>
         /// <param name="value">KinaUnaLanguage object with the properties to update.</param>
         /// <returns>The updated KinaUnaLanguage object.</returns>
-        [Authorize]
+        [Authorize(Policy = "UserOrClient")]
         [HttpPut]
         [Route("[action]/{languageId:int}")]
         public async Task<IActionResult> UpdateLanguage(int languageId, [FromBody] KinaUnaLanguage value)
@@ -97,7 +95,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="languageId">The Id of the KinaUnaLanguage entity to delete.</param>
         /// <returns>The deleted KinaUnaLanguage object.</returns>
-        [Authorize]
+        [Authorize(Policy = "UserOrClient")]
         [HttpDelete]
         [Route("[action]/{languageId:int}")]
         public async Task<IActionResult> DeleteLanguage(int languageId)

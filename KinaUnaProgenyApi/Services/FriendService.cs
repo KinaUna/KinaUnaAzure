@@ -39,10 +39,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Friend> GetFriend(int id)
         {
             Friend friend = await GetFriendFromCache(id);
-            if (friend == null)
-            {
-                friend = await SetFriendInCache(id);
-            }
+            friend ??= await SetFriendInCache(id);
             return friend;
         }
 
@@ -193,7 +190,7 @@ namespace KinaUnaProgenyApi.Services
                 friendsList = await SetFriendsListInCache(progenyId);
             }
 
-            friendsList = friendsList.Where(p => p.AccessLevel >= accessLevel).ToList();
+            friendsList = [.. friendsList.Where(p => p.AccessLevel >= accessLevel)];
 
             return friendsList;
         }

@@ -1,5 +1,4 @@
 ﻿using System;
-using KinaUna.Data.Models;
 using Syncfusion.EJ2.Schedule;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,13 +1,14 @@
-﻿using IdentityModel.Client;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Duende.IdentityModel.Client;
 using KinaUna.Data;
-using KinaUna.Data.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -18,13 +19,24 @@ namespace KinaUnaWeb.Services.HttpClients
     public class ProgenyHttpClient : IProgenyHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly ITokenService _tokenService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ProgenyHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public ProgenyHttpClient(HttpClient httpClient, IConfiguration configuration, ITokenService tokenService, IHostEnvironment env, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClient;
-            _apiTokenClient = apiTokenClient;
-            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            _httpContextAccessor = httpContextAccessor;
+            _tokenService = tokenService;
+            string clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey);
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Local");
+            }
+
+            if (env.IsStaging())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Azure");
+            }
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -45,8 +57,9 @@ namespace KinaUnaWeb.Services.HttpClients
                 progenyId = Constants.DefaultChildId;
             }
 
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             Progeny progeny = new();
             string progenyApiPath = "/api/Progeny/" + progenyId;
@@ -86,8 +99,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>Progeny: The Progeny object that was added.</returns>
         public async Task<Progeny> AddProgeny(Progeny progeny)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string newProgenyApiPath = "/api/Progeny/";
             HttpResponseMessage progenyResponse = await _httpClient.PostAsync(newProgenyApiPath, new StringContent(JsonConvert.SerializeObject(progeny), System.Text.Encoding.UTF8, "application/json"));
@@ -106,8 +120,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated Progeny object.</returns>
         public async Task<Progeny> UpdateProgeny(Progeny progeny)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateProgenyApiPath = "/api/Progeny/" + progeny.Id;
             HttpResponseMessage progenyResponse = await _httpClient.PutAsync(updateProgenyApiPath, new StringContent(JsonConvert.SerializeObject(progeny), System.Text.Encoding.UTF8, "application/json"));
@@ -125,8 +140,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if successfully removed.</returns>
         public async Task<bool> DeleteProgeny(int progenyId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string progenyApiPath = "/api/Progeny/" + progenyId;
             HttpResponseMessage progenyResponse = await _httpClient.DeleteAsync(progenyApiPath);
@@ -140,8 +156,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The ProgenyInfo object for the given Progeny.</returns>
         public async Task<ProgenyInfo> GetProgenyInfo(int progenyId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             ProgenyInfo progenyInfo = new();
             string progenyInfoApiPath = "/api/Progeny/GetProgenyInfo/" + progenyId;
@@ -164,8 +181,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated ProgenyInfo object.</returns>
         public async Task<ProgenyInfo> UpdateProgenyInfo(ProgenyInfo progenyInfo)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateProgenyInfoApiPath = "/api/Progeny/UpdateProgenyInfo/" + progenyInfo.ProgenyId;
             HttpResponseMessage progenyInfoResponse = await _httpClient.PutAsync(updateProgenyInfoApiPath, new StringContent(JsonConvert.SerializeObject(progenyInfo), System.Text.Encoding.UTF8, "application/json"));
@@ -183,8 +201,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of Progeny objects.</returns>
         public async Task<List<Progeny>> GetProgenyAdminList(string email)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string accessApiPath = "/api/Access/AdminListByUserPost/";
             List<Progeny> accessList = [];
@@ -205,8 +224,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList)
         {
             List<TimeLineItem> yearAgoPosts = [];
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string yearAgoApiPath = "/api/Timeline/ProgeniesYearAgo/";
             HttpResponseMessage yearAgoResponse = await _httpClient.PostAsync(yearAgoApiPath, new StringContent(JsonConvert.SerializeObject(progeniesList), System.Text.Encoding.UTF8, "application/json"));

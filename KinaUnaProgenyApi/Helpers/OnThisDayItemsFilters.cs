@@ -44,25 +44,24 @@ namespace KinaUnaProgenyApi.Helpers
             switch (onThisDayRequest.OnThisDayPeriod)
             {
                 case OnThisDayPeriod.Week:
-                    timeLineItems = timeLineItems.Where(t => t.ProgenyTime.DayOfWeek == onThisDayRequest.ThisDayDateTime.DayOfWeek).ToList();
+                    timeLineItems = [.. timeLineItems.Where(t => t.ProgenyTime.DayOfWeek == onThisDayRequest.ThisDayDateTime.DayOfWeek)];
                     break;
                 case OnThisDayPeriod.Month:
-                    timeLineItems = timeLineItems.Where(t => t.ProgenyTime.Day == onThisDayRequest.ThisDayDateTime.Day).ToList();
+                    timeLineItems = [.. timeLineItems.Where(t => t.ProgenyTime.Day == onThisDayRequest.ThisDayDateTime.Day)];
                     break;
                 case OnThisDayPeriod.Quarter:
                 {
-                    List<TimeLineItem> quarterTimeLineItems = timeLineItems.Where(t => t.ProgenyTime.Day == onThisDayRequest.ThisDayDateTime.Day).ToList();
-                    quarterTimeLineItems = quarterTimeLineItems.Where(t => 
+                    List<TimeLineItem> quarterTimeLineItems = [.. timeLineItems.Where(t => t.ProgenyTime.Day == onThisDayRequest.ThisDayDateTime.Day)];
+                    quarterTimeLineItems = [.. quarterTimeLineItems.Where(t => 
                         t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month 
                          || t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month + 3
                          || t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month + 6 
-                         || t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month + 9)
-                        .ToList();
+                         || t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month + 9)];
                     timeLineItems = quarterTimeLineItems;
                     break;
                 }
                 case OnThisDayPeriod.Year:
-                    timeLineItems = timeLineItems.Where(t => t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month && t.ProgenyTime.Day == onThisDayRequest.ThisDayDateTime.Day).ToList();
+                    timeLineItems = [.. timeLineItems.Where(t => t.ProgenyTime.Month == onThisDayRequest.ThisDayDateTime.Month && t.ProgenyTime.Day == onThisDayRequest.ThisDayDateTime.Day)];
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(onThisDayRequest), "onThisDayRequest.OnThisDayPeriod is out of range.");

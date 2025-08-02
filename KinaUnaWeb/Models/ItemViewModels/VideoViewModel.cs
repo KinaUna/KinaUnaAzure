@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
-using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {

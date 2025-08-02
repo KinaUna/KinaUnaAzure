@@ -1,6 +1,4 @@
-﻿using KinaUna.Data.Models;
-
-namespace KinaUnaWeb.Models.ItemViewModels
+﻿namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class WebNotificationViewModel: BaseItemsViewModel
     {

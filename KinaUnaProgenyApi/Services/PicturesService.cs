@@ -115,13 +115,11 @@ namespace KinaUnaProgenyApi.Services
                 {
                     memoryStream.Position = 0;
 
-                    using (MagickImage image = new(memoryStream))
-                    {
-                        using MemoryStream memStream = new();
-                        await image.WriteAsync(memStream);
-                        memStream.Position = 0;
-                        picture.PictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, image.FileExtensionString());
-                    }
+                    using MagickImage image = new(memoryStream);
+                    using MemoryStream memStream = new();
+                    await image.WriteAsync(memStream);
+                    memStream.Position = 0;
+                    picture.PictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, image.FileExtensionString());
                 }
                 
 
@@ -130,13 +128,11 @@ namespace KinaUnaProgenyApi.Services
                 {
                     memoryStream600.Position = 0;
 
-                    using (MagickImage image600 = new(memoryStream600))
-                    {
-                        using MemoryStream memStream600 = new();
-                        await image600.WriteAsync(memStream600);
-                        memStream600.Position = 0;
-                        picture.PictureLink600 = await _imageStore.SaveImage(memStream600, BlobContainers.Pictures, image600.FileExtensionString());
-                    }
+                    using MagickImage image600 = new(memoryStream600);
+                    using MemoryStream memStream600 = new();
+                    await image600.WriteAsync(memStream600);
+                    memStream600.Position = 0;
+                    picture.PictureLink600 = await _imageStore.SaveImage(memStream600, BlobContainers.Pictures, image600.FileExtensionString());
                 }
                 
 
@@ -145,13 +141,11 @@ namespace KinaUnaProgenyApi.Services
                 {
                     memoryStream1200.Position = 0;
 
-                    using (MagickImage image1200 = new(memoryStream1200))
-                    {
-                        using MemoryStream memStream1200 = new();
-                        await image1200.WriteAsync(memStream1200);
-                        memStream1200.Position = 0;
-                        picture.PictureLink1200 = await _imageStore.SaveImage(memStream1200, BlobContainers.Pictures, image1200.FileExtensionString());
-                    }
+                    using MagickImage image1200 = new(memoryStream1200);
+                    using MemoryStream memStream1200 = new();
+                    await image1200.WriteAsync(memStream1200);
+                    memStream1200.Position = 0;
+                    picture.PictureLink1200 = await _imageStore.SaveImage(memStream1200, BlobContainers.Pictures, image1200.FileExtensionString());
                 }
                 
 
@@ -184,54 +178,52 @@ namespace KinaUnaProgenyApi.Services
             {
                 memoryStream.Position = 0;
 
-                using (MagickImage image = new(memoryStream))
+                using MagickImage image = new(memoryStream);
+                IExifProfile profile = image.GetExifProfile();
+                if (profile != null)
                 {
-                    IExifProfile profile = image.GetExifProfile();
-                    if (profile != null)
-                    {
-                        picture.Longtitude = profile.GetLongitude();
-                        picture.Latitude = profile.GetLatitude();
-                        picture.Altitude = profile.GetAltitude();
+                    picture.Longtitude = profile.GetLongitude();
+                    picture.Latitude = profile.GetLatitude();
+                    picture.Altitude = profile.GetAltitude();
 
-                        picture.PictureRotation = profile.GetRotationInDegrees();
+                    picture.PictureRotation = profile.GetRotationInDegrees();
 
-                        picture.PictureTime = profile.GetDateTime();
+                    picture.PictureTime = profile.GetDateTime();
 
-                        picture.PictureWidth = profile.GetPictureWidth(image);
-                        picture.PictureHeight = profile.GetPictureHeight(image);
-                    }
-                    else
-                    {
-                        picture.PictureWidth = (int)image.Width;
-                        picture.PictureHeight = (int)image.Height;
-
-                    }
-
-                    if (picture.PictureRotation != null)
-                    {
-                        if (picture.PictureRotation != 0)
-                        {
-                            image.Rotate((int)picture.PictureRotation);
-                        }
-
-                    }
-
-                    if (picture.PictureWidth > 600)
-                    {
-                        const int newWidth = 600;
-                        int newHeight = (600 / picture.PictureWidth) * picture.PictureHeight;
-
-                        image.Resize(newWidth, (uint)newHeight);
-                    }
-
-                    image.Strip();
-
-                    using MemoryStream memStream = new();
-                    await image.WriteAsync(memStream);
-                    memStream.Position = 0;
-
-                    picture.PictureLink600 = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, image.FileExtensionString());
+                    picture.PictureWidth = profile.GetPictureWidth(image);
+                    picture.PictureHeight = profile.GetPictureHeight(image);
                 }
+                else
+                {
+                    picture.PictureWidth = (int)image.Width;
+                    picture.PictureHeight = (int)image.Height;
+
+                }
+
+                if (picture.PictureRotation != null)
+                {
+                    if (picture.PictureRotation != 0)
+                    {
+                        image.Rotate((int)picture.PictureRotation);
+                    }
+
+                }
+
+                if (picture.PictureWidth > 600)
+                {
+                    const int newWidth = 600;
+                    int newHeight = (600 / picture.PictureWidth) * picture.PictureHeight;
+
+                    image.Resize(newWidth, (uint)newHeight);
+                }
+
+                image.Strip();
+
+                using MemoryStream memStream = new();
+                await image.WriteAsync(memStream);
+                memStream.Position = 0;
+
+                picture.PictureLink600 = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, image.FileExtensionString());
             }
             
             using (MagickImage image = new(memoryStream))
@@ -592,7 +584,7 @@ namespace KinaUnaProgenyApi.Services
                 picturesList = await SetPicturesListInCache(progenyId);
             }
 
-            picturesList = picturesList.Where(p => p.AccessLevel >= accessLevel).ToList();
+            picturesList = [.. picturesList.Where(p => p.AccessLevel >= accessLevel)];
 
             return picturesList;
         }

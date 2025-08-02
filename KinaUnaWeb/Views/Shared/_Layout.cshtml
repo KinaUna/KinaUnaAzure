@@ -1,9 +1,7 @@
 ﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
-<!DOCTYPE html>
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
 @using KinaUnaWeb.Models.HomeViewModels
-@using Microsoft.AspNetCore.Http.Extensions
 @using KinaUnaWeb.Services
 @inject ILocaleManager LocaleManager;
 @inject IProgenyManager ChildManager
@@ -17,7 +15,6 @@
     KinaUnaLanguage kinaUnaLanguage = Context.Request.GetKinaUnaLanguage();
     int languageId = kinaUnaLanguage.Id;
     string languageCode = kinaUnaLanguage.Code;
-    string returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl();
     List<Progeny> childList = new();
     Progeny child = new();
     UserInfo userInfo = new();
@@ -33,7 +30,7 @@
         {
             if (userInfo.UserId == "401") // The current user's account is not valid, log out.
             {
-                Context.Response.Redirect("/Account/CheckOut?returnUrl=" + returnUrl);
+                Context.Response.Redirect("/Account/LogOut");
             }
             else
             {
@@ -52,7 +49,7 @@
             }
             else
             {
-                Context.Response.Redirect("/Account/SignIn?returnUrl=" + returnUrl);
+                Context.Response.Redirect("/Account/LogOut");
             }
         }
     }
@@ -61,6 +58,7 @@
 
     UserMenuViewModel userMenuViewModel = new UserMenuViewModel { LanguageId = languageId, UserInfo = userInfo, ProgenyId = child.Id};
 }
+<!DOCTYPE html>
 <html lang="@languageCode">
 <head>
     <meta charset="utf-8" />
@@ -111,7 +109,7 @@
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
-    <div id="top-language-div" class="kinauna-purple-bg">
+<div id="top-language-div" class="kinauna-purple-bg">
     <div class="container">
         <div class="row">
             <div class="col ml-3 mt-0 mb-1 w-100">
@@ -120,17 +118,17 @@
         </div>
     </div>
 </div>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top" id="nav-main">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top" id="nav-main">
     <div id="top-main-menu-container" class="container">
 
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leave-page" aria-label="Home" style="margin-right: 80px;">
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leave-page" aria-label="Home" style="margin-right: 80px;">
             <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
         </a>
         @if (userInfo.CanUserAddItems)
         {
             <div class="navbar-nav nav-item ml-3 ml-lg-1">
-                    <button class="btn btn-link kinauna-yellow-text" style="margin-right: 12px;" id="main-page-add-item-button" data-toggle="modal" data-target="#main-modal" aria-label="Add item">
-                        <i class="material-icons kinauna-icon-medium kinauna-yellow-text" aria-hidden="true">add</i>
+                <button class="btn btn-link kinauna-yellow-text" style="margin-right: 12px;" id="main-page-add-item-button" data-toggle="modal" data-target="#main-modal" aria-label="Add item">
+                    <i class="material-icons kinauna-icon-medium kinauna-yellow-text" aria-hidden="true">add</i>
                 </button>
             </div>
         }
@@ -141,21 +139,22 @@
                 string picLink = child.GetProfilePictureUrl();
                 childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 48px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 48px; object-fit: contain;\" /img> ";
             }
-                <span class="d-lg-none selected-child-profile-picture">@Html.Raw(childprofilePic)</span>
+
+            <span class="d-lg-none selected-child-profile-picture">@Html.Raw(childprofilePic)</span>
         }
         <span id="toggler-notifications-counter" class="badge badge-danger ml-auto mr-2 d-block d-lg-none" style="position: relative; display: none; font-size: 12px;">0</span>
         <button id="nav-main-menu-button" class="navbar-toggler d-block d-lg-none" style="height: 52px; border-color: transparent; outline: none" type="button" data-toggle="collapse" data-target="#navbar-main-content" aria-controls="navbarMainContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon kinauna-yellow-text"></span>
+            <span class="navbar-toggler-icon kinauna-yellow-text"></span>
         </button>
         <div class="collapse navbar-collapse mt-5 mt-lg-1 ml-6 ml-sm-6 ml-md-6 ml-lg-0" id="navbar-main-content" style="min-height: 52px;">
             <ul class="navbar-nav ml-1 ml-lg-2 w-100 top-menu-max-height">
                 @if (childList.Count > 1)
                 {
                     <li class="nav-item dropdown mb-2 mb-lg-0 mr-auto mr-lg-2">
-                            <a id="select-child-menu-button" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                        <a id="select-child-menu-button" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                             <span style="max-height: 40px;">@Html.Raw(childprofilePic)</span><span> @child.NickName </span>
                         </a>
-                            <div id="select-child-dropdown-menu" class="dropdown-menu">
+                        <div id="select-child-dropdown-menu" class="dropdown-menu">
                             @foreach (Progeny prog in childList)
                             {
                                 <div class="dropdown-item">
@@ -178,14 +177,14 @@
                                     }
                                     else
                                     {
-                                            <a class="ml-auto btn btn-link text-success set-default-progeny-button" data-default-progeny-id="@prog.Id" style="width: 64px;">
+                                        <a class="ml-auto btn btn-link text-success set-default-progeny-button" data-default-progeny-id="@prog.Id" style="width: 64px;">
                                             <i class="material-icons" data-default-progeny-id="@prog.Id">stars</i>
                                         </a>
                                     }
-                                        <a class="btn btn-link text-white default-progeny-button" data-progeny-info-id="@prog.Id" style="width: 64px;">
+                                    <a class="btn btn-link text-white default-progeny-button" data-progeny-info-id="@prog.Id" style="width: 64px;">
                                         <i class="material-icons" data-progeny-info-id="@prog.Id">info</i>
                                     </a>
-                                    
+
                                 </div>
                             }
                         </div>
@@ -199,9 +198,9 @@
                 else
                 {
                     <li class="nav-item ml-lg-auto">
-                            <form id="login-form" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post">
-                            <button id="login-button" type="submit" class="btn btn-link nav-link text-left btn-block"><i class="material-icons ml-2 mr-1">exit_to_app</i> @await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, languageId)</button>
-                        </form>
+                        <span id="login-form" class="form-inline-fullwidth">
+                            <a id="login-button" asp-controller="Authentication" asp-action="LogIn" class="btn btn-link nav-link text-left btn-block leave-page"><i class="material-icons ml-2 mr-1">exit_to_app</i> @await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, languageId)</a>
+                        </span>
                     </li>
                 }
             </ul>
@@ -210,7 +209,7 @@
         </div>
     </div>
 </nav>
-    @await Html.PartialAsync("_SideMenuPartial", userMenuViewModel)
+@await Html.PartialAsync("_SideMenuPartial", userMenuViewModel)
 <div id="body-content" class="main-container body-content">
     <div id="kinauna-main-div" class="main kinauna-main" style="margin-top: 10px; padding-top: 10px;">
         @if (showUndelete)

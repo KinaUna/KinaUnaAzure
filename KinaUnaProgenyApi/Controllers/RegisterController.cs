@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using Microsoft.Azure.NotificationHubs;
-using Microsoft.Azure.NotificationHubs.Messaging;
-using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.NotificationHubs;
+using Microsoft.Azure.NotificationHubs.Messaging;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -17,7 +17,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// Uses Azure Notification Hubs.
     /// </summary>
     /// <param name="azureNotifications"></param>
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

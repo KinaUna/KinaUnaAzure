@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Models;
 using KinaUna.Data.Extensions;
 using KinaUnaWeb.Models.HomeViewModels;
 
@@ -56,7 +55,6 @@ namespace KinaUnaWeb.Controllers
         /// <param name="UploadFiles">List of files to save.</param>
         /// <returns>Empty string, the file url is returned via the response header. </returns>
         [HttpPost]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "ASP0019:Suggest using IHeaderDictionary.Append or the indexer", Justification = "From Syncfusion samples.")]
         // ReSharper disable once InconsistentNaming
         public async Task<ActionResult> SaveRtfFile(IList<IFormFile> UploadFiles)
         {
@@ -76,7 +74,7 @@ namespace KinaUnaWeb.Controllers
                     string resultName = imageStore.UriFor(filename, BlobContainers.Notes);
                     Response.Clear();
                     Response.ContentType = "application/json; charset=utf-8";
-                    Response.Headers.Add("name", resultName);
+                    Response.Headers.Append("name", resultName);
                     Response.StatusCode = 204;
                 }
             }

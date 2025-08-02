@@ -1,0 +1,128 @@
+﻿@using KinaUna.OpenIddict.Services
+@using Microsoft.AspNetCore.Http
+@inject ILocaleManager LocaleManager
+<!DOCTYPE html>
+@{
+    int languageId = 1;
+    string languageCode = "en";
+
+    if (Context.Request.Query.ContainsKey("languageId"))
+    {
+        if (int.TryParse(Context.Request.Query["languageId"], out int queryValue))
+        {
+            languageId = queryValue;
+        }
+    }
+    else
+    {
+        if (Context.Request.Cookies.TryGetValue("languageId", out string? languageIdText))
+        {
+            if (!int.TryParse(languageIdText, out languageId))
+            {
+                languageId = 1;
+            }
+        }
+        else
+        {
+            try
+            {
+                string[] userLanguages = Context.Request.GetTypedHeaders().AcceptLanguage.OrderByDescending(x => x.Quality ?? 1).Select(x => x.Value.ToString()).ToArray();
+                string? firstLang = userLanguages.FirstOrDefault();
+
+                if (firstLang != null && firstLang.StartsWith("de"))
+                {
+                    languageId = 2;
+                }
+                if (firstLang != null && firstLang.StartsWith("da"))
+                {
+                    languageId = 3;
+                }
+                if (firstLang != null && firstLang.StartsWith("tr"))
+                {
+                    languageId = 4;
+                }
+                if (firstLang != null && firstLang.StartsWith("sr"))
+                {
+                    languageId = 5;
+                }
+            }
+            catch (NullReferenceException)
+            {
+                languageId = 1;
+            }
+        }
+    }
+
+    if (languageId == 1)
+    {
+        languageCode = "en";
+    }
+
+    if (languageId == 2)
+    {
+        languageCode = "de";
+    }
+
+    if (languageId == 3)
+    {
+        languageCode = "da";
+    }
+}
+<html lang="@languageCode">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="color-scheme" content="light dark">
+    <title>Kina Una Authentication Server</title>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="~/favicon.ico" />
+    @*<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />*@
+    <link rel="stylesheet" href="~/css/bootstrap.min.css" asp-append-version="true">
+    <link href="~/lib/fa5_2_0/css/all.min.css" rel="stylesheet" />
+    <link href="~/css/waitMe.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
+    <script src="~/lib/popper.min.js" asp-append-version="true"></script>
+    <script src="~/js/bootstrap.min.js" asp-append-version="true"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+            integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/bootstrap-select.min.js"></script>
+    <script src="~/js/waitMe.min.js"></script>
+    <script src="~/js/site.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</head>
+<body>
+<div id="topLanguageDiv" class="kinauna-purple-bg">
+    <div class="container">
+        <div class="row">
+            <div class="ml-3 mt-0 mb-1 mr-sm-1 mr-md-2 mr-lg-4 w-100">
+                @*<a href="#" class="small mr-3"><span class="icon-question-circle-o mr-2"></span> <span class="d-none d-lg-inline-block">@await _localeManager.GetTranslation("Help", PageNames.Layout, languageId)</span></a>*@
+
+                @await Html.PartialAsync("_LanguagePartial", await LocaleManager.GetLanguageModel(languageId))
+            </div>
+        </div>
+    </div>
+</div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top" id="nav-main">
+    <div id="top-main-menu-container" class="container">
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leave-page" aria-label="Home" style="margin-right: 80px;">
+            <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
+        </a>
+        <div class="collapse navbar-collapse mt-5 mt-lg-1 ml-6 ml-sm-6 ml-md-6 ml-lg-0" id="navbar-main-content" style="min-height: 52px;">
+                <span>KinaUna Authentication Server</span>
+        </div>
+
+    </div>
+</nav>
+<div id="body-content" class="main-container body-content">
+    <div id="kinauna-main-div" class="main kinauna-main" style="margin-top: 10px; padding-top: 10px; min-height: 250px;">
+        @RenderBody()
+    </div>
+</div>
+<br />
+@await Html.PartialAsync("_FooterPartial", languageId)
+<script src="~/js/site.js"></script>
+</body>
+</html>

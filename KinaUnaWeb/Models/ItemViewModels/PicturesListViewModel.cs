@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using KinaUna.Data.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Pictures;
 
 namespace KinaUnaWeb.Models.ItemViewModels

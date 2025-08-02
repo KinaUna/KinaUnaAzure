@@ -1,14 +1,16 @@
-﻿using System;
+﻿using Duende.IdentityModel.Client;
+using KinaUna.Data;
+using KinaUna.Data.Models.DTOs;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using IdentityModel.Client;
-using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -18,13 +20,24 @@ namespace KinaUnaWeb.Services.HttpClients
     public class TimelineHttpClient : ITimelineHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly ITokenService _tokenService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public TimelineHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public TimelineHttpClient(HttpClient httpClient, IConfiguration configuration, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IHostEnvironment env)
         {
             _httpClient = httpClient;
-            _apiTokenClient = apiTokenClient;
-            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            _httpContextAccessor = httpContextAccessor;
+            _tokenService = tokenService;
+            string clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey);
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Local");
+            }
+
+            if (env.IsStaging())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Azure");
+            }
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -41,8 +54,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>TimeLineItem object. If it cannot be found a new TimeLineItem with ItemId=0 is returned.</returns>
         public async Task<TimeLineItem> GetTimeLineItem(string itemId, int itemType)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string timeLineApiPath = "/api/Timeline/" + "GetTimelineItemByItemId/" + itemId + "/" + itemType;
             HttpResponseMessage timeLineResponse = await _httpClient.GetAsync(timeLineApiPath);
@@ -60,8 +74,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The added TimeLineItem object.</returns>
         public async Task<TimeLineItem> AddTimeLineItem(TimeLineItem timeLineItem)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string timeLineApiPath = "/api/Timeline/";
             HttpResponseMessage timelineResponse = await _httpClient.PostAsync(timeLineApiPath, new StringContent(JsonConvert.SerializeObject(timeLineItem), System.Text.Encoding.UTF8, "application/json"));
@@ -79,8 +94,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>The updated TimeLineItem object.</returns>
         public async Task<TimeLineItem> UpdateTimeLineItem(TimeLineItem timeLineItem)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateTimeLineApiPath = "/api/Timeline/" + timeLineItem.TimeLineId;
             HttpResponseMessage timelineResponse = await _httpClient.PutAsync(updateTimeLineApiPath, new StringContent(JsonConvert.SerializeObject(timeLineItem), System.Text.Encoding.UTF8, "application/json"));
@@ -98,8 +114,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>bool: True if the TimeLineItem was successfully removed.</returns>
         public async Task<bool> DeleteTimeLineItem(int timeLineItemId)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string timeLineApiPath = "/api/Timeline/" + timeLineItemId;
             HttpResponseMessage timelineResponse = await _httpClient.DeleteAsync(timeLineApiPath);
@@ -116,10 +133,11 @@ namespace KinaUnaWeb.Services.HttpClients
         {
             List<TimeLineItem> progenyTimeline = [];
 
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
-            string timelineApiPath = "/api/Timeline/Progenies/";
+            const string timelineApiPath = "/api/Timeline/Progenies/";
             HttpResponseMessage timelineResponse = await _httpClient.PostAsync(timelineApiPath, new StringContent(JsonConvert.SerializeObject(progeniesList), System.Text.Encoding.UTF8, "application/json"));
             if (!timelineResponse.IsSuccessStatusCode) return progenyTimeline;
 
@@ -139,10 +157,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<OnThisDayResponse> GetOnThisDayTimeLineItems(OnThisDayRequest onThisDayRequest)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
-            string onThisDayApiPath = "/api/Timeline/GetOnThisDayTimeLineItems";
+            const string onThisDayApiPath = "/api/Timeline/GetOnThisDayTimeLineItems";
             HttpResponseMessage onThisDayResponse = await _httpClient.PostAsync(onThisDayApiPath, new StringContent(JsonConvert.SerializeObject(onThisDayRequest), System.Text.Encoding.UTF8, "application/json"));
             if (!onThisDayResponse.IsSuccessStatusCode) return new OnThisDayResponse();
 
@@ -153,10 +172,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<TimelineResponse> GetTimeLineData(TimelineRequest timelineRequest)
         {
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
-            string timelineDataApiPath = "/api/Timeline/GetTimeLineRequestData";
+            const string timelineDataApiPath = "/api/Timeline/GetTimeLineRequestData";
             HttpResponseMessage timelineResponseMessage = await _httpClient.PostAsync(timelineDataApiPath, new StringContent(JsonConvert.SerializeObject(timelineRequest), System.Text.Encoding.UTF8, "application/json"));
             if (!timelineResponseMessage.IsSuccessStatusCode) return new TimelineResponse();
 

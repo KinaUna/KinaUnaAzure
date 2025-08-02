@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
-using KinaUna.Data.Models;
 using System.Linq;
 using KinaUna.Data.Extensions;
 

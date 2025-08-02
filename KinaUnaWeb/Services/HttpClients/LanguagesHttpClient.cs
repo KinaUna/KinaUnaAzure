@@ -1,13 +1,15 @@
-﻿using System;
+﻿using Duende.IdentityModel.Client;
+using KinaUna.Data;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using IdentityModel.Client;
-using KinaUna.Data.Models;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -17,16 +19,27 @@ namespace KinaUnaWeb.Services.HttpClients
     public class LanguagesHttpClient : ILanguagesHttpClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITokenService _tokenService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheExpirationLong = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(22));
 
-        public LanguagesHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IDistributedCache cache)
+        public LanguagesHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ITokenService tokenService, IDistributedCache cache, IHostEnvironment env)
         {
             _httpClient = httpClient;
-            _apiTokenClient = apiTokenClient;
+            _httpContextAccessor = httpContextAccessor;
+            _tokenService = tokenService;
             _cache = cache;
-            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
+            string clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey);
+            if (env.IsDevelopment())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Local");
+            }
+
+            if (env.IsStaging())
+            {
+                clientUri = configuration.GetValue<string>(AuthConstants.ProgenyApiUrlKey + "Azure");
+            }
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -50,8 +63,8 @@ namespace KinaUnaWeb.Services.HttpClients
                 return languageList;
             }
 
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string admininfoApiPath = "/api/Languages/GetAllLanguages";
             HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);
@@ -84,8 +97,8 @@ namespace KinaUnaWeb.Services.HttpClients
                 return language;
             }
 
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string admininfoApiPath = "/api/Languages/GetLanguage/" + languageId;
             HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);
@@ -108,8 +121,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<KinaUnaLanguage> AddLanguage(KinaUnaLanguage language)
         {
             KinaUnaLanguage addedLanguage = new();
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string addApiPath = "/api/Languages/AddLanguage/";
             HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(language), System.Text.Encoding.UTF8, "application/json"));
@@ -130,8 +144,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<KinaUnaLanguage> UpdateLanguage(KinaUnaLanguage language)
         {
             KinaUnaLanguage updatedLanguage = new();
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateApiPath = "/api/Languages/UpdateLanguage/" + language.Id;
             HttpResponseMessage updateResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(language), System.Text.Encoding.UTF8, "application/json"));
@@ -153,8 +168,9 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<KinaUnaLanguage> DeleteLanguage(KinaUnaLanguage language)
         {
             KinaUnaLanguage deletedLanguage = new();
-            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
-            _httpClient.SetBearerToken(accessToken);
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string deleteApiPath = "/api/Languages/DeleteLanguage/" + language.Id;
             HttpResponseMessage deleteResponse = await _httpClient.DeleteAsync(deleteApiPath);

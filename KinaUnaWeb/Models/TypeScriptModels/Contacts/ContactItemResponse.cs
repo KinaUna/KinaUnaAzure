@@ -1,6 +1,4 @@
-﻿using KinaUna.Data.Models;
-
-namespace KinaUnaWeb.Models.TypeScriptModels.Contacts
+﻿namespace KinaUnaWeb.Models.TypeScriptModels.Contacts
 {
     public class ContactItemResponse
     {

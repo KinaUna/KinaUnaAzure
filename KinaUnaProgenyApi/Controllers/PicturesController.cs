@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
@@ -15,6 +9,12 @@ using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -31,7 +31,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="userAccessService"></param>
     /// <param name="webNotificationsService"></param>
     /// <param name="timelineService"></param>
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -113,10 +113,9 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Picture> itemsOnPage = allItems
+            List<Picture> itemsOnPage = [.. allItems
                 .Skip(pageSize * (pageIndex - 1))
-                .Take(pageSize)
-                .ToList();
+                .Take(pageSize)];
 
             foreach (Picture pic in itemsOnPage)
             {
@@ -440,7 +439,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="id">The PictureId of the Picture to get the file for.</param>
         /// <param name="size">The size of the image to get a file for, 600 = 600 pixels wide, 1200 = 1200 pixes wide, any other number gets the original image file.</param>
         /// <returns>FileContentResult with the image file, if the current user has the access rights for the Picture, else a placeholder image file.</returns>
-        [AllowAnonymous]
         public async Task<FileContentResult> File([FromQuery] int id, [FromQuery] int size)
         {
             Picture picture = await picturesService.GetPicture(id);

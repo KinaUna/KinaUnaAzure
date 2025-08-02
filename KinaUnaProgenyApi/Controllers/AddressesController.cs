@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
-using KinaUna.Data.Models;
+﻿using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -10,7 +10,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// API endpoints for Addresses.
     /// </summary>
     /// <param name="locationService"></param>
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

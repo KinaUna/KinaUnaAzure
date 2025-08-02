@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.IO;
 using KinaUnaWeb.Models;
@@ -213,7 +212,7 @@ namespace KinaUnaWeb.Controllers
                 friendsList.Reverse();
             }
 
-            List<int> friendsIdList = friendsList.Select(f => f.FriendId).ToList();
+            List<int> friendsIdList = [.. friendsList.Select(f => f.FriendId)];
 
             return Json(new FriendsPageResponse()
             {

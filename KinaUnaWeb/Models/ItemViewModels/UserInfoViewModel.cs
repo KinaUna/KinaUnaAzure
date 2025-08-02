@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using KinaUna.Data;
-using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace KinaUnaWeb.Models.ItemViewModels
@@ -42,11 +41,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public UserInfoViewModel()
         {
             ReadOnlyCollection<TimeZoneInfo> tzs = TimeZoneInfo.GetSystemTimeZones();
-            TimezoneList = tzs.Select(tz => new SelectListItem()
+            TimezoneList = [.. tzs.Select(tz => new SelectListItem()
             {
                 Text = tz.DisplayName,
                 Value = tz.Id
-            }).ToArray();
+            })];
         }
     }
 

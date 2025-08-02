@@ -1,6 +1,4 @@
-﻿using KinaUna.Data.Models;
-
-namespace KinaUnaWeb.Models.TypeScriptModels.Friends
+﻿namespace KinaUnaWeb.Models.TypeScriptModels.Friends
 {
     public class FriendItemResponse
     {

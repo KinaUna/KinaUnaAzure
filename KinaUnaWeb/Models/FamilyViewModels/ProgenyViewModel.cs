@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -27,11 +26,11 @@ namespace KinaUnaWeb.Models.FamilyViewModels
         public ProgenyViewModel()
         {
             ReadOnlyCollection<TimeZoneInfo> tzs = TimeZoneInfo.GetSystemTimeZones();
-            TimezoneList = tzs.Select(tz => new SelectListItem()
+            TimezoneList = [.. tzs.Select(tz => new SelectListItem()
             {
                 Text = tz.DisplayName,
                 Value = tz.Id
-            }).ToArray();
+            })];
         }
     }
 }

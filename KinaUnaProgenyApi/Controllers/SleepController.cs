@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
@@ -10,6 +6,10 @@ using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Constants = KinaUna.Data.Constants;
 
 namespace KinaUnaProgenyApi.Controllers
@@ -24,7 +24,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="progenyService"></param>
     /// <param name="userInfoService"></param>
     /// <param name="webNotificationsService"></param>
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -234,7 +234,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="sortBy">Sort order. 0 = oldest first, 1= newest first.</param>
         /// <returns>SleepListPage object.</returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetSleepListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int sortBy = 1)
         {
 
@@ -274,10 +273,9 @@ namespace KinaUnaProgenyApi.Controllers
                 sleepCounter++;
             }
 
-            List<Sleep> itemsOnPage = allItems
+            List<Sleep> itemsOnPage = [.. allItems
                 .Skip(pageSize * (pageIndex - 1))
-                .Take(pageSize)
-                .ToList();
+                .Take(pageSize)];
 
             SleepListPage model = new()
             {
