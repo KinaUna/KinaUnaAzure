@@ -127,7 +127,7 @@ namespace KinaUna.OpenIddict.Services
 
             if (removeResponse.IsSuccessStatusCode)
             {
-                UserInfo? removeUserInfoFromDeletedUserInfos = removeResponse.Content.ReadFromJsonAsync<UserInfo>().Result;
+                UserInfo? removeUserInfoFromDeletedUserInfos = await removeResponse.Content.ReadFromJsonAsync<UserInfo>();
                 if (removeUserInfoFromDeletedUserInfos != null) return removeUserInfoFromDeletedUserInfos;
             }
 
