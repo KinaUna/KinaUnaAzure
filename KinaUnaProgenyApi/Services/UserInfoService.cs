@@ -367,7 +367,7 @@ namespace KinaUnaProgenyApi.Services
         /// <summary>
         /// Removes the specified user information from the collection of deleted user information.
         /// </summary>
-        /// <remarks>This does not update the orignial userinfo entity. This method performs an asynchronous operation to remove the specified user
+        /// <remarks>This does not update the original userinfo entity. This method performs an asynchronous operation to remove the specified user
         /// information from the collection  of deleted user information. If the user information is not found, the
         /// method completes successfully and  returns <see langword="null"/>.</remarks>
         /// <param name="userInfo">The user information to be removed. This parameter cannot be <see langword="null"/>.</param>
