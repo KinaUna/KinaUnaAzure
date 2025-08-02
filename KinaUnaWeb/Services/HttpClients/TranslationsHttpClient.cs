@@ -221,7 +221,7 @@ namespace KinaUnaWeb.Services.HttpClients
             HttpResponseMessage deleteResponse = await _httpClient.DeleteAsync(addApiPath);
             if (!deleteResponse.IsSuccessStatusCode) return deletedTranslation;
 
-            string deleteResponseString = await _httpClient.DeleteAsync(addApiPath).Result.Content.ReadAsStringAsync();
+            string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
             deletedTranslation = JsonConvert.DeserializeObject<TextTranslation>(deleteResponseString);
 
             return deletedTranslation;

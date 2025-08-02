@@ -294,7 +294,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> UpdateUsersEmail([FromBody] UpdateUserEmailModel model)
         {
             UserInfo userInfo = await userInfoService.GetUserInfoByUserId(model.UserId);
-            if (model.OldEmail.ToUpper() != userInfo.UserEmail.ToUpper())
+            if (!model.OldEmail.Equals(userInfo.UserEmail, System.StringComparison.CurrentCultureIgnoreCase))
             {
                 return NotFound("User with given id and email could not be found.");
             }

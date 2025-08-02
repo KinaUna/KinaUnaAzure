@@ -15,7 +15,7 @@ namespace KinaUnaProgenyApi.AuthorizationHandlers
             List<string> allowedClients = AuthConstants.AllowedApiOnlyClients;
             if (env.IsDevelopment())
             {
-                List<string> allowedDevelopmentClients = new List<string>();
+                List<string> allowedDevelopmentClients = [];
                 foreach (string client in AuthConstants.AllowedApiOnlyClients)
                 {
                     allowedDevelopmentClients.Add(client + "local");
@@ -26,7 +26,7 @@ namespace KinaUnaProgenyApi.AuthorizationHandlers
 
             if (env.IsStaging())
             {
-                List<string> allowedStagingClients = new List<string>();
+                List<string> allowedStagingClients = [];
                 foreach (string client in AuthConstants.AllowedApiOnlyClients)
                 {
                     allowedStagingClients.Add(client + "azure");
