@@ -132,7 +132,7 @@ namespace KinaUna.OpenIddict.Services
             }
 
             string errorMessage = await removeResponse.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Failed to update access lists with new email: {errorMessage}");
+            throw new HttpRequestException($"Failed to remove user info from deleted user infos: {errorMessage}");
         }
     }
 }
