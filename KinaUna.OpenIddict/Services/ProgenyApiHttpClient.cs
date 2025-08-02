@@ -111,7 +111,7 @@ namespace KinaUna.OpenIddict.Services
             HttpResponseMessage updateResponse = await _httpClient.PostAsync(updatePath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
             if (updateResponse.IsSuccessStatusCode)
             {
-                UserInfo? updatedUserInfo = updateResponse.Content.ReadFromJsonAsync<UserInfo>().Result;
+                UserInfo? updatedUserInfo = await updateResponse.Content.ReadFromJsonAsync<UserInfo>();
                 if (updatedUserInfo != null) return updatedUserInfo;
             }
             string errorMessage = await updateResponse.Content.ReadAsStringAsync();
