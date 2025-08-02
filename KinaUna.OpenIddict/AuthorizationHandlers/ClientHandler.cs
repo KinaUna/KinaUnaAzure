@@ -26,7 +26,7 @@ namespace KinaUna.OpenIddict.AuthorizationHandlers
                 List<string> allowedStagingClients = new List<string>();
                 foreach (string client in AuthConstants.AllowedApiOnlyClients)
                 {
-                    allowedClients.Add(client + "azure");
+                    allowedStagingClients.Add(client + "azure");
                 }
 
                 allowedClients = allowedStagingClients;
