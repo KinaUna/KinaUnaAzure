@@ -6,11 +6,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Extensions;
 
 namespace KinaUnaProgenyApi.Services.TodosServices
 {
     public class TodosService(ProgenyDbContext progenyDbContext): ITodosService
     {
+        public async Task<TodoItem> AddTodoItem(TodoItem value)
+        {
+            TodoItem todoItemToAdd = new TodoItem();
+            todoItemToAdd.CopyPropertiesForAdd(value);
+
+            todoItemToAdd.CreatedTime = DateTime.UtcNow;
+            todoItemToAdd.ModifiedTime = DateTime.UtcNow;
+            todoItemToAdd.ModifiedBy = value.CreatedBy;
+            todoItemToAdd.IsDeleted = false;
+
+            _ = progenyDbContext.TodoItemsDb.Add(todoItemToAdd);
+            _ = await progenyDbContext.SaveChangesAsync();
+            
+            return todoItemToAdd;
+        }
+
         public async Task<TodoItem> GetTodoItem(int id)
         {
             TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == id);

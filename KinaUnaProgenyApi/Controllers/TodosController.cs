@@ -1,4 +1,5 @@
-﻿using KinaUna.Data;
+﻿using System;
+using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
@@ -85,6 +86,46 @@ namespace KinaUnaProgenyApi.Controllers
 
             return accessLevelResult.ToActionResult();
 
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] TodoItem value)
+        {
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (progeny != null)
+            {
+
+                if (!progeny.IsInAdminList(userEmail))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+            if (value.DueDate == DateTime.MinValue)
+            {
+                value.DueDate = DateTime.UtcNow;
+            }
+
+            value.CreatedBy = User.GetUserId();
+
+            TodoItem todoItem = await todosService.AddTodoItem(value);
+
+            if (todoItem == null)
+            {
+                return BadRequest();
+            }
+
+            // Add TimeLineItem for the new TodoItem
+
+            // Send notifications about the new TodoItem
+
+
+            return Ok(todoItem);
         }
     }
 }
