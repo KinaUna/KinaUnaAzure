@@ -18,7 +18,11 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class TodosController(IProgenyService progenyService, IUserAccessService userAccessService, ITodosService todosService) : ControllerBase
     {
-
+        /// <summary>
+        /// Returns a list of to-do items for the specified progenies.
+        /// </summary>
+        /// <param name="request">TodoItemsRequest with the parameters and filters for retrieving TodoItems.</param>
+        /// <returns>TodoItemsResponse containing the list of TodoItems and associated Progeny.</returns>
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> Progenies([FromBody] TodoItemsRequest request)
@@ -44,7 +48,7 @@ namespace KinaUnaProgenyApi.Controllers
             foreach (Progeny progeny in progenyList)
             {
                 UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, userEmail);
-                List<TodoItem> progenyTodos = await todosService.GetTodosForProgeny(progeny.Id, userAccess.AccessLevel, request.StartDate, request.EndDate);
+                List<TodoItem> progenyTodos = await todosService.GetTodosForProgeny(progeny.Id, userAccess.AccessLevel, request);
                 todoItems.AddRange(progenyTodos);
             }
 
@@ -58,6 +62,16 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(todoItemsResponse);
         }
         
+        /// <summary>
+        /// Retrieves a specific to-do item by its unique identifier.
+        /// </summary>
+        /// <remarks>The method validates the user's access level for the requested to-do item before
+        /// returning it. If the user lacks the required access, the response will indicate the appropriate
+        /// error.</remarks>
+        /// <param name="id">The unique identifier of the to-do item to retrieve. Must be a positive integer.</param>
+        /// <returns>An <see cref="IActionResult"/> containing the requested to-do item if found and accessible to the user.
+        /// Returns <see cref="NotFoundResult"/> if the item does not exist, or an appropriate HTTP response if the user
+        /// does not have sufficient access rights.</returns>
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetTodoItem(int id)
         {
