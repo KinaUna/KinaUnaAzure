@@ -1,15 +1,15 @@
-﻿using System;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.TodosServices;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using KinaUnaProgenyApi.Services.TodosServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -17,9 +17,14 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class TodosController(IProgenyService progenyService, IUserAccessService userAccessService,
-        ITodosService todosService, IUserInfoService userInfoService, ITimelineService timelineService,
-        IAzureNotifications azureNotifications, IWebNotificationsService webNotificationsService) : ControllerBase
+    public class TodosController(
+        IProgenyService progenyService,
+        IUserAccessService userAccessService,
+        ITodosService todosService,
+        IUserInfoService userInfoService,
+        ITimelineService timelineService,
+        IAzureNotifications azureNotifications,
+        IWebNotificationsService webNotificationsService) : ControllerBase
     {
         /// <summary>
         /// Returns a list of to-do items for the specified progenies.
@@ -64,7 +69,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(todoItemsResponse);
         }
-        
+
         /// <summary>
         /// Retrieves a specific to-do item by its unique identifier.
         /// </summary>
@@ -83,7 +88,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(result.ProgenyId, userEmail, result.AccessLevel);
-            
+
             if (accessLevelResult.IsSuccess) return Ok(result);
 
             return accessLevelResult.ToActionResult();
@@ -126,7 +131,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return BadRequest();
             }
-            
+
             value.CreatedBy = User.GetUserId();
             if (string.IsNullOrWhiteSpace(value.UId))
             {
@@ -223,6 +228,61 @@ namespace KinaUnaProgenyApi.Controllers
             await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
 
             await webNotificationsService.SendTodoItemNotification(todoItem, userInfo, notificationTitle);
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            TodoItem todoItem = await todosService.GetTodoItem(id);
+            if (todoItem == null)
+            {
+                return NotFound();
+            }
+
+            // Check if the user has access to the Progeny associated with the TodoItem
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+
+            Progeny progeny = await progenyService.GetProgeny(todoItem.ProgenyId);
+            if (progeny != null)
+            {
+                if (!progeny.IsInAdminList(userEmail))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+            // Check if the TodoItem has a TimeLineItem and delete it
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(todoItem.TodoItemId.ToString(), (int)KinaUnaTypes.TimeLineType.TodoItem);
+            if (timeLineItem != null)
+            {
+                _ = await timelineService.DeleteTimeLineItem(timeLineItem);
+            }
+
+            todoItem.ModifiedBy = User.GetUserId();
+            bool isDeleted = await todosService.DeleteTodoItem(todoItem);
+            if (!isDeleted)
+            {
+                return BadRequest();
+            }
+
+            if (timeLineItem == null) return NoContent();
+
+            // Send notifications about the deleted TodoItem
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+
+            string notificationTitle = "Todo item deleted for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " deleted a todo item for " + progeny.NickName + ". Todo: " + todoItem.Title;
+
+            todoItem.AccessLevel = timeLineItem.AccessLevel = 0; // Set access level to 0 for notifications, to only notify admins.
+
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendTodoItemNotification(todoItem, userInfo, notificationTitle);
+
+            return NoContent();
         }
     }
 }

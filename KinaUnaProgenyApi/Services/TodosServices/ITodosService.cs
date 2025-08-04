@@ -8,6 +8,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
     public interface ITodosService
     {
         Task<TodoItem> AddTodoItem(TodoItem value);
+        Task<bool> DeleteTodoItem(TodoItem todoItem, bool hardDelete = false);
         Task<TodoItem> GetTodoItem(int id);
         Task<List<TodoItem>> GetTodosForProgeny(int id, int accessLevel, TodoItemsRequest request);
         Task<TodoItem> UpdateTodoItem(TodoItem todoItem);
