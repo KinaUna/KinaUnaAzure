@@ -18,7 +18,7 @@ namespace KinaUna.Data.Models
         /// Gets or sets the unique identifier for the entity.
         /// </summary>
         [System.ComponentModel.DataAnnotations.Key]
-        public int TodoITemId { get; set; }
+        public int TodoItemId { get; set; }
         /// <summary>
         /// Gets or sets the unique identifier for the progeny this task is assigned to.
         /// </summary>
