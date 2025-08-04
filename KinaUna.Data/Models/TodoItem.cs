@@ -44,7 +44,7 @@ namespace KinaUna.Data.Models
         /// <summary>
         /// Gets or sets the notes or additional information associated with the task.
         /// </summary>
-        public string Notes { get; set; }
+        public string Notes { get; set; } = string.Empty;
         /// <summary>
         /// Gets or sets the access level required to view this task.
         /// </summary>
