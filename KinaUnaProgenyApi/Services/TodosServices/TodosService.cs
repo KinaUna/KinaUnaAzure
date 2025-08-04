@@ -65,7 +65,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         {
             List<TodoItem> todoItemsForProgeny = await progenyDbContext.TodoItemsDb
                 .AsNoTracking()
-                .Where(t => t.ProgenyId == id && t.AccessLevel <= accessLevel)
+                .Where(t => t.ProgenyId == id && t.AccessLevel <= accessLevel && !t.IsDeleted)
                 .ToListAsync();
 
             if (request.StartDate.HasValue && request.EndDate.HasValue)
@@ -116,6 +116,16 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 .Take(request.NumberOfItems)];
 
             return todoItemsForProgeny;
+        }
+
+        public async Task<List<TodoItem>> GetTodosList(int progenyId, int accessLevel)
+        {
+            List<TodoItem> todoItems = await progenyDbContext.TodoItemsDb
+                .AsNoTracking()
+                .Where(t => t.ProgenyId == progenyId && t.AccessLevel <= accessLevel && !t.IsDeleted)
+                .ToListAsync();
+
+            return todoItems;
         }
 
         public async Task<TodoItem> UpdateTodoItem(TodoItem todoItem)
