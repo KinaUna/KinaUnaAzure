@@ -91,6 +91,12 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                     .ToList();
             }
 
+            // Sort by DueDate, newest first, then by CreatedTime
+            todoItemsForProgeny = todoItemsForProgeny
+                .OrderByDescending(t => t.DueDate)
+                .ThenByDescending(t => t.CreatedTime)
+                .ToList();
+
             // Apply pagination
             todoItemsForProgeny = todoItemsForProgeny
                 .Skip(request.Skip)
@@ -98,6 +104,21 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 .ToList();
 
             return todoItemsForProgeny;
+        }
+
+        public async Task<TodoItem> UpdateTodoItem(TodoItem todoItem)
+        {
+            TodoItem currentTodoItem = await progenyDbContext.TodoItemsDb
+                .SingleOrDefaultAsync(t => t.TodoItemId == todoItem.TodoItemId);
+            if (currentTodoItem == null)
+            {
+                return null; // Item not found
+            }
+            // Update properties
+            currentTodoItem.CopyPropertiesForUpdate(todoItem);
+            progenyDbContext.TodoItemsDb.Update(currentTodoItem);
+            _ = await progenyDbContext.SaveChangesAsync();
+            return currentTodoItem;
         }
     }
 }

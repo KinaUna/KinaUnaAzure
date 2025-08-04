@@ -152,7 +152,61 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         /// <summary>
-        /// Sends notifications when a new todo item is added for a specific progeny.
+        /// Updates an existing to-do item with the specified ID.
+        /// </summary>
+        /// <remarks>This method performs the following steps: <list type="number">
+        /// <item><description>Retrieves the to-do item by its ID.</description></item> <item><description>Validates the
+        /// user's authorization to update the item based on the associated progeny.</description></item>
+        /// <item><description>Updates the to-do item and its associated timeline entry, if
+        /// applicable.</description></item> </list></remarks>
+        /// <param name="id">The unique identifier of the to-do item to update. Must be a positive integer.</param>
+        /// <param name="value">The updated <see cref="TodoItem"/> object containing the new values for the to-do item.</param>
+        /// <returns>An <see cref="IActionResult"/> indicating the result of the operation: <list type="bullet">
+        /// <item><description><see cref="NotFoundResult"/> if the to-do item with the specified ID does not
+        /// exist.</description></item> <item><description><see cref="UnauthorizedResult"/> if the current user is not
+        /// authorized to update the to-do item.</description></item> <item><description><see cref="BadRequestResult"/>
+        /// if the associated progeny information is invalid.</description></item> <item><description><see
+        /// cref="OkObjectResult"/> containing the updated to-do item if the operation is
+        /// successful.</description></item> </list></returns>
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Put(int id, [FromBody] TodoItem value)
+        {
+            TodoItem todoItem = await todosService.GetTodoItem(id);
+            if (todoItem == null)
+            {
+                return NotFound();
+            }
+
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (progeny != null)
+            {
+                if (!progeny.IsInAdminList(userEmail))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+            todoItem.ModifiedBy = User.GetUserId();
+
+            todoItem = await todosService.UpdateTodoItem(todoItem);
+
+            // Update TimeLineItem for the TodoItem
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(todoItem.TodoItemId.ToString(), (int)KinaUnaTypes.TimeLineType.TodoItem);
+
+            if (timeLineItem == null || !timeLineItem.CopyTodoItemPropertiesForUpdate(todoItem)) return Ok(todoItem);
+
+            _ = await timelineService.UpdateTimeLineItem(timeLineItem);
+
+            return Ok(todoItem);
+        }
+
+        /// <summary>
+        /// Sends notifications when a new TodoItem is added for a specific progeny.
         /// </summary>
         /// <remarks>This method sends both an Azure notification and a web notification to inform
         /// relevant users about the addition of a new TodoItem. The notifications include details about the progeny

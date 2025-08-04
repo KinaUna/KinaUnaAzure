@@ -478,5 +478,31 @@ namespace KinaUna.Data.Extensions
             }
             
         }
+
+        /// <summary>
+        /// Copies the properties of a <see cref="TodoItem"/> to a <see cref="TimeLineItem"/> for update purposes.
+        /// </summary>
+        /// <remarks>This method updates the <paramref name="currentTimeLineItem"/> with the <see
+        /// cref="TodoItem.CreatedTime"/> or  <see cref="TodoItem.StartDate"/> (if specified) as the <see
+        /// cref="TimeLineItem.ProgenyTime"/>, and sets the  <see cref="TimeLineItem.AccessLevel"/> to match the <see
+        /// cref="TodoItem.AccessLevel"/>.</remarks>
+        /// <param name="currentTimeLineItem">The <see cref="TimeLineItem"/> instance to update. Must not be <see langword="null"/>.</param>
+        /// <param name="todoItem">The <see cref="TodoItem"/> instance whose properties will be copied. Must not be <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if the properties were successfully copied; otherwise, <see langword="false"/> if
+        /// <paramref name="currentTimeLineItem"/> is <see langword="null"/>.</returns>
+        public static bool CopyTodoItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, TodoItem todoItem)
+        {
+            if (currentTimeLineItem == null) return false;
+
+            DateTime progenyTime = todoItem.CreatedTime;
+            if (todoItem.StartDate.HasValue)
+            {
+                progenyTime = todoItem.StartDate.Value;
+            }
+            currentTimeLineItem.ProgenyTime = progenyTime;
+            currentTimeLineItem.AccessLevel = todoItem.AccessLevel;
+            return true;
+
+        }
     }
 }

@@ -10,5 +10,6 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         Task<TodoItem> AddTodoItem(TodoItem value);
         Task<TodoItem> GetTodoItem(int id);
         Task<List<TodoItem>> GetTodosForProgeny(int id, int accessLevel, TodoItemsRequest request);
+        Task<TodoItem> UpdateTodoItem(TodoItem todoItem);
     }
 }
