@@ -624,5 +624,59 @@ namespace KinaUnaProgenyApi.Services
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunauseraccess" + userAccessItem.ProgenyId);
             }
         }
+
+        public async Task SendTodoItemNotification(TodoItem todoItem, UserInfo currentUser, string title)
+        {
+            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(todoItem.ProgenyId, Constants.SystemAccountEmail);
+
+            if (usersToNotifyResult.IsFailure) return;
+
+            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            {
+                if (userAccess.AccessLevel > todoItem.AccessLevel) continue;
+
+                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+
+                string eventTimeString;
+                if (todoItem.StartDate != null)
+                {
+                    DateTime startDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.StartDate.Value,
+                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                    eventTimeString = "\r\nStart: " + startDate.ToString("dd-MMM-yyyy");
+                }
+                else
+                {
+                    DateTime startDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.CreatedTime,
+                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                    eventTimeString = "\r\nStart: " + startDate.ToString("dd-MMM-yyyy");
+                }
+                
+
+                if (todoItem.DueDate != null)
+                {
+                    DateTime dueDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.DueDate.Value,
+                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                    eventTimeString = eventTimeString + "\r\nDue: " + dueDate.ToString("dd-MMM-yyyy");
+                }
+
+                WebNotification webNotification = new()
+                {
+                    To = uaUserInfo.UserId,
+                    From = currentUser.FullName(),
+                    Message = todoItem.Title + eventTimeString,
+                    DateTime = DateTime.UtcNow,
+                    Icon = currentUser.ProfilePicture,
+                    Title = title,
+                    Link = "/Todo?todoItemId=" + todoItem.TodoItemId + "&childId=" + todoItem.ProgenyId,
+                    Type = "Notification"
+                };
+
+                webNotification = await notificationsService.AddWebNotification(webNotification);
+
+                await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                    webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunatodolist" + todoItem.TodoItemId);
+            }
+        }
     }
 }

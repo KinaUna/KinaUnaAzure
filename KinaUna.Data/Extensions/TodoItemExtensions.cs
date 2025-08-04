@@ -8,6 +8,7 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForAdd(this TodoItem currentTodoItem, TodoItem otherTodoItem)
         {
             currentTodoItem.ProgenyId = otherTodoItem.ProgenyId;
+            currentTodoItem.UId = otherTodoItem.UId;
             currentTodoItem.Title = otherTodoItem.Title;
             currentTodoItem.Description = otherTodoItem.Description;
             currentTodoItem.Status = otherTodoItem.Status;

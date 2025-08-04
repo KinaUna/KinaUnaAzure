@@ -125,4 +125,16 @@ public interface IWebNotificationsService
     /// <param name="userInfo">The UserInfo for the user who made changes.</param>
     /// <param name="title">The title of the notification.</param>
     Task SendUserAccessNotification(UserAccess userAccessItem, UserInfo userInfo, string title);
+
+    /// <summary>
+    /// Sends a notification about a specified to-do item to the appropriate recipients.
+    /// </summary>
+    /// <remarks>This method is asynchronous and does not block the calling thread. Ensure that all required
+    /// fields in the <paramref name="todoItem"/> and <paramref name="currentUser"/> objects are properly populated
+    /// before calling this method.</remarks>
+    /// <param name="todoItem">The to-do item for which the notification is being sent. Cannot be null.</param>
+    /// <param name="currentUser">The user initiating the notification. Cannot be null.</param>
+    /// <param name="title">The title of the notification. Cannot be null or empty.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task SendTodoItemNotification(TodoItem todoItem, UserInfo currentUser, string title);
 }
