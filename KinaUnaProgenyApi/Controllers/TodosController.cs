@@ -17,7 +17,8 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class TodosController(IProgenyService progenyService, IUserAccessService userAccessService, ITodosService todosService) : ControllerBase
+    public class TodosController(IProgenyService progenyService, IUserAccessService userAccessService,
+        ITodosService todosService, IUserInfoService userInfoService, ITimelineService timelineService) : ControllerBase
     {
         /// <summary>
         /// Returns a list of to-do items for the specified progenies.
@@ -121,6 +122,8 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             // Add TimeLineItem for the new TodoItem
+            TimeLineItem timeLineItem = todoItem.ToNewTimeLineItem();
+            _ = await timelineService.AddTimeLineItem(timeLineItem);
 
             // Send notifications about the new TodoItem
 
