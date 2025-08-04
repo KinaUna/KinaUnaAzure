@@ -60,7 +60,7 @@ namespace KinaUna.Data.Models
         /// <summary>
         /// Gets or sets the id for the user who created the task.
         /// </summary>
-        public string CreatedBy { get; set; }
+        public string CreatedBy { get; set; } = string.Empty;
         /// <summary>
         /// Gets or sets the date and time when the task was created.
         /// </summary>
