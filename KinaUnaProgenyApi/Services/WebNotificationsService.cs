@@ -625,6 +625,17 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Sends a notification to users with appropriate access to a specified to-do item.
+        /// </summary>
+        /// <remarks>This method retrieves the list of users with access to the progeny associated with
+        /// the to-do item and sends a notification to each user whose access level permits viewing the item.
+        /// Notifications include details such as the start and due dates of the to-do item, if available, and a link to
+        /// the to-do item in the application.</remarks>
+        /// <param name="todoItem">The to-do item for which notifications will be sent. Must not be null.</param>
+        /// <param name="currentUser">The user initiating the notification. Must not be null.</param>
+        /// <param name="title">The title of the notification. Must not be null or empty.</param>
+        /// <returns></returns>
         public async Task SendTodoItemNotification(TodoItem todoItem, UserInfo currentUser, string title)
         {
             CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(todoItem.ProgenyId, Constants.SystemAccountEmail);

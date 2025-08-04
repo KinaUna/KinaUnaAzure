@@ -36,6 +36,11 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
+        /// <summary>
+        /// Gets a list of CalendarItems for a given Progeny.
+        /// </summary>
+        /// <param name="request">The parameters for the request, including the ProgenyId, start date, and end date.</param>
+        /// <returns></returns>
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> Progenies([FromBody] CalendarItemsRequest request)
@@ -130,6 +135,16 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(calendarItem);
         }
 
+        /// <summary>
+        /// Sends notifications when a new calendar item is added for a specified progeny.
+        /// </summary>
+        /// <remarks>This method sends both Azure and web notifications to inform relevant parties about
+        /// the addition of a new calendar item.</remarks>
+        /// <param name="progeny">The progeny for whom the calendar item was added. Cannot be null.</param>
+        /// <param name="userInfo">The user who added the calendar item. Cannot be null.</param>
+        /// <param name="timeLineItem">The timeline item associated with the calendar event. Cannot be null.</param>
+        /// <param name="calendarItem">The calendar item that was added. Cannot be null.</param>
+        /// <returns></returns>
         private async Task NotifyCalendarItemAdded(Progeny progeny, UserInfo userInfo, TimeLineItem timeLineItem, CalendarItem calendarItem )
         {
             string notificationTitle = "Calendar item added for " + progeny.NickName;

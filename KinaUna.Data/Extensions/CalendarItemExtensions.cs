@@ -103,6 +103,15 @@ namespace KinaUna.Data.Extensions
             return timeLineItem;
         }
 
+        /// <summary>
+        /// Determines whether the specified date and count are within the bounds of the recurrence rule's end
+        /// conditions.
+        /// </summary>
+        /// <param name="rule">The recurrence rule to evaluate.</param>
+        /// <param name="date">The date to check against the rule's end conditions.</param>
+        /// <param name="count">The occurrence count to check against the rule's end conditions.</param>
+        /// <returns><see langword="true"/> if the specified date and count are before the end of the recurrence rule; otherwise,
+        /// <see langword="false"/>.</returns>
         public static bool IsBeforeEnd(this RecurrenceRule rule, DateTime date, int count)
         {
             if (rule.EndOption == 0) return true;
@@ -112,12 +121,26 @@ namespace KinaUna.Data.Extensions
             return false;
         }
 
+        /// <summary>
+        /// Determines whether the specified date falls within the end boundary of the recurrence rule.
+        /// </summary>
+        /// <param name="rule">The recurrence rule to evaluate.</param>
+        /// <param name="date">The date to check against the rule's end boundary.</param>
+        /// <returns><see langword="true"/> if the date is within the rule's end boundary or if the rule has no defined end
+        /// boundary; otherwise, <see langword="false"/>.</returns>
         private static bool IsDateWithinRuleEnd(this RecurrenceRule rule, DateTime date)
         {
             if (rule.EndOption == 1 && rule.Until.HasValue) return rule.Until.Value >= date;
             return true;
         }
 
+        /// <summary>
+        /// Determines whether the specified count is within the limit defined by the recurrence rule's end option.
+        /// </summary>
+        /// <param name="rule">The recurrence rule that defines the end condition.</param>
+        /// <param name="count">The count to evaluate against the rule's end condition.</param>
+        /// <returns><see langword="true"/> if the count is within the limit defined by the rule's end option; otherwise, <see
+        /// langword="false"/>. Always returns <see langword="true"/> if the rule does not specify a count limit.</returns>
         private static bool IsCountWithinRuleEnd(this RecurrenceRule rule, int count)
         {
             if (rule.EndOption == 2 && rule.Count > 0) return rule.Count > count;

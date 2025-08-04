@@ -13,6 +13,20 @@ using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// Provides API endpoints for managing to-do items associated with progenies.
+    /// </summary>
+    /// <remarks>This controller includes methods for retrieving, creating, updating, and deleting to-do
+    /// items. It enforces user access policies to ensure that only authorized users can perform operations on to-do
+    /// items. The controller also integrates with notification services to inform users about changes to to-do
+    /// items.</remarks>
+    /// <param name="progenyService"></param>
+    /// <param name="userAccessService"></param>
+    /// <param name="todosService"></param>
+    /// <param name="userInfoService"></param>
+    /// <param name="timelineService"></param>
+    /// <param name="azureNotifications"></param>
+    /// <param name="webNotificationsService"></param>
     [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -230,6 +244,23 @@ namespace KinaUnaProgenyApi.Controllers
             await webNotificationsService.SendTodoItemNotification(todoItem, userInfo, notificationTitle);
         }
 
+        /// <summary>
+        /// Deletes a specified to-do item and its associated timeline item, if any, after verifying user permissions.
+        /// </summary>
+        /// <remarks>This method performs the following steps: <list type="number">
+        /// <item><description>Retrieves the to-do item by its ID.</description></item> <item><description>Validates
+        /// that the user has administrative access to the associated progeny.</description></item>
+        /// <item><description>Deletes the associated timeline item, if one exists.</description></item>
+        /// <item><description>Deletes the to-do item and sends notifications to relevant users.</description></item>
+        /// </list> The method ensures that only authorized users can delete to-do items and their associated
+        /// data.</remarks>
+        /// <param name="id">The unique identifier of the to-do item to delete. Must be a positive integer.</param>
+        /// <returns>An <see cref="IActionResult"/> indicating the result of the operation: <list type="bullet">
+        /// <item><description><see cref="NotFoundResult"/> if the to-do item does not exist.</description></item>
+        /// <item><description><see cref="UnauthorizedResult"/> if the user does not have permission to delete the to-do
+        /// item.</description></item> <item><description><see cref="BadRequestResult"/> if the request is invalid or
+        /// the deletion fails.</description></item> <item><description><see cref="NoContentResult"/> if the to-do item
+        /// is successfully deleted.</description></item> </list></returns>
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
