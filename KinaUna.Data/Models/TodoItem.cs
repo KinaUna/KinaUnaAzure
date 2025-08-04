@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KinaUna.Data.Models.ItemInterfaces;
+using System;
 
 namespace KinaUna.Data.Models
 {
@@ -8,7 +9,7 @@ namespace KinaUna.Data.Models
     /// <remarks>This class is used to manage and track individual to-do items, including their assignment,
     /// status, and lifecycle events. It includes properties for metadata such as creation and modification details, as
     /// well as optional notes and tags for categorization.</remarks>
-    public class TodoItem
+    public class TodoItem : IContexted, ITaggable
     {
         /// <summary>
         /// Gets or sets the unique identifier for the entity.
