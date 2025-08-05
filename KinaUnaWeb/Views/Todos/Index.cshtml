@@ -1,4 +1,19 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.TodoItemsListViewModel
+﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.ItemViewModels.TodoItemsListViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Todo Items";
+    ViewData["Title"] = await LocaleManager.GetTranslation("Todo List", PageNames.Todos, Model.LanguageId);
+    string pageParameters = Json.Serialize(Model.TodoItemsPageParameters).ToString();
 }
+<div id="todos-index-page-parameters" class="d-none" data-todos-index-page-parameters="@pageParameters"></div>
+<div id="popup-todo-id-div" class="d-none" data-popup-todo-id="@Model.PopUpTodoItemId"></div>
+<div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10 col-w1900-8 col-w2500-7">
+
+    <h2>@ViewData["Title"]</h2>
+    <div class="space-20"></div>
+    <div id="todos-list-div" class="row">
+    </div>
+</div>
+
+<script src="/js/todos/todos-index.js" type="module" asp-append-version="true"></script>

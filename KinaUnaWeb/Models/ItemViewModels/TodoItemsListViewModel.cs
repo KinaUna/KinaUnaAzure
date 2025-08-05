@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using KinaUnaWeb.Models.TypeScriptModels.TodoItems;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class TodoItemsListViewModel: BaseItemsViewModel
     {
         public List<TodoItem> TodoItemsList { get; set; }
-        
+        public TodoItemsPageParameters TodoItemsPageParameters { get; init; }
         
         public int PopUpTodoItemId = 0;
 
@@ -16,6 +17,18 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SetBaseProperties(baseItemsViewModel);
 
             TodoItemsList = [];
+
+            TodoItemsPageParameters = new TodoItemsPageParameters
+            {
+                ProgenyId = CurrentProgenyId,
+                CurrentPageNumber = 0,
+                ItemsPerPage = 10,
+                TotalPages = 0,
+                TotalItems = 0,
+                LanguageId = LanguageId,
+                TagFilter = "",
+                Sort = 1
+            };
         }
         
         public void SetTodoItemsList(List<TodoItem> todoItemsList)

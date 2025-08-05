@@ -423,7 +423,7 @@ export class WebNotificationsList {
 export enum TimeLineType {
     Photo = 1, Video = 2, Calendar = 3, Vocabulary = 4, Skill = 5,
     Friend = 6, Measurement = 7, Sleep = 8, Note = 9, Contact = 10,
-    Vaccination = 11, Location = 12, User = 13, UserAccess = 14, Child = 100
+    Vaccination = 11, Location = 12, User = 13, UserAccess = 14, TodoItem = 15, Child = 100
 }
 
 export enum OnThisDayPeriod {
@@ -465,5 +465,30 @@ export class CalendarItemsRequest {
 
 export class SetProgenyRequest {
     progenyId: number = 0;
+    languageId: number = 0;
+}
+
+export class TodosPageParameters implements BasePageParameters {
+    progenyId: number = 0;
+    progenies: number[] = [];
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 1;
+    tagFilter: string = '';
+    showSettings: boolean = false;
+}
+
+export class TodosPageResponse implements BaseItemsPageResponseModel {
+    pageNumber: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    todosList: number[] = [];
+}
+
+export class TodoItemParameters implements BaseItemParameters {
+    todoItemId: number = 0;
     languageId: number = 0;
 }

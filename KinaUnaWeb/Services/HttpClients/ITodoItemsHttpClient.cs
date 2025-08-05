@@ -6,7 +6,7 @@ namespace KinaUnaWeb.Services.HttpClients
 {
     public interface ITodoItemsHttpClient
     {
-        Task<TodoItem> GetCalendarItem(int popUpTodoItemId);
+        Task<TodoItem> GetTodoItem(int itemId);
         Task<List<TodoItem>> GetProgeniesTodoItemsList(TodoItemsRequest request);
     }
 }

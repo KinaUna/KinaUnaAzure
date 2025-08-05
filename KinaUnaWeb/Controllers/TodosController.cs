@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUnaWeb.Models.TypeScriptModels.TodoItems;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -27,7 +28,7 @@ namespace KinaUnaWeb.Controllers
 
             if (model.PopUpTodoItemId != 0)
             {
-                model.TodoItemsList.Add(await todoItemsHttpClient.GetCalendarItem(model.PopUpTodoItemId));
+                model.TodoItemsList.Add(await todoItemsHttpClient.GetTodoItem(model.PopUpTodoItemId));
             }
 
             return View(model);
@@ -81,6 +82,40 @@ namespace KinaUnaWeb.Controllers
             }
 
             return Json(resultList);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> TodoElement([FromBody] TodoItemParameters parameters)
+        {
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+
+            TodoItemResponse todoItemResponse = new()
+            {
+                LanguageId = parameters.LanguageId
+            };
+
+            if (parameters.TodoItemId == 0)
+            {
+                todoItemResponse.TodoItem = new TodoItem { TodoItemId = 0 };
+            }
+            else
+            {
+                todoItemResponse.TodoItem = await todoItemsHttpClient.GetTodoItem(parameters.TodoItemId);
+                todoItemResponse.TodoItem.Progeny = await progenyHttpClient.GetProgeny(todoItemResponse.TodoItem.ProgenyId);
+                todoItemResponse.TodoItemId = todoItemResponse.TodoItem.TodoItemId;
+
+                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), todoItemResponse.TodoItem.ProgenyId);
+                todoItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
+                UserInfo noteUserInfo = await userInfosHttpClient.GetUserInfoByUserId(todoItemResponse.TodoItem.CreatedBy);
+                todoItemResponse.TodoItem.CreatedBy = noteUserInfo.FullName();
+            }
+
+
+            return PartialView("_TodoItemElementPartial", todoItemResponse);
         }
     }
 }

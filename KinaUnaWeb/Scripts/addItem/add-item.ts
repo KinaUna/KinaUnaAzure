@@ -15,6 +15,7 @@ import { initializeAddEditVaccination } from "../vaccinations/add-edit-vaccinati
 import { initializeAddEditVideo } from "../videos/add-edit-video.js";
 import { popupVideoDetails } from "../videos/video-details.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
+import { initializeAddEditTodo } from "../todos/add-edit-todo.js";
 
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
@@ -292,6 +293,10 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
         if (editItemType === 'location') {
             await initializeAddEditLocation();
         }
+
+        if (editItemType === 'todo') {
+            await initializeAddEditTodo();
+        }
         
         hideBodyScrollbars();
         addCloseButtonEventListener();
@@ -383,6 +388,10 @@ async function popupCopyItemModal(copyItemType: string, copyItemItemId: string):
 
         if (copyItemType === 'video') {
             await initializeAddEditVideo();
+        }
+
+        if (copyItemType === 'todo') {
+            await initializeAddEditTodo();
         }
 
         hideBodyScrollbars();

@@ -11,6 +11,7 @@ import { addMeasurementItemListeners, popupMeasurementItem } from '../measuremen
 import { addSkillItemListeners, popupSkillItem } from '../skills/skill-details.js';
 import { addVocabularyItemListeners, popupVocabularyItem } from '../vocabulary/vocabulary-details.js';
 import { addVaccinationItemListeners, popupVaccinationItem } from '../vaccinations/vaccination-details.js';
+import { addTodoEventListeners, popupTodoItem } from '../todos/todo-details.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
  * Adds event listeners for a given timeline item. Used to show popups for items.
@@ -63,6 +64,10 @@ export async function addTimelineItemEventListener(item: TimelineItem): Promise<
 
     if (item.itemType === 12) {
         addLocationItemListeners(item.itemId);
+    }
+
+    if (item.itemType === 12) {
+        addTodoItemListeners(item.itemId);
     }
 }
 
@@ -206,6 +211,13 @@ export async function showPopupAtLoad(itemType: number): Promise<void> {
         let itemId = getItemIdFromPopupDiv('location');
         if (itemId !== 0) {
             await popupLocationItem(itemId.toString());
+        }
+    }
+
+    if (itemType === 15) {
+        let itemId = getItemIdFromPopupDiv('todo');
+        if (itemId !== 0) {
+            await popupTodoItem(itemId.toString());
         }
     }
 

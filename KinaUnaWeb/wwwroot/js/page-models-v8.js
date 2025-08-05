@@ -456,6 +456,7 @@ export var TimeLineType;
     TimeLineType[TimeLineType["Location"] = 12] = "Location";
     TimeLineType[TimeLineType["User"] = 13] = "User";
     TimeLineType[TimeLineType["UserAccess"] = 14] = "UserAccess";
+    TimeLineType[TimeLineType["TodoItem"] = 15] = "TodoItem";
     TimeLineType[TimeLineType["Child"] = 100] = "Child";
 })(TimeLineType || (TimeLineType = {}));
 export var OnThisDayPeriod;
@@ -504,6 +505,34 @@ export class CalendarItemsRequest {
 export class SetProgenyRequest {
     constructor() {
         this.progenyId = 0;
+        this.languageId = 0;
+    }
+}
+export class TodosPageParameters {
+    constructor() {
+        this.progenyId = 0;
+        this.progenies = [];
+        this.languageId = 0;
+        this.currentPageNumber = 0;
+        this.itemsPerPage = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.sort = 1;
+        this.tagFilter = '';
+        this.showSettings = false;
+    }
+}
+export class TodosPageResponse {
+    constructor() {
+        this.pageNumber = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.todosList = [];
+    }
+}
+export class TodoItemParameters {
+    constructor() {
+        this.todoItemId = 0;
         this.languageId = 0;
     }
 }
