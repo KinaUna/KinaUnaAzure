@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUnaProgenyApi.Services.TodosServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -41,7 +42,8 @@ namespace KinaUnaProgenyApi.Controllers
         IPicturesService picturesService,
         IVideosService videosService,
         ILocationService locationService,
-        IVocabularyService vocabularyService)
+        IVocabularyService vocabularyService,
+        ITodosService todosService)
         : ControllerBase
     {
         /// <summary>
@@ -102,7 +104,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<Contact> allContacts = await contactService.GetContactsList(id, accessLevelResult.Value);
             autoSuggestListBuilder.AddItemsToContextsList(allContacts);
-            
+
+            List<TodoItem> allTodos = await todosService.GetTodosList(id, accessLevelResult.Value);
+            autoSuggestListBuilder.AddItemsToContextsList(allTodos);
+
             List<string> autoSuggestList = autoSuggestListBuilder.GetContextsList();
             autoSuggestList.Sort();
 
@@ -179,6 +184,9 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<Contact> allContacts = await contactService.GetContactsList(id, accessLevelResult.Value);
             autoSuggestListBuilder.AddItemsToTagsList(allContacts);
+
+            List<TodoItem> allTodoItems = await todosService.GetTodosList(id, accessLevelResult.Value);
+            autoSuggestListBuilder.AddItemsToTagsList(allTodoItems);
 
             List<string> autoSuggestList = autoSuggestListBuilder.GetTagsList();
             autoSuggestList.Sort();

@@ -1,0 +1,210 @@
+﻿using KinaUna.Data.Contexts;
+using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using KinaUna.Data.Extensions;
+
+namespace KinaUnaProgenyApi.Services.TodosServices
+{
+    /// <summary>
+    /// Provides functionality for managing and retrieving to-do items associated with a progeny.
+    /// </summary>
+    /// <remarks>This service allows for the creation, retrieval, updating, and deletion of to-do items. It
+    /// also supports filtering and pagination for retrieving lists of to-do items based on various criteria such as
+    /// access level, date range, tags, context, and status.</remarks>
+    /// <param name="progenyDbContext"></param>
+    public class TodosService(ProgenyDbContext progenyDbContext): ITodosService
+    {
+        public async Task<TodoItem> AddTodoItem(TodoItem value)
+        {
+            TodoItem todoItemToAdd = new();
+            todoItemToAdd.CopyPropertiesForAdd(value);
+
+            todoItemToAdd.CreatedTime = DateTime.UtcNow;
+            todoItemToAdd.ModifiedTime = DateTime.UtcNow;
+            todoItemToAdd.ModifiedBy = value.CreatedBy;
+            todoItemToAdd.IsDeleted = false;
+
+            _ = progenyDbContext.TodoItemsDb.Add(todoItemToAdd);
+            _ = await progenyDbContext.SaveChangesAsync();
+            
+            return todoItemToAdd;
+        }
+
+        /// <summary>
+        /// Deletes the specified to-do item from the database, either by marking it as deleted or by performing a hard
+        /// delete.
+        /// </summary>
+        /// <remarks>When performing a soft delete (i.e., <paramref name="hardDelete"/> is <see
+        /// langword="false"/>),  the method updates the <c>IsDeleted</c> property of the to-do item to <see
+        /// langword="true"/>  and sets its <c>ModifiedTime</c> and <c>ModifiedBy</c> properties.  Callers should ensure
+        /// that the <paramref name="todoItem"/> parameter contains the necessary metadata for these updates.</remarks>
+        /// <param name="todoItem">The to-do item to delete. Must not be <see langword="null"/> and must have a valid <c>TodoItemId</c>.</param>
+        /// <param name="hardDelete">A value indicating whether to perform a hard delete.  If <see langword="true"/>, the item is permanently
+        /// removed from the database;  otherwise, the item is marked as deleted and its metadata is updated.</param>
+        /// <returns><see langword="true"/> if the to-do item was successfully deleted or marked as deleted;  otherwise, <see
+        /// langword="false"/> if the item was not found in the database.</returns>
+        public async Task<bool> DeleteTodoItem(TodoItem todoItem, bool hardDelete = false)
+        {
+            TodoItem todoItemToDelete = await progenyDbContext.TodoItemsDb
+                .SingleOrDefaultAsync(t => t.TodoItemId == todoItem.TodoItemId);
+
+            if (todoItemToDelete == null)
+            {
+                return false;
+            }
+            
+            if (hardDelete)
+            {
+                progenyDbContext.TodoItemsDb.Remove(todoItemToDelete);
+            }
+            else
+            {
+                todoItemToDelete.IsDeleted = true;
+                todoItemToDelete.ModifiedTime = DateTime.UtcNow;
+                todoItemToDelete.ModifiedBy = todoItem.ModifiedBy;
+                progenyDbContext.TodoItemsDb.Update(todoItemToDelete);
+            }
+
+            _ = await progenyDbContext.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// Retrieves a to-do item by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the to-do item to retrieve.</param>
+        /// <returns>A <see cref="TodoItem"/> representing the to-do item with the specified identifier,  or <see
+        /// langword="null"/> if no matching item is found.</returns>
+        public async Task<TodoItem> GetTodoItem(int id)
+        {
+            TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == id);
+            
+            return todoItem;
+        }
+
+        /// <summary>
+        /// Retrieves a filtered and paginated list of to-do items for a specific progeny.
+        /// </summary>
+        /// <remarks>The method applies the following filters and operations in sequence: <list
+        /// type="bullet"> <item><description>Filters by the progeny ID and access level.</description></item>
+        /// <item><description>Filters by the specified date range, if provided.</description></item>
+        /// <item><description>Filters by tags, context, and status, if specified in the request.</description></item>
+        /// <item><description>Sorts the results by due date (newest first) and then by creation
+        /// time.</description></item> <item><description>Applies pagination based on the skip and take values in the
+        /// request.</description></item> </list></remarks>
+        /// <param name="id">The unique identifier of the progeny for which to retrieve to-do items.</param>
+        /// <param name="accessLevel">The access level of the requesting user. Only to-do items with an access level less than or equal to this
+        /// value will be included.</param>
+        /// <param name="request">An object containing filtering, sorting, and pagination options for the to-do items.  This includes date
+        /// ranges, tags, context, status, and pagination parameters.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="TodoItem"/>
+        /// objects  that match the specified filters and pagination settings.</returns>
+        public async Task<List<TodoItem>> GetTodosForProgeny(int id, int accessLevel, TodoItemsRequest request)
+        {
+            List<TodoItem> todoItemsForProgeny = await progenyDbContext.TodoItemsDb
+                .AsNoTracking()
+                .Where(t => t.ProgenyId == id && t.AccessLevel <= accessLevel && !t.IsDeleted)
+                .ToListAsync();
+
+            if (request.StartDate.HasValue && request.EndDate.HasValue)
+            {
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate >= request.StartDate.Value && t.DueDate <= request.EndDate.Value)];
+            }
+            else if (request.StartDate.HasValue)
+            {
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate >= request.StartDate.Value)];
+            }
+            else if (request.EndDate.HasValue)
+            {
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate <= request.EndDate.Value)];
+            }
+
+            // Filter by tags if provided
+            if (!string.IsNullOrWhiteSpace(request.TagFilter))
+            {
+                List<string> tags = [.. request.TagFilter.Split(',').Select(tag => tag.Trim())];
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => tags.Any(tag => t.Tags.Contains(tag, StringComparison.OrdinalIgnoreCase)))];
+            }
+
+            // Filter by context if provided
+            if (!string.IsNullOrWhiteSpace(request.ContextFilter))
+            {
+                List<string> contexts = [.. request.ContextFilter.Split(',').Select(context => context.Trim())];
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => contexts.Any(context => t.Context.Contains(context, StringComparison.OrdinalIgnoreCase)))];
+            }
+
+            // Filter by status if provided
+            if (!string.IsNullOrWhiteSpace(request.StatusFilter))
+            {
+                List<int> statusCodes = [.. request.StatusFilter.Split(',')
+                    .Select(status => int.TryParse(status.Trim(), out int code) ? code : -1)
+                    .Where(code => code >= 0)];
+                
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => statusCodes.Contains(t.Status))];
+            }
+
+            // Sort by DueDate, newest first, then by CreatedTime
+            todoItemsForProgeny = [.. todoItemsForProgeny
+                .OrderByDescending(t => t.DueDate)
+                .ThenByDescending(t => t.CreatedTime)];
+
+            // Apply pagination
+            todoItemsForProgeny = [.. todoItemsForProgeny
+                .Skip(request.Skip)
+                .Take(request.NumberOfItems)];
+
+            return todoItemsForProgeny;
+        }
+
+        /// <summary>
+        /// Retrieves a list of to-do items for a specified progeny, filtered by access level.
+        /// </summary>
+        /// <remarks>To-do items marked as deleted are excluded from the results. The method uses a
+        /// no-tracking query to improve performance  when the returned data does not need to be tracked by the database
+        /// context.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny for which to retrieve to-do items.</param>
+        /// <param name="accessLevel">The maximum access level of the to-do items to include in the result. Only items with an access level less
+        /// than or equal to this value will be returned.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="TodoItem"/>
+        /// objects  that match the specified criteria. The list will be empty if no matching items are found.</returns>
+        public async Task<List<TodoItem>> GetTodosList(int progenyId, int accessLevel)
+        {
+            List<TodoItem> todoItems = await progenyDbContext.TodoItemsDb
+                .AsNoTracking()
+                .Where(t => t.ProgenyId == progenyId && t.AccessLevel <= accessLevel && !t.IsDeleted)
+                .ToListAsync();
+
+            return todoItems;
+        }
+
+        /// <summary>
+        /// Updates an existing to-do item with new values.
+        /// </summary>
+        /// <remarks>This method retrieves the existing to-do item from the database, updates its
+        /// properties with the values from the provided <paramref name="todoItem"/>,  and saves the changes. If no
+        /// matching item is found, the method returns <see langword="null"/> without making any changes.</remarks>
+        /// <param name="todoItem">The to-do item containing the updated values. The <see cref="TodoItem.TodoItemId"/> property must match an
+        /// existing item.</param>
+        /// <returns>The updated <see cref="TodoItem"/> if the operation is successful; otherwise, <see langword="null"/> if no
+        /// matching item is found.</returns>
+        public async Task<TodoItem> UpdateTodoItem(TodoItem todoItem)
+        {
+            TodoItem currentTodoItem = await progenyDbContext.TodoItemsDb
+                .SingleOrDefaultAsync(t => t.TodoItemId == todoItem.TodoItemId);
+            if (currentTodoItem == null)
+            {
+                return null; // Item not found
+            }
+            // Update properties
+            currentTodoItem.CopyPropertiesForUpdate(todoItem);
+            progenyDbContext.TodoItemsDb.Update(currentTodoItem);
+            _ = await progenyDbContext.SaveChangesAsync();
+            return currentTodoItem;
+        }
+    }
+}
