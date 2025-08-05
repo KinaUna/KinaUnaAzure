@@ -140,7 +140,12 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             if (!string.IsNullOrWhiteSpace(request.ContextFilter))
             {
                 List<string> contexts = [.. request.ContextFilter.Split(',').Select(context => context.Trim())];
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => contexts.Any(context => t.Context.Contains(context, StringComparison.OrdinalIgnoreCase)))];
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t =>
+                    t.Context != null &&
+                    t.Context.Split(',')
+                        .Select(c => c.Trim())
+                        .Any(itemContext => contexts.Any(filterContext => string.Equals(itemContext, filterContext, StringComparison.OrdinalIgnoreCase)))
+                )];
             }
 
             // Filter by status if provided
