@@ -8,5 +8,8 @@ namespace KinaUnaWeb.Services.HttpClients
     {
         Task<TodoItem> GetTodoItem(int itemId);
         Task<List<TodoItem>> GetProgeniesTodoItemsList(TodoItemsRequest request);
+        Task<TodoItem> AddTodoItem(TodoItem todoItem);
+        Task<TodoItem> UpdateTodoItem(TodoItem todoItem);
+        Task<bool> DeleteTodoItem(int todoItemId);
     }
 }

@@ -1,0 +1,69 @@
+﻿@using System.Web
+@using KinaUna.Data
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-notes item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.TodoItem.Progeny.PictureLink" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">fact_check</i></span>
+            </div>
+            <div class="col">
+                <div class="row text-white h5">
+                    <div class="col-auto">@Model.TodoItem.CreatedTime.ToString("dd-MMM-yyyy")</div>
+                    <div class="col-auto ml-auto text-white-50">@Model.TodoItem.CreatedBy</div>
+                </div>
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        <div class="space-20"></div>
+                        @if (Model.CurrentUser.CanUserAddItems)
+                        {
+                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.TodoItem.TodoItemId" data-copy-item-type="todo">
+                                <i class="material-icons kinauna-icon-medium">content_copy</i>
+                            </button>
+                        }
+                        @Model.TodoItem.Title
+                        <div class="space-10"></div>
+                    </div>
+                </div>
+                <div class="timeline-text row m-0 text-white-75">
+                    <div class="timeline-noteitem-text text-dark bg-white col-12 p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.TodoItem.Description))</div>
+                    @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
+                    {
+                        List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
+                        <div class="col-12 text-right">
+                            @foreach (string contextsString in contextsList)
+                            {
+                                <span class="btn category-item tag-item-sm">@contextsString</span>
+                            }
+                        </div>
+                    }
+                </div>
+
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="col-12">
+                    <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Todos" asp-action="DeleteTodo" asp-route-itemId="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>

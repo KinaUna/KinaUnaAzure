@@ -1,5 +1,6 @@
 ﻿using Duende.IdentityModel.Client;
 using KinaUna.Data;
+using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -76,6 +77,47 @@ namespace KinaUnaWeb.Services.HttpClients
             progenyTodoItemsList = JsonConvert.DeserializeObject<List<TodoItem>>(todosListAsString);
 
             return progenyTodoItemsList;
+        }
+
+        public async Task<TodoItem> AddTodoItem(TodoItem todoItem)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            const string todosApiPath = "/api/Todos/";
+            HttpResponseMessage todosResponse = await _httpClient.PostAsync(todosApiPath, new StringContent(JsonConvert.SerializeObject(todoItem), System.Text.Encoding.UTF8, "application/json"));
+            if (!todosResponse.IsSuccessStatusCode) return new TodoItem();
+
+            string todoAsString = await todosResponse.Content.ReadAsStringAsync();
+            todoItem = JsonConvert.DeserializeObject<TodoItem>(todoAsString);
+            return todoItem;
+        }
+
+        public async Task<TodoItem> UpdateTodoItem(TodoItem todoItem)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string updateApiPath = "/api/Todos/" + todoItem.TodoItemId;
+            HttpResponseMessage todoResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(todoItem), System.Text.Encoding.UTF8, "application/json"));
+            if (!todoResponse.IsSuccessStatusCode) return new TodoItem();
+
+            string todoAsString = await todoResponse.Content.ReadAsStringAsync();
+            todoItem = JsonConvert.DeserializeObject<TodoItem>(todoAsString);
+            return todoItem;
+        }
+
+        public async Task<bool> DeleteTodoItem(int todoItemId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string todoApiPath = "/api/Todos/" + todoItemId;
+            HttpResponseMessage todoResponse = await _httpClient.DeleteAsync(todoApiPath);
+            return todoResponse.IsSuccessStatusCode;
         }
     }
 }

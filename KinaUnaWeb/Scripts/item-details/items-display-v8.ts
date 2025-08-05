@@ -11,7 +11,7 @@ import { addMeasurementItemListeners, popupMeasurementItem } from '../measuremen
 import { addSkillItemListeners, popupSkillItem } from '../skills/skill-details.js';
 import { addVocabularyItemListeners, popupVocabularyItem } from '../vocabulary/vocabulary-details.js';
 import { addVaccinationItemListeners, popupVaccinationItem } from '../vaccinations/vaccination-details.js';
-import { addTodoEventListeners, popupTodoItem } from '../todos/todo-details.js';
+import { addTodoItemListeners, popupTodoItem } from '../todos/todo-details.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
 /**
  * Adds event listeners for a given timeline item. Used to show popups for items.

@@ -6,7 +6,7 @@ import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v
  * When clicked, the DisplayTodoItem function is called.
  * @param {string} itemId The id of the todo item to add event listeners for.
  */
-export function addTodoEventListeners(itemId) {
+export function addTodoItemListeners(itemId) {
     const todoElementsWithDataId = document.querySelectorAll('[data-todo-id="' + itemId + '"]');
     if (todoElementsWithDataId) {
         todoElementsWithDataId.forEach((element) => {

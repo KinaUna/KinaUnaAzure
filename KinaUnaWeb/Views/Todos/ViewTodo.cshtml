@@ -1,0 +1,58 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
+@using System.Web
+@using KinaUna.Data
+@using KinaUnaWeb.Services
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Notes, Model.LanguageId);
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="timeline-card-body bg-notes">
+        <div class="row m-0 h5">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">fact_check</i></span>
+            </div>
+            <div class="col">
+                <div class="row text-white">
+                    <div class="col-auto font-weight-bold">@Model.TodoItem.CreatedTime.ToString("dd-MMM-yyyy")</div>
+                </div>
+                <div class="timeline-title row">
+                    <div class="col-12">
+                        <div class="space-20"></div>
+                        @Model.TodoItem.Title
+                    </div>
+                </div>
+                <div class="timeline-text row text-white-75">
+                    <div class="timeline-noteitem-text rounded text-dark bg-white">@Html.Raw(HttpUtility.HtmlDecode(Model.TodoItem.Description))</div>
+                    @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
+                    {
+                        List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
+                        <div class="text-right">
+                            @foreach (string contextString in contextsList)
+                            {
+                                <span class="btn category-item tag-item-sm">@contextString</span>
+                            }
+                        </div>
+                    }
+                </div>
+                @if (Model.IsCurrentUserProgenyAdmin)
+                {
+
+                    <div class="row m-0 mt-2 mb-2">
+                        <div class="col-auto">
+                            <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button">@await LocaleManager.GetTranslation("Edit", PageNames.Notes, languageId)</a>
+                        </div>
+                        <div class="col-auto">
+                            <a asp-controller="Todos" asp-action="DeleteTodo" asp-route-itemId="@Model.TodoItem.TodoItemId" class="p-2 kinauna-yellow-text bg-dark">@await LocaleManager.GetTranslation("Delete", PageNames.Notes, languageId)</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
