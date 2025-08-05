@@ -128,7 +128,12 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             if (!string.IsNullOrWhiteSpace(request.TagFilter))
             {
                 List<string> tags = [.. request.TagFilter.Split(',').Select(tag => tag.Trim())];
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => tags.Any(tag => t.Tags.Contains(tag, StringComparison.OrdinalIgnoreCase)))];
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t =>
+                    t.Tags != null &&
+                    t.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(tag => tag.Trim())
+                        .Any(itemTag => tags.Any(filterTag => string.Equals(itemTag, filterTag, StringComparison.OrdinalIgnoreCase)))
+                )];
             }
 
             // Filter by context if provided
