@@ -34,10 +34,10 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.AccessLevel = otherTodoItem.AccessLevel;
             currentTodoItem.Tags = otherTodoItem.Tags;
             currentTodoItem.Context = otherTodoItem.Context;
-            currentTodoItem.CreatedBy = otherTodoItem.CreatedBy;
-            currentTodoItem.CreatedTime = otherTodoItem.CreatedTime;
-            currentTodoItem.ModifiedTime = otherTodoItem.ModifiedTime;
-            currentTodoItem.ModifiedBy = otherTodoItem.ModifiedBy;
+            currentTodoItem.CreatedBy = null; // Set to null or assign current user if available
+            currentTodoItem.CreatedTime = DateTime.UtcNow;
+            currentTodoItem.ModifiedTime = DateTime.UtcNow;
+            currentTodoItem.ModifiedBy = null; // Set to null or assign current user if available
             currentTodoItem.IsDeleted = otherTodoItem.IsDeleted;
         }
 
