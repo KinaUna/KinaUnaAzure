@@ -113,15 +113,15 @@ namespace KinaUnaProgenyApi.Services.TodosServices
 
             if (request.StartDate.HasValue && request.EndDate.HasValue)
             {
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate >= request.StartDate.Value && t.DueDate <= request.EndDate.Value)];
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate == null || (t.DueDate >= request.StartDate.Value && t.DueDate <= request.EndDate.Value))];
             }
             else if (request.StartDate.HasValue)
             {
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate >= request.StartDate.Value)];
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate == null || t.DueDate >= request.StartDate.Value)];
             }
             else if (request.EndDate.HasValue)
             {
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate <= request.EndDate.Value)];
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate == null || t.DueDate <= request.EndDate.Value)];
             }
 
             // Filter by tags if provided
