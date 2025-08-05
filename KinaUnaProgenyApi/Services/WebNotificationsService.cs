@@ -624,5 +624,70 @@ namespace KinaUnaProgenyApi.Services
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunauseraccess" + userAccessItem.ProgenyId);
             }
         }
+
+        /// <summary>
+        /// Sends a notification to users with appropriate access to a specified to-do item.
+        /// </summary>
+        /// <remarks>This method retrieves the list of users with access to the progeny associated with
+        /// the to-do item and sends a notification to each user whose access level permits viewing the item.
+        /// Notifications include details such as the start and due dates of the to-do item, if available, and a link to
+        /// the to-do item in the application.</remarks>
+        /// <param name="todoItem">The to-do item for which notifications will be sent. Must not be null.</param>
+        /// <param name="currentUser">The user initiating the notification. Must not be null.</param>
+        /// <param name="title">The title of the notification. Must not be null or empty.</param>
+        /// <returns>A task that represents the asynchronous operation of sending notifications to users with access to the specified to-do item.</returns>
+        public async Task SendTodoItemNotification(TodoItem todoItem, UserInfo currentUser, string title)
+        {
+            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(todoItem.ProgenyId, Constants.SystemAccountEmail);
+
+            if (usersToNotifyResult.IsFailure) return;
+
+            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            {
+                if (userAccess.AccessLevel > todoItem.AccessLevel) continue;
+
+                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+
+                string eventTimeString = string.Empty;
+                if (todoItem.StartDate != null)
+                {
+                    DateTime startDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.StartDate.Value,
+                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                    eventTimeString = "\r\nStart: " + startDate.ToString("dd-MMM-yyyy");
+                }
+                else
+                {
+                    DateTime startDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.CreatedTime,
+                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                    eventTimeString = "\r\nStart: " + startDate.ToString("dd-MMM-yyyy");
+                }
+                
+
+                if (todoItem.DueDate != null)
+                {
+                    DateTime dueDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.DueDate.Value,
+                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                    eventTimeString = eventTimeString + "\r\nDue: " + dueDate.ToString("dd-MMM-yyyy");
+                }
+
+                WebNotification webNotification = new()
+                {
+                    To = uaUserInfo.UserId,
+                    From = currentUser.FullName(),
+                    Message = todoItem.Title + eventTimeString,
+                    DateTime = DateTime.UtcNow,
+                    Icon = currentUser.ProfilePicture,
+                    Title = title,
+                    Link = "/Todo?todoItemId=" + todoItem.TodoItemId + "&childId=" + todoItem.ProgenyId,
+                    Type = "Notification"
+                };
+
+                webNotification = await notificationsService.AddWebNotification(webNotification);
+
+                await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                    webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunatodolist" + todoItem.TodoItemId);
+            }
+        }
     }
 }
