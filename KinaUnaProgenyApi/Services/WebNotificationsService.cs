@@ -635,7 +635,7 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="todoItem">The to-do item for which notifications will be sent. Must not be null.</param>
         /// <param name="currentUser">The user initiating the notification. Must not be null.</param>
         /// <param name="title">The title of the notification. Must not be null or empty.</param>
-        /// <returns></returns>
+        /// <returns>A task that represents the asynchronous operation of sending notifications to users with access to the specified to-do item.</returns>
         public async Task SendTodoItemNotification(TodoItem todoItem, UserInfo currentUser, string title)
         {
             CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(todoItem.ProgenyId, Constants.SystemAccountEmail);
