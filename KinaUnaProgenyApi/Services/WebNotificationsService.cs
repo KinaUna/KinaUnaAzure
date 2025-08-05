@@ -649,7 +649,7 @@ namespace KinaUnaProgenyApi.Services
                 UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                 if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
 
-                string eventTimeString = string.Empty;
+                string eventTimeString;
                 if (todoItem.StartDate != null)
                 {
                     DateTime startDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.StartDate.Value,
