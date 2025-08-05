@@ -11,6 +11,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
+        public List<SelectListItem> StatusList { get; set; }
 
         public TodoViewModel()
         {
@@ -21,7 +22,62 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             SetBaseProperties(baseItemsViewModel);
             SetAccessLevelList();
+            SetStatusList(0);
             ProgenyList = [];
+        }
+
+        public void SetStatusList(int selectedStatus)
+        {
+            SelectListItem notStartedStatus = new()
+            {
+                Text = "Not Started",
+                Value = "0"
+            };
+
+            SelectListItem inProgressStatus = new()
+            {
+                Text = "In Progress",
+                Value = "1"
+            };
+
+            SelectListItem completedStatus = new()
+            {
+                Text = "Completed",
+                Value = "2"
+            };
+
+            SelectListItem cancelledStatus = new()
+            {
+                Text = "Cancelled",
+                Value = "3"
+            };
+
+            SelectListItem overdueStatus = new()
+            {
+                Text = "Overdue",
+                Value = "4"
+            };
+
+            StatusList =
+            [
+                notStartedStatus,
+                inProgressStatus,
+                completedStatus,
+                cancelledStatus,
+                overdueStatus
+            ];
+
+            foreach (SelectListItem item in StatusList)
+            {
+                if (item.Value == selectedStatus.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
         }
 
         public void SetAccessLevelList()

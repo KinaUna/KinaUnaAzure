@@ -132,6 +132,7 @@ namespace KinaUnaWeb.Controllers
             model.TodoItem.Progeny.PictureLink = model.TodoItem.Progeny.GetProfilePictureUrl();
             UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.TodoItem.CreatedBy);
             model.TodoItem.CreatedBy = todoUserInfo.FullName();
+            model.SetStatusList(model.TodoItem.Status);
             if (partialView)
             {
                 return PartialView("_TodoDetailsPartial", model);
@@ -215,8 +216,8 @@ namespace KinaUnaWeb.Controllers
             model.SetPropertiesFromTodoItem(todoItem);
 
             model.SetAccessLevelList();
+            model.SetStatusList(model.TodoItem.Status);
 
-            
             return PartialView("_EditTodoPartial", model);
         }
 
@@ -264,6 +265,9 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.TodoItem = todoItem;
+            model.SetStatusList(model.TodoItem.Status);
+            model.TodoItem.Progeny = model.CurrentProgeny;
+            model.TodoItem.Progeny.PictureLink = model.TodoItem.Progeny.GetProfilePictureUrl();
 
             return View(model);
         }
@@ -317,18 +321,19 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.SetAccessLevelList();
-            
+            model.SetStatusList(model.TodoItem.Status);
+
             return PartialView("_CopyTodoPartial", model);
         }
 
         /// <summary>
         /// HttpPost endpoint for updating an edited TodoItem.
         /// </summary>
-        /// <param name="model">NoteViewModel with the updated TodoItem properties.</param>
+        /// <param name="model">TodoViewModel with the updated TodoItem properties.</param>
         /// <returns>TodoItem copied partial view</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CopyNote(TodoViewModel model)
+        public async Task<IActionResult> CopyTodo(TodoViewModel model)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId);
             model.SetBaseProperties(baseModel);
@@ -342,7 +347,7 @@ namespace KinaUnaWeb.Controllers
 
             model.TodoItem = await todoItemsHttpClient.AddTodoItem(copiedTodoItem);
             model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-
+            model.SetStatusList(model.TodoItem.Status);
             return PartialView("_TodoCopiedPartial", model);
         }
     }

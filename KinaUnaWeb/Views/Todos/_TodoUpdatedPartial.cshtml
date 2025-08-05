@@ -1,16 +1,17 @@
 ﻿@using System.Web
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    string title = await LocaleManager.GetTranslation("Todo updated", PageNames.Todos, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-notes item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.TodoItem.Progeny.PictureLink" class="item-details-title-picture" />
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -26,17 +27,10 @@
             <div class="col">
                 <div class="row text-white h5">
                     <div class="col-auto">@await LocaleManager.GetTranslation("Due Date", PageNames.Notes, Model.LanguageId) : @Model.TodoItem.DueDate?.ToString("dd-MMM-yyyy")</div>
-                    <div class="col-auto ml-auto text-white-50">@Model.TodoItem.CreatedBy</div>
                 </div>
                 <div class="timeline-title row">
                     <div class="col-12 h4">
                         <div class="space-20"></div>
-                        @if (Model.CurrentUser.CanUserAddItems)
-                        {
-                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.TodoItem.TodoItemId" data-copy-item-type="todo">
-                                <i class="material-icons kinauna-icon-medium">content_copy</i>
-                            </button>
-                        }
                         @Model.TodoItem.Title
                         <div class="space-10"></div>
                     </div>
@@ -47,9 +41,9 @@
                     {
                         List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
                         <div class="col-12 text-right">
-                            @foreach (string contextsString in contextsList)
+                            @foreach (string contextString in contextsList)
                             {
-                                <span class="btn category-item tag-item-sm">@contextsString</span>
+                                <span class="btn category-item tag-item-sm">@contextString</span>
                             }
                         </div>
                     }

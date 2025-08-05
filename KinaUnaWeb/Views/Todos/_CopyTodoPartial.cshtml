@@ -1,0 +1,127 @@
+﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Copy todo", PageNames.Todos, Model.LanguageId);
+    string copyTodoToString = await LocaleManager.GetTranslation("Copy todo to:", PageNames.Todos, Model.LanguageId);
+    const string longDateTimeFormat = "dd-MMMM-yyyy";
+    const string zebraDateTimeFormat = "d-F-Y";
+
+    foreach (SelectListItem statusItem in Model.StatusList)
+    {
+        statusItem.Text = await LocaleManager.GetTranslation(statusItem.Text, PageNames.Todos, Model.LanguageId);
+    }
+    foreach (SelectListItem accessLevelItem in Model.AccessLevelListEn)
+    {
+        accessLevelItem.Text = await LocaleManager.GetTranslation(accessLevelItem.Text, PageNames.AccessManagement, Model.LanguageId);
+    }
+}
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="add-todo-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="add-item-container-wide">
+            <h2 class="col-12">@ViewData["Title"]</h2>
+            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            <div class="space-20"></div>
+            <form id="save-item-form" asp-action="CopyTodo" asp-controller="Todos" role="form" method="post">
+                @if (Model.ProgenyList.Count > 1)
+                {
+                    <div class="form-group">
+                        <label class="col-auto control-label">@copyTodoToString </label>
+                        <div class="col-auto">
+                            <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="TodoItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label class="col-auto control-label">@copyTodoToString</label>
+                        <div class="col-auto">
+                            <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                        </div>
+                        <input asp-for="TodoItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                    </div>
+                }
+                <div class="form-group">
+                    <label asp-for="TodoItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input asp-for="TodoItem.Title" class="form-control" value="@Model.TodoItem.Title" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TodoItem.Description" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Todos, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        @{
+                            string[] toolbarItems = new[] {"Bold", "Italic", "Underline", "StrikeThrough",
+                                                "FontName", "FontSize", "FontColor", "BackgroundColor",
+                                                "LowerCase", "UpperCase", "|",
+                                                "Formats", "Alignments", "OrderedList", "UnorderedList",
+                                                "Outdent", "Indent", "|",
+                                                "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
+                                                "SourceCode", "FullScreen", "|", "Undo", "Redo" };
+                        }
+                        <ejs-richtexteditor id="content-rich-text-editor" ejs-for="TodoItem.Description" height="300px" enableResize="true">
+                            <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
+                            <e-richtexteditor-insertimagesettings saveUrl="/AddItem/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
+                            <e-content-template>
+
+                            </e-content-template>
+                        </ejs-richtexteditor>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TodoItem.DueDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Due Date", PageNames.Notes, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <div class="input-group date">
+                            <input id="todo-due-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.DueDate"
+                                   value="@Model.TodoItem.DueDate?.ToString(longDateTimeFormat)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId) </label>
+                    <div class="col-auto">
+                        <select id="todo-status-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.StatusList.Count" asp-for="TodoItem.Status" asp-items="@Model.StatusList"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TodoItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input id="context-input" asp-for="TodoItem.Context" value="@Model.TodoItem.Context" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TodoItem.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <textarea rows="4" asp-for="TodoItem.Notes" class="form-control">@Model.TodoItem.Notes</textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input id="tag-list" type="text" asp-for="TodoItem.Tags" value="@Model.TodoItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TodoItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="TodoItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                    </div>
+                </div>
+                <div class="space-20"></div>
+                <div class="form-group">
+                    <div class="col-auto control-label"></div>
+                    <div class="col-auto">
+                        <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                        <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<ejs-scripts></ejs-scripts>
