@@ -84,6 +84,7 @@ namespace KinaUnaWeb
             services.AddHttpClient<ICalendarRemindersHttpClient, CalendarRemindersHttpClient>();
             services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
+            services.AddTransient<ITodoItemsHttpClient, TodoItemsHttpClient>();
             services.AddHttpClient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddSingleton<ITokenService, TokenService>();
 

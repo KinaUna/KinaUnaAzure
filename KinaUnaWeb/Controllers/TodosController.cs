@@ -13,7 +13,8 @@ using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class TodosController(IViewModelSetupService viewModelSetupService, IUserInfosHttpClient userInfosHttpClient, IProgenyHttpClient progenyHttpClient) : Controller
+    public class TodosController(ITodoItemsHttpClient todoItemsHttpClient, IViewModelSetupService viewModelSetupService,
+        IUserInfosHttpClient userInfosHttpClient, IProgenyHttpClient progenyHttpClient) : Controller
     {
         [AllowAnonymous]
         public async Task<IActionResult> Index(int? todoItemId, int childId = 0)
