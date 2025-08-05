@@ -210,7 +210,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest();
             }
 
-            todoItem.ModifiedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
 
             todoItem = await todosService.UpdateTodoItem(value);
 
