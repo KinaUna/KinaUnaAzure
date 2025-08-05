@@ -40,7 +40,10 @@ namespace KinaUnaProgenyApi.Controllers
         /// Gets a list of CalendarItems for a given Progeny.
         /// </summary>
         /// <param name="request">The parameters for the request, including the ProgenyId, start date, and end date.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Returns a 200 OK response with a list of CalendarItem objects for the specified progeny if accessible by the user.
+        /// Returns a 404 Not Found response if no accessible progeny is found.
+        /// </returns>
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> Progenies([FromBody] CalendarItemsRequest request)
