@@ -212,7 +212,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             todoItem.ModifiedBy = User.GetUserId();
 
-            todoItem = await todosService.UpdateTodoItem(todoItem);
+            todoItem = await todosService.UpdateTodoItem(value);
 
             // Update TimeLineItem for the TodoItem
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(todoItem.TodoItemId.ToString(), (int)KinaUnaTypes.TimeLineType.TodoItem);
