@@ -234,7 +234,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="userInfo">The user who added the TodoItem. Cannot be null.</param>
         /// <param name="timeLineItem">The timeline item associated with the TodoItem. Cannot be null.</param>
         /// <param name="todoItem">The TodoItem that was added. Cannot be null.</param>
-        /// <returns></returns>
+        /// <returns>A task that represents the asynchronous notification operation.</returns>
         private async Task NotifyTodoItemAdded(Progeny progeny, UserInfo userInfo, TimeLineItem timeLineItem, TodoItem todoItem)
         {
             string notificationTitle = "Todo item added for " + progeny.NickName;
