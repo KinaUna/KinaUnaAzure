@@ -147,7 +147,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="userInfo">The user who added the calendar item. Cannot be null.</param>
         /// <param name="timeLineItem">The timeline item associated with the calendar event. Cannot be null.</param>
         /// <param name="calendarItem">The calendar item that was added. Cannot be null.</param>
-        /// <returns></returns>
+        /// <returns>A task that represents the asynchronous notification operation.</returns>
         private async Task NotifyCalendarItemAdded(Progeny progeny, UserInfo userInfo, TimeLineItem timeLineItem, CalendarItem calendarItem )
         {
             string notificationTitle = "Calendar item added for " + progeny.NickName;
