@@ -478,6 +478,14 @@ export class TodosPageParameters implements BasePageParameters {
     totalItems: number = 0;
     sort: number = 1;
     tagFilter: string = '';
+    contextFilter: string = '';
+    statusFilter: string = '';
+    startYear: number = 0;
+    startMonth: number = 0;
+    startDay: number = 0;
+    endYear: number = 0;
+    endMonth: number = 0;
+    endDay: number = 0;
     showSettings: boolean = false;
 }
 
@@ -485,10 +493,32 @@ export class TodosPageResponse implements BaseItemsPageResponseModel {
     pageNumber: number = 0;
     totalPages: number = 0;
     totalItems: number = 0;
-    todosList: number[] = [];
+    todosList: TodoItem[] = [];
+    tagsList: string[] = [];
+    contextsList: string[] = [];
 }
 
 export class TodoItemParameters implements BaseItemParameters {
     todoItemId: number = 0;
     languageId: number = 0;
+}
+export class TodoItem {
+    todoItemId: number = 0;
+    uId: string = '';
+    progenyId: number = 0;
+    title: string = '';
+    description: string = '';
+    status: number = 0;
+    startDate: Date = new Date();
+    dueDate: Date = new Date();
+    completedDate: Date = new Date();
+    notes: string = '';
+    accessLevel: number = 5;
+    tags: string[] = [];
+    context: string = '';
+    createdBy: string = '';
+    modifiedBy: string = '';
+    createdTime: Date = new Date();
+    modifiedTime: Date = new Date();
+    isDeleted: boolean = false;
 }

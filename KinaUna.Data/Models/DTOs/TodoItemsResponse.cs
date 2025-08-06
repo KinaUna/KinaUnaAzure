@@ -23,5 +23,30 @@ namespace KinaUna.Data.Models.DTOs
         /// Gets or sets the request object containing parameters used for retrieving the list of to-do items.
         /// </summary>
         public TodoItemsRequest TodoItemsRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current page number in a paginated collection.
+        /// </summary>
+        public int PageNumber { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the total number of pages available.
+        /// </summary>
+        public int TotalPages { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the total number of items.
+        /// </summary>
+        public int TotalItems { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the list of tags associated with the current entity.
+        /// </summary>
+        public List<string> TagsList { get; set; } = [];
+
+        /// <summary>
+        /// Gets or sets the list of context names.
+        /// </summary>
+        public List<string> ContextsList { get; set; } = [];
     }
 }

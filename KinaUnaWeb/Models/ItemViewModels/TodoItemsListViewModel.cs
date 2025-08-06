@@ -22,7 +22,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             {
                 ProgenyId = CurrentProgenyId,
                 CurrentPageNumber = 0,
-                ItemsPerPage = 10,
+                ItemsPerPage = 0, // Get all items by default.
                 TotalPages = 0,
                 TotalItems = 0,
                 LanguageId = LanguageId,

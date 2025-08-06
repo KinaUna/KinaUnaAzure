@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -59,9 +58,14 @@ namespace KinaUnaWeb.Services.HttpClients
             return todoItem;
         }
 
-        public async Task<List<TodoItem>> GetProgeniesTodoItemsList(TodoItemsRequest request)
+        public async Task<TodoItemsResponse> GetProgeniesTodoItemsList(TodoItemsRequest request)
         {
-            List<TodoItem> progenyTodoItemsList = [];
+            TodoItemsResponse progenyTodoItemsResponse = new()
+            {
+                TodoItems = [],
+                TodoItemsRequest = request,
+                ProgenyList = []
+            };
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
@@ -69,13 +73,13 @@ namespace KinaUnaWeb.Services.HttpClients
             string todosApiPath = "/api/Todos/Progenies/";
             HttpResponseMessage todosResponse =
                 await _httpClient.PostAsync(todosApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
-            if (!todosResponse.IsSuccessStatusCode) return progenyTodoItemsList;
+            if (!todosResponse.IsSuccessStatusCode) return progenyTodoItemsResponse;
 
-            string todosListAsString = await todosResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string todosResponseAsString = await todosResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            progenyTodoItemsList = JsonConvert.DeserializeObject<List<TodoItem>>(todosListAsString);
+            progenyTodoItemsResponse = JsonConvert.DeserializeObject<TodoItemsResponse>(todosResponseAsString);
 
-            return progenyTodoItemsList;
+            return progenyTodoItemsResponse;
         }
 
         public async Task<TodoItem> AddTodoItem(TodoItem todoItem)

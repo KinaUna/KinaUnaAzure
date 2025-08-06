@@ -64,6 +64,8 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
+            if (request.Skip <= 0) request.Skip = (request.CurrentPageNumber -1) * request.NumberOfItems;
+
             List<TodoItem> todoItems = [];
 
             if (progenyList.Count == 0) return NotFound();
@@ -74,13 +76,8 @@ namespace KinaUnaProgenyApi.Controllers
                 todoItems.AddRange(progenyTodos);
             }
 
-            TodoItemsResponse todoItemsResponse = new()
-            {
-                TodoItems = todoItems,
-                ProgenyList = progenyList,
-                TodoItemsRequest = request
-            };
-
+            TodoItemsResponse todoItemsResponse = todosService.GetTodosPageForProgenies(todoItems, request);
+            
             return Ok(todoItemsResponse);
         }
 

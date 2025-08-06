@@ -161,8 +161,7 @@ namespace KinaUnaWeb.Services.HttpClients
         public async Task<TextTranslation> AddTranslation(TextTranslation translation)
         {
             TextTranslation addedTranslation = new();
-            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
-            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string addApiPath = "/api/Translations/";

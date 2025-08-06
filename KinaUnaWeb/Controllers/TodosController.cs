@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUnaWeb.Models.TypeScriptModels.TodoItems;
 
@@ -36,19 +35,46 @@ namespace KinaUnaWeb.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> GetTodoItemsList([FromBody] TodoItemsRequest request)
+        public async Task<IActionResult> GetTodoItemsList([FromBody] TodoItemsPageParameters parameters)
         {
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+
+            if (parameters.CurrentPageNumber < 1)
+            {
+                parameters.CurrentPageNumber = 1;
+            }
+
+            if (parameters.ItemsPerPage < 1)
+            {
+                parameters.ItemsPerPage = 10;
+            }
+
+            TodoItemsRequest request = new()
+            {
+                ProgenyIds = parameters.Progenies,
+                StartYear = parameters.StartYear,
+                StartMonth = parameters.StartMonth,
+                StartDay = parameters.StartDay,
+                EndYear = parameters.EndYear,
+                EndMonth = parameters.EndMonth,
+                EndDay = parameters.EndDay,
+                Skip = (parameters.CurrentPageNumber - 1) * parameters.ItemsPerPage,
+                NumberOfItems = parameters.ItemsPerPage,
+                TagFilter = parameters.TagFilter,
+                ContextFilter = parameters.ContextFilter,
+                StatusFilter = parameters.StatusFilter
+            };
+
+            request.SetStartDateAndEndDate();
+
             UserInfo currentUserInfo = await userInfosHttpClient.GetUserInfo(User.GetEmail());
-            request.StartDate = new DateTime(request.StartYear, request.StartMonth, request.StartDay);
-            request.EndDate = new DateTime(request.EndYear, request.EndMonth, request.EndDay);
+            
+            TodoItemsResponse todoItemsResponse = await todoItemsHttpClient.GetProgeniesTodoItemsList(request);
 
-            List<TodoItem> todoItems = await todoItemsHttpClient.GetProgeniesTodoItemsList(request);
-
-            todoItems = [.. todoItems.OrderBy(t => t.DueDate)];
-            List<TodoItem> resultList = [];
-            List<Progeny> progeniesList = [];
-
-            foreach (TodoItem todoItem in todoItems)
+            foreach (TodoItem todoItem in todoItemsResponse.TodoItems)
             {
                 if (todoItem.DueDate.HasValue)
                 {
@@ -71,17 +97,11 @@ namespace KinaUnaWeb.Controllers
                 todoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(todoItem.CreatedTime,
                     TimeZoneInfo.FindSystemTimeZoneById(currentUserInfo.Timezone));
 
-                Progeny progeny = progeniesList.FirstOrDefault(p => p.Id == todoItem.ProgenyId);
-                if (progeny == null)
-                {
-                    progeny = await progenyHttpClient.GetProgeny(todoItem.ProgenyId);
-                    progeniesList.Add(progeny);
-                }
-                
-                resultList.Add(todoItem);
             }
 
-            return Json(resultList);
+            TodosPageResponse pageResponse = new(todoItemsResponse);
+            
+            return Json(pageResponse);
         }
 
         [AllowAnonymous]
@@ -145,7 +165,6 @@ namespace KinaUnaWeb.Controllers
         /// Page for adding a new TodoItem.
         /// </summary>
         /// <returns>View with TodoViewModel.</returns>
-        [Authorize]
         [HttpGet]
         public async Task<IActionResult> AddTodo()
         {

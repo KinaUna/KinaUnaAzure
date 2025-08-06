@@ -42,10 +42,10 @@ async function getTodos(): Promise<void> {
                 if (todosListDiv != null) {
                     todosListDiv.innerHTML = '';
                 }
-                for await (const todoItemId of todosPageResponse.todosList) {
-                    await getTodoElement(todoItemId);
+                for await (const todoItem of todosPageResponse.todosList) {
+                    await getTodoElement(todoItem.todoItemId);
                     const timelineItem = new pageModels.TimelineItem();
-                    timelineItem.itemId = todoItemId.toString();
+                    timelineItem.itemId = todoItem.todoItemId.toString();
                     timelineItem.itemType = 15;
                     addTimelineItemEventListener(timelineItem);
                 };
@@ -63,7 +63,7 @@ async function getTodoElement(id: number): Promise<void> {
     getTodoElementParameters.todoItemId = id;
     getTodoElementParameters.languageId = todosPageParameters.languageId;
 
-    const getTodoElementResponse = await fetch('/Todo/TodoElement', {
+    const getTodoElementResponse = await fetch('/Todos/TodoElement', {
         method: 'POST',
         body: JSON.stringify(getTodoElementParameters),
         headers: {

@@ -114,6 +114,9 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
         if (addItemType === 'location') {
             await initializeAddEditLocation();
         }
+        if (addItemType === 'todo') {
+            await initializeAddEditTodo();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();

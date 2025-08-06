@@ -519,6 +519,14 @@ export class TodosPageParameters {
         this.totalItems = 0;
         this.sort = 1;
         this.tagFilter = '';
+        this.contextFilter = '';
+        this.statusFilter = '';
+        this.startYear = 0;
+        this.startMonth = 0;
+        this.startDay = 0;
+        this.endYear = 0;
+        this.endMonth = 0;
+        this.endDay = 0;
         this.showSettings = false;
     }
 }
@@ -528,12 +536,36 @@ export class TodosPageResponse {
         this.totalPages = 0;
         this.totalItems = 0;
         this.todosList = [];
+        this.tagsList = [];
+        this.contextsList = [];
     }
 }
 export class TodoItemParameters {
     constructor() {
         this.todoItemId = 0;
         this.languageId = 0;
+    }
+}
+export class TodoItem {
+    constructor() {
+        this.todoItemId = 0;
+        this.uId = '';
+        this.progenyId = 0;
+        this.title = '';
+        this.description = '';
+        this.status = 0;
+        this.startDate = new Date();
+        this.dueDate = new Date();
+        this.completedDate = new Date();
+        this.notes = '';
+        this.accessLevel = 5;
+        this.tags = [];
+        this.context = '';
+        this.createdBy = '';
+        this.modifiedBy = '';
+        this.createdTime = new Date();
+        this.modifiedTime = new Date();
+        this.isDeleted = false;
     }
 }
 //# sourceMappingURL=page-models-v8.js.map

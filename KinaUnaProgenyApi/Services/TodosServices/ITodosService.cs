@@ -61,5 +61,16 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="TodoItem"/>
         /// objects that match the specified progeny ID and access level. If no items are found, the list will be empty.</returns>
         Task<List<TodoItem>> GetTodosList(int progenyId, int accessLevel);
+
+        /// <summary>
+        /// Retrieves a paginated list of TodoItems for progenies based on the specified request parameters.
+        /// </summary>
+        /// <remarks>The method processes the provided list of TodoItems and applies the pagination and
+        /// filtering criteria defined in the <paramref name="request"/>. The response includes the filtered TodoItems
+        /// and additional metadata such as the total number of items and the current page index.</remarks>
+        /// <param name="todoItemsForProgenies">A list of TodoItems associated with progenies to be filtered and paginated.</param>
+        /// <param name="request">The request parameters that specify pagination and filtering options.</param>
+        /// <returns>A <see cref="TodoItemsResponse"/> containing the paginated list of TodoItems and associated metadata.</returns>
+        TodoItemsResponse GetTodosPageForProgenies(List<TodoItem> todoItemsForProgenies, TodoItemsRequest request);
     }
 }
