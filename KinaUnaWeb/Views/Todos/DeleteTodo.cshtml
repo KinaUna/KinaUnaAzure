@@ -25,7 +25,7 @@
             <input asp-for="TodoItem.TodoItemId" class="form-control" value="@Model.TodoItem.TodoItemId" type="hidden"/>
             <div class="col-auto">
                 <Button type="submit" class="btn btn-success leave-page">@await LocaleManager.GetTranslation("Yes - delete this todo", PageNames.Todos, Model.LanguageId)</Button>
-                <a class="btn btn-danger leave-page" asp-controller="Notes" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                <a class="btn btn-danger leave-page" asp-controller="Todos" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
             </div>
         </form>
     </div>
