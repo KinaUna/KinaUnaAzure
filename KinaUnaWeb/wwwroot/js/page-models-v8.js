@@ -456,6 +456,7 @@ export var TimeLineType;
     TimeLineType[TimeLineType["Location"] = 12] = "Location";
     TimeLineType[TimeLineType["User"] = 13] = "User";
     TimeLineType[TimeLineType["UserAccess"] = 14] = "UserAccess";
+    TimeLineType[TimeLineType["TodoItem"] = 15] = "TodoItem";
     TimeLineType[TimeLineType["Child"] = 100] = "Child";
 })(TimeLineType || (TimeLineType = {}));
 export var OnThisDayPeriod;
@@ -505,6 +506,66 @@ export class SetProgenyRequest {
     constructor() {
         this.progenyId = 0;
         this.languageId = 0;
+    }
+}
+export class TodosPageParameters {
+    constructor() {
+        this.progenyId = 0;
+        this.progenies = [];
+        this.languageId = 0;
+        this.currentPageNumber = 0;
+        this.itemsPerPage = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.sort = 1;
+        this.tagFilter = '';
+        this.contextFilter = '';
+        this.statusFilter = '';
+        this.startYear = 0;
+        this.startMonth = 0;
+        this.startDay = 0;
+        this.endYear = 0;
+        this.endMonth = 0;
+        this.endDay = 0;
+        this.showSettings = false;
+    }
+}
+export class TodosPageResponse {
+    constructor() {
+        this.pageNumber = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.todosList = [];
+        this.tagsList = [];
+        this.contextsList = [];
+    }
+}
+export class TodoItemParameters {
+    constructor() {
+        this.todoItemId = 0;
+        this.languageId = 0;
+    }
+}
+export class TodoItem {
+    constructor() {
+        this.todoItemId = 0;
+        this.uId = '';
+        this.progenyId = 0;
+        this.title = '';
+        this.description = '';
+        this.status = 0;
+        this.startDate = new Date();
+        this.dueDate = new Date();
+        this.completedDate = new Date();
+        this.notes = '';
+        this.accessLevel = 5;
+        this.tags = [];
+        this.context = '';
+        this.createdBy = '';
+        this.modifiedBy = '';
+        this.createdTime = new Date();
+        this.modifiedTime = new Date();
+        this.isDeleted = false;
     }
 }
 //# sourceMappingURL=page-models-v8.js.map

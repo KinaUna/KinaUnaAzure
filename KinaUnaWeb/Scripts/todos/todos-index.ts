@@ -1,0 +1,111 @@
+﻿import { getCurrentProgenyId } from '../data-tools-v8.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
+import * as pageModels from '../page-models-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v8.js';
+
+let todosPageParameters = new pageModels.TodosPageParameters();
+const todosIndexPageParametersDiv = document.querySelector<HTMLDivElement>('#todos-index-page-parameters');
+const todosListDiv = document.querySelector<HTMLDivElement>('#todos-list-div');
+const todosPageMainDiv = document.querySelector<HTMLDivElement>('#kinauna-main-div');
+
+function setTodosPageParametersFromPageData(): void {
+    if (todosIndexPageParametersDiv !== null) {
+        const pageParameters = todosIndexPageParametersDiv.dataset.todosIndexPageParameters;
+        if (pageParameters) {
+            todosPageParameters = JSON.parse(pageParameters);
+        }
+    }
+}
+
+async function getTodos(): Promise<void> {
+    const getMoreTodosResponse = await fetch('/Todos/GetTodoItemsList', {
+        method: 'POST',
+        body: JSON.stringify(todosPageParameters),
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+        }
+    });
+
+    if (getMoreTodosResponse.ok && getMoreTodosResponse.body !== null) {
+        const todosPageResponse = await getMoreTodosResponse.json() as pageModels.TodosPageResponse;
+        if (todosPageResponse) {
+            todosPageParameters.currentPageNumber = todosPageResponse.pageNumber;
+            todosPageParameters.totalPages = todosPageResponse.totalPages;
+            todosPageParameters.totalItems = todosPageResponse.totalItems;
+
+            if (todosPageResponse.totalItems < 1) {
+                getTodoElement(0);
+            }
+            else {
+                // updateTodosPageNavigation();
+                if (todosListDiv != null) {
+                    todosListDiv.innerHTML = '';
+                }
+                for await (const todoItem of todosPageResponse.todosList) {
+                    await getTodoElement(todoItem.todoItemId);
+                    const timelineItem = new pageModels.TimelineItem();
+                    timelineItem.itemId = todoItem.todoItemId.toString();
+                    timelineItem.itemType = 15;
+                    addTimelineItemEventListener(timelineItem);
+                };
+            }
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function getTodoElement(id: number): Promise<void> {
+    const getTodoElementParameters = new pageModels.TodoItemParameters();
+    getTodoElementParameters.todoItemId = id;
+    getTodoElementParameters.languageId = todosPageParameters.languageId;
+
+    const getTodoElementResponse = await fetch('/Todos/TodoElement', {
+        method: 'POST',
+        body: JSON.stringify(getTodoElementParameters),
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    });
+
+    if (getTodoElementResponse.ok && getTodoElementResponse.text !== null) {
+        const todoHtml = await getTodoElementResponse.text();
+        if (todosListDiv != null) {
+            todosListDiv.insertAdjacentHTML('beforeend', todoHtml);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            todosPageParameters.progenies = getSelectedProgenies();
+            todosPageParameters.currentPageNumber = 1;
+            await getTodos();
+        }
+
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    await showPopupAtLoad(pageModels.TimeLineType.TodoItem);
+
+    setTodosPageParametersFromPageData();
+    addSelectedProgeniesChangedEventListener();
+    todosPageParameters.progenies = getSelectedProgenies();
+
+    getTodos();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+});

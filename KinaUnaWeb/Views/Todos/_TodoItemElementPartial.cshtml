@@ -1,0 +1,43 @@
+﻿@using System.Web
+@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.TypeScriptModels.TodoItems.TodoItemResponse
+@inject ILocaleManager LocaleManager
+<button class="col-12 card text-white bg-notes note-item" data-todo-id="@Model.TodoItemId" align="left" style="min-width: 49%;">
+    @if (Model.TodoItem.TodoItemId == 0)
+    {
+        <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
+    }
+    else
+    {
+        <div class="card-header rounded w-100 p-0 pt-2" style="padding-right: 5px; margin-bottom: 0;">
+            <img class="float-right" src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" style="max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;" />
+            <div class="card-title text-left"><span class="pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">note</i> </span><span class="h4">@Model.TodoItem.Title</span></div>
+            <div class="row card-category text-white-50">
+                @if (Model.TodoItem.DueDate.HasValue)
+                {
+                    <div class="col-auto">@Model.TodoItem.DueDate.Value.ToString("dd-MMM-yyyy")</div>
+                }
+            </div>
+        </div>
+        <div class="card-body p-0 w-100">
+            <div class="card-text">
+                <div class="text-dark card-body bg-white" style="overflow: hidden; max-height: 250px;" align="left">@Html.Raw(HttpUtility.HtmlDecode(Model.TodoItem.Description))</div>
+            </div>
+        </div>
+        <div class="mt-3 w-100 ">
+            @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
+            {
+                List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
+                <div class="col-12 text-right">
+                    @foreach (string contextString in contextsList)
+                    {
+                        <span class="btn category-item tag-item-sm">@contextString</span>
+                    }
+                </div>
+            }
+        </div>
+    }
+</button>
+<div class="space-20"></div>

@@ -25,6 +25,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             todoItemToAdd.CopyPropertiesForAdd(value);
 
             todoItemToAdd.CreatedTime = DateTime.UtcNow;
+            todoItemToAdd.CreatedBy = value.CreatedBy;
             todoItemToAdd.ModifiedTime = DateTime.UtcNow;
             todoItemToAdd.ModifiedBy = value.CreatedBy;
             todoItemToAdd.IsDeleted = false;
@@ -157,18 +158,56 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 
                 todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => statusCodes.Contains(t.Status))];
             }
+            
+            return todoItemsForProgeny;
+        }
+
+        public TodoItemsResponse CreateTodoItemsResponseForTodoPage(List<TodoItem> todoItemsForProgenies, TodoItemsRequest request)
+        {
+            TodoItemsResponse response = new()
+            {
+                TotalItems = todoItemsForProgenies.Count,
+                TotalPages = (int)Math.Ceiling((double)todoItemsForProgenies.Count / request.NumberOfItems),
+            };
 
             // Sort by DueDate, newest first, then by CreatedTime
-            todoItemsForProgeny = [.. todoItemsForProgeny
-                .OrderByDescending(t => t.DueDate)
-                .ThenByDescending(t => t.CreatedTime)];
+            if (request.Sort == 1)
+            {
+                todoItemsForProgenies = [.. todoItemsForProgenies
+                    .OrderByDescending(t => t.DueDate)
+                    .ThenByDescending(t => t.CreatedTime)];
+            }
+            else
+            {
+                todoItemsForProgenies = [.. todoItemsForProgenies
+                    .OrderBy(t => t.DueDate)
+                    .ThenBy(t => t.CreatedTime)];
+            }
 
-            // Apply pagination
-            todoItemsForProgeny = [.. todoItemsForProgeny
-                .Skip(request.Skip)
-                .Take(request.NumberOfItems)];
+            // Apply pagination, if number of items is less than 1, we do not apply pagination
+            if (request.NumberOfItems > 0)
+            {
+                todoItemsForProgenies =
+                [
+                    .. todoItemsForProgenies
+                        .Skip(request.Skip)
+                        .Take(request.NumberOfItems)
+                ];
+            }
 
-            return todoItemsForProgeny;
+            response.TodoItems = todoItemsForProgenies;
+            response.PageNumber = request.NumberOfItems > 0 ? request.Skip / request.NumberOfItems : 0;
+            response.TodoItemsRequest = request;
+            response.TagsList = [.. todoItemsForProgenies
+                .SelectMany(t => t.Tags?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? [])
+                .Distinct()
+                .Select(tag => tag.Trim())];
+            response.ContextsList = [.. todoItemsForProgenies
+                .SelectMany(t => t.Context?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? [])
+                .Distinct()
+                .Select(context => context.Trim())];
+            
+            return response;
         }
 
         /// <summary>

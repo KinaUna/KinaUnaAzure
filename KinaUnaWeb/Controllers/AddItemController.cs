@@ -160,6 +160,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddLocation", "Locations");
             }
 
+            if (itemType == "todo")
+            {
+                return RedirectToAction("AddTodo", "Todos");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
@@ -234,6 +239,11 @@ namespace KinaUnaWeb.Controllers
             if (itemType == "video")
             {
                 return RedirectToAction("Video", "Videos", new { id = itemId, partialView = true });
+            }
+
+            if (itemType == "todo")
+            {
+                return RedirectToAction("EditTodo", "Todos", new { itemId, partialView = true });
             }
 
             return PartialView("../Shared/_NotFoundPartial", new { itemId });

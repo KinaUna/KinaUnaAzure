@@ -73,6 +73,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("CopyLocation", "Locations", new { itemId });
             }
 
+            if (itemType == "todo")
+            {
+                return RedirectToAction("CopyTodo", "Todos", new { itemId });
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
        

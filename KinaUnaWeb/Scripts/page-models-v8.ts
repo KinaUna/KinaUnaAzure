@@ -423,7 +423,7 @@ export class WebNotificationsList {
 export enum TimeLineType {
     Photo = 1, Video = 2, Calendar = 3, Vocabulary = 4, Skill = 5,
     Friend = 6, Measurement = 7, Sleep = 8, Note = 9, Contact = 10,
-    Vaccination = 11, Location = 12, User = 13, UserAccess = 14, Child = 100
+    Vaccination = 11, Location = 12, User = 13, UserAccess = 14, TodoItem = 15, Child = 100
 }
 
 export enum OnThisDayPeriod {
@@ -466,4 +466,59 @@ export class CalendarItemsRequest {
 export class SetProgenyRequest {
     progenyId: number = 0;
     languageId: number = 0;
+}
+
+export class TodosPageParameters implements BasePageParameters {
+    progenyId: number = 0;
+    progenies: number[] = [];
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 1;
+    tagFilter: string = '';
+    contextFilter: string = '';
+    statusFilter: string = '';
+    startYear: number = 0;
+    startMonth: number = 0;
+    startDay: number = 0;
+    endYear: number = 0;
+    endMonth: number = 0;
+    endDay: number = 0;
+    showSettings: boolean = false;
+}
+
+export class TodosPageResponse implements BaseItemsPageResponseModel {
+    pageNumber: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    todosList: TodoItem[] = [];
+    tagsList: string[] = [];
+    contextsList: string[] = [];
+}
+
+export class TodoItemParameters implements BaseItemParameters {
+    todoItemId: number = 0;
+    languageId: number = 0;
+}
+export class TodoItem {
+    todoItemId: number = 0;
+    uId: string = '';
+    progenyId: number = 0;
+    title: string = '';
+    description: string = '';
+    status: number = 0;
+    startDate: Date = new Date();
+    dueDate: Date = new Date();
+    completedDate: Date = new Date();
+    notes: string = '';
+    accessLevel: number = 5;
+    tags: string[] = [];
+    context: string = '';
+    createdBy: string = '';
+    modifiedBy: string = '';
+    createdTime: Date = new Date();
+    modifiedTime: Date = new Date();
+    isDeleted: boolean = false;
 }

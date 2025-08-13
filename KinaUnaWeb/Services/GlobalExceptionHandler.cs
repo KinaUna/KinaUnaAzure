@@ -43,8 +43,8 @@ namespace KinaUnaWeb.Services
             logger.LogError(
                 exception, "Exception occurred: {Message}", exception.Message);
 
-            // Redirect to the home page if an authentication exception occurs
-            httpContext.Response.Redirect("/Authentication/LogIn");
+            // Redirect to the login page if an authentication exception occurs
+            httpContext.Response.Redirect("/login");
             return ValueTask.FromResult(true);
         }
     }
