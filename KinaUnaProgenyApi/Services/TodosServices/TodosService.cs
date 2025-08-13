@@ -162,7 +162,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             return todoItemsForProgeny;
         }
 
-        public TodoItemsResponse GetTodosPageForProgenies(List<TodoItem> todoItemsForProgenies, TodoItemsRequest request)
+        public TodoItemsResponse CreateTodoItemsResponseForTodoPage(List<TodoItem> todoItemsForProgenies, TodoItemsRequest request)
         {
             TodoItemsResponse response = new()
             {

@@ -53,7 +53,7 @@ export async function addTimelineItemEventListener(item) {
     if (item.itemType === 12) {
         addLocationItemListeners(item.itemId);
     }
-    if (item.itemType === 12) {
+    if (item.itemType === 15) {
         addTodoItemListeners(item.itemId);
     }
 }

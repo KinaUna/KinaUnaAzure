@@ -70,7 +70,7 @@ namespace KinaUnaWeb.Services.HttpClients
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
-            string todosApiPath = "/api/Todos/Progenies/";
+            string todosApiPath = "/api/Todos/GetProgeniesTodoItemsList/";
             HttpResponseMessage todosResponse =
                 await _httpClient.PostAsync(todosApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
             if (!todosResponse.IsSuccessStatusCode) return progenyTodoItemsResponse;

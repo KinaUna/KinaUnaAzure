@@ -75,8 +75,14 @@ namespace KinaUna.Data.Models.DTOs
         /// </summary>
         public string StatusFilter { get; set; } = string.Empty;
 
+        /// <summary>
+        /// The sort order for the items. 0 for ascending and 1 for descending.
+        /// </summary>
         public int Sort { get; set; } = 0; // Sort ascending = 0, Sort descending = 1
 
+        /// <summary>
+        /// Sets the StartDate and EndDate properties based on the provided year, month, and day values.
+        /// </summary>
         public void SetStartDateAndEndDate()
         {
             if (StartYear > 0 && StartMonth > 0 && StartDay > 0)

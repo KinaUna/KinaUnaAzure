@@ -13,9 +13,24 @@ using KinaUnaWeb.Models.TypeScriptModels.TodoItems;
 
 namespace KinaUnaWeb.Controllers
 {
+    /// <summary>
+    /// The TodosController handles the management of TodoItems.
+    /// </summary>
+    /// <param name="todoItemsHttpClient"></param>
+    /// <param name="viewModelSetupService"></param>
+    /// <param name="userInfosHttpClient"></param>
+    /// <param name="progenyHttpClient"></param>
     public class TodosController(ITodoItemsHttpClient todoItemsHttpClient, IViewModelSetupService viewModelSetupService,
         IUserInfosHttpClient userInfosHttpClient, IProgenyHttpClient progenyHttpClient) : Controller
     {
+        /// <summary>
+        /// The Index Page for Todos.
+        /// Shows the list of TodoItems for the currently selected Progenies.
+        /// If a TodoItemId is passed, it will be shown in a popup.
+        /// </summary>
+        /// <param name="todoItemId">The TodoItemId to show in a popup.</param>
+        /// <param name="childId"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int? todoItemId, int childId = 0)
         {
@@ -33,6 +48,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Post endpoint for retrieving a list of TodoItems based on the provided parameters.
+        /// </summary>
+        /// <param name="parameters">TodoItemsPageParameters containing the filtering and pagination parameters.</param>
+        /// <returns>A JSON response containing the paginated list of TodoItems.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> GetTodoItemsList([FromBody] TodoItemsPageParameters parameters)
@@ -104,6 +124,11 @@ namespace KinaUnaWeb.Controllers
             return Json(pageResponse);
         }
 
+        /// <summary>
+        /// Returns a partial view for a TodoItem element based on the provided parameters.
+        /// </summary>
+        /// <param name="parameters">TodoItemParameters containing the TodoItemId and LanguageId.</param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> TodoElement([FromBody] TodoItemParameters parameters)
@@ -138,6 +163,13 @@ namespace KinaUnaWeb.Controllers
             return PartialView("_TodoItemElementPartial", todoItemResponse);
         }
 
+        /// <summary>
+        /// Renders the details of a TodoItem.
+        /// If partialView is true, it returns a partial view.
+        /// </summary>
+        /// <param name="todoId">The TodoItemId of the TodoItem to view.</param>
+        /// <param name="partialView">Flag indicating whether to return a partial view or a full view.</param>
+        /// <returns>Partial view or full view with TodoViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> ViewTodo(int todoId, bool partialView = false)
         {

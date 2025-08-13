@@ -71,6 +71,6 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// <param name="todoItemsForProgenies">A list of TodoItems associated with progenies to be filtered and paginated.</param>
         /// <param name="request">The request parameters that specify pagination and filtering options.</param>
         /// <returns>A <see cref="TodoItemsResponse"/> containing the paginated list of TodoItems and associated metadata.</returns>
-        TodoItemsResponse GetTodosPageForProgenies(List<TodoItem> todoItemsForProgenies, TodoItemsRequest request);
+        TodoItemsResponse CreateTodoItemsResponseForTodoPage(List<TodoItem> todoItemsForProgenies, TodoItemsRequest request);
     }
 }

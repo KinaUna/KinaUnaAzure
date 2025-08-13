@@ -47,7 +47,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <returns>TodoItemsResponse containing the list of TodoItems and associated Progeny.</returns>
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> Progenies([FromBody] TodoItemsRequest request)
+        public async Task<IActionResult> GetProgeniesTodoItemsList([FromBody] TodoItemsRequest request)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             List<Progeny> progenyList = [];
@@ -76,7 +76,7 @@ namespace KinaUnaProgenyApi.Controllers
                 todoItems.AddRange(progenyTodos);
             }
 
-            TodoItemsResponse todoItemsResponse = todosService.GetTodosPageForProgenies(todoItems, request);
+            TodoItemsResponse todoItemsResponse = todosService.CreateTodoItemsResponseForTodoPage(todoItems, request);
             
             return Ok(todoItemsResponse);
         }

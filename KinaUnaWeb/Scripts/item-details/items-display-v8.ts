@@ -66,7 +66,7 @@ export async function addTimelineItemEventListener(item: TimelineItem): Promise<
         addLocationItemListeners(item.itemId);
     }
 
-    if (item.itemType === 12) {
+    if (item.itemType === 15) {
         addTodoItemListeners(item.itemId);
     }
 }

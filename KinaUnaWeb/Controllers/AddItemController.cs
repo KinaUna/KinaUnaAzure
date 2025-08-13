@@ -243,7 +243,7 @@ namespace KinaUnaWeb.Controllers
 
             if (itemType == "todo")
             {
-                return RedirectToAction("EditTodo", "Todos", new { id = itemId, partialView = true });
+                return RedirectToAction("EditTodo", "Todos", new { itemId, partialView = true });
             }
 
             return PartialView("../Shared/_NotFoundPartial", new { itemId });
