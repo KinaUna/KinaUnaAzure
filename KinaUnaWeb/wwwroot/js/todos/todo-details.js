@@ -70,7 +70,10 @@ async function onSetAsNotStartedButtonClicked(event) {
                     console.error('Error setting todo as in progress. Status: ' + response.status + ', Message: ' + response.statusText);
                 }
             }).catch(function (error) {
-                console.error('Error setting todo as in progress. Error: ' + error);
+                    console.error('Error setting todo as not started. Status: ' + response.status + ', Message: ' + response.statusText);
+                }
+            }).catch(function (error) {
+                console.error('Error setting todo as not started. Error: ' + error);
             });
             stopFullPageSpinner();
         }
