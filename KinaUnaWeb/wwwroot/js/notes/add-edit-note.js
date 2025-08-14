@@ -58,7 +58,7 @@ function setupRichTextEditor() {
 /**
  * Handles the image upload success event for the Rich Text Editor.
  * Updates the file name in the editor after a successful image upload.
- * @param {any} args The event arguments containing the uploaded file information.
+ * @param args The event arguments containing the uploaded file information.
  */
 function onImageUploadSuccess(args) {
     if (args.e.currentTarget.getResponseHeader('name') != null) {
@@ -96,7 +96,7 @@ function onRichTextEditorFocus() {
 }
 /**
  * Initializes the Add/Edit Note page by setting up the date time picker, progeny select list, tags and categories auto suggest lists, and the Rich Text Editor.
- * @returns {Promise<void>} A promise that resolves when the initialization is complete.
+ * @returns A promise that resolves when the initialization is complete.
  */
 export async function initializeAddEditNote() {
     languageId = getCurrentLanguageId();

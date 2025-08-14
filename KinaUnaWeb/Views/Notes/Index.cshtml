@@ -8,6 +8,8 @@
     string pageString = await LocaleManager.GetTranslation("Page:", PageNames.Notes, Model.LanguageId);
     string previousPageString = await LocaleManager.GetTranslation("Previous page", PageNames.Notes, Model.LanguageId);
     string nextPageString = await LocaleManager.GetTranslation("Next page", PageNames.Notes, Model.LanguageId);
+    string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Timeline, Model.LanguageId);
+    string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Timeline, Model.LanguageId);
 }
 <div id="notes-index-page-parameters" class="d-none" data-notes-index-page-parameters="@pageParameters"></div>
 <div id="popup-note-id-div" class="d-none" data-popup-note-id="@Model.NoteId"></div>
@@ -67,21 +69,21 @@
         <div class="p-4">
             <div class="row">
                 <div class="col h5">
-                    Page settings
+                    @await LocaleManager.GetTranslation("Page settings", PageNames.Layout, Model.LanguageId)
                 </div>
             </div>
             <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">
-                    Sort:
+                    @await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId)
                 </div>
                 <div class="col-auto ml-4">
                     <div class="row align-items-center">
                         <div class="col">
-                            <button id="sort-notes-descending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">history</i> Newest</button>
+                            <button id="sort-notes-descending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">history</i> @newestFirstString</button>
                         </div>
                         <div class="col">
-                            <button id="sort-notes-ascending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">update</i> Oldest</button>
+                            <button id="sort-notes-ascending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">update</i> @oldestFirstString</button>
                         </div>
                     </div>
                 </div>
@@ -89,7 +91,7 @@
             <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">
-                    Items per page:
+                    @await LocaleManager.GetTranslation("Items per page", PageNames.Layout, Model.LanguageId):
                 </div>
                 <div class="col-auto ml-4">
                     <div class="row align-items-center">
@@ -105,7 +107,7 @@
             <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">
-                    <button id="notes-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> Save</button>
+                    <button id="notes-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
                 </div>
 
             </div>

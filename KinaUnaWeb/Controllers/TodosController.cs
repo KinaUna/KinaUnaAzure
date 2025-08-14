@@ -88,7 +88,8 @@ namespace KinaUnaWeb.Controllers
                 NumberOfItems = parameters.ItemsPerPage,
                 TagFilter = parameters.TagFilter,
                 ContextFilter = parameters.ContextFilter,
-                StatusFilter = parameters.StatusFilter
+                StatusFilter = parameters.StatusFilter,
+                Sort = parameters.Sort
             };
 
             request.SetStartDateAndEndDate();
