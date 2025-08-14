@@ -208,6 +208,10 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             value.ModifiedBy = User.GetUserId();
+            if (string.IsNullOrWhiteSpace(value.UId))
+            {
+                value.UId = Guid.NewGuid().ToString();
+            }
 
             todoItem = await todosService.UpdateTodoItem(value);
 
