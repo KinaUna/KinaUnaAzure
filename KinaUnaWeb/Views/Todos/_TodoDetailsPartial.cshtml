@@ -43,7 +43,7 @@
                 @if (Model.TodoItem.DueDate.HasValue)
                 {
                     <div class="row text-white">
-                        <div class="col-auto">@await LocaleManager.GetTranslation("Due Date", PageNames.Notes, Model.LanguageId) : @Model.TodoItem.DueDate?.ToString("dd-MMM-yyyy")</div>
+                        <div class="col-auto">@await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.DueDate?.ToString("dd-MMM-yyyy")</div>
                     </div>
                 }
                 @if (Model.TodoItem.StartDate.HasValue)
@@ -53,13 +53,13 @@
                 else
                 {
                     <div class="row text-white">
-                        <div class="col-auto">@await LocaleManager.GetTranslation("Start Date", PageNames.Notes, Model.LanguageId) : @Model.TodoItem.CreatedTime.ToString("dd-MMM-yyyy")</div>
+                        <div class="col-auto">@await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.CreatedTime.ToString("dd-MMM-yyyy")</div>
                     </div>
                 }
-                @if (Model.TodoItem.CompletedDate.HasValue)
+                @if (Model.TodoItem.CompletedDate.HasValue && Model.TodoItem.Status == (int)TodoStatusTypes.TodoStatusType.Completed)
                 {
                     <div class="row text-white">
-                        <div class="col-auto">@await LocaleManager.GetTranslation("Completed Date", PageNames.Notes, Model.LanguageId) : @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
+                        <div class="col-auto">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
                     </div>
                 }
                 <div class="space-10"></div>
@@ -85,6 +85,36 @@
                         <div class="col-12 text-right text-white-50">Created by: @Model.TodoItem.CreatedBy</div>
                     </div>
                     <div class="space-20"></div>
+                    <div class="row ml-5">
+                        <div class="col-12">
+                            @if (Model.TodoItem.Status != (int)TodoStatusTypes.TodoStatusType.NotStarted)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-50" data-set-todo-item-not-started-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">pending_actions</i> Set as not started
+                                </button>
+                            }
+                            @if (Model.TodoItem.Status != (int)TodoStatusTypes.TodoStatusType.InProgress)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-50" data-set-todo-item-in-progress-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">assignment</i> Set as in progress
+                                </button>
+                            }
+                            @if (Model.TodoItem.Status != (int)TodoStatusTypes.TodoStatusType.Completed)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-50" data-set-todo-item-completed-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> Set as completed
+                                </button>
+                            }
+                            @if (Model.TodoItem.Status != (int)TodoStatusTypes.TodoStatusType.Cancelled)
+                            {
+                                <button class="btn btn-link p-3 float-right text-white-50" data-set-todo-item-cancelled-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">playlist_remove</i> Set as cancelled
+                                </button>
+                            }
+                        </div>
+                        
+
+                    </div>
                 </div>
                 
                 <div class="col-12">

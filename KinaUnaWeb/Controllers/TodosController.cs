@@ -20,8 +20,11 @@ namespace KinaUnaWeb.Controllers
     /// <param name="viewModelSetupService"></param>
     /// <param name="userInfosHttpClient"></param>
     /// <param name="progenyHttpClient"></param>
-    public class TodosController(ITodoItemsHttpClient todoItemsHttpClient, IViewModelSetupService viewModelSetupService,
-        IUserInfosHttpClient userInfosHttpClient, IProgenyHttpClient progenyHttpClient) : Controller
+    public class TodosController(
+        ITodoItemsHttpClient todoItemsHttpClient,
+        IViewModelSetupService viewModelSetupService,
+        IUserInfosHttpClient userInfosHttpClient,
+        IProgenyHttpClient progenyHttpClient) : Controller
     {
         /// <summary>
         /// The Index Page for Todos.
@@ -91,7 +94,7 @@ namespace KinaUnaWeb.Controllers
             request.SetStartDateAndEndDate();
 
             UserInfo currentUserInfo = await userInfosHttpClient.GetUserInfo(User.GetEmail());
-            
+
             TodoItemsResponse todoItemsResponse = await todoItemsHttpClient.GetProgeniesTodoItemsList(request);
 
             foreach (TodoItem todoItem in todoItemsResponse.TodoItems)
@@ -120,7 +123,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             TodosPageResponse pageResponse = new(todoItemsResponse);
-            
+
             return Json(pageResponse);
         }
 
@@ -214,7 +217,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            
+
             model.SetAccessLevelList();
 
             return PartialView("_AddTodoPartial", model);
@@ -269,7 +272,7 @@ namespace KinaUnaWeb.Controllers
                 model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
                 model.SetProgenyList();
             }
-            
+
             model.SetPropertiesFromTodoItem(todoItem);
 
             model.SetAccessLevelList();
@@ -406,6 +409,82 @@ namespace KinaUnaWeb.Controllers
             model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SetStatusList(model.TodoItem.Status);
             return PartialView("_TodoCopiedPartial", model);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> SetTodoAsNotStarted(int todoId)
+        {
+            TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            TodoViewModel model = new(baseModel);
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return Unauthorized("Access denied.");
+            }
+
+            todoItem.CompletedDate = null;
+            todoItem.Status = (int)TodoStatusTypes.TodoStatusType.NotStarted;
+            TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
+
+            return Json(result);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> SetTodoAsInProgress(int todoId)
+        {
+            TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            TodoViewModel model = new(baseModel);
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return Unauthorized("Access denied.");
+            }
+
+            todoItem.CompletedDate = null;
+            todoItem.Status = (int)TodoStatusTypes.TodoStatusType.InProgress;
+            TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
+
+            return Json(result);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> SetTodoAsCompleted(int todoId)
+        {
+            TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            TodoViewModel model = new(baseModel);
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return Unauthorized("Access denied.");
+            }
+
+            todoItem.CompletedDate = DateTime.UtcNow;
+            todoItem.Status = (int)TodoStatusTypes.TodoStatusType.Completed;
+            TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
+
+            return Json(result);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> SetTodoAsCancelled(int todoId)
+        {
+            TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            TodoViewModel model = new(baseModel);
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return Unauthorized("Access denied.");
+            }
+
+            todoItem.CompletedDate = null;
+            todoItem.Status = (int)TodoStatusTypes.TodoStatusType.Cancelled;
+            TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
+
+            return Json(result);
         }
     }
 }
