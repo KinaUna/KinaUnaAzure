@@ -58,7 +58,7 @@ function setupRichTextEditor() {
 /**
  * Handles the image upload success event for the Rich Text Editor.
  * Updates the file name in the editor after a successful image upload.
- * @param args The event arguments containing the uploaded file information.
+ * @param {any} args The event arguments containing the uploaded file information.
  */
 function onImageUploadSuccess(args) {
     if (args.e.currentTarget.getResponseHeader('name') != null) {
