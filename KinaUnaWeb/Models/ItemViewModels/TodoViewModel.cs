@@ -142,6 +142,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             TodoItem todoItem = new()
             {
+                TodoItemId = TodoItem.TodoItemId,
                 ProgenyId = CurrentProgenyId,
                 Description = TodoItem.Description,
                 AccessLevel = TodoItem.AccessLevel,

@@ -24,7 +24,7 @@
             <h2 class="col-12">@ViewData["Title"]</h2>
             <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             <div class="space-20"></div>
-            <form id="save-item-form" asp-action="AddTodo" asp-controller="Todos" role="form" method="post">
+            <form id="save-item-form" asp-action="EditTodo" asp-controller="Todos" role="form" method="post">
                 <div class="form-group">
                     <label asp-for="TodoItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
                     <div class="col-auto">
@@ -59,6 +59,15 @@
                         <div class="input-group date">
                             <input id="todo-due-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.DueDate"
                                    value="@Model.TodoItem.DueDate?.ToString(longDateTimeFormat)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TodoItem.StartDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Start Date", PageNames.Notes, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <div class="input-group date">
+                            <input id="todo-start-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.StartDate"
+                                   value="@Model.TodoItem.StartDate?.ToString(longDateTimeFormat)"/>
                         </div>
                     </div>
                 </div>
