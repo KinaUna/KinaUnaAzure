@@ -26,27 +26,27 @@ namespace KinaUna.Data.Extensions
                 throw new ArgumentNullException(nameof(todoItem), "TodoItem cannot be null.");
             }
 
-            if (todoItem.Status == 0)
+            if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.NotStarted)
             {
                 return "Not started";
             }
 
-            if (todoItem.Status == 1)
+            if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.InProgress)
             {
                 return "In progress";
             }
 
-            if (todoItem.Status == 2)
+            if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.Completed)
             {
                 return "Completed";
             }
 
-            if (todoItem.Status == 3)
+            if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.Cancelled)
             {
                 return "Cancelled";
             }
 
-            if (todoItem.Status == 4)
+            if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.Overdue)
             {
                 return "Overdue";
             }

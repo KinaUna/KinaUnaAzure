@@ -4,7 +4,7 @@
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.TypeScriptModels.TodoItems.TodoItemResponse
 @inject ILocaleManager LocaleManager
-<button class="col-12 card text-white bg-notes note-item" data-todo-id="@Model.TodoItemId" align="left" style="min-width: 49%;">
+<button class="col-12 card text-white bg-todos note-item" data-todo-id="@Model.TodoItemId" align="left" style="min-width: 49%;">
     @if (Model.TodoItem.TodoItemId == 0)
     {
         <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
@@ -14,21 +14,22 @@
         <div class="card-header rounded w-100 p-0 pt-2" style="padding-right: 5px; margin-bottom: 0;">
             <img class="float-right" src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" style="max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;" />
             <div class="card-title text-left"><span class="pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">fact_check</i> </span><span class="h4">@Model.TodoItem.Title</span></div>
-            <div class="row card-category text-white-50">
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-4 text-left">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
                 @if (Model.TodoItem.StartDate.HasValue)
                 {
-                    <div>@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId): @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                    <div class="col-12 col-sm-6 col-md-4 text-left">@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId): @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
                 }
                 else
                 {
-                    <div>@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId): @Model.TodoItem.CreatedTime.ToString("dd-MMM-yyyy")</div>
+                    <div class="col-12 col-sm-6 col-md-4 text-left">@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId): @Model.TodoItem.CreatedTime.ToString("dd-MMM-yyyy")</div>
                 }
                 @if (Model.TodoItem.DueDate.HasValue)
                 {
-                    <div>@await LocaleManager.GetTranslation("Due", PageNames.Todos, Model.LanguageId): @Model.TodoItem.DueDate.Value.ToString("dd-MMM-yyyy")</div>
+                    <div class="col-12 col-sm-6 col-md-4 text-left">@await LocaleManager.GetTranslation("Due", PageNames.Todos, Model.LanguageId): @Model.TodoItem.DueDate.Value.ToString("dd-MMM-yyyy")</div>
                 }
             </div>
-            <div>@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
+            
         </div>
         <div class="card-body p-0 w-100">
             <div class="card-text">

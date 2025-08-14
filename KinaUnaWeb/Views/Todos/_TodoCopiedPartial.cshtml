@@ -8,7 +8,7 @@
     string title = await LocaleManager.GetTranslation("Todo copied", PageNames.Todos, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
-    <div class="timeline-card-body bg-notes item-details-content">
+    <div class="timeline-card-body bg-todos item-details-content">
         <div class="row m-0">
             <div class="col-12">
                 <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
@@ -43,7 +43,7 @@
                         <div class="col-12 text-right">
                             @foreach (string contextString in contextsList)
                             {
-                                <span class="btn category-item tag-item-sm">@contextString</span>
+                                <span class="btn context-item tag-item-sm">@contextString</span>
                             }
                         </div>
                     }

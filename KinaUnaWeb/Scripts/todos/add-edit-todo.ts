@@ -11,8 +11,19 @@ async function setupDateTimePicker(): Promise<void> {
     zebraDateTimeFormat = getZebraDateTimeFormat('#add-todo-zebra-date-time-format-div');
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
 
-    const dateTimePicker: any = $('#todo-due-date-time-picker');
-    dateTimePicker.Zebra_DatePicker({
+    const dueDateTimePicker: any = $('#todo-due-date-time-picker');
+    dueDateTimePicker.Zebra_DatePicker({
+        format: zebraDateTimeFormat,
+        open_icon_only: true,
+        days: zebraDatePickerTranslations.daysArray,
+        months: zebraDatePickerTranslations.monthsArray,
+        lang_clear_date: zebraDatePickerTranslations.clearString,
+        show_select_today: zebraDatePickerTranslations.todayString,
+        select_other_months: true
+    });
+
+    const startDateTimePicker: any = $('#todo-start-date-time-picker');
+    startDateTimePicker.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,
         days: zebraDatePickerTranslations.daysArray,

@@ -72,6 +72,15 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label asp-for="TodoItem.CompletedDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Completed Date", PageNames.Notes, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <div class="input-group date">
+                            <input id="todo-completed-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.CompletedDate"
+                                   value="@Model.TodoItem.CompletedDate?.ToString(longDateTimeFormat)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId) </label>
                     <div class="col-auto">
                         <select id="todo-status-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.StatusList.Count" asp-for="TodoItem.Status" asp-items="@Model.StatusList"></select>
