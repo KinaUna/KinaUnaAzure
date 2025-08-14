@@ -242,15 +242,9 @@ namespace KinaUnaWeb
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
             }).AddNewtonsoftJson().AddViewLocalization();
-
-            IMvcBuilder mvcBuilder = services.AddRazorPages();
-
-            if (env.IsDevelopment())
-            {
-                mvcBuilder.AddRazorRuntimeCompilation();
-            }
-
+            
             services.AddExceptionHandler<AuthenticationExceptionHandler>();
+            services.AddExceptionHandler<GlobalExceptionHandler>();
             services.AddProblemDetails();
 
             services.AddSignalR().AddMessagePackProtocol().AddNewtonsoftJsonProtocol();

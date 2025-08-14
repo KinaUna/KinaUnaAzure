@@ -7,7 +7,7 @@
     string title = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
-    <div class="timeline-card-body bg-notes item-details-content">
+    <div class="timeline-card-body bg-todos item-details-content">
         <div class="row m-0">
             <div class="col-12">
                 <img src="@Model.TodoItem.Progeny.PictureLink" class="item-details-title-picture" />
@@ -49,7 +49,7 @@
                         <div class="col-12 text-right">
                             @foreach (string contextsString in contextsList)
                             {
-                                <span class="btn category-item tag-item-sm">@contextsString</span>
+                                <span class="btn context-item tag-item-sm">@contextsString</span>
                             }
                         </div>
                     }

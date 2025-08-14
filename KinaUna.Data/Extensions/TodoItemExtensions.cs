@@ -13,6 +13,48 @@ namespace KinaUna.Data.Extensions
     public static class TodoItemExtensions
     {
         /// <summary>
+        /// Returns a user-friendly status text based on the <see cref="TodoItem.Status"/> value.
+        /// </summary>
+        /// <param name="todoItem">The <see cref="TodoItem"/> instance for which to retrieve the status text.</param>
+        /// <returns>The status text corresponding to the <see cref="TodoItem.Status"/> value. Possible values are:
+        /// Not started, In progress, Completed, Cancelled, Overdue, or Unknown status.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static string StatusText(this TodoItem todoItem)
+        {
+            if (todoItem == null)
+            {
+                throw new ArgumentNullException(nameof(todoItem), "TodoItem cannot be null.");
+            }
+
+            if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.NotStarted)
+            {
+                return "Not started";
+            }
+
+            if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.InProgress)
+            {
+                return "In progress";
+            }
+
+            if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.Completed)
+            {
+                return "Completed";
+            }
+
+            if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.Cancelled)
+            {
+                return "Cancelled";
+            }
+
+            if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.Overdue)
+            {
+                return "Overdue";
+            }
+
+            return "Unknown status";
+        }
+
+        /// <summary>
         /// Copies the properties of the specified <see cref="TodoItem"/> to the current <see cref="TodoItem"/>
         /// instance.
         /// </summary>

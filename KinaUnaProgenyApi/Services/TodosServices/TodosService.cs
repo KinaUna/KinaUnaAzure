@@ -249,6 +249,24 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             {
                 return null; // Item not found
             }
+
+            // Check if the status has changed and update the completed date accordingly
+            if (todoItem.Status != currentTodoItem.Status)
+            {
+                if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.Completed)
+                {
+                    todoItem.CompletedDate = DateTime.UtcNow;
+                }
+                else if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.Cancelled)
+                {
+                    todoItem.CompletedDate = null; // Reset completed date if cancelled
+                }
+                else
+                {
+                    todoItem.CompletedDate = currentTodoItem.CompletedDate; // Keep the existing completed date for other statuses
+                }
+            }
+
             // Update properties
             currentTodoItem.CopyPropertiesForUpdate(todoItem);
             progenyDbContext.TodoItemsDb.Update(currentTodoItem);

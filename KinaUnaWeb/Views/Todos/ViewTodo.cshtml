@@ -8,7 +8,7 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    <div class="timeline-card-body bg-notes">
+    <div class="timeline-card-body bg-todos">
         <div class="row m-0 h5">
             <div class="col-12">
                 <div class="space-20">
@@ -35,7 +35,7 @@
                         <div class="text-right">
                             @foreach (string contextString in contextsList)
                             {
-                                <span class="btn category-item tag-item-sm">@contextString</span>
+                                <span class="btn context-item tag-item-sm">@contextString</span>
                             }
                         </div>
                     }
