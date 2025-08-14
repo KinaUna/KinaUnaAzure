@@ -96,7 +96,7 @@ function onRichTextEditorFocus() {
 }
 /**
  * Initializes the Add/Edit Note page by setting up the date time picker, progeny select list, tags and categories auto suggest lists, and the Rich Text Editor.
- * @returns A promise that resolves when the initialization is complete.
+ * @returns {Promise<void>} A promise that resolves when the initialization is complete.
  */
 export async function initializeAddEditNote() {
     languageId = getCurrentLanguageId();
