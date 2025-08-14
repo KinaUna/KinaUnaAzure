@@ -162,6 +162,19 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             return todoItemsForProgeny;
         }
 
+        /// <summary>
+        /// Creates a <see cref="TodoItemsResponse"/> object for a paginated and sorted list of todo items.
+        /// </summary>
+        /// <remarks>The method applies sorting based on the <paramref name="request"/> parameter's
+        /// <c>Sort</c> property, where <c>1</c> indicates sorting by due date in descending order, and other values
+        /// indicate sorting by due date in ascending order. Pagination is applied if the <c>NumberOfItems</c> property
+        /// in the <paramref name="request"/> is greater than zero. Additionally, the response includes distinct tags
+        /// and contexts extracted from the todo items.</remarks>
+        /// <param name="todoItemsForProgenies">The list of todo items to be included in the response. This list may be filtered, sorted, and paginated
+        /// based on the request parameters.</param>
+        /// <param name="request">The request object containing pagination, sorting, and other parameters used to generate the response.</param>
+        /// <returns>A <see cref="TodoItemsResponse"/> object containing the paginated and sorted todo items, along with metadata
+        /// such as total items, total pages, and extracted tags and contexts.</returns>
         public TodoItemsResponse CreateTodoItemsResponseForTodoPage(List<TodoItem> todoItemsForProgenies, TodoItemsRequest request)
         {
             TodoItemsResponse response = new()

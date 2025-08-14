@@ -95,6 +95,9 @@ namespace KinaUna.Data.Models
         /// </summary>
         public bool IsDeleted { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets the associated progeny data for the current entity.
+        /// </summary>
         [NotMapped]
         public Progeny Progeny { get; set; } = new Progeny();
 

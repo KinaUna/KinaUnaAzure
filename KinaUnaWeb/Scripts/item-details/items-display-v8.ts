@@ -13,6 +13,7 @@ import { addVocabularyItemListeners, popupVocabularyItem } from '../vocabulary/v
 import { addVaccinationItemListeners, popupVaccinationItem } from '../vaccinations/vaccination-details.js';
 import { addTodoItemListeners, popupTodoItem } from '../todos/todo-details.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
+
 /**
  * Adds event listeners for a given timeline item. Used to show popups for items.
  * @param {TimelineItem} item The timeline item to add event listeners for.
@@ -91,6 +92,11 @@ export function showBodyScrollbars(): void {
     }
 }
 
+/**
+ * Retrieves the item ID from the popup div based on the item type string.
+ * @param {string} itemTypeString The string representing the item type (e.g., 'picture', 'video').
+ * @returns {number} The item ID, or 0 if not found.
+ */
 function getItemIdFromPopupDiv(itemTypeString: string): number {
     let itemId = 0;
 
@@ -107,6 +113,7 @@ function getItemIdFromPopupDiv(itemTypeString: string): number {
 
     return itemId;
 }
+
 /**
  * Shows the video details popup when the page is loaded, if the url query string contains videoId that is not 0.
  */

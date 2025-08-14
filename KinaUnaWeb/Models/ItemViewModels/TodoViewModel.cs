@@ -138,6 +138,13 @@ namespace KinaUnaWeb.Models.ItemViewModels
             TodoItem.Progeny = todoItem.Progeny;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="TodoItem"/> instance based on the current state of the application.
+        /// </summary>
+        /// <remarks>This method initializes a <see cref="TodoItem"/> object using the current user's
+        /// timezone and other contextual data. The created <see cref="TodoItem"/> includes properties such as
+        /// description, title, and timestamps converted to UTC.</remarks>
+        /// <returns>A new <see cref="TodoItem"/> instance populated with the relevant data.</returns>
         public TodoItem CreateTodoItem()
         {
             TodoItem todoItem = new()
@@ -150,9 +157,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Title = TodoItem.Title,
                 CreatedTime = TimeZoneInfo.ConvertTimeToUtc(TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
                 CreatedBy = CurrentUser.UserId,
-                StartDate = TodoItem.StartDate.HasValue ? TimeZoneInfo.ConvertTimeToUtc(TodoItem.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)) : null,
-                DueDate = TodoItem.DueDate.HasValue ? TimeZoneInfo.ConvertTimeToUtc(TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)) : null,
-                CompletedDate = TodoItem.CompletedDate.HasValue ? TimeZoneInfo.ConvertTimeToUtc(TodoItem.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)) : null,
+                StartDate = TodoItem.StartDate.HasValue ? TimeZoneInfo.ConvertTimeToUtc(TodoItem.StartDate.Value.Date + TimeSpan.FromHours(12), TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)) : null,
+                DueDate = TodoItem.DueDate.HasValue ? TimeZoneInfo.ConvertTimeToUtc(TodoItem.DueDate.Value.Date + TimeSpan.FromHours(12), TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)) : null,
+                CompletedDate = TodoItem.CompletedDate.HasValue ? TimeZoneInfo.ConvertTimeToUtc(TodoItem.CompletedDate.Value.Date + TimeSpan.FromHours(12), TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)) : null,
                 Notes = TodoItem.Notes,
                 Status = TodoItem.Status,
                 Tags = TodoItem.Tags,

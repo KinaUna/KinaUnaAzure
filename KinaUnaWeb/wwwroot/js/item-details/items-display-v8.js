@@ -75,6 +75,11 @@ export function showBodyScrollbars() {
         bodyElement.style.removeProperty('overflow');
     }
 }
+/**
+ * Retrieves the item ID from the popup div based on the item type string.
+ * @param {string} itemTypeString The string representing the item type (e.g., 'picture', 'video').
+ * @returns {number} The item ID, or 0 if not found.
+ */
 function getItemIdFromPopupDiv(itemTypeString) {
     let itemId = 0;
     const popupIdDiv = document.querySelector('#popup-' + itemTypeString + '-id-div');

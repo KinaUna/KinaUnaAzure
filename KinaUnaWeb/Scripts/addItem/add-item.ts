@@ -27,6 +27,12 @@ export function setAddItemButtonEventListeners(): void {
     });
 }
 
+/**
+ * Handles the click event for the add item button.
+ * It retrieves the item type and progeny id from the button's data attributes,
+ * then opens the add item modal for the specified type and progeny.
+ * @param event The mouse event that triggered the click.
+ */
 async function onAddItemButtonClicked(event: MouseEvent): Promise<void> {
     event.preventDefault();
     startFullPageSpinner();
@@ -165,6 +171,12 @@ export function setEditItemButtonEventListeners(): void {
     });
 }
 
+/**
+ * Handles the click event for the edit item button.
+ * It retrieves the item type and progeny id from the button's data attributes,
+ * then opens the edit item modal for the specified type and progeny.
+ * @param event The mouse event that triggered the click.
+ */
 async function onEditItemButtonClicked(event: MouseEvent): Promise<void> {
     event.preventDefault();
     startFullPageSpinner();
@@ -183,6 +195,12 @@ async function onEditItemButtonClicked(event: MouseEvent): Promise<void> {
     });
 }
 
+/**
+ * Handles the click event for the copy item button.
+ * It retrieves the item type and item id from the button's data attributes,
+ * then opens the copy item modal for the specified type and item id.
+ * @param event The mouse event that triggered the click.
+ */
 async function onCopyItemButtonClicked(event: MouseEvent): Promise<void> {
     event.preventDefault();
     startFullPageSpinner();
@@ -419,6 +437,12 @@ export function setDeleteItemButtonEventListeners(): void {
     });
 }
 
+/**
+ * Handles the click event for the delete item button.
+ * It retrieves the item type and item id from the button's data attributes,
+ * then opens the delete item modal for the specified type and item id.
+ * @param event The mouse event that triggered the click.
+ */
 async function onDeleteItemButtonClicked(event: MouseEvent): Promise<void> {
     event.preventDefault();
     startFullPageSpinner();
@@ -496,6 +520,10 @@ function addCloseButtonEventListener(): void {
     }
 }
 
+/**
+ * Handles the click event for the close button in the item details popup.
+ * It hides the popup and shows the body scrollbars.
+ */
 function onCloseButtonClicked() {
     const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
     if (itemDetailsPopupDiv) {
@@ -518,6 +546,10 @@ function addCancelButtonEventListener(): void {
     }
 }
 
+/**
+ * Handles the click event for the cancel button in the add or edit item popup.
+ * It hides the popup and shows the body scrollbars.
+ */
 function onCancelButtonClicked() {
     const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
     if (itemDetailsPopupDiv) {
@@ -538,6 +570,12 @@ function setSaveItemFormEventListener(): void {
     }
 }
 
+/**
+ * Handles the submission of the save item form.
+ * It prevents the default form submission, sends the form data to the server,
+ * and displays the response in the item details popup.
+ * @param event The submit event triggered by the form submission.
+ */
 async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
     startFullPageSpinner();

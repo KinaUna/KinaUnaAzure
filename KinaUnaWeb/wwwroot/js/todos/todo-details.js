@@ -181,6 +181,11 @@ async function onSetAsCancelledButtonClicked(event) {
         }
     }
 }
+/**
+ * Sets up event listeners for the todo details popup.
+ * @param {string} itemId The id of the todo item to set event listeners for.
+ * @param {HTMLDivElement} todoDetailsPopupDiv The div element for the todo details popup.
+ */
 async function setTodoDetailsEventListeners(itemId, todoDetailsPopupDiv) {
     let closeButtonsList = document.querySelectorAll('.item-details-close-button');
     if (closeButtonsList) {

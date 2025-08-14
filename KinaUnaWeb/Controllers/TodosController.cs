@@ -246,7 +246,20 @@ namespace KinaUnaWeb.Controllers
 
             model.TodoItem = await todoItemsHttpClient.AddTodoItem(todoItem);
             model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            if (model.TodoItem.CompletedDate.HasValue)
+            {
+                model.TodoItem.CompletedDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
 
+            if (model.TodoItem.StartDate.HasValue)
+            {
+                model.TodoItem.StartDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            if (model.TodoItem.DueDate.HasValue)
+            {
+                model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
             return PartialView("_TodoAddedPartial", model);
         }
 
@@ -302,7 +315,18 @@ namespace KinaUnaWeb.Controllers
 
             model.TodoItem = await todoItemsHttpClient.UpdateTodoItem(editedTodoItem);
             model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-
+            if (model.TodoItem.CompletedDate.HasValue)
+            {
+                model.TodoItem.CompletedDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            if (model.TodoItem.StartDate.HasValue)
+            {
+                model.TodoItem.StartDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            if (model.TodoItem.DueDate.HasValue)
+            {
+                model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
             return PartialView("_TodoUpdatedPartial", model);
         }
 
@@ -411,6 +435,14 @@ namespace KinaUnaWeb.Controllers
             return PartialView("_TodoCopiedPartial", model);
         }
 
+        /// <summary>
+        /// Sets the status of a specified to-do item to "Not Started."
+        /// </summary>
+        /// <remarks>This method requires the user to be authorized and ensures that the user has
+        /// administrative access to the associated progeny before updating the to-do item.</remarks>
+        /// <param name="todoId">The unique identifier of the to-do item to update.</param>
+        /// <returns>An <see cref="IActionResult"/> containing the updated to-do item in JSON format if the operation succeeds.
+        /// Returns <see cref="UnauthorizedResult"/> if the user does not have the necessary permissions.</returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> SetTodoAsNotStarted(int todoId)
@@ -430,6 +462,14 @@ namespace KinaUnaWeb.Controllers
             return Json(result);
         }
 
+        /// <summary>
+        /// Marks the specified to-do item as "In Progress" and updates its status.
+        /// </summary>
+        /// <remarks>This method requires the user to be authorized and ensures that the user has
+        /// administrative access to the associated progeny before updating the to-do item's status.</remarks>
+        /// <param name="todoId">The unique identifier of the to-do item to update.</param>
+        /// <returns>An <see cref="IActionResult"/> containing the updated to-do item in JSON format if the operation succeeds.
+        /// Returns <see cref="UnauthorizedResult"/> if the user does not have the necessary permissions.</returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> SetTodoAsInProgress(int todoId)
@@ -449,6 +489,16 @@ namespace KinaUnaWeb.Controllers
             return Json(result);
         }
 
+        /// <summary>
+        /// Marks the specified to-do item as completed and updates its status.
+        /// </summary>
+        /// <remarks>This method requires the user to be authorized and ensures that the user has
+        /// administrative access to the progeny associated with the to-do item. If the user is not authorized, the
+        /// method returns an HTTP 401 Unauthorized response.</remarks>
+        /// <param name="todoId">The unique identifier of the to-do item to be marked as completed.</param>
+        /// <returns>An <see cref="IActionResult"/> containing the updated to-do item in JSON format if the operation succeeds.
+        /// Returns <see cref="UnauthorizedResult"/> if the user does not have administrative access to the associated
+        /// progeny.</returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> SetTodoAsCompleted(int todoId)
@@ -468,6 +518,16 @@ namespace KinaUnaWeb.Controllers
             return Json(result);
         }
 
+        /// <summary>
+        /// Marks the specified to-do item as cancelled.
+        /// </summary>
+        /// <remarks>This method requires the user to be authorized and ensures that the user has
+        /// administrative access to the progeny associated with the to-do item. The to-do item's status is updated to
+        /// "Cancelled," and its completion date is cleared.</remarks>
+        /// <param name="todoId">The unique identifier of the to-do item to be marked as cancelled.</param>
+        /// <returns>An <see cref="IActionResult"/> containing the updated to-do item in JSON format if the operation succeeds.
+        /// Returns <see cref="UnauthorizedResult"/> if the current user does not have administrative access to the
+        /// associated progeny.</returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> SetTodoAsCancelled(int todoId)
