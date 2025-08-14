@@ -18,6 +18,12 @@ export function addTodoItemListeners(itemId: string): void {
     }
 }
 
+/**
+ * Adds a click event listener to the todo item div.
+ * When clicked, it calls the onTodoItemDivClicked function.
+ * @param {MouseEvent} event The click event.
+ * @returns {Promise<void>} A promise that resolves when the function completes.
+ * */
 async function onTodoItemDivClicked(event: MouseEvent): Promise<void> {
     const todoElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
     if (todoElement !== null) {
@@ -40,6 +46,202 @@ export async function popupTodoItem(todoId: string): Promise<void> {
     });
 }
 
+/**
+ * Handles the click event for the "Set as Not Started" button.
+ * When clicked, it sends a request to set the todo item as not started.
+ * @param {MouseEvent} event The click event.
+ * @return {Promise<void>} A promise that resolves when the function completes.
+ * */
+async function onSetAsNotStartedButtonClicked(event: MouseEvent): Promise<void> {
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoId = buttonElement.dataset.setTodoItemNotStartedId;
+        if (todoId) {
+            startFullPageSpinner();
+            let url = '/Todos/SetTodoAsNotStarted?todoId=' + todoId;
+            await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+            }).then(async function (response) {
+                if (response.ok) {
+                    stopFullPageSpinner();
+                    await displayTodoItem(todoId);
+                    return;
+
+                } else {
+                    console.error('Error setting todo as not started. Status: ' + response.status + ', Message: ' + response.statusText);
+                }
+            }).catch(function (error) {
+                console.error('Error setting todo as not started. Error: ' + error);
+            });
+            stopFullPageSpinner();
+        }
+    }
+}
+
+/**
+ * Handles the click event for the "Set as In Progress" button.
+ * When clicked, it sends a request to set the todo item as in progress.
+ * @param {MouseEvent} event The click event.
+ * @return {Promise<void>} A promise that resolves when the function completes.
+ * */
+async function onSetAsInProgressButtonClicked(event: MouseEvent): Promise<void> {
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoId = buttonElement.dataset.setTodoItemInProgressId;
+        if (todoId) {
+            startFullPageSpinner();
+            let url = '/Todos/SetTodoAsInProgress?todoId=' + todoId;
+            await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+            }).then(async function (response) {
+                if (response.ok) {
+                    stopFullPageSpinner();
+                    await displayTodoItem(todoId);
+                    return;
+
+                } else {
+                    console.error('Error setting todo as in progress. Status: ' + response.status + ', Message: ' + response.statusText);
+                }
+            }).catch(function (error) {
+                console.error('Error setting todo as in progress. Error: ' + error);
+            });
+            stopFullPageSpinner();
+        }
+    }
+}
+
+/**
+ * Handles the click event for the "Set as Done" button.
+ * When clicked, it sends a request to set the todo item as done.
+ * @param {MouseEvent} event The click event.
+ * @return {Promise<void>} A promise that resolves when the function completes.
+ * */
+async function onSetAsCompletedButtonClicked(event: MouseEvent): Promise<void> {
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoId = buttonElement.dataset.setTodoItemCompletedId;
+        if (todoId) {
+            startFullPageSpinner();
+            let url = '/Todos/SetTodoAsCompleted?todoId=' + todoId;
+            await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+            }).then(async function (response) {
+                if (response.ok) {
+                    stopFullPageSpinner();
+                    await displayTodoItem(todoId);
+                    return;
+
+                } else {
+                    console.error('Error setting todo as completed. Status: ' + response.status + ', Message: ' + response.statusText);
+                }
+            }).catch(function (error) {
+                console.error('Error setting todo as completed. Error: ' + error);
+            });
+            stopFullPageSpinner();
+        }
+    }
+}
+
+/**
+ * Handles the click event for the "Set as Cancelled" button.
+ * When clicked, it sends a request to set the todo item as cancelled.
+ * @param {MouseEvent} event The click event.
+ * @return {Promise<void>} A promise that resolves when the function completes.
+ * */
+async function onSetAsCancelledButtonClicked(event: MouseEvent): Promise<void> {
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoId = buttonElement.dataset.setTodoItemCancelledId;
+        if (todoId) {
+            startFullPageSpinner();
+            let url = '/Todos/SetTodoAsCancelled?todoId=' + todoId;
+            await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+            }).then(async function (response) {
+                if (response.ok) {
+                    stopFullPageSpinner();
+                    await displayTodoItem(todoId);
+                    return;
+
+                } else {
+                    console.error('Error setting todo as cancelled. Status: ' + response.status + ', Message: ' + response.statusText);
+                }
+            }).catch(function (error) {
+                console.error('Error setting todo as cancelled. Error: ' + error);
+            });
+            stopFullPageSpinner();
+        }
+    }
+}
+
+async function setTodoDetailsEventListeners(itemId: string, todoDetailsPopupDiv: HTMLDivElement) {
+    let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
+    if (closeButtonsList) {
+        closeButtonsList.forEach((button) => {
+            button.addEventListener('click', function () {
+                todoDetailsPopupDiv.innerHTML = '';
+                todoDetailsPopupDiv.classList.add('d-none');
+                showBodyScrollbars();
+            });
+        });
+    }
+
+    const todoElementsWithDataCompletedId = document.querySelectorAll<HTMLButtonElement>('[data-set-todo-item-completed-id="' + itemId + '"]');
+    if (todoElementsWithDataCompletedId) {
+        todoElementsWithDataCompletedId.forEach((element) => {
+            element.addEventListener('click', async function (event: MouseEvent) {
+                event.stopPropagation(); // Prevent the click from bubbling up to the todo item div
+                await onSetAsCompletedButtonClicked(event);
+            });
+        });
+    }
+
+    const todoElementsWithDataCancelledId = document.querySelectorAll<HTMLButtonElement>('[data-set-todo-item-cancelled-id="' + itemId + '"]');
+    if (todoElementsWithDataCancelledId) {
+        todoElementsWithDataCancelledId.forEach((element) => {
+            element.addEventListener('click', async function (event: MouseEvent) {
+                event.stopPropagation(); // Prevent the click from bubbling up to the todo item div
+                await onSetAsCancelledButtonClicked(event);
+            });
+        });
+    }
+
+    const todoElementsWithDataInProgressId = document.querySelectorAll<HTMLButtonElement>('[data-set-todo-item-in-progress-id="' + itemId + '"]');
+    if (todoElementsWithDataInProgressId) {
+        todoElementsWithDataInProgressId.forEach((element) => {
+            element.addEventListener('click', async function (event: MouseEvent) {
+                event.stopPropagation(); // Prevent the click from bubbling up to the todo item div
+                await onSetAsInProgressButtonClicked(event);
+            });
+        });
+    }
+
+    const todoElementsWithDataNotStartedId = document.querySelectorAll<HTMLButtonElement>('[data-set-todo-item-not-started-id="' + itemId + '"]');
+    if (todoElementsWithDataNotStartedId) {
+        todoElementsWithDataNotStartedId.forEach((element) => {
+            element.addEventListener('click', async function (event: MouseEvent) {
+                event.stopPropagation(); // Prevent the click from bubbling up to the todo item div
+                await onSetAsNotStartedButtonClicked(event);
+            });
+        });
+    }
+}
 /**
  * Displays a todo item in a popup.
  * @param {string} todoId The id of the todo item to display.
@@ -64,17 +266,7 @@ async function displayTodoItem(todoId: string): Promise<void> {
                 todoDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
                 todoDetailsPopupDiv.classList.remove('d-none');
-                let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
-                if (closeButtonsList) {
-                    closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
-                            todoDetailsPopupDiv.innerHTML = '';
-                            todoDetailsPopupDiv.classList.add('d-none');
-                            showBodyScrollbars();
-                        });
-                    });
-                }
-
+                setTodoDetailsEventListeners(todoId, todoDetailsPopupDiv);
                 setEditItemButtonEventListeners();
             }
         } else {

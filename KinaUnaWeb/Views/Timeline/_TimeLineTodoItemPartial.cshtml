@@ -7,7 +7,7 @@
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
-<button class="item-btn note-item" data-todo-id="@Model.TodoItemId">
+<button class="item-btn todo-item" data-todo-id="@Model.TodoItemId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-todos">
             <div class="row">
@@ -20,7 +20,15 @@
                         @Model.Title
                     </div>
                     <div class="timeline-text text-white">
-                        
+                        <div>@await LocaleManager.GetTranslation("Status", PageNames.Todos, languageId): @await LocaleManager.GetTranslation(Model.StatusText(), PageNames.Todos, languageId)</div>
+                        @if (Model.CompletedDate.HasValue && Model.Status == (int)TodoStatusTypes.TodoStatusType.Completed)
+                        {
+                            <div>@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, languageId) : @Model.CompletedDate?.ToString("dd-MMM-yyyy")</div>
+                        }
+                        @if (Model.DueDate.HasValue)
+                        {
+                            <div>@await LocaleManager.GetTranslation("Due", PageNames.Todos, languageId): @Model.DueDate.Value.ToString("dd-MMM-yyyy")</div>
+                        }
                         @if (Model.StartDate.HasValue)
                         {
                             <div>@await LocaleManager.GetTranslation("Start", PageNames.Todos, languageId): @Model.StartDate.Value.ToString("dd-MMM-yyyy")</div>
@@ -29,12 +37,7 @@
                         {
                             <div>@await LocaleManager.GetTranslation("Start", PageNames.Todos, languageId): @Model.CreatedTime.ToString("dd-MMM-yyyy")</div>
                         }
-                        @if (Model.DueDate.HasValue)
-                        {
-                            <div>@await LocaleManager.GetTranslation("Due", PageNames.Todos, languageId): @Model.DueDate.Value.ToString("dd-MMM-yyyy")</div>
-                        }
                     </div>
-                    <div>@await LocaleManager.GetTranslation("Status", PageNames.Todos, languageId): @await LocaleManager.GetTranslation(Model.StatusText(), PageNames.Todos, languageId)</div>
                     <div class="timeline-text text-white-50">
                         <div class="timeline-noteitem-text rounded text-dark bg-white">@Html.Raw(HttpUtility.HtmlDecode(Model.Description))</div>
                         @if (!string.IsNullOrEmpty(Model.Context))
@@ -43,7 +46,7 @@
                             <div class="text-right">
                                 @foreach (string contextString in contextsList)
                                 {
-                                    <span class="btn category-item tag-item-sm">@contextString</span>
+                                    <span class="btn context-item tag-item-sm">@contextString</span>
                                 }
                             </div>
                         }
