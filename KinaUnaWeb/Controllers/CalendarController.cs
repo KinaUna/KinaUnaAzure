@@ -24,6 +24,7 @@ namespace KinaUnaWeb.Controllers
     public class CalendarController(
         ICalendarsHttpClient calendarsHttpClient,
         ICalendarRemindersHttpClient calendarRemindersHttpClient,
+        ITodoItemsHttpClient todoItemsHttpClient,
         IViewModelSetupService viewModelSetupService,
         IUserInfosHttpClient userInfosHttpClient,
         IProgenyHttpClient progenyHttpClient) : Controller
@@ -401,23 +402,32 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> GetUpcomingEventsList([FromBody] TimelineParameters parameters)
         {
             TimelineList timelineList = new();
-            CalendarItemsRequest request = new()
+            CalendarItemsRequest calendarItemsRequest = new()
             {
                 ProgenyIds = parameters.Progenies,
                 StartDate = DateTime.UtcNow.Date,
                 EndDate = DateTime.UtcNow.Date.AddYears(10) // ToDo: Make this configurable
             };
             
-            List<CalendarItem> upcomingCalendarItems = await calendarsHttpClient.GetProgeniesCalendarList(request);
+            List<CalendarItem> upcomingCalendarItems = await calendarsHttpClient.GetProgeniesCalendarList(calendarItemsRequest);
 
             upcomingCalendarItems = [.. upcomingCalendarItems.Where(c => c.EndTime > DateTime.UtcNow)];
             upcomingCalendarItems = [.. upcomingCalendarItems.OrderBy(c => c.StartTime)];
             
-            timelineList.AllItemsCount = upcomingCalendarItems.Count;
-            timelineList.RemainingItemsCount = upcomingCalendarItems.Count - parameters.Skip - parameters.Count;
+            TodoItemsRequest todoItemsRequest = new()
+            {
+                ProgenyIds = parameters.Progenies,
+                StartDate = DateTime.UtcNow.Date,
+                EndDate = DateTime.UtcNow.Date.AddYears(10) // ToDo: Make this configurable
+            };
 
-            upcomingCalendarItems = [.. upcomingCalendarItems.Skip(parameters.Skip).Take(parameters.Count)];
+            var upcomingTodoItemsResponse = await todoItemsHttpClient.GetProgeniesTodoItemsList(todoItemsRequest);
+            List<TodoItem> upcomingTodoItems = [.. upcomingTodoItemsResponse.TodoItems.Where(t => t.Status < (int)TodoStatusTypes.TodoStatusType.Completed)];
+            upcomingTodoItems = [.. upcomingTodoItems.OrderBy(t => t.DueDate)];
 
+            timelineList.AllItemsCount = upcomingCalendarItems.Count + upcomingTodoItems.Count;
+            timelineList.RemainingItemsCount = timelineList.AllItemsCount - parameters.Skip - parameters.Count;
+            
             foreach (CalendarItem eventItem in upcomingCalendarItems)
             {
                 TimeLineItem eventTimelineItem = new()
@@ -429,10 +439,30 @@ namespace KinaUnaWeb.Controllers
                     ItemYear = eventItem.StartTime?.Year ?? DateTime.UtcNow.Year,
                     ItemMonth = eventItem.StartTime?.Month ?? DateTime.UtcNow.Month,
                     ItemDay = eventItem.StartTime?.Day ?? DateTime.UtcNow.Day,
+                    ProgenyTime = eventItem.StartTime ?? DateTime.UtcNow,
                 };
                 timelineList.TimelineItems.Add(eventTimelineItem);
             }
-            
+
+            foreach (TodoItem todoItem in upcomingTodoItems)
+            {
+                TimeLineItem todoTimelineItem = new()
+                {
+                    ProgenyId = todoItem.ProgenyId,
+                    AccessLevel = todoItem.AccessLevel,
+                    ItemId = todoItem.TodoItemId.ToString(),
+                    ItemType = (int)KinaUnaTypes.TimeLineType.TodoItem,
+                    ItemYear = todoItem.DueDate?.Year ?? DateTime.UtcNow.Year,
+                    ItemMonth = todoItem.DueDate?.Month ?? DateTime.UtcNow.Month,
+                    ItemDay = todoItem.DueDate?.Day ?? DateTime.UtcNow.Day,
+                    ProgenyTime = todoItem.DueDate ?? DateTime.UtcNow,
+                };
+                timelineList.TimelineItems.Add(todoTimelineItem);
+            }
+
+            timelineList.TimelineItems = [.. timelineList.TimelineItems.OrderBy(t => t.ProgenyTime)];
+            timelineList.TimelineItems = [.. timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count)];
+
             return Json(timelineList);
 
         }
