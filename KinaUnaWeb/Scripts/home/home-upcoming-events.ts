@@ -119,6 +119,9 @@ function setUpcomingEventsEventListeners() {
     }
 }
 
+/**
+ * Adds an event listener for the 'progeniesChanged' event to update the upcoming events list when the selected progenies change.
+ */
 function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');

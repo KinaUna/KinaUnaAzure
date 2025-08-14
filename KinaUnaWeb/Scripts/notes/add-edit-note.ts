@@ -44,6 +44,9 @@ function setupProgenySelectList(): void {
     }
 }
 
+/**
+ * Sets up the Rich Text Editor for the note content field and adds event listeners for image upload success and editor creation.
+ */
 function setupRichTextEditor() {
     const fullScreenOverlay = document.getElementById('full-screen-overlay-div');
     if (fullScreenOverlay !== null) {
@@ -62,6 +65,11 @@ function setupRichTextEditor() {
     }    
 }
 
+/**
+ * Handles the image upload success event for the Rich Text Editor.
+ * Updates the file name in the editor after a successful image upload.
+ * @param args The event arguments containing the uploaded file information.
+ */
 function onImageUploadSuccess(args: any) {
     if (args.e.currentTarget.getResponseHeader('name') != null) {
         args.file.name = args.e.currentTarget.getResponseHeader('name');
@@ -71,6 +79,10 @@ function onImageUploadSuccess(args: any) {
     }
 }
 
+/**
+ * Refreshes the Rich Text Editor UI after it has been created.
+ * This is necessary to ensure that the editor is properly initialized and displayed.
+ */
 function onRichTextEditorCreated() {
     setTimeout(function () {
         let rteElement: any = document.getElementById('content-rich-text-editor');
@@ -84,6 +96,10 @@ function onRichTextEditorCreated() {
         1000);
 }
 
+/**
+ * Refreshes the Rich Text Editor UI when it receives focus.
+ * This ensures that the editor is properly initialized and displayed when focused.
+ */
 function onRichTextEditorFocus() {
     let rteElement: any = document.getElementById('content-rich-text-editor');
     if (rteElement) {
@@ -93,6 +109,10 @@ function onRichTextEditorFocus() {
     }
 }
 
+/**
+ * Initializes the Add/Edit Note page by setting up the date time picker, progeny select list, tags and categories auto suggest lists, and the Rich Text Editor.
+ * @returns A promise that resolves when the initialization is complete.
+ */
 export async function initializeAddEditNote(): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();

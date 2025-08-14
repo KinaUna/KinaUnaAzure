@@ -393,7 +393,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         /// <summary>
-        /// HttpPost action to get a list of upcoming CalendarItems.
+        /// HttpPost action to get a list of upcoming CalendarItems and TodoItems.
         /// </summary>
         /// <param name="parameters">TimeLineParameters object.</param>
         /// <returns>Json of TimelineList object.</returns>

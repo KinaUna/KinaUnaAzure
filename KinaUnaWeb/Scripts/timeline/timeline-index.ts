@@ -560,6 +560,9 @@ function refreshSelectPickers(): void {
     }
 }
 
+/** Adds an event listener for the 'progeniesChanged' event, which is triggered when the selected progenies change.
+ * It updates the timeLineParameters with the new selected progenies and reloads the timeline items list.
+ */
 function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');

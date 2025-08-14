@@ -25,6 +25,12 @@ export function setAddItemButtonEventListeners() {
         button.addEventListener('click', onAddItemButtonClicked);
     });
 }
+/**
+ * Handles the click event for the add item button.
+ * It retrieves the item type and progeny id from the button's data attributes,
+ * then opens the add item modal for the specified type and progeny.
+ * @param event The mouse event that triggered the click.
+ */
 async function onAddItemButtonClicked(event) {
     event.preventDefault();
     startFullPageSpinner();
@@ -139,6 +145,12 @@ export function setEditItemButtonEventListeners() {
         button.addEventListener('click', onCopyItemButtonClicked);
     });
 }
+/**
+ * Handles the click event for the edit item button.
+ * It retrieves the item type and progeny id from the button's data attributes,
+ * then opens the edit item modal for the specified type and progeny.
+ * @param event The mouse event that triggered the click.
+ */
 async function onEditItemButtonClicked(event) {
     event.preventDefault();
     startFullPageSpinner();
@@ -153,6 +165,12 @@ async function onEditItemButtonClicked(event) {
         resolve();
     });
 }
+/**
+ * Handles the click event for the copy item button.
+ * It retrieves the item type and item id from the button's data attributes,
+ * then opens the copy item modal for the specified type and item id.
+ * @param event The mouse event that triggered the click.
+ */
 async function onCopyItemButtonClicked(event) {
     event.preventDefault();
     startFullPageSpinner();
@@ -346,6 +364,12 @@ export function setDeleteItemButtonEventListeners() {
         button.addEventListener('click', onDeleteItemButtonClicked);
     });
 }
+/**
+ * Handles the click event for the delete item button.
+ * It retrieves the item type and item id from the button's data attributes,
+ * then opens the delete item modal for the specified type and item id.
+ * @param event The mouse event that triggered the click.
+ */
 async function onDeleteItemButtonClicked(event) {
     event.preventDefault();
     startFullPageSpinner();
@@ -413,6 +437,10 @@ function addCloseButtonEventListener() {
         });
     }
 }
+/**
+ * Handles the click event for the close button in the item details popup.
+ * It hides the popup and shows the body scrollbars.
+ */
 function onCloseButtonClicked() {
     const itemDetailsPopupDiv = document.querySelector('#item-details-div');
     if (itemDetailsPopupDiv) {
@@ -433,6 +461,10 @@ function addCancelButtonEventListener() {
         });
     }
 }
+/**
+ * Handles the click event for the cancel button in the add or edit item popup.
+ * It hides the popup and shows the body scrollbars.
+ */
 function onCancelButtonClicked() {
     const itemDetailsPopupDiv = document.querySelector('#item-details-div');
     if (itemDetailsPopupDiv) {
@@ -451,6 +483,12 @@ function setSaveItemFormEventListener() {
         addItemForm.addEventListener('submit', onSaveItemFormSubmit);
     }
 }
+/**
+ * Handles the submission of the save item form.
+ * It prevents the default form submission, sends the form data to the server,
+ * and displays the response in the item details popup.
+ * @param event The submit event triggered by the form submission.
+ */
 async function onSaveItemFormSubmit(event) {
     event.preventDefault();
     startFullPageSpinner();
