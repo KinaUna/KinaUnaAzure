@@ -163,17 +163,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         }
 
         /// <summary>
-        /// Creates a <see cref="TodoItemsResponse"/> object for a paginated and sorted list of todo items.
+        /// Creates a <see cref="TodoItemsResponse"/> object for a paginated and sorted list of TodoItems.
         /// </summary>
         /// <remarks>The method applies sorting based on the <paramref name="request"/> parameter's
         /// <c>Sort</c> property, where <c>1</c> indicates sorting by due date in descending order, and other values
         /// indicate sorting by due date in ascending order. Pagination is applied if the <c>NumberOfItems</c> property
         /// in the <paramref name="request"/> is greater than zero. Additionally, the response includes distinct tags
-        /// and contexts extracted from the todo items.</remarks>
-        /// <param name="todoItemsForProgenies">The list of todo items to be included in the response. This list may be filtered, sorted, and paginated
+        /// and contexts extracted from the TodoItems.</remarks>
+        /// <param name="todoItemsForProgenies">The list of TodoItems to be included in the response. This list may be filtered, sorted, and paginated
         /// based on the request parameters.</param>
         /// <param name="request">The request object containing pagination, sorting, and other parameters used to generate the response.</param>
-        /// <returns>A <see cref="TodoItemsResponse"/> object containing the paginated and sorted todo items, along with metadata
+        /// <returns>A <see cref="TodoItemsResponse"/> object containing the paginated and sorted TodoItems, along with metadata
         /// such as total items, total pages, and extracted tags and contexts.</returns>
         public TodoItemsResponse CreateTodoItemsResponseForTodoPage(List<TodoItem> todoItemsForProgenies, TodoItemsRequest request)
         {
@@ -209,7 +209,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             }
 
             response.TodoItems = todoItemsForProgenies;
-            response.PageNumber = request.NumberOfItems > 0 ? request.Skip / request.NumberOfItems : 0;
+            response.PageNumber = request.NumberOfItems > 0 && request.Skip > 0 ? request.Skip / request.NumberOfItems + 1 : 1;
             response.TodoItemsRequest = request;
             response.TagsList = [.. todoItemsForProgenies
                 .SelectMany(t => t.Tags?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? [])

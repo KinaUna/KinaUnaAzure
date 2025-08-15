@@ -496,6 +496,7 @@ export class TodosPageResponse implements BaseItemsPageResponseModel {
     todosList: TodoItem[] = [];
     tagsList: string[] = [];
     contextsList: string[] = [];
+    
 }
 
 export class TodoItemParameters implements BaseItemParameters {

@@ -63,8 +63,8 @@ namespace KinaUnaProgenyApi.Controllers
                     }
                 }
             }
-
-            if (request.Skip <= 0) request.Skip = (request.CurrentPageNumber -1) * request.NumberOfItems;
+            
+            if (request.Skip < 0) request.Skip = 0;
 
             List<TodoItem> todoItems = [];
 

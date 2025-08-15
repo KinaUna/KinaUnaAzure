@@ -57,7 +57,7 @@ namespace KinaUna.Data.Models.DTOs
         /// Gets or sets the number of items to skip for pagination.
         /// </summary>
         public int Skip { get; set; } = 0;
-        public int CurrentPageNumber { get; set; } = 0;
+
         /// <summary>
         /// Gets or sets the number of items to retrieve for pagination.
         /// </summary>

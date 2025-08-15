@@ -17,10 +17,17 @@ function setTodosPageParametersFromPageData() {
         const pageParameters = todosIndexPageParametersDiv.dataset.todosIndexPageParameters;
         if (pageParameters) {
             todosPageParameters = JSON.parse(pageParameters);
+            if (todosPageParameters.sort === 0) {
+                sortTodosAscending();
+            }
+            else {
+                sortTodosDescending();
+            }
         }
     }
 }
 async function getTodos() {
+    moreTodoItemsButton?.classList.add('d-none');
     const getMoreTodosResponse = await fetch('/Todos/GetTodoItemsList', {
         method: 'POST',
         body: JSON.stringify(todosPageParameters),
@@ -39,9 +46,6 @@ async function getTodos() {
                 getTodoElement(0);
             }
             else {
-                if (todosListDiv != null) {
-                    todosListDiv.innerHTML = '';
-                }
                 for await (const todoItem of todosPageResponse.todosList) {
                     await getTodoElement(todoItem.todoItemId);
                     const timelineItem = new pageModels.TimelineItem();
@@ -50,6 +54,10 @@ async function getTodos() {
                     addTimelineItemEventListener(timelineItem);
                 }
                 ;
+            }
+            todosPageParameters.currentPageNumber++;
+            if (todosPageResponse.totalPages > todosPageResponse.pageNumber && moreTodoItemsButton !== null) {
+                moreTodoItemsButton.classList.remove('d-none');
             }
         }
     }
@@ -120,6 +128,7 @@ function clearTodoItemsElements() {
     if (todoItemsDiv !== null) {
         todoItemsDiv.innerHTML = '';
     }
+    todosPageParameters.currentPageNumber = 1;
 }
 /**
  * Updates parameters sort value, sets the sort buttons to show the ascending button as active, and the descending button as inactive.
@@ -234,6 +243,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     loadTodosPageSettings();
     addSelectedProgeniesChangedEventListener();
     todosPageParameters.progenies = getSelectedProgenies();
+    moreTodoItemsButton = document.querySelector('#more-todo-items-button');
+    if (moreTodoItemsButton !== null) {
+        moreTodoItemsButton.addEventListener('click', async () => {
+            getTodos();
+        });
+    }
     SettingsHelper.initPageSettings();
     initialSettingsPanelSetup();
     getTodos();
