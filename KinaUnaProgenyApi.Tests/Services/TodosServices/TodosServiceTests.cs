@@ -438,7 +438,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
 
             TodoItemsRequest request = new()
             {
-                StatusFilter = "0,2",
+                StatusFilter = [KinaUnaTypes.TodoStatusType.NotStarted, KinaUnaTypes.TodoStatusType.Completed],
                 Skip = 0,
                 NumberOfItems = 10
             };

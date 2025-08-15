@@ -459,7 +459,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             todoItem.CompletedDate = null;
-            todoItem.Status = (int)TodoStatusTypes.TodoStatusType.NotStarted;
+            todoItem.Status = (int)KinaUnaTypes.TodoStatusType.NotStarted;
             TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
 
             return Json(result);
@@ -486,7 +486,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             todoItem.CompletedDate = null;
-            todoItem.Status = (int)TodoStatusTypes.TodoStatusType.InProgress;
+            todoItem.Status = (int)KinaUnaTypes.TodoStatusType.InProgress;
             TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
 
             return Json(result);
@@ -515,7 +515,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             todoItem.CompletedDate = DateTime.UtcNow;
-            todoItem.Status = (int)TodoStatusTypes.TodoStatusType.Completed;
+            todoItem.Status = (int)KinaUnaTypes.TodoStatusType.Completed;
             TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
 
             return Json(result);
@@ -544,7 +544,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             todoItem.CompletedDate = null;
-            todoItem.Status = (int)TodoStatusTypes.TodoStatusType.Cancelled;
+            todoItem.Status = (int)KinaUnaTypes.TodoStatusType.Cancelled;
             TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
 
             return Json(result);

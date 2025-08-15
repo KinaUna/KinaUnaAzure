@@ -1,13 +1,17 @@
 ﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.TodoItemsListViewModel
 @inject ILocaleManager LocaleManager
+@inject IProgenyManager ChildManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Todo List", PageNames.Todos, Model.LanguageId);
     string pageParameters = Json.Serialize(Model.TodoItemsPageParameters).ToString();
     string ascendingString = await LocaleManager.GetTranslation("Ascending", PageNames.Contacts, Model.LanguageId);
     string descendingString = await LocaleManager.GetTranslation("Descending", PageNames.Contacts, Model.LanguageId);
     string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
+    UserInfo userInfo = await ChildManager.GetInfo(User.GetEmail());
+    List<Progeny> childList = userInfo.ProgenyList;
 }
 <div id="todos-index-page-parameters" class="d-none" data-todos-index-page-parameters="@pageParameters"></div>
 <div id="popup-todo-id-div" class="d-none" data-popup-todo-id="@Model.PopUpTodoItemId"></div>
@@ -123,6 +127,86 @@
                 </div>
             </div>
             <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    <a id="todos-toggle-filters-button" class="btn-settings-panel" href="#">
+                        @await LocaleManager.GetTranslation("Filters", PageNames.Timeline, Model.LanguageId)
+                        <i id="show-filters-chevron" class="material-icons sidebar-icon chevron-right">chevron_right</i>
+                    </a>
+                </div>
+            </div>
+        <div class="row ml-4 todos-filter-options d-none">
+            <div class="col-12">
+                <div class="space-20"></div>
+                @await LocaleManager.GetTranslation("Status:", PageNames.Todos, Model.LanguageId)
+            </div>
+            <div class="col ml-4">
+                <div class="row align-items-center">
+                    <div class="col">
+                            <button class="btn btn-outline-info active filter-status-type-button" data-filter-status-type="0">
+                                @await LocaleManager.GetTranslation("Not Started", PageNames.Todos, Model.LanguageId)
+                        </button>
+                    </div>
+                    <div class="col">
+                            <button class="btn btn-outline-info active filter-status-type-button" data-filter-status-type="1">
+                                @await LocaleManager.GetTranslation("In Progress", PageNames.Todos, Model.LanguageId)
+                        </button>
+                    </div>
+                    <div class="col">
+                            <button class="btn btn-outline-info active filter-status-type-button" data-filter-status-type="2">
+                                @await LocaleManager.GetTranslation("Completed", PageNames.Todos, Model.LanguageId)
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-info filter-status-type-button" data-filter-status-type="3">
+                            @await LocaleManager.GetTranslation("Cancelled", PageNames.Todos, Model.LanguageId)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <div class="row ml-4 todos-filter-options d-none">
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    <span id="assigned-to-filter-span">@await LocaleManager.GetTranslation("Assigned To Filter:", PageNames.Todos, Model.LanguageId)</span>
+                </div>
+                <div class="col-12">
+                    @foreach (Progeny prog in childList)
+                    {
+                        <button class="btn btn-link btn-block text-white text-left ml-0 filter-assigned-to-button" data-filter-assigned-to="@prog.Id">
+                            @{
+                                string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
+                                if (!string.IsNullOrWhiteSpace(prog.PictureLink))
+                                {
+                                    string picLink2 = prog.GetProfilePictureUrl();
+                                    profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; width: 42px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px; object-fit: contain;\" /img> ";
+                                }
+                            }
+                            @Html.Raw(profilePic2) @prog.NickName <span class="d-none filter-progeny-check-span ml-2 text-success"><i class="material-icons">check</i></span>
+                        </button>
+                    }
+                    <input id="assigned-to-filter-input" type="hidden"/>
+                </div>
+        </div>
+            <div class="row ml-4 todos-filter-options d-none">
+            <div class="col-12">
+                <div class="space-20"></div>
+                <span id="context-filter-span">@await LocaleManager.GetTranslation("Context Filter:", PageNames.Timeline, Model.LanguageId)</span>
+            </div>
+            <div class="col ml-4">
+                <input id="context-filter-input" type="text"/>
+            </div>
+        </div>
+            <div class="row ml-4 todos-filter-options d-none">
+            <div class="col-12">
+                <div class="space-20"></div>
+                <span id="tag-filter-span">@await LocaleManager.GetTranslation("Tag Filter:", PageNames.Timeline, Model.LanguageId)</span>
+            </div>
+            <div class="col ml-4">
+                <input id="tag-filter-input" type="text" />
+            </div>
+        </div>
+        <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">
                     @await LocaleManager.GetTranslation("Set as default page settings", PageNames.Pictures, Model.LanguageId)

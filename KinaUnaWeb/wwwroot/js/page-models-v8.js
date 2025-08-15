@@ -459,6 +459,14 @@ export var TimeLineType;
     TimeLineType[TimeLineType["TodoItem"] = 15] = "TodoItem";
     TimeLineType[TimeLineType["Child"] = 100] = "Child";
 })(TimeLineType || (TimeLineType = {}));
+export var TodoStatusType;
+(function (TodoStatusType) {
+    TodoStatusType[TodoStatusType["NotStarted"] = 0] = "NotStarted";
+    TodoStatusType[TodoStatusType["InProgress"] = 1] = "InProgress";
+    TodoStatusType[TodoStatusType["Completed"] = 2] = "Completed";
+    TodoStatusType[TodoStatusType["Cancelled"] = 3] = "Cancelled";
+    TodoStatusType[TodoStatusType["Overdue"] = 4] = "Overdue";
+})(TodoStatusType || (TodoStatusType = {}));
 export var OnThisDayPeriod;
 (function (OnThisDayPeriod) {
     OnThisDayPeriod[OnThisDayPeriod["Week"] = 1] = "Week";
@@ -522,7 +530,7 @@ export class TodosPageParameters {
         this.groupBy = 0; // 0 for no grouping, 1 for Status, 2 for Context, 3 for Tag, 4 for Progeny
         this.tagFilter = '';
         this.contextFilter = '';
-        this.statusFilter = '';
+        this.statusFilter = [];
         this.startYear = 0;
         this.startMonth = 0;
         this.startDay = 0;

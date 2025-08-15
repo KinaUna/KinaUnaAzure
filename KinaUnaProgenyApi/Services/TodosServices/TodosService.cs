@@ -150,13 +150,10 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             }
 
             // Filter by status if provided
-            if (!string.IsNullOrWhiteSpace(request.StatusFilter))
+            if (request.StatusFilter.Count > 0)
             {
-                List<int> statusCodes = [.. request.StatusFilter.Split(',')
-                    .Select(status => int.TryParse(status.Trim(), out int code) ? code : -1)
-                    .Where(code => code >= 0)];
-                
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => statusCodes.Contains(t.Status))];
+                todoItemsForProgeny = [.. todoItemsForProgeny.Where( t =>
+                    request.StatusFilter.Contains((KinaUnaTypes.TodoStatusType)t.Status))];
             }
             
             return todoItemsForProgeny;
@@ -356,11 +353,11 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             // Check if the status has changed and update the completed date accordingly
             if (todoItem.Status != currentTodoItem.Status)
             {
-                if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.Completed)
+                if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
                 {
                     todoItem.CompletedDate = DateTime.UtcNow;
                 }
-                else if (todoItem.Status == (int)TodoStatusTypes.TodoStatusType.Cancelled)
+                else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled)
                 {
                     todoItem.CompletedDate = null; // Reset completed date if cancelled
                 }

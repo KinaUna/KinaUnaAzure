@@ -1,4 +1,6 @@
-﻿namespace KinaUnaWeb.Models.TypeScriptModels.TodoItems
+﻿using System.Collections.Generic;
+
+namespace KinaUnaWeb.Models.TypeScriptModels.TodoItems
 {
     public class TodoItemsPageParameters: BasePageParameters
     {
@@ -40,7 +42,7 @@
         /// <summary>
         /// Comma-separated list of status codes to filter by (e.g., "0,1,2" for Not started, In progress, Completed).
         /// </summary>
-        public string StatusFilter { get; set; } = string.Empty;
+        public List<KinaUnaTypes.TodoStatusType> StatusFilter { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the sorting criteria for items.

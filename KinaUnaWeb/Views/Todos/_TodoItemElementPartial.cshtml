@@ -28,7 +28,7 @@
                 {
                     <div class="col-12 col-sm-6 col-md-4 text-left">@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId): @Model.TodoItem.CreatedTime.ToString("dd-MMM-yyyy")</div>
                 }
-                @if (Model.TodoItem.CompletedDate.HasValue && Model.TodoItem.Status == (int)TodoStatusTypes.TodoStatusType.Completed)
+                @if (Model.TodoItem.CompletedDate.HasValue && Model.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
                 {
                     <div class="row text-white">
                         <div class="col-auto">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>

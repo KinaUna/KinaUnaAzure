@@ -424,7 +424,7 @@ namespace KinaUnaWeb.Controllers
             };
 
             TodoItemsResponse upcomingTodoItemsResponse = await todoItemsHttpClient.GetProgeniesTodoItemsList(todoItemsRequest);
-            List<TodoItem> upcomingTodoItems = [.. upcomingTodoItemsResponse.TodoItems.Where(t => t.Status < (int)TodoStatusTypes.TodoStatusType.Completed)];
+            List<TodoItem> upcomingTodoItems = [.. upcomingTodoItemsResponse.TodoItems.Where(t => t.Status < (int)KinaUnaTypes.TodoStatusType.Completed)];
             upcomingTodoItems = [.. upcomingTodoItems.OrderBy(t => t.DueDate)];
 
             timelineList.AllItemsCount = upcomingCalendarItems.Count + upcomingTodoItems.Count;

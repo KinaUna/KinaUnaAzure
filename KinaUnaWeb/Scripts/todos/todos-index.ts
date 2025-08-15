@@ -1,4 +1,4 @@
-﻿import { getCurrentProgenyId } from '../data-tools-v8.js';
+﻿import { getCurrentProgenyId, setContextAutoSuggestList, setTagsAutoSuggestList } from '../data-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as pageModels from '../page-models-v8.js';
 import { getSelectedProgenies } from '../settings-tools-v8.js';
@@ -321,6 +321,96 @@ function setEventListenersForItemsPerPage(): void {
 }
 
 /**
+ * Toggles the active state of the tag filter button and updates the tag filter in the parameters.
+ */
+function toggleShowFilters(): void {
+    const filtersElements = document.querySelectorAll<HTMLDivElement>('.todos-filter-options');
+    const toggleShowFiltersChevron = document.getElementById('show-filters-chevron');
+    filtersElements.forEach(function (element: HTMLDivElement) {
+        if (element.classList.contains('d-none')) {
+            element.classList.remove('d-none');
+        }
+        else {
+            element.classList.add('d-none');
+        }
+    });
+
+    if (toggleShowFiltersChevron !== null) {
+        if (toggleShowFiltersChevron.classList.contains('chevron-right-rotate-down')) {
+            toggleShowFiltersChevron.classList.remove('chevron-right-rotate-down');
+        }
+        else {
+            toggleShowFiltersChevron.classList.add('chevron-right-rotate-down');
+        }
+    }
+}
+
+/**
+ * Adds or removes the TimeLineType in the onThisDayParameters.timeLineTypeFilter.
+ * @param type The TimeLineType to toggle.
+ */
+function toggleTodoFilterStatusType(type: pageModels.TodoStatusType): void {
+    const index = todosPageParameters.statusFilter.indexOf(type);
+    if (index > -1) {
+        todosPageParameters.statusFilter.splice(index, 1);
+    }
+    else {
+        todosPageParameters.statusFilter.push(type);
+    }
+
+    updateTodosFilterStatusButtons();
+}
+
+/**
+ * Updates the status filter buttons to reflect the current status filter in todosPageParameters.
+ */
+function updateTodosFilterStatusButtons(): void {
+    const typeButtons = document.querySelectorAll<HTMLButtonElement>('.filter-status-type-button');
+    typeButtons.forEach(function (button: HTMLButtonElement) {
+        button.classList.remove('active');
+        if (todosPageParameters.statusFilter.includes(parseInt(button.dataset.filterStatusType ?? '-1'))) {
+            button.classList.add('active');
+        }
+    });
+}
+
+/**
+ * Toggles the assigned to filter for a specific progeny ID.
+ * If the progeny ID is already in the assignedToFilter, it removes it.
+ * Otherwise, it adds the progeny ID to the assignedToFilter.
+ * @param progenyId The ID of the progeny to toggle in the assigned to filter.
+ */
+function toggleTodoFilterAssignedTo(progenyId: number): void {
+    if (todosPageParameters.progenies.includes(progenyId)) {
+        const index = todosPageParameters.progenies.indexOf(progenyId);
+        if (index > -1) {
+            todosPageParameters.progenies.splice(index, 1);
+        }
+    }
+    else {
+        todosPageParameters.progenies.push(progenyId);
+    }
+
+    updateTodosFilterAssignedToButtons();
+}
+
+/**
+ * Updates the assigned to filter buttons to reflect the current assigned to filter in todosPageParameters.
+ */
+function updateTodosFilterAssignedToButtons(): void {
+    const assignedToButtons = document.querySelectorAll<HTMLButtonElement>('.filter-assigned-to-button');
+    assignedToButtons.forEach(function (button: HTMLButtonElement) {
+        const checkedSpan = button.querySelector<HTMLSpanElement>('.filter-progeny-check-span');
+        if (checkedSpan !== null && todosPageParameters.progenies.includes(parseInt(button.dataset.filterAssignedTo ?? '-1'))) {
+            checkedSpan.classList.remove('d-none');
+        }
+        else if (checkedSpan !== null) {
+            checkedSpan.classList.add('d-none');
+        }
+    });
+}
+
+/**
  * Loads the todos page settings from local storage and applies them to the page.
  * If no settings are found, it uses default values.
  */
@@ -415,6 +505,45 @@ async function initialSettingsPanelSetup(): Promise<void> {
         groupByAssignedToSettingsButton.addEventListener('click', groupByAssignedTo);
     }
 
+    const toggleShowFiltersButton = document.querySelector<HTMLButtonElement>('#todos-toggle-filters-button');
+    if (toggleShowFiltersButton !== null) {
+        toggleShowFiltersButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            toggleShowFilters();
+        });
+    }
+
+    const statusTypeButtons = document.querySelectorAll<HTMLButtonElement>('.filter-status-type-button');
+    statusTypeButtons.forEach(function (button: HTMLButtonElement) {
+        button.addEventListener('click', function () {
+            toggleTodoFilterStatusType(parseInt(button.dataset.filterStatusType ?? '-1'));
+        });
+
+        if (todosPageParameters.statusFilter.includes(parseInt(button.dataset.filterStatusType ?? '-1'))) {
+            button.classList.add('active');
+        }
+        else {
+            button.classList.remove('active');
+        }
+    });
+
+    updateTodosFilterAssignedToButtons();
+    const assignedToButtons = document.querySelectorAll<HTMLButtonElement>('.filter-assigned-to-button');
+    assignedToButtons.forEach(function (button: HTMLButtonElement) {
+        button.addEventListener('click', function () {
+            toggleTodoFilterAssignedTo(parseInt(button.dataset.filterAssignedTo ?? '-1'));
+        });
+        if (todosPageParameters.progenies.includes(parseInt(button.dataset.filterAssignedTo ?? '-1'))) {
+            button.classList.add('active');
+        }
+        else {
+            button.classList.remove('active');
+        }
+    });
+
+    await setTagsAutoSuggestList(todosPageParameters.progenies, 'tag-filter-input', true);
+    await setContextAutoSuggestList(todosPageParameters.progenies, 'context-filter-input', true);
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
@@ -434,11 +563,21 @@ async function saveTodosPageSettings(): Promise<void> {
 
     todosPageParameters.sort = sortAscendingSettingsButton?.classList.contains('active') ? 0 : 1;   
 
+    const tagFilterInput = document.querySelector<HTMLInputElement>('#tag-filter-input');
+    if (tagFilterInput !== null) {
+        todosPageParameters.tagFilter = tagFilterInput.value;
+    }
+        
+    const contextFilterInput = document.querySelector<HTMLInputElement>('#context-filter-input');
+    if (contextFilterInput !== null) {
+        todosPageParameters.contextFilter = contextFilterInput.value;
+    }
+
     // If the 'set as default' checkbox is checked, save the page settings to local storage.
     const setAsDefaultCheckbox = document.querySelector<HTMLInputElement>('#todo-settings-save-default-checkbox');
     if (setAsDefaultCheckbox !== null && setAsDefaultCheckbox.checked) {
         SettingsHelper.savePageSettings<pageModels.TodosPageParameters>(todosPageSettingsStorageKey, todosPageParameters);
-    }    
+    }  
     
     SettingsHelper.toggleShowPageSettings();
     clearTodoItemsElements();

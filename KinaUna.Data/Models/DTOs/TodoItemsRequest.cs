@@ -73,7 +73,7 @@ namespace KinaUna.Data.Models.DTOs
         /// <summary>
         /// Comma-separated list of status codes to filter by (e.g., "0,1,2" for Not started, In progress, Completed).
         /// </summary>
-        public string StatusFilter { get; set; } = string.Empty;
+        public List<KinaUnaTypes.TodoStatusType> StatusFilter { get; set; } = [];
 
         /// <summary>
         /// The sort order for the items. 0 for ascending and 1 for descending.

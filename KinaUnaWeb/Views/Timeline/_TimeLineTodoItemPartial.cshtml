@@ -21,7 +21,7 @@
                     </div>
                     <div class="timeline-text text-white">
                         <div>@await LocaleManager.GetTranslation("Status", PageNames.Todos, languageId): @await LocaleManager.GetTranslation(Model.StatusText(), PageNames.Todos, languageId)</div>
-                        @if (Model.CompletedDate.HasValue && Model.Status == (int)TodoStatusTypes.TodoStatusType.Completed)
+                        @if (Model.CompletedDate.HasValue && Model.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
                         {
                             <div>@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, languageId) : @Model.CompletedDate?.ToString("dd-MMM-yyyy")</div>
                         }

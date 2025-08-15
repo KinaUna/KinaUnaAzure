@@ -26,7 +26,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 LanguageId = LanguageId,
                 TagFilter = "",
                 ContextFilter = "",
-                StatusFilter = "0, 1, 2", // Not started, In progress, Completed
+                StatusFilter = [KinaUnaTypes.TodoStatusType.NotStarted, KinaUnaTypes.TodoStatusType.InProgress, KinaUnaTypes.TodoStatusType.Completed],
                 Sort = 0,
                 SortBy = 0, // Sort by DueDate by default
                 GroupBy = 1 // Group by Status by default
