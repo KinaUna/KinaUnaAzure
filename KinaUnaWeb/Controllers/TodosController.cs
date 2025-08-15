@@ -89,7 +89,9 @@ namespace KinaUnaWeb.Controllers
                 TagFilter = parameters.TagFilter,
                 ContextFilter = parameters.ContextFilter,
                 StatusFilter = parameters.StatusFilter,
-                Sort = parameters.Sort
+                Sort = parameters.Sort,
+                SortBy = parameters.SortBy,
+                GroupBy = parameters.GroupBy
             };
 
             request.SetStartDateAndEndDate();

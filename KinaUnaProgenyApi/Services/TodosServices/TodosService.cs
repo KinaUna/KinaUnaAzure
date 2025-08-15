@@ -183,19 +183,109 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 TotalPages = (int)Math.Ceiling((double)todoItemsForProgenies.Count / request.NumberOfItems),
             };
 
-            // Sort by DueDate, newest first, then by CreatedTime
-            if (request.Sort == 1)
+            if (request.SortBy == 0)
             {
-                todoItemsForProgenies = [.. todoItemsForProgenies
-                    .OrderByDescending(t => t.DueDate)
-                    .ThenByDescending(t => t.CreatedTime)];
+                // Sort by DueDate, then by CreatedTime
+                if (request.Sort == 1)
+                {
+                    todoItemsForProgenies =
+                    [
+                        .. todoItemsForProgenies
+                            .OrderByDescending(t => t.DueDate)
+                            .ThenByDescending(t => t.CreatedTime)
+                    ];
+                }
+                else
+                {
+                    todoItemsForProgenies =
+                    [
+                        .. todoItemsForProgenies
+                            .OrderBy(t => t.DueDate)
+                            .ThenBy(t => t.CreatedTime)
+                    ];
+                }
             }
-            else
+
+            if (request.SortBy == 1)
             {
-                todoItemsForProgenies = [.. todoItemsForProgenies
-                    .OrderBy(t => t.DueDate)
-                    .ThenBy(t => t.CreatedTime)];
+                // Sort by CreatedTime, then by DueDate
+                if (request.Sort == 1)
+                {
+                    todoItemsForProgenies =
+                    [
+                        .. todoItemsForProgenies
+                            .OrderByDescending(t => t.CreatedTime)
+                            .ThenByDescending(t => t.DueDate)
+                    ];
+                }
+                else
+                {
+                    todoItemsForProgenies =
+                    [
+                        .. todoItemsForProgenies
+                            .OrderBy(t => t.CreatedTime)
+                            .ThenBy(t => t.DueDate)
+                    ];
+                }
             }
+
+            if (request.SortBy == 2)
+            {
+                // Sort by StartDate, then by DueDate
+                if (request.Sort == 1)
+                {
+                    todoItemsForProgenies =
+                    [
+                        .. todoItemsForProgenies
+                            .OrderByDescending(t => t.StartDate)
+                            .ThenByDescending(t => t.DueDate)
+                    ];
+                }
+                else
+                {
+                    todoItemsForProgenies =
+                    [
+                        .. todoItemsForProgenies
+                            .OrderBy(t => t.StartDate)
+                            .ThenBy(t => t.DueDate)
+                    ];
+                }
+            }
+
+            if (request.SortBy == 3)
+            {
+                // Sort by CompletedDate, then by DueDate
+                if (request.Sort == 1)
+                {
+                    todoItemsForProgenies =
+                    [
+                        .. todoItemsForProgenies
+                            .OrderByDescending(t => t.CompletedDate)
+                            .ThenByDescending(t => t.DueDate)
+                    ];
+                }
+                else
+                {
+                    todoItemsForProgenies =
+                    [
+                        .. todoItemsForProgenies
+                            .OrderBy(t => t.CompletedDate)
+                            .ThenBy(t => t.DueDate)
+                    ];
+                }
+            }
+
+            if (request.GroupBy == 1)
+            {
+                // Group by Status
+                todoItemsForProgenies = [.. todoItemsForProgenies.GroupBy(t => t.Status).SelectMany(g => g)];
+            }
+            else if (request.GroupBy == 2)
+            {
+                // Group by Progeny
+                todoItemsForProgenies = [.. todoItemsForProgenies.GroupBy(t => t.ProgenyId).SelectMany(g => g)];
+            }
+
 
             // Apply pagination, if number of items is less than 1, we do not apply pagination
             if (request.NumberOfItems > 0)

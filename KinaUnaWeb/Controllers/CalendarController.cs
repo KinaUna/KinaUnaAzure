@@ -418,10 +418,12 @@ namespace KinaUnaWeb.Controllers
             {
                 ProgenyIds = parameters.Progenies,
                 StartDate = DateTime.UtcNow.Date,
-                EndDate = DateTime.UtcNow.Date.AddYears(10) // ToDo: Make this configurable
+                EndDate = DateTime.UtcNow.Date.AddYears(10), // ToDo: Make this configurable
+                SortBy = 0,
+                GroupBy = 0
             };
 
-            var upcomingTodoItemsResponse = await todoItemsHttpClient.GetProgeniesTodoItemsList(todoItemsRequest);
+            TodoItemsResponse upcomingTodoItemsResponse = await todoItemsHttpClient.GetProgeniesTodoItemsList(todoItemsRequest);
             List<TodoItem> upcomingTodoItems = [.. upcomingTodoItemsResponse.TodoItems.Where(t => t.Status < (int)TodoStatusTypes.TodoStatusType.Completed)];
             upcomingTodoItems = [.. upcomingTodoItems.OrderBy(t => t.DueDate)];
 

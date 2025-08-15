@@ -14,7 +14,18 @@ let moreTodoItemsButton: HTMLButtonElement | null;
 const sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#todo-settings-sort-ascending-button');
 const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#todo-settings-sort-descending-button');
 const itemsPerPageInput = document.querySelector<HTMLInputElement>('#todo-items-per-page-input');
+const sortByDueDateSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-due-date-button');
+const sortByCreatedDateSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-created-date-button');
+const sortByStartDateSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-start-date-button');
+const sortByCompletedDateSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-completed-date-button');
+const groupByNoneSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-none-button');
+const groupByStatusSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-status-button');
+const groupByAssignedToSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-assigned-to-button');
 
+/**
+ * Sets the todos page parameters from the data attributes of the todosIndexPageParametersDiv.
+ * If the sort is 0, it sorts the todos in ascending order, otherwise in descending order.
+ */
 function setTodosPageParametersFromPageData(): void {
     if (todosIndexPageParametersDiv !== null) {
         const pageParameters = todosIndexPageParametersDiv.dataset.todosIndexPageParameters;
@@ -30,6 +41,12 @@ function setTodosPageParametersFromPageData(): void {
     }
 }
 
+/**
+ * Fetches the todo items from the server and appends them to the todos list div.
+ * If there are more todo items to fetch, it shows the "more" button.
+ * If there are no todo items, it calls getTodoElement with 0 to show an empty state.
+ * @returns A promise that resolves when the todo items are fetched and appended.
+ */
 async function getTodos(): Promise<void> {
     moreTodoItemsButton?.classList.add('d-none');
     
@@ -175,6 +192,10 @@ async function sortTodosDescending(): Promise<void> {
     });
 }
 
+/**
+ * Decreases the number of todo items displayed per page.
+ * Updates the itemsPerPage property in todosPageParameters.
+ */
 function decreaseTodoItemsPerPage(): void {
     if (itemsPerPageInput !== null) {
         let itemsPerPageInputValue: number = itemsPerPageInput.valueAsNumber;
@@ -187,6 +208,10 @@ function decreaseTodoItemsPerPage(): void {
     }
 }
 
+/**
+ * Increases the number of todo items displayed per page.
+ * Updates the itemsPerPage property in todosPageParameters.
+ */
 function increaseTodoItemsPerPage(): void {
     if (itemsPerPageInput !== null) {
         let itemsPerPageInputValue: number = itemsPerPageInput.valueAsNumber;
@@ -199,6 +224,91 @@ function increaseTodoItemsPerPage(): void {
     }
 }
 
+/**
+ * Sorts the todo items by due date.
+ * Updates the sortBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function sortByDueDate(): void {
+    todosPageParameters.sortBy = 0;
+    sortByDueDateSettingsButton?.classList.add('active');
+    sortByCreatedDateSettingsButton?.classList.remove('active');
+    sortByStartDateSettingsButton?.classList.remove('active');
+    sortByCompletedDateSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Sorts the todo items by created date.
+ * Updates the sortBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function sortByCreatedDate(): void {
+    todosPageParameters.sortBy = 1;
+    sortByDueDateSettingsButton?.classList.remove('active');
+    sortByCreatedDateSettingsButton?.classList.add('active');
+    sortByStartDateSettingsButton?.classList.remove('active');
+    sortByCompletedDateSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Sorts the todo items by start date.
+ * Updates the sortBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function sortByStartDate(): void {
+    todosPageParameters.sortBy = 2;
+    sortByDueDateSettingsButton?.classList.remove('active');
+    sortByCreatedDateSettingsButton?.classList.remove('active');
+    sortByStartDateSettingsButton?.classList.add('active');
+    sortByCompletedDateSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Sorts the todo items by completed date.
+ * Updates the sortBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function sortByCompletedDate(): void {
+    todosPageParameters.sortBy = 3;
+    sortByDueDateSettingsButton?.classList.remove('active');
+    sortByCreatedDateSettingsButton?.classList.remove('active');
+    sortByStartDateSettingsButton?.classList.remove('active');
+    sortByCompletedDateSettingsButton?.classList.add('active');
+}
+
+/**
+ * Disables grouping of the todo items.
+ * Updates the groupBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function groupByNone(): void {
+    todosPageParameters.groupBy = 0;
+    groupByNoneSettingsButton?.classList.add('active');
+    groupByStatusSettingsButton?.classList.remove('active');
+    groupByAssignedToSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Groups the todo items by status.
+ * Updates the groupBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function groupByStatus(): void {
+    todosPageParameters.groupBy = 1;
+    groupByNoneSettingsButton?.classList.remove('active');
+    groupByStatusSettingsButton?.classList.add('active');
+    groupByAssignedToSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Groups the todo items by the user they are assigned to.
+ * Updates the groupBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function groupByAssignedTo(): void {
+    todosPageParameters.groupBy = 2;
+    groupByNoneSettingsButton?.classList.remove('active');
+    groupByStatusSettingsButton?.classList.remove('active');
+    groupByAssignedToSettingsButton?.classList.add('active');
+}
+
+/**
+ * Sets event listeners for the items per page buttons.
+ * Decreases or increases the number of todo items displayed per page.
+ */
 function setEventListenersForItemsPerPage(): void {
     const decreaseItemsPerPageButton = document.querySelector<HTMLButtonElement>('#decrease-todo-items-per-page-button');
     const increaseItemsPerPageButton = document.querySelector<HTMLButtonElement>('#increase-todo-items-per-page-button');
@@ -210,6 +320,10 @@ function setEventListenersForItemsPerPage(): void {
     }
 }
 
+/**
+ * Loads the todos page settings from local storage and applies them to the page.
+ * If no settings are found, it uses default values.
+ */
 function loadTodosPageSettings(): void {
     const pageSettingsFromStorage = SettingsHelper.getPageSettings<pageModels.TodosPageParameters>(todosPageSettingsStorageKey);
     if (pageSettingsFromStorage !== null) {
@@ -223,10 +337,37 @@ function loadTodosPageSettings(): void {
         }
 
         todosPageParameters.itemsPerPage = pageSettingsFromStorage.itemsPerPage ?? 10;
-        const itemsPerPageInput = document.querySelector<HTMLInputElement>('#todo-items-per-page-input');
-        if (itemsPerPageInput !== null) {
-            itemsPerPageInput.value = todosPageParameters.itemsPerPage.toString();
-        }        
+        
+        
+        todosPageParameters.sortBy = pageSettingsFromStorage.sortBy ?? 0;
+        todosPageParameters.groupBy = pageSettingsFromStorage.groupBy ?? 0;
+    }
+
+    if (itemsPerPageInput !== null) {
+        itemsPerPageInput.value = todosPageParameters.itemsPerPage.toString();
+    }
+
+    if (todosPageParameters.sortBy === 0) {
+        sortByDueDate();
+    }
+    else if (todosPageParameters.sortBy === 1) {
+        sortByCreatedDate();
+    }
+    else if (todosPageParameters.sortBy === 2) {
+        sortByStartDate();
+    }
+    else if (todosPageParameters.sortBy === 3) {
+        sortByCompletedDate();
+    }
+
+    if (todosPageParameters.groupBy === 0) {
+        groupByNone();
+    }
+    else if (todosPageParameters.groupBy === 1) {
+        groupByStatus();
+    }
+    else if (todosPageParameters.groupBy === 2) {
+        groupByAssignedTo();
     }
 }
 
@@ -245,6 +386,38 @@ async function initialSettingsPanelSetup(): Promise<void> {
     }
 
     setEventListenersForItemsPerPage();
+
+    if (sortByDueDateSettingsButton !== null) {
+        sortByDueDateSettingsButton.addEventListener('click', sortByDueDate);
+    }
+
+    if (sortByCreatedDateSettingsButton !== null) {
+        sortByCreatedDateSettingsButton.addEventListener('click', sortByCreatedDate);
+    }
+
+    if (sortByStartDateSettingsButton !== null) {
+        sortByStartDateSettingsButton.addEventListener('click', sortByStartDate);
+    }
+
+    if (sortByCompletedDateSettingsButton !== null) {
+        sortByCompletedDateSettingsButton.addEventListener('click', sortByCompletedDate);
+    }
+
+    if (groupByNoneSettingsButton !== null) {
+        groupByNoneSettingsButton.addEventListener('click', groupByNone);
+    }
+
+    if (groupByStatusSettingsButton !== null) {
+        groupByStatusSettingsButton.addEventListener('click', groupByStatus);
+    }
+
+    if (groupByAssignedToSettingsButton !== null) {
+        groupByAssignedToSettingsButton.addEventListener('click', groupByAssignedTo);
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**

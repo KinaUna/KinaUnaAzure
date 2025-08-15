@@ -74,6 +74,57 @@
             <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">
+                    @await LocaleManager.GetTranslation("Sort by:", PageNames.Contacts, Model.LanguageId)
+                </div>
+            </div>
+            <div class="row align-items-center">
+                <div class="col">
+                    <button id="settings-sort-by-due-date-button" class="btn btn-outline-info active">
+                        @await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId)
+                    </button>
+                </div>
+                <div class="col">
+                    <button id="settings-sort-by-created-date-button" class="btn btn-outline-info">
+                        @await LocaleManager.GetTranslation("Created Date", PageNames.Todos, Model.LanguageId)
+                    </button>
+                </div>
+                <div class="col">
+                    <button id="settings-sort-by-start-date-button" class="btn btn-outline-info">
+                        @await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId)
+                    </button>
+                </div>
+                <div class="col">
+                    <button id="settings-sort-by-completed-date-button" class="btn btn-outline-info">
+                        @await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId)
+                    </button>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Group by:", PageNames.Todos, Model.LanguageId)
+                </div>
+            </div>
+            <div class="row align-items-center">
+                <div class="col">
+                    <button id="settings-group-by-none-button" class="btn btn-outline-info active">
+                        @await LocaleManager.GetTranslation("No Grouping", PageNames.Todos, Model.LanguageId)
+                    </button>
+                </div>
+                <div class="col">
+                    <button id="settings-group-by-status-button" class="btn btn-outline-info">
+                        @await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId)
+                    </button>
+                </div>
+                <div class="col">
+                    <button id="settings-group-by-assigned-to-button" class="btn btn-outline-info">
+                        @await LocaleManager.GetTranslation("Assigned To", PageNames.Todos, Model.LanguageId)
+                    </button>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
                     @await LocaleManager.GetTranslation("Set as default page settings", PageNames.Pictures, Model.LanguageId)
                 </div>
                 <div class="col ml-4">
