@@ -426,6 +426,10 @@ export enum TimeLineType {
     Vaccination = 11, Location = 12, User = 13, UserAccess = 14, TodoItem = 15, Child = 100
 }
 
+export enum TodoStatusType {
+    NotStarted = 0, InProgress = 1, Completed = 2, Cancelled = 3, Overdue = 4
+}
+
 export enum OnThisDayPeriod {
     Week = 1, Month = 2, Quarter = 3, Year = 4
 }
@@ -476,10 +480,12 @@ export class TodosPageParameters implements BasePageParameters {
     itemsPerPage: number = 0;
     totalPages: number = 0;
     totalItems: number = 0;
-    sort: number = 1;
+    sort: number = 0; // 0 Ascending, 1 Descending
+    sortBy: number = 0; // 0 for DueDate, 1 for CreatedTime, 2 for StartDate, 3 for CompletedDate
+    groupBy: number = 0; // 0 for no grouping, 1 for Status, 2 for Context, 3 for Tag, 4 for Progeny
     tagFilter: string = '';
     contextFilter: string = '';
-    statusFilter: string = '';
+    statusFilter: TodoStatusType[] = [];
     startYear: number = 0;
     startMonth: number = 0;
     startDay: number = 0;
@@ -496,6 +502,7 @@ export class TodosPageResponse implements BaseItemsPageResponseModel {
     todosList: TodoItem[] = [];
     tagsList: string[] = [];
     contextsList: string[] = [];
+    
 }
 
 export class TodoItemParameters implements BaseItemParameters {

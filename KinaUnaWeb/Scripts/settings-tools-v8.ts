@@ -77,8 +77,13 @@ export function removePageSettings(storageKey: string): void {
  * @param momentDateTimeFormat The Moment format string used for the date-picker.
  * @returns The start date as a Moment object.
  */
-export function getPageSettingsStartDate(momentDateTimeFormat: string): any {
-    let settingsStartTime: any = moment($('#settings-start-date-datetimepicker').val(), momentDateTimeFormat);
+export function getPageSettingsStartDate(momentDateTimeFormat: string, startElement: string = '#settings-start-date-datetimepicker' ): any {
+    let settingsStartTime: any = moment($(startElement).val(), momentDateTimeFormat);
+    return settingsStartTime;
+}
+
+export function getPageSettingsEndDate(momentDateTimeFormat: string, endElement: string = '#settings-end-date-datetimepicker'): any {
+    let settingsStartTime: any = moment($(endElement).val(), momentDateTimeFormat);
     return settingsStartTime;
 }
 

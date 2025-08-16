@@ -57,7 +57,7 @@ namespace KinaUna.Data.Models.DTOs
         /// Gets or sets the number of items to skip for pagination.
         /// </summary>
         public int Skip { get; set; } = 0;
-        public int CurrentPageNumber { get; set; } = 0;
+
         /// <summary>
         /// Gets or sets the number of items to retrieve for pagination.
         /// </summary>
@@ -73,12 +73,24 @@ namespace KinaUna.Data.Models.DTOs
         /// <summary>
         /// Comma-separated list of status codes to filter by (e.g., "0,1,2" for Not started, In progress, Completed).
         /// </summary>
-        public string StatusFilter { get; set; } = string.Empty;
+        public List<KinaUnaTypes.TodoStatusType> StatusFilter { get; set; } = [];
 
         /// <summary>
         /// The sort order for the items. 0 for ascending and 1 for descending.
         /// </summary>
         public int Sort { get; set; } = 0; // Sort ascending = 0, Sort descending = 1
+
+        /// <summary>
+        /// Gets or sets the sorting criteria for items.
+        /// 0 for DueDate, 1 for CreatedTime, 2 for StartDate, 3 for CompletedDate
+        /// </summary>
+        public int SortBy { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the grouping mode for data organization.
+        /// 0 for no grouping, 1 for Status, 2 for Progeny
+        /// </summary>
+        public int GroupBy { get; set; } = 0;
 
         /// <summary>
         /// Sets the StartDate and EndDate properties based on the provided year, month, and day values.

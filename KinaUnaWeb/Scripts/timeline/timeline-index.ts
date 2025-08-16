@@ -336,6 +336,7 @@ function toggleShowFilters(): void {
         }
     }
 }
+
 /**
  * Adds or removes the TimeLineType in the onThisDayParameters.timeLineTypeFilter.
  * @param type The TimeLineType to toggle.
