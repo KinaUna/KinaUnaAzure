@@ -1,9 +1,10 @@
-﻿import { getCurrentProgenyId, setContextAutoSuggestList, setTagsAutoSuggestList } from '../data-tools-v8.js';
+﻿import { getCurrentProgenyId, getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setContextAutoSuggestList, setMomentLocale, setTagsAutoSuggestList } from '../data-tools-v8.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
 import * as pageModels from '../page-models-v8.js';
 import { getSelectedProgenies } from '../settings-tools-v8.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
 import * as SettingsHelper from '../settings-tools-v8.js';
+import * as LocaleHelper from '../localization-v8.js';
 
 let todosPageParameters = new pageModels.TodosPageParameters();
 const todosPageSettingsStorageKey = 'todos_page_parameters';
@@ -21,6 +22,8 @@ const sortByCompletedDateSettingsButton = document.querySelector<HTMLButtonEleme
 const groupByNoneSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-none-button');
 const groupByStatusSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-status-button');
 const groupByAssignedToSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-assigned-to-button');
+const todosStartDateTimePicker: any = $('#settings-start-date-datetimepicker');
+const todosEndDateTimePicker: any = $('#settings-end-date-datetimepicker');
 
 /**
  * Sets the todos page parameters from the data attributes of the todosIndexPageParametersDiv.
@@ -365,6 +368,13 @@ function toggleTodoFilterStatusType(type: pageModels.TodoStatusType): void {
  * Updates the status filter buttons to reflect the current status filter in todosPageParameters.
  */
 function updateTodosFilterStatusButtons(): void {
+    // If status filter is null or empty, set default status filters.
+    if (todosPageParameters.statusFilter === null || todosPageParameters.statusFilter.length === 0) {
+        todosPageParameters.statusFilter.push(pageModels.TodoStatusType.NotStarted);
+        todosPageParameters.statusFilter.push(pageModels.TodoStatusType.InProgress);
+        todosPageParameters.statusFilter.push(pageModels.TodoStatusType.Completed);
+    }
+
     const typeButtons = document.querySelectorAll<HTMLButtonElement>('.filter-status-type-button');
     typeButtons.forEach(function (button: HTMLButtonElement) {
         button.classList.remove('active');
@@ -410,6 +420,60 @@ function updateTodosFilterAssignedToButtons(): void {
     });
 }
 
+/** Gets the formatted date value from the start date picker and sets the start date in the parameters.
+* @param dateTimeFormatMoment The Moment format of the date, which is used by the date picker.
+*/
+async function setStartDate(dateTimeFormatMoment: string): Promise<void> {
+    let settingsStartValue: any = SettingsHelper.getPageSettingsStartDate(dateTimeFormatMoment);
+
+    todosPageParameters.startYear = settingsStartValue.year();
+    todosPageParameters.startMonth = settingsStartValue.month() + 1;
+    todosPageParameters.startDay = settingsStartValue.date();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/** Gets the formatted date value from the end date picker and sets the end date in the parameters.
+* @param dateTimeFormatMoment The Moment format of the date, which is used by the date picker.
+*/
+async function setEndDate(dateTimeFormatMoment: string): Promise<void> {
+    let settingsEndValue: any = SettingsHelper.getPageSettingsEndDate(dateTimeFormatMoment);
+
+    todosPageParameters.endYear = settingsEndValue.year();
+    todosPageParameters.endMonth = settingsEndValue.month() + 1;
+    todosPageParameters.endDay = settingsEndValue.date();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/**
+ * Sets the value of the startDateTimePicker to the given date in the format defined by startDateTimeFormatMoment.
+ * @param date The date to assign to the DateTimePicker.
+ */
+function updateStartDatePicker(date: Date): void {
+    if (todosStartDateTimePicker !== null) {
+        const todosDateTimeFormatMoment = getLongDateTimeFormatMoment();
+        const dateString = getFormattedDateString(date, todosDateTimeFormatMoment);
+        todosStartDateTimePicker.val(dateString);
+    }
+}
+
+/**
+ * Sets the value of the startDateTimePicker to the given date in the format defined by startDateTimeFormatMoment.
+ * @param date The date to assign to the DateTimePicker.
+ */
+function updateEndDatePicker(date: Date): void {
+    if (todosEndDateTimePicker !== null) {
+        const todosDateTimeFormatMoment = getLongDateTimeFormatMoment();
+        const dateString = getFormattedDateString(date, todosDateTimeFormatMoment);
+        todosEndDateTimePicker.val(dateString);
+    }
+}
+
 /**
  * Loads the todos page settings from local storage and applies them to the page.
  * If no settings are found, it uses default values.
@@ -427,10 +491,9 @@ function loadTodosPageSettings(): void {
         }
 
         todosPageParameters.itemsPerPage = pageSettingsFromStorage.itemsPerPage ?? 10;
-        
-        
         todosPageParameters.sortBy = pageSettingsFromStorage.sortBy ?? 0;
         todosPageParameters.groupBy = pageSettingsFromStorage.groupBy ?? 0;
+        todosPageParameters.statusFilter = pageSettingsFromStorage.statusFilter;
     }
 
     if (itemsPerPageInput !== null) {
@@ -459,6 +522,7 @@ function loadTodosPageSettings(): void {
     else if (todosPageParameters.groupBy === 2) {
         groupByAssignedTo();
     }
+    updateTodosFilterStatusButtons();
 }
 
 /**
@@ -541,6 +605,33 @@ async function initialSettingsPanelSetup(): Promise<void> {
         }
     });
 
+    setMomentLocale();
+    const zebraDateTimeFormat = getZebraDateTimeFormat();
+    const zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(todosPageParameters.languageId);
+    const todosDateTimeFormatMoment = getLongDateTimeFormatMoment();
+
+    todosStartDateTimePicker.Zebra_DatePicker({
+        format: zebraDateTimeFormat,
+        open_icon_only: true,
+        onSelect: function (a: any, b: any, c: any) { setStartDate(todosDateTimeFormatMoment); },
+        days: zebraDatePickerTranslations.daysArray,
+        months: zebraDatePickerTranslations.monthsArray,
+        lang_clear_date: zebraDatePickerTranslations.clearString,
+        show_select_today: zebraDatePickerTranslations.todayString,
+        select_other_months: true
+    });
+
+    todosEndDateTimePicker.Zebra_DatePicker({
+        format: zebraDateTimeFormat,
+        open_icon_only: true,
+        onSelect: function (a: any, b: any, c: any) { setEndDate(todosDateTimeFormatMoment); },
+        days: zebraDatePickerTranslations.daysArray,
+        months: zebraDatePickerTranslations.monthsArray,
+        lang_clear_date: zebraDatePickerTranslations.clearString,
+        show_select_today: zebraDatePickerTranslations.todayString,
+        select_other_months: true
+    });
+
     await setTagsAutoSuggestList(todosPageParameters.progenies, 'tag-filter-input', true);
     await setContextAutoSuggestList(todosPageParameters.progenies, 'context-filter-input', true);
 
@@ -582,6 +673,11 @@ async function saveTodosPageSettings(): Promise<void> {
     SettingsHelper.toggleShowPageSettings();
     clearTodoItemsElements();
     await getTodos();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+
 }
 /** Initializes the Todos page by setting up event listeners and fetching initial data.
  * This function is called when the DOM content is fully loaded.
