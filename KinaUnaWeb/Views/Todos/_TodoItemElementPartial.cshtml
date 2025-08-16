@@ -14,45 +14,49 @@
         <div class="card-header rounded w-100 p-0 pt-2" style="padding-right: 5px; margin-bottom: 0;">
             <img class="float-right" src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" style="max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;" />
             <div class="card-title text-left"><span class="pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">fact_check</i> </span><span class="h4">@Model.TodoItem.Title</span></div>
-            <div class="row">
-                <div class="col-12 col-sm-6 col-md-4 text-left">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
+            <div class="row mr-3">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 text-left">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
                 @if (Model.TodoItem.DueDate.HasValue)
                 {
-                    <div class="col-12 col-sm-6 col-md-4 text-left">@await LocaleManager.GetTranslation("Due", PageNames.Todos, Model.LanguageId): @Model.TodoItem.DueDate.Value.ToString("dd-MMM-yyyy")</div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-2 text-left">@await LocaleManager.GetTranslation("Due", PageNames.Todos, Model.LanguageId): @Model.TodoItem.DueDate.Value.ToString("dd-MMM-yyyy")</div>
                 }
                 @if (Model.TodoItem.StartDate.HasValue)
                 {
-                    <div class="col-12 col-sm-6 col-md-4 text-left">@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId): @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-2 text-left">@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId): @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
                 }
-                else
+                @* else
                 {
                     <div class="col-12 col-sm-6 col-md-4 text-left">@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId): @Model.TodoItem.CreatedTime.ToString("dd-MMM-yyyy")</div>
-                }
+                } *@
                 @if (Model.TodoItem.CompletedDate.HasValue && Model.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
                 {
                     <div class="row text-white">
                         <div class="col-auto">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
                     </div>
                 }
+                @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
+                {
+                    List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
+                    <div class="col text-right">
+                        @foreach (string contextString in contextsList)
+                        {
+                            <span class="btn context-item tag-item-sm">@contextString</span>
+                        }
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.TodoItem.Tags))
+                {
+                    List<string> tagsList = Model.TodoItem.Tags.Split(',').ToList();
+                    <div class="col">
+                        @foreach (string tagString in tagsList)
+                        {
+                            <span class="btn tag-item tag-item-sm">@tagString</span>
+                        }
+                    </div>
+                }
+                
             </div>
             
-        </div>
-        <div class="card-body p-0 w-100">
-            <div class="card-text">
-                <div class="text-dark card-body bg-white" style="overflow: hidden; max-height: 250px;" align="left">@Html.Raw(HttpUtility.HtmlDecode(Model.TodoItem.Description))</div>
-            </div>
-        </div>
-        <div class="mt-3 w-100 ">
-            @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
-            {
-                List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
-                <div class="col-12 text-right">
-                    @foreach (string contextString in contextsList)
-                    {
-                        <span class="btn context-item tag-item-sm">@contextString</span>
-                    }
-                </div>
-            }
         </div>
     }
 </button>

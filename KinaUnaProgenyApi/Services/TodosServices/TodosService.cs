@@ -183,107 +183,296 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             if (request.SortBy == 0)
             {
                 // Sort by DueDate, then by CreatedTime
-                if (request.Sort == 1)
+                if (request.Sort == 0)
                 {
-                    todoItemsForProgenies =
-                    [
-                        .. todoItemsForProgenies
-                            .OrderByDescending(t => t.DueDate)
-                            .ThenByDescending(t => t.CreatedTime)
-                    ];
-                }
-                else
-                {
-                    todoItemsForProgenies =
+                    if (request.GroupBy == 1)
+                    {
+                        // Group by Status
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Status)
+                                .ThenBy(t => t.DueDate)
+                                .ThenBy(t => t.CreatedTime)
+                        ];
+                    }
+                    else if (request.GroupBy == 2)
+                    {
+                        // Group by Progeny
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.DueDate)
+                                .ThenBy(t => t.CreatedTime)
+                        ];
+                    }
+                    else
+                        todoItemsForProgenies =
                     [
                         .. todoItemsForProgenies
                             .OrderBy(t => t.DueDate)
                             .ThenBy(t => t.CreatedTime)
                     ];
                 }
+                else
+                {
+                    if (request.GroupBy == 1)
+                    {
+                        // Group by Status
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Status)
+                                .ThenByDescending(t => t.DueDate)
+                                .ThenByDescending(t => t.CreatedTime)
+                        ];
+                    }
+                    else if (request.GroupBy == 2)
+                    {
+                        // Group by Progeny
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.ProgenyId)
+                                .ThenByDescending(t => t.DueDate)
+                                .ThenByDescending(t => t.CreatedTime)
+                        ];
+                    }
+                    else
+                    {
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderByDescending(t => t.DueDate)
+                                .ThenByDescending(t => t.CreatedTime)
+                        ];
+                    }
+                }
             }
 
             if (request.SortBy == 1)
             {
                 // Sort by CreatedTime, then by DueDate
-                if (request.Sort == 1)
+                if (request.Sort == 0)
                 {
-                    todoItemsForProgenies =
-                    [
-                        .. todoItemsForProgenies
-                            .OrderByDescending(t => t.CreatedTime)
-                            .ThenByDescending(t => t.DueDate)
-                    ];
+                    if (request.GroupBy == 1)
+                    {
+                        // Group by Status
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Status)
+                                .ThenBy(t => t.CreatedTime)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
+                    else if (request.GroupBy == 2)
+                    {
+                        // Group by Progeny
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.CreatedTime)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
+                    else
+                    {
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.CreatedTime)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
                 }
                 else
                 {
-                    todoItemsForProgenies =
-                    [
-                        .. todoItemsForProgenies
-                            .OrderBy(t => t.CreatedTime)
-                            .ThenBy(t => t.DueDate)
-                    ];
+                    if (request.GroupBy == 1)
+                    {
+                        // Group by Status
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Status)
+                                .ThenByDescending(t => t.CreatedTime)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
+                    else if (request.GroupBy == 2)
+                    {
+                        // Group by Progeny
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.ProgenyId)
+                                .ThenByDescending(t => t.CreatedTime)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
+                    else
+                    {
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderByDescending(t => t.CreatedTime)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
                 }
+                
             }
 
             if (request.SortBy == 2)
             {
                 // Sort by StartDate, then by DueDate
-                if (request.Sort == 1)
+                if (request.Sort == 0)
                 {
-                    todoItemsForProgenies =
-                    [
-                        .. todoItemsForProgenies
-                            .OrderByDescending(t => t.StartDate)
-                            .ThenByDescending(t => t.DueDate)
-                    ];
+                    if (request.GroupBy == 1)
+                    {
+                        // Group by Status
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Status)
+                                .ThenBy(t => t.StartDate)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
+                    else if (request.GroupBy == 2)
+                    {
+                        // Group by Progeny
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.StartDate)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
+                    else
+                    {
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.StartDate)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
                 }
                 else
                 {
-                    todoItemsForProgenies =
-                    [
-                        .. todoItemsForProgenies
-                            .OrderBy(t => t.StartDate)
-                            .ThenBy(t => t.DueDate)
-                    ];
+                    if (request.GroupBy == 1)
+                    {
+                        // Group by Status
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Status)
+                                .ThenByDescending(t => t.StartDate)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
+                    else if (request.GroupBy == 2)
+                    {
+                        // Group by Progeny
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.ProgenyId)
+                                .ThenByDescending(t => t.StartDate)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
+                    else
+                    {
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderByDescending(t => t.StartDate)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
                 }
+                
+                
             }
 
             if (request.SortBy == 3)
             {
                 // Sort by CompletedDate, then by DueDate
-                if (request.Sort == 1)
+                if (request.Sort == 0)
                 {
-                    todoItemsForProgenies =
-                    [
-                        .. todoItemsForProgenies
-                            .OrderByDescending(t => t.CompletedDate)
-                            .ThenByDescending(t => t.DueDate)
-                    ];
+                    if (request.GroupBy == 1)
+                    {
+                        // Group by Status
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Status)
+                                .ThenBy(t => t.CompletedDate)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
+                    else if (request.GroupBy == 2)
+                    {
+                        // Group by Progeny
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.CompletedDate)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
+                    else
+                    {
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.CompletedDate)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
                 }
                 else
                 {
-                    todoItemsForProgenies =
-                    [
-                        .. todoItemsForProgenies
-                            .OrderBy(t => t.CompletedDate)
-                            .ThenBy(t => t.DueDate)
-                    ];
+                    if (request.GroupBy == 1)
+                    {
+                        // Group by Status
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Status)
+                                .ThenByDescending(t => t.CompletedDate)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
+                    else if (request.GroupBy == 2)
+                    {
+                        // Group by Progeny
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.ProgenyId)
+                                .ThenByDescending(t => t.CompletedDate)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
+                    else
+                    {
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderByDescending(t => t.CompletedDate)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
                 }
             }
-
-            if (request.GroupBy == 1)
-            {
-                // Group by Status
-                todoItemsForProgenies = [.. todoItemsForProgenies.GroupBy(t => t.Status).SelectMany(g => g)];
-            }
-            else if (request.GroupBy == 2)
-            {
-                // Group by Progeny
-                todoItemsForProgenies = [.. todoItemsForProgenies.GroupBy(t => t.ProgenyId).SelectMany(g => g)];
-            }
-
-
+            
             // Apply pagination, if number of items is less than 1, we do not apply pagination
             if (request.NumberOfItems > 0)
             {

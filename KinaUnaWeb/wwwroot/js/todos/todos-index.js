@@ -413,7 +413,7 @@ function updateStartDatePicker(date) {
     }
 }
 /**
- * Sets the value of the startDateTimePicker to the given date in the format defined by startDateTimeFormatMoment.
+ * Sets the value of the endDateTimePicker to the given date in the format defined by startDateTimeFormatMoment.
  * @param date The date to assign to the DateTimePicker.
  */
 function updateEndDatePicker(date) {
