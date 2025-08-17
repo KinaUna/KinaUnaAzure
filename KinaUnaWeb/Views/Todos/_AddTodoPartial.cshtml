@@ -7,6 +7,7 @@
     string addTodoForString = await LocaleManager.GetTranslation("Add todo for:", PageNames.Todos, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
+    const string longDateTimeFormatMoment = "DD-MMMM-YYYY";
 
     foreach (SelectListItem statusItem in Model.StatusList)
     {
@@ -19,6 +20,7 @@
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-todo-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container-wide">
@@ -48,7 +50,7 @@
                 <div class="form-group">
                     <label asp-for="TodoItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="TodoItem.Title" class="form-control" />
+                        <input id="todo-title-input" asp-for="TodoItem.Title" class="form-control" />
                     </div>
                 </div>
                 <div class="form-group">
@@ -125,7 +127,7 @@
                 <div class="form-group">
                     <div class="col-auto control-label"></div>
                     <div class="col-auto">
-                        <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                        <button id="save-todo-button" disabled="disabled" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
                         <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                     </div>
                 </div>

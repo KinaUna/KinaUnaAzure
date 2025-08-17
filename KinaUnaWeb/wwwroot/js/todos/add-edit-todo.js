@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
+import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue } from '../data-tools-v9.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat;
@@ -11,26 +11,52 @@ async function setupDateTimePicker() {
     setMomentLocale();
     zebraDateTimeFormat = getZebraDateTimeFormat('#add-todo-zebra-date-time-format-div');
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
-    const dueDateTimePicker = $('#todo-due-date-time-picker');
-    dueDateTimePicker.Zebra_DatePicker({
-        format: zebraDateTimeFormat,
-        open_icon_only: true,
-        days: zebraDatePickerTranslations.daysArray,
-        months: zebraDatePickerTranslations.monthsArray,
-        lang_clear_date: zebraDatePickerTranslations.clearString,
-        show_select_today: zebraDatePickerTranslations.todayString,
-        select_other_months: true
-    });
-    const startDateTimePicker = $('#todo-start-date-time-picker');
-    startDateTimePicker.Zebra_DatePicker({
-        format: zebraDateTimeFormat,
-        open_icon_only: true,
-        days: zebraDatePickerTranslations.daysArray,
-        months: zebraDatePickerTranslations.monthsArray,
-        lang_clear_date: zebraDatePickerTranslations.clearString,
-        show_select_today: zebraDatePickerTranslations.todayString,
-        select_other_months: true
-    });
+    const dueDateInput = document.getElementById('todo-due-date-time-picker');
+    if (dueDateInput !== null) {
+        dueDateInput.addEventListener('blur', validateInputs);
+        const dueDateTimePicker = $('#todo-due-date-time-picker');
+        dueDateTimePicker.Zebra_DatePicker({
+            format: zebraDateTimeFormat,
+            open_icon_only: true,
+            onSelect: function (a, b, c) { validateInputs; },
+            days: zebraDatePickerTranslations.daysArray,
+            months: zebraDatePickerTranslations.monthsArray,
+            lang_clear_date: zebraDatePickerTranslations.clearString,
+            show_select_today: zebraDatePickerTranslations.todayString,
+            select_other_months: true
+        });
+    }
+    const startDateInput = document.getElementById('todo-start-date-time-picker');
+    if (startDateInput !== null) {
+        startDateInput.addEventListener('blur', validateInputs);
+        const startDateTimePicker = $('#todo-start-date-time-picker');
+        startDateTimePicker.Zebra_DatePicker({
+            format: zebraDateTimeFormat,
+            open_icon_only: true,
+            onSelect: function (a, b, c) { validateInputs; },
+            days: zebraDatePickerTranslations.daysArray,
+            months: zebraDatePickerTranslations.monthsArray,
+            lang_clear_date: zebraDatePickerTranslations.clearString,
+            show_select_today: zebraDatePickerTranslations.todayString,
+            select_other_months: true
+        });
+    }
+    const completedDateInput = document.getElementById('todo-completed-date-time-picker');
+    if (completedDateInput !== null) {
+        completedDateInput.addEventListener('blur', validateInputs);
+        const completedDateTimePicker = $('#todo-completed-date-time-picker');
+        completedDateTimePicker.Zebra_DatePicker({
+            format: zebraDateTimeFormat,
+            open_icon_only: true,
+            onSelect: function (a, b, c) { validateInputs; },
+            days: zebraDatePickerTranslations.daysArray,
+            months: zebraDatePickerTranslations.monthsArray,
+            lang_clear_date: zebraDatePickerTranslations.clearString,
+            show_select_today: zebraDatePickerTranslations.todayString,
+            select_other_months: true
+        });
+    }
+    ;
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -105,6 +131,46 @@ function onRichTextEditorFocus() {
         }
     }
 }
+function validateInputs() {
+    let isValid = true;
+    const saveButton = document.getElementById('save-todo-button');
+    if (saveButton !== null) {
+        const titleInput = document.getElementById('todo-title-input');
+        if (titleInput && titleInput.value.trim() === '') {
+            isValid = false;
+        }
+        const todoStartDateInput = document.getElementById('todo-start-date-time-picker');
+        if (todoStartDateInput) {
+            if (todoStartDateInput.value !== '') {
+                if (!validateDateValue(todoStartDateInput.value, getLongDateTimeFormatMoment())) {
+                    isValid = false;
+                }
+            }
+        }
+        const todoDueDateInput = document.getElementById('todo-due-date-time-picker');
+        if (todoDueDateInput) {
+            if (todoDueDateInput.value !== '') {
+                if (!validateDateValue(todoDueDateInput.value, getLongDateTimeFormatMoment())) {
+                    isValid = false;
+                }
+            }
+        }
+        const todoCompletedDateInput = document.getElementById('todo-completed-date-time-picker');
+        if (todoCompletedDateInput) {
+            if (todoCompletedDateInput.value !== '') {
+                if (!validateDateValue(todoCompletedDateInput.value, getLongDateTimeFormatMoment())) {
+                    isValid = false;
+                }
+            }
+        }
+        if (isValid) {
+            saveButton.removeAttribute('disabled');
+        }
+        else {
+            saveButton.setAttribute('disabled', 'disabled');
+        }
+    }
+}
 /**
  * Initializes the Add/Edit Todo page by setting up the date time picker, progeny select list, tags and context auto suggest lists, and the Rich Text Editor.
  * @returns {Promise<void>} A promise that resolves when the initialization is complete.
@@ -118,6 +184,11 @@ export async function initializeAddEditTodo() {
     await setContextAutoSuggestList([currentProgenyId]);
     $(".selectpicker").selectpicker('refresh');
     setupRichTextEditor();
+    const titleInput = document.getElementById('todo-title-input');
+    if (titleInput) {
+        titleInput.addEventListener('input', validateInputs);
+    }
+    validateInputs();
     return new Promise(function (resolve, reject) {
         resolve();
     });
