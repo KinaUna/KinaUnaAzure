@@ -1,6 +1,6 @@
 import { addPictureItemEventListeners, popupPictureDetails } from '../pictures/picture-details.js';
 import { addCalendarEventListeners, popupEventItem } from '../calendar/calendar-details.js';
-import { TimelineItem } from '../page-models-v8.js'
+import { TimelineItem } from '../page-models-v9.js'
 import { addVideoItemEventListeners, popupVideoDetails } from '../videos/video-details.js';
 import { addNoteEventListeners, popupNoteItem } from '../notes/note-details.js';
 import { addSleepEventListeners, popupSleepItem } from '../sleep/sleep-details.js';
@@ -11,7 +11,7 @@ import { addMeasurementItemListeners, popupMeasurementItem } from '../measuremen
 import { addSkillItemListeners, popupSkillItem } from '../skills/skill-details.js';
 import { addVocabularyItemListeners, popupVocabularyItem } from '../vocabulary/vocabulary-details.js';
 import { addVaccinationItemListeners, popupVaccinationItem } from '../vaccinations/vaccination-details.js';
-import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
+import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
 /**
  * Adds event listeners for a given timeline item. Used to show popups for items.
  * @param {TimelineItem} item The timeline item to add event listeners for.

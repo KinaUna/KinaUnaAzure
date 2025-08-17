@@ -1,6 +1,6 @@
 import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
-import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
-import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
+import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
 import '@here/maps-api-for-javascript';
 
 declare let map: H.Map;

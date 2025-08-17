@@ -1,11 +1,11 @@
-﻿import * as LocaleHelper from '../localization-v8.js';
-import { Picture, PictureViewModel, PicturesList, PicturesPageParameters, TimeLineType, TimelineItem } from '../page-models-v8.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v8.js';
-import * as SettingsHelper from '../settings-tools-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
+﻿import * as LocaleHelper from '../localization-v9.js';
+import { Picture, PictureViewModel, PicturesList, PicturesPageParameters, TimeLineType, TimelineItem } from '../page-models-v9.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v9.js';
+import * as SettingsHelper from '../settings-tools-v9.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v9.js';
 import { popupPictureDetails } from './picture-details.js';
-import { getSelectedProgenies } from '../settings-tools-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
 
 let picturesPageParameters: PicturesPageParameters | null = new PicturesPageParameters();
 let popupPictureId: number = 0;

@@ -249,4 +249,4 @@ export async function initSidebar() {
         resolve();
     });
 }
-//# sourceMappingURL=sidebar-v8.js.map
+//# sourceMappingURL=sidebar-v9.js.map

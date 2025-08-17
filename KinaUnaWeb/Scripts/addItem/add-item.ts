@@ -1,10 +1,10 @@
 ﻿import { initializeAddEditEvent } from "../calendar/add-edit-event.js";
 import { initializeAddEditContact } from "../contacts/add-edit-contact.js";
 import { initializeAddEditFriend } from "../friends/add-edit-friend.js";
-import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
+import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9.js";
 import { initializeAddEditLocation } from "../locations/add-edit-location.js";
 import { initializeAddEditMeasurement } from "../measurements/add-edit-measurement.js";
-import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v8.js";
+import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
 import { initializeAddEditNote } from "../notes/add-edit-note.js";
 import { initializeAddEditPicture } from "../pictures/add-edit-picture.js";
 import { popupPictureDetails } from "../pictures/picture-details.js";

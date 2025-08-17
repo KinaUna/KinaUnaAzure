@@ -99,7 +99,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// time.</description></item> <item><description>Applies pagination based on the skip and take values in the
         /// request.</description></item> </list></remarks>
         /// <param name="id">The unique identifier of the progeny for which to retrieve to-do items.</param>
-        /// <param name="accessLevel">The access level of the requesting user. Only to-do items with an access level less than or equal to this
+        /// <param name="accessLevel">The access level of the requesting user. Only to-do items with an access level higher than or equal to this
         /// value will be included.</param>
         /// <param name="request">An object containing filtering, sorting, and pagination options for the to-do items.  This includes date
         /// ranges, tags, context, status, and pagination parameters.</param>
@@ -109,7 +109,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         {
             List<TodoItem> todoItemsForProgeny = await progenyDbContext.TodoItemsDb
                 .AsNoTracking()
-                .Where(t => t.ProgenyId == id && t.AccessLevel <= accessLevel && !t.IsDeleted)
+                .Where(t => t.ProgenyId == id && t.AccessLevel >= accessLevel && !t.IsDeleted)
                 .ToListAsync();
 
             if (request.StartDate.HasValue && request.EndDate.HasValue)
@@ -545,6 +545,15 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
                 {
                     todoItem.CompletedDate = DateTime.UtcNow;
+                }
+                else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted)
+                {
+                    todoItem.CompletedDate = null; // Reset completed date if not started
+                    todoItem.StartDate = null; // Reset start date if not started
+                }
+                else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.InProgress)
+                {
+                    todoItem.StartDate = DateTime.UtcNow; // Set start date if not already set
                 }
                 else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled)
                 {

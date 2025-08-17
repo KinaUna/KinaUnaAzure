@@ -1,4 +1,4 @@
-import { getCurrentProgenyId } from "./data-tools-v8.js";
+import { getCurrentProgenyId } from "./data-tools-v9.js";
 let currentPageSettingsDiv = document.querySelector('#page-settings-div');
 let currentPageMainDiv = document.querySelector('#kinauna-main-div');
 let currentPageSettingsButton = document.querySelector('#page-settings-button');
@@ -147,4 +147,4 @@ export function getSelectedProgenies() {
     }
     return progeniesIds;
 }
-//# sourceMappingURL=settings-tools-v8.js.map
+//# sourceMappingURL=settings-tools-v9.js.map

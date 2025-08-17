@@ -1,11 +1,11 @@
-import * as LocaleHelper from '../localization-v8.js';
-import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
-import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
+import * as LocaleHelper from '../localization-v9.js';
+import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
-import { VideosPageParameters, VideoViewModelRequest } from '../page-models-v8.js';
+import { VideosPageParameters, VideoViewModelRequest } from '../page-models-v9.js';
 import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
-import { getSelectedProgenies } from '../settings-tools-v8.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
 
 let videoDetailsTouchStartX: number = 0;
 let videoDetailsTouchStartY: number = 0;

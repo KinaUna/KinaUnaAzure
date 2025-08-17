@@ -1,4 +1,4 @@
-import { AutoSuggestList } from './page-models-v8.js';
+import { AutoSuggestList } from './page-models-v9.js';
 let currentMomentLocale = 'en';
 /** Gets the Id of the current Progeny from the progeny-id-div's data-progeny-id attribute's value.
   * @returns The Progeny's Id number.
@@ -467,6 +467,13 @@ export function dateStringFormatConverter(originalDateString, inputFormat, outpu
     let timeString = pickertime.format(outputFormat);
     return timeString;
 }
+export function validateDateValue(dateValue, dateFormat = '') {
+    if (dateFormat === '') {
+        dateFormat = getLongDateTimeFormatMoment();
+    }
+    let isValid = moment(dateValue, dateFormat, true).isValid();
+    return isValid;
+}
 export function setCopyContentEventListners() {
     let copyContentButtons = document.querySelectorAll('.copy-content-button');
     if (copyContentButtons) {
@@ -495,4 +502,4 @@ export function setCopyContentEventListners() {
         });
     }
 }
-//# sourceMappingURL=data-tools-v8.js.map
+//# sourceMappingURL=data-tools-v9.js.map

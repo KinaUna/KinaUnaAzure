@@ -1,10 +1,10 @@
-import { getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setContextAutoSuggestList, setMomentLocale, setTagsAutoSuggestList } from '../data-tools-v8.js';
-import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
-import * as pageModels from '../page-models-v8.js';
-import { getSelectedProgenies } from '../settings-tools-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import * as SettingsHelper from '../settings-tools-v8.js';
-import * as LocaleHelper from '../localization-v8.js';
+import { getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setContextAutoSuggestList, setMomentLocale, setTagsAutoSuggestList, validateDateValue } from '../data-tools-v9.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v9.js';
+import * as pageModels from '../page-models-v9.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
+import * as SettingsHelper from '../settings-tools-v9.js';
+import * as LocaleHelper from '../localization-v9.js';
 let todosPageParameters = new pageModels.TodosPageParameters();
 const todosPageSettingsStorageKey = 'todos_page_parameters';
 const todosIndexPageParametersDiv = document.querySelector('#todos-index-page-parameters');
@@ -558,6 +558,30 @@ async function initialSettingsPanelSetup() {
         show_select_today: zebraDatePickerTranslations.todayString,
         select_other_months: true
     });
+    const startPickerInput = document.getElementById('settings-start-date-datetimepicker');
+    if (startPickerInput) {
+        startPickerInput.addEventListener('blur', function () {
+            if (!validateDateValue(startPickerInput.value, getLongDateTimeFormatMoment())) {
+                startPickerInput.value = '';
+                todosPageParameters.startYear = 0;
+                todosPageParameters.startMonth = 0;
+                todosPageParameters.startDay = 0;
+                // Todo: show error and focus on the input.
+            }
+        });
+    }
+    const endPickerInput = document.getElementById('settings-end-date-datetimepicker');
+    if (endPickerInput) {
+        endPickerInput.addEventListener('blur', function () {
+            if (!validateDateValue(endPickerInput.value, getLongDateTimeFormatMoment())) {
+                endPickerInput.value = '';
+                todosPageParameters.endYear = 0;
+                todosPageParameters.endMonth = 0;
+                todosPageParameters.endDay = 0;
+                // Todo: show error and focus on the input.
+            }
+        });
+    }
     await setTagsAutoSuggestList(todosPageParameters.progenies, 'tag-filter-input', true);
     await setContextAutoSuggestList(todosPageParameters.progenies, 'context-filter-input', true);
     return new Promise(function (resolve, reject) {

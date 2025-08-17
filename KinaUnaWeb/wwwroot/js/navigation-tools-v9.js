@@ -123,4 +123,4 @@ export function stopFullPageSpinner2() {
     const waitMeStopEvent = new Event('waitMeStop2');
     window.dispatchEvent(waitMeStopEvent);
 }
-//# sourceMappingURL=navigation-tools-v8.js.map
+//# sourceMappingURL=navigation-tools-v9.js.map

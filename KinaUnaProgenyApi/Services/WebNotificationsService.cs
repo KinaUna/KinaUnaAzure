@@ -679,7 +679,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Todo?todoItemId=" + todoItem.TodoItemId + "&childId=" + todoItem.ProgenyId,
+                    Link = "/Todos?todoItemId=" + todoItem.TodoItemId + "&childId=" + todoItem.ProgenyId,
                     Type = "Notification"
                 };
 

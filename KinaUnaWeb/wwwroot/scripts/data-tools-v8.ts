@@ -1,5 +1,5 @@
-import { getTranslation } from './localization-v8.js';
-import { AutoSuggestList } from './page-models-v8.js';
+import { getTranslation } from './localization-v9.js';
+import { AutoSuggestList } from './page-models-v9.js';
 
 declare let moment: any;
 let currentMomentLocale: string = 'en';

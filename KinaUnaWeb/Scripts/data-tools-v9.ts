@@ -1,5 +1,5 @@
-﻿import { getTranslation } from './localization-v8.js';
-import { AutoSuggestList } from './page-models-v8.js';
+﻿import { getTranslation } from './localization-v9.js';
+import { AutoSuggestList } from './page-models-v9.js';
 
 declare let moment: any;
 let currentMomentLocale: string = 'en';
@@ -532,6 +532,14 @@ export function dateStringFormatConverter(originalDateString: string, inputForma
     let pickertime: any = moment.utc(originalDateString, inputFormat);
     let timeString: string = pickertime.format(outputFormat);
     return timeString;
+}
+
+export function validateDateValue(dateValue: string, dateFormat: string = ''): boolean {
+    if (dateFormat === '') {
+        dateFormat = getLongDateTimeFormatMoment();
+    }
+    let isValid: boolean = moment(dateValue, dateFormat, true).isValid();
+    return isValid;
 }
 
 export function setCopyContentEventListners() {

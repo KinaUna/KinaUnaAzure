@@ -1,4 +1,4 @@
-import { TextTranslation } from './page-models-v8.js';
+import { TextTranslation } from './page-models-v9.js';
 /**
  * Fetches and loads the cldr-data files for the specified culture for Syncfusion components, used for translations and formatting of data related to dates and numbers.
  * @param currentCulture The locale code for the culture to get.
@@ -106,4 +106,4 @@ export async function getTranslation(word, page, languageId) {
         resolve(translationString);
     });
 }
-//# sourceMappingURL=localization-v8.js.map
+//# sourceMappingURL=localization-v9.js.map

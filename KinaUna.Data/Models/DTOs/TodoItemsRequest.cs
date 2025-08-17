@@ -100,11 +100,18 @@ namespace KinaUna.Data.Models.DTOs
             if (StartYear > 0 && StartMonth > 0 && StartDay > 0)
             {
                 StartDate = new DateTime(StartYear, StartMonth, StartDay, 0, 0, 0);
-                EndDate = new DateTime(EndYear, EndMonth, EndDay, 23, 59, 59);
             }
             else
             {
                 StartDate = null;
+            }
+
+            if (EndYear > 0 && EndMonth > 0 && EndDay > 0)
+            {
+                EndDate = new DateTime(EndYear, EndMonth, EndDay, 23, 59, 59);
+            }
+            else
+            {
                 EndDate = null;
             }
         }

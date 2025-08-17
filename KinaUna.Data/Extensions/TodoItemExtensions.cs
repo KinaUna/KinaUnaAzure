@@ -71,6 +71,7 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.Description = otherTodoItem.Description;
             currentTodoItem.Status = otherTodoItem.Status;
             currentTodoItem.DueDate = otherTodoItem.DueDate;
+            currentTodoItem.StartDate = otherTodoItem.StartDate;
             currentTodoItem.CompletedDate = otherTodoItem.CompletedDate;
             currentTodoItem.Notes = otherTodoItem.Notes;
             currentTodoItem.AccessLevel = otherTodoItem.AccessLevel;
@@ -101,6 +102,7 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.Description = otherTodoItem.Description;
             currentTodoItem.Status = otherTodoItem.Status;
             currentTodoItem.DueDate = otherTodoItem.DueDate;
+            currentTodoItem.StartDate = otherTodoItem.StartDate;
             currentTodoItem.CompletedDate = otherTodoItem.CompletedDate;
             currentTodoItem.Notes = otherTodoItem.Notes;
             currentTodoItem.AccessLevel = otherTodoItem.AccessLevel;
