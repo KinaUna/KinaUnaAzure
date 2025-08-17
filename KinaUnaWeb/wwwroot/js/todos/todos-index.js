@@ -48,6 +48,7 @@ function setTodosPageParametersFromPageData() {
  * @returns A promise that resolves when the todo items are fetched and appended.
  */
 async function getTodos() {
+    startLoadingSpinner();
     moreTodoItemsButton?.classList.add('d-none');
     const getMoreTodosResponse = await fetch('/Todos/GetTodoItemsList', {
         method: 'POST',
@@ -82,6 +83,7 @@ async function getTodos() {
             }
         }
     }
+    stopLoadingSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -584,9 +586,106 @@ async function initialSettingsPanelSetup() {
     }
     await setTagsAutoSuggestList(todosPageParameters.progenies, 'tag-filter-input', true);
     await setContextAutoSuggestList(todosPageParameters.progenies, 'context-filter-input', true);
+    updateSettingsNotificationDiv();
     return new Promise(function (resolve, reject) {
         resolve();
     });
+}
+/**
+ * Updates the settings notification div with the current settings.
+ * This function is called when the settings are changed or saved.
+ */
+function updateSettingsNotificationDiv() {
+    let todoSettingsNotificationText = '';
+    const settingsSortLabelDiv = document.querySelector('settings-sort-label');
+    if (settingsSortLabelDiv !== null) {
+        todoSettingsNotificationText = settingsSortLabelDiv.innerHTML;
+    }
+    if (todosPageParameters.sort === 0) {
+        todoSettingsNotificationText += ' ' + sortAscendingSettingsButton?.innerHTML;
+    }
+    else {
+        todoSettingsNotificationText += ' ' + sortDescendingSettingsButton?.innerHTML;
+    }
+    const itemsPerPageSpan = document.querySelector('#settings-items-per-page-label');
+    if (itemsPerPageSpan !== null) {
+        todoSettingsNotificationText += '<br/>' + itemsPerPageSpan.innerHTML + ' ' + todosPageParameters.itemsPerPage;
+    }
+    const settingsSortByLabelDiv = document.querySelector('#settings-sort-by-label');
+    if (settingsSortByLabelDiv !== null) {
+        todoSettingsNotificationText += '<br/>' + settingsSortByLabelDiv.innerHTML;
+    }
+    if (todosPageParameters.sortBy === 0) {
+        todoSettingsNotificationText += ' ' + sortByDueDateSettingsButton?.innerHTML;
+    }
+    else if (todosPageParameters.sortBy === 1) {
+        todoSettingsNotificationText += ' ' + sortByCreatedDateSettingsButton?.innerHTML;
+    }
+    else if (todosPageParameters.sortBy === 2) {
+        todoSettingsNotificationText += ' ' + sortByStartDateSettingsButton?.innerHTML;
+    }
+    else if (todosPageParameters.sortBy === 3) {
+        todoSettingsNotificationText += ' ' + sortByCompletedDateSettingsButton?.innerHTML;
+    }
+    const settingsGroupByLabelDiv = document.querySelector('#settings-group-by-label');
+    if (settingsGroupByLabelDiv !== null) {
+        todoSettingsNotificationText += '<br/>' + settingsGroupByLabelDiv.innerHTML;
+    }
+    if (todosPageParameters.groupBy === 0) {
+        todoSettingsNotificationText += ' ' + groupByNoneSettingsButton?.innerHTML;
+    }
+    else if (todosPageParameters.groupBy === 1) {
+        todoSettingsNotificationText += ' ' + groupByStatusSettingsButton?.innerHTML;
+    }
+    else if (todosPageParameters.groupBy === 2) {
+        todoSettingsNotificationText += ' ' + groupByAssignedToSettingsButton?.innerHTML;
+    }
+    const settingsStatusFilterLabelSpan = document.querySelector('#settings-status-filter-label');
+    if (settingsStatusFilterLabelSpan !== null) {
+        todoSettingsNotificationText += '<br/>' + settingsStatusFilterLabelSpan.innerHTML;
+    }
+    const statusTypeButtons = document.querySelectorAll('.filter-status-type-button');
+    statusTypeButtons.forEach(function (button) {
+        if (button.classList.contains('active')) {
+            todoSettingsNotificationText += ' [' + button.innerHTML + ']';
+        }
+    });
+    if (todosPageParameters.startYear > 0 && todosPageParameters.startMonth > 0 && todosPageParameters.startDay > 0) {
+        const settingsStartLabel = document.querySelector('#start-filter-span');
+        if (settingsStartLabel !== null) {
+            todoSettingsNotificationText += '<br/>' + settingsStartLabel.innerHTML + ': ';
+        }
+        const settingsStartDateInput = document.querySelector('#settings-start-date-datetimepicker');
+        todoSettingsNotificationText += settingsStartDateInput?.value ?? '';
+    }
+    if (todosPageParameters.endYear > 0 && todosPageParameters.endMonth > 0 && todosPageParameters.endDay > 0) {
+        const settingsEndLabel = document.querySelector('#end-filter-span');
+        if (settingsEndLabel !== null) {
+            todoSettingsNotificationText += '<br/>' + settingsEndLabel.innerHTML + ': ';
+        }
+        const settingsEndDateInput = document.querySelector('#settings-end-date-datetimepicker');
+        todoSettingsNotificationText += settingsEndDateInput?.value ?? '';
+    }
+    const contextFilterInput = document.querySelector('#context-filter-input');
+    if (contextFilterInput !== null && contextFilterInput.value.length > 0) {
+        const settingsContextFilterLabel = document.querySelector('#context-filter-span');
+        if (settingsContextFilterLabel !== null) {
+            todoSettingsNotificationText += '<br/>' + settingsContextFilterLabel.innerHTML;
+        }
+        todoSettingsNotificationText += ' [' + contextFilterInput.value + ']';
+    }
+    const tagFilterInput = document.querySelector('#tag-filter-input');
+    if (tagFilterInput !== null && tagFilterInput.value.length > 0) {
+        const settingsTagFilterLabel = document.querySelector('#tag-filter-span');
+        if (settingsTagFilterLabel !== null) {
+            todoSettingsNotificationText += '<br/>' + settingsTagFilterLabel.innerHTML;
+        }
+        todoSettingsNotificationText += ' [' + tagFilterInput.value + ']';
+    }
+    const settingsNotificationsDiv = document.querySelector('#settings-notification-div');
+    if (settingsNotificationsDiv !== null && todoSettingsNotificationText !== undefined) {
+        settingsNotificationsDiv.innerHTML = todoSettingsNotificationText;
+    }
 }
 /**
  * Saves the current page parameters to local storage and reloads the todo items list.
@@ -615,6 +714,7 @@ async function saveTodosPageSettings() {
     }
     SettingsHelper.toggleShowPageSettings();
     clearTodoItemsElements();
+    updateSettingsNotificationDiv();
     await getTodos();
     return new Promise(function (resolve, reject) {
         resolve();

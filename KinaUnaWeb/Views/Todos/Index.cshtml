@@ -20,12 +20,16 @@
 <div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
 <div id="popup-todo-id-div" class="d-none" data-popup-todo-id="@Model.PopUpTodoItemId"></div>
 <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10 col-w1900-8 col-w2500-7">
-
-    <div id="page-title-div" class="h2">@ViewData["Title"]</div>
+    <div class="row">
+        <div class="col-12">
+            <div id="settings-notification-div" class="float-right small text-muted"></div>
+            <div id="page-title-div" class="h2">@ViewData["Title"]</div>
+        </div>
+    </div>
     <div class="space-20"></div>
     <div id="todos-list-div" class="row">
     </div>
-    <div style="height: 150px;">
+    <div class="row" style="height: 150px;">
         <button id="more-todo-items-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
         <div id="loading-todo-items-div" class="w-100">
             <div class="space-50"></div>
@@ -49,7 +53,7 @@
             </div>
             <div class="space-20"></div>
             <div class="row">
-                <div class="col-12">
+                <div id="settings-sort-label" class="col-12">
                     @sortString
                 </div>
                 <div class="col-auto ml-4">
@@ -65,7 +69,7 @@
             </div>
             <div class="space-20"></div>
             <div class="row">
-                <div class="col-12">
+                <div id="settings-items-per-page-label" class="col-12">
                     @await LocaleManager.GetTranslation("Items per page", PageNames.Layout, Model.LanguageId):
                 </div>
                 <div class="col-auto ml-4">
@@ -81,7 +85,7 @@
             </div>
             <div class="space-20"></div>
             <div class="row">
-                <div class="col-12">
+                <div id="settings-sort-by-label" class="col-12">
                     @await LocaleManager.GetTranslation("Sort by:", PageNames.Contacts, Model.LanguageId)
                 </div>
             </div>
@@ -109,7 +113,7 @@
             </div>
             <div class="space-20"></div>
             <div class="row">
-                <div class="col-12">
+                <div id="settings-group-by-label" class="col-12">
                     @await LocaleManager.GetTranslation("Group by:", PageNames.Todos, Model.LanguageId)
                 </div>
             </div>
@@ -142,7 +146,7 @@
             <div class="row ml-4 todos-filter-options d-none">
                 <div class="col-12">
                     <div class="space-20"></div>
-                    @await LocaleManager.GetTranslation("Status:", PageNames.Todos, Model.LanguageId)
+                    <span id="settings-status-filter-label">@await LocaleManager.GetTranslation("Status:", PageNames.Todos, Model.LanguageId)</span>
                 </div>
                 <div class="col ml-4">
                     <div class="row align-items-center">

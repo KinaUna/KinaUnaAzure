@@ -12,7 +12,7 @@
     {
         <div class="card-header rounded w-100 p-0 pt-2" style="padding-right: 5px; margin-bottom: 0;">
             <img class="float-right" src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" style="max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;" />
-            <div class="card-title text-left"><span class="pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">fact_check</i> </span><span class="h4">@Model.TodoItem.Title</span></div>
+            <div class="card-title text-left"><span class="pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">fact_check</i> </span><span class="h5">@Model.TodoItem.Title</span></div>
             <div class="row mr-3">
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 text-left">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
                 @if (Model.TodoItem.DueDate.HasValue)

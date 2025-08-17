@@ -33,13 +33,9 @@
                         {
                             <div>@await LocaleManager.GetTranslation("Start", PageNames.Todos, languageId): @Model.StartDate.Value.ToString("dd-MMM-yyyy")</div>
                         }
-                        else
-                        {
-                            <div>@await LocaleManager.GetTranslation("Start", PageNames.Todos, languageId): @Model.CreatedTime.ToString("dd-MMM-yyyy")</div>
-                        }
                     </div>
                     <div class="timeline-text text-white-50">
-                        <div class="timeline-noteitem-text rounded text-dark bg-white">@Html.Raw(HttpUtility.HtmlDecode(Model.Description))</div>
+                        @* <div class="timeline-noteitem-text rounded text-dark bg-white">@Html.Raw(HttpUtility.HtmlDecode(Model.Description))</div> *@
                         @if (!string.IsNullOrEmpty(Model.Context))
                         {
                             List<string> contextsList = Model.Context.Split(',').ToList();
