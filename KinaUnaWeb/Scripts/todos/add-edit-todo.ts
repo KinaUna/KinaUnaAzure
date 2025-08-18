@@ -154,33 +154,63 @@ function validateInputs(): void {
     const saveButton = document.getElementById('save-todo-button');
     if (saveButton !== null) {
         const titleInput = document.getElementById('todo-title-input') as HTMLInputElement;
+        const titleRequiredDiv = document.querySelector<HTMLDivElement>('#todo-title-required-div');
         if (titleInput && titleInput.value.trim() === '') {
             isValid = false;
+            if (titleRequiredDiv) {
+                titleRequiredDiv.classList.remove('d-none');
+            }
+        }
+        else {
+            if (titleRequiredDiv) {
+                titleRequiredDiv.classList.add('d-none');
+            }
         }
 
         const todoStartDateInput = document.getElementById('todo-start-date-time-picker') as HTMLInputElement;
+        const todoStartDateRequiredDiv = document.querySelector<HTMLDivElement>('#todo-start-date-invalid-div');
         if (todoStartDateInput) {
-            if (todoStartDateInput.value !== '') {
-                if (!validateDateValue(todoStartDateInput.value, getLongDateTimeFormatMoment())) {
-                    isValid = false;
+            if (todoStartDateInput.value !== '' && !validateDateValue(todoStartDateInput.value, getLongDateTimeFormatMoment())) {
+                isValid = false;
+                if (todoStartDateRequiredDiv) {
+                    todoStartDateRequiredDiv.classList.remove('d-none');
+                }
+            }
+            else {
+                if (todoStartDateRequiredDiv) {
+                    todoStartDateRequiredDiv.classList.add('d-none');
                 }
             }
         }
 
         const todoDueDateInput = document.getElementById('todo-due-date-time-picker') as HTMLInputElement;
+        const todoDueDateRequiredDiv = document.querySelector<HTMLDivElement>('#todo-due-date-invalid-div');
         if (todoDueDateInput) {
-            if (todoDueDateInput.value !== '') {
-                if (!validateDateValue(todoDueDateInput.value, getLongDateTimeFormatMoment())) {
-                    isValid = false;
+            if (todoDueDateInput.value !== '' && !validateDateValue(todoDueDateInput.value, getLongDateTimeFormatMoment())) {
+                isValid = false;
+                if (todoDueDateRequiredDiv) {
+                    todoDueDateRequiredDiv.classList.remove('d-none');
+                }
+            }
+            else {
+                if (todoDueDateRequiredDiv) {
+                    todoDueDateRequiredDiv.classList.add('d-none');
                 }
             }
         }
 
         const todoCompletedDateInput = document.getElementById('todo-completed-date-time-picker') as HTMLInputElement;
+        const todoCompletedDateRequiredDiv = document.querySelector<HTMLDivElement>('#todo-completed-date-invalid-div');
         if (todoCompletedDateInput) {
-            if (todoCompletedDateInput.value !== '') {
-                if (!validateDateValue(todoCompletedDateInput.value, getLongDateTimeFormatMoment())) {
-                    isValid = false;
+            if (todoCompletedDateInput.value !== '' && !validateDateValue(todoCompletedDateInput.value, getLongDateTimeFormatMoment())) {
+                isValid = false;
+                if (todoCompletedDateRequiredDiv) {
+                    todoCompletedDateRequiredDiv.classList.remove('d-none');
+                }
+            }
+            else {
+                if (todoCompletedDateRequiredDiv) {
+                    todoCompletedDateRequiredDiv.classList.add('d-none');
                 }
             }
         }

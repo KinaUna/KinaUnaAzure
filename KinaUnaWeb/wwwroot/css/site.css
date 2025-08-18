@@ -1507,6 +1507,14 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     background: linear-gradient(90deg, transparent, #ffffff);
 }
 
+.bg-display-rich-text {
+    background: #ffffff33;
+}
+
+.bg-display-rich-text-dark {
+    background: #00000033;
+}
+
 .img-thumbnail {
     padding: 0;
     background-color: #fff;

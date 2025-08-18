@@ -53,12 +53,32 @@
                 @if (!string.IsNullOrWhiteSpace(Model.TodoItem.Description))
                 {
                     <div class="space-10"></div>
+                    <div class="row text-white">
+                        <div class="col-auto">
+                            @await LocaleManager.GetTranslation("Description", PageNames.Todos, Model.LanguageId)
+                        </div>
+                    </div>
                     <div class="timeline-text row m-0 text-white-75">
-                        <div class="timeline-noteitem-text text-dark bg-white col-12 p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.TodoItem.Description))</div>
+                        <div class="col-12 bg-display-rich-text p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.TodoItem.Description))</div>
+                    </div>
+                }
+                <div class="space-20"></div>
+                <div class="row">
+                    <div class="col-12">
+                        @if (!string.IsNullOrEmpty(Model.TodoItem.Tags))
+                        {
+                            List<string> tagsList = Model.TodoItem.Tags.Split(',').ToList();
+                            <div class="float-right">
+                                @foreach (string tagString in tagsList)
+                                {
+                                    <span class="btn tag-item tag-item-sm">@tagString</span>
+                                }
+                            </div>
+                        }
                         @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
                         {
                             List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
-                            <div class="col-12 text-right">
+                            <div class="float-right">
                                 @foreach (string contextsString in contextsList)
                                 {
                                     <span class="btn context-item tag-item-sm">@contextsString</span>
@@ -66,7 +86,7 @@
                             </div>
                         }
                     </div>
-                }
+                </div>
             </div>
             @if (Model.IsCurrentUserProgenyAdmin)
             {

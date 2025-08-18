@@ -18,8 +18,8 @@
                     <div class="timeline-text text-white">
                         @Model.Title
                     </div>
-                    <div class="timeline-text text-white-50">
-                        <div class="timeline-noteitem-text rounded text-dark bg-white">@Html.Raw(HttpUtility.HtmlDecode(Model.Content))</div>
+                    <div class="timeline-text text-white">
+                        <div class="bg-display-rich-text-dark rounded">@Html.Raw(HttpUtility.HtmlDecode(Model.Content))</div>
                         @if (!string.IsNullOrEmpty(Model.Category))
                         {
                             List<string> categoriesList = Model.Category.Split(',').ToList();

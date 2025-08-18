@@ -27,8 +27,8 @@
                         @Model.NoteItem.Title
                     </div>
                 </div>
-                <div class="timeline-text row text-white-75">
-                    <div class="timeline-noteitem-text rounded text-dark bg-white">@Html.Raw(HttpUtility.HtmlDecode(Model.NoteItem.Content))</div>
+                <div class="timeline-text row text-white">
+                    <div class="bg-display-rich-text-dark rounded">@Html.Raw(HttpUtility.HtmlDecode(Model.NoteItem.Content))</div>
                     @if (!string.IsNullOrEmpty(Model.NoteItem.Category))
                     {
                         List<string> categoriesList = Model.NoteItem.Category.Split(',').ToList();
