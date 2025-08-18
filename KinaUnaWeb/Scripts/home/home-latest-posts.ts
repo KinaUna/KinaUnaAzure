@@ -128,7 +128,7 @@ function addSelectedProgeniesChangedEventListener() {
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     latestPostsProgenyId = getCurrentProgenyId();
-    timeLineParameters.count = 5;
+    timeLineParameters.count = 10;
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
     timeLineParameters.progenies = getSelectedProgenies();

@@ -124,7 +124,7 @@ function addSelectedProgeniesChangedEventListener() {
  */
 document.addEventListener('DOMContentLoaded', async function () {
     yearAgoProgenyId = getCurrentProgenyId();
-    yearAgoParameters.count = 5;
+    yearAgoParameters.count = 10;
     yearAgoParameters.skip = 0;
     yearAgoParameters.progenyId = yearAgoProgenyId;
     yearAgoParameters.progenies = getSelectedProgenies();

@@ -142,7 +142,7 @@ function addSelectedProgeniesChangedEventListener() {
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     upcomingEventsProgenyId = getCurrentProgenyId();
-    upcomingEventsParameters.count = 5;
+    upcomingEventsParameters.count = 10;
     upcomingEventsParameters.skip = 0;
     upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
 

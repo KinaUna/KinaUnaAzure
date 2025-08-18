@@ -448,6 +448,10 @@ namespace KinaUnaWeb.Controllers
 
             foreach (TodoItem todoItem in upcomingTodoItems)
             {
+                if (!todoItem.DueDate.HasValue)
+                {
+                    todoItem.DueDate = DateTime.UtcNow + TimeSpan.FromDays(5); // Default to 5 days from now if no due date is set.
+                }
                 TimeLineItem todoTimelineItem = new()
                 {
                     ProgenyId = todoItem.ProgenyId,
