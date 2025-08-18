@@ -1,6 +1,8 @@
 ﻿import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { TimelineChangedEvent } from '../data-tools-v9.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
+import { TimelineItem } from '../page-models-v9.js';
 
 /**
  * Adds event listeners to all elements with the data-todo-id attribute.
@@ -69,6 +71,7 @@ async function onSetAsNotStartedButtonClicked(event: MouseEvent): Promise<void> 
                 if (response.ok) {
                     stopFullPageSpinner();
                     await displayTodoItem(todoId);
+                    dispatchTimelineItemChangedEvent(todoId);
                     return;
 
                 } else {
@@ -105,6 +108,7 @@ async function onSetAsInProgressButtonClicked(event: MouseEvent): Promise<void> 
                 if (response.ok) {
                     stopFullPageSpinner();
                     await displayTodoItem(todoId);
+                    dispatchTimelineItemChangedEvent(todoId);
                     return;
 
                 } else {
@@ -141,6 +145,7 @@ async function onSetAsCompletedButtonClicked(event: MouseEvent): Promise<void> {
                 if (response.ok) {
                     stopFullPageSpinner();
                     await displayTodoItem(todoId);
+                    dispatchTimelineItemChangedEvent(todoId);
                     return;
 
                 } else {
@@ -177,6 +182,7 @@ async function onSetAsCancelledButtonClicked(event: MouseEvent): Promise<void> {
                 if (response.ok) {
                     stopFullPageSpinner();
                     await displayTodoItem(todoId);
+                    dispatchTimelineItemChangedEvent(todoId);
                     return;
 
                 } else {
@@ -188,6 +194,15 @@ async function onSetAsCancelledButtonClicked(event: MouseEvent): Promise<void> {
             stopFullPageSpinner();
         }
     }
+}
+
+function dispatchTimelineItemChangedEvent(todoId: string): void {
+    
+    const timelineItem = new TimelineItem();
+    timelineItem.itemType = 15;
+    timelineItem.itemId = todoId;
+    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+    window.dispatchEvent(timelineItemChangedEvent);
 }
 
 /**

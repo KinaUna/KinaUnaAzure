@@ -6,7 +6,9 @@
 @inject ILocaleManager LocaleManager
 @{
     string title = await LocaleManager.GetTranslation("New todo added", PageNames.Todos, Model.LanguageId);
+    const int changedItemType = (int)KinaUnaTypes.TimeLineType.TodoItem;
 }
+<div id="timeline-update-data-div" class="d-none" data-changed-item-type="@changedItemType" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row m-0">

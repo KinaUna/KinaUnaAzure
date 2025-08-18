@@ -1,5 +1,5 @@
 ﻿import { getTranslation } from './localization-v9.js';
-import { AutoSuggestList } from './page-models-v9.js';
+import { AutoSuggestList, TimelineItem } from './page-models-v9.js';
 
 declare let moment: any;
 let currentMomentLocale: string = 'en';
@@ -568,6 +568,18 @@ export function setCopyContentEventListners() {
                 }
             });
         });
+    }
+}
+
+export class TimelineChangedEvent extends Event {
+    timelineItem: TimelineItem | null = null;
+    constructor(timelineItem: TimelineItem) {
+        super('timelineChanged');
+        this.timelineItem = timelineItem;
+    }
+
+    get TimelineItem(): TimelineItem | null {
+        return this.timelineItem;
     }
 }
 

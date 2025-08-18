@@ -1,6 +1,8 @@
 import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { TimelineChangedEvent } from '../data-tools-v9.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
+import { TimelineItem } from '../page-models-v9.js';
 /**
  * Adds event listeners to all elements with the data-todo-id attribute.
  * When clicked, the DisplayTodoItem function is called.
@@ -64,6 +66,7 @@ async function onSetAsNotStartedButtonClicked(event) {
                 if (response.ok) {
                     stopFullPageSpinner();
                     await displayTodoItem(todoId);
+                    dispatchTimelineItemChangedEvent(todoId);
                     return;
                 }
                 else {
@@ -99,6 +102,7 @@ async function onSetAsInProgressButtonClicked(event) {
                 if (response.ok) {
                     stopFullPageSpinner();
                     await displayTodoItem(todoId);
+                    dispatchTimelineItemChangedEvent(todoId);
                     return;
                 }
                 else {
@@ -134,6 +138,7 @@ async function onSetAsCompletedButtonClicked(event) {
                 if (response.ok) {
                     stopFullPageSpinner();
                     await displayTodoItem(todoId);
+                    dispatchTimelineItemChangedEvent(todoId);
                     return;
                 }
                 else {
@@ -169,6 +174,7 @@ async function onSetAsCancelledButtonClicked(event) {
                 if (response.ok) {
                     stopFullPageSpinner();
                     await displayTodoItem(todoId);
+                    dispatchTimelineItemChangedEvent(todoId);
                     return;
                 }
                 else {
@@ -180,6 +186,13 @@ async function onSetAsCancelledButtonClicked(event) {
             stopFullPageSpinner();
         }
     }
+}
+function dispatchTimelineItemChangedEvent(todoId) {
+    const timelineItem = new TimelineItem();
+    timelineItem.itemType = 15;
+    timelineItem.itemId = todoId;
+    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+    window.dispatchEvent(timelineItemChangedEvent);
 }
 /**
  * Sets up event listeners for the todo details popup.

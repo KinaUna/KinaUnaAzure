@@ -131,6 +131,11 @@ function onRichTextEditorFocus() {
         }
     }
 }
+/**
+ * Validates the inputs on the Add/Edit Todo page.
+ * Checks if the title is empty, and if the date inputs are valid.
+ * Enables or disables the save button based on the validation results.
+ */
 function validateInputs() {
     let isValid = true;
     const saveButton = document.getElementById('save-todo-button');

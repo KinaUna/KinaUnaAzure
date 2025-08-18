@@ -1,4 +1,4 @@
-﻿import { getCurrentProgenyId, getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setContextAutoSuggestList, setMomentLocale, setTagsAutoSuggestList, validateDateValue } from '../data-tools-v9.js';
+﻿import { getCurrentProgenyId, getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setContextAutoSuggestList, setMomentLocale, setTagsAutoSuggestList, TimelineChangedEvent, validateDateValue } from '../data-tools-v9.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v9.js';
 import * as pageModels from '../page-models-v9.js';
 import { getSelectedProgenies } from '../settings-tools-v9.js';
@@ -24,6 +24,11 @@ const groupByStatusSettingsButton = document.querySelector<HTMLButtonElement>('#
 const groupByAssignedToSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-assigned-to-button');
 const todosStartDateTimePicker: any = $('#settings-start-date-datetimepicker');
 const todosEndDateTimePicker: any = $('#settings-end-date-datetimepicker');
+declare global {
+    interface WindowEventMap {
+        'timelineChanged': TimelineChangedEvent;
+    }
+}
 
 /**
  * Sets the todos page parameters from the data attributes of the todosIndexPageParametersDiv.
@@ -66,7 +71,6 @@ async function getTodos(): Promise<void> {
     if (getMoreTodosResponse.ok && getMoreTodosResponse.body !== null) {
         const todosPageResponse = await getMoreTodosResponse.json() as pageModels.TodosPageResponse;
         if (todosPageResponse) {
-            todosPageParameters.currentPageNumber = todosPageResponse.pageNumber;
             todosPageParameters.totalPages = todosPageResponse.totalPages;
             todosPageParameters.totalItems = todosPageResponse.totalItems;
 
@@ -94,6 +98,23 @@ async function getTodos(): Promise<void> {
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
+}
+
+async function refreshTodos(changedTodoId: string) {
+    let tempPageNumber = todosPageParameters.currentPageNumber;
+    todosPageParameters.currentPageNumber = 1;
+    clearTodoItemsElements();
+    while (todosPageParameters.currentPageNumber <= tempPageNumber) {
+        await getTodos();
+    }
+
+    // If changedTodo is not zero, scroll to the todo item with data-todo-id={changedTodoId}, if it exists in the page.
+    if (parseInt(changedTodoId) > 0) {
+        const todoElement = document.querySelector<HTMLButtonElement>(`[data-todo-id="${changedTodoId}"]`);
+        if (todoElement !== null) {
+            todoElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
 }
 
 /**
@@ -141,6 +162,18 @@ function addSelectedProgeniesChangedEventListener() {
             await getTodos();
         }
 
+    });
+}
+
+function addTimelineChangedEventListener() {
+    // Subscribe to the timelineChanged event to refresh the todos list when a todo is added, updated, or deleted.
+    window.addEventListener('timelineChanged', async (event: TimelineChangedEvent) => {
+        let changedItem = event.TimelineItem;
+        if (changedItem !== null && changedItem.itemType === 15) { // 15 is the item type for todos.
+            if (changedItem.itemId !== '') {
+                await refreshTodos(changedItem.itemId);
+            }
+        }
     });
 }
 
@@ -826,6 +859,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     setTodosPageParametersFromPageData();
     loadTodosPageSettings();
     addSelectedProgeniesChangedEventListener();
+    addTimelineChangedEventListener();
     todosPageParameters.progenies = getSelectedProgenies();
 
     moreTodoItemsButton = document.querySelector<HTMLButtonElement>('#more-todo-items-button');
@@ -837,7 +871,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     SettingsHelper.initPageSettings();
     initialSettingsPanelSetup();
-    
+
     getTodos();
 
     return new Promise<void>(function (resolve, reject) {

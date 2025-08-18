@@ -61,7 +61,6 @@ async function getTodos() {
     if (getMoreTodosResponse.ok && getMoreTodosResponse.body !== null) {
         const todosPageResponse = await getMoreTodosResponse.json();
         if (todosPageResponse) {
-            todosPageParameters.currentPageNumber = todosPageResponse.pageNumber;
             todosPageParameters.totalPages = todosPageResponse.totalPages;
             todosPageParameters.totalItems = todosPageResponse.totalItems;
             if (todosPageResponse.totalItems < 1) {
@@ -87,6 +86,21 @@ async function getTodos() {
     return new Promise(function (resolve, reject) {
         resolve();
     });
+}
+async function refreshTodos(changedTodoId) {
+    let tempPageNumber = todosPageParameters.currentPageNumber;
+    todosPageParameters.currentPageNumber = 1;
+    clearTodoItemsElements();
+    while (todosPageParameters.currentPageNumber <= tempPageNumber) {
+        await getTodos();
+    }
+    // If changedTodo is not zero, scroll to the todo item with data-todo-id={changedTodoId}, if it exists in the page.
+    if (parseInt(changedTodoId) > 0) {
+        const todoElement = document.querySelector(`[data-todo-id="${changedTodoId}"]`);
+        if (todoElement !== null) {
+            todoElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
 }
 /**
  * Gets a todo element by its ID and appends it to the todos list div.
@@ -127,6 +141,17 @@ function addSelectedProgeniesChangedEventListener() {
             todosPageParameters.progenies = getSelectedProgenies();
             todosPageParameters.currentPageNumber = 1;
             await getTodos();
+        }
+    });
+}
+function addTimelineChangedEventListener() {
+    // Subscribe to the timelineChanged event to refresh the todos list when a todo is added, updated, or deleted.
+    window.addEventListener('timelineChanged', async (event) => {
+        let changedItem = event.TimelineItem;
+        if (changedItem !== null && changedItem.itemType === 15) { // 15 is the item type for todos.
+            if (changedItem.itemId !== '') {
+                await refreshTodos(changedItem.itemId);
+            }
         }
     });
 }
@@ -728,6 +753,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     setTodosPageParametersFromPageData();
     loadTodosPageSettings();
     addSelectedProgeniesChangedEventListener();
+    addTimelineChangedEventListener();
     todosPageParameters.progenies = getSelectedProgenies();
     moreTodoItemsButton = document.querySelector('#more-todo-items-button');
     if (moreTodoItemsButton !== null) {

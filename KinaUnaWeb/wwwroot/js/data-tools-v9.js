@@ -502,4 +502,14 @@ export function setCopyContentEventListners() {
         });
     }
 }
+export class TimelineChangedEvent extends Event {
+    constructor(timelineItem) {
+        super('timelineChanged');
+        this.timelineItem = null;
+        this.timelineItem = timelineItem;
+    }
+    get TimelineItem() {
+        return this.timelineItem;
+    }
+}
 //# sourceMappingURL=data-tools-v9.js.map
