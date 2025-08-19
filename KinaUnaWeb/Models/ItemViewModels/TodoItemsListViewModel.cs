@@ -24,6 +24,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 TotalPages = 0,
                 TotalItems = 0,
                 LanguageId = LanguageId,
+                LocationFilter = "",
                 TagFilter = "",
                 ContextFilter = "",
                 StatusFilter = [KinaUnaTypes.TodoStatusType.NotStarted, KinaUnaTypes.TodoStatusType.InProgress, KinaUnaTypes.TodoStatusType.Completed],

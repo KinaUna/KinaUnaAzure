@@ -86,6 +86,7 @@ namespace KinaUnaWeb.Controllers
                 EndDay = parameters.EndDay,
                 Skip = (parameters.CurrentPageNumber - 1) * parameters.ItemsPerPage,
                 NumberOfItems = parameters.ItemsPerPage,
+                LocationFilter = parameters.LocationFilter,
                 TagFilter = parameters.TagFilter,
                 ContextFilter = parameters.ContextFilter,
                 StatusFilter = parameters.StatusFilter,
