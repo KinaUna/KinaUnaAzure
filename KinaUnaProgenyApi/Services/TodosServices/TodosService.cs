@@ -128,7 +128,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             // Filter by locations if provided
             if (!string.IsNullOrWhiteSpace(request.LocationFilter))
             {
-                List<string> locations = [.. request.TagFilter.Split(',').Select(tag => tag.Trim())];
+                List<string> locations = [.. request.LocationFilter.Split(',').Select(location => location.Trim())];
                 todoItemsForProgeny =
                 [
                     .. todoItemsForProgeny.Where(t =>
