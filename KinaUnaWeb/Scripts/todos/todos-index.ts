@@ -780,6 +780,9 @@ function updateSettingsNotificationDiv() {
     else if (todosPageParameters.groupBy === 2) {
         todoSettingsNotificationText += ' ' + groupByAssignedToSettingsButton?.innerHTML;
     }
+    else if (todosPageParameters.groupBy === 3) {
+        todoSettingsNotificationText += ' ' + groupByLocationSettingsButton?.innerHTML;
+    }
 
     const settingsStatusFilterLabelSpan = document.querySelector<HTMLSpanElement>('#settings-status-filter-label');
     if (settingsStatusFilterLabelSpan !== null) {
