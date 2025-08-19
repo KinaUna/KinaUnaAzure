@@ -95,6 +95,11 @@ public class BackgroundTasksController(IBackgroundTasksService backgroundTasksSe
             return BadRequest("Task not found.");
         }
 
+        if (task.TaskId != id)
+        {
+            return BadRequest("Task ID mismatch.");
+        }
+
         CustomResult<KinaUnaBackgroundTask> existingTaskResult = await backgroundTasksService.GetTask(task.TaskId);
         if (existingTaskResult.IsFailure)
         {
