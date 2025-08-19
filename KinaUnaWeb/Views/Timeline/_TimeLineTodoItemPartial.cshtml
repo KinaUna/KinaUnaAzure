@@ -1,5 +1,4 @@
-﻿@using System.Web;
-@using KinaUna.Data
+﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @model TodoItem
@@ -32,6 +31,10 @@
                         @if (Model.StartDate.HasValue)
                         {
                             <div>@await LocaleManager.GetTranslation("Start", PageNames.Todos, languageId): @Model.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Location))
+                        {
+                            <div class="text-white-75"><i class="material-icons" style="font-size: 18px;">location_on</i> @Model.Location</div>
                         }
                     </div>
                     <div class="timeline-text text-white-50">

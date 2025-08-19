@@ -1,4 +1,4 @@
-import { getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setContextAutoSuggestList, setMomentLocale, setTagsAutoSuggestList, validateDateValue } from '../data-tools-v9.js';
+import { getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setContextAutoSuggestList, setLocationAutoSuggestList, setMomentLocale, setTagsAutoSuggestList, validateDateValue } from '../data-tools-v9.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v9.js';
 import * as pageModels from '../page-models-v9.js';
 import { getSelectedProgenies } from '../settings-tools-v9.js';
@@ -21,6 +21,7 @@ const sortByCompletedDateSettingsButton = document.querySelector('#settings-sort
 const groupByNoneSettingsButton = document.querySelector('#settings-group-by-none-button');
 const groupByStatusSettingsButton = document.querySelector('#settings-group-by-status-button');
 const groupByAssignedToSettingsButton = document.querySelector('#settings-group-by-assigned-to-button');
+const groupByLocationSettingsButton = document.querySelector('#settings-group-by-location-button');
 const todosStartDateTimePicker = $('#settings-start-date-datetimepicker');
 const todosEndDateTimePicker = $('#settings-end-date-datetimepicker');
 /**
@@ -281,6 +282,7 @@ function groupByNone() {
     groupByNoneSettingsButton?.classList.add('active');
     groupByStatusSettingsButton?.classList.remove('active');
     groupByAssignedToSettingsButton?.classList.remove('active');
+    groupByLocationSettingsButton?.classList.remove('active');
 }
 /**
  * Groups the todo items by status.
@@ -291,6 +293,7 @@ function groupByStatus() {
     groupByNoneSettingsButton?.classList.remove('active');
     groupByStatusSettingsButton?.classList.add('active');
     groupByAssignedToSettingsButton?.classList.remove('active');
+    groupByLocationSettingsButton?.classList.remove('active');
 }
 /**
  * Groups the todo items by the user they are assigned to.
@@ -301,6 +304,18 @@ function groupByAssignedTo() {
     groupByNoneSettingsButton?.classList.remove('active');
     groupByStatusSettingsButton?.classList.remove('active');
     groupByAssignedToSettingsButton?.classList.add('active');
+    groupByLocationSettingsButton?.classList.remove('active');
+}
+/**
+ * Groups the todo items by location.
+ * Updates the groupBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function groupByLocation() {
+    todosPageParameters.groupBy = 3;
+    groupByNoneSettingsButton?.classList.remove('active');
+    groupByStatusSettingsButton?.classList.remove('active');
+    groupByAssignedToSettingsButton?.classList.remove('active');
+    groupByLocationSettingsButton?.classList.add('active');
 }
 /**
  * Sets event listeners for the items per page buttons.
@@ -493,6 +508,9 @@ function loadTodosPageSettings() {
     else if (todosPageParameters.groupBy === 2) {
         groupByAssignedTo();
     }
+    else if (todosPageParameters.groupBy === 3) {
+        groupByLocation();
+    }
     updateTodosFilterStatusButtons();
 }
 /**
@@ -528,6 +546,9 @@ async function initialSettingsPanelSetup() {
     }
     if (groupByAssignedToSettingsButton !== null) {
         groupByAssignedToSettingsButton.addEventListener('click', groupByAssignedTo);
+    }
+    if (groupByLocationSettingsButton !== null) {
+        groupByLocationSettingsButton.addEventListener('click', groupByLocation);
     }
     const toggleShowFiltersButton = document.querySelector('#todos-toggle-filters-button');
     if (toggleShowFiltersButton !== null) {
@@ -611,6 +632,7 @@ async function initialSettingsPanelSetup() {
     }
     await setTagsAutoSuggestList(todosPageParameters.progenies, 'tag-filter-input', true);
     await setContextAutoSuggestList(todosPageParameters.progenies, 'context-filter-input', true);
+    await setLocationAutoSuggestList(todosPageParameters.progenies, 'location-filter-input', true);
     updateSettingsNotificationDiv();
     return new Promise(function (resolve, reject) {
         resolve();
@@ -665,6 +687,9 @@ function updateSettingsNotificationDiv() {
     else if (todosPageParameters.groupBy === 2) {
         todoSettingsNotificationText += ' ' + groupByAssignedToSettingsButton?.innerHTML;
     }
+    else if (todosPageParameters.groupBy === 3) {
+        todoSettingsNotificationText += ' ' + groupByLocationSettingsButton?.innerHTML;
+    }
     const settingsStatusFilterLabelSpan = document.querySelector('#settings-status-filter-label');
     if (settingsStatusFilterLabelSpan !== null) {
         todoSettingsNotificationText += '<br/>' + settingsStatusFilterLabelSpan.innerHTML;
@@ -690,6 +715,14 @@ function updateSettingsNotificationDiv() {
         }
         const settingsEndDateInput = document.querySelector('#settings-end-date-datetimepicker');
         todoSettingsNotificationText += settingsEndDateInput?.value ?? '';
+    }
+    const locationFilterInput = document.querySelector('#location-filter-input');
+    if (locationFilterInput !== null && locationFilterInput.value.length > 0) {
+        const settingsLocationFilterLabel = document.querySelector('#location-filter-span');
+        if (settingsLocationFilterLabel !== null) {
+            todoSettingsNotificationText += '<br/>' + settingsLocationFilterLabel.innerHTML;
+        }
+        todoSettingsNotificationText += ' [' + locationFilterInput.value + ']';
     }
     const contextFilterInput = document.querySelector('#context-filter-input');
     if (contextFilterInput !== null && contextFilterInput.value.length > 0) {
@@ -724,6 +757,10 @@ async function saveTodosPageSettings() {
         todosPageParameters.itemsPerPage = 10;
     }
     todosPageParameters.sort = sortAscendingSettingsButton?.classList.contains('active') ? 0 : 1;
+    const locationFilterInput = document.querySelector('#location-filter-input');
+    if (locationFilterInput !== null) {
+        todosPageParameters.locationFilter = locationFilterInput.value;
+    }
     const tagFilterInput = document.querySelector('#tag-filter-input');
     if (tagFilterInput !== null) {
         todosPageParameters.tagFilter = tagFilterInput.value;

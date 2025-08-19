@@ -106,15 +106,21 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label asp-for="TodoItem.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Contacts, Model.LanguageId)</label>
+                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Locations, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <textarea rows="4" asp-for="TodoItem.Notes" class="form-control"></textarea>
+                        <input id="location-input" type="text" asp-for="TodoItem.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
                         <input id="tag-list" type="text" asp-for="TodoItem.Tags" value="@Model.TodoItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TodoItem.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <textarea rows="4" asp-for="TodoItem.Notes" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="form-group">

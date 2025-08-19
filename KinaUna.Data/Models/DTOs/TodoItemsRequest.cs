@@ -91,6 +91,7 @@ namespace KinaUna.Data.Models.DTOs
         /// 0 for no grouping, 1 for Status, 2 for Progeny
         /// </summary>
         public int GroupBy { get; set; } = 0;
+        public string LocationFilter { get; set; }
 
         /// <summary>
         /// Sets the StartDate and EndDate properties based on the provided year, month, and day values.

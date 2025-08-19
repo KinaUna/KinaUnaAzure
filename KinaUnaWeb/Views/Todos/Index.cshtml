@@ -45,222 +45,236 @@
                 </button>
             </div>
         </div>
-        <div class="p-4">
-            <div class="row">
-                <div class="col h5">
-                    @await LocaleManager.GetTranslation("Page settings", PageNames.Layout, Model.LanguageId)
-                </div>
-            </div>
-            <div class="space-20"></div>
-            <div class="row">
-                <div id="settings-sort-label" class="col-12">
-                    @sortString
-                </div>
-                <div class="col-auto ml-4">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <button id="todo-settings-sort-ascending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">update</i> @ascendingString</button>
-                        </div>
-                        <div class="col">
-                            <button id="todo-settings-sort-descending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">history</i> @descendingString</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="space-20"></div>
-            <div class="row">
-                <div id="settings-items-per-page-label" class="col-12">
-                    @await LocaleManager.GetTranslation("Items per page", PageNames.Layout, Model.LanguageId):
-                </div>
-                <div class="col-auto ml-4">
-                    <div class="row align-items-center">
-                        <div class="col-auto">
-                            <input type="number" id="todo-items-per-page-input" min="1" max="100" step="1" value="10" class="form-control d-inline w-auto" />
-                        </div>
-                        <div class="col-auto">
-                            <button id="decrease-todo-items-per-page-button" class="btn btn-outline-info">-</button><button id="increase-todo-items-per-page-button" class="btn btn-outline-info">+</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="space-20"></div>
-            <div class="row">
-                <div id="settings-sort-by-label" class="col-12">
-                    @await LocaleManager.GetTranslation("Sort by:", PageNames.Contacts, Model.LanguageId)
-                </div>
-            </div>
+    <div class="p-4">
+    <div class="row">
+        <div class="col h5">
+            @await LocaleManager.GetTranslation("Page settings", PageNames.Layout, Model.LanguageId)
+        </div>
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div id="settings-sort-label" class="col-12">
+            @sortString
+        </div>
+        <div class="col-auto ml-4">
             <div class="row align-items-center">
                 <div class="col">
-                    <button id="settings-sort-by-due-date-button" class="btn btn-outline-info active">
-                        @await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId)
-                    </button>
+                    <button id="todo-settings-sort-ascending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">update</i> @ascendingString</button>
                 </div>
                 <div class="col">
-                    <button id="settings-sort-by-created-date-button" class="btn btn-outline-info">
-                        @await LocaleManager.GetTranslation("Created Date", PageNames.Todos, Model.LanguageId)
-                    </button>
-                </div>
-                <div class="col">
-                    <button id="settings-sort-by-start-date-button" class="btn btn-outline-info">
-                        @await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId)
-                    </button>
-                </div>
-                <div class="col">
-                    <button id="settings-sort-by-completed-date-button" class="btn btn-outline-info">
-                        @await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId)
-                    </button>
-                </div>
-            </div>
-            <div class="space-20"></div>
-            <div class="row">
-                <div id="settings-group-by-label" class="col-12">
-                    @await LocaleManager.GetTranslation("Group by:", PageNames.Todos, Model.LanguageId)
-                </div>
-            </div>
-            <div class="row align-items-center">
-                <div class="col">
-                    <button id="settings-group-by-none-button" class="btn btn-outline-info active">
-                        @await LocaleManager.GetTranslation("No Grouping", PageNames.Todos, Model.LanguageId)
-                    </button>
-                </div>
-                <div class="col">
-                    <button id="settings-group-by-status-button" class="btn btn-outline-info">
-                        @await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId)
-                    </button>
-                </div>
-                <div class="col">
-                    <button id="settings-group-by-assigned-to-button" class="btn btn-outline-info">
-                        @await LocaleManager.GetTranslation("Assigned To", PageNames.Todos, Model.LanguageId)
-                    </button>
-                </div>
-            </div>
-            <div class="space-20"></div>
-            <div class="row">
-                <div class="col-12">
-                    <a id="todos-toggle-filters-button" class="btn-settings-panel" href="#">
-                        @await LocaleManager.GetTranslation("Filters", PageNames.Timeline, Model.LanguageId)
-                        <i id="show-filters-chevron" class="material-icons sidebar-icon chevron-right">chevron_right</i>
-                    </a>
-                </div>
-            </div>
-            <div class="row ml-4 todos-filter-options d-none">
-                <div class="col-12">
-                    <div class="space-20"></div>
-                    <span id="settings-status-filter-label">@await LocaleManager.GetTranslation("Status:", PageNames.Todos, Model.LanguageId)</span>
-                </div>
-                <div class="col ml-4">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <button class="btn btn-outline-info active filter-status-type-button" data-filter-status-type="0">
-                                @await LocaleManager.GetTranslation("Not Started", PageNames.Todos, Model.LanguageId)
-                            </button>
-                        </div>
-                        <div class="col">
-                            <button class="btn btn-outline-info active filter-status-type-button" data-filter-status-type="1">
-                                @await LocaleManager.GetTranslation("In Progress", PageNames.Todos, Model.LanguageId)
-                            </button>
-                        </div>
-                        <div class="col">
-                            <button class="btn btn-outline-info active filter-status-type-button" data-filter-status-type="2">
-                                @await LocaleManager.GetTranslation("Completed", PageNames.Todos, Model.LanguageId)
-                            </button>
-                        </div>
-                        <div class="col">
-                            <button class="btn btn-outline-info filter-status-type-button" data-filter-status-type="3">
-                                @await LocaleManager.GetTranslation("Cancelled", PageNames.Todos, Model.LanguageId)
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row ml-4 todos-filter-options d-none">
-                <div class="col-12">
-                    <div class="space-20"></div>
-                    <span id="assigned-to-filter-span">@await LocaleManager.GetTranslation("Assigned To Filter:", PageNames.Todos, Model.LanguageId)</span>
-                </div>
-                <div class="col-12">
-                    @foreach (Progeny prog in childList)
-                    {
-                        <button class="btn btn-link btn-block text-white text-left ml-0 filter-assigned-to-button" data-filter-assigned-to="@prog.Id">
-                            @{
-                                string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
-                                if (!string.IsNullOrWhiteSpace(prog.PictureLink))
-                                {
-                                    string picLink2 = prog.GetProfilePictureUrl();
-                                    profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; width: 42px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px; object-fit: contain;\" /img> ";
-                                }
-                            }
-                            @Html.Raw(profilePic2) @prog.NickName <span class="d-none filter-progeny-check-span ml-2 text-success"><i class="material-icons">check</i></span>
-                        </button>
-                    }
-                    <input id="assigned-to-filter-input" type="hidden"/>
-                </div>
-            </div>
-            <div class="row ml-4 todos-filter-options d-none">
-                <div class="col-12">
-                    <div class="space-20"></div>
-                    <span id="start-filter-span">@await LocaleManager.GetTranslation("Start", PageNames.Calendar, Model.LanguageId):</span>
-                </div>
-                <div class="col ml-4">
-                    <div class="input-group date">
-                        <input id="settings-start-date-datetimepicker" type="text" class="form-control" data-zdp_readonly_element="false"/>
-                    </div>
-                </div>
-            </div>
-            <div class="row ml-4 todos-filter-options d-none">
-                <div class="col-12">
-                    <div class="space-20"></div>
-                    <span id="end-filter-span">@await LocaleManager.GetTranslation("End", PageNames.Calendar, Model.LanguageId):</span>
-                </div>
-                <div class="col ml-4">
-                    <div class="input-group date">
-                        <input id="settings-end-date-datetimepicker" type="text" class="form-control" data-zdp_readonly_element="false" />
-                    </div>
-                </div>
-            </div>
-            <div class="row ml-4 todos-filter-options d-none">
-                <div class="col-12">
-                    <div class="space-20"></div>
-                    <span id="context-filter-span">@await LocaleManager.GetTranslation("Context Filter:", PageNames.Timeline, Model.LanguageId)</span>
-                </div>
-                <div class="col ml-4">
-                    <input id="context-filter-input" type="text"/>
-                </div>
-            </div>
-            <div class="row ml-4 todos-filter-options d-none">
-                <div class="col-12">
-                    <div class="space-20"></div>
-                    <span id="tag-filter-span">@await LocaleManager.GetTranslation("Tag Filter:", PageNames.Timeline, Model.LanguageId)</span>
-                </div>
-                <div class="col ml-4">
-                    <input id="tag-filter-input" type="text" />
-                </div>
-            </div>
-            <div class="space-20"></div>
-            <div class="row">
-                <div class="col-12">
-                    @await LocaleManager.GetTranslation("Set as default page settings", PageNames.Pictures, Model.LanguageId)
-                </div>
-                <div class="col ml-4">
-                    <div class="row">
-                        <div class="col" style="max-width: 5em;">
-                            <input id="todo-settings-save-default-checkbox" type="checkbox" class="form-control" style="width: 2em; height: 2em; accent-color: #302e36;"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="space-20"></div>
-            <div class="row">
-                <div class="col-12">
-                    <button id="todos-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <button id="todo-settings-sort-descending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">history</i> @descendingString</button>
                 </div>
             </div>
         </div>
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div id="settings-items-per-page-label" class="col-12">
+            @await LocaleManager.GetTranslation("Items per page", PageNames.Layout, Model.LanguageId):
+        </div>
+        <div class="col-auto ml-4">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <input type="number" id="todo-items-per-page-input" min="1" max="100" step="1" value="10" class="form-control d-inline w-auto" />
+                </div>
+                <div class="col-auto">
+                    <button id="decrease-todo-items-per-page-button" class="btn btn-outline-info">-</button><button id="increase-todo-items-per-page-button" class="btn btn-outline-info">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div id="settings-sort-by-label" class="col-12">
+            @await LocaleManager.GetTranslation("Sort by:", PageNames.Contacts, Model.LanguageId)
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col">
+            <button id="settings-sort-by-due-date-button" class="btn btn-outline-info active">
+                @await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId)
+            </button>
+        </div>
+        <div class="col">
+            <button id="settings-sort-by-created-date-button" class="btn btn-outline-info">
+                @await LocaleManager.GetTranslation("Created Date", PageNames.Todos, Model.LanguageId)
+            </button>
+        </div>
+        <div class="col">
+            <button id="settings-sort-by-start-date-button" class="btn btn-outline-info">
+                @await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId)
+            </button>
+        </div>
+        <div class="col">
+            <button id="settings-sort-by-completed-date-button" class="btn btn-outline-info">
+                @await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId)
+            </button>
+        </div>
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div id="settings-group-by-label" class="col-12">
+            @await LocaleManager.GetTranslation("Group by:", PageNames.Todos, Model.LanguageId)
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col">
+            <button id="settings-group-by-none-button" class="btn btn-outline-info active">
+                @await LocaleManager.GetTranslation("No Grouping", PageNames.Todos, Model.LanguageId)
+            </button>
+        </div>
+        <div class="col">
+            <button id="settings-group-by-status-button" class="btn btn-outline-info">
+                @await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId)
+            </button>
+        </div>
+        <div class="col">
+            <button id="settings-group-by-assigned-to-button" class="btn btn-outline-info">
+                @await LocaleManager.GetTranslation("Assigned To", PageNames.Todos, Model.LanguageId)
+            </button>
+        </div>
+        <div class="col">
+            <button id="settings-group-by-location-button" class="btn btn-outline-info">
+                @await LocaleManager.GetTranslation("Location", PageNames.Locations, Model.LanguageId)
+            </button>
+        </div>
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div class="col-12">
+            <a id="todos-toggle-filters-button" class="btn-settings-panel" href="#">
+                @await LocaleManager.GetTranslation("Filters", PageNames.Timeline, Model.LanguageId)
+                <i id="show-filters-chevron" class="material-icons sidebar-icon chevron-right">chevron_right</i>
+            </a>
+        </div>
+    </div>
+    <div class="row ml-4 todos-filter-options d-none">
+        <div class="col-12">
+            <div class="space-20"></div>
+            <span id="settings-status-filter-label">@await LocaleManager.GetTranslation("Status:", PageNames.Todos, Model.LanguageId)</span>
+        </div>
+        <div class="col ml-4">
+            <div class="row align-items-center">
+                <div class="col">
+                    <button class="btn btn-outline-info active filter-status-type-button" data-filter-status-type="0">
+                        @await LocaleManager.GetTranslation("Not Started", PageNames.Todos, Model.LanguageId)
+                    </button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-outline-info active filter-status-type-button" data-filter-status-type="1">
+                        @await LocaleManager.GetTranslation("In Progress", PageNames.Todos, Model.LanguageId)
+                    </button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-outline-info active filter-status-type-button" data-filter-status-type="2">
+                        @await LocaleManager.GetTranslation("Completed", PageNames.Todos, Model.LanguageId)
+                    </button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-outline-info filter-status-type-button" data-filter-status-type="3">
+                        @await LocaleManager.GetTranslation("Cancelled", PageNames.Todos, Model.LanguageId)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row ml-4 todos-filter-options d-none">
+        <div class="col-12">
+            <div class="space-20"></div>
+            <span id="assigned-to-filter-span">@await LocaleManager.GetTranslation("Assigned To Filter:", PageNames.Todos, Model.LanguageId)</span>
+        </div>
+        <div class="col-12">
+            @foreach (Progeny prog in childList)
+            {
+                <button class="btn btn-link btn-block text-white text-left ml-0 filter-assigned-to-button" data-filter-assigned-to="@prog.Id">
+                    @{
+                        string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
+                        if (!string.IsNullOrWhiteSpace(prog.PictureLink))
+                        {
+                            string picLink2 = prog.GetProfilePictureUrl();
+                            profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; width: 42px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px; object-fit: contain;\" /img> ";
+                        }
+                    }
+                    @Html.Raw(profilePic2) @prog.NickName <span class="d-none filter-progeny-check-span ml-2 text-success"><i class="material-icons">check</i></span>
+                </button>
+            }
+            <input id="assigned-to-filter-input" type="hidden"/>
+        </div>
+    </div>
+    <div class="row ml-4 todos-filter-options d-none">
+        <div class="col-12">
+            <div class="space-20"></div>
+            <span id="start-filter-span">@await LocaleManager.GetTranslation("Start", PageNames.Calendar, Model.LanguageId):</span>
+        </div>
+        <div class="col ml-4">
+            <div class="input-group date">
+                <input id="settings-start-date-datetimepicker" type="text" class="form-control" data-zdp_readonly_element="false"/>
+            </div>
+        </div>
+    </div>
+    <div class="row ml-4 todos-filter-options d-none">
+        <div class="col-12">
+            <div class="space-20"></div>
+            <span id="end-filter-span">@await LocaleManager.GetTranslation("End", PageNames.Calendar, Model.LanguageId):</span>
+        </div>
+        <div class="col ml-4">
+            <div class="input-group date">
+                <input id="settings-end-date-datetimepicker" type="text" class="form-control" data-zdp_readonly_element="false" />
+            </div>
+        </div>
+    </div>
+    <div class="row ml-4 todos-filter-options d-none">
+        <div class="col-12">
+            <div class="space-20"></div>
+            <span id="location-filter-span">@await LocaleManager.GetTranslation("Location Filter:", PageNames.Timeline, Model.LanguageId)</span>
+        </div>
+        <div class="col ml-4">
+            <input id="location-filter-input" type="text"/>
+        </div>
+    </div>
+    <div class="row ml-4 todos-filter-options d-none">
+        <div class="col-12">
+            <div class="space-20"></div>
+            <span id="context-filter-span">@await LocaleManager.GetTranslation("Context Filter:", PageNames.Timeline, Model.LanguageId)</span>
+        </div>
+        <div class="col ml-4">
+            <input id="context-filter-input" type="text"/>
+        </div>
+    </div>
+    <div class="row ml-4 todos-filter-options d-none">
+        <div class="col-12">
+            <div class="space-20"></div>
+            <span id="tag-filter-span">@await LocaleManager.GetTranslation("Tag Filter:", PageNames.Timeline, Model.LanguageId)</span>
+        </div>
+        <div class="col ml-4">
+            <input id="tag-filter-input" type="text" />
+        </div>
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div class="col-12">
+            @await LocaleManager.GetTranslation("Set as default page settings", PageNames.Pictures, Model.LanguageId)
+        </div>
+        <div class="col ml-4">
+            <div class="row">
+                <div class="col" style="max-width: 5em;">
+                    <input id="todo-settings-save-default-checkbox" type="checkbox" class="form-control" style="width: 2em; height: 2em; accent-color: #302e36;"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div class="col-12">
+            <button id="todos-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+        </div>
+    </div>
+    </div>
     </div>
     <div id="show-page-settings-button-div" style="position: absolute; top: 60px; right: 0;">
         <button id="page-settings-button" class="btn btn-link btn-link-yellow bg-dark p-3 m-2" style="border-radius: 33%">
             <span><i class="material-icons icon-top-4">settings</i></span>
         </button>
     </div>
-</div>
+    </div>
 <script src="/js/todos/todos-index.js" type="module" asp-append-version="true"></script>

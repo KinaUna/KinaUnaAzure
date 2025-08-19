@@ -73,6 +73,11 @@ namespace KinaUna.Data.Models
         [MaxLength(256)]
         public string Context { get; set; } = string.Empty;
         /// <summary>
+        /// Gets or sets the location associated with the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string Location { get; set; } = string.Empty;
+        /// <summary>
         /// Gets or sets the id for the user who created the task.
         /// </summary>
         [MaxLength(256)]

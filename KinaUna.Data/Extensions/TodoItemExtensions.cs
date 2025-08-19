@@ -77,6 +77,7 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.AccessLevel = otherTodoItem.AccessLevel;
             currentTodoItem.Tags = otherTodoItem.Tags;
             currentTodoItem.Context = otherTodoItem.Context;
+            currentTodoItem.Location = otherTodoItem.Location;
             currentTodoItem.CreatedBy = null; // Set to null or assign current user if available
             currentTodoItem.CreatedTime = DateTime.UtcNow;
             currentTodoItem.ModifiedTime = DateTime.UtcNow;
@@ -97,7 +98,6 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForUpdate(this TodoItem currentTodoItem, TodoItem otherTodoItem)
         {
             currentTodoItem.ProgenyId = otherTodoItem.ProgenyId;
-            currentTodoItem.UId = otherTodoItem.UId;
             currentTodoItem.Title = otherTodoItem.Title;
             currentTodoItem.Description = otherTodoItem.Description;
             currentTodoItem.Status = otherTodoItem.Status;
@@ -108,6 +108,7 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.AccessLevel = otherTodoItem.AccessLevel;
             currentTodoItem.Tags = otherTodoItem.Tags;
             currentTodoItem.Context = otherTodoItem.Context;
+            currentTodoItem.Location = otherTodoItem.Location;
             currentTodoItem.ModifiedTime = DateTime.UtcNow; // Update modified time to now
             currentTodoItem.ModifiedBy = otherTodoItem.ModifiedBy; // Keep the same modifier
             currentTodoItem.IsDeleted = otherTodoItem.IsDeleted; // Keep the same deleted status

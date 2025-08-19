@@ -125,6 +125,21 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate == null || t.DueDate <= request.EndDate.Value)];
             }
 
+            // Filter by locations if provided
+            if (!string.IsNullOrWhiteSpace(request.LocationFilter))
+            {
+                List<string> locations = [.. request.LocationFilter.Split(',').Select(location => location.Trim())];
+                todoItemsForProgeny =
+                [
+                    .. todoItemsForProgeny.Where(t =>
+                        t.Location != null &&
+                        t.Location.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(location => location.Trim())
+                            .Any(itemLocation => locations.Any(filterLocation => string.Equals(itemLocation, filterLocation, StringComparison.OrdinalIgnoreCase)))
+                    )
+                ];
+            }
+
             // Filter by tags if provided
             if (!string.IsNullOrWhiteSpace(request.TagFilter))
             {
@@ -207,6 +222,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                                 .ThenBy(t => t.CreatedTime)
                         ];
                     }
+                    else if (request.GroupBy == 3)
+                    {
+                        // Group by Location
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Location)
+                                .ThenBy(t => t.DueDate)
+                                .ThenBy(t => t.CreatedTime)
+                        ];
+                    }
                     else
                         todoItemsForProgenies =
                     [
@@ -235,6 +261,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenByDescending(t => t.DueDate)
+                                .ThenByDescending(t => t.CreatedTime)
+                        ];
+                    }
+                    else if (request.GroupBy == 3)
+                    {
+                        // Group by Location
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Location)
                                 .ThenByDescending(t => t.DueDate)
                                 .ThenByDescending(t => t.CreatedTime)
                         ];
@@ -278,6 +315,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                                 .ThenBy(t => t.DueDate)
                         ];
                     }
+                    else if (request.GroupBy == 3)
+                    {
+                        // Group by Location
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Location)
+                                .ThenBy(t => t.CreatedTime)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
                     else
                     {
                         todoItemsForProgenies =
@@ -308,6 +356,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenByDescending(t => t.CreatedTime)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
+                    else if (request.GroupBy == 3)
+                    {
+                        // Group by Location
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Location)
                                 .ThenByDescending(t => t.CreatedTime)
                                 .ThenByDescending(t => t.DueDate)
                         ];
@@ -352,6 +411,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                                 .ThenBy(t => t.DueDate)
                         ];
                     }
+                    else if (request.GroupBy == 3)
+                    {
+                        // Group by Location
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Location)
+                                .ThenBy(t => t.StartDate)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
                     else
                     {
                         todoItemsForProgenies =
@@ -382,6 +452,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenByDescending(t => t.StartDate)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
+                    else if (request.GroupBy == 3)
+                    {
+                        // Group by Location
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Location)
                                 .ThenByDescending(t => t.StartDate)
                                 .ThenByDescending(t => t.DueDate)
                         ];
@@ -427,6 +508,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                                 .ThenBy(t => t.DueDate)
                         ];
                     }
+                    else if (request.GroupBy == 3)
+                    {
+                        // Group by Location
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Location)
+                                .ThenBy(t => t.CompletedDate)
+                                .ThenBy(t => t.DueDate)
+                        ];
+                    }
                     else
                     {
                         todoItemsForProgenies =
@@ -457,6 +549,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenByDescending(t => t.CompletedDate)
+                                .ThenByDescending(t => t.DueDate)
+                        ];
+                    }
+                    else if (request.GroupBy == 3)
+                    {
+                        // Group by Location
+                        todoItemsForProgenies =
+                        [
+                            .. todoItemsForProgenies
+                                .OrderBy(t => t.Location)
                                 .ThenByDescending(t => t.CompletedDate)
                                 .ThenByDescending(t => t.DueDate)
                         ];

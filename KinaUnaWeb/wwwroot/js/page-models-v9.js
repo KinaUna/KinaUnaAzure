@@ -527,9 +527,10 @@ export class TodosPageParameters {
         this.totalItems = 0;
         this.sort = 0; // 0 Ascending, 1 Descending
         this.sortBy = 0; // 0 for DueDate, 1 for CreatedTime, 2 for StartDate, 3 for CompletedDate
-        this.groupBy = 0; // 0 for no grouping, 1 for Status, 2 for Context, 3 for Tag, 4 for Progeny
+        this.groupBy = 0; // 0 for no grouping, 1 for Status, 2 for Progeny/AssignedTo, 3 for Location
         this.tagFilter = '';
         this.contextFilter = '';
+        this.locationFilter = '';
         this.statusFilter = [];
         this.startYear = 0;
         this.startMonth = 0;

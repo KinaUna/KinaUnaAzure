@@ -125,6 +125,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             TodoItem.Description = todoItem.Description;
             TodoItem.AccessLevel = todoItem.AccessLevel;
             TodoItem.Context = todoItem.Context;
+            TodoItem.Location = todoItem.Location;
             TodoItem.Title = todoItem.Title;
             TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(todoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
             TodoItem.CreatedBy = todoItem.CreatedBy;
@@ -163,6 +164,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Notes = TodoItem.Notes,
                 Status = TodoItem.Status,
                 Tags = TodoItem.Tags,
+                Location = TodoItem.Location,
                 UId = TodoItem.UId,
                 Progeny = TodoItem.Progeny
             };
