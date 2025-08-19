@@ -23,15 +23,15 @@
                 {
                     <div class="col-12 col-sm-6 col-md-4 col-lg-2 text-left">@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId): @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
                 }
-                @* else
-                {
-                    <div class="col-12 col-sm-6 col-md-4 text-left">@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId): @Model.TodoItem.CreatedTime.ToString("dd-MMM-yyyy")</div>
-                } *@
                 @if (Model.TodoItem.CompletedDate.HasValue && Model.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
                 {
-                    <div class="row text-white">
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-2 text-left">
                         <div class="col-auto">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
                     </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.TodoItem.Location))
+                {
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-2 text-right"><i class="material-icons" style="font-size: 18px;">location_on</i> @Model.TodoItem.Location</div>
                 }
                 @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
                 {

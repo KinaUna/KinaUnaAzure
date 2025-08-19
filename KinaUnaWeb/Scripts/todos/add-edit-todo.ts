@@ -1,5 +1,5 @@
 ﻿import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue } from '../data-tools-v9.js';
+import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList } from '../data-tools-v9.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
@@ -79,6 +79,8 @@ function setupProgenySelectList(): void {
             currentProgenyId = parseInt(progenyIdSelect.value);
             await setTagsAutoSuggestList([currentProgenyId]);
             await setContextAutoSuggestList([currentProgenyId]);
+            await setLocationAutoSuggestList([currentProgenyId]);
+            ($(".selectpicker") as any).selectpicker('refresh');
         });
     }
 }
@@ -241,6 +243,7 @@ export async function initializeAddEditTodo(): Promise<void> {
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId]);
     await setContextAutoSuggestList([currentProgenyId]);
+    await setLocationAutoSuggestList([currentProgenyId]);
     ($(".selectpicker") as any).selectpicker('refresh');
 
     setupRichTextEditor();

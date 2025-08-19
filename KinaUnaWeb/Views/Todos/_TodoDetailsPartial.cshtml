@@ -70,6 +70,15 @@
                         <div class="col-12 bg-display-rich-text p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.TodoItem.Description))</div>
                     </div>
                 }
+                @if (!string.IsNullOrWhiteSpace(Model.TodoItem.Location))
+                {
+                    <div class="space-10"></div>
+                    <div class="row text-white">
+                        <div class="col-auto">
+                            <i class="material-icons" style="font-size: 18px;">location_on</i> @Model.TodoItem.Location
+                        </div>
+                    </div>
+                }
                 <div class="space-20"></div>
                 <div class="row">
                     <div class="col-12">
