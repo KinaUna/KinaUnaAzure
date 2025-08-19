@@ -1,4 +1,4 @@
-﻿import { getCurrentProgenyId, getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setContextAutoSuggestList, setMomentLocale, setTagsAutoSuggestList, TimelineChangedEvent, validateDateValue } from '../data-tools-v9.js';
+﻿import { getCurrentProgenyId, getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setContextAutoSuggestList, setLocationAutoSuggestList, setMomentLocale, setTagsAutoSuggestList, TimelineChangedEvent, validateDateValue } from '../data-tools-v9.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v9.js';
 import * as pageModels from '../page-models-v9.js';
 import { getSelectedProgenies } from '../settings-tools-v9.js';
@@ -22,6 +22,7 @@ const sortByCompletedDateSettingsButton = document.querySelector<HTMLButtonEleme
 const groupByNoneSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-none-button');
 const groupByStatusSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-status-button');
 const groupByAssignedToSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-assigned-to-button');
+const groupByLocationSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-location-button');
 const todosStartDateTimePicker: any = $('#settings-start-date-datetimepicker');
 const todosEndDateTimePicker: any = $('#settings-end-date-datetimepicker');
 declare global {
@@ -320,6 +321,7 @@ function groupByNone(): void {
     groupByNoneSettingsButton?.classList.add('active');
     groupByStatusSettingsButton?.classList.remove('active');
     groupByAssignedToSettingsButton?.classList.remove('active');
+    groupByLocationSettingsButton?.classList.remove('active');
 }
 
 /**
@@ -331,6 +333,7 @@ function groupByStatus(): void {
     groupByNoneSettingsButton?.classList.remove('active');
     groupByStatusSettingsButton?.classList.add('active');
     groupByAssignedToSettingsButton?.classList.remove('active');
+    groupByLocationSettingsButton?.classList.remove('active');
 }
 
 /**
@@ -342,6 +345,19 @@ function groupByAssignedTo(): void {
     groupByNoneSettingsButton?.classList.remove('active');
     groupByStatusSettingsButton?.classList.remove('active');
     groupByAssignedToSettingsButton?.classList.add('active');
+    groupByLocationSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Groups the todo items by location.
+ * Updates the groupBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function groupByLocation(): void {
+    todosPageParameters.groupBy = 3;
+    groupByNoneSettingsButton?.classList.remove('active');
+    groupByStatusSettingsButton?.classList.remove('active');
+    groupByAssignedToSettingsButton?.classList.remove('active');
+    groupByLocationSettingsButton?.classList.add('active');
 }
 
 /**
@@ -557,6 +573,9 @@ function loadTodosPageSettings(): void {
     else if (todosPageParameters.groupBy === 2) {
         groupByAssignedTo();
     }
+    else if (todosPageParameters.groupBy === 3) {
+        groupByLocation();
+    }
     updateTodosFilterStatusButtons();
 }
 
@@ -602,6 +621,10 @@ async function initialSettingsPanelSetup(): Promise<void> {
 
     if (groupByAssignedToSettingsButton !== null) {
         groupByAssignedToSettingsButton.addEventListener('click', groupByAssignedTo);
+    }
+
+    if (groupByLocationSettingsButton !== null) {
+        groupByLocationSettingsButton.addEventListener('click', groupByLocation);
     }
 
     const toggleShowFiltersButton = document.querySelector<HTMLButtonElement>('#todos-toggle-filters-button');
@@ -695,6 +718,7 @@ async function initialSettingsPanelSetup(): Promise<void> {
 
     await setTagsAutoSuggestList(todosPageParameters.progenies, 'tag-filter-input', true);
     await setContextAutoSuggestList(todosPageParameters.progenies, 'context-filter-input', true);
+    await setLocationAutoSuggestList(todosPageParameters.progenies, 'location-filter-input', true);
     updateSettingsNotificationDiv();
 
     return new Promise<void>(function (resolve, reject) {
@@ -786,6 +810,15 @@ function updateSettingsNotificationDiv() {
         todoSettingsNotificationText += settingsEndDateInput?.value ?? '';
     }
 
+    const locationFilterInput = document.querySelector<HTMLInputElement>('#location-filter-input');
+    if (locationFilterInput !== null && locationFilterInput.value.length > 0) {
+        const settingsLocationFilterLabel = document.querySelector<HTMLSpanElement>('#location-filter-span');
+        if (settingsLocationFilterLabel !== null) {
+            todoSettingsNotificationText += '<br/>' + settingsLocationFilterLabel.innerHTML;
+        }
+        todoSettingsNotificationText += ' [' + locationFilterInput.value + ']';
+    }
+
     const contextFilterInput = document.querySelector<HTMLInputElement>('#context-filter-input');
     if (contextFilterInput !== null && contextFilterInput.value.length > 0) {
         const settingsContextFilterLabel = document.querySelector<HTMLSpanElement>('#context-filter-span');
@@ -823,6 +856,11 @@ async function saveTodosPageSettings(): Promise<void> {
     }
 
     todosPageParameters.sort = sortAscendingSettingsButton?.classList.contains('active') ? 0 : 1;   
+
+    const locationFilterInput = document.querySelector<HTMLInputElement>('#location-filter-input');
+    if (locationFilterInput !== null) {
+        todosPageParameters.locationFilter = locationFilterInput.value;
+    }
 
     const tagFilterInput = document.querySelector<HTMLInputElement>('#tag-filter-input');
     if (tagFilterInput !== null) {

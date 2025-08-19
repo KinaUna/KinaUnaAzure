@@ -482,9 +482,10 @@ export class TodosPageParameters implements BasePageParameters {
     totalItems: number = 0;
     sort: number = 0; // 0 Ascending, 1 Descending
     sortBy: number = 0; // 0 for DueDate, 1 for CreatedTime, 2 for StartDate, 3 for CompletedDate
-    groupBy: number = 0; // 0 for no grouping, 1 for Status, 2 for Context, 3 for Tag, 4 for Progeny
+    groupBy: number = 0; // 0 for no grouping, 1 for Status, 2 for Progeny/AssignedTo, 3 for Location
     tagFilter: string = '';
     contextFilter: string = '';
+    locationFilter: string = '';
     statusFilter: TodoStatusType[] = [];
     startYear: number = 0;
     startMonth: number = 0;
