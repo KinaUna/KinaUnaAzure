@@ -108,7 +108,7 @@
                 <div class="form-group">
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Locations, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="location-list" type="text" asp-for="TodoItem.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
+                        <input id="location-input" type="text" asp-for="TodoItem.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
                     </div>
                 </div>
                 <div class="form-group">

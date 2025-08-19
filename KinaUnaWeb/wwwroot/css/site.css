@@ -1350,6 +1350,15 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     border-radius: 2rem;
     box-shadow: unset;
 }
+
+.tag-item-xsm {
+    padding: .25rem .75rem;
+    font-size: 0.75rem;
+    line-height: 0.75;
+    border-radius: 1rem;
+    box-shadow: unset;
+}
+
 .card {
     border: 0;
     margin-bottom: 30px;
