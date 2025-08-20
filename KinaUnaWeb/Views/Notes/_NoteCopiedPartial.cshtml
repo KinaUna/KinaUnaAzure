@@ -35,8 +35,8 @@
                         <div class="space-10"></div>
                     </div>
                 </div>
-                <div class="timeline-text row m-0 text-white-75">
-                    <div class="timeline-noteitem-text text-dark bg-white col-12 p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.NoteItem.Content))</div>
+                <div class="timeline-text row m-0 text-white">
+                    <div class="bg-display-rich-text-dark col-12 p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.NoteItem.Content))</div>
                     @if (!string.IsNullOrEmpty(Model.NoteItem.Category))
                     {
                         List<string> categoriesList = Model.NoteItem.Category.Split(',').ToList();

@@ -1,0 +1,119 @@
+﻿@using System.Web
+@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = await LocaleManager.GetTranslation("Todo updated", PageNames.Todos, Model.LanguageId);
+    const int changedItemType = (int)KinaUnaTypes.TimeLineType.TodoItem;
+}
+<div id="timeline-update-data-div" class="d-none" data-changed-item-type="@changedItemType" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-todos item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">fact_check</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        @if (Model.CurrentUser.CanUserAddItems)
+                        {
+                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.TodoItem.TodoItemId" data-copy-item-type="todo">
+                                <i class="material-icons kinauna-icon-medium">content_copy</i>
+                            </button>
+                        }
+                        @Model.TodoItem.Title
+                    </div>
+                </div>
+                <div class="row text-white">
+                    <div class="col-auto">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
+                </div>
+                @if (Model.TodoItem.DueDate.HasValue)
+                {
+                    <div class="row text-white">
+                        <div class="col-auto">@await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.DueDate?.ToString("dd-MMM-yyyy")</div>
+                    </div>
+                }
+                @if (Model.TodoItem.StartDate.HasValue)
+                {
+                    <div class="row text-white">
+                        <div class="col-auto">@await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                    </div>
+                }
+                @if (Model.TodoItem.CompletedDate.HasValue && Model.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
+                {
+                    <div class="row text-white">
+                        <div class="col-auto">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.TodoItem.Description))
+                {
+                    <div class="space-10"></div>
+                    <div class="row text-white">
+                        <div class="col-auto">
+                            @await LocaleManager.GetTranslation("Description", PageNames.Todos, Model.LanguageId)
+                        </div>
+                    </div>
+                    <div class="timeline-text row m-0 text-white-75">
+                        <div class="col-12 bg-display-rich-text-dark p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.TodoItem.Description))</div>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.TodoItem.Location))
+                {
+                    <div class="space-10"></div>
+                    <div class="row text-white">
+                        <div class="col-auto">
+                            <i class="material-icons" style="font-size: 18px;">location_on</i> @Model.TodoItem.Location
+                        </div>
+                    </div>
+                }
+                <div class="space-20"></div>
+                <div class="row">
+                    <div class="col-12">
+                        @if (!string.IsNullOrEmpty(Model.TodoItem.Tags))
+                        {
+                            List<string> tagsList = Model.TodoItem.Tags.Split(',').ToList();
+                            <div class="float-right">
+                                @foreach (string tagString in tagsList)
+                                {
+                                    <span class="btn tag-item tag-item-sm">@tagString</span>
+                                }
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
+                        {
+                            List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
+                            <div class="float-right">
+                                @foreach (string contextsString in contextsList)
+                                {
+                                    <span class="btn context-item tag-item-sm">@contextsString</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="col-12">
+                    <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Todos" asp-action="DeleteTodo" asp-route-itemId="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>

@@ -1,10 +1,10 @@
 import { initializeAddEditEvent } from "../calendar/add-edit-event.js";
 import { initializeAddEditContact } from "../contacts/add-edit-contact.js";
 import { initializeAddEditFriend } from "../friends/add-edit-friend.js";
-import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v8.js";
+import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9.js";
 import { initializeAddEditLocation } from "../locations/add-edit-location.js";
 import { initializeAddEditMeasurement } from "../measurements/add-edit-measurement.js";
-import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
 import { initializeAddEditNote } from "../notes/add-edit-note.js";
 import { initializeAddEditPicture } from "../pictures/add-edit-picture.js";
 import { popupPictureDetails } from "../pictures/picture-details.js";
@@ -15,6 +15,9 @@ import { initializeAddEditVaccination } from "../vaccinations/add-edit-vaccinati
 import { initializeAddEditVideo } from "../videos/add-edit-video.js";
 import { popupVideoDetails } from "../videos/video-details.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
+import { initializeAddEditTodo } from "../todos/add-edit-todo.js";
+import { TimelineChangedEvent } from "../data-tools-v9.js";
+import { TimelineItem } from "../page-models-v9.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */
@@ -24,6 +27,12 @@ export function setAddItemButtonEventListeners() {
         button.addEventListener('click', onAddItemButtonClicked);
     });
 }
+/**
+ * Handles the click event for the add item button.
+ * It retrieves the item type and progeny id from the button's data attributes,
+ * then opens the add item modal for the specified type and progeny.
+ * @param event The mouse event that triggered the click.
+ */
 async function onAddItemButtonClicked(event) {
     event.preventDefault();
     startFullPageSpinner();
@@ -113,6 +122,9 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
         if (addItemType === 'location') {
             await initializeAddEditLocation();
         }
+        if (addItemType === 'todo') {
+            await initializeAddEditTodo();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -135,6 +147,12 @@ export function setEditItemButtonEventListeners() {
         button.addEventListener('click', onCopyItemButtonClicked);
     });
 }
+/**
+ * Handles the click event for the edit item button.
+ * It retrieves the item type and progeny id from the button's data attributes,
+ * then opens the edit item modal for the specified type and progeny.
+ * @param event The mouse event that triggered the click.
+ */
 async function onEditItemButtonClicked(event) {
     event.preventDefault();
     startFullPageSpinner();
@@ -149,6 +167,12 @@ async function onEditItemButtonClicked(event) {
         resolve();
     });
 }
+/**
+ * Handles the click event for the copy item button.
+ * It retrieves the item type and item id from the button's data attributes,
+ * then opens the copy item modal for the specified type and item id.
+ * @param event The mouse event that triggered the click.
+ */
 async function onCopyItemButtonClicked(event) {
     event.preventDefault();
     startFullPageSpinner();
@@ -243,6 +267,9 @@ async function popupEditItemModal(editItemType, editItemItemId) {
         if (editItemType === 'location') {
             await initializeAddEditLocation();
         }
+        if (editItemType === 'todo') {
+            await initializeAddEditTodo();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -318,6 +345,9 @@ async function popupCopyItemModal(copyItemType, copyItemItemId) {
         if (copyItemType === 'video') {
             await initializeAddEditVideo();
         }
+        if (copyItemType === 'todo') {
+            await initializeAddEditTodo();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -336,6 +366,12 @@ export function setDeleteItemButtonEventListeners() {
         button.addEventListener('click', onDeleteItemButtonClicked);
     });
 }
+/**
+ * Handles the click event for the delete item button.
+ * It retrieves the item type and item id from the button's data attributes,
+ * then opens the delete item modal for the specified type and item id.
+ * @param event The mouse event that triggered the click.
+ */
 async function onDeleteItemButtonClicked(event) {
     event.preventDefault();
     startFullPageSpinner();
@@ -403,6 +439,10 @@ function addCloseButtonEventListener() {
         });
     }
 }
+/**
+ * Handles the click event for the close button in the item details popup.
+ * It hides the popup and shows the body scrollbars.
+ */
 function onCloseButtonClicked() {
     const itemDetailsPopupDiv = document.querySelector('#item-details-div');
     if (itemDetailsPopupDiv) {
@@ -423,6 +463,10 @@ function addCancelButtonEventListener() {
         });
     }
 }
+/**
+ * Handles the click event for the cancel button in the add or edit item popup.
+ * It hides the popup and shows the body scrollbars.
+ */
 function onCancelButtonClicked() {
     const itemDetailsPopupDiv = document.querySelector('#item-details-div');
     if (itemDetailsPopupDiv) {
@@ -441,6 +485,12 @@ function setSaveItemFormEventListener() {
         addItemForm.addEventListener('submit', onSaveItemFormSubmit);
     }
 }
+/**
+ * Handles the submission of the save item form.
+ * It prevents the default form submission, sends the form data to the server,
+ * and displays the response in the item details popup.
+ * @param event The submit event triggered by the form submission.
+ */
 async function onSaveItemFormSubmit(event) {
     event.preventDefault();
     startFullPageSpinner();
@@ -480,6 +530,7 @@ async function onSaveItemFormSubmit(event) {
                     addCloseButtonEventListener();
                     setEditItemButtonEventListeners();
                     setAddItemButtonEventListeners();
+                    dispatchTimelineItemChangedEvent();
                 }
             }
         }).catch(function (error) {
@@ -490,5 +541,35 @@ async function onSaveItemFormSubmit(event) {
     return new Promise(function (resolve, reject) {
         resolve();
     });
+}
+/**
+ * Dispatches a TimelineItemChangedEvent if the timeline update div has the necessary attributes.
+ * This is used to notify other parts of the application that a timeline item has changed.
+ */
+function dispatchTimelineItemChangedEvent() {
+    const timelineUpdateDataDiv = document.querySelector('#timeline-update-data-div');
+    if (timelineUpdateDataDiv === null) {
+        // If the timeline update div is not found, do not dispatch the event.
+        return;
+    }
+    let changedItemType = timelineUpdateDataDiv.getAttribute('data-changed-item-type');
+    let changedItemItemId = timelineUpdateDataDiv.getAttribute('data-changed-item-item-id');
+    if (changedItemType === null || changedItemItemId === null) {
+        // If the item type or item id is null, do not dispatch the event.
+        return;
+    }
+    if (changedItemType === '0' || changedItemItemId === '0') {
+        // If the item type or item id is 0, do not dispatch the event.
+        return;
+    }
+    if (isNaN(parseInt(changedItemType)) || isNaN(parseInt(changedItemItemId))) {
+        // If the item type or item id is not a number, do not dispatch the event.
+        return;
+    }
+    const timelineItem = new TimelineItem();
+    timelineItem.itemType = parseInt(changedItemType);
+    timelineItem.itemId = changedItemItemId;
+    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+    window.dispatchEvent(timelineItemChangedEvent);
 }
 //# sourceMappingURL=add-item.js.map

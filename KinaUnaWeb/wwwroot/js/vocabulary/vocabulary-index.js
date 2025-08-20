@@ -1,6 +1,6 @@
-import { setMomentLocale } from '../data-tools-v8.js';
-import { showPopupAtLoad } from '../item-details/items-display-v8.js';
-import { TimeLineType } from '../page-models-v8.js';
+import { setMomentLocale } from '../data-tools-v9.js';
+import { showPopupAtLoad } from '../item-details/items-display-v9.js';
+import { TimeLineType } from '../page-models-v9.js';
 /**
  * Sets up the Vocabulary chart.
  */

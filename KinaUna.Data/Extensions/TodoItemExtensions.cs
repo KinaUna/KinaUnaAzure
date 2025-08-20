@@ -13,6 +13,48 @@ namespace KinaUna.Data.Extensions
     public static class TodoItemExtensions
     {
         /// <summary>
+        /// Returns a user-friendly status text based on the <see cref="TodoItem.Status"/> value.
+        /// </summary>
+        /// <param name="todoItem">The <see cref="TodoItem"/> instance for which to retrieve the status text.</param>
+        /// <returns>The status text corresponding to the <see cref="TodoItem.Status"/> value. Possible values are:
+        /// Not started, In progress, Completed, Cancelled, Overdue, or Unknown status.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static string StatusText(this TodoItem todoItem)
+        {
+            if (todoItem == null)
+            {
+                throw new ArgumentNullException(nameof(todoItem), "TodoItem cannot be null.");
+            }
+
+            if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted)
+            {
+                return "Not started";
+            }
+
+            if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.InProgress)
+            {
+                return "In progress";
+            }
+
+            if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
+            {
+                return "Completed";
+            }
+
+            if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled)
+            {
+                return "Cancelled";
+            }
+
+            if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Overdue)
+            {
+                return "Overdue";
+            }
+
+            return "Unknown status";
+        }
+
+        /// <summary>
         /// Copies the properties of the specified <see cref="TodoItem"/> to the current <see cref="TodoItem"/>
         /// instance.
         /// </summary>
@@ -29,11 +71,13 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.Description = otherTodoItem.Description;
             currentTodoItem.Status = otherTodoItem.Status;
             currentTodoItem.DueDate = otherTodoItem.DueDate;
+            currentTodoItem.StartDate = otherTodoItem.StartDate;
             currentTodoItem.CompletedDate = otherTodoItem.CompletedDate;
             currentTodoItem.Notes = otherTodoItem.Notes;
             currentTodoItem.AccessLevel = otherTodoItem.AccessLevel;
             currentTodoItem.Tags = otherTodoItem.Tags;
             currentTodoItem.Context = otherTodoItem.Context;
+            currentTodoItem.Location = otherTodoItem.Location;
             currentTodoItem.CreatedBy = null; // Set to null or assign current user if available
             currentTodoItem.CreatedTime = DateTime.UtcNow;
             currentTodoItem.ModifiedTime = DateTime.UtcNow;
@@ -54,16 +98,17 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForUpdate(this TodoItem currentTodoItem, TodoItem otherTodoItem)
         {
             currentTodoItem.ProgenyId = otherTodoItem.ProgenyId;
-            currentTodoItem.UId = otherTodoItem.UId;
             currentTodoItem.Title = otherTodoItem.Title;
             currentTodoItem.Description = otherTodoItem.Description;
             currentTodoItem.Status = otherTodoItem.Status;
             currentTodoItem.DueDate = otherTodoItem.DueDate;
+            currentTodoItem.StartDate = otherTodoItem.StartDate;
             currentTodoItem.CompletedDate = otherTodoItem.CompletedDate;
             currentTodoItem.Notes = otherTodoItem.Notes;
             currentTodoItem.AccessLevel = otherTodoItem.AccessLevel;
             currentTodoItem.Tags = otherTodoItem.Tags;
             currentTodoItem.Context = otherTodoItem.Context;
+            currentTodoItem.Location = otherTodoItem.Location;
             currentTodoItem.ModifiedTime = DateTime.UtcNow; // Update modified time to now
             currentTodoItem.ModifiedBy = otherTodoItem.ModifiedBy; // Keep the same modifier
             currentTodoItem.IsDeleted = otherTodoItem.IsDeleted; // Keep the same deleted status

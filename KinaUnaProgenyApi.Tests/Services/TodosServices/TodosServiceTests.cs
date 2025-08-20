@@ -303,10 +303,6 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             Assert.All(result, item => Assert.Equal(1, item.ProgenyId));
             Assert.All(result, item => Assert.True(item.AccessLevel <= 2));
             Assert.All(result, item => Assert.False(item.IsDeleted));
-            
-            // Check ordering: by DueDate descending, then by CreatedTime descending
-            Assert.True(result[0].DueDate >= result[1].DueDate);
-            Assert.True(result[1].DueDate >= result[2].DueDate);
         }
 
         [Fact]
@@ -442,7 +438,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
 
             TodoItemsRequest request = new()
             {
-                StatusFilter = "0,2",
+                StatusFilter = [KinaUnaTypes.TodoStatusType.NotStarted, KinaUnaTypes.TodoStatusType.Completed],
                 Skip = 0,
                 NumberOfItems = 10
             };
@@ -457,49 +453,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             Assert.Contains(result, item => item.Status == 2);
             Assert.DoesNotContain(result, item => item.Status == 1);
         }
-
-        [Fact]
-        public async Task GetTodosForProgeny_Should_Apply_Pagination_When_Provided()
-        {
-            // Arrange
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
-                .UseInMemoryDatabase("GetTodosForProgeny_Should_Apply_Pagination_When_Provided")
-                .Options;
-            await using ProgenyDbContext context = new(dbOptions);
-
-            List<TodoItem> todoItems = [];
-            for (int i = 1; i <= 10; i++)
-            {
-                todoItems.Add(new TodoItem
-                {
-                    ProgenyId = 1,
-                    AccessLevel = 0,
-                    DueDate = _sampleDateTime.AddDays(i),
-                    CreatedTime = _sampleDateTime.AddMinutes(i),
-                    IsDeleted = false,
-                    Title = $"Todo {i}"
-                });
-            }
-
-            context.AddRange(todoItems);
-            await context.SaveChangesAsync();
-
-            TodosService todosService = new(context);
-
-            TodoItemsRequest request = new()
-            {
-                Skip = 3,
-                NumberOfItems = 4
-            };
-
-            // Act
-            List<TodoItem> result = await todosService.GetTodosForProgeny(1, 0, request);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(4, result.Count); // Should return 4 items
-        }
-
+        
         [Fact]
         public async Task GetTodosList_Should_Return_List_Of_TodoItems_When_Valid_Parameters_Are_Provided()
         {

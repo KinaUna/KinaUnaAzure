@@ -1,5 +1,5 @@
-import { showPopupAtLoad } from "../item-details/items-display-v8.js";
-import { TimeLineType } from "../page-models-v8.js";
+import { showPopupAtLoad } from "../item-details/items-display-v9.js";
+import { TimeLineType } from "../page-models-v9.js";
 
 /**
  * Initializes the page elements when it is loaded.

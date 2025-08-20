@@ -1,0 +1,57 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@model TodoItem
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
+<button class="item-btn todo-item" data-todo-id="@Model.TodoItemId">
+    <div class="bg-primary timeline-card">
+        <div class="timeline-card-body bg-todos">
+            <div class="row">
+                <div class="col-auto">
+                    <span class="timeline-icon"><i class="material-icons">fact_check</i></span>
+                </div>
+                <div class="col">
+                    <div class="timeline-title">
+                        <img src="@Model.Progeny.GetProfilePictureUrl()" style="float: right; max-height: 24px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; right: 8px; position: absolute;"/>
+                        @Model.Title
+                    </div>
+                    <div class="timeline-text text-white">
+                        <div>@await LocaleManager.GetTranslation("Status", PageNames.Todos, languageId): @await LocaleManager.GetTranslation(Model.StatusText(), PageNames.Todos, languageId)</div>
+                        @if (Model.CompletedDate.HasValue && Model.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
+                        {
+                            <div>@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, languageId) : @Model.CompletedDate?.ToString("dd-MMM-yyyy")</div>
+                        }
+                        @if (Model.DueDate.HasValue)
+                        {
+                            <div>@await LocaleManager.GetTranslation("Due", PageNames.Todos, languageId): @Model.DueDate.Value.ToString("dd-MMM-yyyy")</div>
+                        }
+                        @if (Model.StartDate.HasValue)
+                        {
+                            <div>@await LocaleManager.GetTranslation("Start", PageNames.Todos, languageId): @Model.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Location))
+                        {
+                            <div class="text-white-75"><i class="material-icons" style="font-size: 18px;">location_on</i> @Model.Location</div>
+                        }
+                    </div>
+                    <div class="timeline-text text-white-50">
+                        @* <div class="timeline-noteitem-text rounded text-dark bg-white">@Html.Raw(HttpUtility.HtmlDecode(Model.Description))</div> *@
+                        @if (!string.IsNullOrEmpty(Model.Context))
+                        {
+                            List<string> contextsList = Model.Context.Split(',').ToList();
+                            <div class="text-right">
+                                @foreach (string contextString in contextsList)
+                                {
+                                    <span class="btn context-item tag-item-sm">@contextString</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</button>

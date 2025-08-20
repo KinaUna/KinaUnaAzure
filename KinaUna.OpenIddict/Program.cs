@@ -220,14 +220,7 @@ else
 
 builder.Services.AddControllersWithViews().AddViewLocalization();
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
-}
-else
-{
-    builder.Services.AddRazorPages();
-}
+builder.Services.AddRazorPages();
 
 WebApplication app = builder.Build();
 

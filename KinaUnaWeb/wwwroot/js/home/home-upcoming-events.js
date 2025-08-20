@@ -1,8 +1,8 @@
-import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v8.js';
-import { getCurrentProgenyId } from '../data-tools-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
-import { getSelectedProgenies } from '../settings-tools-v8.js';
+import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v9.js';
+import { getCurrentProgenyId } from '../data-tools-v9.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
+import { addTimelineItemEventListener } from '../item-details/items-display-v9.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
 let upcomingEventsList = [];
 const upcomingEventsParameters = new TimelineParameters();
 let upcomingEventsProgenyId;
@@ -105,6 +105,9 @@ function setUpcomingEventsEventListeners() {
         });
     }
 }
+/**
+ * Adds an event listener for the 'progeniesChanged' event to update the upcoming events list when the selected progenies change.
+ */
 function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
@@ -124,7 +127,7 @@ function addSelectedProgeniesChangedEventListener() {
  */
 document.addEventListener('DOMContentLoaded', async function () {
     upcomingEventsProgenyId = getCurrentProgenyId();
-    upcomingEventsParameters.count = 5;
+    upcomingEventsParameters.count = 10;
     upcomingEventsParameters.skip = 0;
     upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
     setUpcomingEventsEventListeners();

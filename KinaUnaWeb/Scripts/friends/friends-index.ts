@@ -1,9 +1,9 @@
-﻿import { getCurrentProgenyId, updateFilterButtonDisplay } from '../data-tools-v8.js';
-import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import * as pageModels from '../page-models-v8.js';
-import * as SettingsHelper from '../settings-tools-v8.js';
-import { getSelectedProgenies } from '../settings-tools-v8.js';
+﻿import { getCurrentProgenyId, updateFilterButtonDisplay } from '../data-tools-v9.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v9.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
+import * as pageModels from '../page-models-v9.js';
+import * as SettingsHelper from '../settings-tools-v9.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
 
 const friendsPageSettingsStorageKey = 'friends_page_parameters';
 let friendsPageParameters = new pageModels.FriendsPageParameters();

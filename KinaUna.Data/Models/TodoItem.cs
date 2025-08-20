@@ -1,6 +1,7 @@
 ﻿using KinaUna.Data.Models.ItemInterfaces;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
@@ -72,6 +73,11 @@ namespace KinaUna.Data.Models
         [MaxLength(256)]
         public string Context { get; set; } = string.Empty;
         /// <summary>
+        /// Gets or sets the location associated with the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string Location { get; set; } = string.Empty;
+        /// <summary>
         /// Gets or sets the id for the user who created the task.
         /// </summary>
         [MaxLength(256)]
@@ -93,6 +99,12 @@ namespace KinaUna.Data.Models
         /// Gets or sets a value indicating whether the entity is marked as deleted.
         /// </summary>
         public bool IsDeleted { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the associated progeny data for the current entity.
+        /// </summary>
+        [NotMapped]
+        public Progeny Progeny { get; set; } = new Progeny();
 
     }
 }

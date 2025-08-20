@@ -1,7 +1,7 @@
-﻿import * as LocaleHelper from '../localization-v8.js';
-import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { Picture, PictureViewModel } from '../page-models-v8.js';
+﻿import * as LocaleHelper from '../localization-v9.js';
+import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
+import { Picture, PictureViewModel } from '../page-models-v9.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
 import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;

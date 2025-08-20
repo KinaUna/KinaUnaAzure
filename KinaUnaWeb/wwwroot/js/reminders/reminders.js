@@ -1,7 +1,7 @@
-import { dateStringFormatConverter, getCurrentLanguageId, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setMomentLocale } from "../data-tools-v8.js";
-import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
-import { CalendarReminderRequest } from "../page-models-v8.js";
-import * as LocaleHelper from '../localization-v8.js';
+import { dateStringFormatConverter, getCurrentLanguageId, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setMomentLocale } from "../data-tools-v9.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
+import { CalendarReminderRequest } from "../page-models-v9.js";
+import * as LocaleHelper from '../localization-v9.js';
 const reminderCustomOffsetDateTimePickerId = '#custom-offset-date-time-picker';
 /**
  * Sets up date time picker, select list and event listeners for reminders.

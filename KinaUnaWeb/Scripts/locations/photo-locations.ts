@@ -1,10 +1,10 @@
-﻿import { getCurrentProgenyId } from '../data-tools-v8.js';
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { LocationItem, LocationsPageParameters, NearByPhotosRequest, NearByPhotosResponse, Picture, PicturesLocationsRequest, PicturesLocationsResponse, TimeLineItemViewModel, TimelineItem } from '../page-models-v8.js';
+﻿import { getCurrentProgenyId } from '../data-tools-v9.js';
+import { addTimelineItemEventListener } from '../item-details/items-display-v9.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
+import { LocationItem, LocationsPageParameters, NearByPhotosRequest, NearByPhotosResponse, Picture, PicturesLocationsRequest, PicturesLocationsResponse, TimeLineItemViewModel, TimelineItem } from '../page-models-v9.js';
 import { setUpMapClickToShowLocationListener, setupHereMaps, setupHereMapsPhotoLocations } from './location-tools.js';
-import * as SettingsHelper from '../settings-tools-v8.js';
-import { getSelectedProgenies } from '../settings-tools-v8.js';
+import * as SettingsHelper from '../settings-tools-v9.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
 
 const photoLocationsPageSettingsStorageKey = 'photo_locations_page_parameters';
 const nearByPhotosSettingsStorageKey = 'near_by_photos_parameters';

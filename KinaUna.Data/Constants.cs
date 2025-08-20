@@ -62,5 +62,6 @@
         public const string Timeline = "Timeline";
         public const string Progeny = "Progeny";
         public const string Notifications = "Notifications";
+        public const string Todos = "Todos";
     }
 }
