@@ -98,7 +98,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
         }
 
         [Fact]
-        public Task CreateTodoItemsResponseForTodoPage_Should_Sort_By_CreatedTime_When_SortBy_Is_1()
+        public void CreateTodoItemsResponseForTodoPage_Should_Sort_By_CreatedTime_When_SortBy_Is_1()
         {
             // Arrange
             List<TodoItem> todoItems =
