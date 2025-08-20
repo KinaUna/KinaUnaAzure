@@ -11,7 +11,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
         private readonly DateTime _sampleDateTime = new(2020, 1, 1, 10, 0, 0, DateTimeKind.Utc);
 
         [Fact]
-        public Task CreateTodoItemsResponseForTodoPage_Should_Return_Correct_Response_With_Default_Sorting()
+        public void CreateTodoItemsResponseForTodoPage_Should_Return_Correct_Response_With_Default_Sorting()
         {
             // Arrange
             List<TodoItem> todoItems =
