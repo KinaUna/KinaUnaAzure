@@ -132,7 +132,11 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
         }
 
         [Fact]
-        public Task CreateTodoItemsResponseForTodoPage_Should_Group_By_Status_When_GroupBy_Is_1()
+            // No need to return Task.CompletedTask for synchronous test
+        }
+
+        [Fact]
+        public void CreateTodoItemsResponseForTodoPage_Should_Group_By_Status_When_GroupBy_Is_1()
         {
             // Arrange
             List<TodoItem> todoItems =
