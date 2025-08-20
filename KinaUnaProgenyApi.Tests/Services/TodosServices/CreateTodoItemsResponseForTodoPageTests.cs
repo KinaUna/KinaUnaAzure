@@ -58,7 +58,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
         }
 
         [Fact]
-        public Task CreateTodoItemsResponseForTodoPage_Should_Apply_Pagination_When_NumberOfItems_Greater_Than_Zero()
+        public void CreateTodoItemsResponseForTodoPage_Should_Apply_Pagination_When_NumberOfItems_Greater_Than_Zero()
         {
             // Arrange
             List<TodoItem> todoItems = [];
