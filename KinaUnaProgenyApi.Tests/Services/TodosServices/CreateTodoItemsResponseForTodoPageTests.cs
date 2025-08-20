@@ -54,7 +54,6 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             Assert.Contains("context1", result.ContextsList);
             Assert.Contains("context2", result.ContextsList);
             Assert.Contains("context3", result.ContextsList);
-            return Task.CompletedTask;
         }
 
         [Fact]
@@ -94,7 +93,6 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             Assert.Equal(3, result.PageNumber); // (Skip 6 / NumberOfItems 3) + 1 = 3
             Assert.Equal(3, result.TodoItems.Count); // Should return 3 items
             Assert.Equal(7, result.TodoItems[0].TodoItemId); // 7th item should be first
-            return Task.CompletedTask;
         }
 
         [Fact]
@@ -128,11 +126,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             Assert.Equal(_sampleDateTime.AddHours(1), result.TodoItems[0].CreatedTime);
             Assert.Equal(_sampleDateTime.AddHours(2), result.TodoItems[1].CreatedTime);
             Assert.Equal(_sampleDateTime.AddHours(3), result.TodoItems[2].CreatedTime);
-            return Task.CompletedTask;
-        }
-
-        [Fact]
-            // No need to return Task.CompletedTask for synchronous test
+            
         }
 
         [Fact]
@@ -167,7 +161,6 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             Assert.Equal(0, result.TodoItems[0].Status); // NotStarted
             Assert.Equal(1, result.TodoItems[1].Status); // InProgress
             Assert.Equal(2, result.TodoItems[2].Status); // Completed
-            return Task.CompletedTask;
         }
 
         [Fact]
