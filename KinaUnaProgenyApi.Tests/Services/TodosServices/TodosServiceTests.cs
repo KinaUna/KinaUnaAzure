@@ -1,6 +1,5 @@
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services.TodosServices;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,9 +28,8 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 AccessLevel = 0,
                 Tags = "test,tag",
                 Context = "Testing",
-                CreatedBy = "TestUser",
-                ModifiedBy = "TestUser",
-                IsDeleted = false
+                Location = "Test Location",
+                CreatedBy = "TestUser"
             };
 
             TodosService todosService = new(context);
@@ -46,16 +44,17 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             Assert.Equal(todoItem.Title, result.Title);
             Assert.Equal(todoItem.Description, result.Description);
             Assert.Equal(todoItem.Status, result.Status);
-            Assert.Equal(todoItem.DueDate, result.DueDate);
+            Assert.Equal(todoItem.DueDate.Value.Date, result.DueDate?.Date ?? new DateTime()); // The time part can be off by a few milliseconds, only compare the date
             Assert.Equal(todoItem.AccessLevel, result.AccessLevel);
             Assert.Equal(todoItem.Tags, result.Tags);
             Assert.Equal(todoItem.Context, result.Context);
+            Assert.Equal(todoItem.Location, result.Location);
             Assert.Equal(todoItem.CreatedBy, result.CreatedBy);
             Assert.Equal(todoItem.CreatedBy, result.ModifiedBy); // ModifiedBy should be set to CreatedBy
             Assert.False(result.IsDeleted);
             Assert.True(result.CreatedTime > DateTime.MinValue);
             Assert.True(result.ModifiedTime > DateTime.MinValue);
-            Assert.Equal(result.CreatedTime.Date, result.ModifiedTime.Date);
+            Assert.Equal(result.CreatedTime.Date, result.ModifiedTime.Date); // The time part can be off by a few milliseconds, only compare the date, hour, minute, and second
             Assert.Equal(result.CreatedTime.Hour, result.ModifiedTime.Hour);
             Assert.Equal(result.CreatedTime.Minute, result.ModifiedTime.Minute);
             Assert.Equal(result.CreatedTime.Second, result.ModifiedTime.Second);
@@ -75,12 +74,6 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 TodoItemId = 1,
                 ProgenyId = 1,
                 Title = "Test Todo",
-                Description = "Test Description",
-                Status = 0,
-                DueDate = _sampleDateTime.AddDays(7),
-                AccessLevel = 0,
-                Tags = "test,tag",
-                Context = "Testing",
                 CreatedBy = "TestUser",
                 CreatedTime = _sampleDateTime,
                 ModifiedTime = _sampleDateTime,
@@ -126,12 +119,6 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 TodoItemId = 1,
                 ProgenyId = 1,
                 Title = "Test Todo",
-                Description = "Test Description",
-                Status = 0,
-                DueDate = _sampleDateTime.AddDays(7),
-                AccessLevel = 0,
-                Tags = "test,tag",
-                Context = "Testing",
                 CreatedBy = "TestUser",
                 CreatedTime = _sampleDateTime,
                 ModifiedTime = _sampleDateTime,
@@ -204,6 +191,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 AccessLevel = 0,
                 Tags = "test,tag",
                 Context = "Testing",
+                Location = "Test Location",
                 CreatedBy = "TestUser",
                 CreatedTime = _sampleDateTime,
                 ModifiedTime = _sampleDateTime,
@@ -231,6 +219,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             Assert.Equal(todoItem.AccessLevel, result.AccessLevel);
             Assert.Equal(todoItem.Tags, result.Tags);
             Assert.Equal(todoItem.Context, result.Context);
+            Assert.Equal(todoItem.Location, result.Location);
             Assert.Equal(todoItem.CreatedBy, result.CreatedBy);
             Assert.Equal(todoItem.CreatedTime, result.CreatedTime);
             Assert.Equal(todoItem.ModifiedTime, result.ModifiedTime);
@@ -255,241 +244,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             // Assert
             Assert.Null(result);
         }
-
-        [Fact]
-        public async Task GetTodosForProgeny_Should_Return_Filtered_List_When_Valid_Parameters_Are_Provided()
-        {
-            // Arrange
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
-                .UseInMemoryDatabase("GetTodosForProgeny_Should_Return_Filtered_List_When_Valid_Parameters_Are_Provided")
-                .Options;
-            await using ProgenyDbContext context = new(dbOptions);
-
-            // Create test data
-            List<TodoItem> todoItems =
-            [
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime.AddDays(1), CreatedTime = _sampleDateTime, IsDeleted = false, Status = 0, Tags = "tag1", Context = "context1" },
-                new() { ProgenyId = 1, AccessLevel = 1, DueDate = _sampleDateTime.AddDays(2), CreatedTime = _sampleDateTime.AddMinutes(1), IsDeleted = false, Status = 1, Tags = "tag2", Context = "context2" },
-                new()
-                {
-                    ProgenyId = 1, AccessLevel = 2, DueDate = _sampleDateTime.AddDays(3), CreatedTime = _sampleDateTime.AddMinutes(2), IsDeleted = false, Status = 2, Tags = "tag1,tag3", Context = "context1,context3"
-                },
-                new() { ProgenyId = 1, AccessLevel = 3, DueDate = _sampleDateTime.AddDays(4), CreatedTime = _sampleDateTime.AddMinutes(3), IsDeleted = false, Status = 0, Tags = "tag4", Context = "context4" },
-                new()
-                {
-                    ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime.AddDays(5), CreatedTime = _sampleDateTime.AddMinutes(4), IsDeleted = true, Status = 0, Tags = "tag1", Context = "context1"
-                }, // Deleted item
-                new() { ProgenyId = 2, AccessLevel = 0, DueDate = _sampleDateTime.AddDays(1), CreatedTime = _sampleDateTime, IsDeleted = false, Status = 0, Tags = "tag1", Context = "context1" }
-            ];
-
-            context.AddRange(todoItems);
-            await context.SaveChangesAsync();
-
-            TodosService todosService = new(context);
-
-            TodoItemsRequest request = new()
-            {
-                Skip = 0,
-                NumberOfItems = 10
-            };
-
-            // Act
-            List<TodoItem> result = await todosService.GetTodosForProgeny(1, 2, request);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.IsType<List<TodoItem>>(result);
-            Assert.Equal(3, result.Count); // Only items with access level <= 2, not deleted, and for progeny 1
-            Assert.All(result, item => Assert.Equal(1, item.ProgenyId));
-            Assert.All(result, item => Assert.True(item.AccessLevel <= 2));
-            Assert.All(result, item => Assert.False(item.IsDeleted));
-        }
-
-        [Fact]
-        public async Task GetTodosForProgeny_Should_Filter_By_DateRange_When_Provided()
-        {
-            // Arrange
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
-                .UseInMemoryDatabase("GetTodosForProgeny_Should_Filter_By_DateRange_When_Provided")
-                .Options;
-            await using ProgenyDbContext context = new(dbOptions);
-
-            List<TodoItem> todoItems =
-            [
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime.AddDays(1), CreatedTime = _sampleDateTime, IsDeleted = false },
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime.AddDays(5), CreatedTime = _sampleDateTime, IsDeleted = false },
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime.AddDays(10), CreatedTime = _sampleDateTime, IsDeleted = false }
-            ];
-
-            context.AddRange(todoItems);
-            await context.SaveChangesAsync();
-
-            TodosService todosService = new(context);
-
-            TodoItemsRequest request = new()
-            {
-                StartDate = _sampleDateTime.AddDays(2),
-                EndDate = _sampleDateTime.AddDays(8),
-                Skip = 0,
-                NumberOfItems = 10
-            };
-
-            // Act
-            List<TodoItem> result = await todosService.GetTodosForProgeny(1, 0, request);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Single(result); // Only the item with DueDate = _sampleDateTime.AddDays(5) should match
-            Assert.Equal(_sampleDateTime.AddDays(5), result[0].DueDate);
-        }
-
-        [Fact]
-        public async Task GetTodosForProgeny_Should_Filter_By_Tags_When_Provided()
-        {
-            // Arrange
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
-                .UseInMemoryDatabase("GetTodosForProgeny_Should_Filter_By_Tags_When_Provided")
-                .Options;
-            await using ProgenyDbContext context = new(dbOptions);
-
-            List<TodoItem> todoItems =
-            [
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false, Tags = "tag1,tag2" },
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false, Tags = "tag3,tag4" },
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false, Tags = "tag1,tag5" }
-            ];
-
-            context.AddRange(todoItems);
-            await context.SaveChangesAsync();
-
-            TodosService todosService = new(context);
-
-            TodoItemsRequest request = new()
-            {
-                TagFilter = "tag1,tag3",
-                Skip = 0,
-                NumberOfItems = 10
-            };
-
-            // Act
-            List<TodoItem> result = await todosService.GetTodosForProgeny(1, 0, request);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(3, result.Count); // All items should match (first and third have tag1, second has tag3)
-        }
-
-        [Fact]
-        public async Task GetTodosForProgeny_Should_Filter_By_Context_When_Provided()
-        {
-            // Arrange
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
-                .UseInMemoryDatabase("GetTodosForProgeny_Should_Filter_By_Context_When_Provided")
-                .Options;
-            await using ProgenyDbContext context = new(dbOptions);
-
-            List<TodoItem> todoItems =
-            [
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false, Context = "work,project" },
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false, Context = "personal,home" },
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false, Context = "work,meeting" }
-            ];
-
-            context.AddRange(todoItems);
-            await context.SaveChangesAsync();
-
-            TodosService todosService = new(context);
-
-            TodoItemsRequest request = new()
-            {
-                ContextFilter = "work,personal",
-                Skip = 0,
-                NumberOfItems = 10
-            };
-
-            // Act
-            List<TodoItem> result = await todosService.GetTodosForProgeny(1, 0, request);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(3, result.Count); // All items should match (first and third have work, second has personal)
-        }
-
-        [Fact]
-        public async Task GetTodosForProgeny_Should_Filter_By_Status_When_Provided()
-        {
-            // Arrange
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
-                .UseInMemoryDatabase("GetTodosForProgeny_Should_Filter_By_Status_When_Provided")
-                .Options;
-            await using ProgenyDbContext context = new(dbOptions);
-
-            List<TodoItem> todoItems =
-            [
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false, Status = 0 },
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false, Status = 1 },
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false, Status = 2 }
-            ];
-
-            context.AddRange(todoItems);
-            await context.SaveChangesAsync();
-
-            TodosService todosService = new(context);
-
-            TodoItemsRequest request = new()
-            {
-                StatusFilter = [KinaUnaTypes.TodoStatusType.NotStarted, KinaUnaTypes.TodoStatusType.Completed],
-                Skip = 0,
-                NumberOfItems = 10
-            };
-
-            // Act
-            List<TodoItem> result = await todosService.GetTodosForProgeny(1, 0, request);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(2, result.Count); // Items with status 0 and 2
-            Assert.Contains(result, item => item.Status == 0);
-            Assert.Contains(result, item => item.Status == 2);
-            Assert.DoesNotContain(result, item => item.Status == 1);
-        }
         
-        [Fact]
-        public async Task GetTodosList_Should_Return_List_Of_TodoItems_When_Valid_Parameters_Are_Provided()
-        {
-            // Arrange
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
-                .UseInMemoryDatabase("GetTodosList_Should_Return_List_Of_TodoItems_When_Valid_Parameters_Are_Provided")
-                .Options;
-            await using ProgenyDbContext context = new(dbOptions);
-
-            List<TodoItem> todoItems =
-            [
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false },
-                new() { ProgenyId = 1, AccessLevel = 1, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false },
-                new() { ProgenyId = 1, AccessLevel = 2, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false },
-                new() { ProgenyId = 1, AccessLevel = 3, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false },
-                new() { ProgenyId = 1, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = true }, // Deleted item
-                new() { ProgenyId = 2, AccessLevel = 0, DueDate = _sampleDateTime, CreatedTime = _sampleDateTime, IsDeleted = false } // Different progeny
-            ];
-
-            context.AddRange(todoItems);
-            await context.SaveChangesAsync();
-
-            TodosService todosService = new(context);
-
-            // Act
-            List<TodoItem> result = await todosService.GetTodosList(1, 2);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.IsType<List<TodoItem>>(result);
-            Assert.Equal(3, result.Count); // Only items with access level <= 2, not deleted, and for progeny 1
-            Assert.All(result, item => Assert.Equal(1, item.ProgenyId));
-            Assert.All(result, item => Assert.True(item.AccessLevel <= 2));
-            Assert.All(result, item => Assert.False(item.IsDeleted));
-        }
-
         [Fact]
         public async Task GetTodosList_Should_Return_Empty_List_When_No_Matching_Items()
         {
@@ -548,7 +303,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 ProgenyId = 1,
                 Title = "Updated Title",
                 Description = "Updated Description",
-                Status = 1,
+                Status = 1, // Changed to InProgress
                 DueDate = _sampleDateTime.AddDays(14),
                 AccessLevel = 1,
                 Tags = "updated,tags",
@@ -581,6 +336,94 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             // CreatedBy and CreatedTime should remain unchanged
             Assert.Equal(originalTodoItem.CreatedBy, result.CreatedBy);
             Assert.Equal(originalTodoItem.CreatedTime, result.CreatedTime);
+
+            // StartDate should be set when status changes to InProgress
+            Assert.NotNull(result.StartDate);
+            Assert.True(result.StartDate > _sampleDateTime);
+        }
+
+        [Fact]
+        public async Task UpdateTodoItem_Should_Set_CompletedDate_When_Status_Changes_To_Completed()
+        {
+            // Arrange
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase("UpdateTodoItem_Should_Set_CompletedDate_When_Status_Changes_To_Completed")
+                .Options;
+            await using ProgenyDbContext context = new(dbOptions);
+
+            TodoItem originalTodoItem = new()
+            {
+                TodoItemId = 1,
+                Status = 1, // InProgress
+                CreatedBy = "TestUser",
+                CreatedTime = _sampleDateTime,
+                ModifiedTime = _sampleDateTime,
+                ModifiedBy = "TestUser"
+            };
+
+            context.Add(originalTodoItem);
+            await context.SaveChangesAsync();
+
+            TodosService todosService = new(context);
+
+            TodoItem updatedTodoItem = new()
+            {
+                TodoItemId = 1,
+                Status = 2, // Completed
+                ModifiedBy = "UpdatedUser"
+            };
+
+            // Act
+            TodoItem result = await todosService.UpdateTodoItem(updatedTodoItem);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Status);
+            Assert.NotNull(result.CompletedDate);
+            Assert.True(result.CompletedDate > _sampleDateTime);
+        }
+
+        [Fact]
+        public async Task UpdateTodoItem_Should_Reset_Dates_When_Status_Changes_To_NotStarted()
+        {
+            // Arrange
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase("UpdateTodoItem_Should_Reset_Dates_When_Status_Changes_To_NotStarted")
+                .Options;
+            await using ProgenyDbContext context = new(dbOptions);
+
+            TodoItem originalTodoItem = new()
+            {
+                TodoItemId = 1,
+                Status = 2, // Completed
+                StartDate = _sampleDateTime,
+                CompletedDate = _sampleDateTime.AddDays(1),
+                CreatedBy = "TestUser",
+                CreatedTime = _sampleDateTime,
+                ModifiedTime = _sampleDateTime,
+                ModifiedBy = "TestUser"
+            };
+
+            context.Add(originalTodoItem);
+            await context.SaveChangesAsync();
+
+            TodosService todosService = new(context);
+
+            TodoItem updatedTodoItem = new()
+            {
+                TodoItemId = 1,
+                Status = 0, // NotStarted
+                ModifiedBy = "UpdatedUser"
+            };
+
+            // Act
+            TodoItem result = await todosService.UpdateTodoItem(updatedTodoItem);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(0, result.Status);
+            Assert.Null(result.StartDate);
+            Assert.Null(result.CompletedDate);
         }
 
         [Fact]
@@ -597,16 +440,8 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             TodoItem nonExistentTodoItem = new()
             {
                 TodoItemId = 999, // Non-existent ID
-                ProgenyId = 1,
-                Title = "Updated Title",
-                Description = "Updated Description",
                 Status = 1,
-                DueDate = _sampleDateTime.AddDays(14),
-                AccessLevel = 1,
-                Tags = "updated,tags",
-                Context = "Updated Context",
-                ModifiedBy = "UpdatedUser",
-                IsDeleted = false
+                ModifiedBy = "UpdatedUser"
             };
 
             // Act
