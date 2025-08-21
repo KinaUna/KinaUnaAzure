@@ -85,6 +85,7 @@ namespace KinaUnaWeb
             services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
             services.AddTransient<ITodoItemsHttpClient, TodoItemsHttpClient>();
+            services.AddTransient<ISubtasksHttpClient, SubtasksHttpClient>();
             services.AddHttpClient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddSingleton<ITokenService, TokenService>();
 

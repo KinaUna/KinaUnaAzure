@@ -541,6 +541,31 @@ export class TodosPageParameters {
         this.showSettings = false;
     }
 }
+export class SubtasksPageParameters {
+    constructor() {
+        this.parentTodoItemId = 0;
+        this.progenyId = 0;
+        this.languageId = 0;
+        this.currentPageNumber = 0;
+        this.itemsPerPage = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.sort = 0; // 0 Ascending, 1 Descending
+        this.sortBy = 0; // 0 for DueDate, 1 for CreatedTime, 2 for StartDate, 3 for CompletedDate
+        this.groupBy = 0; // 0 for no grouping, 1 for Status, 2 for Progeny/AssignedTo, 3 for Location
+        this.tagFilter = '';
+        this.contextFilter = '';
+        this.locationFilter = '';
+        this.statusFilter = [];
+        this.startYear = 0;
+        this.startMonth = 0;
+        this.startDay = 0;
+        this.endYear = 0;
+        this.endMonth = 0;
+        this.endDay = 0;
+        this.showSettings = false;
+    }
+}
 export class TodosPageResponse {
     constructor() {
         this.pageNumber = 0;
@@ -549,6 +574,15 @@ export class TodosPageResponse {
         this.todosList = [];
         this.tagsList = [];
         this.contextsList = [];
+    }
+}
+export class SubtasksPageResponse {
+    constructor() {
+        this.parentTodoItemId = 0;
+        this.pageNumber = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.subtasksList = [];
     }
 }
 export class TodoItemParameters {
