@@ -652,11 +652,11 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted)
                 {
                     todoItem.CompletedDate = null; // Reset completed date if not started
-                    todoItem.StartDate = null; // Reset start date if not started
                 }
                 else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.InProgress)
                 {
                     todoItem.StartDate = DateTime.UtcNow; // Set start date if not already set
+                    todoItem.CompletedDate = null; // Reset completed date if in progress
                 }
                 else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled)
                 {

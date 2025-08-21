@@ -425,7 +425,7 @@ namespace KinaUnaWeb.Controllers
 
             TodoItemsResponse upcomingTodoItemsResponse = await todoItemsHttpClient.GetProgeniesTodoItemsList(todoItemsRequest);
             List<TodoItem> upcomingTodoItems = [.. upcomingTodoItemsResponse.TodoItems.Where(t => t.Status < (int)KinaUnaTypes.TodoStatusType.Completed)];
-            upcomingTodoItems = [.. upcomingTodoItems.OrderBy(t => t.DueDate)];
+            upcomingTodoItems = [.. upcomingTodoItems.OrderBy(t => t.StartDate)];
 
             timelineList.AllItemsCount = upcomingCalendarItems.Count + upcomingTodoItems.Count;
             timelineList.RemainingItemsCount = timelineList.AllItemsCount - parameters.Skip - parameters.Count;
@@ -448,9 +448,9 @@ namespace KinaUnaWeb.Controllers
 
             foreach (TodoItem todoItem in upcomingTodoItems)
             {
-                if (!todoItem.DueDate.HasValue)
+                if (!todoItem.StartDate.HasValue)
                 {
-                    todoItem.DueDate = DateTime.UtcNow + TimeSpan.FromDays(5); // Default to 5 days from now if no due date is set.
+                    todoItem.StartDate = DateTime.UtcNow + TimeSpan.FromDays(7); // Default to 7 days from now if no start date is set.
                 }
                 TimeLineItem todoTimelineItem = new()
                 {
@@ -458,10 +458,10 @@ namespace KinaUnaWeb.Controllers
                     AccessLevel = todoItem.AccessLevel,
                     ItemId = todoItem.TodoItemId.ToString(),
                     ItemType = (int)KinaUnaTypes.TimeLineType.TodoItem,
-                    ItemYear = todoItem.DueDate?.Year ?? DateTime.UtcNow.Year,
-                    ItemMonth = todoItem.DueDate?.Month ?? DateTime.UtcNow.Month,
-                    ItemDay = todoItem.DueDate?.Day ?? DateTime.UtcNow.Day,
-                    ProgenyTime = todoItem.DueDate ?? DateTime.UtcNow,
+                    ItemYear = todoItem.StartDate?.Year ?? DateTime.UtcNow.Year,
+                    ItemMonth = todoItem.StartDate?.Month ?? DateTime.UtcNow.Month,
+                    ItemDay = todoItem.StartDate?.Day ?? DateTime.UtcNow.Day,
+                    ProgenyTime = todoItem.StartDate ?? DateTime.UtcNow,
                 };
                 timelineList.TimelineItems.Add(todoTimelineItem);
             }
