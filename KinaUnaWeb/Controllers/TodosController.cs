@@ -16,10 +16,10 @@ namespace KinaUnaWeb.Controllers
     /// <summary>
     /// The TodosController handles the management of TodoItems.
     /// </summary>
-    /// <param name="todoItemsHttpClient"></param>
-    /// <param name="viewModelSetupService"></param>
-    /// <param name="userInfosHttpClient"></param>
-    /// <param name="progenyHttpClient"></param>
+    /// <param name="todoItemsHttpClient">Service for managing TodoItems.</param>
+    /// <param name="viewModelSetupService">Service for setting up view models with common data.</param>
+    /// <param name="userInfosHttpClient">Service for managing user information.</param>
+    /// <param name="progenyHttpClient">Service for managing Progeny data.</param>
     public class TodosController(
         ITodoItemsHttpClient todoItemsHttpClient,
         IViewModelSetupService viewModelSetupService,

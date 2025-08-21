@@ -74,43 +74,43 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             request.SetStartDateAndEndDate();
             if (request.StartDate.HasValue)
             {
-                subtasks = subtasks.Where(t => t.StartDate >= request.StartDate.Value).ToList();
+                subtasks = [.. subtasks.Where(t => t.StartDate >= request.StartDate.Value)];
             }
 
             if (request.EndDate.HasValue)
             {
-                subtasks = subtasks.Where(t => t.DueDate <= request.EndDate.Value).ToList();
+                subtasks = [.. subtasks.Where(t => t.DueDate <= request.EndDate.Value)];
             }
 
             if (!string.IsNullOrEmpty(request.TagFilter))
             {
-                subtasks = subtasks.Where(t => t.Tags != null && t.Tags.Contains(request.TagFilter)).ToList();
+                subtasks = [.. subtasks.Where(t => t.Tags != null && t.Tags.Contains(request.TagFilter))];
             }
 
             if (!string.IsNullOrEmpty(request.ContextFilter))
             {
-                subtasks = subtasks.Where(t => t.Context != null && t.Context.Contains(request.ContextFilter)).ToList();
+                subtasks = [.. subtasks.Where(t => t.Context != null && t.Context.Contains(request.ContextFilter))];
             }
 
             if (!string.IsNullOrEmpty(request.LocationFilter))
             {
-                subtasks = subtasks.Where(t => t.Location != null && t.Location.Contains(request.LocationFilter)).ToList();
+                subtasks = [.. subtasks.Where(t => t.Location != null && t.Location.Contains(request.LocationFilter))];
             }
 
             if (request.StatusFilter != null && request.StatusFilter.Count > 0)
             {
-                subtasks = subtasks.Where(t => request.StatusFilter.Contains((KinaUnaTypes.TodoStatusType)t.Status)).ToList();
+                subtasks = [.. subtasks.Where(t => request.StatusFilter.Contains((KinaUnaTypes.TodoStatusType)t.Status))];
             }
             // Todo: Sorting logic can be added here based on request.Sort and request.SortBy
 
             if (request.Skip > 0)
             {
-                subtasks = subtasks.Skip(request.Skip).ToList();
+                subtasks = [.. subtasks.Skip(request.Skip)];
             }
 
             if (request.NumberOfItems > 0)
             {
-                subtasks = subtasks.Take(request.NumberOfItems).ToList();
+                subtasks = [.. subtasks.Take(request.NumberOfItems)];
             }
             // Create the response object
             SubtasksResponse response = new()
@@ -118,8 +118,8 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 ParentTodoItemId = request.ParentTodoItemId,
                 Subtasks = subtasks,
                 SubtasksRequest = request,
-                PageNumber = request?.Skip / request?.NumberOfItems ?? 0,
-                TotalPages = (int)Math.Ceiling((double)subtasks.Count / (request?.NumberOfItems ?? 1)),
+                PageNumber = request.Skip / (request.NumberOfItems > 0 ? request.NumberOfItems : 1),
+                TotalPages = (int)Math.Ceiling((double)subtasks.Count / (request.NumberOfItems > 0 ? request.NumberOfItems : 1)),
                 TotalItems = subtasks.Count,
             };
 

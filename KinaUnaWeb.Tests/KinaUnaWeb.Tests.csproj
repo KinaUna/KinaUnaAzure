@@ -10,32 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Pages\Subtasks\DeleteSubtask.cshtml" />
-    <None Remove="Pages\Subtasks\ViewSubtask.cshtml" />
-    <None Remove="Pages\Subtasks\_AddSubtaskPartial.cshtml" />
-    <None Remove="Pages\Subtasks\_CopySubtaskPartial.cshtml" />
-    <None Remove="Pages\Subtasks\_EditSubtaskPartial.cshtml" />
-    <None Remove="Pages\Subtasks\_SubtaskAddedPartial.cshtml" />
-    <None Remove="Pages\Subtasks\_SubtaskCopiedPartial.cshtml" />
-    <None Remove="Pages\Subtasks\_SubtaskDetailsPartial.cshtml" />
-    <None Remove="Pages\Subtasks\_SubtaskElementPartial.cshtml" />
-    <None Remove="Pages\Subtasks\_SubtaskUpdatedPartial.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Pages\Subtasks\DeleteSubtask.cshtml" />
-    <Content Include="Pages\Subtasks\ViewSubtask.cshtml" />
-    <Content Include="Pages\Subtasks\_AddSubtaskPartial.cshtml" />
-    <Content Include="Pages\Subtasks\_CopySubtaskPartial.cshtml" />
-    <Content Include="Pages\Subtasks\_EditSubtaskPartial.cshtml" />
-    <Content Include="Pages\Subtasks\_SubtaskAddedPartial.cshtml" />
-    <Content Include="Pages\Subtasks\_SubtaskCopiedPartial.cshtml" />
-    <Content Include="Pages\Subtasks\_SubtaskDetailsPartial.cshtml" />
-    <Content Include="Pages\Subtasks\_SubtaskElementPartial.cshtml" />
-    <Content Include="Pages\Subtasks\_SubtaskUpdatedPartial.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.47.2" />
     <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.8.0" />
     <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.8.0" />
@@ -113,6 +87,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KinaUnaWeb\KinaUnaWeb.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Pages\" />
   </ItemGroup>
 
 </Project>

@@ -307,18 +307,18 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CopyTodo(int itemId)
+        public async Task<IActionResult> CopySubtask(int itemId)
         {
-            TodoItem todoItem = await subtasksHttpClient.GetSubtask(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            TodoItem subtask = await subtasksHttpClient.GetSubtask(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), subtask.ProgenyId);
             TodoViewModel model = new(baseModel);
 
-            if (model.CurrentAccessLevel > todoItem.AccessLevel)
+            if (model.CurrentAccessLevel > subtask.AccessLevel)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
-            model.SetPropertiesFromTodoItem(todoItem);
+            model.SetPropertiesFromTodoItem(subtask);
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
