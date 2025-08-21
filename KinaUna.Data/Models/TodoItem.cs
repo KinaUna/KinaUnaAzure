@@ -99,6 +99,12 @@ namespace KinaUna.Data.Models
         /// Gets or sets a value indicating whether the entity is marked as deleted.
         /// </summary>
         public bool IsDeleted { get; set; } = false;
+        /// <summary>
+        /// Gets or sets the identifier of the parent to-do item.
+        /// 0 indicates that this item has no parent.
+        /// Not 0 indicates that this item is a child of another to-do item.
+        /// </summary>
+        public int ParentTodoItemId { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the associated progeny data for the current entity.
