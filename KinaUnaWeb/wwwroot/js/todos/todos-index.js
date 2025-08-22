@@ -519,6 +519,7 @@ function loadTodosPageSettings() {
 async function initialSettingsPanelSetup() {
     const todosPageSaveSettingsButton = document.querySelector('#todos-page-save-settings-button');
     if (todosPageSaveSettingsButton !== null) {
+        // Clear event listeners
         todosPageSaveSettingsButton.addEventListener('click', saveTodosPageSettings);
     }
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {

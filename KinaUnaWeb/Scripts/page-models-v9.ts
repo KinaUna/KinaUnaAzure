@@ -545,6 +545,7 @@ export class TodoItemParameters implements BaseItemParameters {
 export class TodoItem {
     todoItemId: number = 0;
     uId: string = '';
+    parentTodoItemId: number = 0;
     progenyId: number = 0;
     title: string = '';
     description: string = '';

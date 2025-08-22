@@ -60,6 +60,7 @@ async function displayEventItem(eventId, eventYear, eventMonth, eventDay) {
             const eventElementHtml = await response.text();
             const eventDetailsPopupDiv = document.querySelector('#item-details-div');
             if (eventDetailsPopupDiv) {
+                eventDetailsPopupDiv.innerHTML = '';
                 const fullScreenOverlay = document.createElement('div');
                 fullScreenOverlay.classList.add('full-screen-bg');
                 fullScreenOverlay.innerHTML = eventElementHtml;

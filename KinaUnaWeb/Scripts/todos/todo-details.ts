@@ -2,7 +2,11 @@
 import { TimelineChangedEvent } from '../data-tools-v9.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
-import { TimelineItem } from '../page-models-v9.js';
+import { SubtasksPageParameters, TimelineItem, TodoItem } from '../page-models-v9.js';
+import { addSubtask, getSubtasks } from './subtasks.js';
+
+let subtaskPageParameters: SubtasksPageParameters = new SubtasksPageParameters();
+const subtasksListDivId = 'todo-details-sub-tasks-list-div';
 
 /**
  * Adds event listeners to all elements with the data-todo-id attribute.
@@ -13,9 +17,10 @@ export function addTodoItemListeners(itemId: string): void {
     const todoElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-todo-id="' + itemId + '"]');
     if (todoElementsWithDataId) {
         todoElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
-                await displayTodoItem(itemId);
-            });
+            //const displayTodoItemWithItemId = () => { displayTodoItem(itemId) };
+            // Clear existing event listeners.            
+            element.removeEventListener('click', onTodoItemDivClicked);
+            element.addEventListener('click', onTodoItemDivClicked);
         });
     }
 }
@@ -205,6 +210,7 @@ function dispatchTimelineItemChangedEvent(todoId: string): void {
     window.dispatchEvent(timelineItemChangedEvent);
 }
 
+
 /**
  * Sets up event listeners for the todo details popup.
  * @param {string} itemId The id of the todo item to set event listeners for.
@@ -214,52 +220,91 @@ async function setTodoDetailsEventListeners(itemId: string, todoDetailsPopupDiv:
     let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
-            button.addEventListener('click', function () {
+            const closeButtonActions = function () {
                 todoDetailsPopupDiv.innerHTML = '';
                 todoDetailsPopupDiv.classList.add('d-none');
                 showBodyScrollbars();
-            });
+            }
+            // Clear existing event listeners.
+            button.removeEventListener('click', closeButtonActions);
+            button.addEventListener('click', closeButtonActions);
         });
     }
 
     const todoElementsWithDataCompletedId = document.querySelectorAll<HTMLButtonElement>('[data-set-todo-item-completed-id="' + itemId + '"]');
     if (todoElementsWithDataCompletedId) {
         todoElementsWithDataCompletedId.forEach((element) => {
-            element.addEventListener('click', async function (event: MouseEvent) {
-                event.stopPropagation(); // Prevent the click from bubbling up to the todo item div
-                await onSetAsCompletedButtonClicked(event);
-            });
+            // Clear existing event listeners.
+            element.removeEventListener('click', onSetAsCompletedButtonClicked);
+            element.addEventListener('click', onSetAsCompletedButtonClicked);
         });
     }
 
     const todoElementsWithDataCancelledId = document.querySelectorAll<HTMLButtonElement>('[data-set-todo-item-cancelled-id="' + itemId + '"]');
     if (todoElementsWithDataCancelledId) {
         todoElementsWithDataCancelledId.forEach((element) => {
-            element.addEventListener('click', async function (event: MouseEvent) {
-                event.stopPropagation(); // Prevent the click from bubbling up to the todo item div
-                await onSetAsCancelledButtonClicked(event);
-            });
+            // Clear existing event listeners.
+            element.removeEventListener('click', onSetAsCancelledButtonClicked);
+            element.addEventListener('click', onSetAsCancelledButtonClicked);
         });
     }
 
     const todoElementsWithDataInProgressId = document.querySelectorAll<HTMLButtonElement>('[data-set-todo-item-in-progress-id="' + itemId + '"]');
     if (todoElementsWithDataInProgressId) {
         todoElementsWithDataInProgressId.forEach((element) => {
-            element.addEventListener('click', async function (event: MouseEvent) {
-                event.stopPropagation(); // Prevent the click from bubbling up to the todo item div
-                await onSetAsInProgressButtonClicked(event);
-            });
+            // Clear existing event listeners.
+            element.removeEventListener('click', onSetAsInProgressButtonClicked);
+            element.addEventListener('click', onSetAsInProgressButtonClicked);
         });
     }
 
     const todoElementsWithDataNotStartedId = document.querySelectorAll<HTMLButtonElement>('[data-set-todo-item-not-started-id="' + itemId + '"]');
     if (todoElementsWithDataNotStartedId) {
         todoElementsWithDataNotStartedId.forEach((element) => {
-            element.addEventListener('click', async function (event: MouseEvent) {
-                event.stopPropagation(); // Prevent the click from bubbling up to the todo item div
-                await onSetAsNotStartedButtonClicked(event);
-            });
+            // Clear existing event listeners.
+            element.removeEventListener('click', onSetAsNotStartedButtonClicked);
+            element.addEventListener('click', onSetAsNotStartedButtonClicked);
         });
+    }
+
+    const addSubtaskForm = document.querySelector<HTMLFormElement>('#add-subtask-inline-form');
+    if (addSubtaskForm) {
+        // Prevent form submission from reloading the page.
+        // Clear existing event listeners.
+        addSubtaskForm.addEventListener('submit', function (event: Event) {
+            event.preventDefault();
+        });
+    }
+
+    const addSubtaskInput = document.querySelector<HTMLInputElement>('#todo-details-add-subtask-title-input');
+    const addSubtaskButton = document.querySelector<HTMLButtonElement>('#todo-details-add-subtask-button');
+    if (addSubtaskButton) {
+        const addSubTaskButtonClickedAction = async function (event: MouseEvent) {
+            if (addSubtaskInput && addSubtaskInput.value.trim() !== '') {
+                event.preventDefault();
+                const subtaskTitle = addSubtaskInput.value.trim();
+                await addSubtask(null, subtasksListDivId);
+                addSubtaskInput.value = '';
+            };
+        };
+        // Clear existing event listeners.
+        addSubtaskButton.removeEventListener('click', addSubTaskButtonClickedAction);
+        addSubtaskButton.addEventListener('click', addSubTaskButtonClickedAction);
+    }
+        
+    if (addSubtaskInput) {
+        const addSubtaskInputKeydownAction = async function (event: KeyboardEvent) {
+            if (event.key === 'Enter' && addSubtaskInput.value.trim() !== '') {
+                event.preventDefault();
+                await addSubtask(null, subtasksListDivId);
+                addSubtaskInput.value = '';
+                // Focus back to the input field after adding the subtask
+                addSubtaskInput.focus();
+            };
+        };
+        // Clear existing event listeners.
+        addSubtaskInput.removeEventListener('keydown', addSubtaskInputKeydownAction);
+        addSubtaskInput.addEventListener('keydown', addSubtaskInputKeydownAction);
     }
 }
 
@@ -269,6 +314,8 @@ async function setTodoDetailsEventListeners(itemId: string, todoDetailsPopupDiv:
  */
 async function displayTodoItem(todoId: string): Promise<void> {
     startFullPageSpinner();
+    subtaskPageParameters = new SubtasksPageParameters();
+    
     let url = '/Todos/ViewTodo?todoId=' + todoId + "&partialView=true";
     await fetch(url, {
         method: 'GET',
@@ -281,6 +328,7 @@ async function displayTodoItem(todoId: string): Promise<void> {
             const todoElementHtml = await response.text();
             const todoDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
             if (todoDetailsPopupDiv) {
+                todoDetailsPopupDiv.innerHTML = '';
                 const fullScreenOverlay = document.createElement('div');
                 fullScreenOverlay.classList.add('full-screen-bg');
                 fullScreenOverlay.innerHTML = todoElementHtml;
@@ -289,6 +337,8 @@ async function displayTodoItem(todoId: string): Promise<void> {
                 todoDetailsPopupDiv.classList.remove('d-none');
                 setTodoDetailsEventListeners(todoId, todoDetailsPopupDiv);
                 setEditItemButtonEventListeners();
+                await getSubtaskList(todoId);
+                
             }
         } else {
             console.error('Error getting todo item. Status: ' + response.status + ', Message: ' + response.statusText);
@@ -302,4 +352,19 @@ async function displayTodoItem(todoId: string): Promise<void> {
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
+}
+
+async function getSubtaskList(todoId: string, resetList: boolean = false) {
+    subtaskPageParameters.parentTodoItemId = parseInt(todoId);
+    subtaskPageParameters.groupBy = 1;
+    subtaskPageParameters = await getSubtasks(subtaskPageParameters, subtasksListDivId, resetList);
+    const todoDetailsDiv = document.getElementById('todo-details-sub-tasks-div');
+    if (todoDetailsDiv) {
+        if (subtaskPageParameters.totalItems > 0) {
+            todoDetailsDiv.classList.remove('d-none');
+        }
+        else {
+            todoDetailsDiv.classList.add('d-none');
+        }
+    }
 }

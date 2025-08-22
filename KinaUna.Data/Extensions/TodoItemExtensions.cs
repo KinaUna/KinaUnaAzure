@@ -54,6 +54,41 @@ namespace KinaUna.Data.Extensions
             return "Unknown status";
         }
 
+        public static string StatusBackgroundColor(this TodoItem todoItem)
+        {
+            if (todoItem == null)
+            {
+                throw new ArgumentNullException(nameof(todoItem), "TodoItem cannot be null.");
+            }
+
+            if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted)
+            {
+                return "#277c45";
+            }
+
+            if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.InProgress)
+            {
+                return "#26551c";
+            }
+
+            if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
+            {
+                return "#072f24";
+            }
+
+            if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled)
+            {
+                return "#000000";
+            }
+
+            if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Overdue)
+            {
+                return "#813e3e";
+            }
+
+            return "#FFFFFF00";
+        }
+
         /// <summary>
         /// Copies the properties of the specified <see cref="TodoItem"/> to the current <see cref="TodoItem"/>
         /// instance.
@@ -66,6 +101,7 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForAdd(this TodoItem currentTodoItem, TodoItem otherTodoItem)
         {
             currentTodoItem.ProgenyId = otherTodoItem.ProgenyId;
+            currentTodoItem.ParentTodoItemId = otherTodoItem.ParentTodoItemId;
             currentTodoItem.UId = otherTodoItem.UId;
             currentTodoItem.Title = otherTodoItem.Title;
             currentTodoItem.Description = otherTodoItem.Description;

@@ -24,6 +24,6 @@ namespace KinaUnaWeb.Models.TypeScriptModels.TodoItems
         /// <summary>
         /// Gets or sets the list of TodoItems.
         /// </summary>
-        public List<TodoItem> TodosList { get; set; } = todoItemsResponse.Subtasks;
+        public List<TodoItem> SubtasksList { get; set; } = todoItemsResponse.Subtasks;
     }
 }

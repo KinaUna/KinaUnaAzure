@@ -15,6 +15,7 @@ namespace KinaUnaWeb.Controllers
 {
     public class SubtasksController(
         ISubtasksHttpClient subtasksHttpClient,
+        ITodoItemsHttpClient todoItemsHttpClient,
         IViewModelSetupService viewModelSetupService,
         IUserInfosHttpClient userInfosHttpClient,
         IProgenyHttpClient progenyHttpClient) : Controller
@@ -209,7 +210,48 @@ namespace KinaUnaWeb.Controllers
             }
             return PartialView("_SubtaskAddedPartial", model);
         }
-        
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddSubtaskInline(TodoItem todoItem)
+        {
+            TodoItem parentTodoItem = await todoItemsHttpClient.GetTodoItem(todoItem.ParentTodoItemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parentTodoItem.ProgenyId);
+            TodoViewModel model = new(baseModel);
+            
+            List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            if (progAdminList.Count == 0)
+            {
+                // Todo: Show that no children are available to add subtask for.
+                return RedirectToAction("Index", "Todos");
+            }
+            todoItem.ProgenyId = parentTodoItem.ProgenyId;
+            todoItem.CreatedTime = DateTime.UtcNow;
+
+            model.SetPropertiesFromTodoItem(todoItem);
+
+            TodoItem subtask = model.CreateTodoItem();
+
+            model.TodoItem = await subtasksHttpClient.AddSubtask(subtask);
+            model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            if (model.TodoItem.CompletedDate.HasValue)
+            {
+                model.TodoItem.CompletedDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            if (model.TodoItem.StartDate.HasValue)
+            {
+                model.TodoItem.StartDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            if (model.TodoItem.DueDate.HasValue)
+            {
+                model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            return Json(model.TodoItem);
+        }
+
         [HttpGet]
         public async Task<IActionResult> EditSubtask(int itemId)
         {

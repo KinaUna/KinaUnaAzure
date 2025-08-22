@@ -179,7 +179,7 @@ export function setEditItemButtonEventListeners(): void {
  * then opens the edit item modal for the specified type and progeny.
  * @param event The mouse event that triggered the click.
  */
-async function onEditItemButtonClicked(event: MouseEvent): Promise<void> {
+export async function onEditItemButtonClicked(event: MouseEvent): Promise<void> {
     event.preventDefault();
     startFullPageSpinner();
     let editItemButton = event.currentTarget as HTMLAnchorElement;
@@ -319,6 +319,10 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
         }
 
         if (editItemType === 'todo') {
+            await initializeAddEditTodo();
+        }
+
+        if (editItemType === 'subtask') {
             await initializeAddEditTodo();
         }
         

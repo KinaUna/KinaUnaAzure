@@ -153,7 +153,7 @@ export function setEditItemButtonEventListeners() {
  * then opens the edit item modal for the specified type and progeny.
  * @param event The mouse event that triggered the click.
  */
-async function onEditItemButtonClicked(event) {
+export async function onEditItemButtonClicked(event) {
     event.preventDefault();
     startFullPageSpinner();
     let editItemButton = event.currentTarget;
@@ -268,6 +268,9 @@ async function popupEditItemModal(editItemType, editItemItemId) {
             await initializeAddEditLocation();
         }
         if (editItemType === 'todo') {
+            await initializeAddEditTodo();
+        }
+        if (editItemType === 'subtask') {
             await initializeAddEditTodo();
         }
         hideBodyScrollbars();

@@ -595,6 +595,7 @@ export class TodoItem {
     constructor() {
         this.todoItemId = 0;
         this.uId = '';
+        this.parentTodoItemId = 0;
         this.progenyId = 0;
         this.title = '';
         this.description = '';

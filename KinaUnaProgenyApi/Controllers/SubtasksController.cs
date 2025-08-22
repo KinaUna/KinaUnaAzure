@@ -55,12 +55,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound("TodoItem not found.");
             }
-            // Check if the TodoItem belongs to the Progeny
-            if (existingTodoItem.ProgenyId != request.ProgenyId)
-            {
-                return BadRequest("TodoItem does not belong to the specified Progeny.");
-            }
 
+            request.ProgenyId = existingTodoItem.ProgenyId;
+            
             // Check if the user has access to the TodoItem
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(request.ProgenyId, userEmail, existingTodoItem.AccessLevel);
             if (accessLevelResult.IsFailure)
@@ -148,6 +145,15 @@ namespace KinaUnaProgenyApi.Controllers
                 value.UId = Guid.NewGuid().ToString();
             }
 
+            TodoItem parentTodoItem = await todosService.GetTodoItem(value.ParentTodoItemId);
+            if (parentTodoItem == null)
+            {
+                return BadRequest("Parent TodoItem not found");
+            }
+            // Ensure the subtask inherits the access level of the parent TodoItem
+            value.AccessLevel = parentTodoItem.AccessLevel;
+            value.ProgenyId = parentTodoItem.ProgenyId;
+
             TodoItem subtask = await subtasksService.AddSubtask(value);
 
             if (subtask == null)
@@ -201,6 +207,16 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 value.UId = Guid.NewGuid().ToString();
             }
+
+            TodoItem parentTodoItem = await todosService.GetTodoItem(value.ParentTodoItemId);
+            if (parentTodoItem == null)
+            {
+                return BadRequest("Parent TodoItem not found.");
+            }
+
+            // Ensure the subtask inherits the access level of the parent TodoItem
+            value.AccessLevel = parentTodoItem.AccessLevel;
+            value.ProgenyId = parentTodoItem.ProgenyId;
 
             subtask = await subtasksService.UpdateSubtask(value);
 

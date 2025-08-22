@@ -83,32 +83,6 @@
                         </div>
                     </div>
                 }
-                @if (Model.IsCurrentUserProgenyAdmin)
-                {
-                    <div class="space-10"></div>
-                    <div class="row text-white">
-                        <input id="todo-details-add-subtask-input" type="text" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
-                        <button id="todo-details-add-subtask-button" class="btn btn-success">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
-                    </div>
-                }
-                <div class="space-20"></div>
-                <div class="row text-white">
-                    <div class="col-auto">
-                        @await LocaleManager.GetTranslation("Subtasks", PageNames.Todos, Model.LanguageId)
-                    </div>
-                </div>
-                <div class="space-10"></div>
-                <div id="todo-details-sub-tasks-div" class="row d-none">
-                    <div id="todo-details-sub-tasks-list-div" class="col-12">
-                        
-                    </div>
-                    <div id="load-more-subtasks-wrapper-div" class="d-none" style="height: 150px;">
-                        <button id="more-subtasks-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
-                        <div id="loading-subtasks-div" class="w-100">
-                            <div class="space-50"></div>
-                        </div>
-                    </div>
-                </div>
                 <div class="space-20"></div>
                 <div class="row">
                     <div class="col-12">
@@ -138,10 +112,6 @@
             @if (Model.IsCurrentUserProgenyAdmin)
             {
                 <div class="col-12">
-                    <div class="space-10"></div>
-                    <div class="row">
-                        <div class="col-12 text-right text-white-50">Created by: @Model.TodoItem.CreatedBy</div>
-                    </div>
                     <div class="space-20"></div>
                     <div class="row ml-5">
                         <div class="col-12">
@@ -172,12 +142,59 @@
                         </div>
                     </div>
                 </div>
+            }
+            <div class="space-10"></div>
+            <div class="col-12 text-right text-white-50">Created by: @Model.TodoItem.CreatedBy</div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
+            </div>
+            <div class="col">
+                <div class="space-50"></div>
+                <div class="row text-white">
+                    <div class="col-12">
+                        @await LocaleManager.GetTranslation("Subtasks", PageNames.Todos, Model.LanguageId)
+                    </div>
+                </div>
+                <div class="space-10"></div>
+                @if (Model.IsCurrentUserProgenyAdmin)
+                {
+                    <div class="row text-white">
+                        <div class="col-12">
+                            <form id="add-subtask-inline-form" asp-controller="Subtasks" asp-action="AddSubtaskInline">
+                                <div class="form-group">
+                                    <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control w-75"
+                                    style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
+                                    <button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
+                                </div>
+                                <input name="ParentTodoItemId" type="hidden" value="@Model.TodoItem.TodoItemId"/>
+                                <input name="Status" type="hidden" value="0"/>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="space-20"></div>
+                }
+                <div id="todo-details-sub-tasks-div" class="row">
+                    <div class="ml-3 mr-3">
+                        <div id="todo-details-sub-tasks-list-div" class="col-12 d-none">
+                        </div>
+                        <div id="load-more-subtasks-wrapper-div" style="height: 150px;">
+                            <button id="more-subtasks-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+                            <div id="loading-subtasks-div" class="w-100">
+                                <div class="space-50"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if(Model.IsCurrentUserProgenyAdmin){
+
                 <div class="col-12">
                     <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
                     <a asp-controller="Todos" asp-action="DeleteTodo" asp-route-itemId="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                 </div>
 
             }
+            
         </div>
     </div>
 </div>

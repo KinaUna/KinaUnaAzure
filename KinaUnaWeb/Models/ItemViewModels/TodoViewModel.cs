@@ -121,6 +121,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public void SetPropertiesFromTodoItem(TodoItem todoItem)
         {
             TodoItem.TodoItemId = todoItem.TodoItemId;
+            TodoItem.ParentTodoItemId = todoItem.ParentTodoItemId;
             TodoItem.ProgenyId = todoItem.ProgenyId;
             TodoItem.Description = todoItem.Description;
             TodoItem.AccessLevel = todoItem.AccessLevel;
@@ -151,6 +152,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             TodoItem todoItem = new()
             {
                 TodoItemId = TodoItem.TodoItemId,
+                ParentTodoItemId = TodoItem.ParentTodoItemId,
                 ProgenyId = CurrentProgenyId,
                 Description = TodoItem.Description,
                 AccessLevel = TodoItem.AccessLevel,

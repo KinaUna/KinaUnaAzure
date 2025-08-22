@@ -585,6 +585,7 @@ function loadTodosPageSettings(): void {
 async function initialSettingsPanelSetup(): Promise<void> {
     const todosPageSaveSettingsButton = document.querySelector<HTMLButtonElement>('#todos-page-save-settings-button');
     if (todosPageSaveSettingsButton !== null) {
+        // Clear event listeners
         todosPageSaveSettingsButton.addEventListener('click', saveTodosPageSettings);
     }
 

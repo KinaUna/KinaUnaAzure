@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             subtaskToAdd.ModifiedBy = value.CreatedBy;
             subtaskToAdd.IsDeleted = false;
 
-            _ = progenyDbContext.SubtasksDb.Add(subtaskToAdd);
+            _ = progenyDbContext.TodoItemsDb.Add(subtaskToAdd);
             _ = await progenyDbContext.SaveChangesAsync();
 
             return subtaskToAdd;
@@ -101,7 +101,51 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             {
                 subtasks = [.. subtasks.Where(t => request.StatusFilter.Contains((KinaUnaTypes.TodoStatusType)t.Status))];
             }
+
+
             // Todo: Sorting logic can be added here based on request.Sort and request.SortBy
+            if (request.GroupBy == 1)
+            {
+                // Group by Status
+                subtasks =
+                [
+                    .. subtasks
+                        .OrderBy(t => t.Status)
+                        .ThenBy(t => t.StartDate)
+                        .ThenBy(t => t.CreatedTime)
+                ];
+            }
+            else if (request.GroupBy == 2)
+            {
+                // Group by Progeny
+                subtasks =
+                [
+                    .. subtasks
+                        .OrderBy(t => t.ProgenyId)
+                        .ThenBy(t => t.StartDate)
+                        .ThenBy(t => t.CreatedTime)
+                ];
+            }
+            else if (request.GroupBy == 3)
+            {
+                // Group by Location
+                subtasks =
+                [
+                    .. subtasks
+                        .OrderBy(t => t.Location)
+                        .ThenBy(t => t.StartDate)
+                        .ThenBy(t => t.CreatedTime)
+                ];
+            }
+            else
+            {
+                subtasks =
+                [
+                    .. subtasks
+                        .OrderBy(t => t.StartDate)
+                        .ThenBy(t => t.CreatedTime)
+                ];
+            }
 
             if (request.Skip > 0)
             {
@@ -118,7 +162,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 ParentTodoItemId = request.ParentTodoItemId,
                 Subtasks = subtasks,
                 SubtasksRequest = request,
-                PageNumber = request.Skip / (request.NumberOfItems > 0 ? request.NumberOfItems : 1),
+                PageNumber = request.NumberOfItems > 0 && request.Skip > 0 ? (request.Skip / request.NumberOfItems) + 1 : 1,
                 TotalPages = (int)Math.Ceiling((double)subtasks.Count / (request.NumberOfItems > 0 ? request.NumberOfItems : 1)),
                 TotalItems = subtasks.Count,
             };
@@ -141,7 +185,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// langword="false"/> if the subtask does not exist.</returns>
         public async Task<bool> DeleteSubtask(TodoItem subtask, bool hardDelete = false)
         {
-            TodoItem subtaskToDelete = await progenyDbContext.SubtasksDb
+            TodoItem subtaskToDelete = await progenyDbContext.TodoItemsDb
                 .SingleOrDefaultAsync(t => t.TodoItemId == subtask.TodoItemId);
 
             if (subtaskToDelete == null)
@@ -151,14 +195,14 @@ namespace KinaUnaProgenyApi.Services.TodosServices
 
             if (hardDelete)
             {
-                progenyDbContext.SubtasksDb.Remove(subtaskToDelete);
+                progenyDbContext.TodoItemsDb.Remove(subtaskToDelete);
             }
             else
             {
                 subtaskToDelete.IsDeleted = true;
                 subtaskToDelete.ModifiedTime = DateTime.UtcNow;
                 subtaskToDelete.ModifiedBy = subtask.ModifiedBy;
-                progenyDbContext.SubtasksDb.Update(subtaskToDelete);
+                progenyDbContext.TodoItemsDb.Update(subtaskToDelete);
             }
 
             _ = await progenyDbContext.SaveChangesAsync();
@@ -173,7 +217,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// if no subtask with the given identifier exists.</returns>
         public async Task<TodoItem> GetSubtask(int id)
         {
-            TodoItem subtask = await progenyDbContext.SubtasksDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == id);
+            TodoItem subtask = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == id);
 
             return subtask;
         }
@@ -188,7 +232,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// representing the subtasks of the specified to-do item.  The list will be empty if no subtasks are found.</returns>
         public async Task<List<TodoItem>> GetSubtasksForTodoItem(int todoItemTodoItemId)
         {
-            List<TodoItem> subtasks = await progenyDbContext.SubtasksDb
+            List<TodoItem> subtasks = await progenyDbContext.TodoItemsDb
                 .AsNoTracking()
                 .Where(t => t.ParentTodoItemId == todoItemTodoItemId && !t.IsDeleted)
                 .ToListAsync();
@@ -216,7 +260,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// langword="null"/> if no subtask with the specified <see cref="TodoItem.TodoItemId"/> exists.</returns>
         public async Task<TodoItem> UpdateSubtask(TodoItem value)
         {
-            TodoItem currentSubtask = await progenyDbContext.SubtasksDb
+            TodoItem currentSubtask = await progenyDbContext.TodoItemsDb
                 .SingleOrDefaultAsync(t => t.TodoItemId == value.TodoItemId);
             if (currentSubtask == null)
             {
@@ -233,11 +277,11 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 else if (value.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted)
                 {
                     value.CompletedDate = null; // Reset completed date if not started
-                    value.StartDate = null; // Reset start date if not started
                 }
                 else if (value.Status == (int)KinaUnaTypes.TodoStatusType.InProgress)
                 {
                     value.StartDate = DateTime.UtcNow; // Set start date if not already set
+                    value.CompletedDate = null; // Reset completed date if in progress
                 }
                 else if (value.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled)
                 {
@@ -251,7 +295,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
 
             // Update properties
             currentSubtask.CopyPropertiesForUpdate(value);
-            progenyDbContext.SubtasksDb.Update(currentSubtask);
+            progenyDbContext.TodoItemsDb.Update(currentSubtask);
             _ = await progenyDbContext.SaveChangesAsync();
             return currentSubtask;
         }
