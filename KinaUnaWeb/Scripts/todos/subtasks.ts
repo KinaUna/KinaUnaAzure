@@ -169,6 +169,13 @@ function addSubtaskListeners(itemId: string): void {
         editButtonElement.addEventListener('click', onEditItemButtonClicked);
     }
 
+    const deleteButtonElement = document.querySelector<HTMLAnchorElement>('[data-delete-item-item-id="' + itemId + '"]');
+    if (deleteButtonElement) {
+        // Clear existing event listeners to avoid duplicates.
+        deleteButtonElement.removeEventListener('click', onDeleteItemButtonClicked);
+        deleteButtonElement.addEventListener('click', onDeleteItemButtonClicked);
+    }
+
     const subtaskElementsWithDataCompletedId = document.querySelectorAll<HTMLButtonElement>('[data-set-subtask-completed-id="' + itemId + '"]');
     if (subtaskElementsWithDataCompletedId) {
         subtaskElementsWithDataCompletedId.forEach((element) => {

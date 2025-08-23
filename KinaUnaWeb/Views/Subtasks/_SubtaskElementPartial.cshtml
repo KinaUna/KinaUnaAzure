@@ -17,6 +17,7 @@
     @if (Model.IsCurrentUserProgenyAdmin)
     {
         <a data-edit-item-type="subtask" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-link edit-item-button btn-sm float-right"><i class="fas fa-pencil-alt"></i></a>
+
         <div class="col-12">
             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
             {
@@ -38,10 +39,11 @@
             }
             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
             {
-                <button class="btn btn-link btn-sm p-1 float-right text-white-50" data-set-subtask-cancelled-id="@Model.TodoItem.TodoItemId">
+                <button class="btn btn-link btn-sm p-1 float-left text-white-50" data-set-subtask-cancelled-id="@Model.TodoItem.TodoItemId">
                     <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
                 </button>
             }
+            <a data-delete-item-type="subtask" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-link edit-item-button btn-sm float-right"><i class="fas fa-pencil-alt"></i></a>
         </div>
     }
 </div>

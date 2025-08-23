@@ -306,6 +306,10 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("DeleteNote", "Notes", new { noteId = itemId });
             }
 
+            if (itemType == "subtask")
+            {
+                return RedirectToAction("DeleteSubtask", "Subtasks", new { itemId });
+            }
             // Todo: Other item types can be added here as needed.
 
             return PartialView("../Shared/_NotFoundPartial");

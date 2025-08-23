@@ -328,7 +328,7 @@ namespace KinaUnaWeb.Controllers
             model.TodoItem.Progeny = model.CurrentProgeny;
             model.TodoItem.Progeny.PictureLink = model.TodoItem.Progeny.GetProfilePictureUrl();
 
-            return View(model);
+            return PartialView(model);
         }
         
         [HttpPost]

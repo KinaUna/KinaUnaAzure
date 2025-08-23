@@ -18,6 +18,7 @@ import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.j
 import { initializeAddEditTodo } from "../todos/add-edit-todo.js";
 import { TimelineChangedEvent } from "../data-tools-v9.js";
 import { TimelineItem } from "../page-models-v9.js";
+import { popupTodoItem } from "../todos/todo-details.js";
 
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
@@ -449,7 +450,7 @@ export function setDeleteItemButtonEventListeners(): void {
  * then opens the delete item modal for the specified type and item id.
  * @param event The mouse event that triggered the click.
  */
-async function onDeleteItemButtonClicked(event: MouseEvent): Promise<void> {
+export async function onDeleteItemButtonClicked(event: MouseEvent): Promise<void> {
     event.preventDefault();
     startFullPageSpinner();
     let deleteItemButton = event.currentTarget as HTMLAnchorElement;
@@ -599,6 +600,13 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
 
     let formData = new FormData(addItemForm);
     let formAction = addItemForm.getAttribute('action');
+    let returnItemId: string;
+    if (formAction !== null && formAction.includes('/Subtasks/')) {
+        const parentTodoItemIdInput = document.querySelector<HTMLInputElement>('#subtask-parent-todo-item-id-input');
+        if (parentTodoItemIdInput) {
+            returnItemId = parentTodoItemIdInput.value;
+        }
+    }
 
     if (itemDetailsPopupDiv) {
         itemDetailsPopupDiv.innerHTML = '';
@@ -614,19 +622,24 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
                     const calendarDataChangedEvent = new Event('calendarDataChanged');
                     window.dispatchEvent(calendarDataChangedEvent);
                 }
-                if (itemDetailsPopupDiv) {
-                    let modalContent = await response.text();
-                    const fullScreenOverlay = document.createElement('div');
-                    fullScreenOverlay.classList.add('full-screen-bg');
-                    fullScreenOverlay.innerHTML = modalContent;
-                    itemDetailsPopupDiv.appendChild(fullScreenOverlay);
-                    itemDetailsPopupDiv.classList.remove('d-none');
-                    hideBodyScrollbars();
-                    addCloseButtonEventListener();
-                    setEditItemButtonEventListeners();
-                    setAddItemButtonEventListeners();
-                    dispatchTimelineItemChangedEvent();
+                if (formAction.includes('/Subtasks/')) {
+                    await popupTodoItem(returnItemId);
                 }
+                else {
+                    if (itemDetailsPopupDiv) {
+                        let modalContent = await response.text();
+                        const fullScreenOverlay = document.createElement('div');
+                        fullScreenOverlay.classList.add('full-screen-bg');
+                        fullScreenOverlay.innerHTML = modalContent;
+                        itemDetailsPopupDiv.appendChild(fullScreenOverlay);
+                        itemDetailsPopupDiv.classList.remove('d-none');
+                        hideBodyScrollbars();
+                        addCloseButtonEventListener();
+                        setEditItemButtonEventListeners();
+                        setAddItemButtonEventListeners();
+                        dispatchTimelineItemChangedEvent();
+                    }
+                }                
             }
         }).catch(function (error) {
             console.error('Error saving item:', error);

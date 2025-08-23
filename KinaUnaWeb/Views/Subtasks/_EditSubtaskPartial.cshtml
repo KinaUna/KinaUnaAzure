@@ -137,7 +137,7 @@
                 </div>
                 <div class="space-20"></div>
                 <input asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId" type="hidden" />
-                <input asp-for="TodoItem.ParentTodoItemId" value="@Model.TodoItem.ParentTodoItemId" type="hidden" />
+                <input id="subtask-parent-todo-item-id-input" asp-for="TodoItem.ParentTodoItemId" value="@Model.TodoItem.ParentTodoItemId" type="hidden" />
                 <input asp-for="TodoItem.CreatedBy" value="@Model.TodoItem.CreatedBy" type="hidden" />
                 <input asp-for="TodoItem.AccessLevel" value="@Model.TodoItem.AccessLevel" type="hidden" />
                 <div class="form-group">
