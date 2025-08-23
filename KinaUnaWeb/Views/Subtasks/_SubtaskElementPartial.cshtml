@@ -10,7 +10,7 @@
     string setAsCancelledString = await LocaleManager.GetTranslation("Set as cancelled", PageNames.Todos, Model.LanguageId);
 
 }
-<div class="row" data-subtask-element-id="@Model.TodoItemId" style="background: @Model.TodoItem.StatusBackgroundColor()">
+<div class="row" data-subtask-element-id="@Model.TodoItem.TodoItemId" style="background: @Model.TodoItem.StatusBackgroundColor()">
     <div class="col-auto">@Model.TodoItem.Title</div>
     <div class="col">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
     

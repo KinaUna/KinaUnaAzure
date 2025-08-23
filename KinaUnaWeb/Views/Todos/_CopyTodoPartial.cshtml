@@ -7,6 +7,8 @@
     string copyTodoToString = await LocaleManager.GetTranslation("Copy todo to:", PageNames.Todos, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
+    const string longDateTimeFormatMoment = "DD-MMMM-YYYY";
+
 
     foreach (SelectListItem statusItem in Model.StatusList)
     {
@@ -19,6 +21,7 @@
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-todo-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container-wide">
@@ -141,7 +144,6 @@
                     </div>
                 </div>
                 <div class="space-20"></div>
-                <input asp-for="TodoItem.ProgenyId" value="@Model.TodoItem.ProgenyId" type="hidden" />
                 <input asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId" type="hidden" />
                 <input asp-for="TodoItem.CreatedBy" value="@Model.TodoItem.CreatedBy" type="hidden" />
                 <input asp-for="TodoItem.UId" value="@Model.TodoItem.UId" type="hidden"/>

@@ -110,25 +110,17 @@ function sortNotifications(): void {
     }
 }
 
-let checkConnectionInterval: NodeJS.Timeout;
 let checkNotifications: NodeJS.Timeout;
-let signalRdisconnected = false;
 
 connection = new signalR.HubConnectionBuilder()
     .withUrl('/webnotificationhub')
-    .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
     .configureLogging(signalR.LogLevel.Information)
+    .withAutomaticReconnect()
     .build();
 
 
-connection.onclose(function () {
-    signalRdisconnected = true;
-    console.log('SignalR connection closed, reconnecting.');
-    clearInterval(checkNotifications);
-    clearNotifications();
-    checkConnectionInterval = setInterval(function () {
-        connection.start().catch(function (err:any) { console.error(err.toString()) });
-    }, 30000);
+connection.onclose(async function () {
+    await start();
 });
 
 connection.on('UserInfo',
@@ -138,12 +130,6 @@ connection.on('UserInfo',
 
 connection.on('ReceiveMessage',
     async function (message: string): Promise<void> {
-        if (signalRdisconnected) {
-            clearInterval(checkConnectionInterval);
-            checkNotifications = setInterval(getNotifications, 300000);
-            signalRdisconnected = false;
-        }
-        
         let parsedMessage: WebNotification = JSON.parse(message);
         await fetch('/Notifications/GetWebNotificationElement', {
             method: 'POST',
@@ -216,7 +202,6 @@ function removeNotificationDiv(parsedMessage: WebNotification) {
                     }
                 }
             };
-
         });
     }
 }
@@ -232,30 +217,27 @@ connection.on('DeleteMessage',
 
 connection.on('MarkAllReadMessage',
     function () {
-        if (signalRdisconnected) {
-            clearInterval(checkConnectionInterval);
-            checkNotifications = setInterval(getNotifications, 300000);
-            signalRdisconnected = false;
-        }
         getNotifications();
         countNotifications();
     }
-
 );
-let getNotifications = function () {
-    if (connection.connection.connectionState === 1) {
-        signalRdisconnected = false;
-        clearNotifications();
-        connection.invoke('GetUpdateForUser', 10, 1).catch((err:any) => console.error(err.toString()));
-    } else {
-        signalRdisconnected = true;
 
+function getNotifications() {
+    clearNotifications();
+    connection.invoke('GetUpdateForUser', 10, 1).catch((err: any) => console.error(err.toString()));
+};
+
+async function start() {
+    try {
+        await connection.start().catch((err: any) => console.error(err.toString()));
+        console.log("SignalR Connected.");
+    } catch (err) {
+        console.log(err);
+        setTimeout(start, 60000);
     }
 };
 
-connection.start().catch((err:any) => console.error(err.toString()));
-
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     let notificationsButton = document.getElementById('notificationsButton');
     if (notificationsButton !== null) {
         notificationsButton.addEventListener('click', function () {
@@ -268,6 +250,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-        
-    checkNotifications = setInterval(getNotifications, 300000);
+    await start();
+    checkNotifications = setInterval(getNotifications, 600000);
 });

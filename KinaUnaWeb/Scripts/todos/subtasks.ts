@@ -162,8 +162,7 @@ function stopLoadingSpinner(): void {
 }
 
 function addSubtaskListeners(itemId: string): void {
-    const subtaskElement = document.getElementById('[data-subtask-element-id="]' + itemId + '"]');
-    const editButtonElement = subtaskElement?.querySelector<HTMLAnchorElement>('[data-edit-item-item-id="' + itemId + '"]');
+    const editButtonElement = document.querySelector<HTMLAnchorElement>('[data-edit-item-item-id="' + itemId + '"]');
     if (editButtonElement) {
         // Clear existing event listeners to avoid duplicates.
         editButtonElement.removeEventListener('click', onEditItemButtonClicked);

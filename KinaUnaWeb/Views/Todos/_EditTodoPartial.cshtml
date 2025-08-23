@@ -143,8 +143,8 @@
                     </div>
                 </div>
                 <div class="space-20"></div>
-                <input asp-for="TodoItem.ProgenyId" value="@Model.TodoItem.ProgenyId" type="hidden"/>
                 <input asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId" type="hidden"/>
+                <input asp-for="TodoItem.ParentTodoItemId" value="@Model.TodoItem.ParentTodoItemId" type="hidden" />
                 <input asp-for="TodoItem.CreatedBy" value="@Model.TodoItem.CreatedBy" type="hidden"/>
                 <div class="form-group">
                     <div class="col-auto control-label"></div>

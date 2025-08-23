@@ -9,8 +9,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public TodoItem TodoItem { get; set; } = new();
         public List<SelectListItem> ProgenyList { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public List<SelectListItem> StatusList { get; set; }
 
         public TodoViewModel()
@@ -84,22 +82,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
             AccessLevelListEn[TodoItem.AccessLevel].Selected = true;
-            AccessLevelListDa[TodoItem.AccessLevel].Selected = true;
-            AccessLevelListDe[TodoItem.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
         }
 
         public void SetProgenyList()

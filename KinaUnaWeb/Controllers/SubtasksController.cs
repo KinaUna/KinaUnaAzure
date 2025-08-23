@@ -291,8 +291,9 @@ namespace KinaUnaWeb.Controllers
             }
 
             TodoItem editedSubtask = model.CreateTodoItem();
+            TodoItem updatedSubtask = await subtasksHttpClient.UpdateSubtask(editedSubtask);
 
-            model.TodoItem = await subtasksHttpClient.UpdateSubtask(editedSubtask);
+            model.TodoItem = await todoItemsHttpClient.GetTodoItem(updatedSubtask.ParentTodoItemId);
             model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             if (model.TodoItem.CompletedDate.HasValue)
             {
@@ -306,7 +307,7 @@ namespace KinaUnaWeb.Controllers
             {
                 model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
-            return PartialView("_SubtaskUpdatedPartial", model);
+            return PartialView("../Todos/_TodoDetailsPartial", model);
         }
         
         [HttpGet]
@@ -345,7 +346,26 @@ namespace KinaUnaWeb.Controllers
             }
 
             _ = await subtasksHttpClient.DeleteSubtask(subtask.TodoItemId);
-            return RedirectToAction("Index", "Todos");
+            
+            model.TodoItem = await todoItemsHttpClient.GetTodoItem(subtask.ParentTodoItemId);
+            model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            if (model.TodoItem.CompletedDate.HasValue)
+            {
+                model.TodoItem.CompletedDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            if (model.TodoItem.StartDate.HasValue)
+            {
+                model.TodoItem.StartDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            if (model.TodoItem.DueDate.HasValue)
+            {
+                model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            
+            return PartialView("../Todos/_TodoDetailsPartial", model);
         }
 
         [HttpGet]

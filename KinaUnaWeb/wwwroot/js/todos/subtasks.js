@@ -140,8 +140,7 @@ function stopLoadingSpinner() {
     stopLoadingItemsSpinner('loading-subtasks-div');
 }
 function addSubtaskListeners(itemId) {
-    const subtaskElement = document.getElementById('[data-subtask-element-id="]' + itemId + '"]');
-    const editButtonElement = subtaskElement?.querySelector('[data-edit-item-item-id="' + itemId + '"]');
+    const editButtonElement = document.querySelector('[data-edit-item-item-id="' + itemId + '"]');
     if (editButtonElement) {
         // Clear existing event listeners to avoid duplicates.
         editButtonElement.removeEventListener('click', onEditItemButtonClicked);
