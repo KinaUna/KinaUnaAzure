@@ -1,4 +1,4 @@
-import { onEditItemButtonClicked } from "../addItem/add-item.js";
+import { onDeleteItemButtonClicked, onEditItemButtonClicked } from "../addItem/add-item.js";
 import { getCurrentLanguageId } from "../data-tools-v9.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
 import { TodoItemParameters } from "../page-models-v9.js";
@@ -145,6 +145,12 @@ function addSubtaskListeners(itemId) {
         // Clear existing event listeners to avoid duplicates.
         editButtonElement.removeEventListener('click', onEditItemButtonClicked);
         editButtonElement.addEventListener('click', onEditItemButtonClicked);
+    }
+    const deleteButtonElement = document.querySelector('[data-delete-item-item-id="' + itemId + '"]');
+    if (deleteButtonElement) {
+        // Clear existing event listeners to avoid duplicates.
+        deleteButtonElement.removeEventListener('click', onDeleteItemButtonClicked);
+        deleteButtonElement.addEventListener('click', onDeleteItemButtonClicked);
     }
     const subtaskElementsWithDataCompletedId = document.querySelectorAll('[data-set-subtask-completed-id="' + itemId + '"]');
     if (subtaskElementsWithDataCompletedId) {

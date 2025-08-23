@@ -1,4 +1,4 @@
-﻿import { onEditItemButtonClicked } from "../addItem/add-item.js";
+﻿import { onDeleteItemButtonClicked, onEditItemButtonClicked } from "../addItem/add-item.js";
 import { getCurrentLanguageId } from "../data-tools-v9.js";
 import { addTimelineItemEventListener } from "../item-details/items-display-v9.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";

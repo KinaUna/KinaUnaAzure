@@ -1,0 +1,35 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
+@using KinaUnaWeb.Services
+@using KinaUna.Data
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Delete subtask", PageNames.Todos, Model.LanguageId);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="add-item-container-wide">
+            <h2 class="col-12">@ViewData["Title"]</h2>
+            <div class="space-20"></div>
+            <form asp-action="DeleteSubtask" asp-controller="Subtasks" role="form" method="post">
+                <div class="col-auto">
+                    @await LocaleManager.GetTranslation("Are you sure you want to delete this subtask item?", PageNames.Todos, Model.LanguageId)
+                </div>
+                <div class="col-auto">
+                    <h4>@Model.TodoItem.Title</h4>
+
+                </div>
+                <div class="space-20"></div>
+                <div class="col-auto">
+                    @await LocaleManager.GetTranslation("Description:", PageNames.Todos, Model.LanguageId) @Html.Raw(Model.TodoItem.Description)
+                </div>
+                <div class="space-20"></div>
+                <input asp-for="TodoItem.TodoItemId" class="form-control" value="@Model.TodoItem.TodoItemId" type="hidden" />
+                <input id="subtask-parent-todo-item-id-input" asp-for="TodoItem.ParentTodoItemId" value="@Model.TodoItem.ParentTodoItemId" type="hidden"/>
+                <div class="col-auto">
+                    <Button type="submit" class="btn btn-success leave-page">@await LocaleManager.GetTranslation("Yes - delete this subtask", PageNames.Todos, Model.LanguageId)</Button>
+                    <a class="btn btn-danger leave-page" asp-controller="Todos" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
