@@ -11,7 +11,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> StatusList { get; set; }
         public int CopyFromTodoId { get; set; } = 0;
-
+        public bool CopySubtasks { get; set; } = false;
         public TodoViewModel()
         {
             ProgenyList = [];

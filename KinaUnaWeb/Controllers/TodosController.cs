@@ -436,7 +436,7 @@ namespace KinaUnaWeb.Controllers
 
             model.TodoItem = await todoItemsHttpClient.AddTodoItem(copiedTodoItem);
 
-            if (model.CopyFromTodoId != 0)
+            if (model.CopyFromTodoId != 0 && model.CopySubtasks)
             {
                 // Copy subtasks from original TodoItem.
                 SubtasksRequest subtasksRequest = new()
@@ -444,7 +444,7 @@ namespace KinaUnaWeb.Controllers
                     ParentTodoItemId = model.CopyFromTodoId,
                     ProgenyId = model.TodoItem.ProgenyId,
                     Skip = 0,
-                    NumberOfItems = 1000
+                    NumberOfItems = 0 // Get all.
                 };
                 SubtasksResponse subtasksResponse = await subtasksHttpClient.GetSubtasksList(subtasksRequest);
                 foreach (TodoItem subTask in subtasksResponse.Subtasks)

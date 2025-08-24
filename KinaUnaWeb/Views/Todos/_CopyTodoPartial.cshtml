@@ -143,10 +143,17 @@
                         <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="TodoItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label asp-for="CopySubtasks" class="col-auto control-label">@await LocaleManager.GetTranslation("Copy subtasks", PageNames.Todos, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input type="checkbox" asp-for="CopySubtasks" checked="checked" value="true" style="width: 2em; height: 2em;" onchange="this.value=this.checked"/>
+                    </div>
+                </div>
                 <div class="space-20"></div>
                 <input asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId" type="hidden" />
                 <input asp-for="TodoItem.CreatedBy" value="@Model.TodoItem.CreatedBy" type="hidden" />
                 <input asp-for="TodoItem.UId" value="@Model.TodoItem.UId" type="hidden"/>
+                <input asp-for="CopyFromTodoId" value="@Model.TodoItem.TodoItemId" type="hidden" />
                 <div class="form-group">
                     <div class="col-auto control-label"></div>
                     <div class="col-auto">
