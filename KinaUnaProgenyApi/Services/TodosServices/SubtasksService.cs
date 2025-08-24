@@ -163,8 +163,8 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 Subtasks = subtasks,
                 SubtasksRequest = request,
                 PageNumber = request.NumberOfItems > 0 && request.Skip > 0 ? (request.Skip / request.NumberOfItems) + 1 : 1,
-                TotalPages = (int)Math.Ceiling((double)subtasks.Count / (request.NumberOfItems > 0 ? request.NumberOfItems : 1)),
-                TotalItems = subtasks.Count,
+                TotalPages = (int)Math.Ceiling((double)totalSubtasksCount / (request.NumberOfItems > 0 ? request.NumberOfItems : 1)),
+                TotalItems = totalSubtasksCount,
             };
 
             return response;
