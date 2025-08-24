@@ -28,12 +28,14 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
             _mockViewModelSetupService = new Mock<IViewModelSetupService>();
             _mockUserInfosHttpClient = new Mock<IUserInfosHttpClient>();
             Mock<IProgenyHttpClient> mockProgenyHttpClient = new();
+            Mock<ISubtasksHttpClient> mockSubtasksHttpClient = new();
 
             _controller = new KinaUnaWeb.Controllers.TodosController(
                 _mockTodoItemsHttpClient.Object,
                 _mockViewModelSetupService.Object,
                 _mockUserInfosHttpClient.Object,
-                mockProgenyHttpClient.Object);
+                mockProgenyHttpClient.Object, 
+                mockSubtasksHttpClient.Object);
 
             SetupControllerContext();
         }

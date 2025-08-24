@@ -24,7 +24,8 @@ namespace KinaUnaWeb.Controllers
         ITodoItemsHttpClient todoItemsHttpClient,
         IViewModelSetupService viewModelSetupService,
         IUserInfosHttpClient userInfosHttpClient,
-        IProgenyHttpClient progenyHttpClient) : Controller
+        IProgenyHttpClient progenyHttpClient,
+        ISubtasksHttpClient subtasksHttpClient) : Controller
     {
         /// <summary>
         /// The Index Page for Todos.
@@ -434,7 +435,27 @@ namespace KinaUnaWeb.Controllers
             TodoItem copiedTodoItem = model.CreateTodoItem();
 
             model.TodoItem = await todoItemsHttpClient.AddTodoItem(copiedTodoItem);
-            
+
+            if (model.CopyFromTodoId != 0)
+            {
+                // Copy subtasks from original TodoItem.
+                SubtasksRequest subtasksRequest = new()
+                {
+                    ParentTodoItemId = model.CopyFromTodoId,
+                    ProgenyId = model.TodoItem.ProgenyId,
+                    Skip = 0,
+                    NumberOfItems = 1000
+                };
+                SubtasksResponse subtasksResponse = await subtasksHttpClient.GetSubtasksList(subtasksRequest);
+                foreach (TodoItem subTask in subtasksResponse.Subtasks)
+                {
+                    subTask.TodoItemId = 0;
+                    subTask.ParentTodoItemId = model.TodoItem.TodoItemId;
+
+                    _ = await todoItemsHttpClient.AddTodoItem(subTask);
+                }
+            }
+
             if (model.TodoItem.StartDate.HasValue)
             {
                 model.TodoItem.StartDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
