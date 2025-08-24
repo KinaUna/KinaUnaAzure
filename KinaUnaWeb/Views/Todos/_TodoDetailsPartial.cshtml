@@ -6,6 +6,10 @@
 @inject ILocaleManager LocaleManager
 @{
     string title = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    string setAsNotStartedString = await LocaleManager.GetTranslation("Set as not started", PageNames.Todos, Model.LanguageId);
+    string setAsInProgressString = await LocaleManager.GetTranslation("Set as in progress", PageNames.Todos, Model.LanguageId);
+    string setAsCompletedString = await LocaleManager.GetTranslation("Set as completed", PageNames.Todos, Model.LanguageId);
+    string setAsCancelledString = await LocaleManager.GetTranslation("Set as cancelled", PageNames.Todos, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-todos item-details-content">
@@ -108,49 +112,89 @@
             @if (Model.IsCurrentUserProgenyAdmin)
             {
                 <div class="col-12">
-                    <div class="space-10"></div>
-                    <div class="row">
-                        <div class="col-12 text-right text-white-50">Created by: @Model.TodoItem.CreatedBy</div>
-                    </div>
                     <div class="space-20"></div>
                     <div class="row ml-5">
                         <div class="col-12">
                             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
                             {
                                 <button class="btn btn-link p-3 float-left text-white-50" data-set-todo-item-not-started-id="@Model.TodoItem.TodoItemId">
-                                    <i class="material-icons kinauna-icon-medium">pending_actions</i> Set as not started
+                                    <i class="material-icons kinauna-icon-medium">pending_actions</i> @setAsNotStartedString
                                 </button>
                             }
                             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
                             {
                                 <button class="btn btn-link p-3 float-left text-white-50" data-set-todo-item-in-progress-id="@Model.TodoItem.TodoItemId">
-                                    <i class="material-icons kinauna-icon-medium">assignment</i> Set as in progress
+                                    <i class="material-icons kinauna-icon-medium">assignment</i> @setAsInProgressString
                                 </button>
                             }
                             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
                             {
                                 <button class="btn btn-link p-3 float-left text-white-50" data-set-todo-item-completed-id="@Model.TodoItem.TodoItemId">
-                                    <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> Set as completed
+                                    <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> @setAsCompletedString
                                 </button>
                             }
                             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
                             {
                                 <button class="btn btn-link p-3 float-right text-white-50" data-set-todo-item-cancelled-id="@Model.TodoItem.TodoItemId">
-                                    <i class="material-icons kinauna-icon-medium">playlist_remove</i> Set as cancelled
+                                    <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
                                 </button>
                             }
                         </div>
-                        
-
                     </div>
                 </div>
-                
+            }
+            <div class="space-10"></div>
+            <div class="col-12 text-right text-white-50">Created by: @Model.TodoItem.CreatedBy</div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
+            </div>
+            <div class="col">
+                <div class="space-50"></div>
+                <div class="row text-white">
+                    <div class="col-12">
+                        @await LocaleManager.GetTranslation("Subtasks", PageNames.Todos, Model.LanguageId)
+                    </div>
+                </div>
+                <div class="space-10"></div>
+                @if (Model.IsCurrentUserProgenyAdmin)
+                {
+                    <div class="row text-white">
+                        <div class="col-12">
+                            <form id="add-subtask-inline-form" asp-controller="Subtasks" asp-action="AddSubtaskInline">
+                                <div class="form-group">
+                                    <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control w-75"
+                                    style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
+                                    <button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
+                                </div>
+                                <input name="ParentTodoItemId" type="hidden" value="@Model.TodoItem.TodoItemId"/>
+                                <input name="Status" type="hidden" value="0"/>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="space-20"></div>
+                }
+                <div id="todo-details-sub-tasks-div" class="row">
+                    <div class="ml-3 mr-3">
+                        <div id="todo-details-sub-tasks-list-div" class="col-12 d-none">
+                        </div>
+                        <div id="load-more-subtasks-wrapper-div" class="col-12" style="height: 150px;">
+                            <button id="more-subtasks-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+                            <div id="loading-subtasks-div" class="w-100">
+                                <div class="space-50"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if(Model.IsCurrentUserProgenyAdmin){
+
                 <div class="col-12">
                     <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a asp-controller="Todos" asp-action="DeleteTodo" asp-route-itemId="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    <a data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                 </div>
 
             }
+            
         </div>
     </div>
 </div>

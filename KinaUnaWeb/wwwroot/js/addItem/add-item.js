@@ -18,12 +18,14 @@ import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.j
 import { initializeAddEditTodo } from "../todos/add-edit-todo.js";
 import { TimelineChangedEvent } from "../data-tools-v9.js";
 import { TimelineItem } from "../page-models-v9.js";
+import { popupTodoItem } from "../todos/todo-details.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */
 export function setAddItemButtonEventListeners() {
     let addItemButtons = document.querySelectorAll('.add-item-button');
     addItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onAddItemButtonClicked);
         button.addEventListener('click', onAddItemButtonClicked);
     });
 }
@@ -140,10 +142,12 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
 export function setEditItemButtonEventListeners() {
     let editItemButtons = document.querySelectorAll('.edit-item-button');
     editItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onEditItemButtonClicked);
         button.addEventListener('click', onEditItemButtonClicked);
     });
     let copyItemButtons = document.querySelectorAll('.copy-item-button');
     copyItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onCopyItemButtonClicked);
         button.addEventListener('click', onCopyItemButtonClicked);
     });
 }
@@ -153,7 +157,7 @@ export function setEditItemButtonEventListeners() {
  * then opens the edit item modal for the specified type and progeny.
  * @param event The mouse event that triggered the click.
  */
-async function onEditItemButtonClicked(event) {
+export async function onEditItemButtonClicked(event) {
     event.preventDefault();
     startFullPageSpinner();
     let editItemButton = event.currentTarget;
@@ -270,6 +274,9 @@ async function popupEditItemModal(editItemType, editItemItemId) {
         if (editItemType === 'todo') {
             await initializeAddEditTodo();
         }
+        if (editItemType === 'subtask') {
+            await initializeAddEditTodo();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -361,8 +368,9 @@ async function popupCopyItemModal(copyItemType, copyItemItemId) {
 * Adds event listeners to all elements with the data-add-item-type attribute.
 */
 export function setDeleteItemButtonEventListeners() {
-    let deleteItemButtons = document.querySelectorAll('.delete-item-button');
+    let deleteItemButtons = document.querySelectorAll('.item-details-delete-button');
     deleteItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onDeleteItemButtonClicked);
         button.addEventListener('click', onDeleteItemButtonClicked);
     });
 }
@@ -372,7 +380,7 @@ export function setDeleteItemButtonEventListeners() {
  * then opens the delete item modal for the specified type and item id.
  * @param event The mouse event that triggered the click.
  */
-async function onDeleteItemButtonClicked(event) {
+export async function onDeleteItemButtonClicked(event) {
     event.preventDefault();
     startFullPageSpinner();
     let deleteItemButton = event.currentTarget;
@@ -435,6 +443,7 @@ function addCloseButtonEventListener() {
     let closeButtonsList = document.querySelectorAll('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
+            button.removeEventListener('click', onCloseButtonClicked);
             button.addEventListener('click', onCloseButtonClicked);
         });
     }
@@ -443,22 +452,22 @@ function addCloseButtonEventListener() {
  * Handles the click event for the close button in the item details popup.
  * It hides the popup and shows the body scrollbars.
  */
-function onCloseButtonClicked() {
-    const itemDetailsPopupDiv = document.querySelector('#item-details-div');
-    if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.innerHTML = '';
-        itemDetailsPopupDiv.classList.add('d-none');
-        showBodyScrollbars();
-    }
+async function onCloseButtonClicked(event) {
+    let closeButton = event.currentTarget;
+    await popupPreviousItem(closeButton);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Adds an event listener to the close button in the item details popup.
  * When clicked, the popup is hidden and the body scrollbars are shown.
  */
 function addCancelButtonEventListener() {
-    let closeButtonsList = document.querySelectorAll('.item-details-cancel-button');
-    if (closeButtonsList) {
-        closeButtonsList.forEach((button) => {
+    let cancelButtonsList = document.querySelectorAll('.item-details-cancel-button');
+    if (cancelButtonsList) {
+        cancelButtonsList.forEach((button) => {
+            button.removeEventListener('click', onCancelButtonClicked);
             button.addEventListener('click', onCancelButtonClicked);
         });
     }
@@ -467,13 +476,33 @@ function addCancelButtonEventListener() {
  * Handles the click event for the cancel button in the add or edit item popup.
  * It hides the popup and shows the body scrollbars.
  */
-function onCancelButtonClicked() {
-    const itemDetailsPopupDiv = document.querySelector('#item-details-div');
-    if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.innerHTML = '';
-        itemDetailsPopupDiv.classList.add('d-none');
-        showBodyScrollbars();
+async function onCancelButtonClicked(event) {
+    let cancelButton = event.currentTarget;
+    await popupPreviousItem(cancelButton);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
+async function popupPreviousItem(buttonClicked) {
+    // If the button has a 'data-previous-item-type' attribute, popup that item again.
+    let previousItemType = buttonClicked.getAttribute('data-previous-item-type');
+    let previousItemId = buttonClicked.getAttribute('data-previous-item-id');
+    if (previousItemType !== null && previousItemId !== null && previousItemId !== '0') {
+        if (previousItemType === 'todo') {
+            await popupTodoItem(previousItemId);
+        }
     }
+    else {
+        const itemDetailsPopupDiv = document.querySelector('#item-details-div');
+        if (itemDetailsPopupDiv) {
+            itemDetailsPopupDiv.innerHTML = '';
+            itemDetailsPopupDiv.classList.add('d-none');
+            showBodyScrollbars();
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Adds an event listener to the save item form.
@@ -482,6 +511,7 @@ function onCancelButtonClicked() {
 function setSaveItemFormEventListener() {
     let addItemForm = document.querySelector('#save-item-form');
     if (addItemForm) {
+        addItemForm.removeEventListener('submit', onSaveItemFormSubmit);
         addItemForm.addEventListener('submit', onSaveItemFormSubmit);
     }
 }
@@ -506,6 +536,13 @@ async function onSaveItemFormSubmit(event) {
     }
     let formData = new FormData(addItemForm);
     let formAction = addItemForm.getAttribute('action');
+    let returnItemId;
+    if (formAction !== null && formAction.includes('/Subtasks/')) {
+        const parentTodoItemIdInput = document.querySelector('#subtask-parent-todo-item-id-input');
+        if (parentTodoItemIdInput) {
+            returnItemId = parentTodoItemIdInput.value;
+        }
+    }
     if (itemDetailsPopupDiv) {
         itemDetailsPopupDiv.innerHTML = '';
     }
@@ -519,18 +556,23 @@ async function onSaveItemFormSubmit(event) {
                     const calendarDataChangedEvent = new Event('calendarDataChanged');
                     window.dispatchEvent(calendarDataChangedEvent);
                 }
-                if (itemDetailsPopupDiv) {
-                    let modalContent = await response.text();
-                    const fullScreenOverlay = document.createElement('div');
-                    fullScreenOverlay.classList.add('full-screen-bg');
-                    fullScreenOverlay.innerHTML = modalContent;
-                    itemDetailsPopupDiv.appendChild(fullScreenOverlay);
-                    itemDetailsPopupDiv.classList.remove('d-none');
-                    hideBodyScrollbars();
-                    addCloseButtonEventListener();
-                    setEditItemButtonEventListeners();
-                    setAddItemButtonEventListeners();
-                    dispatchTimelineItemChangedEvent();
+                if (formAction.includes('/Subtasks/')) {
+                    await popupTodoItem(returnItemId);
+                }
+                else {
+                    if (itemDetailsPopupDiv) {
+                        let modalContent = await response.text();
+                        const fullScreenOverlay = document.createElement('div');
+                        fullScreenOverlay.classList.add('full-screen-bg');
+                        fullScreenOverlay.innerHTML = modalContent;
+                        itemDetailsPopupDiv.appendChild(fullScreenOverlay);
+                        itemDetailsPopupDiv.classList.remove('d-none');
+                        hideBodyScrollbars();
+                        addCloseButtonEventListener();
+                        setEditItemButtonEventListeners();
+                        setAddItemButtonEventListeners();
+                        dispatchTimelineItemChangedEvent();
+                    }
                 }
             }
         }).catch(function (error) {

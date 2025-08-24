@@ -58,6 +58,7 @@ async function displayNoteItem(noteId: string): Promise<void> {
             const noteElementHtml = await response.text();
             const noteDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
             if (noteDetailsPopupDiv) {
+                noteDetailsPopupDiv.innerHTML = '';
                 const fullScreenOverlay = document.createElement('div');
                 fullScreenOverlay.classList.add('full-screen-bg');
                 fullScreenOverlay.innerHTML = noteElementHtml;

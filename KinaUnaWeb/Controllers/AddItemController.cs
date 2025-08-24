@@ -1,4 +1,6 @@
-﻿using KinaUnaWeb.Models;
+﻿using KinaUna.Data.Extensions;
+using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.HomeViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -8,8 +10,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
-using KinaUnaWeb.Models.HomeViewModels;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -176,7 +176,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("AddTodo", "Todos");
             }
-
+            
             return PartialView("../Shared/_NotFoundPartial");
         }
 
@@ -270,6 +270,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("EditTodo", "Todos", new { itemId, partialView = true });
             }
 
+            if (itemType == "subtask")
+            {
+                return RedirectToAction("EditSubtask", "Subtasks", new { itemId });
+            }
+
             return PartialView("../Shared/_NotFoundPartial", new { itemId });
         }
 
@@ -300,6 +305,17 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("DeleteNote", "Notes", new { noteId = itemId });
             }
+
+            if (itemType == "todo")
+            {
+                return RedirectToAction("DeleteTodo", "Todos", new { itemId });
+            }
+
+            if (itemType == "subtask")
+            {
+                return RedirectToAction("DeleteSubtask", "Subtasks", new { itemId });
+            }
+            // Todo: Other item types can be added here as needed.
 
             return PartialView("../Shared/_NotFoundPartial");
         }

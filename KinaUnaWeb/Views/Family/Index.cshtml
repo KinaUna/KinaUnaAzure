@@ -71,7 +71,7 @@
                                 <a data-edit-item-type="progeny" data-edit-item-item-id="@progeny.Id" class="btn btn-info edit-item-button">
                                     <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                                 </a>
-                                <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@progeny.Id.ToString()" class="btn btn-danger leave-page">
+                                <a data-delete-item-type="progeny" data-delete-item-item-id="@progeny.Id.ToString()" class="btn btn-danger item-details-delete-button">
                                     <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
                                 </a>
 
@@ -133,7 +133,7 @@
                             <a data-edit-item-type="user" data-edit-item-item-id="@item.AccessId" class="btn btn-info edit-item-button">
                                 <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                             </a>
-                            <a data-delete-item-type="user" data-delete-item-item-id="@item.AccessId" class="btn btn-danger delete-item-button">
+                                <a data-delete-item-type="user" data-delete-item-item-id="@item.AccessId" class="btn btn-danger item-details-delete-button">
                                 <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
                             </a>
 

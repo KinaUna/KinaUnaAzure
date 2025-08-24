@@ -3,7 +3,7 @@
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.TypeScriptModels.TodoItems.TodoItemResponse
 @inject ILocaleManager LocaleManager
-<button class="col-12 card text-white bg-todos todo-item" data-todo-id="@Model.TodoItemId" align="left" style="min-width: 49%;">
+<button class="col-12 card text-white bg-todos todo-item" data-todo-id="@Model.TodoItemId" align="left" style="min-width: 49%; background: @Model.TodoItem.StatusBackgroundColor()">
     @if (Model.TodoItem.TodoItemId == 0)
     {
         <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>

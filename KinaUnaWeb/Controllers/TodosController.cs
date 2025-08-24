@@ -16,15 +16,16 @@ namespace KinaUnaWeb.Controllers
     /// <summary>
     /// The TodosController handles the management of TodoItems.
     /// </summary>
-    /// <param name="todoItemsHttpClient"></param>
-    /// <param name="viewModelSetupService"></param>
-    /// <param name="userInfosHttpClient"></param>
-    /// <param name="progenyHttpClient"></param>
+    /// <param name="todoItemsHttpClient">Service for managing TodoItems.</param>
+    /// <param name="viewModelSetupService">Service for setting up view models with common data.</param>
+    /// <param name="userInfosHttpClient">Service for managing user information.</param>
+    /// <param name="progenyHttpClient">Service for managing Progeny data.</param>
     public class TodosController(
         ITodoItemsHttpClient todoItemsHttpClient,
         IViewModelSetupService viewModelSetupService,
         IUserInfosHttpClient userInfosHttpClient,
-        IProgenyHttpClient progenyHttpClient) : Controller
+        IProgenyHttpClient progenyHttpClient,
+        ISubtasksHttpClient subtasksHttpClient) : Controller
     {
         /// <summary>
         /// The Index Page for Todos.
@@ -357,7 +358,7 @@ namespace KinaUnaWeb.Controllers
             model.TodoItem.Progeny = model.CurrentProgeny;
             model.TodoItem.Progeny.PictureLink = model.TodoItem.Progeny.GetProfilePictureUrl();
 
-            return View(model);
+            return PartialView("_DeleteTodoPartial", model);
         }
 
         /// <summary>
@@ -380,7 +381,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             _ = await todoItemsHttpClient.DeleteTodoItem(todoItem.TodoItemId);
-            return RedirectToAction("Index", "Todos");
+            return Json(todoItem);
         }
 
         /// <summary>
@@ -434,6 +435,40 @@ namespace KinaUnaWeb.Controllers
             TodoItem copiedTodoItem = model.CreateTodoItem();
 
             model.TodoItem = await todoItemsHttpClient.AddTodoItem(copiedTodoItem);
+
+            if (model.CopyFromTodoId != 0 && model.CopySubtasks)
+            {
+                // Copy subtasks from original TodoItem.
+                SubtasksRequest subtasksRequest = new()
+                {
+                    ParentTodoItemId = model.CopyFromTodoId,
+                    ProgenyId = model.TodoItem.ProgenyId,
+                    Skip = 0,
+                    NumberOfItems = 0 // Get all.
+                };
+                SubtasksResponse subtasksResponse = await subtasksHttpClient.GetSubtasksList(subtasksRequest);
+                foreach (TodoItem subTask in subtasksResponse.Subtasks)
+                {
+                    subTask.TodoItemId = 0;
+                    subTask.ParentTodoItemId = model.TodoItem.TodoItemId;
+
+                    _ = await subtasksHttpClient.AddSubtask(subTask);
+                }
+            }
+
+            if (model.TodoItem.StartDate.HasValue)
+            {
+                model.TodoItem.StartDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            if (model.TodoItem.DueDate.HasValue)
+            {
+                model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            if (model.TodoItem.CompletedDate.HasValue)
+            {
+                model.TodoItem.CompletedDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
             model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SetStatusList(model.TodoItem.Status);
             return PartialView("_TodoCopiedPartial", model);

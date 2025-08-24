@@ -17,6 +17,7 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
     {
         private readonly Mock<ITodoItemsHttpClient> _mockTodoItemsHttpClient;
         private readonly Mock<IViewModelSetupService> _mockViewModelSetupService;
+        private readonly Mock<ISubtasksHttpClient> _mockSubtasksHttpClient = new();
         private readonly KinaUnaWeb.Controllers.TodosController _controller;
         private const string TestUserEmail = "test@kinauna.com";
         private const string TestUserId = "test-user-id";
@@ -27,12 +28,14 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
             _mockViewModelSetupService = new Mock<IViewModelSetupService>();
             Mock<IUserInfosHttpClient> mockUserInfosHttpClient = new();
             Mock<IProgenyHttpClient> mockProgenyHttpClient = new();
+            
 
             _controller = new KinaUnaWeb.Controllers.TodosController(
                 _mockTodoItemsHttpClient.Object,
                 _mockViewModelSetupService.Object,
                 mockUserInfosHttpClient.Object,
-                mockProgenyHttpClient.Object);
+                mockProgenyHttpClient.Object,
+                _mockSubtasksHttpClient.Object);
 
             SetupControllerContext();
         }
@@ -145,9 +148,12 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
             _mockTodoItemsHttpClient.Verify(x => x.AddTodoItem(It.IsAny<TodoItem>()), Times.Once);
         }
 
+        // Todo: Add tests that verify that subtasks are copied too.
+        
+
         #endregion
 
-        #region Helper Methods
+            #region Helper Methods
 
         private static BaseItemsViewModel CreateMockBaseItemsViewModelUserIsAdmin()
         {

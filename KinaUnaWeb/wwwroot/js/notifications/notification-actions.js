@@ -48,7 +48,19 @@ async function notificationItemClick(btn) {
         }
         if (notificationLink.startsWith('/Pictures?childId=')) {
             let notificationLinkWithoutPath = notificationLink.replace('/Pictures?childId=', '');
-            let notificationLinkSplit = notificationLinkWithoutPath.split('?');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let pictureId = notificationLinkSplit[1].replace('pictureId=', '');
+            if (pictureId !== null) {
+                await popupPictureDetails(pictureId);
+                stopFullPageSpinner();
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+        if (notificationLink.startsWith('/Pictures?pictureId=')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Pictures?pictureId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
             let pictureId = notificationLinkSplit[0];
             if (pictureId !== null) {
                 await popupPictureDetails(pictureId);
@@ -72,7 +84,7 @@ async function notificationItemClick(btn) {
         }
         if (notificationLink.startsWith('/Videos?videoId=')) {
             let notificationLinkWithoutPath = notificationLink.replace('/Videos?videoId=', '');
-            let notificationLinkSplit = notificationLinkWithoutPath.split('?');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
             let videoId = notificationLinkSplit[0];
             if (videoId !== null) {
                 await popupVideoDetails(videoId);

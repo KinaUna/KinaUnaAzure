@@ -27,12 +27,14 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
             _mockViewModelSetupService = new Mock<IViewModelSetupService>();
             Mock<IUserInfosHttpClient> mockUserInfosHttpClient = new();
             Mock<IProgenyHttpClient> mockProgenyHttpClient = new();
+            Mock<ISubtasksHttpClient> mockSubtasksHttpClient = new();
 
             _controller = new KinaUnaWeb.Controllers.TodosController(
                 _mockTodoItemsHttpClient.Object,
                 _mockViewModelSetupService.Object,
                 mockUserInfosHttpClient.Object,
-                mockProgenyHttpClient.Object);
+                mockProgenyHttpClient.Object,
+                mockSubtasksHttpClient.Object);
 
             SetupControllerContext();
         }
@@ -85,7 +87,7 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
             IActionResult? result = await _controller.DeleteTodo(itemId);
 
             // Assert
-            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            PartialViewResult viewResult = Assert.IsType<PartialViewResult>(result);
             TodoViewModel model = Assert.IsType<TodoViewModel>(viewResult.Model);
             Assert.Equal(itemId, model.TodoItem.TodoItemId);
         }
@@ -113,7 +115,7 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
         }
 
         [Fact]
-        public async Task DeleteTodo_Post_Should_Delete_And_Redirect_When_Successful()
+        public async Task DeleteTodo_Post_Should_Delete_And_Return_JsonResult_When_Successful()
         {
             // Arrange
             TodoViewModel model = CreateMockTodoViewModelUserIsAdmin();
@@ -132,10 +134,11 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
             IActionResult? result = await _controller.DeleteTodo(model);
 
             // Assert
-            RedirectToActionResult redirectResult = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("Index", redirectResult.ActionName);
-            Assert.Equal("Todos", redirectResult.ControllerName);
-
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            TodoItem? jsonResultAsTodoItem = jsonResult.Value as TodoItem;
+            Assert.NotNull(jsonResultAsTodoItem);
+            Assert.Equal(todoItem.TodoItemId, jsonResultAsTodoItem.TodoItemId);
+            
             _mockTodoItemsHttpClient.Verify(x => x.DeleteTodoItem(todoItem.TodoItemId), Times.Once);
         }
 

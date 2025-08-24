@@ -949,6 +949,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasMaxLength(4096)
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ParentTodoItemId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ProgenyId")
                         .HasColumnType("int");
 

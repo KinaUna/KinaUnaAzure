@@ -91,6 +91,7 @@ namespace KinaUnaProgenyApi
             services.AddScoped<ICalendarRemindersService, CalendarRemindersService>();
             services.AddScoped<ICalendarRecurrencesService, CalendarRecurrencesService>();
             services.AddScoped<ITodosService, TodosService>();
+            services.AddScoped<ISubtasksService, SubtasksService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();

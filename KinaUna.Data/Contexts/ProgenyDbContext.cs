@@ -33,6 +33,5 @@ namespace KinaUna.Data.Contexts
         public DbSet<ProgenyInfo> ProgenyInfoDb { get; init; }
         public DbSet<RecurrenceRule> RecurrenceRulesDb { get; init; }
         public DbSet<TodoItem> TodoItemsDb { get; init; }
-        public DbSet<TodoItem> SubtasksDb { get; set; }
     }
 }

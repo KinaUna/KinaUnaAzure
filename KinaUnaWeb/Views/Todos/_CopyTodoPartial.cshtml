@@ -7,6 +7,8 @@
     string copyTodoToString = await LocaleManager.GetTranslation("Copy todo to:", PageNames.Todos, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
+    const string longDateTimeFormatMoment = "DD-MMMM-YYYY";
+
 
     foreach (SelectListItem statusItem in Model.StatusList)
     {
@@ -19,11 +21,12 @@
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-todo-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container-wide">
             <h2 class="col-12">@ViewData["Title"]</h2>
-            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.TodoItemId"><span>×</span></button>
             <div class="space-20"></div>
             <form id="save-item-form" asp-action="CopyTodo" asp-controller="Todos" role="form" method="post">
                 @if (Model.ProgenyList.Count > 1)
@@ -140,16 +143,22 @@
                         <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="TodoItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label asp-for="CopySubtasks" class="col-auto control-label">@await LocaleManager.GetTranslation("Copy subtasks", PageNames.Todos, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input type="checkbox" asp-for="CopySubtasks" checked="checked" value="true" style="width: 2em; height: 2em;" onchange="this.value=this.checked"/>
+                    </div>
+                </div>
                 <div class="space-20"></div>
-                <input asp-for="TodoItem.ProgenyId" value="@Model.TodoItem.ProgenyId" type="hidden" />
                 <input asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId" type="hidden" />
                 <input asp-for="TodoItem.CreatedBy" value="@Model.TodoItem.CreatedBy" type="hidden" />
                 <input asp-for="TodoItem.UId" value="@Model.TodoItem.UId" type="hidden"/>
+                <input asp-for="CopyFromTodoId" value="@Model.TodoItem.TodoItemId" type="hidden" />
                 <div class="form-group">
                     <div class="col-auto control-label"></div>
                     <div class="col-auto">
                         <button id="save-todo-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                        <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                        <button type="button" class="btn btn-danger item-details-cancel-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.TodoItemId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
                     </div>
                     <div id="validation-errors-div" class="col-auto">
                         <div id="todo-title-required-div" class="d-none text-warning">

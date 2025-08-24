@@ -109,7 +109,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         {
             List<TodoItem> todoItemsForProgeny = await progenyDbContext.TodoItemsDb
                 .AsNoTracking()
-                .Where(t => t.ProgenyId == id && t.AccessLevel >= accessLevel && !t.IsDeleted)
+                .Where(t => t.ProgenyId == id && t.AccessLevel >= accessLevel && t.ParentTodoItemId == 0 && !t.IsDeleted)
                 .ToListAsync();
 
             if (request.StartDate.HasValue && request.EndDate.HasValue)
@@ -652,11 +652,11 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted)
                 {
                     todoItem.CompletedDate = null; // Reset completed date if not started
-                    todoItem.StartDate = null; // Reset start date if not started
                 }
                 else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.InProgress)
                 {
                     todoItem.StartDate = DateTime.UtcNow; // Set start date if not already set
+                    todoItem.CompletedDate = null; // Reset completed date if in progress
                 }
                 else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled)
                 {
@@ -672,6 +672,23 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             currentTodoItem.CopyPropertiesForUpdate(todoItem);
             progenyDbContext.TodoItemsDb.Update(currentTodoItem);
             _ = await progenyDbContext.SaveChangesAsync();
+
+            // Update access level and progeny id for child subtasks if parent task access level or progeny id has changed
+            if (todoItem.AccessLevel == currentTodoItem.AccessLevel) return currentTodoItem;
+            {
+                List<TodoItem> subtasks = await progenyDbContext.TodoItemsDb
+                    .Where(t => t.ParentTodoItemId == currentTodoItem.TodoItemId)
+                    .ToListAsync();
+                
+                foreach (TodoItem subtask in subtasks)
+                {
+                    if (subtask.AccessLevel == todoItem.AccessLevel && subtask.ProgenyId == todoItem.ProgenyId) continue;
+                    subtask.AccessLevel = todoItem.AccessLevel;
+                    subtask.ProgenyId = todoItem.ProgenyId;
+                    progenyDbContext.TodoItemsDb.Update(subtask);
+                }
+                _ = await progenyDbContext.SaveChangesAsync();
+            }
             return currentTodoItem;
         }
     }

@@ -94,32 +94,19 @@ function sortNotifications() {
         updateNoficationElementEvents(recentNotificationButtonsList);
     }
 }
-let checkConnectionInterval;
 let checkNotifications;
-let signalRdisconnected = false;
 connection = new signalR.HubConnectionBuilder()
     .withUrl('/webnotificationhub')
-    .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
     .configureLogging(signalR.LogLevel.Information)
+    .withAutomaticReconnect()
     .build();
-connection.onclose(function () {
-    signalRdisconnected = true;
-    console.log('SignalR connection closed, reconnecting.');
-    clearInterval(checkNotifications);
-    clearNotifications();
-    checkConnectionInterval = setInterval(function () {
-        connection.start().catch(function (err) { console.error(err.toString()); });
-    }, 30000);
+connection.onclose(async function () {
+    await start();
 });
 connection.on('UserInfo', function (info) {
     console.log(info);
 });
 connection.on('ReceiveMessage', async function (message) {
-    if (signalRdisconnected) {
-        clearInterval(checkConnectionInterval);
-        checkNotifications = setInterval(getNotifications, 300000);
-        signalRdisconnected = false;
-    }
     let parsedMessage = JSON.parse(message);
     await fetch('/Notifications/GetWebNotificationElement', {
         method: 'POST',
@@ -196,26 +183,26 @@ connection.on('DeleteMessage', function (message) {
     countNotifications();
 });
 connection.on('MarkAllReadMessage', function () {
-    if (signalRdisconnected) {
-        clearInterval(checkConnectionInterval);
-        checkNotifications = setInterval(getNotifications, 300000);
-        signalRdisconnected = false;
-    }
     getNotifications();
     countNotifications();
 });
-let getNotifications = function () {
-    if (connection.connection.connectionState === 1) {
-        signalRdisconnected = false;
-        clearNotifications();
-        connection.invoke('GetUpdateForUser', 10, 1).catch((err) => console.error(err.toString()));
+function getNotifications() {
+    clearNotifications();
+    connection.invoke('GetUpdateForUser', 10, 1).catch((err) => console.error(err.toString()));
+}
+;
+async function start() {
+    try {
+        await connection.start().catch((err) => console.error(err.toString()));
+        console.log("SignalR Connected.");
     }
-    else {
-        signalRdisconnected = true;
+    catch (err) {
+        console.log(err);
+        setTimeout(start, 60000);
     }
-};
-connection.start().catch((err) => console.error(err.toString()));
-document.addEventListener('DOMContentLoaded', function () {
+}
+;
+document.addEventListener('DOMContentLoaded', async function () {
     let notificationsButton = document.getElementById('notificationsButton');
     if (notificationsButton !== null) {
         notificationsButton.addEventListener('click', function () {
@@ -228,6 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-    checkNotifications = setInterval(getNotifications, 300000);
+    await start();
+    checkNotifications = setInterval(getNotifications, 600000);
 });
 //# sourceMappingURL=notifications-menu.js.map

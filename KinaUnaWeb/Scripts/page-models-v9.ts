@@ -496,6 +496,30 @@ export class TodosPageParameters implements BasePageParameters {
     showSettings: boolean = false;
 }
 
+export class SubtasksPageParameters implements BasePageParameters {
+    parentTodoItemId: number = 0;
+    progenyId: number = 0;
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 0; // 0 Ascending, 1 Descending
+    sortBy: number = 0; // 0 for DueDate, 1 for CreatedTime, 2 for StartDate, 3 for CompletedDate
+    groupBy: number = 0; // 0 for no grouping, 1 for Status, 2 for Progeny/AssignedTo, 3 for Location
+    tagFilter: string = '';
+    contextFilter: string = '';
+    locationFilter: string = '';
+    statusFilter: TodoStatusType[] = [];
+    startYear: number = 0;
+    startMonth: number = 0;
+    startDay: number = 0;
+    endYear: number = 0;
+    endMonth: number = 0;
+    endDay: number = 0;
+    showSettings: boolean = false;
+}
+
 export class TodosPageResponse implements BaseItemsPageResponseModel {
     pageNumber: number = 0;
     totalPages: number = 0;
@@ -506,6 +530,14 @@ export class TodosPageResponse implements BaseItemsPageResponseModel {
     
 }
 
+export class SubtasksPageResponse implements BaseItemsPageResponseModel {
+    parentTodoItemId: number = 0;
+    pageNumber: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    subtasksList: TodoItem[] = [];
+}
+
 export class TodoItemParameters implements BaseItemParameters {
     todoItemId: number = 0;
     languageId: number = 0;
@@ -513,6 +545,7 @@ export class TodoItemParameters implements BaseItemParameters {
 export class TodoItem {
     todoItemId: number = 0;
     uId: string = '';
+    parentTodoItemId: number = 0;
     progenyId: number = 0;
     title: string = '';
     description: string = '';
