@@ -41,19 +41,19 @@
                 }
             </div>
             <div class="row">
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3 text-left">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 text-left"><span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId):</span> @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
                 @if (Model.TodoItem.DueDate.HasValue)
                 {
-                    <div class="col-12 col-sm-6 col-md-4 col-lg-2 text-left">@await LocaleManager.GetTranslation("Due", PageNames.Todos, Model.LanguageId): @Model.TodoItem.DueDate.Value.ToString("dd-MMM-yyyy")</div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-2 text-left"><span class="text-white-75">@await LocaleManager.GetTranslation("Due", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.DueDate.Value.ToString("dd-MMM-yyyy")</div>
                 }
                 @if (Model.TodoItem.StartDate.HasValue)
                 {
-                    <div class="col-12 col-sm-6 col-md-4 col-lg-2 text-left">@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId): @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-2 text-left"><span class="text-white-75">@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
                 }
                 @if (Model.TodoItem.CompletedDate.HasValue && Model.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
                 {
                     <div class="col-12 col-sm-6 col-md-4 col-lg-3 text-left">
-                        @await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId): @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")
+                        <span class="text-white-75">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId): @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</span>
                     </div>
                 }
                 @if (!string.IsNullOrEmpty(Model.TodoItem.Location))

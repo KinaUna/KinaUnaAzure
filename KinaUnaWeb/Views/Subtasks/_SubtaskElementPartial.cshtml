@@ -11,8 +11,8 @@
 
 }
 <div class="row" data-subtask-element-id="@Model.TodoItem.TodoItemId" style="background: @Model.TodoItem.StatusBackgroundColor()">
-    <div class="col-auto">@Model.TodoItem.Title</div>
-    <div class="col">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
+    <div class="col-auto lead">@Model.TodoItem.Title</div>
+    <div class="col text-white-75 text-right" style="align-content-end;">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
     
     @if (Model.IsCurrentUserProgenyAdmin)
     {
@@ -21,25 +21,25 @@
         <div class="col-11">
             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
             {
-                <button class="btn btn-link btn-sm p-1 float-left text-white-50" data-set-subtask-not-started-id="@Model.TodoItem.TodoItemId">
+                <button class="btn btn-link btn-sm p-1 float-left text-white-75" data-set-subtask-not-started-id="@Model.TodoItem.TodoItemId">
                     <i class="material-icons kinauna-icon-medium">pending_actions</i> @setAsNotStartedString
                 </button>
             }
             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
             {
-                <button class="btn btn-link btn-sm p-1 float-left text-white-50" data-set-subtask-in-progress-id="@Model.TodoItem.TodoItemId">
+                <button class="btn btn-link btn-sm p-1 float-left text-white-75" data-set-subtask-in-progress-id="@Model.TodoItem.TodoItemId">
                     <i class="material-icons kinauna-icon-medium">assignment</i> @setAsInProgressString
                 </button>
             }
             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
             {
-                <button class="btn btn-link btn-sm p-1 float-left text-white-50" data-set-subtask-completed-id="@Model.TodoItem.TodoItemId">
+                <button class="btn btn-link btn-sm p-1 float-left text-white-75" data-set-subtask-completed-id="@Model.TodoItem.TodoItemId">
                     <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> @setAsCompletedString
                 </button>
             }
             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
             {
-                <button class="btn btn-link btn-sm p-1 float-left text-white-50" data-set-subtask-cancelled-id="@Model.TodoItem.TodoItemId">
+                <button class="btn btn-link btn-sm p-1 float-left text-white-75" data-set-subtask-cancelled-id="@Model.TodoItem.TodoItemId">
                     <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
                 </button>
             }
