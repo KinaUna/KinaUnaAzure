@@ -452,7 +452,7 @@ namespace KinaUnaWeb.Controllers
                     subTask.TodoItemId = 0;
                     subTask.ParentTodoItemId = model.TodoItem.TodoItemId;
 
-                    _ = await todoItemsHttpClient.AddTodoItem(subTask);
+                    _ = await subtasksHttpClient.AddSubtask(subTask);
                 }
             }
 
