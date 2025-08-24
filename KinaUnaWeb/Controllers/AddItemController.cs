@@ -306,6 +306,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("DeleteNote", "Notes", new { noteId = itemId });
             }
 
+            if (itemType == "todo")
+            {
+                return RedirectToAction("DeleteTodo", "Todos", new { itemId });
+            }
+
             if (itemType == "subtask")
             {
                 return RedirectToAction("DeleteSubtask", "Subtasks", new { itemId });

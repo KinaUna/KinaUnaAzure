@@ -357,7 +357,7 @@ namespace KinaUnaWeb.Controllers
             model.TodoItem.Progeny = model.CurrentProgeny;
             model.TodoItem.Progeny.PictureLink = model.TodoItem.Progeny.GetProfilePictureUrl();
 
-            return View(model);
+            return PartialView("_DeleteTodoPartial", model);
         }
 
         /// <summary>
@@ -380,7 +380,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             _ = await todoItemsHttpClient.DeleteTodoItem(todoItem.TodoItemId);
-            return RedirectToAction("Index", "Todos");
+            return Json(todoItem);
         }
 
         /// <summary>

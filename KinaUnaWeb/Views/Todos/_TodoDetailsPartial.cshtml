@@ -177,7 +177,7 @@
                     <div class="ml-3 mr-3">
                         <div id="todo-details-sub-tasks-list-div" class="col-12 d-none">
                         </div>
-                        <div id="load-more-subtasks-wrapper-div" style="height: 150px;">
+                        <div id="load-more-subtasks-wrapper-div" class="col-12" style="height: 150px;">
                             <button id="more-subtasks-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
                             <div id="loading-subtasks-div" class="w-100">
                                 <div class="space-50"></div>
@@ -190,7 +190,7 @@
 
                 <div class="col-12">
                     <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a asp-controller="Todos" asp-action="DeleteTodo" asp-route-itemId="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    <a data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                 </div>
 
             }

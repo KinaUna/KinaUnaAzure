@@ -1,4 +1,4 @@
-﻿import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+﻿import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { TimelineChangedEvent } from '../data-tools-v9.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
@@ -337,6 +337,7 @@ async function displayTodoItem(todoId: string): Promise<void> {
                 todoDetailsPopupDiv.classList.remove('d-none');
                 setTodoDetailsEventListeners(todoId, todoDetailsPopupDiv);
                 setEditItemButtonEventListeners();
+                setDeleteItemButtonEventListeners();
                 await getSubtaskList(todoId);
                 
             }

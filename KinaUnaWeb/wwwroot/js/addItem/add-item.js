@@ -25,6 +25,7 @@ import { popupTodoItem } from "../todos/todo-details.js";
 export function setAddItemButtonEventListeners() {
     let addItemButtons = document.querySelectorAll('.add-item-button');
     addItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onAddItemButtonClicked);
         button.addEventListener('click', onAddItemButtonClicked);
     });
 }
@@ -141,10 +142,12 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
 export function setEditItemButtonEventListeners() {
     let editItemButtons = document.querySelectorAll('.edit-item-button');
     editItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onEditItemButtonClicked);
         button.addEventListener('click', onEditItemButtonClicked);
     });
     let copyItemButtons = document.querySelectorAll('.copy-item-button');
     copyItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onCopyItemButtonClicked);
         button.addEventListener('click', onCopyItemButtonClicked);
     });
 }
@@ -365,8 +368,9 @@ async function popupCopyItemModal(copyItemType, copyItemItemId) {
 * Adds event listeners to all elements with the data-add-item-type attribute.
 */
 export function setDeleteItemButtonEventListeners() {
-    let deleteItemButtons = document.querySelectorAll('.delete-item-button');
+    let deleteItemButtons = document.querySelectorAll('.item-details-delete-button');
     deleteItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onDeleteItemButtonClicked);
         button.addEventListener('click', onDeleteItemButtonClicked);
     });
 }
@@ -439,6 +443,7 @@ function addCloseButtonEventListener() {
     let closeButtonsList = document.querySelectorAll('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
+            button.removeEventListener('click', onCloseButtonClicked);
             button.addEventListener('click', onCloseButtonClicked);
         });
     }
@@ -447,22 +452,22 @@ function addCloseButtonEventListener() {
  * Handles the click event for the close button in the item details popup.
  * It hides the popup and shows the body scrollbars.
  */
-function onCloseButtonClicked() {
-    const itemDetailsPopupDiv = document.querySelector('#item-details-div');
-    if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.innerHTML = '';
-        itemDetailsPopupDiv.classList.add('d-none');
-        showBodyScrollbars();
-    }
+async function onCloseButtonClicked(event) {
+    let closeButton = event.currentTarget;
+    await popupPreviousItem(closeButton);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Adds an event listener to the close button in the item details popup.
  * When clicked, the popup is hidden and the body scrollbars are shown.
  */
 function addCancelButtonEventListener() {
-    let closeButtonsList = document.querySelectorAll('.item-details-cancel-button');
-    if (closeButtonsList) {
-        closeButtonsList.forEach((button) => {
+    let cancelButtonsList = document.querySelectorAll('.item-details-cancel-button');
+    if (cancelButtonsList) {
+        cancelButtonsList.forEach((button) => {
+            button.removeEventListener('click', onCancelButtonClicked);
             button.addEventListener('click', onCancelButtonClicked);
         });
     }
@@ -471,13 +476,33 @@ function addCancelButtonEventListener() {
  * Handles the click event for the cancel button in the add or edit item popup.
  * It hides the popup and shows the body scrollbars.
  */
-function onCancelButtonClicked() {
-    const itemDetailsPopupDiv = document.querySelector('#item-details-div');
-    if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.innerHTML = '';
-        itemDetailsPopupDiv.classList.add('d-none');
-        showBodyScrollbars();
+async function onCancelButtonClicked(event) {
+    let cancelButton = event.currentTarget;
+    await popupPreviousItem(cancelButton);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
+async function popupPreviousItem(buttonClicked) {
+    // If the button has a 'data-previous-item-type' attribute, popup that item again.
+    let previousItemType = buttonClicked.getAttribute('data-previous-item-type');
+    let previousItemId = buttonClicked.getAttribute('data-previous-item-id');
+    if (previousItemType !== null && previousItemId !== null && previousItemId !== '0') {
+        if (previousItemType === 'todo') {
+            await popupTodoItem(previousItemId);
+        }
     }
+    else {
+        const itemDetailsPopupDiv = document.querySelector('#item-details-div');
+        if (itemDetailsPopupDiv) {
+            itemDetailsPopupDiv.innerHTML = '';
+            itemDetailsPopupDiv.classList.add('d-none');
+            showBodyScrollbars();
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Adds an event listener to the save item form.
@@ -486,6 +511,7 @@ function onCancelButtonClicked() {
 function setSaveItemFormEventListener() {
     let addItemForm = document.querySelector('#save-item-form');
     if (addItemForm) {
+        addItemForm.removeEventListener('submit', onSaveItemFormSubmit);
         addItemForm.addEventListener('submit', onSaveItemFormSubmit);
     }
 }

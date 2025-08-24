@@ -16,7 +16,7 @@
     
     @if (Model.IsCurrentUserProgenyAdmin)
     {
-        <a data-edit-item-type="subtask" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-link edit-item-button btn-sm float-right mr-1"><i class="fas fa-pencil-alt"></i></a>
+        <a data-edit-item-type="subtask" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-link edit-item-button btn-sm float-right mr-1" style="color: #90d0ff"><i class="fas fa-pencil-alt"></i></a>
 
         <div class="col-11">
             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
@@ -44,7 +44,7 @@
                 </button>
             }
         </div>
-        <a data-delete-item-type="subtask" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-link delete-item-button btn-sm float-right"><i class="fas fa-trash-alt"></i></a>
+        <a data-delete-item-type="subtask" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-link delete-item-button btn-sm float-right" style="color: #ff9696;"><i class="fas fa-trash-alt"></i></a>
     }
 </div>
 <div class="space-10"></div>

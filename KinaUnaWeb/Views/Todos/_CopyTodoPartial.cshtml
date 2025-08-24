@@ -26,7 +26,7 @@
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container-wide">
             <h2 class="col-12">@ViewData["Title"]</h2>
-            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.TodoItemId"><span>×</span></button>
             <div class="space-20"></div>
             <form id="save-item-form" asp-action="CopyTodo" asp-controller="Todos" role="form" method="post">
                 @if (Model.ProgenyList.Count > 1)
@@ -151,7 +151,7 @@
                     <div class="col-auto control-label"></div>
                     <div class="col-auto">
                         <button id="save-todo-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                        <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                        <button type="button" class="btn btn-danger item-details-cancel-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.TodoItemId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
                     </div>
                     <div id="validation-errors-div" class="col-auto">
                         <div id="todo-title-required-div" class="d-none text-warning">

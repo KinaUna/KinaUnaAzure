@@ -26,6 +26,7 @@ import { popupTodoItem } from "../todos/todo-details.js";
 export function setAddItemButtonEventListeners(): void {
     let addItemButtons = document.querySelectorAll<HTMLAnchorElement>('.add-item-button');
     addItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onAddItemButtonClicked);
         button.addEventListener('click', onAddItemButtonClicked);
     });
 }
@@ -165,11 +166,13 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
 export function setEditItemButtonEventListeners(): void {
     let editItemButtons = document.querySelectorAll<HTMLAnchorElement>('.edit-item-button');
     editItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onEditItemButtonClicked);
         button.addEventListener('click', onEditItemButtonClicked);
     });
 
     let copyItemButtons = document.querySelectorAll<HTMLButtonElement>('.copy-item-button');
     copyItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onCopyItemButtonClicked);
         button.addEventListener('click', onCopyItemButtonClicked);
     });
 }
@@ -438,8 +441,9 @@ async function popupCopyItemModal(copyItemType: string, copyItemItemId: string):
 * Adds event listeners to all elements with the data-add-item-type attribute.
 */
 export function setDeleteItemButtonEventListeners(): void {
-    let deleteItemButtons = document.querySelectorAll<HTMLAnchorElement>('.delete-item-button');
+    let deleteItemButtons = document.querySelectorAll<HTMLAnchorElement>('.item-details-delete-button');
     deleteItemButtons.forEach(function (button) {
+        button.removeEventListener('click', onDeleteItemButtonClicked);
         button.addEventListener('click', onDeleteItemButtonClicked);
     });
 }
@@ -522,6 +526,7 @@ function addCloseButtonEventListener(): void {
     let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
+            button.removeEventListener('click', onCloseButtonClicked);
             button.addEventListener('click', onCloseButtonClicked);
         });
     }
@@ -531,13 +536,13 @@ function addCloseButtonEventListener(): void {
  * Handles the click event for the close button in the item details popup.
  * It hides the popup and shows the body scrollbars.
  */
-function onCloseButtonClicked() {
-    const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
-    if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.innerHTML = '';
-        itemDetailsPopupDiv.classList.add('d-none');
-        showBodyScrollbars();
-    }
+async function onCloseButtonClicked(event: MouseEvent): Promise<void> {
+    let closeButton = event.currentTarget as HTMLElement;
+    await popupPreviousItem(closeButton);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -545,9 +550,10 @@ function onCloseButtonClicked() {
  * When clicked, the popup is hidden and the body scrollbars are shown.
  */
 function addCancelButtonEventListener(): void {
-    let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-cancel-button');
-    if (closeButtonsList) {
-        closeButtonsList.forEach((button) => {
+    let cancelButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-cancel-button');
+    if (cancelButtonsList) {
+        cancelButtonsList.forEach((button) => {
+            button.removeEventListener('click', onCancelButtonClicked);
             button.addEventListener('click', onCancelButtonClicked);
         });
     }
@@ -557,14 +563,39 @@ function addCancelButtonEventListener(): void {
  * Handles the click event for the cancel button in the add or edit item popup.
  * It hides the popup and shows the body scrollbars.
  */
-function onCancelButtonClicked() {
-    const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
-    if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.innerHTML = '';
-        itemDetailsPopupDiv.classList.add('d-none');
-        showBodyScrollbars();
-    }
+async function onCancelButtonClicked(event: MouseEvent): Promise<void> {
+    let cancelButton = event.currentTarget as HTMLElement;
+    
+    await popupPreviousItem(cancelButton);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
+
+async function popupPreviousItem(buttonClicked: HTMLElement): Promise<void> {
+    // If the button has a 'data-previous-item-type' attribute, popup that item again.
+    let previousItemType = buttonClicked.getAttribute('data-previous-item-type');
+    let previousItemId = buttonClicked.getAttribute('data-previous-item-id');
+    if (previousItemType !== null && previousItemId !== null && previousItemId !== '0') {
+        if (previousItemType === 'todo') {
+            await popupTodoItem(previousItemId);
+        }
+    }
+    else {
+        const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+        if (itemDetailsPopupDiv) {
+            itemDetailsPopupDiv.innerHTML = '';
+            itemDetailsPopupDiv.classList.add('d-none');
+            showBodyScrollbars();
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
 
 /**
  * Adds an event listener to the save item form.
@@ -573,6 +604,7 @@ function onCancelButtonClicked() {
 function setSaveItemFormEventListener(): void {
     let addItemForm = document.querySelector<HTMLFormElement>('#save-item-form');
     if (addItemForm) {
+        addItemForm.removeEventListener('submit', onSaveItemFormSubmit);
         addItemForm.addEventListener('submit', onSaveItemFormSubmit);
     }
 }
