@@ -19,18 +19,18 @@
                         @Model.Title
                     </div>
                     <div class="timeline-text text-white">
-                        <div>@await LocaleManager.GetTranslation("Status", PageNames.Todos, languageId): @await LocaleManager.GetTranslation(Model.StatusText(), PageNames.Todos, languageId)</div>
+                        <div><span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, languageId):</span> @await LocaleManager.GetTranslation(Model.StatusText(), PageNames.Todos, languageId)</div>
                         @if (Model.CompletedDate.HasValue && Model.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
                         {
-                            <div>@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, languageId) : @Model.CompletedDate?.ToString("dd-MMM-yyyy")</div>
+                            <div><span class="text-white-75">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, languageId):</span> @Model.CompletedDate?.ToString("dd-MMM-yyyy")</div>
                         }
                         @if (Model.DueDate.HasValue)
                         {
-                            <div>@await LocaleManager.GetTranslation("Due", PageNames.Todos, languageId): @Model.DueDate.Value.ToString("dd-MMM-yyyy")</div>
+                            <div><span class="text-white-75">@await LocaleManager.GetTranslation("Due", PageNames.Todos, languageId):</span> @Model.DueDate.Value.ToString("dd-MMM-yyyy")</div>
                         }
                         @if (Model.StartDate.HasValue)
                         {
-                            <div>@await LocaleManager.GetTranslation("Start", PageNames.Todos, languageId): @Model.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                            <div><span class="text-white-75">@await LocaleManager.GetTranslation("Start", PageNames.Todos, languageId):</span> @Model.StartDate.Value.ToString("dd-MMM-yyyy")</div>
                         }
                         @if (!string.IsNullOrEmpty(Model.Location))
                         {

@@ -42,24 +42,24 @@
                     </div>
                 </div>
                 <div class="row text-white">
-                    <div class="col-auto">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
+                    <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId):</span> @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
                 </div>
                 @if (Model.TodoItem.DueDate.HasValue)
                 {
                     <div class="row text-white">
-                        <div class="col-auto">@await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.DueDate?.ToString("dd-MMM-yyyy")</div>
+                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.DueDate?.ToString("dd-MMM-yyyy")</div>
                     </div>
                 }
                 @if (Model.TodoItem.StartDate.HasValue)
                 {
                     <div class="row text-white">
-                        <div class="col-auto">@await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
                     </div>
                 }
                 @if (Model.TodoItem.CompletedDate.HasValue && Model.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
                 {
                     <div class="row text-white">
-                        <div class="col-auto">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
+                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
                     </div>
                 }
                 @if (!string.IsNullOrWhiteSpace(Model.TodoItem.Description))
@@ -67,18 +67,18 @@
                     <div class="space-10"></div>
                     <div class="row text-white">
                         <div class="col-auto">
-                            @await LocaleManager.GetTranslation("Description", PageNames.Todos, Model.LanguageId)
+                            <span class="text-white-75">@await LocaleManager.GetTranslation("Description", PageNames.Todos, Model.LanguageId):</span>
                         </div>
                     </div>
-                    <div class="timeline-text row m-0 text-white-75">
+                    <div class="timeline-text row m-0 text-white">
                         <div class="col-12 bg-display-rich-text p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.TodoItem.Description))</div>
                     </div>
                 }
                 @if (!string.IsNullOrWhiteSpace(Model.TodoItem.Location))
                 {
                     <div class="space-10"></div>
-                    <div class="row text-white">
-                        <div class="col-auto">
+                    <div class="row">
+                        <div class="col-auto text-white-75">
                             <i class="material-icons" style="font-size: 18px;">location_on</i> @Model.TodoItem.Location
                         </div>
                     </div>
@@ -117,25 +117,25 @@
                         <div class="col-12">
                             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
                             {
-                                <button class="btn btn-link p-3 float-left text-white-50" data-set-todo-item-not-started-id="@Model.TodoItem.TodoItemId">
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-not-started-id="@Model.TodoItem.TodoItemId">
                                     <i class="material-icons kinauna-icon-medium">pending_actions</i> @setAsNotStartedString
                                 </button>
                             }
                             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
                             {
-                                <button class="btn btn-link p-3 float-left text-white-50" data-set-todo-item-in-progress-id="@Model.TodoItem.TodoItemId">
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-in-progress-id="@Model.TodoItem.TodoItemId">
                                     <i class="material-icons kinauna-icon-medium">assignment</i> @setAsInProgressString
                                 </button>
                             }
                             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
                             {
-                                <button class="btn btn-link p-3 float-left text-white-50" data-set-todo-item-completed-id="@Model.TodoItem.TodoItemId">
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-completed-id="@Model.TodoItem.TodoItemId">
                                     <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> @setAsCompletedString
                                 </button>
                             }
                             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
                             {
-                                <button class="btn btn-link p-3 float-right text-white-50" data-set-todo-item-cancelled-id="@Model.TodoItem.TodoItemId">
+                                <button class="btn btn-link p-3 float-right text-white-75" data-set-todo-item-cancelled-id="@Model.TodoItem.TodoItemId">
                                     <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
                                 </button>
                             }
@@ -143,15 +143,13 @@
                     </div>
                 </div>
             }
-            <div class="space-10"></div>
-            <div class="col-12 text-right text-white-50">Created by: @Model.TodoItem.CreatedBy</div>
             <div class="col-auto">
                 <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
             </div>
             <div class="col">
                 <div class="space-50"></div>
                 <div class="row text-white">
-                    <div class="col-12">
+                    <div class="col-12 text-white-75">
                         @await LocaleManager.GetTranslation("Subtasks", PageNames.Todos, Model.LanguageId)
                     </div>
                 </div>
@@ -163,7 +161,7 @@
                             <form id="add-subtask-inline-form" asp-controller="Subtasks" asp-action="AddSubtaskInline">
                                 <div class="form-group">
                                     <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control w-75"
-                                    style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
+                                           style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
                                     <button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
                                 </div>
                                 <input name="ParentTodoItemId" type="hidden" value="@Model.TodoItem.TodoItemId"/>
@@ -186,6 +184,8 @@
                     </div>
                 </div>
             </div>
+            <div class="space-10"></div>
+            <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.TodoItem.CreatedBy</div>
             @if(Model.IsCurrentUserProgenyAdmin){
 
                 <div class="col-12">
