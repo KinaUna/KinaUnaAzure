@@ -147,6 +147,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 ];
             }
 
+            int totalSubtasksCount = subtasks.Count;
             if (request.Skip > 0)
             {
                 subtasks = [.. subtasks.Skip(request.Skip)];
