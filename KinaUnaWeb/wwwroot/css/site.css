@@ -904,6 +904,21 @@ to {
         box-shadow: 0 14px 26px -12px rgb(0 188 212 / 42%), 0 4px 23px 0 rgb(0 0 0 / 12%), 0 8px 10px -5px rgb(0 188 212 / 20%);
     }
 
+.btn.btn-add-todo {
+    color: #fff;
+    background: #156952;
+    background: linear-gradient(60deg, #347d60, #156952);
+    border-color: #681b2f;
+    box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
+    width: 12em;
+    height: 8em;
+}
+
+    .btn.btn-add-todo:active, .btn.btn-add-todo:focus, .btn.btn-add-todo:hover {
+        color: #fbd10d;
+        box-shadow: 0 14px 26px -12px rgb(0 188 212 / 42%), 0 4px 23px 0 rgb(0 0 0 / 12%), 0 8px 10px -5px rgb(0 188 212 / 20%);
+    }
+
 .fileinput {
     display: inline-block;
     margin-bottom: 9px;
