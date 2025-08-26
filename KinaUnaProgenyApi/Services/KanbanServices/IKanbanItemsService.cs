@@ -8,5 +8,6 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         public Task<KanbanItem> GetKanbanItemById(int kanbanItemId);
         Task<KanbanItem> AddKanbanItem(KanbanItem kanbanItem);
         Task<KanbanItem> UpdateKanbanItem(KanbanItem kanbanItem);
+        Task<KanbanItem> DeleteKanbanItem(KanbanItem kanbanItem);
     }
 }

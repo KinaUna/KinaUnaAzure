@@ -63,11 +63,15 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(savedKanbanItem);
         }
 
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<IActionResult> Update([FromBody] KanbanItem kanbanItem)
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] KanbanItem kanbanItem)
         {
-            KanbanItem existingKanbanItem = await kanbanItemsService.GetKanbanItemById(kanbanItem.KanbanItemId);
+            if (kanbanItem == null || id != kanbanItem.KanbanItemId)
+            {
+                return BadRequest();
+            }
+
+            KanbanItem existingKanbanItem = await kanbanItemsService.GetKanbanItemById(id);
             if (existingKanbanItem == null)
             {
                 return BadRequest();
@@ -88,6 +92,26 @@ namespace KinaUnaProgenyApi.Controllers
 
             KanbanItem resultKanbanItem = await kanbanItemsService.UpdateKanbanItem(kanbanItem);
             return Ok(resultKanbanItem);
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            KanbanItem existingKanbanItem = await kanbanItemsService.GetKanbanItemById(id);
+            if (existingKanbanItem == null)
+            {
+                return NotFound();
+            }
+            if (existingKanbanItem.TodoItem == null)
+            {
+                return BadRequest("The Kanban item is not linked to a valid Todo item.");
+            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(existingKanbanItem.TodoItem.ProgenyId, userEmail, existingKanbanItem.TodoItem.AccessLevel);
+            if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
+
+            KanbanItem deletedKanbanItem = await kanbanItemsService.DeleteKanbanItem(existingKanbanItem);
+            return Ok(deletedKanbanItem);
         }
 
     }

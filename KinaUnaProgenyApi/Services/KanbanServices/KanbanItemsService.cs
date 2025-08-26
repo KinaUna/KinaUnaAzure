@@ -42,5 +42,19 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
 
             return existingKanbanItem;
         }
+
+        public async Task<KanbanItem> DeleteKanbanItem(KanbanItem kanbanItem)
+        {
+            KanbanItem existingKanbanItem = await progenyDbContext.KanbanItemsDb.SingleOrDefaultAsync(k => k.KanbanItemId == kanbanItem.KanbanItemId);
+            if (existingKanbanItem == null)
+            {
+                return null;
+            }
+
+            progenyDbContext.KanbanItemsDb.Remove(existingKanbanItem);
+            await progenyDbContext.SaveChangesAsync();
+
+            return existingKanbanItem;
+        }
     }
 }
