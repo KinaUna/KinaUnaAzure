@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
@@ -25,5 +26,8 @@ namespace KinaUna.Data.Models
         public string CreatedBy { get; set; } = string.Empty;
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
+
+        [NotMapped]
+        public TodoItem TodoItem { get; set; }
     }
 }
