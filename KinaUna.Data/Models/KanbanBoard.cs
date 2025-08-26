@@ -13,17 +13,30 @@ namespace KinaUna.Data.Models
     {
         [Key]
         public int KanbanBoardId { get; set; }
+        
         [MaxLength(128)]
         public string UId { get; set; } = string.Empty;
         public int ProgenyId { get; set; }
+        
+        [MaxLength(256)]
         public string Title { get; set; } = string.Empty;
+        
         [MaxLength(4096)]
         public string Description { get; set; } = string.Empty;
-        public string Columns { get; set; } // JSON representation of the columns in the Kanban board.
+
+        [MaxLength(4096)]
+        public string Columns { get; set; } = string.Empty; // JSON representation of the columns in the Kanban board.
+        
         public DateTime CreatedTime { get; set; }
+        
         public DateTime ModifiedTime { get; set; }
-        [MaxLength(256)] public string CreatedBy { get; set; } = string.Empty;
-        [MaxLength(256)] public string ModifiedBy { get; set; } = string.Empty;
+        
+        [MaxLength(256)] 
+        public string CreatedBy { get; set; } = string.Empty;
+        
+        [MaxLength(256)]
+        public string ModifiedBy { get; set; } = string.Empty;
+        
         public int AccessLevel { get; set; }
     }
 }
