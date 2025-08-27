@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using KinaUna.Data.Models;
 
 namespace KinaUnaProgenyApi.Services.KanbanServices
@@ -9,5 +10,6 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         Task<KanbanItem> AddKanbanItem(KanbanItem kanbanItem);
         Task<KanbanItem> UpdateKanbanItem(KanbanItem kanbanItem);
         Task<KanbanItem> DeleteKanbanItem(KanbanItem kanbanItem);
+        Task<List<KanbanItem>> GetKanbanItemsForBoard(int kanbanBoardId);
     }
 }

@@ -1,13 +1,15 @@
-﻿using System;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.KanbanServices;
 using KinaUnaProgenyApi.Services.TodosServices;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
@@ -16,10 +18,14 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class KanbanItemsController(IKanbanItemsService kanbanItemsService, ITodosService todosService, IUserAccessService userAccessService) : Controller
+    public class KanbanItemsController(IKanbanItemsService kanbanItemsService,
+        IKanbanBoardsService kanbanBoardsService,
+        ITodosService todosService,
+        IUserAccessService userAccessService,
+        IProgenyService progenyService) : Controller
     {
-        [HttpPost]
-        [Route("[action]")]
+        [HttpGet]
+        [Route("[action]/{kanbanItemId:int}")]
         public async Task<IActionResult> GetKanbanItem(int kanbanItemId)
         {
             KanbanItem kanbanItem = await kanbanItemsService.GetKanbanItemById(kanbanItemId);
@@ -40,6 +46,38 @@ namespace KinaUnaProgenyApi.Controllers
             return accessLevelResult.ToActionResult();
         }
 
+        [HttpGet]
+        [Route("[action]/{kanbanBoardId:int}")]
+        public async Task<IActionResult> GetKanbanItemsForBoard(int kanbanBoardId)
+        {
+            KanbanBoard kanbanBoard = await kanbanBoardsService.GetKanbanBoardById(kanbanBoardId);
+            if (kanbanBoard == null)
+            {
+                return NotFound();
+            }
+            
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanBoard.ProgenyId, userEmail, kanbanBoard.AccessLevel);
+
+            if (accessLevelResult.IsSuccess)
+            {
+                List<KanbanItem> kanbanItems = await kanbanItemsService.GetKanbanItemsForBoard(kanbanBoardId);
+                List<KanbanItem> allowedKanbanItems = [];
+                foreach (KanbanItem kanbanItem in kanbanItems)
+                {
+                    CustomResult<int> itemAccessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanItem.TodoItem.ProgenyId, userEmail, kanbanItem.TodoItem.AccessLevel);
+                    if (itemAccessLevelResult.IsSuccess)
+                    {
+                        allowedKanbanItems.Add(kanbanItem);
+                    }
+                }
+
+                return Ok(allowedKanbanItems);
+            }
+
+            return accessLevelResult.ToActionResult();
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] KanbanItem kanbanItem)
         {
@@ -47,14 +85,27 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return BadRequest();
             }
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
             kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId);
             if (kanbanItem.TodoItem == null)
             {
                 return BadRequest("The Kanban item must be linked to a valid Todo item.");
             }
 
+            Progeny progeny = await progenyService.GetProgeny(kanbanItem.TodoItem.ProgenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (progeny != null)
+            {
+
+                if (!progeny.IsInAdminList(userEmail))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return BadRequest();
+            }
+            
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanItem.TodoItem.ProgenyId, userEmail, kanbanItem.TodoItem.AccessLevel);
             if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
             
@@ -82,8 +133,21 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest("The Kanban item must be linked to a valid Todo item.");
             }
 
+            Progeny progeny = await progenyService.GetProgeny(kanbanItem.TodoItem.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            
+            if (progeny != null)
+            {
+
+                if (!progeny.IsInAdminList(userEmail))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return BadRequest();
+            }
+
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanItem.TodoItem.ProgenyId, userEmail, kanbanItem.TodoItem.AccessLevel);
             if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
 
@@ -106,7 +170,21 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return BadRequest("The Kanban item is not linked to a valid Todo item.");
             }
+
+            Progeny progeny = await progenyService.GetProgeny(existingKanbanItem.TodoItem.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (progeny != null)
+            {
+
+                if (!progeny.IsInAdminList(userEmail))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return BadRequest();
+            }
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(existingKanbanItem.TodoItem.ProgenyId, userEmail, existingKanbanItem.TodoItem.AccessLevel);
             if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
 
