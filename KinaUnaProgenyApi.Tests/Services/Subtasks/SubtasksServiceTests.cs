@@ -161,8 +161,8 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
 
             await using ProgenyDbContext context = new(dbOptions);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new()
                 {
                     TodoItemId = 1,
@@ -170,6 +170,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
                     ParentTodoItemId = TestParentTodoItemId,
                     IsDeleted = false
                 },
+
                 new()
                 {
                     TodoItemId = 2,
@@ -177,6 +178,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
                     ParentTodoItemId = TestParentTodoItemId,
                     IsDeleted = false
                 },
+
                 new()
                 {
                     TodoItemId = 3,
@@ -184,6 +186,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
                     ParentTodoItemId = TestParentTodoItemId,
                     IsDeleted = true
                 },
+
                 new()
                 {
                     TodoItemId = 4,
@@ -191,7 +194,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
                     ParentTodoItemId = 999,
                     IsDeleted = false
                 }
-            };
+            ];
 
             context.TodoItemsDb.AddRange(subtasks);
             await context.SaveChangesAsync();
