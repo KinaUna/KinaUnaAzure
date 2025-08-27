@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using KinaUna.Data.Contexts;
+using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Contexts;
-using KinaUna.Data.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services.KanbanServices
 {
@@ -42,7 +44,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// identifier.</returns>
         public async Task<KanbanBoard> AddKanbanBoard(KanbanBoard kanbanBoard)
         {
-            kanbanBoard.UId = System.Guid.NewGuid().ToString();
+            kanbanBoard.UId = Guid.NewGuid().ToString();
             await progenyDbContext.KanbanBoardsDb.AddAsync(kanbanBoard);
             await progenyDbContext.SaveChangesAsync();
             return kanbanBoard;
@@ -69,7 +71,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
 
             if (string.IsNullOrEmpty(existingKanbanBoard.UId))
             {
-                existingKanbanBoard.UId = System.Guid.NewGuid().ToString();
+                existingKanbanBoard.UId = Guid.NewGuid().ToString();
             }
 
             existingKanbanBoard.Title = kanbanBoard.Title;
@@ -103,7 +105,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             }
 
             // Delete the associated KanbanItems too.
-            List<KanbanItem> kanbanItemsToDelete = await progenyDbContext.KanbanItemsDb.AsNoTracking().Where(ki => ki.KanbanBoardId == kanbanBoardToDelete.KanbanBoardId).ToListAsync();
+            List<KanbanItem> kanbanItemsToDelete = await progenyDbContext.KanbanItemsDb.Where(ki => ki.KanbanBoardId == kanbanBoardToDelete.KanbanBoardId).ToListAsync();
             if (kanbanItemsToDelete.Count != 0)
             {
                 progenyDbContext.KanbanItemsDb.RemoveRange(kanbanItemsToDelete);
@@ -114,6 +116,51 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             await progenyDbContext.SaveChangesAsync();
 
             return kanbanBoardToDelete;
+        }
+
+        /// <summary>
+        /// Retrieves a list of Kanban boards associated with a specific progeny, filtered by the user's access level.
+        /// </summary>
+        /// <remarks>This method performs a database query to retrieve Kanban boards that belong to the
+        /// specified progeny and meet the access level requirements. The results are returned as a read-only list and
+        /// are not tracked by the database context.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny for which Kanban boards are requested.</param>
+        /// <param name="userAccessAccessLevel">The minimum access level required to include a Kanban board in the result. Boards with an access level lower
+        /// than this value will be excluded.</param>
+        /// <param name="request">An object containing additional parameters for the request. This may include filtering or pagination
+        /// options.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="KanbanBoard"/> objects that meet the specified criteria. The list will be empty if no matching boards
+        /// are found.</returns>
+        public async Task<List<KanbanBoard>> GetKanbanBoardsForProgeny(int progenyId, int userAccessAccessLevel, KanbanBoardsRequest request)
+        {
+            List<KanbanBoard> kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking().Where(k => k.ProgenyId == progenyId && k.AccessLevel >= userAccessAccessLevel).ToListAsync();
+
+            return kanbanBoards;
+        }
+
+        public KanbanBoardsResponse CreateKanbanBoardsResponse(List<KanbanBoard> kanbanBoards, KanbanBoardsRequest request)
+        {
+            KanbanBoardsResponse kanbanBoardsResponse = new()
+            {
+                KanbanBoardsRequest = request,
+                TotalItems = kanbanBoards.Count,
+                TotalPages = (int)Math.Ceiling((double)kanbanBoards.Count / request.NumberOfItems)
+            };
+
+            kanbanBoards = [.. kanbanBoards.OrderByDescending(k => k.ModifiedTime).ThenByDescending(k => k.CreatedTime)];
+            if (request.NumberOfItems > 0)
+            {
+                kanbanBoardsResponse.KanbanBoards = [.. kanbanBoards.Skip(request.Skip).Take(request.NumberOfItems)];
+                kanbanBoardsResponse.PageNumber = (int)Math.Ceiling((double)request.Skip / request.NumberOfItems) + 1;
+            }
+            else
+            {
+                kanbanBoardsResponse.KanbanBoards = kanbanBoards;
+                kanbanBoardsResponse.PageNumber = 1;
+            }
+            
+            return kanbanBoardsResponse;
         }
     }
 }

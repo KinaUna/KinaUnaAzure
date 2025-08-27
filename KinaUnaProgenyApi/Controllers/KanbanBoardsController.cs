@@ -1,14 +1,16 @@
-﻿using KinaUna.Data.Extensions;
+﻿using KinaUna.Data;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.KanbanServices;
+using KinaUnaProgenyApi.Services.TodosServices;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using KinaUna.Data;
-using KinaUnaProgenyApi.Services;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -38,8 +40,8 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="kanbanBoardId">The unique identifier of the Kanban board to retrieve.</param>
         /// <returns>An <see cref="IActionResult"/> containing the Kanban board if found and accessible,  or an appropriate HTTP
         /// response indicating the result of the operation.</returns>
-        [HttpPost]
-        [Route("[action]")]
+        [HttpGet]
+        [Route("[action]/{kanbanBoardId:int}")]
         public async Task<IActionResult> GetKanbanBoard(int kanbanBoardId)
         {
             KanbanBoard kanbanBoard = await kanbanBoardsService.GetKanbanBoardById(kanbanBoardId);
@@ -54,6 +56,41 @@ namespace KinaUnaProgenyApi.Controllers
             if (accessLevelResult.IsSuccess) return Ok(kanbanBoard);
 
             return accessLevelResult.ToActionResult();
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> GetProgeniesKanbanBoardsList([FromBody] KanbanBoardsRequest request)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            List<Progeny> progenyList = [];
+            foreach (int progenyId in request.ProgenyIds)
+            {
+                Progeny progeny = await progenyService.GetProgeny(progenyId);
+                if (progeny != null)
+                {
+                    UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+                    if (userAccess != null)
+                    {
+                        progenyList.Add(progeny);
+                    }
+                }
+            }
+
+            if (request.Skip < 0) request.Skip = 0;
+
+            List<KanbanBoard> kanbanBoards = [];
+            if (progenyList.Count == 0) return NotFound();
+            foreach (Progeny progeny in progenyList)
+            {
+                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, userEmail);
+                List<KanbanBoard> progenyKanbanBoards = await kanbanBoardsService.GetKanbanBoardsForProgeny(progeny.Id, userAccess.AccessLevel, request);
+                kanbanBoards.AddRange(progenyKanbanBoards);
+            }
+
+            KanbanBoardsResponse kanbanBoardsResponse = kanbanBoardsService.CreateKanbanBoardsResponse(kanbanBoards, request);
+
+            return Ok(kanbanBoardsResponse);
         }
 
         /// <summary>
