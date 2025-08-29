@@ -126,7 +126,7 @@ function onRichTextEditorCreated() {
  * This ensures that the editor is properly displayed and ready for user input.
  */
 function onRichTextEditorFocus() {
-    let rteElement = document.getElementById('content-rich-text-editor');
+    let rteElement = document.getElementById('description-rich-text-editor');
     if (rteElement) {
         if (rteElement.ej2_instances && rteElement.ej2_instances.length > 0) {
             rteElement.ej2_instances[0].refreshUI();

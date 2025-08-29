@@ -19,6 +19,7 @@ import { initializeAddEditTodo } from "../todos/add-edit-todo.js";
 import { TimelineChangedEvent } from "../data-tools-v9.js";
 import { TimelineItem } from "../page-models-v9.js";
 import { popupTodoItem } from "../todos/todo-details.js";
+import { initializeAddEditKanbanBoard } from "../kanbans/add-edit-kanban-board.js";
 
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
@@ -147,6 +148,10 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
 
         if (addItemType === 'todo') {
             await initializeAddEditTodo();
+        }
+
+        if (addItemType === 'kanbanboard') {
+            await initializeAddEditKanbanBoard();
         }
        
         hideBodyScrollbars();
@@ -329,6 +334,10 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
         if (editItemType === 'subtask') {
             await initializeAddEditTodo();
         }
+
+        if (editItemType === 'kanbanboard') {
+            await initializeAddEditKanbanBoard();
+        }
         
         hideBodyScrollbars();
         addCloseButtonEventListener();
@@ -424,6 +433,10 @@ async function popupCopyItemModal(copyItemType: string, copyItemItemId: string):
 
         if (copyItemType === 'todo') {
             await initializeAddEditTodo();
+        }
+
+        if (copyItemType === 'kanbanboard') {
+            await initializeAddEditKanbanBoard();
         }
 
         hideBodyScrollbars();

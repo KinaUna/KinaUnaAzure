@@ -44,7 +44,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteFile(FileItem model)
         {
-            
+            // Todo: Implement file deletion from blob storage.
             throw new NotImplementedException();
         }
 
@@ -176,7 +176,12 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("AddTodo", "Todos");
             }
-            
+
+            if (itemType == "kanbanboard")
+            {
+                return RedirectToAction("AddKanbanBoard", "Kanbans");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
