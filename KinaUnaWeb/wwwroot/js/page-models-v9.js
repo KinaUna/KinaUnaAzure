@@ -457,6 +457,8 @@ export var TimeLineType;
     TimeLineType[TimeLineType["User"] = 13] = "User";
     TimeLineType[TimeLineType["UserAccess"] = 14] = "UserAccess";
     TimeLineType[TimeLineType["TodoItem"] = 15] = "TodoItem";
+    TimeLineType[TimeLineType["KanbanBoard"] = 16] = "KanbanBoard";
+    TimeLineType[TimeLineType["KanbanItem"] = 17] = "KanbanItem";
     TimeLineType[TimeLineType["Child"] = 100] = "Child";
 })(TimeLineType || (TimeLineType = {}));
 export var TodoStatusType;
@@ -607,6 +609,79 @@ export class TodoItem {
         this.accessLevel = 5;
         this.tags = [];
         this.context = '';
+        this.createdBy = '';
+        this.modifiedBy = '';
+        this.createdTime = new Date();
+        this.modifiedTime = new Date();
+        this.isDeleted = false;
+    }
+}
+export class KanbanBoardsPageParameters {
+    constructor() {
+        this.progenyId = 0;
+        this.progenies = [];
+        this.languageId = 0;
+        this.currentPageNumber = 0;
+        this.itemsPerPage = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.sort = 0; // 0 Ascending, 1 Descending
+        this.tagFilter = '';
+        this.contextFilter = '';
+        this.includeDeleted = false;
+        this.showSettings = false;
+    }
+}
+export class KanbanBoardsPageResponse {
+    constructor() {
+        this.pageNumber = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.KanbanBoardsList = [];
+        this.tagsList = [];
+        this.contextsList = [];
+    }
+}
+export class KanbanBoard {
+    constructor() {
+        this.kanbanBoardId = 0;
+        this.uId = '';
+        this.progenyId = 0;
+        this.title = '';
+        this.description = '';
+        this.columns = '';
+        this.accessLevel = 5;
+        this.tags = [];
+        this.context = '';
+        this.createdBy = '';
+        this.modifiedBy = '';
+        this.createdTime = new Date();
+        this.modifiedTime = new Date();
+        this.isDeleted = false;
+    }
+}
+export class KanbanBoardElementParameters {
+    constructor() {
+        this.kanbanBoardId = 0;
+        this.languageId = 0;
+    }
+}
+export class KanbanBoardColumn {
+    constructor() {
+        this.id = 0;
+        this.columnIndex = 0;
+        this.title = '';
+        this.kanbanItems = [];
+    }
+}
+export class KanbanItem {
+    constructor() {
+        this.kanbanItemId = 0;
+        this.uId = '';
+        this.kanbanBoardId = 0;
+        this.todoItemId = 0;
+        this.columnIndex = 0;
+        this.rowIndex = 0;
         this.createdBy = '';
         this.modifiedBy = '';
         this.createdTime = new Date();

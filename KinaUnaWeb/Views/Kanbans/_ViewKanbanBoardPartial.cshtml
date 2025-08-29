@@ -1,0 +1,96 @@
+﻿@using System.Web
+@using KinaUna.Data
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.ItemViewModels.KanbanBoardViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = Model.KanbanBoard.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Kanban Boards", PageNames.Todos, Model.LanguageId);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-todos item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.KanbanBoard.Progeny.PictureLink" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="space-50"></div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">view_kanban</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        @if (Model.CurrentUser.CanUserAddItems)
+                        {
+                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.KanbanBoard.KanbanBoardId" data-copy-item-type="kanbanboard">
+                                <i class="material-icons kinauna-icon-medium">content_copy</i>
+                            </button>
+                        }
+                        @Model.KanbanBoard.Title
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrWhiteSpace(Model.KanbanBoard.Description))
+                {
+                    <div class="space-10"></div>
+                    <div class="row text-white">
+                        <div class="col-auto">
+                            <span class="text-white-75">@await LocaleManager.GetTranslation("Description", PageNames.Todos, Model.LanguageId):</span>
+                        </div>
+                    </div>
+                    <div class="timeline-text row m-0 text-white">
+                        <div class="col-12 bg-display-rich-text p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.KanbanBoard.Description))</div>
+                    </div>
+                }
+                <div class="space-20"></div>
+                <div class="row">
+                    <div class="col-12">
+                        @if (!string.IsNullOrEmpty(Model.KanbanBoard.Tags))
+                        {
+                            List<string> tagsList = Model.KanbanBoard.Tags.Split(',').ToList();
+                            <div class="float-right">
+                                @foreach (string tagString in tagsList)
+                                {
+                                    <span class="btn tag-item tag-item-sm">@tagString</span>
+                                }
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.KanbanBoard.Context))
+                        {
+                            List<string> contextsList = Model.KanbanBoard.Context.Split(',').ToList();
+                            <div class="float-right">
+                                @foreach (string contextsString in contextsList)
+                                {
+                                    <span class="btn context-item tag-item-sm">@contextsString</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="kanban-board-main-div" class="kanban-board" data-view-kanban-board-id="@Model.KanbanBoard.KanbanBoardId">
+                        
+                    </div>
+                </div>
+                <div class="space-10"></div>
+                <div class="row">
+                    <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.KanbanBoard.CreatedBy</div>
+                    @if (Model.IsCurrentUserProgenyAdmin)
+                    {
+                        <div class="col-12">
+                            <a data-edit-item-type="kanbanboard" data-edit-item-item-id="@Model.KanbanBoard.KanbanBoardId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                            <a data-delete-item-type="kanbanboard" data-delete-item-item-id="@Model.KanbanBoard.KanbanBoardId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -12,7 +12,7 @@
 }
 <div class="row" data-subtask-element-id="@Model.TodoItem.TodoItemId" style="background: @Model.TodoItem.StatusBackgroundColor()">
     <div class="col-auto lead">@Model.TodoItem.Title</div>
-    <div class="col text-white-75 text-right" style="align-content-end;">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
+    <div class="col text-white-75 text-right" style="align-content: end;">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
     
     @if (Model.IsCurrentUserProgenyAdmin)
     {

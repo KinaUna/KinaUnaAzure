@@ -187,14 +187,11 @@
             <div class="space-10"></div>
             <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.TodoItem.CreatedBy</div>
             @if(Model.IsCurrentUserProgenyAdmin){
-
                 <div class="col-12">
                     <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
                     <a data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                 </div>
-
             }
-            
         </div>
     </div>
 </div>

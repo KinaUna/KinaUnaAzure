@@ -54,9 +54,10 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// from the database. Ensure that the provided <paramref name="existingKanbanBoard"/> represents a valid and
         /// existing Kanban board.</remarks>
         /// <param name="existingKanbanBoard">The Kanban board to delete. The board must already exist in the database.</param>
+        /// <param name="hardDelete">If set to <see langword="true"/>, the Kanban board and its items are permanently removed from the database.</param>
         /// <returns>The deleted <see cref="KanbanBoard"/> if the operation is successful; otherwise, <see langword="null"/> if
         /// the specified board does not exist.</returns>
-        Task<KanbanBoard> DeleteKanbanBoard(KanbanBoard existingKanbanBoard);
+        Task<KanbanBoard> DeleteKanbanBoard(KanbanBoard existingKanbanBoard, bool hardDelete = false);
 
         /// <summary>
         /// Retrieves a list of Kanban boards associated with a specific progeny, filtered by the user's access level.

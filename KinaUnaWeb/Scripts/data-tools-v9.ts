@@ -125,8 +125,8 @@ export async function setTagsAutoSuggestList(progenyIds: number[], elementId: st
 
         const suggestInputElement = tagListElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
-            suggestInputElement.tabIndex =-1;
-            suggestInputElement.addEventListener('keydown', function(this, event) {
+            suggestInputElement.tabIndex = -1;
+            const suggestInputKeydownFunction = function (this: HTMLInputElement, event: KeyboardEvent) {
                 if (event.key === "Enter") {
                     event.preventDefault();
                     const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
@@ -138,7 +138,9 @@ export async function setTagsAutoSuggestList(progenyIds: number[], elementId: st
                     }
                     return false;
                 }
-            });
+            }
+            suggestInputElement.removeEventListener('keydown', suggestInputKeydownFunction);
+            suggestInputElement.addEventListener('keydown', suggestInputKeydownFunction);
         }
     }
 
@@ -193,7 +195,7 @@ export async function setContextAutoSuggestList(progenyIds: number[], elementId:
         const suggestInputElement = contextInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (this, event) {
+            const suggestInputKeydownFunction = function (this: HTMLInputElement, event: KeyboardEvent) {
                 if (event.key === "Enter") {
                     event.preventDefault();
                     const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
@@ -205,7 +207,9 @@ export async function setContextAutoSuggestList(progenyIds: number[], elementId:
                     }
                     return false;
                 }
-            });
+            }
+            suggestInputElement.removeEventListener('keydown', suggestInputKeydownFunction);
+            suggestInputElement.addEventListener('keydown', suggestInputKeydownFunction);
         }
     }
 
@@ -261,7 +265,7 @@ export async function setLocationAutoSuggestList(progenyIds: number[], elementId
         const suggestInputElement = locationInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (this, event) {
+            const suggestInputKeydownFunction = function (this: HTMLInputElement, event: KeyboardEvent) {
                 if (event.key === "Enter") {
                     event.preventDefault();
                     const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
@@ -273,7 +277,9 @@ export async function setLocationAutoSuggestList(progenyIds: number[], elementId
                     }
                     return false;
                 }
-            });
+            }
+            suggestInputElement.removeEventListener('keydown', suggestInputKeydownFunction);
+            suggestInputElement.addEventListener('keydown', suggestInputKeydownFunction);
         }
     }
 
@@ -329,7 +335,7 @@ export async function setCategoriesAutoSuggestList(progenyIds: number[], element
         const suggestInputElement = categoryInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (this, event) {
+            const suggestInputKeydownFunction = function (this: HTMLInputElement, event: KeyboardEvent) {
                 if (event.key === "Enter") {
                     event.preventDefault();
                     const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
@@ -341,7 +347,9 @@ export async function setCategoriesAutoSuggestList(progenyIds: number[], element
                     }
                     return false;
                 }
-            });
+            }
+            suggestInputElement.removeEventListener('keydown', suggestInputKeydownFunction);
+            suggestInputElement.addEventListener('keydown', suggestInputKeydownFunction);
         }
     }
 
@@ -397,7 +405,7 @@ export async function setVocabularyLanguagesAutoSuggestList(progenyIds: number[]
         const suggestInputElement = languageInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (this, event) {
+            const suggestInputKeydownFunction = function (this: HTMLInputElement, event: KeyboardEvent) {
                 if (event.key === "Enter") {
                     event.preventDefault();
                     const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
@@ -409,7 +417,9 @@ export async function setVocabularyLanguagesAutoSuggestList(progenyIds: number[]
                     }
                     return false;
                 }
-            });
+            }
+            suggestInputElement.removeEventListener('keydown', suggestInputKeydownFunction);
+            suggestInputElement.addEventListener('keydown', suggestInputKeydownFunction);
         }
     }
 

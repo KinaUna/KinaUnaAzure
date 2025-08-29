@@ -586,10 +586,13 @@ async function initialSettingsPanelSetup(): Promise<void> {
     const todosPageSaveSettingsButton = document.querySelector<HTMLButtonElement>('#todos-page-save-settings-button');
     if (todosPageSaveSettingsButton !== null) {
         // Clear event listeners
+        todosPageSaveSettingsButton.removeEventListener('click', saveTodosPageSettings);
         todosPageSaveSettingsButton.addEventListener('click', saveTodosPageSettings);
     }
 
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.removeEventListener('click', sortTodosAscending);
+        sortDescendingSettingsButton.removeEventListener('click', sortTodosDescending);
         sortAscendingSettingsButton.addEventListener('click', sortTodosAscending);
         sortDescendingSettingsButton.addEventListener('click', sortTodosDescending);
     }
@@ -597,50 +600,62 @@ async function initialSettingsPanelSetup(): Promise<void> {
     setEventListenersForItemsPerPage();
 
     if (sortByDueDateSettingsButton !== null) {
+        sortByDueDateSettingsButton.removeEventListener('click', sortByDueDate);
         sortByDueDateSettingsButton.addEventListener('click', sortByDueDate);
     }
 
     if (sortByCreatedDateSettingsButton !== null) {
+        sortByCreatedDateSettingsButton.removeEventListener('click', sortByCreatedDate);
         sortByCreatedDateSettingsButton.addEventListener('click', sortByCreatedDate);
     }
 
     if (sortByStartDateSettingsButton !== null) {
+        sortByStartDateSettingsButton.removeEventListener('click', sortByStartDate);
         sortByStartDateSettingsButton.addEventListener('click', sortByStartDate);
     }
 
     if (sortByCompletedDateSettingsButton !== null) {
+        sortByCompletedDateSettingsButton.removeEventListener('click', sortByCompletedDate);
         sortByCompletedDateSettingsButton.addEventListener('click', sortByCompletedDate);
     }
 
     if (groupByNoneSettingsButton !== null) {
+        groupByNoneSettingsButton.removeEventListener('click', groupByNone);
         groupByNoneSettingsButton.addEventListener('click', groupByNone);
     }
 
     if (groupByStatusSettingsButton !== null) {
+        groupByStatusSettingsButton.removeEventListener('click', groupByStatus);
         groupByStatusSettingsButton.addEventListener('click', groupByStatus);
     }
 
     if (groupByAssignedToSettingsButton !== null) {
+        groupByAssignedToSettingsButton.removeEventListener('click', groupByAssignedTo);
         groupByAssignedToSettingsButton.addEventListener('click', groupByAssignedTo);
     }
 
     if (groupByLocationSettingsButton !== null) {
+        groupByLocationSettingsButton.removeEventListener('click', groupByLocation);
         groupByLocationSettingsButton.addEventListener('click', groupByLocation);
     }
 
     const toggleShowFiltersButton = document.querySelector<HTMLButtonElement>('#todos-toggle-filters-button');
     if (toggleShowFiltersButton !== null) {
-        toggleShowFiltersButton.addEventListener('click', function (event) {
+        const toggleShowFiltersFunction = function (event: Event) {
             event.preventDefault();
             toggleShowFilters();
-        });
+        }
+        toggleShowFiltersButton.removeEventListener('click', toggleShowFiltersFunction)
+        toggleShowFiltersButton.addEventListener('click', toggleShowFiltersFunction);
     }
 
     const statusTypeButtons = document.querySelectorAll<HTMLButtonElement>('.filter-status-type-button');
     statusTypeButtons.forEach(function (button: HTMLButtonElement) {
-        button.addEventListener('click', function () {
+        const toggleTodoFilterStatusTypeFunction = function (event: Event) {
             toggleTodoFilterStatusType(parseInt(button.dataset.filterStatusType ?? '-1'));
-        });
+        }
+        button.removeEventListener('click', toggleTodoFilterStatusTypeFunction);
+        button.addEventListener('click', toggleTodoFilterStatusTypeFunction);
 
         if (todosPageParameters.statusFilter.includes(parseInt(button.dataset.filterStatusType ?? '-1'))) {
             button.classList.add('active');
@@ -653,9 +668,12 @@ async function initialSettingsPanelSetup(): Promise<void> {
     updateTodosFilterAssignedToButtons();
     const assignedToButtons = document.querySelectorAll<HTMLButtonElement>('.filter-assigned-to-button');
     assignedToButtons.forEach(function (button: HTMLButtonElement) {
-        button.addEventListener('click', function () {
+        const toggleTodoFilterAssignedToFunction = function (event: Event) {
             toggleTodoFilterAssignedTo(parseInt(button.dataset.filterAssignedTo ?? '-1'));
-        });
+        }
+        button.removeEventListener('click', toggleTodoFilterAssignedToFunction);
+        button.addEventListener('click', toggleTodoFilterAssignedToFunction);
+
         if (todosPageParameters.progenies.includes(parseInt(button.dataset.filterAssignedTo ?? '-1'))) {
             button.classList.add('active');
         }

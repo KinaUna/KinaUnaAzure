@@ -1,0 +1,114 @@
+﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@inject ILocaleManager LocaleManager
+@model KinaUnaWeb.Models.Kanbans.KanbanBoardsListViewModel
+@{
+    ViewData["Title"] = "Kanban Boards";
+    string pageParameters = Json.Serialize(Model.KanbanBoardsPageParameters).ToString();
+}
+<div id="kanbans-index-page-parameters-div" class="d-none" data-kanbans-index-page-parameters="@pageParameters"></div>
+<div id="popup-kanban-board-id-div" class="d-none" data-popup-kanban-board-id="@Model.PopUpKanbanBoardId"></div>
+<div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10 col-w1900-8 col-w2500-7">
+    <div class="row">
+        <div class="col-12">
+            <div id="settings-notification-div" class="float-right small text-muted"></div>
+            <div id="page-title-div" class="h2">@ViewData["Title"]</div>
+        </div>
+    </div>
+    <div class="space-20"></div>
+    <div id="kanban-boards-list-div" class="row">
+    </div>
+    <div class="row" style="height: 150px;">
+        <button id="more-kanban-boards-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+        <div id="loading-kanban-boards-div" class="w-100">
+            <div class="space-50"></div>
+        </div>
+    </div>
+</div>
+<div class="d-none">
+    <div id="page-settings-content-div" class="bg-dark page-settings-content">
+        <div class="row">
+            <div class="col-auto ml-auto">
+                <button id="close-page-settings-button" class="ml-auto btn btn-link btn-link-yellow p-2">
+                    <i class="material-icons icon-top-4">close</i>
+                </button>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="row">
+                <div class="col h5">
+                    @await LocaleManager.GetTranslation("Page settings", PageNames.Layout, Model.LanguageId)
+                </div>
+            </div>
+            <div class="space-20"></div>
+        </div>
+        <div class="row">
+            <div id="settings-items-per-page-label" class="col-12">
+                @await LocaleManager.GetTranslation("Items per page", PageNames.Layout, Model.LanguageId):
+            </div>
+            <div class="col-auto ml-4">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <input type="number" id="kanbans-index-items-per-page-input" min="1" max="100" step="1" value="10" class="form-control d-inline w-auto"/>
+                    </div>
+                    <div class="col-auto">
+                        <button id="decrease-kanban-index-items-per-page-button" class="btn btn-outline-info">-</button><button id="increase-kanban-index-items-per-page-button" class="btn btn-outline-info">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="space-20"></div>
+        <div class="row">
+            <div class="col-12">
+                <a id="kanbans-toggle-filters-button" class="btn-settings-panel" href="#">
+                    @await LocaleManager.GetTranslation("Filters", PageNames.Timeline, Model.LanguageId)
+                    <i id="show-filters-chevron" class="material-icons sidebar-icon chevron-right">chevron_right</i>
+                </a>
+            </div>
+        </div>
+        <div class="row ml-4 kanbans-filter-options d-none">
+            <div class="col-12">
+                <div class="space-20"></div>
+                <span id="context-filter-span">@await LocaleManager.GetTranslation("Context Filter:", PageNames.Timeline, Model.LanguageId)</span>
+            </div>
+            <div class="col ml-4">
+                <input id="context-filter-input" type="text"/>
+            </div>
+        </div>
+        <div class="row ml-4 kanbans-filter-options d-none">
+            <div class="col-12">
+                <div class="space-20"></div>
+                <span id="tag-filter-span">@await LocaleManager.GetTranslation("Tag Filter:", PageNames.Timeline, Model.LanguageId)</span>
+            </div>
+            <div class="col ml-4">
+                <input id="tag-filter-input" type="text"/>
+            </div>
+        </div>
+        <div class="space-20"></div>
+        <div class="row">
+            <div class="col-12">
+                @await LocaleManager.GetTranslation("Set as default page settings", PageNames.Pictures, Model.LanguageId)
+            </div>
+            <div class="col ml-4">
+                <div class="row">
+                    <div class="col" style="max-width: 5em;">
+                        <input id="kanbans-settings-save-default-checkbox" type="checkbox" class="form-control" style="width: 2em; height: 2em; accent-color: #302e36;"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="space-20"></div>
+        <div class="row">
+            <div class="col-12">
+                <button id="kanbans-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+            </div>
+        </div>
+
+    </div>
+    <div id="show-page-settings-button-div" style="position: absolute; top: 60px; right: 0;">
+        <button id="page-settings-button" class="btn btn-link btn-link-yellow bg-dark p-3 m-2" style="border-radius: 33%">
+            <span><i class="material-icons icon-top-4">settings</i></span>
+        </button>
+    </div>
+</div>
+<script src="/js/kanbans/kanbans-index.js" type="module" asp-append-version="true"></script>

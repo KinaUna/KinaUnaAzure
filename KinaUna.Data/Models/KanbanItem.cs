@@ -65,6 +65,11 @@ namespace KinaUna.Data.Models
         /// </summary>
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether the entity is marked as deleted.
+        /// </summary>
+        public bool IsDeleted { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the associated <see cref="TodoItem"/> for this entity.  This property is not mapped to the

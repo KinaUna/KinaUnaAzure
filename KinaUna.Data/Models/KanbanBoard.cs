@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
@@ -76,5 +77,28 @@ namespace KinaUna.Data.Models
         /// Gets or sets the access level required to view this Kanban board.
         /// </summary>
         public int AccessLevel { get; set; }
+
+        /// <summary>
+        /// Comma-separated list of tags associated with the entity for categorization and filtering.
+        /// </summary>
+        [MaxLength(256)]
+        public string Tags { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Context information associated with the entity, providing additional metadata or categorization.
+        /// </summary>
+        [MaxLength(256)]
+        public string Context { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the entity is marked as deleted.
+        /// </summary>
+        public bool IsDeleted { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the associated progeny data for the current entity.
+        /// </summary>
+        [NotMapped]
+        public Progeny Progeny { get; set; } = new Progeny();
     }
 }

@@ -18,5 +18,20 @@ namespace KinaUna.Data.Models.DTOs
         /// Gets or sets the number of items to retrieve for pagination.
         /// </summary>
         public int NumberOfItems { get; set; } = 10;
+
+        /// <summary>
+        /// Comma-separated list of tags to filter by (e.g., "tag1,tag2").
+        /// </summary>
+        public string TagFilter { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Comma-separated list of contexts to filter by (e.g., "context1,context2").
+        /// </summary>
+        public string ContextFilter { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether deleted items should be included in the results.
+        /// </summary>
+        public bool IncludeDeleted { get; set; } = false;
     }
 }

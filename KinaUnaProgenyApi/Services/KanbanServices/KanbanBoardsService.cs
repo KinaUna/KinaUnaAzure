@@ -16,7 +16,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
     /// boards. It ensures that each Kanban board has a unique identifier and handles associated data, such as Kanban
     /// items, when deleting a board.</remarks>
     /// <param name="progenyDbContext">Service for accessing the Progeny database context.</param>
-    public class KanbanBoardsService(ProgenyDbContext progenyDbContext): IKanbanBoardsService
+    public class KanbanBoardsService(ProgenyDbContext progenyDbContext, IKanbanItemsService kanbanItemsService): IKanbanBoardsService
     {
         /// <summary>
         /// Retrieves a Kanban board by its unique identifier.
@@ -94,9 +94,10 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// from the database. Ensure that the provided <paramref name="existingKanbanBoard"/> represents a valid and
         /// existing Kanban board.</remarks>
         /// <param name="existingKanbanBoard">The Kanban board to delete. The board must already exist in the database.</param>
+        /// <param name="hardDelete">If set to <see langword="true"/>, the Kanban board and its items are permanently removed from the database.</param>
         /// <returns>The deleted <see cref="KanbanBoard"/> if the operation is successful; otherwise, <see langword="null"/> if
         /// the specified board does not exist.</returns>
-        public async Task<KanbanBoard> DeleteKanbanBoard(KanbanBoard existingKanbanBoard)
+        public async Task<KanbanBoard> DeleteKanbanBoard(KanbanBoard existingKanbanBoard, bool hardDelete = false)
         {
             KanbanBoard kanbanBoardToDelete = await progenyDbContext.KanbanBoardsDb.SingleOrDefaultAsync(k => k.KanbanBoardId == existingKanbanBoard.KanbanBoardId);
             if (kanbanBoardToDelete == null)
@@ -108,11 +109,22 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             List<KanbanItem> kanbanItemsToDelete = await progenyDbContext.KanbanItemsDb.Where(ki => ki.KanbanBoardId == kanbanBoardToDelete.KanbanBoardId).ToListAsync();
             if (kanbanItemsToDelete.Count != 0)
             {
-                progenyDbContext.KanbanItemsDb.RemoveRange(kanbanItemsToDelete);
-                await progenyDbContext.SaveChangesAsync();
+                foreach (KanbanItem kanbanItem in kanbanItemsToDelete)
+                {
+                    await kanbanItemsService.DeleteKanbanItem(kanbanItem, hardDelete);
+                }
             }
 
-            progenyDbContext.KanbanBoardsDb.Remove(kanbanBoardToDelete);
+            if (hardDelete)
+            {
+                progenyDbContext.KanbanBoardsDb.Remove(kanbanBoardToDelete);
+            }
+            else
+            {
+                kanbanBoardToDelete.IsDeleted = true;
+                progenyDbContext.KanbanBoardsDb.Update(kanbanBoardToDelete);
+            }
+
             await progenyDbContext.SaveChangesAsync();
 
             return kanbanBoardToDelete;
@@ -134,7 +146,47 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// are found.</returns>
         public async Task<List<KanbanBoard>> GetKanbanBoardsForProgeny(int progenyId, int userAccessAccessLevel, KanbanBoardsRequest request)
         {
-            List<KanbanBoard> kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking().Where(k => k.ProgenyId == progenyId && k.AccessLevel >= userAccessAccessLevel).ToListAsync();
+            List<KanbanBoard> kanbanBoards;
+            if (request.IncludeDeleted)
+            {
+                kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
+                    .Where(k => k.ProgenyId == progenyId && k.AccessLevel >= userAccessAccessLevel).ToListAsync();
+            }
+            else
+            {
+                kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
+                    .Where(k => k.ProgenyId == progenyId && k.AccessLevel >= userAccessAccessLevel && !k.IsDeleted).ToListAsync();
+            }
+
+            // Filter by tags if provided
+            if (!string.IsNullOrWhiteSpace(request.TagFilter))
+            {
+                List<string> tags = [.. request.TagFilter.Split(',').Select(tag => tag.Trim())];
+                kanbanBoards =
+                [
+                    .. kanbanBoards.Where(t =>
+                        t.Tags != null &&
+                        t.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(tag => tag.Trim())
+                            .Any(itemTag => tags.Any(filterTag => string.Equals(itemTag, filterTag, StringComparison.OrdinalIgnoreCase)))
+                    )
+                ];
+            }
+
+            // Filter by context if provided
+            if (!string.IsNullOrWhiteSpace(request.ContextFilter))
+            {
+                List<string> contexts = [.. request.ContextFilter.Split(',').Select(context => context.Trim())];
+                kanbanBoards =
+                [
+                    .. kanbanBoards.Where(t =>
+                        t.Context != null &&
+                        t.Context.Split(',')
+                            .Select(c => c.Trim())
+                            .Any(itemContext => contexts.Any(filterContext => string.Equals(itemContext, filterContext, StringComparison.OrdinalIgnoreCase)))
+                    )
+                ];
+            }
 
             return kanbanBoards;
         }

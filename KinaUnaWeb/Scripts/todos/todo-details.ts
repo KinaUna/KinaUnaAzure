@@ -17,8 +17,6 @@ export function addTodoItemListeners(itemId: string): void {
     const todoElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-todo-id="' + itemId + '"]');
     if (todoElementsWithDataId) {
         todoElementsWithDataId.forEach((element) => {
-            //const displayTodoItemWithItemId = () => { displayTodoItem(itemId) };
-            // Clear existing event listeners.            
             element.removeEventListener('click', onTodoItemDivClicked);
             element.addEventListener('click', onTodoItemDivClicked);
         });
@@ -26,8 +24,9 @@ export function addTodoItemListeners(itemId: string): void {
 }
 
 /**
- * Adds a click event listener to the todo item div.
- * When clicked, it calls the onTodoItemDivClicked function.
+ * The click event handler for todo item divs.
+ * When a todo item div is clicked, it retrieves the todoId from the data attribute
+ * and calls the displayTodoItem function to show the todo details.
  * @param {MouseEvent} event The click event.
  * @returns {Promise<void>} A promise that resolves when the function completes.
  * */
@@ -269,11 +268,13 @@ async function setTodoDetailsEventListeners(itemId: string, todoDetailsPopupDiv:
 
     const addSubtaskForm = document.querySelector<HTMLFormElement>('#add-subtask-inline-form');
     if (addSubtaskForm) {
+        const subtaskFormPreventDefaultAction = function (event: Event) {
+            event.preventDefault();
+        }
         // Prevent form submission from reloading the page.
         // Clear existing event listeners.
-        addSubtaskForm.addEventListener('submit', function (event: Event) {
-            event.preventDefault();
-        });
+        addSubtaskForm.removeEventListener('submit', subtaskFormPreventDefaultAction);
+        addSubtaskForm.addEventListener('submit', subtaskFormPreventDefaultAction );
     }
 
     const addSubtaskInput = document.querySelector<HTMLInputElement>('#todo-details-add-subtask-title-input');

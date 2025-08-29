@@ -163,8 +163,8 @@ namespace KinaUnaWeb.Controllers
 
                 BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), todoItemResponse.TodoItem.ProgenyId);
                 todoItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
-                UserInfo noteUserInfo = await userInfosHttpClient.GetUserInfoByUserId(todoItemResponse.TodoItem.CreatedBy);
-                todoItemResponse.TodoItem.CreatedBy = noteUserInfo.FullName();
+                UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(todoItemResponse.TodoItem.CreatedBy);
+                todoItemResponse.TodoItem.CreatedBy = todoUserInfo.FullName();
             }
 
 
