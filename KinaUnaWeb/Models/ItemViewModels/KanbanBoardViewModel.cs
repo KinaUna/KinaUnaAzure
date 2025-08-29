@@ -65,5 +65,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             return kanbanBoard;
         }
+
+        internal void SetPropertiesFromKanbanBoard(KanbanBoard kanbanBoard)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

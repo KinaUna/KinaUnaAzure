@@ -658,6 +658,7 @@ export class KanbanBoard {
         this.createdTime = new Date();
         this.modifiedTime = new Date();
         this.isDeleted = false;
+        this.columnsList = [];
     }
 }
 export class KanbanBoardElementParameters {
@@ -671,7 +672,7 @@ export class KanbanBoardColumn {
         this.id = 0;
         this.columnIndex = 0;
         this.title = '';
-        this.kanbanItems = [];
+        this.wipLimit = 0;
     }
 }
 export class KanbanItem {

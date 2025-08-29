@@ -1,12 +1,15 @@
 ﻿import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item";
-import { TimelineChangedEvent } from "../data-tools-v9";
+import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v9";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9";
+import { getTranslation } from "../localization-v9";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9";
 import { KanbanBoard, KanbanBoardColumn, KanbanItem, TimelineItem } from "../page-models-v9";
 import { displayKanbanItemDetails, getKanbanItemsForBoard, updateKanbanItem } from "./kanban-items";
 
 const kanbanBoardMainDiv = document.querySelector<HTMLDivElement>('#kanban-board-main-div');
+let kanbanBoard: KanbanBoard;
 let kanbanItems: KanbanItem[] = [];
+const defaultColumnTitle = 'Unnamed Column';  
 
 /**
  * Adds event listeners to all elements with the data-kanban-board-id attribute.
@@ -120,7 +123,6 @@ function dispatchTimelineItemChangedEvent(kanbanBoardId: string): void {
 }
 
 async function getKanbanBoard(kanbanBoardId: number): Promise<KanbanBoard> {
-    let kanbanBoard = new KanbanBoard();
     let url = '/api/KanbanBoards/GetKanbanBoard?kanbanBoardId=' + kanbanBoardId;
     await fetch(url, {
         method: 'GET',
@@ -131,6 +133,10 @@ async function getKanbanBoard(kanbanBoardId: number): Promise<KanbanBoard> {
     }).then(async function (response) {
         if (response.ok) {
             kanbanBoard = await response.json();
+            if (!kanbanBoard.columns) {
+                kanbanBoard.columns = '[]';
+            }
+            kanbanBoard.columnsList = JSON.parse(kanbanBoard.columns) as KanbanBoardColumn[];
         } else {
             console.error('Error getting Kanban Board. Status: ' + response.status + ', Message: ' + response.statusText);
         }
@@ -146,17 +152,26 @@ async function renderKanbanBoard() {
         if (kanbanBoardId) {
             const kanbanBoard: KanbanBoard = await getKanbanBoard(parseInt(kanbanBoardId));
             if (kanbanBoard) {
-                if (kanbanBoard.columns !== null && kanbanBoard.columns.length === 0) {
-                    kanbanBoardMainDiv.innerHTML = '<div class="alert alert-info" role="alert">No columns defined for this Kanban Board.</div>';
-                }
-                else {
-                    kanbanBoardMainDiv.innerHTML = createKanbanBoardContainer(kanbanBoard);
+                // If the KanbanBoard has no columns, add a default "To Do" column.
+                if (kanbanBoard.columnsList !== null && kanbanBoard.columnsList.length === 0) {
 
-                    // Load KanbanItems and render them in the appropriate columns.
-                    kanbanItems = await getKanbanItemsForBoard(kanbanBoard.kanbanBoardId);
-                    await renderKanbanItems(kanbanBoard.kanbanBoardId);
-                    
+                    let defaultKanbanBoardColumn: KanbanBoardColumn = new KanbanBoardColumn();
+                    defaultKanbanBoardColumn.id = 1;
+                    defaultKanbanBoardColumn.title = await getTranslation(defaultColumnTitle, 'Todos', getCurrentLanguageId());
+                    defaultKanbanBoardColumn.columnIndex = 0;
+                    defaultKanbanBoardColumn.wipLimit = 0;
+                    kanbanBoard.columnsList.push(defaultKanbanBoardColumn);
+                    kanbanBoard.columns = JSON.stringify(kanbanBoard.columnsList);
+                    // Save the updated KanbanBoard to the server.
+                    await updateKanbanBoardColumns(kanbanBoard);
                 }
+
+                kanbanBoardMainDiv.innerHTML = createKanbanBoardContainer(kanbanBoard);
+
+                // Load KanbanItems and render them in the appropriate columns.
+                kanbanItems = await getKanbanItemsForBoard(kanbanBoard.kanbanBoardId);
+                await renderKanbanItems(kanbanBoard.kanbanBoardId);
+                addColumnEventListeners();
             }
         }
     }
@@ -210,7 +225,8 @@ async function renderKanbanItems(kanbanBoardId: number) {
 
             const cardDragFunction = function (event: DragEvent) {
                 if (event.dataTransfer !== null) {
-                    event.dataTransfer.setData('text/plain', card.dataset.kanbanItemId || '');
+                    event.dataTransfer.setData('element-id', card.dataset.kanbanItemId || '');
+                    event.dataTransfer.setData('element-type', 'kanban-item-card');
                     event.dataTransfer.setData('source-column-id', card.parentElement?.parentElement?.dataset.columnId || '');
                     event.dataTransfer.effectAllowed = 'move';
                     card.classList.add('kanban-item-dragging');
@@ -218,7 +234,7 @@ async function renderKanbanItems(kanbanBoardId: number) {
             }
             card.removeEventListener('dragstart', cardDragFunction);
             card.addEventListener('dragstart', cardDragFunction);
-
+            
             const cardDragEndFunction = async function (event: DragEvent) {
                 card.classList.remove('kanban-item-dragging');
                 const kanbanItemId = card.dataset.kanbanItemId;
@@ -229,6 +245,17 @@ async function renderKanbanItems(kanbanBoardId: number) {
                     const kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
                     const currentKanbanItemColumnIndex = kanbanItem?.columnIndex;
                     if (targetColumnId) {
+                        const kanbanBoardColumn: KanbanBoardColumn = kanbanBoard.columnsList.find(c => c.id.toString() === targetColumnId) as KanbanBoardColumn;
+                        if (kanbanBoardColumn.wipLimit > 0) {
+                            const columnBodyDiv = document.querySelector<HTMLDivElement>('#kanban-column-body-' + kanbanBoardColumn.id);
+                            if (columnBodyDiv) {
+                                const kanbanItemsInColumn = columnBodyDiv.querySelectorAll<HTMLDivElement>('.kanban-card');
+                                if (kanbanItemsInColumn.length >= kanbanBoardColumn.wipLimit) {
+                                    alert('WIP limit reached for this column. Cannot move item here.'); // Todo: Replace with a nicer alert.
+                                    return;
+                                }
+                            }
+                        }
                         await updateKanbanItemsInColumn(parseInt(targetColumnId));
                         if (currentKanbanItemColumnIndex && targetColumnId !== currentKanbanItemColumnIndex.toString()) {
                             await updateKanbanItemsInColumn(currentKanbanItemColumnIndex);
@@ -280,10 +307,9 @@ function getStatusIconForCard(status: number): string {
     }
 }
 
-function createKanbanBoardContainer(kanbanBoard: KanbanBoard) {
-    const kanbanColumns: KanbanBoardColumn[] = JSON.parse(kanbanBoard.columns);
+function createKanbanBoardContainer(kanbanBoard: KanbanBoard): string {
     let kanbanBoardHtml = '<div class="kanban-board-container">';
-    kanbanColumns.forEach((column) => {
+    kanbanBoard.columnsList.forEach((column) => {
         kanbanBoardHtml += `
                         <div class="kanban-column" data-column-id="${column.id}">
                             <div class="kanban-column-header">
@@ -298,6 +324,108 @@ function createKanbanBoardContainer(kanbanBoard: KanbanBoard) {
                         </div>`;
     });
     kanbanBoardHtml += '</div>';
-
+    
     return kanbanBoardHtml;
+}
+
+function addColumnEventListeners() {
+    const addColumnButton = document.querySelector<HTMLButtonElement>('#add-kanban-column-button');
+    if (addColumnButton) {
+        const addColumnFunction = async function () {
+            let newColumnIndex = 0;
+            if (kanbanBoard.columnsList.length > 0) {
+                newColumnIndex = Math.max(...kanbanBoard.columnsList.map(c => c.columnIndex)) + 1;
+            }
+            let newColumnId = 1;
+            if (kanbanBoard.columnsList.length > 0) {
+                newColumnId = Math.max(...kanbanBoard.columnsList.map(c => c.id)) + 1;
+            }
+            let newKanbanBoardColumn: KanbanBoardColumn = new KanbanBoardColumn();
+            newKanbanBoardColumn.id = newColumnId;
+            newKanbanBoardColumn.title = await getTranslation(defaultColumnTitle, 'Todos', getCurrentLanguageId());
+            newKanbanBoardColumn.columnIndex = newColumnIndex;
+            newKanbanBoardColumn.wipLimit = 0;
+            kanbanBoard.columnsList.push(newKanbanBoardColumn);
+            kanbanBoard.columns = JSON.stringify(kanbanBoard.columnsList);
+            // Save the updated KanbanBoard to the server.
+            await updateKanbanBoardColumns(kanbanBoard);
+            // Re-render the KanbanBoard.
+            await renderKanbanBoard();
+        }
+        addColumnButton.removeEventListener('click', addColumnFunction);
+        addColumnButton.addEventListener('click', addColumnFunction);
+    }
+
+    const dragOverFunction = function (event: DragEvent) {
+        event.preventDefault();
+        // Check if dragged element is kanban-card.
+        if (event.dataTransfer === null || !event.dataTransfer.types.includes('element-type')) {
+            event.dataTransfer!.dropEffect = 'none';
+            return;
+        }
+        const elementType = event.dataTransfer.getData('element-type');
+        if (elementType !== 'kanban-item-card' && elementType !== 'kanban-column') {
+            event.dataTransfer!.dropEffect = 'none';
+            return;
+        }
+
+        // Todo: Add drag and drop for re-ordering columns.
+
+        // Check if WIP limit is reached for this column.
+        const columnId = (event.currentTarget as HTMLDivElement).dataset.columnId;
+        if (columnId) {
+            const kanbanBoardColumn: KanbanBoardColumn = kanbanBoard.columnsList.find(c => c.id.toString() === columnId) as KanbanBoardColumn;
+            if (kanbanBoardColumn.wipLimit > 0) {
+                const columnBodyDiv = document.querySelector<HTMLDivElement>('#kanban-column-body-' + kanbanBoardColumn.id);
+                if (columnBodyDiv) {
+                    const kanbanItemsInColumn = columnBodyDiv.querySelectorAll<HTMLDivElement>('.kanban-card');
+                    if (kanbanItemsInColumn.length >= kanbanBoardColumn.wipLimit) {
+                        event.dataTransfer!.dropEffect = 'none';
+                        return;
+                    }
+                }
+            }
+            event.dataTransfer!.dropEffect = 'move';
+        }
+    }
+
+    const dragEnterFunction = function (event: DragEvent) {
+        event.preventDefault();
+        (event.currentTarget as HTMLDivElement).classList.add('kanban-column-drag-over');
+    }
+    const dragLeaveFunction = function (event: DragEvent) {
+        event.preventDefault();
+        (event.currentTarget as HTMLDivElement).classList.remove('kanban-column-drag-over');
+    }
+
+    // Set up drag-and-drop event listeners for each column.
+    const kanbanColumns = document.querySelectorAll<HTMLDivElement>('.kanban-column');
+    kanbanColumns.forEach((column) => {
+        column.removeEventListener('dragover', dragOverFunction);
+        column.addEventListener('dragover', dragOverFunction);
+        column.removeEventListener('dragenter', dragEnterFunction);
+        column.addEventListener('dragenter', dragEnterFunction);
+        column.removeEventListener('dragleave', dragLeaveFunction);
+        column.addEventListener('dragleave', dragLeaveFunction);
+    });
+}
+
+async function updateKanbanBoardColumns(kanbanBoard: KanbanBoard): Promise<void> {
+    let url = '/api/KanbanBoards/UpdateKanbanBoardColumns';
+    await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(kanbanBoard)
+    }).then(async function (response) {
+        if (response.ok) {
+            // KanbanBoard updated successfully.
+        } else {
+            console.error('Error updating Kanban Board. Status: ' + response.status + ', Message: ' + response.statusText);
+        }
+    }).catch(function (error) {
+        console.error('Error updating Kanban Board. Error: ' + error);
+    });
 }

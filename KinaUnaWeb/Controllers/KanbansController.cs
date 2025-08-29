@@ -14,7 +14,8 @@ using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class KanbansController(IViewModelSetupService viewModelSetupService,
+    public class KanbansController(
+        IViewModelSetupService viewModelSetupService,
         IKanbanBoardsHttpClient kanbanBoardsHttpClient,
         IUserInfosHttpClient userInfosHttpClient,
         IProgenyHttpClient progenyHttpClient) : Controller
@@ -180,6 +181,77 @@ namespace KinaUnaWeb.Controllers
             KanbanBoard addedKanbanBoard = await kanbanBoardsHttpClient.AddKanbanBoard(kanbanBoard);
 
             return Json(addedKanbanBoard);
+        }
+
+        public async Task<IActionResult> EditKanbanBoard(int kanbanBoardId)
+        {
+            KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanBoard.ProgenyId);
+
+            KanbanBoardViewModel model = new(baseModel)
+            {
+                KanbanBoard = kanbanBoard
+            };
+            if (model.CurrentUser == null)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
+            {
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.SetProgenyList();
+            }
+
+            model.SetPropertiesFromKanbanBoard(kanbanBoard);
+
+            model.SetAccessLevelList();
+
+            return PartialView("_EditKanbanBoardPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditKanbanBoard([FromBody] KanbanBoardViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanBoard.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            KanbanBoard kanbanBoard = model.CreateKanbanBoard();
+            KanbanBoard updatedKanbanBoard = await kanbanBoardsHttpClient.UpdateKanbanBoard(kanbanBoard);
+
+            return Json(updatedKanbanBoard);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateKanbanBoardColumns(KanbanBoard kanbanBoard)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanBoard.ProgenyId);
+            KanbanBoardViewModel model = new(baseModel);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+            KanbanBoard existingKanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoard.KanbanBoardId);
+            existingKanbanBoard.Columns = kanbanBoard.Columns;
+            existingKanbanBoard.ModifiedBy = model.CurrentUser.UserId;
+            existingKanbanBoard.ModifiedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            KanbanBoard updatedKanbanBoard = await kanbanBoardsHttpClient.UpdateKanbanBoard(existingKanbanBoard);
+
+            return Json(updatedKanbanBoard);
         }
     }
 }

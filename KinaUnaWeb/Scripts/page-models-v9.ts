@@ -605,6 +605,7 @@ export class KanbanBoard {
     createdTime: Date = new Date();
     modifiedTime: Date = new Date();
     isDeleted: boolean = false;
+    columnsList: KanbanBoardColumn[] = [];
 }
 
 export class KanbanBoardElementParameters {
@@ -616,7 +617,7 @@ export class KanbanBoardColumn {
     id: number = 0;
     columnIndex: number = 0;
     title: string = '';
-    kanbanItems: KanbanItem[] = [];
+    wipLimit: number = 0;
 }
 
 export class KanbanItem {

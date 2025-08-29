@@ -89,5 +89,21 @@ namespace KinaUnaWeb.Services.HttpClients
 
             return kanbanBoardsResponse;
         }
+
+        public async Task<KanbanBoard> UpdateKanbanBoard(KanbanBoard kanbanBoard)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string kanbanBoardsApiPath = "/api/KanbanBoards/" + kanbanBoard.KanbanBoardId;
+            HttpResponseMessage kanbanBoardsResponse = await _httpClient.PutAsJsonAsync(kanbanBoardsApiPath, kanbanBoard).ConfigureAwait(false);
+            if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
+            
+            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            kanbanBoard = JsonConvert.DeserializeObject<KanbanBoard>(kanbanBoardAsString);
+
+            return kanbanBoard;
+        }
     }
 }
