@@ -243,7 +243,7 @@ namespace KinaUnaWeb.Controllers
             List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
             if (progAdminList.Count == 0)
             {
-                // Todo: Show that no children are available to add note for.
+                // Todo: Show that no children are available to add TodoItem for.
                 return RedirectToAction("Index");
             }
 

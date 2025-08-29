@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 
 namespace KinaUnaWeb.Models.ItemViewModels
@@ -40,6 +41,29 @@ namespace KinaUnaWeb.Models.ItemViewModels
                     item.Selected = false;
                 }
             }
+        }
+
+        internal KanbanBoard CreateKanbanBoard()
+        {
+            KanbanBoard kanbanBoard = new()
+            {
+                KanbanBoardId = KanbanBoard.KanbanBoardId,
+                UId = KanbanBoard.UId,
+                ProgenyId = KanbanBoard.ProgenyId,
+                Title = KanbanBoard.Title,
+                Description = KanbanBoard.Description,
+                Columns = KanbanBoard.Columns,
+                CreatedTime = KanbanBoard.CreatedTime,
+                ModifiedTime = DateTime.UtcNow,
+                CreatedBy = CurrentUser.UserId,
+                ModifiedBy = CurrentUser.UserId,
+                AccessLevel = KanbanBoard.AccessLevel,
+                Tags = KanbanBoard.Tags,
+                Context = KanbanBoard.Context,
+                IsDeleted = false
+            };
+
+            return kanbanBoard;
         }
     }
 }

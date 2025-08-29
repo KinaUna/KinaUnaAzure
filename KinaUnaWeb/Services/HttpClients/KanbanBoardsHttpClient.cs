@@ -40,6 +40,22 @@ namespace KinaUnaWeb.Services.HttpClients
             httpClient.DefaultRequestVersion = new Version(2, 0);
         }
 
+        public async Task<KanbanBoard> AddKanbanBoard(KanbanBoard kanbanBoard)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string kanbanBoardsApiPath = "/api/KanbanBoards/";
+            HttpResponseMessage kanbanBoardsResponse = await _httpClient.PostAsJsonAsync(kanbanBoardsApiPath, kanbanBoard).ConfigureAwait(false);
+            if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
+
+            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            kanbanBoard = JsonConvert.DeserializeObject<KanbanBoard>(kanbanBoardAsString);
+
+            return kanbanBoard;
+        }
+
         public async Task<KanbanBoard> GetKanbanBoard(int kanbanBoardId)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;

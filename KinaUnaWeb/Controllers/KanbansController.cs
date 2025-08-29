@@ -1,18 +1,23 @@
 ﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Models.Kanbans;
 using KinaUnaWeb.Models.TypeScriptModels.Kanbans;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using KinaUnaWeb.Models.ItemViewModels;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class KanbansController(IViewModelSetupService viewModelSetupService, IKanbanBoardsHttpClient kanbanBoardsHttpClient, IUserInfosHttpClient userInfosHttpClient) : Controller
+    public class KanbansController(IViewModelSetupService viewModelSetupService,
+        IKanbanBoardsHttpClient kanbanBoardsHttpClient,
+        IUserInfosHttpClient userInfosHttpClient,
+        IProgenyHttpClient progenyHttpClient) : Controller
     {
         [AllowAnonymous]
         public async Task<IActionResult> Index(int? kanbanBoardId, int childId = 0)
@@ -27,7 +32,7 @@ namespace KinaUnaWeb.Controllers
             {
                 model.KanbanBoardsList.Add(await kanbanBoardsHttpClient.GetKanbanBoard(model.PopUpKanbanBoardId));
             }
-            
+
             return View(model);
         }
 
@@ -58,7 +63,7 @@ namespace KinaUnaWeb.Controllers
                 TagFilter = pageParameters.TagFilter,
                 ContextFilter = pageParameters.ContextFilter,
             };
-            
+
             KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
 
             return Json(kanbanBoardsResponse);
@@ -134,6 +139,47 @@ namespace KinaUnaWeb.Controllers
             }
 
             return View(model);
+        }
+
+        public async Task<IActionResult> AddKanbanBoard()
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            KanbanBoardViewModel model = new(baseModel);
+            if (model.CurrentUser == null)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
+            {
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.SetProgenyList();
+            }
+
+            model.KanbanBoard.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.SetAccessLevelList();
+
+            return PartialView("_AddKanbanBoardPartial", model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddKanbanBoard([FromBody] KanbanBoardViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanBoard.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            if (progAdminList.Count == 0)
+            {
+                // Todo: Show that no children are available to add kanban for.
+                return RedirectToAction("Index");
+            }
+
+            KanbanBoard kanbanBoard = model.CreateKanbanBoard();
+            KanbanBoard addedKanbanBoard = await kanbanBoardsHttpClient.AddKanbanBoard(kanbanBoard);
+
+            return Json(addedKanbanBoard);
         }
     }
 }
