@@ -56,6 +56,22 @@ namespace KinaUnaWeb.Services.HttpClients
             return kanbanBoard;
         }
 
+        public async Task<KanbanBoard> DeleteKanbanBoard(KanbanBoard kanbanBoard, bool hardDelete = false)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string kanbanBoardsApiPath = "/api/KanbanBoards/" + kanbanBoard.KanbanBoardId + "?hardDelete=" + hardDelete;
+            HttpResponseMessage kanbanBoardsResponse = await _httpClient.DeleteAsync(kanbanBoardsApiPath).ConfigureAwait(false);
+            if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
+
+            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            kanbanBoard = JsonConvert.DeserializeObject<KanbanBoard>(kanbanBoardAsString);
+
+            return kanbanBoard;
+        }
+
         public async Task<KanbanBoard> GetKanbanBoard(int kanbanBoardId)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;

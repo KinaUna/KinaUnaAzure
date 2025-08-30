@@ -253,5 +253,50 @@ namespace KinaUnaWeb.Controllers
 
             return Json(updatedKanbanBoard);
         }
+
+        public async Task<IActionResult> DeleteKanbanBoard(int kanbanBoardId)
+        {
+            KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanBoard.ProgenyId);
+            KanbanBoardViewModel model = new(baseModel)
+            {
+                KanbanBoard = kanbanBoard
+            };
+
+            if (model.CurrentUser == null)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.SetPropertiesFromKanbanBoard(kanbanBoard);
+
+            return PartialView("_DeleteKanbanBoardPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteKanbanBoard([FromBody] KanbanBoardViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanBoard.ProgenyId);
+            model.SetBaseProperties(baseModel);
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            KanbanBoard existingKanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(model.KanbanBoard.KanbanBoardId);
+            if (existingKanbanBoard == null)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            
+            KanbanBoard deletedKanbanBoard = await kanbanBoardsHttpClient.DeleteKanbanBoard(existingKanbanBoard, false);
+            return Json(deletedKanbanBoard);
+        }
     }
 }

@@ -20,6 +20,7 @@ import { TimelineChangedEvent } from "../data-tools-v9.js";
 import { TimelineItem } from "../page-models-v9.js";
 import { popupTodoItem } from "../todos/todo-details.js";
 import { initializeAddEditKanbanBoard } from "../kanbans/add-edit-kanban-board.js";
+import { popupKanbanBoard } from "../kanbans/kanban-board-details.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */
@@ -500,6 +501,9 @@ async function popupPreviousItem(buttonClicked) {
     if (previousItemType !== null && previousItemId !== null && previousItemId !== '0') {
         if (previousItemType === 'todo') {
             await popupTodoItem(previousItemId);
+        }
+        if (previousItemType === 'kanbanboard') {
+            await popupKanbanBoard(previousItemId);
         }
     }
     else {

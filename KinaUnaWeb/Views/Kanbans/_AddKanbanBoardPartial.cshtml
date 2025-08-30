@@ -3,8 +3,8 @@
 @model KinaUnaWeb.Models.ItemViewModels.KanbanBoardViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = await LocaleManager.GetTranslation("Add Kanban Board", PageNames.Todos, Model.LanguageId);
-    string addKanbanForString = await LocaleManager.GetTranslation("Add Kanban Board for:", PageNames.Todos, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Add kanban board", PageNames.Todos, Model.LanguageId);
+    string addKanbanForString = await LocaleManager.GetTranslation("Add kanban board for:", PageNames.Todos, Model.LanguageId);
     
     foreach (SelectListItem accessLevelItem in Model.AccessLevelListEn)
     {

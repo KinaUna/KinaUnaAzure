@@ -4,7 +4,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.KanbanBoardViewModel
 @inject ILocaleManager LocaleManager
 @{ 
-    ViewData["Title"] = Model.KanbanBoard.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Kanban Boards", PageNames.Todos, Model.LanguageId);
+    ViewData["Title"] = Model.KanbanBoard.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Kanban boards", PageNames.Todos, Model.LanguageId);
 }
 
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
@@ -72,6 +72,10 @@
                             }
                         </div>
                     }
+                </div>
+            </div>
+            <div class="row">
+                <div id="kanban-board-main-div" class="kanban-board" data-view-kanban-board-id="@Model.KanbanBoard.KanbanBoardId">
                 </div>
             </div>
             <div class="space-10"></div>

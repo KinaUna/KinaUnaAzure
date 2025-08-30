@@ -36,7 +36,7 @@ async function onKanbanBoardDivClicked(event) {
 * Enable other scripts to call the DisplayKanbanBoard function.
 * @param {string} kanbanBoardId The id of the KanbanBoard to display.
 */
-export async function popupTodoItem(kanbanBoardId) {
+export async function popupKanbanBoard(kanbanBoardId) {
     await displayKanbanBoard(kanbanBoardId);
     return new Promise(function (resolve, reject) {
         resolve();

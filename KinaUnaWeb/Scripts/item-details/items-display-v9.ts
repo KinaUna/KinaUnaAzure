@@ -13,7 +13,7 @@ import { addVocabularyItemListeners, popupVocabularyItem } from '../vocabulary/v
 import { addVaccinationItemListeners, popupVaccinationItem } from '../vaccinations/vaccination-details.js';
 import { addTodoItemListeners, popupTodoItem } from '../todos/todo-details.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
-import { addKanbanBoardListeners } from '../kanbans/kanban-board-details.js';
+import { addKanbanBoardListeners, popupKanbanBoard } from '../kanbans/kanban-board-details.js';
 
 /**
  * Adds event listeners for a given timeline item. Used to show popups for items.
@@ -237,6 +237,13 @@ export async function showPopupAtLoad(itemType: number): Promise<void> {
         }
     }
 
+    if (itemType === 16) {
+        let itemId = getItemIdFromPopupDiv('kanbanboard');
+        if (itemId !== 0) {
+            await popupKanbanBoard(itemId.toString());
+        }
+    }
+    
     stopFullPageSpinner();
 
     return new Promise<void>(function (resolve, reject) {

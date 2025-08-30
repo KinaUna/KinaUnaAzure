@@ -280,6 +280,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("EditSubtask", "Subtasks", new { itemId });
             }
 
+            if (itemType == "kanbanboard")
+            {
+                return RedirectToAction("EditKanbanBoard", "Kanbans", new { kanbanBoardId = itemId });
+            }
+
             return PartialView("../Shared/_NotFoundPartial", new { itemId });
         }
 
@@ -320,6 +325,12 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("DeleteSubtask", "Subtasks", new { itemId });
             }
+
+            if (itemType == "kanbanboard")
+            {
+                return RedirectToAction("DeleteKanbanBoard", "Kanbans", new { kanbanBoardId = itemId });
+            }
+
             // Todo: Other item types can be added here as needed.
 
             return PartialView("../Shared/_NotFoundPartial");
