@@ -910,6 +910,7 @@ async function saveTodosPageSettings(): Promise<void> {
     });
 
 }
+
 /** Initializes the Todos page by setting up event listeners and fetching initial data.
  * This function is called when the DOM content is fully loaded.
  */

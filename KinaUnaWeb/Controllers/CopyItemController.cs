@@ -78,6 +78,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("CopyTodo", "Todos", new { itemId });
             }
 
+            if (itemType == "kanban")
+            {
+                return RedirectToAction("CopyKanbanBoard", "Kanbans", new { itemId });
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
        

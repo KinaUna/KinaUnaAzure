@@ -637,7 +637,7 @@ export class KanbanBoardsPageResponse {
         this.pageNumber = 0;
         this.totalPages = 0;
         this.totalItems = 0;
-        this.KanbanBoardsList = [];
+        this.kanbanBoards = [];
         this.tagsList = [];
         this.contextsList = [];
     }

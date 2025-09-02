@@ -1,8 +1,9 @@
-﻿import { setContextAutoSuggestList, setTagsAutoSuggestList, TimelineChangedEvent } from "../data-tools-v9";
-import { addTimelineItemEventListener, showPopupAtLoad } from "../item-details/items-display-v9";
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9";
-import { KanbanBoardElementParameters, KanbanBoardsPageParameters, KanbanBoardsPageResponse, TimelineItem, TimeLineType } from "../page-models-v9";
-import { getSelectedProgenies } from "../settings-tools-v9";
+﻿import { setAddItemButtonEventListeners } from "../addItem/add-item.js";
+import { setContextAutoSuggestList, setTagsAutoSuggestList, TimelineChangedEvent } from "../data-tools-v9.js";
+import { addTimelineItemEventListener, showPopupAtLoad } from "../item-details/items-display-v9.js";
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
+import { KanbanBoardElementParameters, KanbanBoardsPageParameters, KanbanBoardsPageResponse, TimelineItem, TimeLineType } from "../page-models-v9.js";
+import { getSelectedProgenies } from "../settings-tools-v9.js";
 import * as SettingsHelper from '../settings-tools-v9.js';
 
 let kanbanBoardsPageParameters = new KanbanBoardsPageParameters();
@@ -49,12 +50,12 @@ async function getKanbanBoards(): Promise<void> {
         if (kanbanBoardsPageResponse) {
             kanbanBoardsPageParameters.totalPages = kanbanBoardsPageResponse.totalPages;
             kanbanBoardsPageParameters.totalItems = kanbanBoardsPageResponse.totalItems;
-
+            
             if (kanbanBoardsPageResponse.totalItems < 1) {
                 getKanbanBoardElement(0);
             }
             else {
-                for await (const kanbanBoardItem of kanbanBoardsPageResponse.KanbanBoardsList) {
+                for await (const kanbanBoardItem of kanbanBoardsPageResponse.kanbanBoards) {
                     await getKanbanBoardElement(kanbanBoardItem.kanbanBoardId);
                     const timelineItem = new TimelineItem();
                     timelineItem.itemId = kanbanBoardItem.kanbanBoardId.toString();
@@ -351,6 +352,7 @@ async function saveKanbansPageSettings(): Promise<void> {
     });
 
 }
+
 /** Initializes the Todos page by setting up event listeners and fetching initial data.
  * This function is called when the DOM content is fully loaded.
  */
@@ -371,6 +373,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     SettingsHelper.initPageSettings();
     initialSettingsPanelSetup();
+    setAddItemButtonEventListeners();
 
     getKanbanBoards();
 

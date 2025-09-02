@@ -235,7 +235,7 @@ namespace KinaUnaWeb.Controllers
         /// <returns>Redirects to Todos/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddTodo(TodoViewModel model)
+        public async Task<IActionResult> AddTodo([FromForm] TodoViewModel model)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId);
             model.SetBaseProperties(baseModel);
@@ -422,7 +422,7 @@ namespace KinaUnaWeb.Controllers
         /// <returns>TodoItem copied partial view</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CopyTodo(TodoViewModel model)
+        public async Task<IActionResult> CopyTodo([FromForm] TodoViewModel model)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId);
             model.SetBaseProperties(baseModel);

@@ -4,9 +4,9 @@
 @model KinaUnaWeb.Models.ItemViewModels.KanbanBoardViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.KanbanBoard.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Kanban boards", PageNames.Todos, Model.LanguageId);
+    string title = Model.KanbanBoard.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Kanban board copied", PageNames.Todos, Model.LanguageId);
 }
-<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper" style="max-width: 90vw;">
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row m-0">
             <div class="col-12">
@@ -36,7 +36,7 @@
                         @Model.KanbanBoard.Title
                     </div>
                 </div>
-                
+
                 @if (!string.IsNullOrWhiteSpace(Model.KanbanBoard.Description))
                 {
                     <div class="space-10"></div>
@@ -75,8 +75,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div id="kanban-board-main-div" class="kanban-board col-12" data-view-kanban-board-id="@Model.KanbanBoard.KanbanBoardId" data-user-can-edit="@Model.IsCurrentUserProgenyAdmin">
-                        
+                    <div id="kanban-board-main-div" class="kanban-board" data-view-kanban-board-id="@Model.KanbanBoard.KanbanBoardId">
                     </div>
                 </div>
                 <div class="space-10"></div>

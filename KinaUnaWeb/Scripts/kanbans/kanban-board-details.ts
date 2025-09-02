@@ -1,15 +1,16 @@
-﻿import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item";
-import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v9";
-import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9";
-import { getTranslation } from "../localization-v9";
-import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9";
-import { KanbanBoard, KanbanBoardColumn, KanbanItem, TimelineItem } from "../page-models-v9";
-import { displayKanbanItemDetails, getKanbanItemsForBoard, updateKanbanItem } from "./kanban-items";
+﻿import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item.js";
+import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v9.js";
+import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9.js";
+import { getTranslation } from "../localization-v9.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
+import { KanbanBoard, KanbanBoardColumn, KanbanItem, TimelineItem } from "../page-models-v9.js";
+import { displayKanbanItemDetails, getKanbanItemsForBoard, updateKanbanItem } from "./kanban-items.js";
 
-const kanbanBoardMainDiv = document.querySelector<HTMLDivElement>('#kanban-board-main-div');
+let kanbanBoardMainDiv = document.querySelector<HTMLDivElement>('#kanban-board-main-div');
 let kanbanBoard: KanbanBoard;
 let kanbanItems: KanbanItem[] = [];
-const defaultColumnTitle = 'Unnamed Column';  
+const defaultColumnTitle = 'Unnamed Column';
+let userCanEdit: boolean = false;
 
 /**
  * Adds event listeners to all elements with the data-kanban-board-id attribute.
@@ -77,6 +78,7 @@ async function displayKanbanBoard(kanbanBoardId: string): Promise<void> {
                 setKanbanBoardDetailsEventListeners(kanbanBoardId, kanbanBoardDetailsPopupDiv);
                 setEditItemButtonEventListeners();
                 setDeleteItemButtonEventListeners();
+                await renderKanbanBoard();
 
             }
         } else {
@@ -123,7 +125,7 @@ function dispatchTimelineItemChangedEvent(kanbanBoardId: string): void {
 }
 
 async function getKanbanBoard(kanbanBoardId: number): Promise<KanbanBoard> {
-    let url = '/api/KanbanBoards/GetKanbanBoard?kanbanBoardId=' + kanbanBoardId;
+    let url = '/Kanbans/GetKanbanBoard?kanbanBoardId=' + kanbanBoardId;
     await fetch(url, {
         method: 'GET',
         headers: {
@@ -147,11 +149,19 @@ async function getKanbanBoard(kanbanBoardId: number): Promise<KanbanBoard> {
 }
 
 async function renderKanbanBoard() {
+    kanbanBoardMainDiv = document.querySelector<HTMLDivElement>('#kanban-board-main-div');
     if (kanbanBoardMainDiv) {
         const kanbanBoardId = kanbanBoardMainDiv.dataset.viewKanbanBoardId;
+        const userCanEditData = kanbanBoardMainDiv.dataset.userCanEdit;
+        if (userCanEditData && userCanEditData === 'True') {
+            userCanEdit = true;
+        }
         if (kanbanBoardId) {
             const kanbanBoard: KanbanBoard = await getKanbanBoard(parseInt(kanbanBoardId));
             if (kanbanBoard) {
+                
+                kanbanBoardMainDiv.innerHTML = createKanbanBoardContainer(kanbanBoard);
+
                 // If the KanbanBoard has no columns, add a default "To Do" column.
                 if (kanbanBoard.columnsList !== null && kanbanBoard.columnsList.length === 0) {
 
@@ -165,8 +175,6 @@ async function renderKanbanBoard() {
                     // Save the updated KanbanBoard to the server.
                     await updateKanbanBoardColumns(kanbanBoard);
                 }
-
-                kanbanBoardMainDiv.innerHTML = createKanbanBoardContainer(kanbanBoard);
 
                 // Load KanbanItems and render them in the appropriate columns.
                 kanbanItems = await getKanbanItemsForBoard(kanbanBoard.kanbanBoardId);
@@ -213,7 +221,7 @@ async function renderKanbanItems(kanbanBoardId: number) {
 
         const kanbanCards = document.querySelectorAll<HTMLDivElement>('.kanban-card');
         kanbanCards.forEach((card) => {
-            card.setAttribute('draggable', 'true');
+                        
             const cardClickFunction = async function () {
                 const kanbanItemId = card.dataset.kanbanItemId;
                 if (kanbanItemId) {
@@ -223,49 +231,52 @@ async function renderKanbanItems(kanbanBoardId: number) {
             card.removeEventListener('click', cardClickFunction);
             card.addEventListener('click', cardClickFunction);
 
-            const cardDragFunction = function (event: DragEvent) {
-                if (event.dataTransfer !== null) {
-                    event.dataTransfer.setData('element-id', card.dataset.kanbanItemId || '');
-                    event.dataTransfer.setData('element-type', 'kanban-item-card');
-                    event.dataTransfer.setData('source-column-id', card.parentElement?.parentElement?.dataset.columnId || '');
-                    event.dataTransfer.effectAllowed = 'move';
-                    card.classList.add('kanban-item-dragging');
-                }
-            }
-            card.removeEventListener('dragstart', cardDragFunction);
-            card.addEventListener('dragstart', cardDragFunction);
-            
-            const cardDragEndFunction = async function (event: DragEvent) {
-                card.classList.remove('kanban-item-dragging');
-                const kanbanItemId = card.dataset.kanbanItemId;
-                if (kanbanItemId) {
-                    // Update the KanbanItem's columnIndex based on the new column it was dropped into.
-                    const targetColumn = event.target as HTMLDivElement;
-                    const targetColumnId = (targetColumn.closest('.kanban-column') as HTMLDivElement)?.dataset.columnId;
-                    const kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
-                    const currentKanbanItemColumnIndex = kanbanItem?.columnIndex;
-                    if (targetColumnId) {
-                        const kanbanBoardColumn: KanbanBoardColumn = kanbanBoard.columnsList.find(c => c.id.toString() === targetColumnId) as KanbanBoardColumn;
-                        if (kanbanBoardColumn.wipLimit > 0) {
-                            const columnBodyDiv = document.querySelector<HTMLDivElement>('#kanban-column-body-' + kanbanBoardColumn.id);
-                            if (columnBodyDiv) {
-                                const kanbanItemsInColumn = columnBodyDiv.querySelectorAll<HTMLDivElement>('.kanban-card');
-                                if (kanbanItemsInColumn.length >= kanbanBoardColumn.wipLimit) {
-                                    alert('WIP limit reached for this column. Cannot move item here.'); // Todo: Replace with a nicer alert.
-                                    return;
-                                }
-                            }
-                        }
-                        await updateKanbanItemsInColumn(parseInt(targetColumnId));
-                        if (currentKanbanItemColumnIndex && targetColumnId !== currentKanbanItemColumnIndex.toString()) {
-                            await updateKanbanItemsInColumn(currentKanbanItemColumnIndex);
-                        }
-                        dispatchTimelineItemChangedEvent(kanbanBoardId.toString());
+            if (userCanEdit) {
+                card.setAttribute('draggable', 'true');
+                const cardDragFunction = function (event: DragEvent) {
+                    if (event.dataTransfer !== null) {
+                        event.dataTransfer.setData('element-id', card.dataset.kanbanItemId || '');
+                        event.dataTransfer.setData('element-type', 'kanban-item-card');
+                        event.dataTransfer.setData('source-column-id', card.parentElement?.parentElement?.dataset.columnId || '');
+                        event.dataTransfer.effectAllowed = 'move';
+                        card.classList.add('kanban-item-dragging');
                     }
                 }
+                card.removeEventListener('dragstart', cardDragFunction);
+                card.addEventListener('dragstart', cardDragFunction);
+
+                const cardDragEndFunction = async function (event: DragEvent) {
+                    card.classList.remove('kanban-item-dragging');
+                    const kanbanItemId = card.dataset.kanbanItemId;
+                    if (kanbanItemId) {
+                        // Update the KanbanItem's columnIndex based on the new column it was dropped into.
+                        const targetColumn = event.target as HTMLDivElement;
+                        const targetColumnId = (targetColumn.closest('.kanban-column') as HTMLDivElement)?.dataset.columnId;
+                        const kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
+                        const currentKanbanItemColumnIndex = kanbanItem?.columnIndex;
+                        if (targetColumnId) {
+                            const kanbanBoardColumn: KanbanBoardColumn = kanbanBoard.columnsList.find(c => c.id.toString() === targetColumnId) as KanbanBoardColumn;
+                            if (kanbanBoardColumn.wipLimit > 0) {
+                                const columnBodyDiv = document.querySelector<HTMLDivElement>('#kanban-column-body-' + kanbanBoardColumn.id);
+                                if (columnBodyDiv) {
+                                    const kanbanItemsInColumn = columnBodyDiv.querySelectorAll<HTMLDivElement>('.kanban-card');
+                                    if (kanbanItemsInColumn.length >= kanbanBoardColumn.wipLimit) {
+                                        alert('WIP limit reached for this column. Cannot move item here.'); // Todo: Replace with a nicer alert.
+                                        return;
+                                    }
+                                }
+                            }
+                            await updateKanbanItemsInColumn(parseInt(targetColumnId));
+                            if (currentKanbanItemColumnIndex && targetColumnId !== currentKanbanItemColumnIndex.toString()) {
+                                await updateKanbanItemsInColumn(currentKanbanItemColumnIndex);
+                            }
+                            dispatchTimelineItemChangedEvent(kanbanBoardId.toString());
+                        }
+                    }
+                }
+                card.removeEventListener('dragend', cardDragEndFunction);
+                card.addEventListener('dragend', cardDragEndFunction);
             }
-            card.removeEventListener('dragend', cardDragEndFunction);
-            card.addEventListener('dragend', cardDragEndFunction);
         });
     });
 }
@@ -308,27 +319,143 @@ function getStatusIconForCard(status: number): string {
 }
 
 function createKanbanBoardContainer(kanbanBoard: KanbanBoard): string {
-    let kanbanBoardHtml = '<div class="kanban-board-container">';
+    let kanbanBoardHtml = '<div class="kanban-board-container"><div class="kanban-column-divider" data-column-divider-id="0"></div>';
+    let dividerIndex = 1;
     kanbanBoard.columnsList.forEach((column) => {
         kanbanBoardHtml += `
                         <div class="kanban-column" data-column-id="${column.id}">
                             <div class="kanban-column-header">
-                                <h3>${column.title}</h3>
+                                <div class="kanban-column-menu-div d-none float-right" data-column-id="${column.id}">
+                                    <button class="kanban-column-menu-button" data-column-id="${column.id}">...</button>
+                                    <div class="kanban-column-menu-content d-none" data-column-id="${column.id}">
+                                        <button class="btn kanban-column-menu-item-button" data-column-menu-action="rename" data-column-id="${column.id}" >Rename</button>
+                                    </div>
+                                </div>
+                                <h5>${column.title}</h5>
                             </div>
                             <div class="kanban-column-body" id="kanban-column-body-${column.id}">
                                 <!-- Cards will be dynamically added here -->
                             </div>
-                            <div class="kanban-column-footer">
+                            <div class="kanban-column-footer">`;
+        if (userCanEdit) {
+            kanbanBoardHtml += `
                                 <button class="btn btn-sm btn-primary add-card-button" data-column-id="${column.id}">Add Card</button>
                             </div>
                         </div>`;
+
+        }
+        else {
+            kanbanBoardHtml += `
+            </div>
+            </div>`;
+        }
+        kanbanBoardHtml += `<div class="kanban-column-divider" data-column-divider-id="${dividerIndex}"></div>`;
+        dividerIndex++;
     });
+    let addColumnButtonHtml = `<div class="canban-column"><button class="btn btn-sm btn-success" id="add-kanban-column-button"><i class="material-icons kinauna-icon-small">add</i></button></div>`;
+    if (userCanEdit) {
+        kanbanBoardHtml += addColumnButtonHtml;
+    }
+
     kanbanBoardHtml += '</div>';
     
     return kanbanBoardHtml;
 }
 
+function addColumnDividerEventListeners() {
+    const columnDividers = document.querySelectorAll<HTMLDivElement>('.kanban-column-divider');
+    columnDividers.forEach((divider) => {
+        // If a column is dragged over a divider, show a visual indicator
+        divider.removeEventListener('dragover', onColumnDragOverDidivider);
+        divider.addEventListener('dragover', onColumnDragOverDidivider);
+
+        // If a column is dropped on a divider, reorder the columns accordingly.
+        divider.removeEventListener('dragleave', onColumnDragLeaveDivider);
+        divider.addEventListener('dragleave', onColumnDragLeaveDivider);
+
+        // Handle the drop event.
+        divider.removeEventListener('drop', onColumnDropped);
+        divider.addEventListener('drop', onColumnDropped);
+    });
+}
+
+function onColumnDragOverDidivider(event: DragEvent) {
+    event.preventDefault();
+    // Handle the dragover event when a column is dragged over a divider.
+    // Show a visual indicator that the column can be dropped here.
+    const columnDivider = event.currentTarget as HTMLDivElement;
+    columnDivider.classList.add('kanban-column-divider-drag-over');
+}
+
+function onColumnDragLeaveDivider(event: DragEvent) {
+    event.preventDefault();
+    // Handle the dragleave event when a column is dragged away from a divider.
+    // Remove the visual indicator.
+    const columnDivider = event.currentTarget as HTMLDivElement;
+    columnDivider.classList.remove('kanban-column-divider-drag-over');
+}
+
+const onColumnDropped = async function (event: DragEvent) {
+    event.preventDefault();
+    // Handle the drop event when a column is dropped on a divider.
+    const columnDivider = event.currentTarget as HTMLDivElement;
+    columnDivider.classList.remove('kanban-column-divider-drag-over');
+    const draggedColumnId = event.dataTransfer?.getData('element-id');
+    const dividerId = columnDivider.dataset.columnDividerId;
+    if (draggedColumnId && dividerId) {
+        // If the column divider is next to the dragged column, don't reorder.
+        if (draggedColumnId === dividerId || draggedColumnId + 1 === dividerId) {
+            return;
+        }
+
+        // Reorder the columns based on the dragged column and the divider it was dropped on.
+        // Update the kanbanBoard.columnsList array accordingly and save to server.
+        const draggedColumn = kanbanBoard.columnsList.find(c => c.id.toString() === draggedColumnId);
+        if (draggedColumn) {
+            // Remove the dragged column from its current position.
+            kanbanBoard.columnsList = kanbanBoard.columnsList.filter(c => c.id.toString() !== draggedColumnId);
+            // Insert the dragged column at the new position based on the dividerId.
+            const newIndex = parseInt(dividerId);
+            kanbanBoard.columnsList.splice(newIndex, 0, draggedColumn);
+            // Update columnIndex for all columns.
+            kanbanBoard.columnsList.forEach((c, index) => {
+                c.columnIndex = index;
+            });
+            kanbanBoard.columns = JSON.stringify(kanbanBoard.columnsList);
+            // Save the updated KanbanBoard to the server.
+            await updateKanbanBoardColumns(kanbanBoard);
+            await renderKanbanBoard();
+        }
+    }
+}
+
 function addColumnEventListeners() {
+    // Set up drag-and-drop event listeners for each column.
+    const columns = document.querySelectorAll<HTMLDivElement>('.kanban-column');
+    columns.forEach((column) => {
+        if (userCanEdit) {
+            column.setAttribute('draggable', 'true');
+            const columnDragFunction = function (event: DragEvent) {
+                if (event.dataTransfer !== null) {
+                    event.dataTransfer.setData('element-id', column.dataset.columnId || '');
+                    event.dataTransfer.setData('element-type', 'kanban-column');
+                    event.dataTransfer.effectAllowed = 'move';
+                    column.classList.add('kanban-column-dragging');
+                }
+            }
+            column.removeEventListener('dragstart', columnDragFunction);
+            column.addEventListener('dragstart', columnDragFunction);
+            const columnDragEndFunction = function (event: DragEvent) {
+                column.classList.remove('kanban-column-dragging');
+            }
+            column.removeEventListener('dragend', columnDragEndFunction);
+            column.addEventListener('dragend', columnDragEndFunction);
+        }
+    });
+
+    addColumnDividerEventListeners();
+
+    // Set up event listener for Add Column button.
     const addColumnButton = document.querySelector<HTMLButtonElement>('#add-kanban-column-button');
     if (addColumnButton) {
         const addColumnFunction = async function () {
@@ -368,9 +495,7 @@ function addColumnEventListeners() {
             event.dataTransfer!.dropEffect = 'none';
             return;
         }
-
-        // Todo: Add drag and drop for re-ordering columns.
-
+        
         // Check if WIP limit is reached for this column.
         const columnId = (event.currentTarget as HTMLDivElement).dataset.columnId;
         if (columnId) {
@@ -408,10 +533,60 @@ function addColumnEventListeners() {
         column.removeEventListener('dragleave', dragLeaveFunction);
         column.addEventListener('dragleave', dragLeaveFunction);
     });
+
+    // Set event listeners for column menu buttons.
+    if (userCanEdit) {
+        const columnMenuWrapperDivs = document.querySelectorAll<HTMLDivElement>('.kanban-column-menu-div');
+        columnMenuWrapperDivs.forEach((menuDiv) => {
+            menuDiv.classList.remove('d-none');
+        });
+        const columnMenuButtons = document.querySelectorAll<HTMLButtonElement>('.kanban-column-menu-button');
+        columnMenuButtons.forEach((button) => {
+            button.removeEventListener('click', showColumnMenu);
+            button.addEventListener('click', showColumnMenu);
+        });
+    }    
+}
+
+function showColumnMenu(event: MouseEvent) {
+    const button = event.currentTarget as HTMLButtonElement;
+    const columnId = button.dataset.columnId;
+    if (columnId) {
+        // Toggle d-none class of .kanban-column-menu-content
+        const menuContentDiv = document.querySelector<HTMLDivElement>('.kanban-column-menu-content[data-column-id="' + columnId + '"]');
+        if (menuContentDiv) {
+            if (menuContentDiv.classList.contains('d-none')) {
+                menuContentDiv.classList.remove('d-none');
+                // Set up event listeners for menu items.
+                const renameButton = menuContentDiv.querySelector<HTMLButtonElement>('button[data-column-menu-action="rename"]');
+                if (renameButton) {
+                    const renameFunction = async function () {
+                        const newTitle = prompt('Enter new column title:');
+                        if (newTitle && newTitle.trim() !== '') {
+                            const kanbanBoardColumn = kanbanBoard.columnsList.find(c => c.id.toString() === columnId);
+                            if (kanbanBoardColumn) {
+                                kanbanBoardColumn.title = newTitle.trim();
+                                kanbanBoard.columns = JSON.stringify(kanbanBoard.columnsList);
+                                // Save the updated KanbanBoard to the server.
+                                await updateKanbanBoardColumns(kanbanBoard);
+                                // Re-render the KanbanBoard.
+                                await renderKanbanBoard();
+                            }
+                        }
+                    }
+                    renameButton.removeEventListener('click', renameFunction);
+                    renameButton.addEventListener('click', renameFunction);
+                }
+            } else {
+                menuContentDiv.classList.add('d-none');
+            }
+        }
+    }
+
 }
 
 async function updateKanbanBoardColumns(kanbanBoard: KanbanBoard): Promise<void> {
-    let url = '/api/KanbanBoards/UpdateKanbanBoardColumns';
+    let url = '/Kanbans/UpdateKanbanBoardColumns';
     await fetch(url, {
         method: 'POST',
         headers: {
@@ -429,3 +604,5 @@ async function updateKanbanBoardColumns(kanbanBoard: KanbanBoard): Promise<void>
         console.error('Error updating Kanban Board. Error: ' + error);
     });
 }
+
+

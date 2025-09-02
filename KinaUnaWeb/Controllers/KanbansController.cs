@@ -21,6 +21,7 @@ namespace KinaUnaWeb.Controllers
         IProgenyHttpClient progenyHttpClient) : Controller
     {
         [AllowAnonymous]
+        [HttpGet]
         public async Task<IActionResult> Index(int? kanbanBoardId, int childId = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
@@ -72,6 +73,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet]
         public async Task<IActionResult> GetKanbanBoard(int kanbanBoardId)
         {
             KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
@@ -119,6 +121,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet]
         public async Task<IActionResult> ViewKanbanBoard(int kanbanBoardId, bool partialView = false)
         {
             KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
@@ -142,6 +145,7 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        [HttpGet]
         public async Task<IActionResult> AddKanbanBoard()
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
@@ -165,7 +169,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddKanbanBoard([FromBody] KanbanBoardViewModel model)
+        public async Task<IActionResult> AddKanbanBoard([FromForm] KanbanBoardViewModel model)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanBoard.ProgenyId);
             model.SetBaseProperties(baseModel);
@@ -178,11 +182,12 @@ namespace KinaUnaWeb.Controllers
             }
 
             KanbanBoard kanbanBoard = model.CreateKanbanBoard();
-            KanbanBoard addedKanbanBoard = await kanbanBoardsHttpClient.AddKanbanBoard(kanbanBoard);
+            model.KanbanBoard = await kanbanBoardsHttpClient.AddKanbanBoard(kanbanBoard);
 
-            return Json(addedKanbanBoard);
+            return PartialView("_KanbanBoardAddedPartial", model);
         }
 
+        [HttpGet]
         public async Task<IActionResult> EditKanbanBoard(int kanbanBoardId)
         {
             KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
@@ -217,7 +222,7 @@ namespace KinaUnaWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditKanbanBoard([FromBody] KanbanBoardViewModel model)
+        public async Task<IActionResult> EditKanbanBoard([FromForm] KanbanBoardViewModel model)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanBoard.ProgenyId);
             model.SetBaseProperties(baseModel);
@@ -228,13 +233,13 @@ namespace KinaUnaWeb.Controllers
             }
 
             KanbanBoard kanbanBoard = model.CreateKanbanBoard();
-            KanbanBoard updatedKanbanBoard = await kanbanBoardsHttpClient.UpdateKanbanBoard(kanbanBoard);
+            model.KanbanBoard = await kanbanBoardsHttpClient.UpdateKanbanBoard(kanbanBoard);
 
-            return Json(updatedKanbanBoard);
+            return PartialView("_KanbanBoardUpdatedPartial", model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateKanbanBoardColumns(KanbanBoard kanbanBoard)
+        public async Task<IActionResult> UpdateKanbanBoardColumns([FromBody] KanbanBoard kanbanBoard)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanBoard.ProgenyId);
             KanbanBoardViewModel model = new(baseModel);
@@ -254,6 +259,7 @@ namespace KinaUnaWeb.Controllers
             return Json(updatedKanbanBoard);
         }
 
+        [HttpGet]
         public async Task<IActionResult> DeleteKanbanBoard(int kanbanBoardId)
         {
             KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
@@ -279,7 +285,7 @@ namespace KinaUnaWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteKanbanBoard([FromBody] KanbanBoardViewModel model)
+        public async Task<IActionResult> DeleteKanbanBoard([FromForm] KanbanBoardViewModel model)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanBoard.ProgenyId);
             model.SetBaseProperties(baseModel);
@@ -297,6 +303,52 @@ namespace KinaUnaWeb.Controllers
             
             KanbanBoard deletedKanbanBoard = await kanbanBoardsHttpClient.DeleteKanbanBoard(existingKanbanBoard, false);
             return Json(deletedKanbanBoard);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CopyKanbanBoard(int itemId)
+        {
+            KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanBoard.ProgenyId);
+            KanbanBoardViewModel model = new(baseModel);
+
+            if (model.CurrentAccessLevel > kanbanBoard.AccessLevel)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            model.SetPropertiesFromKanbanBoard(kanbanBoard);
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
+            {
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.SetProgenyList();
+            }
+
+            model.SetAccessLevelList();
+            
+            return PartialView("_CopyKanbanBoardPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CopyKanbanBoard([FromForm] KanbanBoardViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanBoard.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            KanbanBoard copiedKanbanBoard = model.CreateKanbanBoard();
+
+            model.KanbanBoard = await kanbanBoardsHttpClient.AddKanbanBoard(copiedKanbanBoard);
+
+            // Todo: Check access level for each KanbanItem/TodoItem and copy only those the user has access to.
+
+            return PartialView("_KanbanBoardCopiedPartial", model);
         }
     }
 }

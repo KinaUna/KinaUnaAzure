@@ -6,7 +6,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class KanbanBoardViewModel: BaseItemsViewModel
     {
-        public KanbanBoard KanbanBoard { get; set; }
+        public KanbanBoard KanbanBoard { get; set; } = new();
         public List<SelectListItem> ProgenyList { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public KanbanBoardViewModel()

@@ -585,7 +585,7 @@ export class KanbanBoardsPageResponse implements BaseItemsPageResponseModel {
     pageNumber: number = 0;
     totalPages: number = 0;
     totalItems: number = 0;
-    KanbanBoardsList: KanbanBoard[] = [];
+    kanbanBoards: KanbanBoard[] = [];
     tagsList: string[] = [];
     contextsList: string[] = [];
 }

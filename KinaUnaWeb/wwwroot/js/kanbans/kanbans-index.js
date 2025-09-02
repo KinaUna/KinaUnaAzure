@@ -1,8 +1,9 @@
-import { setContextAutoSuggestList, setTagsAutoSuggestList } from "../data-tools-v9";
-import { addTimelineItemEventListener, showPopupAtLoad } from "../item-details/items-display-v9";
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9";
-import { KanbanBoardElementParameters, KanbanBoardsPageParameters, TimelineItem, TimeLineType } from "../page-models-v9";
-import { getSelectedProgenies } from "../settings-tools-v9";
+import { setAddItemButtonEventListeners } from "../addItem/add-item.js";
+import { setContextAutoSuggestList, setTagsAutoSuggestList } from "../data-tools-v9.js";
+import { addTimelineItemEventListener, showPopupAtLoad } from "../item-details/items-display-v9.js";
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
+import { KanbanBoardElementParameters, KanbanBoardsPageParameters, TimelineItem, TimeLineType } from "../page-models-v9.js";
+import { getSelectedProgenies } from "../settings-tools-v9.js";
 import * as SettingsHelper from '../settings-tools-v9.js';
 let kanbanBoardsPageParameters = new KanbanBoardsPageParameters();
 const kanbansPageSettingsStorageKey = 'kanbans_page_parameters';
@@ -42,7 +43,7 @@ async function getKanbanBoards() {
                 getKanbanBoardElement(0);
             }
             else {
-                for await (const kanbanBoardItem of kanbanBoardsPageResponse.KanbanBoardsList) {
+                for await (const kanbanBoardItem of kanbanBoardsPageResponse.kanbanBoards) {
                     await getKanbanBoardElement(kanbanBoardItem.kanbanBoardId);
                     const timelineItem = new TimelineItem();
                     timelineItem.itemId = kanbanBoardItem.kanbanBoardId.toString();
@@ -311,6 +312,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
     SettingsHelper.initPageSettings();
     initialSettingsPanelSetup();
+    setAddItemButtonEventListeners();
     getKanbanBoards();
     return new Promise(function (resolve, reject) {
         resolve();

@@ -79,7 +79,7 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             KanbanBoard kanbanBoard = new();
-            string kanbanBoardsApiPath = "/api/KanbanBoards/" + kanbanBoardId;
+            string kanbanBoardsApiPath = "/api/KanbanBoards/GetKanbanBoard/" + kanbanBoardId;
             HttpResponseMessage kanbanBoardsResponse = await _httpClient.GetAsync(kanbanBoardsApiPath).ConfigureAwait(false);
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
 

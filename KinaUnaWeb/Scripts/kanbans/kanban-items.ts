@@ -1,4 +1,4 @@
-﻿import { KanbanItem } from "../page-models-v9";
+﻿import { KanbanItem } from "../page-models-v9.js";
 
 export async function getKanbanItemsForBoard(kanbanBoardId: number): Promise<KanbanItem[]> {
     let kanbanItems: KanbanItem[] = [];

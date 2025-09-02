@@ -15,6 +15,11 @@
             <div id="page-title-div" class="h2">@ViewData["Title"]</div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-12">
+            <button id="add-kanban-board-button" class="btn btn-success add-item-button" data-add-item-type="kanbanboard" data-add-item-progeny-id="0"><i class="material-icons icon-top-4">add</i> @await LocaleManager.GetTranslation("Add kanban board", PageNames.Todos, Model.LanguageId)</button>
+        </div>
+    </div>
     <div class="space-20"></div>
     <div id="kanban-boards-list-div" class="row">
     </div>
