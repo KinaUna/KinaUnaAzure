@@ -490,23 +490,33 @@ export function checkStartBeforeEndTime(startElementId: string, endElementId: st
         return false;
     }
 
-    let sTime: any = moment(startElement.value, pickerDateTimeFormatMoment);
-    let eTime: any = moment(endElement?.value, pickerDateTimeFormatMoment);
     const notificationDiv = document.querySelector<HTMLDivElement>('#notification');
     const submitButton = document.querySelector<HTMLButtonElement>('#submit-button');
-    if (sTime < eTime && sTime.isValid() && eTime.isValid()) {
 
-        if (notificationDiv !== null) {
-            notificationDiv.textContent = '';
+    let sTime: any = moment(startElement.value, pickerDateTimeFormatMoment);
+    let eTime: any = moment(endElement.value, pickerDateTimeFormatMoment);
+    if (sTime.isValid() && eTime.isValid()) {
+
+        if (sTime < eTime) {
+
+            if (notificationDiv !== null) {
+                notificationDiv.textContent = '';
+            }
+
+            if (submitButton !== null) {
+                submitButton.disabled = false;
+            }
+
+            return true;
         }
-
-        if (submitButton !== null) {
-            submitButton.disabled = false;
+        else {
+            console.log('sTime is after eTime. sTime: ' + sTime + ', eTime: ' + eTime);
         }
-
-        return true;
-
     }
+    else {
+        console.log('sTime or eTime is not valid. sTime: ' + sTime + ', eTime: ' + eTime);
+    }
+    
 
     if (notificationDiv !== null) {
         notificationDiv.textContent = warningStartIsAfterEndString;

@@ -342,7 +342,7 @@
                     <div class="form-group">
                         <div class="col-auto control-label"></div>
                         <div class="col-auto">
-                            <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                            <button id="submit-event-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
                             <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                         </div>
                     </div>

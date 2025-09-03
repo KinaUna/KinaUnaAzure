@@ -17,7 +17,7 @@ let endDateTimePickerId = '#event-end-date-time-picker';
  */
 function validateDatePickerStartEnd() {
     const saveItemNotificationDiv = document.querySelector('#save-item-notification');
-    const submitEventButton = document.querySelector('#submit-button');
+    const submitEventButton = document.querySelector('#submit-event-button');
     if (checkStartBeforeEndTime(startDateTimePickerId, endDateTimePickerId, longDateTimeFormatMoment, warningStartIsAfterEndString)) {
         if (saveItemNotificationDiv !== null) {
             saveItemNotificationDiv.textContent = '';
@@ -25,7 +25,6 @@ function validateDatePickerStartEnd() {
         if (submitEventButton !== null) {
             submitEventButton.disabled = false;
         }
-        //$('#submit-button').prop('disabled', false);
     }
     else {
         if (saveItemNotificationDiv !== null) {
@@ -81,19 +80,25 @@ async function setupDateTimePickers() {
         show_select_today: zebraDatePickerTranslations.todayString,
         select_other_months: true
     });
-    validateDatePickerStartEnd();
     const startZebraPicker = document.querySelector(startDateTimePickerId);
     if (startZebraPicker !== null) {
-        startZebraPicker.addEventListener('change', () => { validateDatePickerStartEnd(); });
-        startZebraPicker.addEventListener('blur', () => { validateDatePickerStartEnd(); });
-        startZebraPicker.addEventListener('focus', () => { validateDatePickerStartEnd(); });
+        startZebraPicker.removeEventListener('change', validateDatePickerStartEnd);
+        startZebraPicker.addEventListener('change', validateDatePickerStartEnd);
+        startZebraPicker.removeEventListener('blur', validateDatePickerStartEnd);
+        startZebraPicker.addEventListener('blur', validateDatePickerStartEnd);
+        startZebraPicker.removeEventListener('focus', validateDatePickerStartEnd);
+        startZebraPicker.addEventListener('focus', validateDatePickerStartEnd);
     }
     const endZebraPicker = document.querySelector(endDateTimePickerId);
     if (endZebraPicker !== null) {
-        endZebraPicker.addEventListener('change', () => { validateDatePickerStartEnd(); });
-        endZebraPicker.addEventListener('blur', () => { validateDatePickerStartEnd(); });
-        endZebraPicker.addEventListener('focus', () => { validateDatePickerStartEnd(); });
+        endZebraPicker.removeEventListener('change', validateDatePickerStartEnd);
+        endZebraPicker.addEventListener('change', validateDatePickerStartEnd);
+        endZebraPicker.removeEventListener('blur', validateDatePickerStartEnd);
+        endZebraPicker.addEventListener('blur', validateDatePickerStartEnd);
+        endZebraPicker.removeEventListener('focus', validateDatePickerStartEnd);
+        endZebraPicker.addEventListener('focus', validateDatePickerStartEnd);
     }
+    validateDatePickerStartEnd();
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -104,6 +109,7 @@ async function setupDateTimePickers() {
 function setupProgenySelectList() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
+        progenyIdSelect.removeEventListener('change', onProgenySelectListChanged);
         progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
     }
 }
