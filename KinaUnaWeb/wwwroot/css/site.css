@@ -3820,7 +3820,7 @@ noUi-handle:after, .noUi-handle:before {
 }
 
 .kanban-column-menu {
-    background: #3e836f;
+    background: #36594f;
     width: 150px;
 }
 
@@ -3835,11 +3835,22 @@ noUi-handle:after, .noUi-handle:before {
     color: white;
 }
 
+    .kanban-column-menu-button:hover {
+        color: #ffef2f;
+    }
+
 .kanban-column-menu-item-button {
     border: none;
     background: transparent;
     color: white;
+    width: 90%;
+    overflow: hidden;
+    text-align: left;
 }
+
+    .kanban-column-menu-item-button:hover {
+        color: #ffef2f;
+    }
 
 .kanban-column-menu-content {
     position: absolute;

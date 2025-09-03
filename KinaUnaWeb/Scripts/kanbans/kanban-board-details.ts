@@ -180,6 +180,10 @@ async function renderKanbanBoard() {
                 kanbanItems = await getKanbanItemsForBoard(kanbanBoard.kanbanBoardId);
                 await renderKanbanItems(kanbanBoard.kanbanBoardId);
                 addColumnEventListeners();
+
+                // Hide all column menus when clicking outside of them.
+                document.removeEventListener('click', hideAllColumnMenus);
+                document.addEventListener('click', hideAllColumnMenus);
             }
         }
     }
@@ -328,7 +332,7 @@ function createKanbanBoardContainer(kanbanBoard: KanbanBoard): string {
                                 <div class="kanban-column-menu-div d-none float-right" data-column-id="${column.id}">
                                     <button class="kanban-column-menu-button" data-column-id="${column.id}">...</button>
                                     <div class="kanban-column-menu-content d-none" data-column-id="${column.id}">
-                                        <button class="btn kanban-column-menu-item-button" data-column-menu-action="rename" data-column-id="${column.id}" >Rename</button>
+                                        <button class="kanban-column-menu-item-button" data-column-menu-action="rename" data-column-id="${column.id}" >Rename</button>
                                     </div>
                                 </div>
                                 <h5>${column.title}</h5>
@@ -584,6 +588,17 @@ function showColumnMenu(event: MouseEvent) {
     }
 
 }
+
+function hideAllColumnMenus(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.kanban-column-menu-div')) {
+        const allColumnMenus = document.querySelectorAll<HTMLDivElement>('.kanban-column-menu-content');
+        allColumnMenus.forEach((menu) => {
+            menu.classList.add('d-none');
+        });
+    }   
+}
+
 
 async function updateKanbanBoardColumns(kanbanBoard: KanbanBoard): Promise<void> {
     let url = '/Kanbans/UpdateKanbanBoardColumns';
