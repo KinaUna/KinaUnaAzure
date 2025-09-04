@@ -40,6 +40,22 @@ namespace KinaUnaWeb.Services.HttpClients
             httpClient.DefaultRequestVersion = new Version(2, 0);
         }
 
+        public async Task<KanbanItem> AddKanbanItem(KanbanItem kanbanItem)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string kanbanItemsApiPath = "/api/KanbanItems/";
+            HttpResponseMessage kanbanItemsResponse = await _httpClient.PostAsJsonAsync(kanbanItemsApiPath, kanbanItem).ConfigureAwait(false);
+            if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItem;
+            
+            string kanbanItemAsString = await kanbanItemsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            kanbanItem = JsonConvert.DeserializeObject<KanbanItem>(kanbanItemAsString);
+            
+            return kanbanItem;
+        }
+
         public async Task<KanbanItem> GetKanbanItem(int kanbanItemId)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
@@ -47,7 +63,7 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             KanbanItem kanbanItem = new();
-            string kanbanItemsApiPath = "/api/KanbanItems/" + kanbanItemId;
+            string kanbanItemsApiPath = "/api/KanbanItems/GetKanbanItem/" + kanbanItemId;
             HttpResponseMessage kanbanItemsResponse = await _httpClient.GetAsync(kanbanItemsApiPath).ConfigureAwait(false);
             if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItem;
 
@@ -65,7 +81,7 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             List<KanbanItem> kanbanItems = [];
-            string kanbanItemsApiPath = "/api/GetKanbanItemsForBoard/" + kanbanBoardId;
+            string kanbanItemsApiPath = "/api/KanbanItems/GetKanbanItemsForBoard/" + kanbanBoardId + "/false";
             HttpResponseMessage kanbanItemsResponse = await _httpClient.GetAsync(kanbanItemsApiPath).ConfigureAwait(false);
             if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItems;
 
@@ -74,6 +90,22 @@ namespace KinaUnaWeb.Services.HttpClients
             kanbanItems = JsonConvert.DeserializeObject<List<KanbanItem>>(kanbanItemsAsString);
 
             return kanbanItems;
+        }
+
+        public async Task<KanbanItem> UpdateKanbanItem(KanbanItem kanbanItem)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string kanbanItemsApiPath = "/api/KanbanItems/" + kanbanItem.KanbanItemId;
+            HttpResponseMessage kanbanItemsResponse = await _httpClient.PutAsJsonAsync(kanbanItemsApiPath, kanbanItem).ConfigureAwait(false);
+            if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItem;
+
+            string kanbanItemAsString = await kanbanItemsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            kanbanItem = JsonConvert.DeserializeObject<KanbanItem>(kanbanItemAsString);
+
+            return kanbanItem;
         }
     }
 }

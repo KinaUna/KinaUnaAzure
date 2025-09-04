@@ -18,7 +18,10 @@ export async function getKanbanItemsForBoard(kanbanBoardId: number): Promise<Kan
     }).catch(function (error) {
         console.error('Error fetching kanban items for board: ' + error);
     });
-    return kanbanItems;
+
+    return new Promise<KanbanItem[]>(function (resolve, reject) {
+        resolve(kanbanItems);
+    });
 };
 
 export async function displayKanbanItemDetails(kanbanItemId: string){
@@ -45,4 +48,25 @@ export async function updateKanbanItem(kanbanItem: KanbanItem): Promise<boolean>
         console.error('Error updating kanban item: ' + error);
     });
     return success;
+}
+
+export async function getAddKanbanItemForm(kanbanBoardId: number, columnId: number, rowIndex: number): Promise<string> {
+    let formHtml = '';
+    const url = '/KanbanItems/AddKanbanItem?kanbanBoardId=' + kanbanBoardId + '&columnId=' + columnId + '&rowIndex=' + rowIndex;
+    await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    }).then(async function (response) {
+        if (response.ok) {
+            formHtml = await response.text();
+        } else {
+            console.error('Error fetching add kanban item form. Status: ' + response.status);
+        }
+    }).catch(function (error) {
+        console.error('Error fetching add kanban item form: ' + error);
+    });
+    return formHtml;
 }
