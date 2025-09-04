@@ -681,7 +681,7 @@ export class KanbanItem {
         this.uId = '';
         this.kanbanBoardId = 0;
         this.todoItemId = 0;
-        this.columnIndex = 0;
+        this.columnId = 0;
         this.rowIndex = 0;
         this.createdBy = '';
         this.modifiedBy = '';

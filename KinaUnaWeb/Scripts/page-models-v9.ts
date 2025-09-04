@@ -625,7 +625,7 @@ export class KanbanItem {
     uId: string = '';
     kanbanBoardId: number = 0;
     todoItemId: number = 0;
-    columnIndex: number = 0;
+    columnId: number = 0;
     rowIndex: number = 0;
     createdBy: string = '';
     modifiedBy: string = '';

@@ -90,7 +90,7 @@ namespace KinaUnaWeb.Controllers
 
             model.KanbanItem.TodoItem = new TodoItem();
             model.KanbanItem.KanbanBoardId = kanbanBoardId;
-            model.KanbanItem.ColumnIndex = columnId;
+            model.KanbanItem.ColumnId = columnId;
             model.KanbanItem.RowIndex = rowIndex;
             model.KanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
             
@@ -139,7 +139,7 @@ namespace KinaUnaWeb.Controllers
                 return Json(new KanbanItem());
             }
 
-            existingKanbanItem.ColumnIndex = kanbanItem.ColumnIndex;
+            existingKanbanItem.ColumnId = kanbanItem.ColumnId;
             existingKanbanItem.RowIndex = kanbanItem.RowIndex;
             existingKanbanItem.ModifiedBy = model.CurrentUser.UserEmail;
             existingKanbanItem.ModifiedTime = System.DateTime.UtcNow;

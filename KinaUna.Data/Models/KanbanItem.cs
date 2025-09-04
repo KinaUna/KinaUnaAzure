@@ -35,9 +35,9 @@ namespace KinaUna.Data.Models
         public int TodoItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the index of the column (indicating status) in the Kanban board where this item is located.
+        /// Gets or sets the id of the column in the Kanban board where this item is located.
         /// </summary>
-        public int ColumnIndex { get; set; }
+        public int ColumnId { get; set; }
 
         /// <summary>
         /// Gets or sets the zero-based index of the row within the column, determining the vertical position of the item.

@@ -221,7 +221,7 @@ async function renderKanbanBoard(reloadKanbanItems: boolean) {
 
 async function renderKanbanItems(kanbanBoardId: number): Promise<void> {
     kanbanItems.forEach((item) => {
-        const columnBodyDiv = document.querySelector<HTMLDivElement>('#kanban-column-body-' + item.columnIndex);
+        const columnBodyDiv = document.querySelector<HTMLDivElement>('#kanban-column-body-' + item.columnId);
         if (columnBodyDiv && item.todoItem) {
             const cardDiv = document.createElement('div');
             cardDiv.classList.add('kanban-card');
@@ -284,7 +284,7 @@ async function updateKanbanItemsInColumn(columnId: number): Promise<void> {
     const columnDiv = document.querySelector<HTMLDivElement>('.kanban-column[data-column-id="' + columnId + '"]');
     if (columnDiv) {
         // Get the list of KanbanItems in the column
-        const kanbanItemsInColumn = kanbanItems.filter(k => k.columnIndex === columnId);
+        const kanbanItemsInColumn = kanbanItems.filter(k => k.columnId === columnId);
         kanbanItemsInColumn.forEach(async (kanbanItem) => {
             await updateKanbanItem(kanbanItem);            
         });
@@ -307,7 +307,7 @@ async function createKanbanBoardContainer(kanbanBoard: KanbanBoard): Promise<str
     const setLimitHeaderString = await getTranslation('Set WIP limit for column (0 = no limit):', 'Todos', getCurrentLanguageId());
 
     kanbanBoard.columnsList.forEach(async (column) => {
-        let numberOfKanbanItems = (kanbanItems.filter(k => k.columnIndex === column.id)).length;
+        let numberOfKanbanItems = (kanbanItems.filter(k => k.columnId === column.id)).length;
         let limitString = '[ ' + numberOfKanbanItems + '/' + column.wipLimit + ' ]';
         if (column.wipLimit === 0) {
             limitString = '[ ' + numberOfKanbanItems + '/ &#8734; ]';
@@ -681,7 +681,7 @@ function addColumnEventListeners(): void {
         const targetColumnId = (event.currentTarget as HTMLDivElement).dataset.columnId;
         if (kanbanItemId && targetColumnId) {
             const kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
-            const currentKanbanItemColumnId = kanbanItem?.columnIndex;
+            const currentKanbanItemColumnId = kanbanItem?.columnId;
 
             if (kanbanItem) {
                 const kanbanBoardColumn: KanbanBoardColumn = kanbanBoard.columnsList.find(c => c.id.toString() === targetColumnId) as KanbanBoardColumn;
@@ -695,21 +695,21 @@ function addColumnEventListeners(): void {
                         }
                     }
                 }
-                const kanbanItemsInColumn = kanbanItems.filter(k => k.columnIndex.toString() === targetColumnId);
-                kanbanItem.columnIndex = parseInt(targetColumnId);
+                const kanbanItemsInColumn = kanbanItems.filter(k => k.columnId.toString() === targetColumnId);
+                kanbanItem.columnId = parseInt(targetColumnId);
                 kanbanItem.rowIndex = kanbanItemsInColumn.length; // New items are added at the bottom of the column.
 
                 // Reorder the kanbanItems array to reflect the new order.
                 kanbanItems = kanbanItems.filter(k => k.kanbanItemId.toString() !== kanbanItemId);
                 kanbanItems.push(kanbanItem);
                 // Reassign rowIndex values for all items in the target column.
-                const itemsInTargetColumn = kanbanItems.filter(k => k.columnIndex.toString() === targetColumnId);
+                const itemsInTargetColumn = kanbanItems.filter(k => k.columnId.toString() === targetColumnId);
                 itemsInTargetColumn.forEach((item, index) => {
                     item.rowIndex = index;
                 });
                 // Reassign rowIndex values for all items in the current column, if different from target column.
                 if (currentKanbanItemColumnId && targetColumnId !== currentKanbanItemColumnId.toString()) {
-                    const itemsInCurrentColumn = kanbanItems.filter(k => k.columnIndex === currentKanbanItemColumnId);
+                    const itemsInCurrentColumn = kanbanItems.filter(k => k.columnId === currentKanbanItemColumnId);
                     itemsInCurrentColumn.forEach((item, index) => {
                         item.rowIndex = index;
                     });

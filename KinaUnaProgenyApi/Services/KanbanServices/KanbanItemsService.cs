@@ -68,7 +68,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             {
                 existingKanbanItem.UId = System.Guid.NewGuid().ToString();
             }
-            existingKanbanItem.ColumnIndex = kanbanItem.ColumnIndex;
+            existingKanbanItem.ColumnId = kanbanItem.ColumnId;
             existingKanbanItem.RowIndex = kanbanItem.RowIndex;
             existingKanbanItem.ModifiedBy = kanbanItem.ModifiedBy;
             existingKanbanItem.ModifiedTime = kanbanItem.ModifiedTime;
