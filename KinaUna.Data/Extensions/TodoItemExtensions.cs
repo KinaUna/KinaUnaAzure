@@ -54,6 +54,38 @@ namespace KinaUna.Data.Extensions
             return "Unknown status";
         }
 
+        /// <summary>
+        /// Returns the appropriate status icon name for the specified <see cref="TodoItem"/> based on its status.
+        /// For use with Material Icons.
+        /// </summary>
+        /// <param name="todoItem">The <see cref="TodoItem"/> for which to determine the status icon. Cannot be <see langword="null"/>.</param>
+        /// <returns>A string representing the name of the status icon. Possible values include: <list type="bullet">
+        /// <item><term>"pending_actions"</term> - The item is not started.</item> <item><term>"assignment"</term> - The
+        /// item is in progress.</item> <item><term>"assignment_turned_in"</term> - The item is completed.</item>
+        /// <item><term>"playlist_remove"</term> - The item is cancelled.</item> <item><term>"help_outline"</term> - The
+        /// item's status is unrecognized.</item> </list></returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="todoItem"/> is <see langword="null"/>.</exception>
+        public static string StatusIcon(this TodoItem todoItem)
+        {
+            if (todoItem == null)
+            {
+                throw new ArgumentNullException(nameof(todoItem), "TodoItem cannot be null.");
+            }
+
+            return todoItem.Status switch
+            {
+                0 => "pending_actions" // Not started
+                ,
+                1 => "assignment" // In progress
+                ,
+                2 => "assignment_turned_in" // Completed
+                ,
+                3 => "playlist_remove" // Cancelled
+                ,
+                _ => "help_outline"
+            };
+        }
+
         public static string StatusBackgroundColor(this TodoItem todoItem)
         {
             if (todoItem == null)

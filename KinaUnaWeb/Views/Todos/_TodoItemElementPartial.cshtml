@@ -41,7 +41,9 @@
                 }
             </div>
             <div class="row">
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3 text-left"><span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId):</span> @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 text-left"><span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId):</span> @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)
+                    <i class="material-icons-small">@Model.TodoItem.StatusIcon()</i>
+                    </div>
                 @if (Model.TodoItem.DueDate.HasValue)
                 {
                     <div class="col-12 col-sm-6 col-md-4 col-lg-2 text-left"><span class="text-white-75">@await LocaleManager.GetTranslation("Due", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.DueDate.Value.ToString("dd-MMM-yyyy")</div>

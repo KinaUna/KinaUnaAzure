@@ -13,7 +13,8 @@ namespace KinaUnaWeb.Controllers
         IKanbanBoardsHttpClient kanbanBoardsHttpClient,
         ITodoItemsHttpClient todoItemsHttpClient,
         IViewModelSetupService viewModelSetupService,
-        IProgenyHttpClient progenyHttpClient) : Controller
+        IProgenyHttpClient progenyHttpClient,
+        IUserInfosHttpClient userInfosHttpClient) : Controller
     {
         [HttpGet]
         public async Task<IActionResult> GetKanbanItem(int kanbanItemId)
@@ -27,6 +28,41 @@ namespace KinaUnaWeb.Controllers
             return Json(kanbanItem);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> KanbanItemDetails(int kanbanItemId)
+        {
+            KanbanItem kanbanItem = await kanbanItemsHttpClient.GetKanbanItem(kanbanItemId);
+            if (kanbanItem == null)
+            {
+                return NotFound();
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanItem.TodoItem.ProgenyId);
+            KanbanItemViewModel model = new(baseModel)
+            {
+                KanbanItem = kanbanItem
+            };
+
+            TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(kanbanItem.TodoItemId);
+            model.KanbanItem.TodoItem = todoItem;
+            model.KanbanItem.TodoItem.Progeny = model.CurrentProgeny;
+            model.KanbanItem.TodoItem.Progeny.PictureLink = model.KanbanItem.TodoItem.Progeny.GetProfilePictureUrl();
+            UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.KanbanItem.TodoItem.CreatedBy);
+            model.KanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
+            model.SetStatusList(model.KanbanItem.TodoItem.Status);
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
+            {
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.SetProgenyList();
+            }
+            model.SetAccessLevelList();
+            model.SetStatusList(kanbanItem.TodoItem.Status);
+            
+            return PartialView("_KanbanItemDetailsPartial", model);
+
+        }
+        
+
         public async Task<IActionResult> GetKanbanItemsForBoard(int kanbanBoardId)
         {
             List<KanbanItem> kanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForBoard(kanbanBoardId);
@@ -38,7 +74,14 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             KanbanItemViewModel model = new(baseModel);
-            
+
+            List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            if (progAdminList.Count == 0)
+            {
+                // Todo: Show that no children are available to add KanbanItem for.
+                return RedirectToAction("Index", "Kanbans");
+            }
+
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
                 model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);

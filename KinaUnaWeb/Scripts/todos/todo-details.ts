@@ -40,6 +40,21 @@ async function onTodoItemDivClicked(event: MouseEvent): Promise<void> {
     }
 }
 
+export function getStatusIconForTodoItems(status: number): string {
+    switch (status) {
+        case 0:
+            return 'pending_actions'; // Not started
+        case 1:
+            return 'assignment'; // In progress
+        case 2:
+            return 'assignment_turned_in'; // Completed
+        case 3:
+            return 'playlist_remove'; // Cancelled
+        default:
+            return 'help_outline'; // Unknown status
+    }
+}
+
 /**
  * Enable other scripts to call the DisplayTodoItem function.
  * @param {string} todoId The id of the todo to display.
@@ -356,7 +371,7 @@ async function displayTodoItem(todoId: string): Promise<void> {
     });
 }
 
-async function getSubtaskList(todoId: string, resetList: boolean = false) {
+export async function getSubtaskList(todoId: string, resetList: boolean = false) {
     subtaskPageParameters.parentTodoItemId = parseInt(todoId);
     subtaskPageParameters.groupBy = 1;
     subtaskPageParameters = await getSubtasks(subtaskPageParameters, subtasksListDivId, resetList);

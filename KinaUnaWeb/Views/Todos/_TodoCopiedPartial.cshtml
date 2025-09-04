@@ -38,7 +38,9 @@
                     </div>
                 </div>
                 <div class="row text-white">
-                    <div class="col-auto">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
+                    <div class="col-auto">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)
+                        <i class="material-icons-small">@Model.TodoItem.StatusIcon()</i>
+                    </div>
                 </div>
                 @if (Model.TodoItem.DueDate.HasValue)
                 {

@@ -2,10 +2,10 @@
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
-@model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
+@model KinaUnaWeb.Models.ItemViewModels.KanbanItemViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    string title = Model.KanbanItem.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
     string setAsNotStartedString = await LocaleManager.GetTranslation("Set as not started", PageNames.Todos, Model.LanguageId);
     string setAsInProgressString = await LocaleManager.GetTranslation("Set as in progress", PageNames.Todos, Model.LanguageId);
     string setAsCompletedString = await LocaleManager.GetTranslation("Set as completed", PageNames.Todos, Model.LanguageId);
@@ -15,9 +15,9 @@
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row m-0">
             <div class="col-12">
-                <img src="@Model.TodoItem.Progeny.PictureLink" class="item-details-title-picture" />
+                <img src="@Model.KanbanItem.TodoItem.Progeny.PictureLink" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
-                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+                <button type="button" class="btn btn-link kanban-item-details-close-button"><span>×</span></button>
             </div>
         </div>
         <div class="space-50"></div>
@@ -34,37 +34,38 @@
                     <div class="col-12 h4">
                         @if (Model.CurrentUser.CanUserAddItems)
                         {
-                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.TodoItem.TodoItemId" data-copy-item-type="todo">
+                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.KanbanItem.TodoItem.TodoItemId" data-copy-item-type="todo">
                                 <i class="material-icons kinauna-icon-medium">content_copy</i>
                             </button>
                         }
-                        @Model.TodoItem.Title
+                        @Model.KanbanItem.TodoItem.Title
                     </div>
                 </div>
                 <div class="row text-white">
-                    <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId):</span> @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)
-                        <i class="material-icons-small">@Model.TodoItem.StatusIcon()</i>
+                    <div class="col-auto">
+                        <span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId):</span> @await LocaleManager.GetTranslation(Model.KanbanItem.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)
+                        <i class="material-icons-small">@Model.KanbanItem.TodoItem.StatusIcon()</i>
                     </div>
                 </div>
-                @if (Model.TodoItem.DueDate.HasValue)
+                @if (Model.KanbanItem.TodoItem.DueDate.HasValue)
                 {
                     <div class="row text-white">
-                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.DueDate?.ToString("dd-MMM-yyyy")</div>
+                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId):</span> @Model.KanbanItem.TodoItem.DueDate?.ToString("dd-MMM-yyyy")</div>
                     </div>
                 }
-                @if (Model.TodoItem.StartDate.HasValue)
+                @if (Model.KanbanItem.TodoItem.StartDate.HasValue)
                 {
                     <div class="row text-white">
-                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId):</span> @Model.KanbanItem.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
                     </div>
                 }
-                @if (Model.TodoItem.CompletedDate.HasValue && Model.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
+                @if (Model.KanbanItem.TodoItem.CompletedDate.HasValue && Model.KanbanItem.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
                 {
                     <div class="row text-white">
-                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
+                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId):</span> @Model.KanbanItem.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
                     </div>
                 }
-                @if (!string.IsNullOrWhiteSpace(Model.TodoItem.Description))
+                @if (!string.IsNullOrWhiteSpace(Model.KanbanItem.TodoItem.Description))
                 {
                     <div class="space-10"></div>
                     <div class="row text-white">
@@ -73,24 +74,24 @@
                         </div>
                     </div>
                     <div class="timeline-text row m-0 text-white">
-                        <div class="col-12 bg-display-rich-text p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.TodoItem.Description))</div>
+                        <div class="col-12 bg-display-rich-text p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.KanbanItem.TodoItem.Description))</div>
                     </div>
                 }
-                @if (!string.IsNullOrWhiteSpace(Model.TodoItem.Location))
+                @if (!string.IsNullOrWhiteSpace(Model.KanbanItem.TodoItem.Location))
                 {
                     <div class="space-10"></div>
                     <div class="row">
                         <div class="col-auto text-white-75">
-                            <i class="material-icons" style="font-size: 18px;">location_on</i> @Model.TodoItem.Location
+                            <i class="material-icons" style="font-size: 18px;">location_on</i> @Model.KanbanItem.TodoItem.Location
                         </div>
                     </div>
                 }
                 <div class="space-20"></div>
                 <div class="row">
                     <div class="col-12">
-                        @if (!string.IsNullOrEmpty(Model.TodoItem.Tags))
+                        @if (!string.IsNullOrEmpty(Model.KanbanItem.TodoItem.Tags))
                         {
-                            List<string> tagsList = Model.TodoItem.Tags.Split(',').ToList();
+                            List<string> tagsList = Model.KanbanItem.TodoItem.Tags.Split(',').ToList();
                             <div class="float-right">
                                 @foreach (string tagString in tagsList)
                                 {
@@ -98,9 +99,9 @@
                                 }
                             </div>
                         }
-                        @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
+                        @if (!string.IsNullOrEmpty(Model.KanbanItem.TodoItem.Context))
                         {
-                            List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
+                            List<string> contextsList = Model.KanbanItem.TodoItem.Context.Split(',').ToList();
                             <div class="float-right">
                                 @foreach (string contextsString in contextsList)
                                 {
@@ -117,27 +118,27 @@
                     <div class="space-20"></div>
                     <div class="row ml-5">
                         <div class="col-12">
-                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
+                            @if (Model.KanbanItem.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
                             {
-                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-not-started-id="@Model.TodoItem.TodoItemId">
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-not-started-id="@Model.KanbanItem.TodoItem.TodoItemId">
                                     <i class="material-icons kinauna-icon-medium">pending_actions</i> @setAsNotStartedString
                                 </button>
                             }
-                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
+                            @if (Model.KanbanItem.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
                             {
-                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-in-progress-id="@Model.TodoItem.TodoItemId">
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-in-progress-id="@Model.KanbanItem.TodoItem.TodoItemId">
                                     <i class="material-icons kinauna-icon-medium">assignment</i> @setAsInProgressString
                                 </button>
                             }
-                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
+                            @if (Model.KanbanItem.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
                             {
-                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-completed-id="@Model.TodoItem.TodoItemId">
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-completed-id="@Model.KanbanItem.TodoItem.TodoItemId">
                                     <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> @setAsCompletedString
                                 </button>
                             }
-                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
+                            @if (Model.KanbanItem.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
                             {
-                                <button class="btn btn-link p-3 float-right text-white-75" data-set-todo-item-cancelled-id="@Model.TodoItem.TodoItemId">
+                                <button class="btn btn-link p-3 float-right text-white-75" data-set-todo-item-cancelled-id="@Model.KanbanItem.TodoItem.TodoItemId">
                                     <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
                                 </button>
                             }
@@ -166,7 +167,7 @@
                                            style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
                                     <button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
                                 </div>
-                                <input name="ParentTodoItemId" type="hidden" value="@Model.TodoItem.TodoItemId"/>
+                                <input name="ParentTodoItemId" type="hidden" value="@Model.KanbanItem.TodoItem.TodoItemId" />
                                 <input name="Status" type="hidden" value="0"/>
                             </form>
                         </div>
@@ -187,11 +188,11 @@
                 </div>
             </div>
             <div class="space-10"></div>
-            <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.TodoItem.CreatedBy</div>
+            <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.KanbanItem.TodoItem.CreatedBy</div>
             @if(Model.IsCurrentUserProgenyAdmin){
                 <div class="col-12">
-                    <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    <a data-edit-item-type="kanbanitem" data-edit-item-item-id="@Model.KanbanItem.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a data-delete-item-type="kanbanitem" data-delete-item-item-id="@Model.KanbanItem.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                 </div>
             }
         </div>
