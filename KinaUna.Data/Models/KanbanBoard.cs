@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -100,5 +101,11 @@ namespace KinaUna.Data.Models
         /// </summary>
         [NotMapped]
         public Progeny Progeny { get; set; } = new Progeny();
+
+        /// <summary>
+        /// Gets or sets the list of columns associated with the Kanban board.
+        /// </summary>
+        [NotMapped]
+        public List<KanbanBoardColumn> ColumnsList { get; set; } = [];
     }
 }
