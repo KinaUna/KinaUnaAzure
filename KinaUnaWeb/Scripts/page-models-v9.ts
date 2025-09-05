@@ -564,6 +564,7 @@ export class TodoItem {
     createdTime: Date = new Date();
     modifiedTime: Date = new Date();
     isDeleted: boolean = false;
+    progeny: Progeny = new Progeny();
 }
 
 export class KanbanBoardsPageParameters implements BasePageParameters {
@@ -571,7 +572,7 @@ export class KanbanBoardsPageParameters implements BasePageParameters {
     progenies: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
-    itemsPerPage: number = 0;
+    itemsPerPage: number = 10;
     totalPages: number = 0;
     totalItems: number = 0;
     sort: number = 0; // 0 Ascending, 1 Descending
@@ -633,4 +634,14 @@ export class KanbanItem {
     modifiedTime: Date = new Date();
     isDeleted: boolean = false;
     todoItem?: TodoItem;
+}
+
+export class Progeny {
+    id: number = 0;
+    name: string = '';
+    nickName: string = '';
+    birthDay: Date = new Date();
+    timeZone: string = '';
+    pictureLink: string = '';
+    admins: string = '';
 }

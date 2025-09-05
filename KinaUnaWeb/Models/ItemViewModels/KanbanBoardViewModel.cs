@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using KinaUna.Data.Extensions;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -63,12 +64,27 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 IsDeleted = false
             };
 
+            kanbanBoard.SetColumnsListFromColumns();
+            
             return kanbanBoard;
         }
 
         internal void SetPropertiesFromKanbanBoard(KanbanBoard kanbanBoard)
         {
-            throw new NotImplementedException();
+            KanbanBoard.AccessLevel = kanbanBoard.AccessLevel;
+            KanbanBoard.Columns = kanbanBoard.Columns;
+            KanbanBoard.CreatedBy = kanbanBoard.CreatedBy;
+            KanbanBoard.CreatedTime = kanbanBoard.CreatedTime;
+            KanbanBoard.Description = kanbanBoard.Description;
+            KanbanBoard.KanbanBoardId = kanbanBoard.KanbanBoardId;
+            KanbanBoard.ModifiedTime = kanbanBoard.ModifiedTime;
+            KanbanBoard.ProgenyId = kanbanBoard.ProgenyId;
+            KanbanBoard.Tags = kanbanBoard.Tags;
+            KanbanBoard.Title = kanbanBoard.Title;
+            KanbanBoard.UId = kanbanBoard.UId;
+            KanbanBoard.Context = kanbanBoard.Context;
+            KanbanBoard.IsDeleted = kanbanBoard.IsDeleted;
+            KanbanBoard.ColumnsList = kanbanBoard.GetColumnsListFromColumns();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using System;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 
 namespace KinaUnaWeb.Models.ItemViewModels
@@ -100,6 +101,41 @@ namespace KinaUnaWeb.Models.ItemViewModels
                     item.Selected = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="TodoItem"/> instance based on the current state of the application.
+        /// </summary>
+        /// <remarks>This method initializes a <see cref="TodoItem"/> object using the current user's
+        /// timezone and other contextual data. The created <see cref="TodoItem"/> includes properties such as
+        /// description, title, and timestamps converted to UTC.</remarks>
+        /// <returns>A new <see cref="TodoItem"/> instance populated with the relevant data.</returns>
+        public TodoItem CreateTodoItem()
+        {
+            TodoItem todoItem = new()
+            {
+                TodoItemId = KanbanItem.TodoItem.TodoItemId,
+                ParentTodoItemId = KanbanItem.TodoItem.ParentTodoItemId,
+                ProgenyId = KanbanItem.TodoItem.ProgenyId,
+                Description = KanbanItem.TodoItem.Description,
+                AccessLevel = KanbanItem.TodoItem.AccessLevel,
+                Context = KanbanItem.TodoItem.Context,
+                Title = KanbanItem.TodoItem.Title,
+                CreatedTime = TimeZoneInfo.ConvertTimeToUtc(KanbanItem.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
+                CreatedBy = CurrentUser.UserId,
+                StartDate = KanbanItem.TodoItem.StartDate.HasValue ? TimeZoneInfo.ConvertTimeToUtc(KanbanItem.TodoItem.StartDate.Value.Date + TimeSpan.FromHours(12), TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)) : null,
+                DueDate = KanbanItem.TodoItem.DueDate.HasValue ? TimeZoneInfo.ConvertTimeToUtc(KanbanItem.TodoItem.DueDate.Value.Date + TimeSpan.FromHours(12), TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)) : null,
+                CompletedDate = KanbanItem.TodoItem.CompletedDate.HasValue
+                    ? TimeZoneInfo.ConvertTimeToUtc(KanbanItem.TodoItem.CompletedDate.Value.Date + TimeSpan.FromHours(12), TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone))
+                    : null,
+                Notes = KanbanItem.TodoItem.Notes,
+                Status = KanbanItem.TodoItem.Status,
+                Tags = KanbanItem.TodoItem.Tags,
+                Location = KanbanItem.TodoItem.Location,
+                UId = KanbanItem.TodoItem.UId,
+            };
+
+            return todoItem;
         }
     }
 }

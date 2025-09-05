@@ -614,6 +614,7 @@ export class TodoItem {
         this.createdTime = new Date();
         this.modifiedTime = new Date();
         this.isDeleted = false;
+        this.progeny = new Progeny();
     }
 }
 export class KanbanBoardsPageParameters {
@@ -622,7 +623,7 @@ export class KanbanBoardsPageParameters {
         this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
-        this.itemsPerPage = 0;
+        this.itemsPerPage = 10;
         this.totalPages = 0;
         this.totalItems = 0;
         this.sort = 0; // 0 Ascending, 1 Descending
@@ -688,6 +689,17 @@ export class KanbanItem {
         this.createdTime = new Date();
         this.modifiedTime = new Date();
         this.isDeleted = false;
+    }
+}
+export class Progeny {
+    constructor() {
+        this.id = 0;
+        this.name = '';
+        this.nickName = '';
+        this.birthDay = new Date();
+        this.timeZone = '';
+        this.pictureLink = '';
+        this.admins = '';
     }
 }
 //# sourceMappingURL=page-models-v9.js.map

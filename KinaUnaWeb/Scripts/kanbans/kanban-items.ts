@@ -1,4 +1,5 @@
-﻿import { KanbanItem } from "../page-models-v9.js";
+﻿import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item.js";
+import { KanbanItem } from "../page-models-v9.js";
 import { addSubtask } from "../todos/subtasks.js";
 import { getStatusIconForTodoItems, getSubtaskList, popupTodoItem } from "../todos/todo-details.js";
 import { dispatchKanbanBoardChangedEvent } from "./kanban-board-details.js";
@@ -60,8 +61,8 @@ async function popupKanbanItem(kanbanItem: KanbanItem, containerId: string): Pro
         containerElement.innerHTML = kanbanItemHtml;
         containerElement.classList.remove('d-none');
         setKanbanItemDetailsEventListeners(kanbanItem.todoItemId.toString(), containerId);
-        //setEditItemButtonEventListeners();
-        //setDeleteItemButtonEventListeners();
+        setEditItemButtonEventListeners();
+        setDeleteItemButtonEventListeners();
         await getSubtaskList(kanbanItem.todoItemId.toString());
     } else {
         console.error('Container element not found: ' + containerId);
@@ -355,6 +356,48 @@ export async function updateKanbanItem(kanbanItem: KanbanItem): Promise<boolean>
 export async function getAddKanbanItemForm(kanbanBoardId: number, columnId: number, rowIndex: number): Promise<string> {
     let formHtml = '';
     const url = '/KanbanItems/AddKanbanItem?kanbanBoardId=' + kanbanBoardId + '&columnId=' + columnId + '&rowIndex=' + rowIndex;
+    await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    }).then(async function (response) {
+        if (response.ok) {
+            formHtml = await response.text();
+        } else {
+            console.error('Error fetching add kanban item form. Status: ' + response.status);
+        }
+    }).catch(function (error) {
+        console.error('Error fetching add kanban item form: ' + error);
+    });
+    return formHtml;
+}
+
+export async function getEditKanbanItemForm(kanbanItemId: string): Promise<string> {
+    let formHtml = '';
+    const url = '/KanbanItems/EditKanbanItem?kanbanItemId=' + kanbanItemId;
+    await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    }).then(async function (response) {
+        if (response.ok) {
+            formHtml = await response.text();
+        } else {
+            console.error('Error fetching add kanban item form. Status: ' + response.status);
+        }
+    }).catch(function (error) {
+        console.error('Error fetching add kanban item form: ' + error);
+    });
+    return formHtml;
+}
+
+export async function getRemoveKanbanItemForm(kanbanItemId: string): Promise<string> {
+    let formHtml = '';
+    const url = '/KanbanItems/RemoveKanbanItem?kanbanItemId=' + kanbanItemId;
     await fetch(url, {
         method: 'GET',
         headers: {

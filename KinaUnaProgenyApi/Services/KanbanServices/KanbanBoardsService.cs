@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Extensions;
 
 namespace KinaUnaProgenyApi.Services.KanbanServices
 {
@@ -44,7 +45,10 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// identifier.</returns>
         public async Task<KanbanBoard> AddKanbanBoard(KanbanBoard kanbanBoard)
         {
+            kanbanBoard.EnsureColumnsAreValid();
             kanbanBoard.UId = Guid.NewGuid().ToString();
+            kanbanBoard.CreatedTime = DateTime.UtcNow;
+            kanbanBoard.ModifiedTime = DateTime.UtcNow;
             await progenyDbContext.KanbanBoardsDb.AddAsync(kanbanBoard);
             await progenyDbContext.SaveChangesAsync();
             return kanbanBoard;
@@ -80,6 +84,10 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             existingKanbanBoard.ModifiedBy = kanbanBoard.ModifiedBy;
             existingKanbanBoard.ModifiedTime = kanbanBoard.ModifiedTime;
             existingKanbanBoard.AccessLevel = kanbanBoard.AccessLevel;
+            existingKanbanBoard.Tags = kanbanBoard.Tags;
+            existingKanbanBoard.Context = kanbanBoard.Context;
+
+            existingKanbanBoard.EnsureColumnsAreValid();
             
             progenyDbContext.KanbanBoardsDb.Update(existingKanbanBoard);
             await progenyDbContext.SaveChangesAsync();

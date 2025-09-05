@@ -127,6 +127,7 @@ function collapsePopupsAndModals(clickover: HTMLElement): void {
  * Also collapses pop-ups and modals if clicking outside the pop-up or modal.
  */
 function setDocumentClickEventListeners(): void {
+    document.removeEventListener('click', onDocumentClicked);
     document.addEventListener('click', onDocumentClicked);
 
     setFullPageSpinnerEventListeners();

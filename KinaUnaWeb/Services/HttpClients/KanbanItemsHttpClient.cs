@@ -56,6 +56,22 @@ namespace KinaUnaWeb.Services.HttpClients
             return kanbanItem;
         }
 
+        public async Task<KanbanItem> DeleteKanbanItem(KanbanItem kanbanItem)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string kanbanItemsApiPath = "/api/KanbanItems/" + kanbanItem.KanbanItemId;
+            HttpResponseMessage kanbanItemsResponse = await _httpClient.DeleteAsync(kanbanItemsApiPath).ConfigureAwait(false);
+            if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItem;
+
+            string kanbanItemAsString = await kanbanItemsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            kanbanItem = JsonConvert.DeserializeObject<KanbanItem>(kanbanItemAsString);
+
+            return kanbanItem;
+        }
+
         public async Task<KanbanItem> GetKanbanItem(int kanbanItemId)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;

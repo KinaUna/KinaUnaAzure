@@ -184,7 +184,7 @@ namespace KinaUnaWeb.Controllers
             KanbanBoard kanbanBoard = model.CreateKanbanBoard();
             model.KanbanBoard = await kanbanBoardsHttpClient.AddKanbanBoard(kanbanBoard);
 
-            return PartialView("_KanbanBoardAddedPartial", model);
+            return Json(model.KanbanBoard);
         }
 
         [HttpGet]
@@ -232,10 +232,23 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
+            KanbanBoard existingKanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(model.KanbanBoard.KanbanBoardId);
+            if (existingKanbanBoard == null)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
             KanbanBoard kanbanBoard = model.CreateKanbanBoard();
+            kanbanBoard.Columns = existingKanbanBoard.Columns;
+            kanbanBoard.CreatedBy = existingKanbanBoard.CreatedBy;
+            kanbanBoard.CreatedTime = existingKanbanBoard.CreatedTime;
+            kanbanBoard.ModifiedBy = model.CurrentUser.UserId;
+            kanbanBoard.ModifiedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            kanbanBoard.SetColumnsListFromColumns();
+
             model.KanbanBoard = await kanbanBoardsHttpClient.UpdateKanbanBoard(kanbanBoard);
 
-            return PartialView("_KanbanBoardUpdatedPartial", model);
+            return Json(model.KanbanBoard);
         }
 
         [HttpPost]

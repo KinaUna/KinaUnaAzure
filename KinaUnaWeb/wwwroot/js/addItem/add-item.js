@@ -20,7 +20,7 @@ import { TimelineChangedEvent } from "../data-tools-v9.js";
 import { TimelineItem } from "../page-models-v9.js";
 import { popupTodoItem } from "../todos/todo-details.js";
 import { initializeAddEditKanbanBoard } from "../kanbans/add-edit-kanban-board.js";
-import { popupKanbanBoard } from "../kanbans/kanban-board-details.js";
+import { dispatchKanbanBoardChangedEvent, editKanbanItemFunction, popupKanbanBoard, removeKanbanItemFunction } from "../kanbans/kanban-board-details.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */
@@ -212,6 +212,12 @@ async function popupEditItemModal(editItemType, editItemItemId) {
     // Picture and video items are handled differently.
     if (editItemType === 'video') {
         await popupVideoDetails(editItemItemId);
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
+    }
+    if (editItemType === 'kanbanitem') {
+        await editKanbanItemFunction(editItemItemId);
         return new Promise(function (resolve, reject) {
             resolve();
         });
@@ -411,6 +417,12 @@ export async function onDeleteItemButtonClicked(event) {
  * @param editItemItemId
  */
 async function popupDeleteItemModal(deleteItemType, deleteItemItemId) {
+    if (deleteItemType === 'kanbanitem') {
+        await removeKanbanItemFunction(deleteItemItemId);
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
+    }
     let popup = document.getElementById('item-details-div');
     if (popup !== null) {
         popup.innerHTML = '';
@@ -572,21 +584,27 @@ async function onSaveItemFormSubmit(event) {
                 }
                 if (formAction.includes('/Subtasks/')) {
                     await popupTodoItem(returnItemId);
+                    return;
                 }
-                else {
-                    if (itemDetailsPopupDiv) {
-                        let modalContent = await response.text();
-                        const fullScreenOverlay = document.createElement('div');
-                        fullScreenOverlay.classList.add('full-screen-bg');
-                        fullScreenOverlay.innerHTML = modalContent;
-                        itemDetailsPopupDiv.appendChild(fullScreenOverlay);
-                        itemDetailsPopupDiv.classList.remove('d-none');
-                        hideBodyScrollbars();
-                        addCloseButtonEventListener();
-                        setEditItemButtonEventListeners();
-                        setAddItemButtonEventListeners();
-                        dispatchTimelineItemChangedEvent();
-                    }
+                if (formAction.includes('/Kanbans/')) {
+                    const updatedKanbanBoard = await response.json();
+                    returnItemId = updatedKanbanBoard.kanbanBoardId.toString();
+                    dispatchKanbanBoardChangedEvent(returnItemId);
+                    await popupKanbanBoard(returnItemId);
+                    return;
+                }
+                if (itemDetailsPopupDiv) {
+                    let modalContent = await response.text();
+                    const fullScreenOverlay = document.createElement('div');
+                    fullScreenOverlay.classList.add('full-screen-bg');
+                    fullScreenOverlay.innerHTML = modalContent;
+                    itemDetailsPopupDiv.appendChild(fullScreenOverlay);
+                    itemDetailsPopupDiv.classList.remove('d-none');
+                    hideBodyScrollbars();
+                    addCloseButtonEventListener();
+                    setEditItemButtonEventListeners();
+                    setAddItemButtonEventListeners();
+                    dispatchTimelineItemChangedEvent();
                 }
             }
         }).catch(function (error) {

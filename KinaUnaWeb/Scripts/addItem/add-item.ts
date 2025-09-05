@@ -17,10 +17,10 @@ import { popupVideoDetails } from "../videos/video-details.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
 import { initializeAddEditTodo } from "../todos/add-edit-todo.js";
 import { TimelineChangedEvent } from "../data-tools-v9.js";
-import { TimelineItem } from "../page-models-v9.js";
+import { KanbanBoard, TimelineItem } from "../page-models-v9.js";
 import { popupTodoItem } from "../todos/todo-details.js";
 import { initializeAddEditKanbanBoard } from "../kanbans/add-edit-kanban-board.js";
-import { popupKanbanBoard } from "../kanbans/kanban-board-details.js";
+import { dispatchKanbanBoardChangedEvent, editKanbanItemFunction, popupKanbanBoard, removeKanbanItemFunction } from "../kanbans/kanban-board-details.js";
 
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
@@ -248,6 +248,13 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
     // Picture and video items are handled differently.
     if (editItemType === 'video') {
         await popupVideoDetails(editItemItemId);
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+
+    if (editItemType === 'kanbanitem') {
+        await editKanbanItemFunction(editItemItemId);
         return new Promise<void>(function (resolve, reject) {
             resolve();
         });
@@ -491,6 +498,13 @@ export async function onDeleteItemButtonClicked(event: MouseEvent): Promise<void
  * @param editItemItemId
  */
 async function popupDeleteItemModal(deleteItemType: string, deleteItemItemId: string): Promise<void> {
+    if (deleteItemType === 'kanbanitem') {
+        await removeKanbanItemFunction(deleteItemItemId);
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+
     let popup = document.getElementById('item-details-div');
     if (popup !== null) {
         popup.innerHTML = '';
@@ -657,7 +671,7 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
             returnItemId = parentTodoItemIdInput.value;
         }
     }
-
+    
     if (itemDetailsPopupDiv) {
         itemDetailsPopupDiv.innerHTML = '';
     }
@@ -672,24 +686,33 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
                     const calendarDataChangedEvent = new Event('calendarDataChanged');
                     window.dispatchEvent(calendarDataChangedEvent);
                 }
+
                 if (formAction.includes('/Subtasks/')) {
                     await popupTodoItem(returnItemId);
+                    return;
                 }
-                else {
-                    if (itemDetailsPopupDiv) {
-                        let modalContent = await response.text();
-                        const fullScreenOverlay = document.createElement('div');
-                        fullScreenOverlay.classList.add('full-screen-bg');
-                        fullScreenOverlay.innerHTML = modalContent;
-                        itemDetailsPopupDiv.appendChild(fullScreenOverlay);
-                        itemDetailsPopupDiv.classList.remove('d-none');
-                        hideBodyScrollbars();
-                        addCloseButtonEventListener();
-                        setEditItemButtonEventListeners();
-                        setAddItemButtonEventListeners();
-                        dispatchTimelineItemChangedEvent();
-                    }
-                }                
+
+                if (formAction.includes('/Kanbans/')) {
+                    const updatedKanbanBoard: KanbanBoard = await response.json() as KanbanBoard;
+                    returnItemId = updatedKanbanBoard.kanbanBoardId.toString();
+                    dispatchKanbanBoardChangedEvent(returnItemId);
+                    await popupKanbanBoard(returnItemId);
+                    return;
+                }
+
+                if (itemDetailsPopupDiv) {
+                    let modalContent = await response.text();
+                    const fullScreenOverlay = document.createElement('div');
+                    fullScreenOverlay.classList.add('full-screen-bg');
+                    fullScreenOverlay.innerHTML = modalContent;
+                    itemDetailsPopupDiv.appendChild(fullScreenOverlay);
+                    itemDetailsPopupDiv.classList.remove('d-none');
+                    hideBodyScrollbars();
+                    addCloseButtonEventListener();
+                    setEditItemButtonEventListeners();
+                    setAddItemButtonEventListeners();
+                    dispatchTimelineItemChangedEvent();
+                }              
             }
         }).catch(function (error) {
             console.error('Error saving item:', error);

@@ -39,6 +39,9 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// <returns>The added <see cref="KanbanItem"/> with its unique identifier assigned. Does not include the associated TodoItem.</returns>
         public async Task<KanbanItem> AddKanbanItem(KanbanItem kanbanItem)
         {
+            int kanbanItemsCount = await progenyDbContext.KanbanItemsDb.CountAsync(k => k.KanbanBoardId == kanbanItem.KanbanBoardId && k.ColumnId == kanbanItem.ColumnId);
+            kanbanItem.RowIndex = kanbanItemsCount;
+
             kanbanItem.UId = System.Guid.NewGuid().ToString();
             await progenyDbContext.KanbanItemsDb.AddAsync(kanbanItem);
             await progenyDbContext.SaveChangesAsync();
@@ -126,6 +129,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         public async Task<List<KanbanItem>> GetKanbanItemsForBoard(int kanbanBoardId, bool includeDeleted = false)
         {
             List<KanbanItem> kanbanItems = await progenyDbContext.KanbanItemsDb.AsNoTracking().Where(ki => ki.KanbanBoardId == kanbanBoardId).ToListAsync();
+            List<KanbanItem> resultItems = [];
             foreach (KanbanItem kanbanItem in kanbanItems)
             {
                 if (!includeDeleted && kanbanItem.IsDeleted)
@@ -134,9 +138,10 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 }
 
                 kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId);
+                resultItems.Add(kanbanItem);
             }
 
-            return kanbanItems;
+            return resultItems;
         }
     }
 }
