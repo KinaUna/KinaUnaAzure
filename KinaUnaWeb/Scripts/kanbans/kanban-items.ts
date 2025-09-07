@@ -320,7 +320,6 @@ export async function displayKanbanItemDetails(kanbanItemId: string, container: 
                     await popupTodoItem(kanbanItem.todoItemId.toString());
                 } else {
                     await popupKanbanItem(kanbanItem, container);
-                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
                 }
             }
         } else {

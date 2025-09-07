@@ -192,8 +192,8 @@ async function renderKanbanBoard(reloadKanbanItems) {
                 addColumnEventListeners();
                 addCardButtonsEventListners();
                 // Hide all column menus when clicking outside of them.
-                document.removeEventListener('click', hideAllColumnMenus);
-                document.addEventListener('click', hideAllColumnMenus);
+                document.removeEventListener('click', hideAllMenusAndModals);
+                document.addEventListener('click', hideAllMenusAndModals);
             }
         }
     }
@@ -395,7 +395,6 @@ async function createKanbanBoardContainer(kanbanBoard) {
         kanbanBoardHtml += addColumnButtonHtml;
     }
     kanbanBoardHtml += '</div>';
-    // kanbanBoardHtml += '<div id="kanban-item-details-div" class="settings-modal d-none" tabindex="-1" role="dialog"></div>';
     return new Promise(function (resolve, reject) {
         resolve(kanbanBoardHtml);
     });
@@ -869,7 +868,7 @@ const showCardMenu = function (event) {
     event.stopPropagation();
     const button = event.currentTarget;
     const kanbanItemId = button.dataset.kanbanItemId;
-    hideAllColumnMenus(event);
+    hideAllMenusAndModals(event);
     if (kanbanItemId) {
         const menuContentDiv = document.querySelector('.kanban-card-menu-content[data-kanban-item-id="' + kanbanItemId + '"]');
         if (menuContentDiv) {
@@ -1328,11 +1327,11 @@ function hideColumnMenus(columnId = '') {
         }
     });
 }
-function hideCardMenus(canbanItemId = '') {
+function hideCardMenus(kanbanItemId = '') {
     const allCardMenus = document.querySelectorAll('.kanban-card-menu-content');
     allCardMenus.forEach((menu) => {
         const menuKanbanItemId = menu.dataset.kanbanItemId;
-        if (canbanItemId === '' || menuKanbanItemId !== canbanItemId) {
+        if (kanbanItemId === '' || menuKanbanItemId !== kanbanItemId) {
             menu.classList.add('d-none');
         }
     });
@@ -1351,7 +1350,7 @@ function hideRenameInputs() {
         menuDiv.classList.remove('d-none');
     });
 }
-function hideAllColumnMenus(event) {
+function hideAllMenusAndModals(event) {
     const target = event.target;
     console.log(target);
     if (!target.closest('.kanban-column-menu-div')) {

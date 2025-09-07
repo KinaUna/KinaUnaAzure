@@ -212,8 +212,8 @@ async function renderKanbanBoard(reloadKanbanItems: boolean) {
                 addCardButtonsEventListners();
 
                 // Hide all column menus when clicking outside of them.
-                document.removeEventListener('click', hideAllColumnMenus);
-                document.addEventListener('click', hideAllColumnMenus);
+                document.removeEventListener('click', hideAllMenusAndModals);
+                document.addEventListener('click', hideAllMenusAndModals);
             }
         }
     }
@@ -424,6 +424,7 @@ async function createKanbanBoardContainer(kanbanBoard: KanbanBoard): Promise<str
             </div>
         </div>`;
         kanbanBoardHtml += limitInputHTML;
+
         const addCardInputHTML = `
         <div class="settings-modal d-none" tabindex="-1" role="dialog" id="add-card-modal-${column.id}">            
         </div>`;
@@ -431,17 +432,18 @@ async function createKanbanBoardContainer(kanbanBoard: KanbanBoard): Promise<str
         
         dividerIndex++;
     });
+
     let addColumnButtonHtml = `<div class="canban-column"><button class="btn btn-sm btn-success" id="add-kanban-column-button"><i class="material-icons kinauna-icon-small">add</i></button></div>`;
     if (userCanEdit) {
         kanbanBoardHtml += addColumnButtonHtml;
     }
-
     kanbanBoardHtml += '</div>';
-    // kanbanBoardHtml += '<div id="kanban-item-details-div" class="settings-modal d-none" tabindex="-1" role="dialog"></div>';
+    
     return new Promise<string>(function (resolve, reject) {
         resolve(kanbanBoardHtml);
     }); 
 }
+
 export async function removeKanbanItemFunction(kanbanItemId: string) {
     const removeKanbanItemModalDiv = document.querySelector<HTMLDivElement>('#kanban-item-details-div');
     if (removeKanbanItemModalDiv) {
@@ -958,7 +960,7 @@ const showCardMenu = function (event: MouseEvent) {
     event.stopPropagation();
     const button = event.currentTarget as HTMLButtonElement;
     const kanbanItemId = button.dataset.kanbanItemId;
-    hideAllColumnMenus(event);
+    hideAllMenusAndModals(event);
 
     if (kanbanItemId) {
         const menuContentDiv = document.querySelector<HTMLDivElement>('.kanban-card-menu-content[data-kanban-item-id="' + kanbanItemId + '"]');
@@ -1455,11 +1457,11 @@ function hideColumnMenus(columnId: string = '') {
     });
 }
 
-function hideCardMenus(canbanItemId: string = '') {
+function hideCardMenus(kanbanItemId: string = '') {
     const allCardMenus = document.querySelectorAll<HTMLDivElement>('.kanban-card-menu-content');
     allCardMenus.forEach((menu) => {
         const menuKanbanItemId = menu.dataset.kanbanItemId;
-        if (canbanItemId === '' || menuKanbanItemId !== canbanItemId) {
+        if (kanbanItemId === '' || menuKanbanItemId !== kanbanItemId) {
             menu.classList.add('d-none');
         }
     });
@@ -1482,7 +1484,7 @@ function hideRenameInputs() {
     });
 }
 
-function hideAllColumnMenus(event: MouseEvent): void {
+function hideAllMenusAndModals(event: MouseEvent): void {
     const target = event.target as HTMLElement;
     console.log(target);
     if (!target.closest('.kanban-column-menu-div')) {
