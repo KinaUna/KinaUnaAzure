@@ -1,11 +1,15 @@
 ﻿import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item.js";
-import { KanbanItem } from "../page-models-v9.js";
+import { getCurrentLanguageId } from "../data-tools-v9.js";
+import { getTranslation } from "../localization-v9.js";
+import { KanbanItem, TodoStatusType } from "../page-models-v9.js";
 import { addSubtask } from "../todos/subtasks.js";
 import { getStatusIconForTodoItems, getSubtaskList, popupTodoItem } from "../todos/todo-details.js";
-import { dispatchKanbanBoardChangedEvent } from "./kanban-board-details.js";
+import { initializeAddEditKanbanItem } from "./add-edit-kanban-item.js";
+import { dispatchKanbanBoardChangedEvent, getKanbanItems, setKanbanItems, updateKanbanItemsInColumn } from "./kanban-board-details.js";
 
 let popupContainerId = '';
 let popupKanbanItemObject: KanbanItem;
+
 export async function getKanbanItemsForBoard(kanbanBoardId: number): Promise<KanbanItem[]> {
     let kanbanItems: KanbanItem[] = [];
     const url = '/KanbanItems/GetKanbanItemsForBoard?kanbanBoardId=' + kanbanBoardId;
@@ -31,7 +35,6 @@ export async function getKanbanItemsForBoard(kanbanBoardId: number): Promise<Kan
 };
 
 async function popupKanbanItem(kanbanItem: KanbanItem, containerId: string): Promise<void> {
-    console.log(containerId);
     if (!kanbanItem || !kanbanItem.todoItem) {
         console.error('Invalid kanban item or missing todo item.');
         return;
@@ -59,21 +62,28 @@ async function popupKanbanItem(kanbanItem: KanbanItem, containerId: string): Pro
     if (containerElement) {
         popupContainerId = containerId;
         containerElement.innerHTML = kanbanItemHtml;
-        containerElement.classList.remove('d-none');
+        
         setKanbanItemDetailsEventListeners(kanbanItem.todoItemId.toString(), containerId);
         setEditItemButtonEventListeners();
         setDeleteItemButtonEventListeners();
         await getSubtaskList(kanbanItem.todoItemId.toString());
+        containerElement.classList.remove('d-none');
     } else {
         console.error('Container element not found: ' + containerId);
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 async function setKanbanItemDetailsEventListeners(itemId: string, todoDetailsPopupDivId: string) {
     let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.kanban-item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
-            const closeButtonActions = function () {
+            const closeButtonActions = function (event: MouseEvent) {
+                event.preventDefault();
+                event.stopPropagation();
                 const todoDetailsPopupDiv = document.getElementById(todoDetailsPopupDivId);
                 if (!todoDetailsPopupDiv) return;
                 todoDetailsPopupDiv.innerHTML = '';
@@ -163,6 +173,10 @@ async function setKanbanItemDetailsEventListeners(itemId: string, todoDetailsPop
         addSubtaskInput.removeEventListener('keydown', addSubtaskInputKeydownAction);
         addSubtaskInput.addEventListener('keydown', addSubtaskInputKeydownAction);
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -172,6 +186,8 @@ async function setKanbanItemDetailsEventListeners(itemId: string, todoDetailsPop
  * @return {Promise<void>} A promise that resolves when the function completes.
  * */
 async function onSetAsNotStartedButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
     const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
     if (buttonElement !== null) {
         const todoId = buttonElement.dataset.setTodoItemNotStartedId;
@@ -186,9 +202,17 @@ async function onSetAsNotStartedButtonClicked(event: MouseEvent): Promise<void> 
             }).then(async function (response) {
                 if (response.ok) {
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
-                    return;
+                    let kanbanItems = getKanbanItems();
+                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId)
+                    if (kanbanItem && kanbanItem.todoItem) {
+                        kanbanItem.todoItem.status = TodoStatusType.NotStarted;
+                    }
+                    setKanbanItems(kanbanItems);
+                    updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
 
+                    return new Promise<void>(function (resolve, reject) {
+                        resolve();
+                    });
                 } else {
                     console.error('Error setting todo as not started. Status: ' + response.status + ', Message: ' + response.statusText);
                 }
@@ -197,6 +221,10 @@ async function onSetAsNotStartedButtonClicked(event: MouseEvent): Promise<void> 
             });
         }
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -206,6 +234,8 @@ async function onSetAsNotStartedButtonClicked(event: MouseEvent): Promise<void> 
  * @return {Promise<void>} A promise that resolves when the function completes.
  * */
 async function onSetAsInProgressButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
     const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
     if (buttonElement !== null) {
         const todoId = buttonElement.dataset.setTodoItemInProgressId;
@@ -220,8 +250,17 @@ async function onSetAsInProgressButtonClicked(event: MouseEvent): Promise<void> 
             }).then(async function (response) {
                 if (response.ok) {
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
-                    return;
+                    let kanbanItems = getKanbanItems();
+                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId)
+                    if (kanbanItem && kanbanItem.todoItem) {
+                        kanbanItem.todoItem.status = TodoStatusType.InProgress;
+                    }
+                    setKanbanItems(kanbanItems);
+                    updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+
+                    return new Promise<void>(function (resolve, reject) {
+                        resolve();
+                    });
 
                 } else {
                     console.error('Error setting todo as in progress. Status: ' + response.status + ', Message: ' + response.statusText);
@@ -231,6 +270,10 @@ async function onSetAsInProgressButtonClicked(event: MouseEvent): Promise<void> 
             });
         }
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -240,6 +283,8 @@ async function onSetAsInProgressButtonClicked(event: MouseEvent): Promise<void> 
  * @return {Promise<void>} A promise that resolves when the function completes.
  * */
 async function onSetAsCompletedButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
     const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
     if (buttonElement !== null) {
         const todoId = buttonElement.dataset.setTodoItemCompletedId;
@@ -254,8 +299,17 @@ async function onSetAsCompletedButtonClicked(event: MouseEvent): Promise<void> {
             }).then(async function (response) {
                 if (response.ok) {
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
-                    return;
+                    let kanbanItems = getKanbanItems();
+                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId)
+                    if (kanbanItem && kanbanItem.todoItem) {
+                        kanbanItem.todoItem.status = TodoStatusType.Completed;
+                    }
+                    setKanbanItems(kanbanItems);
+                    updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+
+                    return new Promise<void>(function (resolve, reject) {
+                        resolve();
+                    });
 
                 } else {
                     console.error('Error setting todo as completed. Status: ' + response.status + ', Message: ' + response.statusText);
@@ -265,6 +319,10 @@ async function onSetAsCompletedButtonClicked(event: MouseEvent): Promise<void> {
             });
         }
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -274,6 +332,8 @@ async function onSetAsCompletedButtonClicked(event: MouseEvent): Promise<void> {
  * @return {Promise<void>} A promise that resolves when the function completes.
  * */
 async function onSetAsCancelledButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
     const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
     if (buttonElement !== null) {
         const todoId = buttonElement.dataset.setTodoItemCancelledId;
@@ -287,10 +347,18 @@ async function onSetAsCancelledButtonClicked(event: MouseEvent): Promise<void> {
                 },
             }).then(async function (response) {
                 if (response.ok) {
-                    dispatchEvent
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
-                    return;
+                    let kanbanItems = getKanbanItems();
+                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId)
+                    if (kanbanItem && kanbanItem.todoItem) {
+                        kanbanItem.todoItem.status = TodoStatusType.Cancelled;
+                    }
+                    setKanbanItems(kanbanItems);
+                    updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+
+                    return new Promise<void>(function (resolve, reject) {
+                        resolve();
+                    });
 
                 } else {
                     console.error('Error setting todo as cancelled. Status: ' + response.status + ', Message: ' + response.statusText);
@@ -300,6 +368,10 @@ async function onSetAsCancelledButtonClicked(event: MouseEvent): Promise<void> {
             });
         }
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 export async function displayKanbanItemDetails(kanbanItemId: string, container: string): Promise<void> {
@@ -328,6 +400,10 @@ export async function displayKanbanItemDetails(kanbanItemId: string, container: 
     }).catch(function (error) {
         console.error('Error fetching kanban item details: ' + error);
     });
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 export async function updateKanbanItem(kanbanItem: KanbanItem): Promise<boolean> {
@@ -349,7 +425,10 @@ export async function updateKanbanItem(kanbanItem: KanbanItem): Promise<boolean>
     }).catch(function (error) {
         console.error('Error updating kanban item: ' + error);
     });
-    return success;
+
+    return new Promise<boolean>(function (resolve, reject) {
+        resolve(success);
+    });
 }
 
 export async function getAddKanbanItemForm(kanbanBoardId: number, columnId: number, rowIndex: number): Promise<string> {
@@ -370,7 +449,10 @@ export async function getAddKanbanItemForm(kanbanBoardId: number, columnId: numb
     }).catch(function (error) {
         console.error('Error fetching add kanban item form: ' + error);
     });
-    return formHtml;
+
+    return new Promise<string>(function (resolve, reject) {
+        resolve(formHtml);
+    });
 }
 
 export async function getEditKanbanItemForm(kanbanItemId: string): Promise<string> {
@@ -391,7 +473,10 @@ export async function getEditKanbanItemForm(kanbanItemId: string): Promise<strin
     }).catch(function (error) {
         console.error('Error fetching add kanban item form: ' + error);
     });
-    return formHtml;
+
+    return new Promise<string>(function (resolve, reject) {
+        resolve(formHtml);
+    });
 }
 
 export async function getRemoveKanbanItemForm(kanbanItemId: string): Promise<string> {
@@ -412,5 +497,144 @@ export async function getRemoveKanbanItemForm(kanbanItemId: string): Promise<str
     }).catch(function (error) {
         console.error('Error fetching add kanban item form: ' + error);
     });
-    return formHtml;
+
+    return new Promise<string>(function (resolve, reject) {
+        resolve(formHtml);
+    });
+}
+
+export async function removeKanbanItemFunction(kanbanItemId: string): Promise<void> {
+    const removeKanbanItemModalDiv = document.querySelector<HTMLDivElement>('#kanban-item-details-div');
+    if (removeKanbanItemModalDiv) {
+        removeKanbanItemModalDiv.innerHTML = '';
+
+        const formHtml = await getRemoveKanbanItemForm(kanbanItemId);
+        removeKanbanItemModalDiv.innerHTML = formHtml;
+        removeKanbanItemModalDiv.classList.remove('d-none');
+        
+        const cancelButton = removeKanbanItemModalDiv.querySelector<HTMLButtonElement>('.remove-kanban-item-cancel-button');
+        if (cancelButton) {
+            const closeButtonFunction = function () {
+                removeKanbanItemModalDiv.innerHTML = '';
+                removeKanbanItemModalDiv.classList.add('d-none');
+            }
+            cancelButton.removeEventListener('click', closeButtonFunction);
+            cancelButton.addEventListener('click', closeButtonFunction);
+
+            const closeButton = removeKanbanItemModalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+            if (closeButton) {
+                closeButton.removeEventListener('click', closeButtonFunction);
+                closeButton.addEventListener('click', closeButtonFunction);
+            }
+        }
+
+        const removeKanbanItemForm = removeKanbanItemModalDiv.querySelector<HTMLFormElement>('#remove-kanban-card-form');
+        if (removeKanbanItemForm) {
+            const removeKanbanItemFormFunction = async function (event: Event) {
+                event.preventDefault();
+                const formData = new FormData(removeKanbanItemForm);
+                const url = '/KanbanItems/RemoveKanbanItem';
+                await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                }).then(async function (response) {
+                    if (response.ok) {
+                        // Successfully saved the KanbanItem. Re-render the KanbanBoard.
+                        removeKanbanItemModalDiv.innerHTML = '';
+                        removeKanbanItemModalDiv.classList.add('d-none');
+                        const removedKanbanItem = await response.json() as KanbanItem;
+                        if (removedKanbanItem) {
+                            let kanbanItems = getKanbanItems();
+                            // remove the item from kanbanItems array
+                            kanbanItems = kanbanItems.filter(k => k.kanbanItemId.toString() !== kanbanItemId);
+
+                            setKanbanItems(kanbanItems);
+
+                            await updateKanbanItemsInColumn(removedKanbanItem.columnId);
+                        }
+                    } else {
+                        console.error('Error removing kanban item. Status: ' + response.status);
+                    }
+                }).catch(function (error) {
+                    console.error('Error removing kanban item: ' + error);
+                });
+            }
+            removeKanbanItemForm.removeEventListener('submit', removeKanbanItemFormFunction);
+            removeKanbanItemForm.addEventListener('submit', removeKanbanItemFormFunction);
+            initializeAddEditKanbanItem('kanban-item-details-div');
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+export async function editKanbanItemFunction(kanbanItemId: string): Promise<void> {
+    const editKanbanItemModalDiv = document.querySelector<HTMLDivElement>('#kanban-item-details-div');
+    if (editKanbanItemModalDiv) {
+        editKanbanItemModalDiv.innerHTML = '';
+
+        const formHtml = await getEditKanbanItemForm(kanbanItemId);
+        editKanbanItemModalDiv.innerHTML = formHtml;
+        editKanbanItemModalDiv.classList.remove('d-none');
+        
+        const cancelButton = editKanbanItemModalDiv.querySelector<HTMLButtonElement>('.edit-kanban-item-cancel-button');
+        if (cancelButton) {
+            const closeButtonFunction = function () {
+                editKanbanItemModalDiv.innerHTML = '';
+                editKanbanItemModalDiv.classList.add('d-none');
+            }
+            cancelButton.removeEventListener('click', closeButtonFunction);
+            cancelButton.addEventListener('click', closeButtonFunction);
+
+            const closeButton = editKanbanItemModalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+            if (closeButton) {
+                closeButton.removeEventListener('click', closeButtonFunction);
+                closeButton.addEventListener('click', closeButtonFunction);
+            }
+        }
+
+        const editKanbanItemForm = editKanbanItemModalDiv.querySelector<HTMLFormElement>('#save-kanban-card-form');
+        if (editKanbanItemForm) {
+            const editKanbanItemFormFunction = async function (event: Event) {
+                event.preventDefault();
+                const formData = new FormData(editKanbanItemForm);
+                const url = '/KanbanItems/EditKanbanItem';
+                await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                }).then(async function (response) {
+                    if (response.ok) {
+                        // Successfully saved the KanbanItem. Re-render the KanbanBoard.
+                        editKanbanItemModalDiv.innerHTML = '';
+                        editKanbanItemModalDiv.classList.add('d-none');
+                        const updatedKanbanItem = await response.json() as KanbanItem;
+                        if (updatedKanbanItem) {
+                            let kanbanItems = getKanbanItems();
+                            // update the item in kanbanItems array
+                            const index = kanbanItems.findIndex(k => k.kanbanItemId === updatedKanbanItem.kanbanItemId);
+                            if (index !== -1) {
+                                kanbanItems[index] = updatedKanbanItem;
+                                setKanbanItems(kanbanItems);
+
+                                await updateKanbanItemsInColumn(updatedKanbanItem.columnId);
+                            }
+                        }
+                    } else {
+                        console.error('Error editing kanban item. Status: ' + response.status);
+                    }
+                }).catch(function (error) {
+                    console.error('Error editing kanban item: ' + error);
+                });
+            }
+            editKanbanItemForm.removeEventListener('submit', editKanbanItemFormFunction);
+            editKanbanItemForm.addEventListener('submit', editKanbanItemFormFunction);
+            initializeAddEditKanbanItem('kanban-item-details-div');
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }

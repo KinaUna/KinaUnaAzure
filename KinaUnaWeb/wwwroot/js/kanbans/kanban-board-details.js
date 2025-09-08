@@ -4,14 +4,26 @@ import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-di
 import { getTranslation } from "../localization-v9.js";
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
 import { KanbanBoardColumn, TimelineItem } from "../page-models-v9.js";
-import { getStatusIconForTodoItems } from "../todos/todo-details.js";
 import { initializeAddEditKanbanItem } from "./add-edit-kanban-item.js";
-import { displayKanbanItemDetails, getAddKanbanItemForm, getEditKanbanItemForm, getKanbanItemsForBoard, getRemoveKanbanItemForm, updateKanbanItem } from "./kanban-items.js";
+import { addCardDividerEventListeners, addCardEventListeners, createKanbanItemCardHTML } from "./kanban-cards.js";
+import { getAddKanbanItemForm, getKanbanItemsForBoard, updateKanbanItem } from "./kanban-items.js";
 let kanbanBoardMainDiv = document.querySelector('#kanban-board-main-div');
 let kanbanBoard;
 let kanbanItems = [];
 const defaultColumnTitle = 'To do';
 let userCanEdit = false;
+export function getKanbanBoard() {
+    return kanbanBoard;
+}
+export function setKanbanBoard(board) {
+    kanbanBoard = board;
+}
+export function getKanbanItems() {
+    return kanbanItems;
+}
+export function setKanbanItems(kanbanItemsList) {
+    kanbanItems = kanbanItemsList;
+}
 function addTimelineChangedEventListener() {
     // Subscribe to the timelineChanged event to refresh the KanbanBoards list when a KanbanBoard is added, updated, or deleted.
     window.addEventListener('timelineChanged', async (event) => {
@@ -22,6 +34,18 @@ function addTimelineChangedEventListener() {
             }
         }
     });
+}
+/**
+ * Trigger a timelineChanged event for the specified KanbanBoard id.
+ * @param kanbanBoardId
+ */
+export function dispatchKanbanBoardChangedEvent(kanbanBoardId) {
+    console.log('dispatchKanbanBoardChangedEvent, kanbanBoardId: ' + kanbanBoardId);
+    const timelineItem = new TimelineItem();
+    timelineItem.itemType = 16;
+    timelineItem.itemId = kanbanBoardId;
+    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+    window.dispatchEvent(timelineItemChangedEvent);
 }
 /**
  * Adds event listeners to all elements with the data-kanban-board-id attribute.
@@ -124,15 +148,13 @@ async function setKanbanBoardDetailsEventListeners(itemId, kanbanBoardDetailsPop
         resolve();
     });
 }
-export function dispatchKanbanBoardChangedEvent(kanbanBoardId) {
-    console.log('dispatchKanbanBoardChangedEvent, kanbanBoardId: ' + kanbanBoardId);
-    const timelineItem = new TimelineItem();
-    timelineItem.itemType = 16;
-    timelineItem.itemId = kanbanBoardId;
-    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
-    window.dispatchEvent(timelineItemChangedEvent);
-}
-async function getKanbanBoard(kanbanBoardId) {
+/**
+ * Gets the KanbanBoard with the specified id from the server.
+ * Stores the result in the kanbanBoard variable and updates the columnsList property.
+ * @param kanbanBoardId The id of the KanbanBoard to get.
+ * @returns The KanbanBoard with the specified id.
+ */
+async function loadKanbanBoard(kanbanBoardId) {
     let url = '/Kanbans/GetKanbanBoard?kanbanBoardId=' + kanbanBoardId;
     await fetch(url, {
         method: 'GET',
@@ -154,8 +176,15 @@ async function getKanbanBoard(kanbanBoardId) {
     }).catch(function (error) {
         console.error('Error getting Kanban Board. Error: ' + error);
     });
-    return kanbanBoard;
+    return new Promise(function (resolve, reject) {
+        resolve(kanbanBoard);
+    });
 }
+/**
+ * Renders the KanbanBoard in the kanban-board-main-div element.
+ * @param reloadKanbanItems Whether to reload the KanbanItems from the server or use the existing kanbanItems array.
+ * @returns A promise that resolves when the KanbanBoard has been rendered.
+ */
 async function renderKanbanBoard(reloadKanbanItems) {
     kanbanBoardMainDiv = document.querySelector('#kanban-board-main-div');
     if (kanbanBoardMainDiv) {
@@ -165,7 +194,7 @@ async function renderKanbanBoard(reloadKanbanItems) {
             userCanEdit = true;
         }
         if (kanbanBoardId) {
-            const kanbanBoard = await getKanbanBoard(parseInt(kanbanBoardId));
+            const kanbanBoard = await loadKanbanBoard(parseInt(kanbanBoardId));
             if (kanbanBoard) {
                 if (kanbanItems.length === 0 || reloadKanbanItems) {
                     kanbanItems = await getKanbanItemsForBoard(kanbanBoard.kanbanBoardId);
@@ -188,7 +217,9 @@ async function renderKanbanBoard(reloadKanbanItems) {
                     await updateKanbanBoardColumns(kanbanBoard);
                 }
                 // Render kanban items in the appropriate columns.
-                await renderKanbanItems(kanbanBoard.kanbanBoardId);
+                kanbanBoard.columnsList.forEach(async (column) => {
+                    await renderKanbanItemsInColumn(column.id);
+                });
                 addColumnEventListeners();
                 addCardButtonsEventListners();
                 // Hide all column menus when clicking outside of them.
@@ -201,97 +232,144 @@ async function renderKanbanBoard(reloadKanbanItems) {
         resolve();
     });
 }
-async function renderKanbanItems(kanbanBoardId) {
-    const moveUpString = await getTranslation('Move up', 'Todos', getCurrentLanguageId());
-    const moveDownString = await getTranslation('Move down', 'Todos', getCurrentLanguageId());
-    const moveLeftString = await getTranslation('Move left', 'Todos', getCurrentLanguageId());
-    const moveRightString = await getTranslation('Move right', 'Todos', getCurrentLanguageId());
-    const removeCardString = await getTranslation('Remove card', 'Todos', getCurrentLanguageId());
-    // Clear all existing kanban items from the columns.
-    const columnBodyDivs = document.querySelectorAll('.kanban-column-body');
-    columnBodyDivs.forEach((div) => {
-        div.innerHTML = '';
-    });
-    // sort the kanban items by their rowIndex
-    kanbanItems.sort((a, b) => a.rowIndex - b.rowIndex);
-    // Add kanban items to the appropriate columns.
-    kanbanItems.forEach((item) => {
-        const columnBodyDiv = document.querySelector('#kanban-column-body-' + item.columnId);
-        if (columnBodyDiv && item.todoItem) {
-            const cardDiv = document.createElement('div');
-            cardDiv.classList.add('kanban-card');
-            cardDiv.setAttribute('data-kanban-item-id', item.kanbanItemId.toString());
-            cardDiv.innerHTML = `
-                            <div class="kanban-card-header">
-                                <div>
-                                    <img src="${item.todoItem.progeny.pictureLink}" class="kanban-card-profile-picture float-right" />
-
-                                    <i class="material-icons float-left">${getStatusIconForTodoItems(item.todoItem.status)}</i>
-                                </div>
-                                <div class="kanban-card-title">
-                                    <div class="kanban-card-menu-div d-none float-right" data-kanban-item-id="${item.kanbanItemId}">
-                                    <button class="kanban-card-menu-button" data-kanban-item-id="${item.kanbanItemId}">...</button>
-                                    <div class="kanban-card-menu-content d-none" data-kanban-item-id="${item.kanbanItemId}">
-                                        <button class="kanban-card-menu-item-button" data-card-menu-action="moveup" data-kanban-item-id="${item.kanbanItemId}" >${moveUpString}</button>
-                                        <button class="kanban-card-menu-item-button" data-card-menu-action="movedown" data-kanban-item-id="${item.kanbanItemId}" >${moveDownString}</button>
-                                        <button class="kanban-card-menu-item-button" data-card-menu-action="moveleft" data-kanban-item-id="${item.kanbanItemId}" >${moveLeftString}</button>
-                                        <button class="kanban-card-menu-item-button" data-card-menu-action="moveright" data-kanban-item-id="${item.kanbanItemId}" >${moveRightString}</button>
-                                        <button class="kanban-card-menu-item-button" data-card-menu-action="removecard" data-kanban-item-id="${item.kanbanItemId}" >${removeCardString}</button>
-                                    </div>
-                                </div>
-                                    ${item.todoItem.title}
-                                </div>
-                                
-                            </div>
-                        `; // Todo: Add profile picture, context, tags, etc.
-            columnBodyDiv.appendChild(cardDiv);
-        }
-    });
-    const kanbanCards = document.querySelectorAll('.kanban-card');
-    kanbanCards.forEach((card) => {
-        const cardClickFunction = async function () {
-            const kanbanItemId = card.dataset.kanbanItemId;
-            if (kanbanItemId) {
-                displayKanbanItemDetails(kanbanItemId, 'kanban-item-details-div');
+function addCardButtonsEventListners() {
+    // Set up event listeners for adding cards, editing cards, deleting cards, dragging and dropping cards, etc.
+    const addCardButtons = document.querySelectorAll('.add-card-button');
+    addCardButtons.forEach((button) => {
+        const addCardButtonFunction = async function () {
+            const columnId = button.dataset.columnId;
+            if (columnId) {
+                const addCardModalDiv = document.querySelector('#kanban-item-details-div');
+                if (addCardModalDiv) {
+                    addCardModalDiv.innerHTML = '';
+                    let rowIndex = 0;
+                    const columnBodyDiv = document.querySelector('#kanban-column-body-' + columnId);
+                    if (columnBodyDiv) {
+                        const kanbanItemsInColumn = columnBodyDiv.querySelectorAll('.kanban-card');
+                        rowIndex = kanbanItemsInColumn.length;
+                    }
+                    const formHtml = await getAddKanbanItemForm(kanbanBoard.kanbanBoardId, parseInt(columnId), rowIndex);
+                    addCardModalDiv.innerHTML = formHtml;
+                    addCardModalDiv.classList.remove('d-none');
+                    hideBodyScrollbars();
+                    const cancelButton = addCardModalDiv.querySelector('.add-kanban-item-cancel-button');
+                    if (cancelButton) {
+                        const closeButtonFunction = function () {
+                            addCardModalDiv.innerHTML = '';
+                            addCardModalDiv.classList.add('d-none');
+                        };
+                        cancelButton.removeEventListener('click', closeButtonFunction);
+                        cancelButton.addEventListener('click', closeButtonFunction);
+                        const closeButton = addCardModalDiv.querySelector('.modal-close-button');
+                        if (closeButton) {
+                            closeButton.removeEventListener('click', closeButtonFunction);
+                            closeButton.addEventListener('click', closeButtonFunction);
+                        }
+                    }
+                    const addKanbanItemForm = addCardModalDiv.querySelector('#save-kanban-card-form');
+                    if (addKanbanItemForm) {
+                        const addKanbanItemFormFunction = async function (event) {
+                            event.preventDefault();
+                            const formData = new FormData(addKanbanItemForm);
+                            const url = '/KanbanItems/AddKanbanItem';
+                            await fetch(url, {
+                                method: 'POST',
+                                body: formData
+                            }).then(async function (response) {
+                                if (response.ok) {
+                                    // Successfully added the KanbanItem. Re-render the KanbanBoard.
+                                    addCardModalDiv.innerHTML = '';
+                                    addCardModalDiv.classList.add('d-none');
+                                    const newKanbanItem = await response.json();
+                                    if (newKanbanItem) {
+                                        kanbanItems.push(newKanbanItem);
+                                        await updateKanbanItemsInColumn(newKanbanItem.columnId);
+                                    }
+                                }
+                                else {
+                                    console.error('Error adding kanban item. Status: ' + response.status);
+                                }
+                            }).catch(function (error) {
+                                console.error('Error adding kanban item: ' + error);
+                            });
+                        };
+                        addKanbanItemForm.removeEventListener('submit', addKanbanItemFormFunction);
+                        addKanbanItemForm.addEventListener('submit', addKanbanItemFormFunction);
+                        initializeAddEditKanbanItem('kanban-item-details-div');
+                    }
+                }
             }
+            return new Promise(function (resolve, reject) {
+                resolve();
+            });
         };
-        card.removeEventListener('click', cardClickFunction);
-        card.addEventListener('click', cardClickFunction);
-        if (userCanEdit) {
-            card.setAttribute('draggable', 'true');
-            const cardDragFunction = function (event) {
-                event.stopPropagation();
-                if (event.dataTransfer !== null) {
-                    event.dataTransfer.setData('kanban-item-id', card.dataset.kanbanItemId || '');
-                    event.dataTransfer.setData('kanban-item-card', 'kanban-item-card');
-                    event.dataTransfer.setData('source-column-id', card.parentElement?.parentElement?.dataset.columnId || '');
-                    event.dataTransfer.effectAllowed = 'move';
-                    card.classList.add('kanban-item-dragging');
-                }
-            };
-            card.removeEventListener('dragstart', cardDragFunction);
-            card.addEventListener('dragstart', cardDragFunction);
-            const cardDragEndFunction = async function (event) {
-                card.classList.remove('kanban-item-dragging');
-            };
-            card.removeEventListener('dragend', cardDragEndFunction);
-            card.addEventListener('dragend', cardDragEndFunction);
-            const cardMenuDiv = card.querySelector('.kanban-card-menu-div');
-            if (cardMenuDiv) {
-                cardMenuDiv.classList.remove('d-none');
-                const cardMenuButton = card.querySelector('.kanban-card-menu-button');
-                if (cardMenuButton) {
-                    cardMenuButton.removeEventListener('click', showCardMenu);
-                    cardMenuButton.addEventListener('click', showCardMenu);
-                }
-            }
-        }
-    });
-    return new Promise(function (resolve, reject) {
-        resolve();
+        button.removeEventListener('click', addCardButtonFunction);
+        button.addEventListener('click', addCardButtonFunction);
     });
 }
-async function updateKanbanItemsInColumn(columnId) {
+function renderKanbanItemsInColumn(columnId) {
+    const columnBodyDiv = document.querySelector('#kanban-column-body-' + columnId);
+    if (!columnBodyDiv) {
+        return;
+    }
+    // Clear existing items
+    columnBodyDiv.innerHTML = '';
+    // Get the list of KanbanItems in the column
+    const kanbanItemsInColumn = kanbanItems.filter(k => k.columnId === columnId);
+    // sort the kanban items by their rowIndex
+    kanbanItemsInColumn.sort((a, b) => a.rowIndex - b.rowIndex);
+    let rowIndex = 0;
+    addCardDividerElement(columnId, rowIndex);
+    // Add kanban items to the column.
+    kanbanItemsInColumn.forEach(async (item) => {
+        rowIndex++;
+        const columnBodyDiv = document.querySelector('#kanban-column-body-' + item.columnId);
+        if (columnBodyDiv && item.todoItem) {
+            // Add the kanban item card.
+            const cardDiv = createKanbanItemCardHTML(item);
+            columnBodyDiv.appendChild(cardDiv);
+            addCardDividerElement(columnId, rowIndex);
+        }
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
+    });
+    kanbanItemsInColumn.forEach((item) => {
+        addCardEventListeners(item.kanbanItemId, userCanEdit);
+    });
+    updateCardCountersInColumn(columnId);
+    return;
+}
+function addCardDividerElement(columnId, rowIndex) {
+    const columnBodyDiv = document.querySelector('#kanban-column-body-' + columnId);
+    if (!columnBodyDiv) {
+        return;
+    }
+    const cardDivider = document.createElement('div');
+    cardDivider.classList.add('kanban-card-divider');
+    cardDivider.dataset.rowIndex = rowIndex.toString();
+    cardDivider.dataset.columnId = columnId.toString();
+    columnBodyDiv.appendChild(cardDivider);
+    addCardDividerEventListeners(columnId, rowIndex);
+}
+function updateCardCountersInColumn(columnId) {
+    const columnDiv = document.querySelector('.kanban-column[data-column-id="' + columnId + '"]');
+    if (columnDiv) {
+        const column = kanbanBoard.columnsList.find(c => c.id === columnId);
+        if (column) {
+            const numberOfKanbanItems = (kanbanItems.filter(k => k.columnId === column.id)).length;
+            let limitString = '[ ' + numberOfKanbanItems + '/' + column.wipLimit + ' ]';
+            if (column.wipLimit === 0) {
+                limitString = '[ ' + numberOfKanbanItems + '/&#8734; ]';
+            }
+            const wipLimitSpan = columnDiv.querySelector('span[data-wip-limit-id="' + column.id + '"]');
+            if (wipLimitSpan) {
+                wipLimitSpan.innerHTML = limitString;
+            }
+        }
+    }
+}
+export async function updateKanbanItemsInColumn(columnId) {
     // Get the column HTMLDiv element.
     const columnDiv = document.querySelector('.kanban-column[data-column-id="' + columnId + '"]');
     if (columnDiv) {
@@ -301,6 +379,7 @@ async function updateKanbanItemsInColumn(columnId) {
         kanbanItemsInColumn.forEach(async (kanbanItem) => {
             await updateKanbanItem(kanbanItem);
         });
+        renderKanbanItemsInColumn(columnId);
     }
     return new Promise(function (resolve, reject) {
         resolve();
@@ -318,6 +397,13 @@ function ensureColumnRowIndexesAreSequential(columnId) {
         kanbanItemsInColumn.forEach((k, index) => {
             k.rowIndex = index;
         });
+        // Update the kanbanItems array with the new row indexes
+        kanbanItemsInColumn.forEach((k) => {
+            const indexInMainArray = kanbanItems.findIndex(ki => ki.kanbanItemId === k.kanbanItemId);
+            if (indexInMainArray !== -1) {
+                kanbanItems[indexInMainArray].rowIndex = k.rowIndex;
+            }
+        });
     }
 }
 async function createKanbanBoardContainer(kanbanBoard) {
@@ -328,7 +414,7 @@ async function createKanbanBoardContainer(kanbanBoard) {
     const moveLeftString = await getTranslation('Move left', 'Todos', getCurrentLanguageId());
     const moveRightString = await getTranslation('Move right', 'Todos', getCurrentLanguageId());
     const setLimitHeaderString = await getTranslation('Set WIP limit for column (0 = no limit):', 'Todos', getCurrentLanguageId());
-    kanbanBoard.columnsList.forEach(async (column) => {
+    kanbanBoard.columnsList.forEach((column) => {
         let numberOfKanbanItems = (kanbanItems.filter(k => k.columnId === column.id)).length;
         let limitString = '[ ' + numberOfKanbanItems + '/' + column.wipLimit + ' ]';
         if (column.wipLimit === 0) {
@@ -395,199 +481,7 @@ async function createKanbanBoardContainer(kanbanBoard) {
         kanbanBoardHtml += addColumnButtonHtml;
     }
     kanbanBoardHtml += '</div>';
-    return new Promise(function (resolve, reject) {
-        resolve(kanbanBoardHtml);
-    });
-}
-export async function removeKanbanItemFunction(kanbanItemId) {
-    const removeKanbanItemModalDiv = document.querySelector('#kanban-item-details-div');
-    if (removeKanbanItemModalDiv) {
-        removeKanbanItemModalDiv.innerHTML = '';
-        const formHtml = await getRemoveKanbanItemForm(kanbanItemId);
-        removeKanbanItemModalDiv.innerHTML = formHtml;
-        removeKanbanItemModalDiv.classList.remove('d-none');
-        hideBodyScrollbars();
-        const cancelButton = removeKanbanItemModalDiv.querySelector('.remove-kanban-item-cancel-button');
-        if (cancelButton) {
-            const closeButtonFunction = function () {
-                removeKanbanItemModalDiv.innerHTML = '';
-                removeKanbanItemModalDiv.classList.add('d-none');
-            };
-            cancelButton.removeEventListener('click', closeButtonFunction);
-            cancelButton.addEventListener('click', closeButtonFunction);
-            const closeButton = removeKanbanItemModalDiv.querySelector('.modal-close-button');
-            if (closeButton) {
-                closeButton.removeEventListener('click', closeButtonFunction);
-                closeButton.addEventListener('click', closeButtonFunction);
-            }
-        }
-        const removeKanbanItemForm = removeKanbanItemModalDiv.querySelector('#remove-kanban-card-form');
-        if (removeKanbanItemForm) {
-            const removeKanbanItemFormFunction = async function (event) {
-                event.preventDefault();
-                const formData = new FormData(removeKanbanItemForm);
-                const url = '/KanbanItems/RemoveKanbanItem';
-                await fetch(url, {
-                    method: 'POST',
-                    body: formData
-                }).then(async function (response) {
-                    if (response.ok) {
-                        // Successfully saved the KanbanItem. Re-render the KanbanBoard.
-                        removeKanbanItemModalDiv.innerHTML = '';
-                        removeKanbanItemModalDiv.classList.add('d-none');
-                        const removedKanbanItem = await response.json();
-                        if (removedKanbanItem) {
-                            // remove the item from kanbanItems array
-                            kanbanItems = kanbanItems.filter(k => k.kanbanItemId.toString() !== kanbanItemId);
-                            await updateKanbanItemsInColumn(removedKanbanItem.columnId);
-                            await renderKanbanBoard(false);
-                        }
-                    }
-                    else {
-                        console.error('Error removing kanban item. Status: ' + response.status);
-                    }
-                }).catch(function (error) {
-                    console.error('Error removing kanban item: ' + error);
-                });
-            };
-            removeKanbanItemForm.removeEventListener('submit', removeKanbanItemFormFunction);
-            removeKanbanItemForm.addEventListener('submit', removeKanbanItemFormFunction);
-            initializeAddEditKanbanItem('kanban-item-details-div');
-        }
-    }
-}
-export async function editKanbanItemFunction(kanbanItemId) {
-    const editKanbanItemModalDiv = document.querySelector('#kanban-item-details-div');
-    if (editKanbanItemModalDiv) {
-        editKanbanItemModalDiv.innerHTML = '';
-        const formHtml = await getEditKanbanItemForm(kanbanItemId);
-        editKanbanItemModalDiv.innerHTML = formHtml;
-        editKanbanItemModalDiv.classList.remove('d-none');
-        hideBodyScrollbars();
-        const cancelButton = editKanbanItemModalDiv.querySelector('.edit-kanban-item-cancel-button');
-        if (cancelButton) {
-            const closeButtonFunction = function () {
-                editKanbanItemModalDiv.innerHTML = '';
-                editKanbanItemModalDiv.classList.add('d-none');
-            };
-            cancelButton.removeEventListener('click', closeButtonFunction);
-            cancelButton.addEventListener('click', closeButtonFunction);
-            const closeButton = editKanbanItemModalDiv.querySelector('.modal-close-button');
-            if (closeButton) {
-                closeButton.removeEventListener('click', closeButtonFunction);
-                closeButton.addEventListener('click', closeButtonFunction);
-            }
-        }
-        const editKanbanItemForm = editKanbanItemModalDiv.querySelector('#save-kanban-card-form');
-        if (editKanbanItemForm) {
-            const editKanbanItemFormFunction = async function (event) {
-                event.preventDefault();
-                const formData = new FormData(editKanbanItemForm);
-                const url = '/KanbanItems/EditKanbanItem';
-                await fetch(url, {
-                    method: 'POST',
-                    body: formData
-                }).then(async function (response) {
-                    if (response.ok) {
-                        // Successfully saved the KanbanItem. Re-render the KanbanBoard.
-                        editKanbanItemModalDiv.innerHTML = '';
-                        editKanbanItemModalDiv.classList.add('d-none');
-                        const updatedKanbanItem = await response.json();
-                        if (updatedKanbanItem) {
-                            // update the item in kanbanItems array
-                            const index = kanbanItems.findIndex(k => k.kanbanItemId === updatedKanbanItem.kanbanItemId);
-                            if (index !== -1) {
-                                kanbanItems[index] = updatedKanbanItem;
-                                await updateKanbanItemsInColumn(updatedKanbanItem.columnId);
-                                await renderKanbanBoard(false);
-                            }
-                        }
-                    }
-                    else {
-                        console.error('Error editing kanban item. Status: ' + response.status);
-                    }
-                }).catch(function (error) {
-                    console.error('Error editing kanban item: ' + error);
-                });
-            };
-            editKanbanItemForm.removeEventListener('submit', editKanbanItemFormFunction);
-            editKanbanItemForm.addEventListener('submit', editKanbanItemFormFunction);
-            initializeAddEditKanbanItem('kanban-item-details-div');
-        }
-    }
-}
-function addCardButtonsEventListners() {
-    // Set up event listeners for adding cards, editing cards, deleting cards, dragging and dropping cards, etc.
-    const addCardButtons = document.querySelectorAll('.add-card-button');
-    addCardButtons.forEach((button) => {
-        const addCardButtonFunction = async function () {
-            const columnId = button.dataset.columnId;
-            if (columnId) {
-                const addCardModalDiv = document.querySelector('#kanban-item-details-div');
-                if (addCardModalDiv) {
-                    addCardModalDiv.innerHTML = '';
-                    let rowIndex = 0;
-                    const columnBodyDiv = document.querySelector('#kanban-column-body-' + columnId);
-                    if (columnBodyDiv) {
-                        const kanbanItemsInColumn = columnBodyDiv.querySelectorAll('.kanban-card');
-                        rowIndex = kanbanItemsInColumn.length;
-                    }
-                    const formHtml = await getAddKanbanItemForm(kanbanBoard.kanbanBoardId, parseInt(columnId), rowIndex);
-                    addCardModalDiv.innerHTML = formHtml;
-                    addCardModalDiv.classList.remove('d-none');
-                    hideBodyScrollbars();
-                    const cancelButton = addCardModalDiv.querySelector('.add-kanban-item-cancel-button');
-                    if (cancelButton) {
-                        const closeButtonFunction = function () {
-                            addCardModalDiv.innerHTML = '';
-                            addCardModalDiv.classList.add('d-none');
-                        };
-                        cancelButton.removeEventListener('click', closeButtonFunction);
-                        cancelButton.addEventListener('click', closeButtonFunction);
-                        const closeButton = addCardModalDiv.querySelector('.modal-close-button');
-                        if (closeButton) {
-                            closeButton.removeEventListener('click', closeButtonFunction);
-                            closeButton.addEventListener('click', closeButtonFunction);
-                        }
-                    }
-                    const addKanbanItemForm = addCardModalDiv.querySelector('#save-kanban-card-form');
-                    if (addKanbanItemForm) {
-                        const addKanbanItemFormFunction = async function (event) {
-                            event.preventDefault();
-                            const formData = new FormData(addKanbanItemForm);
-                            const url = '/KanbanItems/AddKanbanItem';
-                            await fetch(url, {
-                                method: 'POST',
-                                body: formData
-                            }).then(async function (response) {
-                                if (response.ok) {
-                                    // Successfully added the KanbanItem. Re-render the KanbanBoard.
-                                    addCardModalDiv.innerHTML = '';
-                                    addCardModalDiv.classList.add('d-none');
-                                    const newKanbanItem = await response.json();
-                                    if (newKanbanItem) {
-                                        kanbanItems.push(newKanbanItem);
-                                        await updateKanbanItemsInColumn(newKanbanItem.columnId);
-                                        await renderKanbanBoard(false);
-                                    }
-                                }
-                                else {
-                                    console.error('Error adding kanban item. Status: ' + response.status);
-                                }
-                            }).catch(function (error) {
-                                console.error('Error adding kanban item: ' + error);
-                            });
-                        };
-                        addKanbanItemForm.removeEventListener('submit', addKanbanItemFormFunction);
-                        addKanbanItemForm.addEventListener('submit', addKanbanItemFormFunction);
-                        initializeAddEditKanbanItem('kanban-item-details-div');
-                    }
-                }
-            }
-        };
-        button.removeEventListener('click', addCardButtonFunction);
-        button.addEventListener('click', addCardButtonFunction);
-    });
+    return kanbanBoardHtml;
 }
 function addColumnDividerEventListeners() {
     const columnDividers = document.querySelectorAll('.kanban-column-divider');
@@ -608,15 +502,15 @@ function addColumnDividerEventListeners() {
 }
 function onColumnDragOverDivider(event) {
     event.preventDefault();
+    event.stopPropagation();
     // Handle the dragover event when a column is dragged over a divider.
     // Show a visual indicator that the column can be dropped here.
     const columnDivider = event.currentTarget;
     // Check if element being dragged is a kanban-column.
-    if (event.dataTransfer !== null) {
-        console.log('onColumnDragOverDivider, dataTransfer.types:');
-        console.log(event.dataTransfer.types);
-    }
     if (event.dataTransfer === null || !event.dataTransfer.types.includes('kanban-column')) {
+        if (event.dataTransfer === null) {
+            return;
+        }
         event.dataTransfer.dropEffect = 'none';
         return;
     }
@@ -624,11 +518,15 @@ function onColumnDragOverDivider(event) {
 }
 function onColumnDragEnterDivider(event) {
     event.preventDefault();
+    event.stopPropagation();
     // Handle the dragover event when a column is dragged over a divider.
     // Show a visual indicator that the column can be dropped here.
     const columnDivider = event.currentTarget;
     // Check if element being dragged is a kanban-column.
     if (event.dataTransfer === null || !event.dataTransfer.types.includes('kanban-column')) {
+        if (event.dataTransfer === null) {
+            return;
+        }
         event.dataTransfer.dropEffect = 'none';
         return;
     }
@@ -636,6 +534,7 @@ function onColumnDragEnterDivider(event) {
 }
 function onColumnDragLeaveDivider(event) {
     event.preventDefault();
+    event.stopPropagation();
     // Handle the dragleave event when a column is dragged away from a divider.
     // Remove the visual indicator.
     const columnDivider = event.currentTarget;
@@ -643,6 +542,7 @@ function onColumnDragLeaveDivider(event) {
 }
 const onColumnDropped = async function (event) {
     event.preventDefault();
+    event.stopPropagation();
     // Handle the drop event when a column is dropped on a divider.
     const columnDivider = event.currentTarget;
     columnDivider.classList.remove('kanban-column-divider-drag-over');
@@ -658,7 +558,9 @@ const onColumnDropped = async function (event) {
             const columnIndex = draggedColumn.columnIndex;
             if (columnIndex.toString() === dividerId || (columnIndex + 1).toString() === dividerId) {
                 stopLoadingItemsSpinner('kanban-board-main-div');
-                return;
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
             }
             // Remove the dragged column from its current position.
             kanbanBoard.columnsList = kanbanBoard.columnsList.filter(c => c.id.toString() !== draggedColumnId);
@@ -694,6 +596,7 @@ function addColumnEventListeners() {
             column.setAttribute('draggable', 'true');
             const columnDragStartFunction = function (event) {
                 event.stopPropagation();
+                event.preventDefault();
                 if (event.dataTransfer !== null) {
                     event.dataTransfer.setData('column-id', column.dataset.columnId || '');
                     event.dataTransfer.setData('kanban-column', 'kanban-column');
@@ -734,12 +637,16 @@ function addColumnEventListeners() {
             await updateKanbanBoardColumns(kanbanBoard);
             // Re-render the KanbanBoard.
             await renderKanbanBoard(false);
+            return new Promise(function (resolve, reject) {
+                resolve();
+            });
         };
         addColumnButton.removeEventListener('click', addColumnFunction);
         addColumnButton.addEventListener('click', addColumnFunction);
     }
     const dragOverColumnFunction = function (event) {
         event.preventDefault();
+        event.stopPropagation();
         // Check if dragged element is kanban-card.
         if (event.dataTransfer === null || !event.dataTransfer.types.includes('kanban-item-card')) {
             event.dataTransfer.dropEffect = 'none';
@@ -752,7 +659,7 @@ function addColumnEventListeners() {
             if (kanbanBoardColumn.wipLimit > 0) {
                 const columnBodyDiv = document.querySelector('#kanban-column-body-' + kanbanBoardColumn.id);
                 if (columnBodyDiv) {
-                    const kanbanItemsInColumn = columnBodyDiv.querySelectorAll('.kanban-card');
+                    const kanbanItemsInColumn = kanbanItems.filter(k => k.columnId.toString() === columnId);
                     if (kanbanItemsInColumn.length >= kanbanBoardColumn.wipLimit) {
                         event.dataTransfer.dropEffect = 'none';
                         return;
@@ -764,15 +671,33 @@ function addColumnEventListeners() {
     };
     const dragEnterColumnFunction = function (event) {
         event.preventDefault();
+        event.stopPropagation();
         // Check if dragged element is kanban-card.
         if (event.dataTransfer === null || !event.dataTransfer.types.includes('kanban-item-card')) {
             event.dataTransfer.dropEffect = 'none';
             return;
         }
+        // Check if WIP limit is reached for this column.
+        const columnId = event.currentTarget.dataset.columnId;
+        if (columnId) {
+            const kanbanBoardColumn = kanbanBoard.columnsList.find(c => c.id.toString() === columnId);
+            if (kanbanBoardColumn.wipLimit > 0) {
+                const columnBodyDiv = document.querySelector('#kanban-column-body-' + kanbanBoardColumn.id);
+                if (columnBodyDiv) {
+                    const kanbanItemsInColumn = kanbanItems.filter(k => k.columnId.toString() === columnId);
+                    if (kanbanItemsInColumn.length >= kanbanBoardColumn.wipLimit) {
+                        event.dataTransfer.dropEffect = 'none';
+                        return;
+                    }
+                }
+            }
+            event.dataTransfer.dropEffect = 'move';
+        }
         event.currentTarget.classList.add('kanban-column-drag-over');
     };
     const dragLeaveColumnFunction = function (event) {
         event.preventDefault();
+        event.stopPropagation();
         // Check if dragged element is kanban-card.
         if (event.dataTransfer === null || !event.dataTransfer.types.includes('kanban-item-card')) {
             event.dataTransfer.dropEffect = 'none';
@@ -782,10 +707,13 @@ function addColumnEventListeners() {
     };
     const dropOnColumnFunction = async function (event) {
         event.preventDefault();
+        event.stopPropagation();
         // Check if dragged element is kanban-card.
         if (event.dataTransfer === null || !event.dataTransfer.types.includes('kanban-item-card')) {
             event.dataTransfer.dropEffect = 'none';
-            return;
+            return new Promise(function (resolve, reject) {
+                resolve();
+            });
         }
         startLoadingItemsSpinner('kanban-board-main-div');
         event.currentTarget.classList.remove('kanban-column-drag-over');
@@ -793,16 +721,18 @@ function addColumnEventListeners() {
         const targetColumnId = event.currentTarget.dataset.columnId;
         if (kanbanItemId && targetColumnId) {
             const kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
-            const currentKanbanItemColumnId = kanbanItem?.columnId;
             if (kanbanItem) {
+                const currentKanbanItemColumnId = kanbanItem.columnId;
                 const kanbanBoardColumn = kanbanBoard.columnsList.find(c => c.id.toString() === targetColumnId);
                 if (kanbanBoardColumn.wipLimit > 0) {
                     const columnBodyDiv = document.querySelector('#kanban-column-body-' + kanbanBoardColumn.id);
                     if (columnBodyDiv) {
-                        const kanbanItemsInColumn = columnBodyDiv.querySelectorAll('.kanban-card');
+                        const kanbanItemsInColumn = kanbanItems.filter(k => k.columnId.toString() === targetColumnId);
                         if (kanbanItemsInColumn.length >= kanbanBoardColumn.wipLimit) {
                             alert('WIP limit reached for this column. Cannot move item here.'); // Todo: Replace with a nicer alert.
-                            return;
+                            return new Promise(function (resolve, reject) {
+                                resolve();
+                            });
                         }
                     }
                 }
@@ -829,9 +759,6 @@ function addColumnEventListeners() {
                 if (currentKanbanItemColumnId && targetColumnId !== currentKanbanItemColumnId.toString()) {
                     await updateKanbanItemsInColumn(currentKanbanItemColumnId);
                 }
-                // dispatchKanbanBoardChangedEvent(kanbanBoard.kanbanBoardId.toString());
-                // Re-render the KanbanBoard.
-                await renderKanbanBoard(false);
             }
         }
         stopLoadingItemsSpinner('kanban-board-main-div');
@@ -863,229 +790,6 @@ function addColumnEventListeners() {
         });
     }
 }
-const showCardMenu = function (event) {
-    event.preventDefault();
-    event.stopPropagation();
-    const button = event.currentTarget;
-    const kanbanItemId = button.dataset.kanbanItemId;
-    hideAllMenusAndModals(event);
-    if (kanbanItemId) {
-        const menuContentDiv = document.querySelector('.kanban-card-menu-content[data-kanban-item-id="' + kanbanItemId + '"]');
-        if (menuContentDiv) {
-            if (menuContentDiv.classList.contains('d-none')) {
-                menuContentDiv.classList.remove('d-none');
-                const moveUpButton = menuContentDiv.querySelector('button[data-card-menu-action="moveup"]');
-                if (moveUpButton) {
-                    const moveCardUpFunction = async function (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        menuContentDiv.classList.add('d-none');
-                        await moveCardUp(kanbanItemId);
-                    };
-                    moveUpButton.removeEventListener('click', moveCardUpFunction);
-                    moveUpButton.addEventListener('click', moveCardUpFunction);
-                }
-                const moveDownButton = menuContentDiv.querySelector('button[data-card-menu-action="movedown"]');
-                if (moveDownButton) {
-                    const moveCardDownFunction = async function (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        menuContentDiv.classList.add('d-none');
-                        await moveCardDown(kanbanItemId);
-                    };
-                    moveDownButton.removeEventListener('click', moveCardDownFunction);
-                    moveDownButton.addEventListener('click', moveCardDownFunction);
-                }
-                const moveLeftButton = menuContentDiv.querySelector('button[data-card-menu-action="moveleft"]');
-                if (moveLeftButton) {
-                    const moveCardLeftFunction = async function (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        menuContentDiv.classList.add('d-none');
-                        await moveCardLeft(kanbanItemId);
-                    };
-                    moveLeftButton.removeEventListener('click', moveCardLeftFunction);
-                    moveLeftButton.addEventListener('click', moveCardLeftFunction);
-                }
-                const moveRightButton = menuContentDiv.querySelector('button[data-card-menu-action="moveright"]');
-                if (moveRightButton) {
-                    const moveCardRightFunction = async function (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        menuContentDiv.classList.add('d-none');
-                        await moveCardRight(kanbanItemId);
-                    };
-                    moveRightButton.removeEventListener('click', moveCardRightFunction);
-                    moveRightButton.addEventListener('click', moveCardRightFunction);
-                }
-                const removeCardButton = menuContentDiv.querySelector('button[data-card-menu-action="removecard"]');
-                if (removeCardButton) {
-                    const removeCardFunction = async function (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        menuContentDiv.classList.add('d-none');
-                        await removeCard(kanbanItemId);
-                    };
-                    removeCardButton.removeEventListener('click', removeCardFunction);
-                    removeCardButton.addEventListener('click', removeCardFunction);
-                }
-            }
-            else {
-                menuContentDiv.classList.add('d-none');
-            }
-        }
-    }
-};
-async function moveCardUp(kanbanItemId) {
-    console.log('moveCardUp starting..');
-    let kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
-    console.log(kanbanItem);
-    if (kanbanItem) {
-        if (kanbanItem.rowIndex > 0) {
-            // Find the item above and swap rowIndex values.
-            const kanbanItemAbove = kanbanItems.find(k => k.columnId === kanbanItem.columnId && k.rowIndex === kanbanItem.rowIndex - 1);
-            if (kanbanItemAbove) {
-                kanbanItemAbove.rowIndex = kanbanItem.rowIndex;
-                kanbanItem.rowIndex = kanbanItem.rowIndex - 1;
-                // Save the updated KanbanItems to the server.
-                await updateKanbanItemsInColumn(kanbanItem.columnId);
-                await renderKanbanBoard(false);
-            }
-        }
-    }
-}
-async function moveCardDown(kanbanItemId) {
-    let kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
-    if (kanbanItem) {
-        const kanbanItemsInColumn = kanbanItems.filter(k => k.columnId === kanbanItem.columnId);
-        if (kanbanItem.rowIndex < kanbanItemsInColumn.length - 1) {
-            // Find the item below and swap rowIndex values.
-            const kanbanItemBelow = kanbanItems.find(k => k.columnId === kanbanItem.columnId && k.rowIndex === kanbanItem.rowIndex + 1);
-            if (kanbanItemBelow) {
-                kanbanItemBelow.rowIndex = kanbanItem.rowIndex;
-                kanbanItem.rowIndex = kanbanItem.rowIndex + 1;
-                // Save the updated KanbanItems to the server.
-                await updateKanbanItemsInColumn(kanbanItem.columnId);
-                await renderKanbanBoard(false);
-            }
-        }
-    }
-}
-async function moveCardRight(kanbanItemId) {
-    let kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
-    if (kanbanItem) {
-        const currentColumnIndex = kanbanBoard.columnsList.find(c => c.id === kanbanItem.columnId)?.columnIndex;
-        if (currentColumnIndex !== undefined && currentColumnIndex < kanbanBoard.columnsList.length - 1) {
-            // Find the column to the right.
-            const rightColumn = kanbanBoard.columnsList.find(c => c.columnIndex === currentColumnIndex + 1);
-            if (rightColumn) {
-                const kanbanItemsInRightColumn = kanbanItems.filter(k => k.columnId === rightColumn.id);
-                // Move the item to the right column and set its rowIndex to the end of the column.
-                kanbanItem.columnId = rightColumn.id;
-                kanbanItem.rowIndex = kanbanItemsInRightColumn.length;
-                // Reassign rowIndex values for all items in the current column.
-                const itemsInCurrentColumn = kanbanItems.filter(k => k.columnId === kanbanItem.columnId);
-                itemsInCurrentColumn.forEach((item, index) => {
-                    item.rowIndex = index;
-                });
-                // Save the updated KanbanItems to the server.
-                await updateKanbanItemsInColumn(kanbanItem.columnId);
-                await renderKanbanBoard(false);
-            }
-        }
-    }
-}
-async function moveCardLeft(kanbanItemId) {
-    let kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
-    if (kanbanItem) {
-        const currentColumnIndex = kanbanBoard.columnsList.find(c => c.id === kanbanItem.columnId)?.columnIndex;
-        if (currentColumnIndex !== undefined && currentColumnIndex > 0) {
-            // Find the column to the left.
-            const leftColumn = kanbanBoard.columnsList.find(c => c.columnIndex === currentColumnIndex - 1);
-            if (leftColumn) {
-                const kanbanItemsInLeftColumn = kanbanItems.filter(k => k.columnId === leftColumn.id);
-                // Move the item to the left column and set its rowIndex to the end of the column.
-                kanbanItem.columnId = leftColumn.id;
-                kanbanItem.rowIndex = kanbanItemsInLeftColumn.length;
-                // Reassign rowIndex values for all items in the current column.
-                const itemsInCurrentColumn = kanbanItems.filter(k => k.columnId === kanbanItem.columnId);
-                itemsInCurrentColumn.forEach((item, index) => {
-                    item.rowIndex = index;
-                });
-                // Save the updated KanbanItems to the server.
-                await updateKanbanItemsInColumn(kanbanItem.columnId);
-                await renderKanbanBoard(false);
-            }
-        }
-    }
-}
-async function removeCard(kanbanItemId) {
-    let kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
-    if (kanbanItem) {
-        const removeCardHtml = await getRemoveKanbanItemForm(kanbanItemId);
-        const removeCardModalDiv = document.querySelector('#kanban-item-details-div');
-        if (removeCardModalDiv) {
-            removeCardModalDiv.innerHTML = removeCardHtml;
-            removeCardModalDiv.classList.remove('d-none');
-            hideBodyScrollbars();
-            const cancelButton = removeCardModalDiv.querySelector('.remove-kanban-item-cancel-button');
-            if (cancelButton) {
-                const closeButtonFunction = function () {
-                    removeCardModalDiv.innerHTML = '';
-                    removeCardModalDiv.classList.add('d-none');
-                };
-                cancelButton.removeEventListener('click', closeButtonFunction);
-                cancelButton.addEventListener('click', closeButtonFunction);
-                const closeButton = removeCardModalDiv.querySelector('.modal-close-button');
-                if (closeButton) {
-                    closeButton.removeEventListener('click', closeButtonFunction);
-                    closeButton.addEventListener('click', closeButtonFunction);
-                }
-            }
-            const removeKanbanItemForm = removeCardModalDiv.querySelector('#remove-kanban-item-form');
-            if (removeKanbanItemForm) {
-                const removeKanbanItemFormFunction = async function (event) {
-                    event.preventDefault();
-                    const formData = new FormData(removeKanbanItemForm);
-                    const url = '/KanbanItems/RemoveKanbanItem';
-                    await fetch(url, {
-                        method: 'POST',
-                        body: formData
-                    }).then(async function (response) {
-                        if (response.ok) {
-                            // Successfully removed the KanbanItem. Re-render the KanbanBoard.
-                            removeCardModalDiv.innerHTML = '';
-                            removeCardModalDiv.classList.add('d-none');
-                            const kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
-                            if (kanbanItem) {
-                                const columnId = kanbanItem.columnId;
-                                // Remove the item from the kanbanItems array.
-                                kanbanItems = kanbanItems.filter(k => k.kanbanItemId.toString() !== kanbanItemId);
-                                // Reassign rowIndex values for all items in the column.
-                                const itemsInColumn = kanbanItems.filter(k => k.columnId === columnId);
-                                // Sort by row index
-                                itemsInColumn.sort((a, b) => a.rowIndex - b.rowIndex);
-                                itemsInColumn.forEach((item, index) => {
-                                    item.rowIndex = index;
-                                });
-                                // Save the updated KanbanItems to the server.
-                                await updateKanbanItemsInColumn(columnId);
-                            }
-                            await renderKanbanBoard(false);
-                        }
-                        else {
-                            console.error('Error removing kanban item. Status: ' + response.status);
-                        }
-                    }).catch(function (error) {
-                        console.error('Error removing kanban item: ' + error);
-                    });
-                };
-                removeKanbanItemForm.removeEventListener('submit', removeKanbanItemFormFunction);
-                removeKanbanItemForm.addEventListener('submit', removeKanbanItemFormFunction);
-            }
-        }
-    }
-}
 const showColumnMenu = function (event) {
     event.preventDefault();
     event.stopPropagation();
@@ -1101,7 +805,7 @@ const showColumnMenu = function (event) {
                 // Set up event listeners for menu items.
                 const renameButton = menuContentDiv.querySelector('button[data-column-menu-action="rename"]');
                 if (renameButton) {
-                    const renameFunction = async function (event) {
+                    const renameFunction = function (event) {
                         event.preventDefault();
                         event.stopPropagation();
                         menuContentDiv.classList.add('d-none');
@@ -1117,6 +821,9 @@ const showColumnMenu = function (event) {
                         event.stopPropagation();
                         menuContentDiv.classList.add('d-none');
                         await showSetLimitPrompt(columnId);
+                        return new Promise(function (resolve, reject) {
+                            resolve();
+                        });
                     };
                     setLimitButton.removeEventListener('click', setLimitFunction);
                     setLimitButton.addEventListener('click', setLimitFunction);
@@ -1126,6 +833,9 @@ const showColumnMenu = function (event) {
                     const moveLeftFunction = async function (event) {
                         menuContentDiv.classList.add('d-none');
                         await moveColumnLeft(columnId);
+                        return new Promise(function (resolve, reject) {
+                            resolve();
+                        });
                     };
                     moveLeftButton.removeEventListener('click', moveLeftFunction);
                     moveLeftButton.addEventListener('click', moveLeftFunction);
@@ -1135,6 +845,9 @@ const showColumnMenu = function (event) {
                     const moveRightFunction = async function (event) {
                         menuContentDiv.classList.add('d-none');
                         await moveColumnRight(columnId);
+                        return new Promise(function (resolve, reject) {
+                            resolve();
+                        });
                     };
                     moveRightButton.removeEventListener('click', moveRightFunction);
                     moveRightButton.addEventListener('click', moveRightFunction);
@@ -1204,7 +917,9 @@ async function showSetLimitPrompt(columnId) {
     if (kanbanBoardColumn) {
         const setLimitPromptDiv = document.querySelector('#set-wip-limit-modal-' + columnId);
         if (setLimitPromptDiv === null) {
-            return;
+            return new Promise(function (resolve, reject) {
+                resolve();
+            });
         }
         setLimitPromptDiv.classList.remove('d-none');
         const wipLimitInput = document.querySelector('#wip-limit-input-' + columnId);
@@ -1247,6 +962,9 @@ async function showSetLimitPrompt(columnId) {
                     }
                 }
                 stopLoadingItemsSpinner('kanban-board-main-div');
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
             };
             saveButton.removeEventListener('click', saveFunction);
             saveButton.addEventListener('click', saveFunction);
@@ -1303,6 +1021,9 @@ function showRenameColumnPrompt(columnId) {
                         }
                     }
                     stopLoadingItemsSpinner('kanban-board-main-div');
+                    return new Promise(function (resolve, reject) {
+                        resolve();
+                    });
                 };
                 saveButton.removeEventListener('click', saveFunction);
                 saveButton.addEventListener('click', saveFunction);
@@ -1350,7 +1071,7 @@ function hideRenameInputs() {
         menuDiv.classList.remove('d-none');
     });
 }
-function hideAllMenusAndModals(event) {
+export function hideAllMenusAndModals(event) {
     const target = event.target;
     console.log(target);
     if (!target.closest('.kanban-column-menu-div')) {
@@ -1365,10 +1086,6 @@ function hideAllMenusAndModals(event) {
     if (!target.closest('.modal-settings-panel') && !target.closest('.modal-content') && !target.closest('.kanban-column-menu-div') && !target.closest('.add-edit-kanban-item-modal')) {
         hideSettingsModals();
     }
-}
-function preventDragElementsBelow(event) {
-    event.preventDefault();
-    event.stopPropagation();
 }
 async function updateKanbanBoardColumns(kanbanBoard) {
     let url = '/Kanbans/UpdateKanbanBoardColumns';

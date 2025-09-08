@@ -20,7 +20,8 @@ import { TimelineChangedEvent } from "../data-tools-v9.js";
 import { TimelineItem } from "../page-models-v9.js";
 import { popupTodoItem } from "../todos/todo-details.js";
 import { initializeAddEditKanbanBoard } from "../kanbans/add-edit-kanban-board.js";
-import { dispatchKanbanBoardChangedEvent, editKanbanItemFunction, popupKanbanBoard, removeKanbanItemFunction } from "../kanbans/kanban-board-details.js";
+import { dispatchKanbanBoardChangedEvent, popupKanbanBoard } from "../kanbans/kanban-board-details.js";
+import { editKanbanItemFunction, removeKanbanItemFunction } from "../kanbans/kanban-items.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */
