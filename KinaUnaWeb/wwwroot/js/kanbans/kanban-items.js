@@ -71,7 +71,7 @@ async function popupKanbanItem(kanbanItem, containerId) {
         resolve();
     });
 }
-async function setKanbanItemDetailsEventListeners(itemId, todoDetailsPopupDivId) {
+function setKanbanItemDetailsEventListeners(itemId, todoDetailsPopupDivId) {
     let closeButtonsList = document.querySelectorAll('.kanban-item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
@@ -163,9 +163,6 @@ async function setKanbanItemDetailsEventListeners(itemId, todoDetailsPopupDivId)
         addSubtaskInput.removeEventListener('keydown', addSubtaskInputKeydownAction);
         addSubtaskInput.addEventListener('keydown', addSubtaskInputKeydownAction);
     }
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
 }
 /**
  * Handles the click event for the "Set as Not Started" button.
@@ -196,7 +193,7 @@ async function onSetAsNotStartedButtonClicked(event) {
                         kanbanItem.todoItem.status = TodoStatusType.NotStarted;
                     }
                     setKanbanItems(kanbanItems);
-                    updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
                     return new Promise(function (resolve, reject) {
                         resolve();
                     });
@@ -242,7 +239,7 @@ async function onSetAsInProgressButtonClicked(event) {
                         kanbanItem.todoItem.status = TodoStatusType.InProgress;
                     }
                     setKanbanItems(kanbanItems);
-                    updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
                     return new Promise(function (resolve, reject) {
                         resolve();
                     });
@@ -288,7 +285,7 @@ async function onSetAsCompletedButtonClicked(event) {
                         kanbanItem.todoItem.status = TodoStatusType.Completed;
                     }
                     setKanbanItems(kanbanItems);
-                    updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
                     return new Promise(function (resolve, reject) {
                         resolve();
                     });
@@ -334,7 +331,7 @@ async function onSetAsCancelledButtonClicked(event) {
                         kanbanItem.todoItem.status = TodoStatusType.Cancelled;
                     }
                     setKanbanItems(kanbanItems);
-                    updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
                     return new Promise(function (resolve, reject) {
                         resolve();
                     });

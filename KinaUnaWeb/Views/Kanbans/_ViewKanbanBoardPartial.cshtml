@@ -6,10 +6,10 @@
 @{
     string title = Model.KanbanBoard.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Kanban boards", PageNames.Todos, Model.LanguageId);
 }
-<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper" style="max-width: 90vw;">
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
     <div class="timeline-card-body bg-todos item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-todos-header">
                 <img src="@Model.KanbanBoard.Progeny.PictureLink" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
@@ -24,7 +24,7 @@
             <div class="col-auto">
                 <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">view_kanban</i></span>
             </div>
-            <div class="col">
+            <div class="col-12 col-sm-12 col-md-11">
                 <div class="timeline-title row">
                     <div class="col-12 h4">
                         @if (Model.CurrentUser.CanUserAddItems)
@@ -75,7 +75,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div id="kanban-board-main-div" class="kanban-board col-12" data-view-kanban-board-id="@Model.KanbanBoard.KanbanBoardId" data-user-can-edit="@Model.IsCurrentUserProgenyAdmin">
+                    <div id="kanban-board-main-div" class="kanban-board" data-view-kanban-board-id="@Model.KanbanBoard.KanbanBoardId" data-user-can-edit="@Model.IsCurrentUserProgenyAdmin">
                         
                     </div>
                     <div id="kanban-item-details-div" class="settings-modal d-none" tabindex="-1" role="dialog"></div>

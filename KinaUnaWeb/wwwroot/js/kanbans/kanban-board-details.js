@@ -131,7 +131,7 @@ async function displayKanbanBoard(kanbanBoardId) {
  * @param {string} itemId The id of the Kanban Board item to set event listeners for.
  * @param {HTMLDivElement} kanbanBoardDetailsPopupDiv The div element for the Kanban Board details popup.
  */
-async function setKanbanBoardDetailsEventListeners(itemId, kanbanBoardDetailsPopupDiv) {
+function setKanbanBoardDetailsEventListeners(itemId, kanbanBoardDetailsPopupDiv) {
     let closeButtonsList = document.querySelectorAll('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
@@ -144,9 +144,6 @@ async function setKanbanBoardDetailsEventListeners(itemId, kanbanBoardDetailsPop
             button.addEventListener('click', closeButtonActions);
         });
     }
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
 }
 /**
  * Gets the KanbanBoard with the specified id from the server.
@@ -199,7 +196,7 @@ async function renderKanbanBoard(reloadKanbanItems) {
                 if (kanbanItems.length === 0 || reloadKanbanItems) {
                     kanbanItems = await getKanbanItemsForBoard(kanbanBoard.kanbanBoardId);
                     const columnIds = kanbanBoard.columnsList.map(c => c.id);
-                    columnIds.forEach(async (columnId) => {
+                    columnIds.forEach((columnId) => {
                         ensureColumnRowIndexesAreSequential(columnId);
                     });
                 }
@@ -217,9 +214,9 @@ async function renderKanbanBoard(reloadKanbanItems) {
                     await updateKanbanBoardColumns(kanbanBoard);
                 }
                 // Render kanban items in the appropriate columns.
-                kanbanBoard.columnsList.forEach(async (column) => {
-                    await renderKanbanItemsInColumn(column.id);
-                });
+                for (const column of kanbanBoard.columnsList) {
+                    renderKanbanItemsInColumn(column.id);
+                }
                 addColumnEventListeners();
                 addCardButtonsEventListners();
                 // Hide all column menus when clicking outside of them.
@@ -320,8 +317,7 @@ function renderKanbanItemsInColumn(columnId) {
     kanbanItemsInColumn.sort((a, b) => a.rowIndex - b.rowIndex);
     let rowIndex = 0;
     addCardDividerElement(columnId, rowIndex);
-    // Add kanban items to the column.
-    kanbanItemsInColumn.forEach(async (item) => {
+    for (const item of kanbanItemsInColumn) {
         rowIndex++;
         const columnBodyDiv = document.querySelector('#kanban-column-body-' + item.columnId);
         if (columnBodyDiv && item.todoItem) {
@@ -330,15 +326,12 @@ function renderKanbanItemsInColumn(columnId) {
             columnBodyDiv.appendChild(cardDiv);
             addCardDividerElement(columnId, rowIndex);
         }
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
-    });
+    }
     kanbanItemsInColumn.forEach((item) => {
+        console.log(item);
         addCardEventListeners(item.kanbanItemId, userCanEdit);
     });
     updateCardCountersInColumn(columnId);
-    return;
 }
 function addCardDividerElement(columnId, rowIndex) {
     const columnBodyDiv = document.querySelector('#kanban-column-body-' + columnId);
@@ -370,15 +363,16 @@ function updateCardCountersInColumn(columnId) {
     }
 }
 export async function updateKanbanItemsInColumn(columnId) {
+    console.log('updateKanbanItemsInColumn starting. columnId: ' + columnId);
     // Get the column HTMLDiv element.
     const columnDiv = document.querySelector('.kanban-column[data-column-id="' + columnId + '"]');
     if (columnDiv) {
         ensureColumnRowIndexesAreSequential(columnId);
         // Get the list of KanbanItems in the column
         const kanbanItemsInColumn = kanbanItems.filter(k => k.columnId === columnId);
-        kanbanItemsInColumn.forEach(async (kanbanItem) => {
+        for (const kanbanItem of kanbanItemsInColumn) {
             await updateKanbanItem(kanbanItem);
-        });
+        }
         renderKanbanItemsInColumn(columnId);
     }
     return new Promise(function (resolve, reject) {
@@ -387,24 +381,14 @@ export async function updateKanbanItemsInColumn(columnId) {
 }
 function ensureColumnRowIndexesAreSequential(columnId) {
     // Sort the KanbanItems by their rowIndex
-    const kanbanItemsInColumn = kanbanItems.filter(k => k.columnId === columnId);
-    kanbanItemsInColumn.sort((a, b) => a.rowIndex - b.rowIndex);
-    // Check if row indexes are unique
-    const rowIndexes = kanbanItemsInColumn.map(k => k.rowIndex);
-    const uniqueRowIndexes = Array.from(new Set(rowIndexes));
-    if (rowIndexes.length !== uniqueRowIndexes.length) {
-        // Row indexes are not unique, reassign them 
-        kanbanItemsInColumn.forEach((k, index) => {
-            k.rowIndex = index;
-        });
-        // Update the kanbanItems array with the new row indexes
-        kanbanItemsInColumn.forEach((k) => {
-            const indexInMainArray = kanbanItems.findIndex(ki => ki.kanbanItemId === k.kanbanItemId);
-            if (indexInMainArray !== -1) {
-                kanbanItems[indexInMainArray].rowIndex = k.rowIndex;
-            }
-        });
-    }
+    kanbanItems.sort((a, b) => a.rowIndex - b.rowIndex);
+    let indexInColumn = 0;
+    kanbanItems.forEach((item) => {
+        if (item.columnId === columnId) {
+            item.rowIndex = indexInColumn;
+            indexInColumn++;
+        }
+    });
 }
 async function createKanbanBoardContainer(kanbanBoard) {
     let kanbanBoardHtml = '<div class="kanban-board-container"><div class="kanban-column-divider" data-column-divider-id="0"></div>';
@@ -476,7 +460,7 @@ async function createKanbanBoardContainer(kanbanBoard) {
         kanbanBoardHtml += addCardInputHTML;
         dividerIndex++;
     });
-    let addColumnButtonHtml = `<div class="canban-column"><button class="btn btn-sm btn-success" id="add-kanban-column-button"><i class="material-icons kinauna-icon-small">add</i></button></div>`;
+    let addColumnButtonHtml = `<div class="kanban-column"><button id="add-kanban-column-button" class="btn btn-sm btn-success mr-auto"><i class="material-icons kinauna-icon-small">add</i></button></div>`;
     if (userCanEdit) {
         kanbanBoardHtml += addColumnButtonHtml;
     }
@@ -755,10 +739,10 @@ function addColumnEventListeners() {
                     });
                 }
                 // Save the updated KanbanItems to the server.
-                await updateKanbanItemsInColumn(parseInt(targetColumnId));
                 if (currentKanbanItemColumnId && targetColumnId !== currentKanbanItemColumnId.toString()) {
                     await updateKanbanItemsInColumn(currentKanbanItemColumnId);
                 }
+                await updateKanbanItemsInColumn(parseInt(targetColumnId));
             }
         }
         stopLoadingItemsSpinner('kanban-board-main-div');

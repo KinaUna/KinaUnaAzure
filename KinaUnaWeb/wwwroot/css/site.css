@@ -1465,6 +1465,10 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     background: linear-gradient(60deg, #ab47bc, #7b1fa2);
 }
 
+.bg-dark-50 {
+    background: #00000055;
+}
+
 .bg-calendar {
     color: #fff;
     background: #581b2f;
@@ -1552,6 +1556,13 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     color: #fff;
     background: #156952;
     background: linear-gradient(40deg, #156952, #0e6345);
+}
+
+.bg-todos-header {
+    color: #fff;
+    background: #105942;
+    background: linear-gradient(40deg, #105942, #0d5335);
+    align-content: center;
 }
 
 .bg-white-gradient {
@@ -2805,7 +2816,11 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 .timeline-card-body {
     flex: 1 1 auto;
     min-height: 1px;
-    padding: 0.75rem;
+    padding: 0.5rem;
+}
+
+.item-details-content.timeline-card-body {
+    padding: 0;
 }
 
 .timeline-icon {
@@ -3084,15 +3099,15 @@ button.Zebra_DatePicker_Icon {
     vertical-align: middle;
 }
 .kinauna-main {
-    margin-left: 66px;
-    margin-right: 66px;
+    margin-left: 56px;
+    margin-right: 56px;
     transition: all 500ms ease-in-out 500ms;
 }
 
 @media (max-width: 576px) {
     .kinauna-main {
         margin-right: 0px;
-        margin-left: 66px;
+        margin-left: 56px;
     }
 }
 
@@ -3552,6 +3567,10 @@ noUi-handle:after, .noUi-handle:before {
     overflow-y: auto;
 }
 
+.item-details-header {
+    height: 3.6rem;
+}
+
 .item-details-content {
     max-height: 100vh;
     overflow-y: auto;
@@ -3579,10 +3598,10 @@ noUi-handle:after, .noUi-handle:before {
 
 .item-details-close-button {
     position: absolute;
-    top: -0.6rem;
+    top: -0.3rem;
     right: 0;
     z-index: 1051;
-    padding: 0.25rem 1rem;
+    padding: 0 1rem;
     font-size: 2.5rem;
     background-color: #aabbcc55 !important;
 }
@@ -3827,15 +3846,28 @@ noUi-handle:after, .noUi-handle:before {
         background-color: #297535;
     }
 
+.kanban-board {
+    width: 100%;
+    overflow-x: auto;
+}
+
 .kanban-board-container {
     border: solid;
     border-width: thin;
     border-color: #3e836f;
     background: #0e503e;
     display: flex;
+    flex-direction: column;
     gap: 0;
     padding: 0;
     min-height: 400px;
+}
+
+@media (min-width: 576px) {
+    .kanban-board-container {
+        flex-direction: row;
+        gap: 0;
+    }
 }
 
 .kanban-column {
@@ -3869,8 +3901,11 @@ noUi-handle:after, .noUi-handle:before {
 
 .kanban-column-header {
     margin: 0;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     background: #00000010;
 }
 
@@ -3934,12 +3969,15 @@ noUi-handle:after, .noUi-handle:before {
 }
 
 .kanban-column-divider {
-    width: 15px;
+    min-width: 15px;
+    width: -webkit-fill-available;
+    min-height: 15px;
     height: -webkit-fill-available;
     background: transparent;
     border: 0;
     padding: 0;
     margin: 0;
+    flex-none;
 }
 
 .kanban-column-divider-drag-over {
@@ -4025,7 +4063,7 @@ noUi-handle:after, .noUi-handle:before {
     }
 
 .kanban-card-divider {
-    height: 15px;
+    height: 20px;
     width: -webkit-fill-available;
     background: transparent;
     border: 0;
