@@ -13,8 +13,8 @@
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-todos item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-todos-header">
                 <img src="@Model.TodoItem.Progeny.PictureLink" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
@@ -163,7 +163,7 @@
                             <form id="add-subtask-inline-form" asp-controller="Subtasks" asp-action="AddSubtaskInline">
                                 <div class="form-group">
                                     <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control w-75"
-                                           style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
+                                           style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)"/>
                                     <button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
                                 </div>
                                 <input name="ParentTodoItemId" type="hidden" value="@Model.TodoItem.TodoItemId"/>
@@ -188,7 +188,8 @@
             </div>
             <div class="space-10"></div>
             <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.TodoItem.CreatedBy</div>
-            @if(Model.IsCurrentUserProgenyAdmin){
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
                 <div class="col-12">
                     <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
                     <a data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>

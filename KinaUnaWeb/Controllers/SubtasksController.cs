@@ -365,7 +365,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             
-            return PartialView("../Todos/_TodoDetailsPartial", model);
+            return Json(model.TodoItem);
         }
 
         [HttpGet]

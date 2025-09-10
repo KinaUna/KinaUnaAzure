@@ -162,6 +162,7 @@ function setSelectProgenyButtonsEventListeners(): void {
 
     let selectProgenyButtons = document.querySelectorAll <HTMLAnchorElement>('.select-progeny-button');
     selectProgenyButtons.forEach(function (button) {
+        button.removeEventListener('click', onSelectProgenyButtonClicked);
         button.addEventListener('click', onSelectProgenyButtonClicked);
     });
 }
@@ -208,7 +209,7 @@ function setSelectedProgenies() {
 function setSetDefaultProgenyEventListeners() {
     let setDefaultProgenyButtons = document.querySelectorAll<HTMLAnchorElement>('.set-default-progeny-button');
     setDefaultProgenyButtons.forEach(function (button) {
-
+        button.removeEventListener('click', onSetDefaultProgenyButtonClicked);
         button.addEventListener('click', onSetDefaultProgenyButtonClicked);
     });
 }
@@ -252,6 +253,7 @@ async function setDefaultProgeny(progenyId: number) {
  */
 
 document.addEventListener('DOMContentLoaded', function (): void {
+    console.log('app.ts: DomContentLoaded');
     initPageSettings();
 
     showSelectProgenyDropdownWhenCurrentProgenyClicked();

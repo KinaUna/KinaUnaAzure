@@ -349,7 +349,6 @@ async function onSetAsCancelledButtonClicked(event) {
     });
 }
 export async function displayKanbanItemDetails(kanbanItemId, container) {
-    console.log('displayKanbanItemDetails, container:' + container);
     let kanbanItem;
     const url = '/KanbanItems/GetKanbanItem?kanbanItemId=' + kanbanItemId;
     await fetch(url, {

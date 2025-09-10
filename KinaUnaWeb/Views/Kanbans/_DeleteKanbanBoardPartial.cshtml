@@ -4,49 +4,64 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Delete kanban board", PageNames.Todos, Model.LanguageId);
-    string title = Model.KanbanBoard.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    string title = Model.KanbanBoard.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Kanban", PageNames.Todos, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
-    <div class="timeline-card-body bg-todos item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
-                <img src="@Model.KanbanBoard.Progeny.PictureLink" class="item-details-title-picture" />
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <img src="@Model.KanbanBoard.Progeny.PictureLink" class="item-details-title-picture"/>
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="kanbanboard" data-previous-item-id="@Model.KanbanBoard.KanbanBoardId"><span>×</span></button>
             </div>
         </div>
         <div class="row m-0">
-            <div class="space-50"></div>
             <div class="row m-0">
                 <div class="col-12">
+                    <div class="row">
+                        <div class="space-50"></div>
+                        <div class="col-auto">
+                            <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">fact_check</i></span>
+                        </div>
+                        <div class="col h4">
+                            @Model.KanbanBoard.Title
+                        </div>
+                    </div>
                     <div class="space-20"></div>
                     <form asp-action="DeleteKanbanBoard" asp-controller="Kanbans" role="form" method="post">
                         <div class="row">
-                            <div class="col-12 h4">@ViewData["Title"]</div>
-                            <div class="col-12 h5">@await LocaleManager.GetTranslation("Are you sure you want to delete this kanban board?", PageNames.Todos, Model.LanguageId)</div>
+                            <div class="col-1"></div>
+                            <div class="col-11 h4">@ViewData["Title"]</div>
+                            <div class="col-1"></div>
+                            <div class="col-11 h5">@await LocaleManager.GetTranslation("Are you sure you want to delete this kanban board?", PageNames.Todos, Model.LanguageId)</div>
                         </div>
-                        <div class="space-20"></div>
-                        <div class="row">
-                            <div class="col-auto">
-                                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">fact_check</i></span>
-                            </div>
-                            <div class="col h4">
-                                @Model.KanbanBoard.Title
-                            </div>
-                        </div>
-                        <div class="space-20"></div>
                         <div class="row">
                             @if (!string.IsNullOrEmpty(Model.KanbanBoard.Description))
                             {
-                                <div class="col-12">
-                                    @await LocaleManager.GetTranslation("Description:", PageNames.Todos, Model.LanguageId) @Html.Raw(Model.KanbanBoard.Description)
+                                <div class="space-20"></div>
+                                <div class="col-1"></div>
+                                <div class="col-11">
+                                    @await LocaleManager.GetTranslation("Description:", PageNames.Todos, Model.LanguageId)
                                 </div>
+                                <div class="col-1"></div>
+                                <div class="col-11">@Html.Raw(Model.KanbanBoard.Description)</div>
                             }
                         </div>
-                        <div class="space-20"></div>
                         <div class="row">
-                            <input asp-for="KanbanBoard.KanbanBoardId" class="form-control" value="@Model.KanbanBoard.KanbanBoardId" type="hidden" />
-                            <div class="col-12">
+                            <div class="col-1"></div>
+                            <div class="col-11">
+                                <div class="space-20"></div>
+                                <div class="form-group">
+                                    <label asp-for="DeleteTodoItems" class="control-label">@await LocaleManager.GetTranslation("Delete Todo items", PageNames.Todos, Model.LanguageId)</label>
+                                    <input type="checkbox" class="add-edit-form-checkbox ml-1" asp-for="DeleteTodoItems" value="false" onchange="this.value=this.checked" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="space-20"></div>
+                            <input asp-for="KanbanBoard.KanbanBoardId" class="form-control" value="@Model.KanbanBoard.KanbanBoardId" type="hidden"/>
+                            <div class="col-1"></div>
+                            <div class="col-11">
                                 <Button type="submit" class="btn btn-success leave-page">@await LocaleManager.GetTranslation("Yes - delete this kanban board", PageNames.Todos, Model.LanguageId)</Button>
                                 <Button type="button" data-previous-item-type="kanbanboard" data-previous-item-id="@Model.KanbanBoard.KanbanBoardId" class="item-details-cancel-button btn btn-danger leave-page">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</Button>
                             </div>

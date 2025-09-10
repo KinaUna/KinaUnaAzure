@@ -64,9 +64,6 @@ export function createKanbanItemCardHTML(kanbanItem) {
 }
 export function addCardEventListeners(kanbanItemId, userCanEdit) {
     const card = document.querySelector('.kanban-card[data-kanban-item-id="' + kanbanItemId + '"]');
-    console.log('addCardEventListeners, kanbanItem: ' + kanbanItemId);
-    console.log('addCardEventListeners, card: ');
-    console.log(card);
     if (!card) {
         return;
     }
@@ -121,6 +118,7 @@ export function addCardDividerEventListeners(columnId, rowIndex) {
                 event.preventDefault();
                 event.stopPropagation();
                 console.log('Card dividerDragEnterFunction start.');
+                console.log('columnId: ' + columnId);
                 // Check if event.dataTransfer contains kanban-item-card
                 if (!event.dataTransfer || !event.dataTransfer.types.includes('kanban-item-card')) {
                     if (event.dataTransfer) {
@@ -129,29 +127,33 @@ export function addCardDividerEventListeners(columnId, rowIndex) {
                     return;
                 }
                 // Check column WIP limit if the card is being moved to a different column.
-                const columnId = divider.dataset.columnId;
-                if (!columnId) {
-                    if (event.dataTransfer) {
-                        event.dataTransfer.dropEffect = 'none';
-                    }
-                    return;
-                }
-                const sourceColumnId = event.dataTransfer.getData('source-column-id');
                 const kanbanBoard = getKanbanBoard();
                 const kanbanItems = getKanbanItems();
-                const targetColumn = kanbanBoard.columnsList.find(c => c.id.toString() === columnId.toString());
-                if (targetColumn && sourceColumnId && sourceColumnId !== columnId) {
-                    const itemsInTargetColumn = kanbanItems.filter(k => k.columnId === targetColumn.id);
-                    if (itemsInTargetColumn.length >= targetColumn.wipLimit && targetColumn.wipLimit > 0) {
-                        if (event.dataTransfer) {
-                            event.dataTransfer.dropEffect = 'none';
+                const kanbanItemId = event.dataTransfer.getData('kanban-item-id');
+                const kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
+                if (kanbanItem) {
+                    const sourceColumnId = kanbanItem.columnId;
+                    console.log('sourceColumnId: ' + sourceColumnId);
+                    const targetColumn = kanbanBoard.columnsList.find(c => c.id.toString() === columnId.toString());
+                    if (targetColumn && sourceColumnId && sourceColumnId !== columnId) {
+                        const itemsInTargetColumn = kanbanItems.filter(k => k.columnId === targetColumn.id);
+                        if (itemsInTargetColumn.length >= targetColumn.wipLimit && targetColumn.wipLimit > 0) {
+                            if (event.dataTransfer) {
+                                event.dataTransfer.dropEffect = 'none';
+                            }
+                            return;
                         }
-                        return;
+                        else {
+                            divider.classList.add('kanban-card-divider-drag-over');
+                            if (event.dataTransfer) {
+                                event.dataTransfer.dropEffect = 'move';
+                            }
+                            return;
+                        }
                     }
                 }
-                divider.classList.add('kanban-card-divider-drag-over');
                 if (event.dataTransfer) {
-                    event.dataTransfer.dropEffect = 'move';
+                    event.dataTransfer.dropEffect = 'none';
                 }
             };
             divider.removeEventListener('dragenter', dividerDragEnterFunction);
@@ -168,29 +170,33 @@ export function addCardDividerEventListeners(columnId, rowIndex) {
                     return;
                 }
                 // Check column WIP limit if the card is being moved to a different column.
-                const columnId = divider.dataset.columnId;
-                if (!columnId) {
-                    if (event.dataTransfer) {
-                        event.dataTransfer.dropEffect = 'none';
-                    }
-                    return;
-                }
-                const sourceColumnId = event.dataTransfer.getData('source-column-id');
                 const kanbanBoard = getKanbanBoard();
                 const kanbanItems = getKanbanItems();
-                const targetColumn = kanbanBoard.columnsList.find(c => c.id.toString() === columnId.toString());
-                if (targetColumn && sourceColumnId && sourceColumnId !== columnId) {
-                    const itemsInTargetColumn = kanbanItems.filter(k => k.columnId === targetColumn.id);
-                    if (itemsInTargetColumn.length >= targetColumn.wipLimit && targetColumn.wipLimit > 0) {
-                        if (event.dataTransfer) {
-                            event.dataTransfer.dropEffect = 'none';
+                const kanbanItemId = event.dataTransfer.getData('kanban-item-id');
+                const kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
+                if (kanbanItem) {
+                    const sourceColumnId = kanbanItem.columnId;
+                    console.log('sourceColumnId: ' + sourceColumnId);
+                    const targetColumn = kanbanBoard.columnsList.find(c => c.id.toString() === columnId.toString());
+                    if (targetColumn && sourceColumnId && sourceColumnId !== columnId) {
+                        const itemsInTargetColumn = kanbanItems.filter(k => k.columnId === targetColumn.id);
+                        if (itemsInTargetColumn.length >= targetColumn.wipLimit && targetColumn.wipLimit > 0) {
+                            if (event.dataTransfer) {
+                                event.dataTransfer.dropEffect = 'none';
+                            }
+                            return;
                         }
-                        return;
+                        else {
+                            divider.classList.add('kanban-card-divider-drag-over');
+                            if (event.dataTransfer) {
+                                event.dataTransfer.dropEffect = 'move';
+                            }
+                            return;
+                        }
                     }
                 }
-                divider.classList.add('kanban-card-divider-drag-over');
                 if (event.dataTransfer) {
-                    event.dataTransfer.dropEffect = 'move';
+                    event.dataTransfer.dropEffect = 'none';
                 }
             };
             divider.removeEventListener('dragover', dividerDragOverFunction);
@@ -217,10 +223,6 @@ export function addCardDividerEventListeners(columnId, rowIndex) {
                         if (kanbanItem) {
                             const previousColumnId = kanbanItem.columnId;
                             const previousRowIndex = kanbanItem.rowIndex;
-                            console.log('previousColumnId:' + previousColumnId);
-                            console.log('targetColumnId:' + targetColumnId);
-                            console.log('previousRowIndex:' + previousRowIndex);
-                            console.log('targetRowIndex:' + targetRowIndex);
                             // Check if WipLimit has been reached.
                             if (previousColumnId.toString() !== targetColumnId) {
                                 let kanbanBoard = getKanbanBoard();

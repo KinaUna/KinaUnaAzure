@@ -2,7 +2,7 @@ import { onDeleteItemButtonClicked, onEditItemButtonClicked } from "../addItem/a
 import { getCurrentLanguageId } from "../data-tools-v9.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
 import { TodoItemParameters } from "../page-models-v9.js";
-let lastSubTaskPageParemeters;
+let lastSubTaskPageParameters;
 let containerElementId = '';
 export async function getSubtasks(subtasksPageParameters, subtasksListElementId, resetList) {
     startLoadingSpinner();
@@ -52,7 +52,16 @@ export async function getSubtasks(subtasksPageParameters, subtasksListElementId,
             }
         }
     }
-    lastSubTaskPageParemeters = subtasksPageParameters;
+    const todoDetailsDiv = document.getElementById('todo-details-sub-tasks-div');
+    if (todoDetailsDiv) {
+        if (subtasksPageParameters.totalItems > 0) {
+            todoDetailsDiv.classList.remove('d-none');
+        }
+        else {
+            todoDetailsDiv.classList.add('d-none');
+        }
+    }
+    lastSubTaskPageParameters = subtasksPageParameters;
     containerElementId = subtasksListElementId;
     stopLoadingSpinner();
     return new Promise(function (resolve, reject) {
@@ -102,7 +111,7 @@ export async function addSubtask(subtask, containerElementId) {
         });
         if (addSubtaskElementResponse.ok) {
             const addedSubtask = await addSubtaskElementResponse.json();
-            await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+            await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
         }
         else {
             console.log('Error adding subtask. Status: ' + addSubtaskElementResponse.status + ', Message: ' + addSubtaskElementResponse.statusText);
@@ -119,7 +128,7 @@ export async function addSubtask(subtask, containerElementId) {
         });
         if (addSubtaskElementResponse.ok) {
             const addedSubtask = await addSubtaskElementResponse.json();
-            await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+            await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
         }
         else {
             console.log('Error adding subtask. Status: ' + addSubtaskElementResponse.status + ', Message: ' + addSubtaskElementResponse.statusText);
@@ -207,7 +216,7 @@ async function onSetAsNotStartedButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+                    await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
                     return;
                 }
                 else {
@@ -242,7 +251,7 @@ async function onSetAsInProgressButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+                    await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
                     return;
                 }
                 else {
@@ -277,7 +286,7 @@ async function onSetAsCompletedButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+                    await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
                     return;
                 }
                 else {
@@ -312,7 +321,7 @@ async function onSetAsCancelledButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+                    await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
                     return;
                 }
                 else {
@@ -324,5 +333,8 @@ async function onSetAsCancelledButtonClicked(event) {
             stopFullPageSpinner();
         }
     }
+}
+export async function refreshSubtasks() {
+    await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
 }
 //# sourceMappingURL=subtasks.js.map

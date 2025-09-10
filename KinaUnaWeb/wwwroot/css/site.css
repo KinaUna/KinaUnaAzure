@@ -182,6 +182,12 @@
     align-items: start;
 }
 
+.add-edit-form-checkbox{
+    width: 1.5em;
+    height: 1.5em;
+    vertical-align: middle;
+}
+
 .dropdown-menu .dropdown-item, .dropdown-menu li > a {
     position: relative;
     width: auto;
@@ -1467,6 +1473,12 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 
 .bg-dark-50 {
     background: #00000055;
+}
+
+.bg-add-item-header {
+    color: #fff;
+    background: #262426;
+    align-content: center;
 }
 
 .bg-calendar {
@@ -3578,7 +3590,7 @@ noUi-handle:after, .noUi-handle:before {
 
 @media (min-width: 576px) {
     .item-details-content {
-        max-height: 95vh;
+        max-height: 100vh;
         overflow-y: auto;
     }
 }
@@ -3620,10 +3632,10 @@ noUi-handle:after, .noUi-handle:before {
 
 .kanban-item-details-close-button {
     position: absolute;
-    top: -0.6rem;
+    top: -0.3rem;
     right: 0;
     z-index: 1051;
-    padding: 0.25rem 1rem;
+    padding: 0 1rem;
     font-size: 2.5rem;
     background-color: #aabbcc55 !important;
 }
@@ -3880,11 +3892,16 @@ noUi-handle:after, .noUi-handle:before {
     padding: 0;
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;
-    max-width: 350px;
     min-width: 200px;
     display: flex;
     flex-direction: column;
     cursor: grab;
+}
+
+@media (min-width: 576px) {
+    .kanban-column {
+        max-width: 350px;
+    }
 }
 
 .kanban-column-drag-over {
@@ -3969,15 +3986,25 @@ noUi-handle:after, .noUi-handle:before {
 }
 
 .kanban-column-divider {
-    min-width: 15px;
     width: -webkit-fill-available;
-    min-height: 15px;
-    height: -webkit-fill-available;
+    height: 15px;
     background: transparent;
     border: 0;
     padding: 0;
     margin: 0;
-    flex-none;
+    flex: none;
+}
+
+@media (min-width: 576px) {
+    .kanban-column-divider {
+        width: 15px;
+        height: -webkit-fill-available;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        flex: none;
+    }
 }
 
 .kanban-column-divider-drag-over {

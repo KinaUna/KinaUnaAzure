@@ -10,6 +10,16 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public KanbanBoard KanbanBoard { get; set; } = new();
         public List<SelectListItem> ProgenyList { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
+        public List<SelectListItem> CopyTodoItemsOptions { get; set; } =
+        [
+            new SelectListItem { Value = "0", Text = "Copy to new item", Selected = true },
+            new SelectListItem { Value = "1", Text = "Copy reference to existing item" },
+            new SelectListItem { Value = "2", Text = "Do not copy" }
+        ];
+
+        public int CopyTodoItemsOption { get; set; } = 0;
+        public bool DeleteTodoItems { get; set; } = false;
+
         public KanbanBoardViewModel()
         {
             ProgenyList = [];

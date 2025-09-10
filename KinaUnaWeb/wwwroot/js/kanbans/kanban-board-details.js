@@ -40,7 +40,6 @@ function addTimelineChangedEventListener() {
  * @param kanbanBoardId
  */
 export function dispatchKanbanBoardChangedEvent(kanbanBoardId) {
-    console.log('dispatchKanbanBoardChangedEvent, kanbanBoardId: ' + kanbanBoardId);
     const timelineItem = new TimelineItem();
     timelineItem.itemType = 16;
     timelineItem.itemId = kanbanBoardId;
@@ -328,7 +327,6 @@ function renderKanbanItemsInColumn(columnId) {
         }
     }
     kanbanItemsInColumn.forEach((item) => {
-        console.log(item);
         addCardEventListeners(item.kanbanItemId, userCanEdit);
     });
     updateCardCountersInColumn(columnId);
@@ -363,7 +361,6 @@ function updateCardCountersInColumn(columnId) {
     }
 }
 export async function updateKanbanItemsInColumn(columnId) {
-    console.log('updateKanbanItemsInColumn starting. columnId: ' + columnId);
     // Get the column HTMLDiv element.
     const columnDiv = document.querySelector('.kanban-column[data-column-id="' + columnId + '"]');
     if (columnDiv) {
@@ -455,12 +452,13 @@ async function createKanbanBoardContainer(kanbanBoard) {
         </div>`;
         kanbanBoardHtml += limitInputHTML;
         const addCardInputHTML = `
-        <div class="settings-modal d-none" tabindex="-1" role="dialog" id="add-card-modal-${column.id}">            
-        </div>`;
+        <div class="settings-modal d-none" tabindex="-1" role="dialog" id="add-card-modal-${column.id}"></div>`;
         kanbanBoardHtml += addCardInputHTML;
         dividerIndex++;
     });
-    let addColumnButtonHtml = `<div class="kanban-column"><button id="add-kanban-column-button" class="btn btn-sm btn-success mr-auto"><i class="material-icons kinauna-icon-small">add</i></button></div>`;
+    let addColumnButtonHtml = `<div class="pr-3">
+                                   <button id="add-kanban-column-button" class="btn btn-sm btn-success mr-auto"><i class="material-icons kinauna-icon-small">add</i></button>
+                               </div>`;
     if (userCanEdit) {
         kanbanBoardHtml += addColumnButtonHtml;
     }
@@ -1057,7 +1055,6 @@ function hideRenameInputs() {
 }
 export function hideAllMenusAndModals(event) {
     const target = event.target;
-    console.log(target);
     if (!target.closest('.kanban-column-menu-div')) {
         hideColumnMenus();
     }

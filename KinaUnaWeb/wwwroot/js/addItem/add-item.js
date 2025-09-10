@@ -584,15 +584,26 @@ async function onSaveItemFormSubmit(event) {
                     window.dispatchEvent(calendarDataChangedEvent);
                 }
                 if (formAction.includes('/Subtasks/')) {
+                    console.log('returnItemId: ' + returnItemId);
                     await popupTodoItem(returnItemId);
-                    return;
+                    return new Promise(function (resolve, reject) {
+                        resolve();
+                    });
                 }
                 if (formAction.includes('/Kanbans/')) {
                     const updatedKanbanBoard = await response.json();
                     returnItemId = updatedKanbanBoard.kanbanBoardId.toString();
                     dispatchKanbanBoardChangedEvent(returnItemId);
                     await popupKanbanBoard(returnItemId);
-                    return;
+                    return new Promise(function (resolve, reject) {
+                        resolve();
+                    });
+                }
+                if (formAction.includes('/DeleteTodo')) {
+                    // Todo: reload the todos list.
+                    return new Promise(function (resolve, reject) {
+                        resolve();
+                    });
                 }
                 if (itemDetailsPopupDiv) {
                     let modalContent = await response.text();
@@ -607,6 +618,9 @@ async function onSaveItemFormSubmit(event) {
                     setAddItemButtonEventListeners();
                     dispatchTimelineItemChangedEvent();
                 }
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
             }
         }).catch(function (error) {
             console.error('Error saving item:', error);
@@ -622,6 +636,7 @@ async function onSaveItemFormSubmit(event) {
  * This is used to notify other parts of the application that a timeline item has changed.
  */
 function dispatchTimelineItemChangedEvent() {
+    console.log('dispatchTimelineItemChangedEvent');
     const timelineUpdateDataDiv = document.querySelector('#timeline-update-data-div');
     if (timelineUpdateDataDiv === null) {
         // If the timeline update div is not found, do not dispatch the event.

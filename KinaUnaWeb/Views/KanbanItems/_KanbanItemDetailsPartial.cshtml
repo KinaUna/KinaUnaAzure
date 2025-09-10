@@ -12,16 +12,15 @@
     string setAsCancelledString = await LocaleManager.GetTranslation("Set as cancelled", PageNames.Todos, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
-    <div class="timeline-card-body bg-todos item-details-content modal-settings-panel">
-        <div class="row m-0">
-            <div class="col-12">
-                <img src="@Model.KanbanItem.TodoItem.Progeny.PictureLink" class="item-details-title-picture" />
+    <div class="timeline-card-body item-details-content modal-settings-panel bg-todos">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-todos-header">
+                <img src="@Model.KanbanItem.TodoItem.Progeny.PictureLink" class="item-details-title-picture"/>
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link kanban-item-details-close-button"><span>×</span></button>
             </div>
         </div>
-        <div class="space-50"></div>
-        <div class="row m-0">
+        <div class="row m-0 bg-todos">
             <div class="col-12">
                 <div class="space-20">
                 </div>

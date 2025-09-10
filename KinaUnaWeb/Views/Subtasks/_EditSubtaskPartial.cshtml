@@ -24,8 +24,12 @@
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container-wide">
-            <h2 class="col-12">@ViewData["Title"]</h2>
-            <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.ParentTodoItemId"><span>×</span></button>
+            <div class="row sticky-top m-0 item-details-header">
+                <div class="col-12 bg-add-item-header">
+                    <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                    <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.ParentTodoItemId"><span>×</span></button>
+                </div>
+            </div>
             <div class="space-20"></div>
             <form id="save-item-form" asp-action="EditSubtask" asp-controller="Subtasks" role="form" method="post">
                 @if (Model.ProgenyList.Count > 1)
@@ -42,15 +46,15 @@
                     <div class="form-group">
                         <label class="col-auto control-label">@assignedToString</label>
                         <div class="col-auto">
-                            <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                            <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text"/>
                         </div>
-                        <input asp-for="TodoItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                        <input asp-for="TodoItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden"/>
                     </div>
                 }
                 <div class="form-group">
                     <label asp-for="TodoItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="todo-title-input" asp-for="TodoItem.Title" class="form-control" value="@Model.TodoItem.Title" />
+                        <input id="todo-title-input" asp-for="TodoItem.Title" class="form-control" value="@Model.TodoItem.Title"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -59,14 +63,14 @@
                         @{
                             string[] toolbarItems = new[]
                             {
-                                                "Bold", "Italic", "Underline", "StrikeThrough",
-                                                "FontName", "FontSize", "FontColor", "BackgroundColor",
-                                                "LowerCase", "UpperCase", "|",
-                                                "Formats", "Alignments", "OrderedList", "UnorderedList",
-                                                "Outdent", "Indent", "|",
-                                                "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
-                                                "SourceCode", "FullScreen", "|", "Undo", "Redo"
-                                                };
+                                "Bold", "Italic", "Underline", "StrikeThrough",
+                                "FontName", "FontSize", "FontColor", "BackgroundColor",
+                                "LowerCase", "UpperCase", "|",
+                                "Formats", "Alignments", "OrderedList", "UnorderedList",
+                                "Outdent", "Indent", "|",
+                                "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
+                                "SourceCode", "FullScreen", "|", "Undo", "Redo"
+                            };
                         }
                         <ejs-richtexteditor id="description-rich-text-editor" ejs-for="TodoItem.Description" height="300px" enableResize="true">
                             <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
@@ -83,7 +87,7 @@
                     <div class="col-auto">
                         <div class="input-group date">
                             <input id="todo-due-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.DueDate"
-                                   value="@Model.TodoItem.DueDate?.ToString(longDateTimeFormat)" />
+                                   value="@Model.TodoItem.DueDate?.ToString(longDateTimeFormat)"/>
                         </div>
                     </div>
                 </div>
@@ -92,7 +96,7 @@
                     <div class="col-auto">
                         <div class="input-group date">
                             <input id="todo-start-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.StartDate"
-                                   value="@Model.TodoItem.StartDate?.ToString(longDateTimeFormat)" />
+                                   value="@Model.TodoItem.StartDate?.ToString(longDateTimeFormat)"/>
                         </div>
                     </div>
                 </div>
@@ -101,7 +105,7 @@
                     <div class="col-auto">
                         <div class="input-group date">
                             <input id="todo-completed-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.CompletedDate"
-                                   value="@Model.TodoItem.CompletedDate?.ToString(longDateTimeFormat)" />
+                                   value="@Model.TodoItem.CompletedDate?.ToString(longDateTimeFormat)"/>
                         </div>
                     </div>
                 </div>
@@ -114,19 +118,19 @@
                 <div class="form-group">
                     <label asp-for="TodoItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="context-input" asp-for="TodoItem.Context" class="form-control" value="@Model.TodoItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)" />
+                        <input id="context-input" asp-for="TodoItem.Context" class="form-control" value="@Model.TodoItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Locations, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="location-input" type="text" asp-for="TodoItem.Location" value="@Model.TodoItem.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
+                        <input id="location-input" type="text" asp-for="TodoItem.Location" value="@Model.TodoItem.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="tag-list" type="text" asp-for="TodoItem.Tags" value="@Model.TodoItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
+                        <input id="tag-list" type="text" asp-for="TodoItem.Tags" value="@Model.TodoItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -136,10 +140,10 @@
                     </div>
                 </div>
                 <div class="space-20"></div>
-                <input asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId" type="hidden" />
-                <input id="subtask-parent-todo-item-id-input" asp-for="TodoItem.ParentTodoItemId" value="@Model.TodoItem.ParentTodoItemId" type="hidden" />
-                <input asp-for="TodoItem.CreatedBy" value="@Model.TodoItem.CreatedBy" type="hidden" />
-                <input asp-for="TodoItem.AccessLevel" value="@Model.TodoItem.AccessLevel" type="hidden" />
+                <input asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId" type="hidden"/>
+                <input id="subtask-parent-todo-item-id-input" asp-for="TodoItem.ParentTodoItemId" value="@Model.TodoItem.ParentTodoItemId" type="hidden"/>
+                <input asp-for="TodoItem.CreatedBy" value="@Model.TodoItem.CreatedBy" type="hidden"/>
+                <input asp-for="TodoItem.AccessLevel" value="@Model.TodoItem.AccessLevel" type="hidden"/>
                 <div class="form-group">
                     <div class="col-auto control-label"></div>
                     <div class="col-auto">

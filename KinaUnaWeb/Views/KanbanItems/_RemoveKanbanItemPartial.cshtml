@@ -4,14 +4,14 @@
 @using KinaUna.Data.Extensions
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = await LocaleManager.GetTranslation("Remove kanban item", PageNames.Todos, Model.LanguageId);
-    string title = Model.KanbanItem.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Remove kanban card", PageNames.Todos, Model.LanguageId);
+    string title = Model.KanbanItem.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Kanban Card", PageNames.Todos, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper add-edit-kanban-item-modal">
-    <div class="timeline-card-body bg-todos modal-content item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
-                <img src="@Model.KanbanItem.TodoItem.Progeny.PictureLink" class="item-details-title-picture" />
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <img src="@Model.KanbanItem.TodoItem.Progeny.PictureLink" class="item-details-title-picture"/>
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link modal-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.KanbanItem.TodoItem.TodoItemId"><span>×</span></button>
             </div>
@@ -24,7 +24,7 @@
                     <form id="remove-kanban-card-form" asp-action="RemoveKanbanItem" asp-controller="KanbanItems" role="form" method="post">
                         <div class="row">
                             <div class="col-12 h4">@ViewData["Title"]</div>
-                            <div class="col-12 h5">@await LocaleManager.GetTranslation("Are you sure you want to delete this todo item?", PageNames.Todos, Model.LanguageId)</div>
+                            <div class="col-12 h5">@await LocaleManager.GetTranslation("Are you sure you want to remove this kanban card?", PageNames.Todos, Model.LanguageId)</div>
                         </div>
                         <div class="space-20"></div>
                         <div class="row">
@@ -61,7 +61,7 @@
                             @if (!string.IsNullOrEmpty(Model.KanbanItem.TodoItem.Description))
                             {
                                 <div class="col-12">
-                                    @await LocaleManager.GetTranslation("Description:", PageNames.Todos, Model.LanguageId) @Html.Raw(Model.KanbanItem.TodoItem.Description)
+                                    <div class="col-auto">@await LocaleManager.GetTranslation("Description:", PageNames.Todos, Model.LanguageId) @Html.Raw(Model.KanbanItem.TodoItem.Description)</div>
                                 </div>
                             }
                         </div>
@@ -71,7 +71,7 @@
                             <input asp-for="KanbanItem.TodoItemId" class="form-control" value="@Model.KanbanItem.TodoItemId" type="hidden" />
                             <input asp-for="KanbanItem.TodoItem.TodoItemId" class="form-control" value="@Model.KanbanItem.TodoItem.TodoItemId" type="hidden"/>
                             <div class="col-12">
-                                <Button id="remove-kanban-item-button" type="submit" class="btn btn-success leave-page">@await LocaleManager.GetTranslation("Yes - delete this todo", PageNames.Todos, Model.LanguageId)</Button>
+                                <Button id="remove-kanban-item-button" type="submit" class="btn btn-success leave-page">@await LocaleManager.GetTranslation("Yes - remove this kanban card", PageNames.Todos, Model.LanguageId)</Button>
                                 <Button type="button" class="remove-kanban-item-cancel-button btn btn-danger leave-page">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</Button>
                             </div>
                         </div>

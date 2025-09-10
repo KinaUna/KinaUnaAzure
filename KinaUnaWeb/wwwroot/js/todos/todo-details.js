@@ -3,7 +3,7 @@ import { TimelineChangedEvent } from '../data-tools-v9.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
 import { SubtasksPageParameters, TimelineItem } from '../page-models-v9.js';
-import { addSubtask, getSubtasks } from './subtasks.js';
+import { addSubtask, getSubtasks, refreshSubtasks } from './subtasks.js';
 let subtaskPageParameters = new SubtasksPageParameters();
 const subtasksListDivId = 'todo-details-sub-tasks-list-div';
 /**
@@ -281,6 +281,7 @@ async function setTodoDetailsEventListeners(itemId, todoDetailsPopupDiv) {
                 const subtaskTitle = addSubtaskInput.value.trim();
                 await addSubtask(null, subtasksListDivId);
                 addSubtaskInput.value = '';
+                await refreshSubtasks();
             }
             ;
         };

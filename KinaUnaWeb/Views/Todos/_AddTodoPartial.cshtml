@@ -24,8 +24,12 @@
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container-wide">
-            <h2 class="col-12">@ViewData["Title"]</h2>
-            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            <div class="row sticky-top m-0 item-details-header">
+                <div class="col-12 bg-add-item-header">
+                    <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                    <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+                </div>
+            </div>
             <div class="space-20"></div>
             <form id="save-item-form" asp-action="AddTodo" asp-controller="Todos" role="form" method="post">
                 @if (Model.ProgenyList.Count > 1)
@@ -42,28 +46,31 @@
                     <div class="form-group">
                         <label class="col-auto control-label">@addTodoForString</label>
                         <div class="col-auto">
-                            <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                            <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text"/>
                         </div>
-                        <input asp-for="TodoItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                        <input asp-for="TodoItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden"/>
                     </div>
                 }
                 <div class="form-group">
                     <label asp-for="TodoItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="todo-title-input" asp-for="TodoItem.Title" class="form-control" />
+                        <input id="todo-title-input" asp-for="TodoItem.Title" class="form-control"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="TodoItem.Description" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Todos, Model.LanguageId)</label>
                     <div class="col-auto">
                         @{
-                            string[] toolbarItems = new[] {"Bold", "Italic", "Underline", "StrikeThrough",
+                            string[] toolbarItems = new[]
+                            {
+                                "Bold", "Italic", "Underline", "StrikeThrough",
                                 "FontName", "FontSize", "FontColor", "BackgroundColor",
                                 "LowerCase", "UpperCase", "|",
                                 "Formats", "Alignments", "OrderedList", "UnorderedList",
                                 "Outdent", "Indent", "|",
                                 "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
-                                "SourceCode", "FullScreen", "|", "Undo", "Redo" };
+                                "SourceCode", "FullScreen", "|", "Undo", "Redo"
+                            };
                         }
                         <ejs-richtexteditor id="description-rich-text-editor" ejs-for="TodoItem.Description" height="300px" enableResize="true">
                             <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
@@ -89,7 +96,7 @@
                     <div class="col-auto">
                         <div class="input-group date">
                             <input id="todo-start-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.StartDate"
-                                   value="@Model.TodoItem.StartDate?.ToString(longDateTimeFormat)" />
+                                   value="@Model.TodoItem.StartDate?.ToString(longDateTimeFormat)"/>
                         </div>
                     </div>
                 </div>
@@ -102,7 +109,7 @@
                 <div class="form-group">
                     <label asp-for="TodoItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="context-input" asp-for="TodoItem.Context" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)" />
+                        <input id="context-input" asp-for="TodoItem.Context" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)"/>
                     </div>
                 </div>
                 <div class="form-group">

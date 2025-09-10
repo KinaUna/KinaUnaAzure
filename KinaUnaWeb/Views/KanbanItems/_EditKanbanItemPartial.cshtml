@@ -25,8 +25,12 @@
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide add-edit-kanban-item-modal">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container-wide">
-            <h2 class="col-12">@ViewData["Title"]</h2>
-            <button type="button" class="btn btn-link modal-close-button"><span>×</span></button>
+            <div class="row sticky-top m-0 item-details-header">
+                <div class="col-12 bg-add-item-header">
+                    <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                    <button type="button" class="btn btn-link modal-close-button"><span>×</span></button>
+                </div>
+            </div>
             <div class="space-20"></div>
             <form id="save-kanban-card-form" asp-action="EditKanbanItem" asp-controller="KanbanItems" role="form" method="post">
                 @if (Model.ProgenyList.Count > 1)

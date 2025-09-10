@@ -11,9 +11,9 @@
 <div id="timeline-update-data-div" class="d-none" data-changed-item-type="@changedItemType" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-todos item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
-                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-todos-header">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>

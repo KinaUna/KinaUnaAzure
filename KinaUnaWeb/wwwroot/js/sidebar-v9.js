@@ -170,11 +170,13 @@ function highlightActivePageIcon() {
 function addSidebarEventListeners() {
     const toggleSideBarTextButton = document.querySelector('#side-bar-toggle-text-btn');
     if (toggleSideBarTextButton !== null) {
-        toggleSideBarTextButton.addEventListener('click', () => { toggleSidebarText(); });
+        toggleSideBarTextButton.removeEventListener('click', toggleSidebarText);
+        toggleSideBarTextButton.addEventListener('click', toggleSidebarText);
     }
     const toggleSideBarButton = document.querySelector('#side-bar-toggle-btn');
     if (toggleSideBarButton !== null) {
-        toggleSideBarButton.addEventListener('click', () => { toggleSideBar(); });
+        toggleSideBarButton.removeEventListener('click', toggleSideBar);
+        toggleSideBarButton.addEventListener('click', toggleSideBar);
     }
     window.onresize = setSideBarPosition;
 }

@@ -24,8 +24,12 @@
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container-wide">
-            <h2 class="col-12">@ViewData["Title"]</h2>
-            <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.TodoItemId"><span>×</span></button>
+            <div class="row sticky-top m-0 item-details-header">
+                <div class="col-12 bg-add-item-header">
+                    <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                    <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.TodoItemId"><span>×</span></button>
+                </div>
+            </div>
             <div class="space-20"></div>
             <form id="save-item-form" asp-action="EditTodo" asp-controller="Todos" role="form" method="post">
                 @if (Model.ProgenyList.Count > 1)
@@ -50,7 +54,7 @@
                 <div class="form-group">
                     <label asp-for="TodoItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="todo-title-input" asp-for="TodoItem.Title" class="form-control" value="@Model.TodoItem.Title" />
+                        <input id="todo-title-input" asp-for="TodoItem.Title" class="form-control" value="@Model.TodoItem.Title"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -120,7 +124,7 @@
                 <div class="form-group">
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Locations, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="location-input" type="text" asp-for="TodoItem.Location" value="@Model.TodoItem.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
+                        <input id="location-input" type="text" asp-for="TodoItem.Location" value="@Model.TodoItem.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -135,7 +139,7 @@
                         <textarea rows="4" asp-for="TodoItem.Notes" class="form-control">@Model.TodoItem.Notes</textarea>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label asp-for="TodoItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
                     <div class="col-auto">
@@ -144,7 +148,7 @@
                 </div>
                 <div class="space-20"></div>
                 <input asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId" type="hidden"/>
-                <input asp-for="TodoItem.ParentTodoItemId" value="@Model.TodoItem.ParentTodoItemId" type="hidden" />
+                <input asp-for="TodoItem.ParentTodoItemId" value="@Model.TodoItem.ParentTodoItemId" type="hidden"/>
                 <input asp-for="TodoItem.CreatedBy" value="@Model.TodoItem.CreatedBy" type="hidden"/>
                 <div class="form-group">
                     <div class="col-auto control-label"></div>

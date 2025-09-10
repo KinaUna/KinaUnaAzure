@@ -187,12 +187,14 @@ function highlightActivePageIcon(): void {
 function addSidebarEventListeners(): void {
     const toggleSideBarTextButton = document.querySelector<HTMLButtonElement>('#side-bar-toggle-text-btn');
     if (toggleSideBarTextButton !== null) {
-        toggleSideBarTextButton.addEventListener('click', () => { toggleSidebarText(); });
+        toggleSideBarTextButton.removeEventListener('click', toggleSidebarText);
+        toggleSideBarTextButton.addEventListener('click', toggleSidebarText);
     }
 
     const toggleSideBarButton = document.querySelector<HTMLButtonElement>('#side-bar-toggle-btn');
     if (toggleSideBarButton !== null) {
-        toggleSideBarButton.addEventListener('click', () => { toggleSideBar(); });
+        toggleSideBarButton.removeEventListener('click', toggleSideBar);
+        toggleSideBarButton.addEventListener('click', toggleSideBar);
     }
 
     window.onresize = setSideBarPosition;

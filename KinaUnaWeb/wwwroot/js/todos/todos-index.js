@@ -51,6 +51,9 @@ function setTodosPageParametersFromPageData() {
 async function getTodos() {
     startLoadingSpinner();
     moreTodoItemsButton?.classList.add('d-none');
+    if (todosPageParameters.currentPageNumber < 1) {
+        todosPageParameters.currentPageNumber = 1;
+    }
     const getMoreTodosResponse = await fetch('/Todos/GetTodoItemsList', {
         method: 'POST',
         body: JSON.stringify(todosPageParameters),
@@ -89,6 +92,7 @@ async function getTodos() {
     });
 }
 async function refreshTodos(changedTodoId) {
+    console.log('todos-index: refreshTodos');
     let tempPageNumber = todosPageParameters.currentPageNumber;
     todosPageParameters.currentPageNumber = 1;
     clearTodoItemsElements();
@@ -137,6 +141,7 @@ async function getTodoElement(id) {
  */
 function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
+        console.log('todos-index: progeniesChanged');
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             todosPageParameters.progenies = getSelectedProgenies();
@@ -148,6 +153,7 @@ function addSelectedProgeniesChangedEventListener() {
 function addTimelineChangedEventListener() {
     // Subscribe to the timelineChanged event to refresh the todos list when a todo is added, updated, or deleted.
     window.addEventListener('timelineChanged', async (event) => {
+        console.log('todos-index: timelineChanged');
         let changedItem = event.TimelineItem;
         if (changedItem !== null && changedItem.itemType === 15) { // 15 is the item type for todos.
             if (changedItem.itemId !== '') {
@@ -182,24 +188,18 @@ function clearTodoItemsElements() {
 /**
  * Updates parameters sort value, sets the sort buttons to show the ascending button as active, and the descending button as inactive.
  */
-async function sortTodosAscending() {
+function sortTodosAscending() {
     sortAscendingSettingsButton?.classList.add('active');
     sortDescendingSettingsButton?.classList.remove('active');
     todosPageParameters.sort = 0;
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
 }
 /**
  * Updates parameters sort value, sets the sort buttons to show the descending button as active, and the ascending button as inactive.
  */
-async function sortTodosDescending() {
+function sortTodosDescending() {
     sortDescendingSettingsButton?.classList.add('active');
     sortAscendingSettingsButton?.classList.remove('active');
     todosPageParameters.sort = 1;
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
 }
 /**
  * Decreases the number of todo items displayed per page.
@@ -795,6 +795,7 @@ async function saveTodosPageSettings() {
     SettingsHelper.toggleShowPageSettings();
     clearTodoItemsElements();
     updateSettingsNotificationDiv();
+    console.log('saveTodosPageSettings');
     await getTodos();
     return new Promise(function (resolve, reject) {
         resolve();
@@ -803,7 +804,9 @@ async function saveTodosPageSettings() {
 /** Initializes the Todos page by setting up event listeners and fetching initial data.
  * This function is called when the DOM content is fully loaded.
  */
-document.addEventListener('DOMContentLoaded', async function () {
+async function onDomContentLoaded(event) {
+    console.log('todos-index.ts: DOMContentLoaded');
+    console.log(event);
     await showPopupAtLoad(pageModels.TimeLineType.TodoItem);
     setTodosPageParametersFromPageData();
     loadTodosPageSettings();
@@ -813,14 +816,17 @@ document.addEventListener('DOMContentLoaded', async function () {
     moreTodoItemsButton = document.querySelector('#more-todo-items-button');
     if (moreTodoItemsButton !== null) {
         moreTodoItemsButton.addEventListener('click', async () => {
-            getTodos();
+            console.log('moreTodoItemsButton');
+            await getTodos();
         });
     }
     SettingsHelper.initPageSettings();
-    initialSettingsPanelSetup();
-    getTodos();
+    await initialSettingsPanelSetup();
+    await getTodos();
     return new Promise(function (resolve, reject) {
         resolve();
     });
-});
+}
+document.removeEventListener('DOMContentLoaded', onDomContentLoaded);
+document.addEventListener('DOMContentLoaded', onDomContentLoaded);
 //# sourceMappingURL=todos-index.js.map

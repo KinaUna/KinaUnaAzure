@@ -18,7 +18,9 @@ namespace KinaUnaWeb.Controllers
         IViewModelSetupService viewModelSetupService,
         IKanbanBoardsHttpClient kanbanBoardsHttpClient,
         IUserInfosHttpClient userInfosHttpClient,
-        IProgenyHttpClient progenyHttpClient) : Controller
+        IProgenyHttpClient progenyHttpClient,
+        IKanbanItemsHttpClient kanbanItemsHttpClient,
+        ITodoItemsHttpClient todoItemsHttpClient) : Controller
     {
         [AllowAnonymous]
         [HttpGet]
@@ -211,6 +213,8 @@ namespace KinaUnaWeb.Controllers
             {
                 model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
                 model.SetProgenyList();
+                model.KanbanBoard.Progeny = model.CurrentProgeny;
+                model.KanbanBoard.Progeny.PictureLink = model.KanbanBoard.Progeny.GetProfilePictureUrl();
             }
 
             model.SetPropertiesFromKanbanBoard(kanbanBoard);
@@ -291,6 +295,9 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
+            model.KanbanBoard.Progeny = model.CurrentProgeny;
+            model.KanbanBoard.Progeny.PictureLink = model.KanbanBoard.Progeny.GetProfilePictureUrl();
+
             model.SetPropertiesFromKanbanBoard(kanbanBoard);
 
             return PartialView("_DeleteKanbanBoardPartial", model);
@@ -313,8 +320,17 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_NotFoundPartial");
             }
 
-            
+            if (model.DeleteTodoItems)
+            {
+                List<KanbanItem> kanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForBoard(model.KanbanBoard.KanbanBoardId);
+                foreach (KanbanItem kanbanItem in kanbanItems)
+                {
+                    await todoItemsHttpClient.DeleteTodoItem(kanbanItem.TodoItemId);
+                }
+            }
+
             KanbanBoard deletedKanbanBoard = await kanbanBoardsHttpClient.DeleteKanbanBoard(existingKanbanBoard, false);
+            
             return Json(deletedKanbanBoard);
         }
 
@@ -336,6 +352,8 @@ namespace KinaUnaWeb.Controllers
             {
                 model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
                 model.SetProgenyList();
+                model.KanbanBoard.Progeny = model.CurrentProgeny;
+                model.KanbanBoard.Progeny.PictureLink = model.KanbanBoard.Progeny.GetProfilePictureUrl();
             }
 
             model.SetAccessLevelList();
@@ -354,12 +372,46 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_AccessDeniedPartial");
             }
+            int originalKanbanBoardId = model.KanbanBoard.KanbanBoardId;
 
             KanbanBoard copiedKanbanBoard = model.CreateKanbanBoard();
 
             model.KanbanBoard = await kanbanBoardsHttpClient.AddKanbanBoard(copiedKanbanBoard);
 
-            // Todo: Check access level for each KanbanItem/TodoItem and copy only those the user has access to.
+            // Copy the Kanban Items, if CopyTodoItemsOption is 0 (Deep copy) or 1 (Shallow copy).
+            if (model.CopyTodoItemsOption < 2)
+            {
+                List<KanbanItem> kanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForBoard(originalKanbanBoardId);
+                foreach (KanbanItem kanbanItem in kanbanItems)
+                {
+                    // If CopyTodoItemsOption is 0, we need to create a new TodoItem for each KanbanItem.
+                    if (model.CopyTodoItemsOption == 0)
+                    {
+                        TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(kanbanItem.TodoItemId);
+                        todoItem.TodoItemId = 0;
+                        todoItem.UId = Guid.NewGuid().ToString();
+                        todoItem.CreatedBy = model.CurrentUser.UserId;
+                        todoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        todoItem.ModifiedBy = model.CurrentUser.UserId;
+                        todoItem.ModifiedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        todoItem.ProgenyId = model.KanbanBoard.ProgenyId;
+                        TodoItem newTodoItem = await todoItemsHttpClient.AddTodoItem(todoItem);
+                        kanbanItem.TodoItemId = newTodoItem.TodoItemId;
+                    }
+
+                    kanbanItem.KanbanItemId = 0;
+                    kanbanItem.KanbanBoardId = model.KanbanBoard.KanbanBoardId;
+                    kanbanItem.CreatedBy = model.CurrentUser.UserId;
+                    kanbanItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                    kanbanItem.ModifiedBy = model.CurrentUser.UserId;
+                    kanbanItem.ModifiedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                    kanbanItem.UId = Guid.NewGuid().ToString();
+
+
+                    await kanbanItemsHttpClient.AddKanbanItem(kanbanItem);
+                }
+            }
+            
 
             return PartialView("_KanbanBoardCopiedPartial", model);
         }

@@ -280,6 +280,7 @@ namespace KinaUnaWeb.Controllers
                 model.SetProgenyList();
                 model.KanbanItem.TodoItem = await todoItemsHttpClient.GetTodoItem(model.KanbanItem.TodoItemId);
                 model.KanbanItem.TodoItem.Progeny = model.CurrentProgeny;
+                model.KanbanItem.TodoItem.Progeny.PictureLink = model.KanbanItem.TodoItem.Progeny.GetProfilePictureUrl();
             }
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))

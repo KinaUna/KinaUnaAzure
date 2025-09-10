@@ -22,6 +22,7 @@ import { popupTodoItem } from "../todos/todo-details.js";
 import { initializeAddEditKanbanBoard } from "../kanbans/add-edit-kanban-board.js";
 import { dispatchKanbanBoardChangedEvent, popupKanbanBoard } from "../kanbans/kanban-board-details.js";
 import { editKanbanItemFunction, removeKanbanItemFunction } from "../kanbans/kanban-items.js";
+import { refreshSubtasks } from "../todos/subtasks.js";
 
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
@@ -689,8 +690,11 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
                 }
 
                 if (formAction.includes('/Subtasks/')) {
+                    console.log('returnItemId: ' + returnItemId);
                     await popupTodoItem(returnItemId);
-                    return;
+                    return new Promise<void>(function (resolve, reject) {
+                        resolve();
+                    });
                 }
 
                 if (formAction.includes('/Kanbans/')) {
@@ -698,7 +702,16 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
                     returnItemId = updatedKanbanBoard.kanbanBoardId.toString();
                     dispatchKanbanBoardChangedEvent(returnItemId);
                     await popupKanbanBoard(returnItemId);
-                    return;
+                    return new Promise<void>(function (resolve, reject) {
+                        resolve();
+                    });
+                }
+
+                if (formAction.includes('/DeleteTodo')) {
+                    // Todo: reload the todos list.
+                    return new Promise<void>(function (resolve, reject) {
+                        resolve();
+                    });
                 }
 
                 if (itemDetailsPopupDiv) {
@@ -713,7 +726,10 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
                     setEditItemButtonEventListeners();
                     setAddItemButtonEventListeners();
                     dispatchTimelineItemChangedEvent();
-                }              
+                }
+                return new Promise<void>(function (resolve, reject) {
+                    resolve();
+                });
             }
         }).catch(function (error) {
             console.error('Error saving item:', error);
@@ -731,6 +747,7 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
  * This is used to notify other parts of the application that a timeline item has changed.
  */
 function dispatchTimelineItemChangedEvent(): void {
+    console.log('dispatchTimelineItemChangedEvent');
     const timelineUpdateDataDiv = document.querySelector<HTMLDivElement>('#timeline-update-data-div');
     if (timelineUpdateDataDiv === null) {
         // If the timeline update div is not found, do not dispatch the event.

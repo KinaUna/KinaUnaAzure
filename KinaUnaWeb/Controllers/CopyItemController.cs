@@ -78,7 +78,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("CopyTodo", "Todos", new { itemId });
             }
 
-            if (itemType == "kanban")
+            if (itemType == "kanbanboard")
             {
                 return RedirectToAction("CopyKanbanBoard", "Kanbans", new { itemId });
             }

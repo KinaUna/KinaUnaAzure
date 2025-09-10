@@ -371,7 +371,6 @@ async function onSetAsCancelledButtonClicked(event: MouseEvent): Promise<void> {
 }
 
 export async function displayKanbanItemDetails(kanbanItemId: string, container: string): Promise<void> {
-    console.log('displayKanbanItemDetails, container:' + container);
     let kanbanItem: KanbanItem;
     const url = '/KanbanItems/GetKanbanItem?kanbanItemId=' + kanbanItemId;
     await fetch(url, {
