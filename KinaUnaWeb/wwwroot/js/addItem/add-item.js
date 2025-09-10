@@ -570,15 +570,16 @@ async function onSaveItemFormSubmit(event) {
             returnItemId = parentTodoItemIdInput.value;
         }
     }
-    if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.innerHTML = '';
-    }
     if (formAction) {
         await fetch(formAction, {
             method: 'POST',
             body: formData
         }).then(async function (response) {
             if (response.ok) {
+                dispatchTimelineItemChangedEvent();
+                if (itemDetailsPopupDiv) {
+                    itemDetailsPopupDiv.innerHTML = '';
+                }
                 if (formAction.includes('/Calendar/')) {
                     const calendarDataChangedEvent = new Event('calendarDataChanged');
                     window.dispatchEvent(calendarDataChangedEvent);
@@ -616,7 +617,6 @@ async function onSaveItemFormSubmit(event) {
                     addCloseButtonEventListener();
                     setEditItemButtonEventListeners();
                     setAddItemButtonEventListeners();
-                    dispatchTimelineItemChangedEvent();
                 }
                 return new Promise(function (resolve, reject) {
                     resolve();

@@ -655,6 +655,7 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
     let itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
     if (itemDetailsPopupDiv) {
         itemDetailsPopupDiv.classList.add('d-none');
+        
     }
     let addItemForm = document.querySelector<HTMLFormElement>('#save-item-form');
     
@@ -674,16 +675,16 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
         }
     }
     
-    if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.innerHTML = '';
-    }
-
     if (formAction) {
         await fetch(formAction, {
             method: 'POST',
             body: formData
         }).then(async function (response) {
             if (response.ok) {
+                dispatchTimelineItemChangedEvent();
+                if (itemDetailsPopupDiv) {
+                    itemDetailsPopupDiv.innerHTML = '';
+                }
                 if (formAction.includes('/Calendar/')){
                     const calendarDataChangedEvent = new Event('calendarDataChanged');
                     window.dispatchEvent(calendarDataChangedEvent);
@@ -725,7 +726,6 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
                     addCloseButtonEventListener();
                     setEditItemButtonEventListeners();
                     setAddItemButtonEventListeners();
-                    dispatchTimelineItemChangedEvent();
                 }
                 return new Promise<void>(function (resolve, reject) {
                     resolve();
