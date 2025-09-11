@@ -661,7 +661,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
         }
 
         [Fact]
-        public async Task DeleteSubtask_Post_Should_Delete_Subtask_And_Return_PartialView()
+        public async Task DeleteSubtask_Post_Should_Delete_Subtask_And_Return_Json()
         {
             // Arrange
             TodoViewModel model = CreateMockTodoViewModelUserIsAdmin();
@@ -683,8 +683,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
             IActionResult result = await _controller.DeleteSubtask(model);
 
             // Assert
-            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-            Assert.Equal("../Todos/_TodoDetailsPartial", partialViewResult.ViewName);
+            Assert.IsType<JsonResult>(result);
             
             _mockSubtasksHttpClient.Verify(x => x.DeleteSubtask(TestSubtaskId), Times.Once);
         }

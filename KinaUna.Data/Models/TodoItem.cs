@@ -112,5 +112,10 @@ namespace KinaUna.Data.Models
         [NotMapped]
         public Progeny Progeny { get; set; } = new Progeny();
 
+        [NotMapped]
+        public int SubtaskCount { get; set; } = 0;
+        [NotMapped]
+        public int CompletedSubtaskCount { get; set; } = 0;
+
     }
 }

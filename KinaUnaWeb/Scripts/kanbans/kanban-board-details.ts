@@ -6,7 +6,7 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from "../navigation
 import { KanbanBoard, KanbanBoardColumn, KanbanItem, TimelineItem } from "../page-models-v9.js";
 import { getStatusIconForTodoItems } from "../todos/todo-details.js";
 import { initializeAddEditKanbanItem } from "./add-edit-kanban-item.js";
-import { addCardDividerEventListeners, addCardEventListeners, createKanbanItemCardHTML } from "./kanban-cards.js";
+import { addCardDividerEventListeners, addCardEventListeners, createKanbanItemCardHTML, loadKanbanItemsTranslations } from "./kanban-cards.js";
 import { displayKanbanItemDetails, getAddKanbanItemForm, getEditKanbanItemForm, getKanbanItemsForBoard, getRemoveKanbanItemForm, updateKanbanItem } from "./kanban-items.js";
 
 let kanbanBoardMainDiv = document.querySelector<HTMLDivElement>('#kanban-board-main-div');
@@ -101,6 +101,7 @@ export async function popupKanbanBoard(kanbanBoardId: string): Promise<void> {
  */
 async function displayKanbanBoard(kanbanBoardId: string): Promise<void> {
     startLoadingItemsSpinner('kanban-board-main-div');
+    await loadKanbanItemsTranslations();
     addTimelineChangedEventListener();
     let url = '/Kanbans/ViewKanbanBoard?kanbanBoardId=' + kanbanBoardId + "&partialView=true";
     await fetch(url, {

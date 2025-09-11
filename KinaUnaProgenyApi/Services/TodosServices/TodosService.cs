@@ -1,4 +1,5 @@
 ﻿using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
 
 namespace KinaUnaProgenyApi.Services.TodosServices
 {
@@ -84,6 +84,9 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         public async Task<TodoItem> GetTodoItem(int id)
         {
             TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == id);
+            List<TodoItem> subtasks = [.. progenyDbContext.TodoItemsDb.AsNoTracking().Where(t => t.ParentTodoItemId == id)];
+            todoItem.SubtaskCount = subtasks.Count;
+            todoItem.CompletedSubtaskCount = subtasks.FindAll(s => s.Status >= (int)KinaUnaTypes.TodoStatusType.Completed).Count;
             
             return todoItem;
         }

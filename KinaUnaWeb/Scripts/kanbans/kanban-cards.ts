@@ -12,7 +12,7 @@ let moveLeftString = '';
 let moveRightString = '';
 let removeCardString = '';
 
-async function loadKanbanItemsTranslations(): Promise<void> {
+export async function loadKanbanItemsTranslations(): Promise<void> {
     if (moveUpString === '') {
         moveUpString = await getTranslation('Move up', 'Todos', getCurrentLanguageId());
     }
@@ -40,13 +40,16 @@ export function createKanbanItemCardHTML(kanbanItem: KanbanItem):HTMLDivElement 
         return cardDiv;
     }
 
-    loadKanbanItemsTranslations();
-
+    let subtasksCountSpanClass = 'd-none';
+    if (kanbanItem.todoItem.subtaskCount > 0) {
+        subtasksCountSpanClass = 'text-appendage-light ml-2';
+    }
+    
+    
     cardDiv.classList.add('kanban-card');
     cardDiv.setAttribute('data-kanban-item-id', kanbanItem.kanbanItemId.toString());
     cardDiv.setAttribute('data-column-id', kanbanItem.columnId.toString());
-    cardDiv.innerHTML = `
-                            <div class="kanban-card-header">
+    cardDiv.innerHTML = `<div class="kanban-card-header">
                                 <div>
                                     <img src="${kanbanItem.todoItem.progeny.pictureLink}" class="kanban-card-profile-picture float-right" />
 
@@ -64,11 +67,10 @@ export function createKanbanItemCardHTML(kanbanItem: KanbanItem):HTMLDivElement 
                                     </div>
                                 </div>
                                     ${kanbanItem.todoItem.title}
+                                    <span class="${subtasksCountSpanClass}">[${kanbanItem.todoItem.completedSubtaskCount}/${kanbanItem.todoItem.subtaskCount}]</span>
                                 </div>
-                                
-                            </div>
-                        `; // Todo: Add profile picture, context, tags, etc.
-
+                            </div>`;
+    
     return cardDiv;
 }
 

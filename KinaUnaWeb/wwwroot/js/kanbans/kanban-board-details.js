@@ -5,7 +5,7 @@ import { getTranslation } from "../localization-v9.js";
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
 import { KanbanBoardColumn, TimelineItem } from "../page-models-v9.js";
 import { initializeAddEditKanbanItem } from "./add-edit-kanban-item.js";
-import { addCardDividerEventListeners, addCardEventListeners, createKanbanItemCardHTML } from "./kanban-cards.js";
+import { addCardDividerEventListeners, addCardEventListeners, createKanbanItemCardHTML, loadKanbanItemsTranslations } from "./kanban-cards.js";
 import { getAddKanbanItemForm, getKanbanItemsForBoard, updateKanbanItem } from "./kanban-items.js";
 let kanbanBoardMainDiv = document.querySelector('#kanban-board-main-div');
 let kanbanBoard;
@@ -88,6 +88,7 @@ export async function popupKanbanBoard(kanbanBoardId) {
  */
 async function displayKanbanBoard(kanbanBoardId) {
     startLoadingItemsSpinner('kanban-board-main-div');
+    await loadKanbanItemsTranslations();
     addTimelineChangedEventListener();
     let url = '/Kanbans/ViewKanbanBoard?kanbanBoardId=' + kanbanBoardId + "&partialView=true";
     await fetch(url, {

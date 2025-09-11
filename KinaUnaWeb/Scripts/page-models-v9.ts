@@ -565,6 +565,8 @@ export class TodoItem {
     modifiedTime: Date = new Date();
     isDeleted: boolean = false;
     progeny: Progeny = new Progeny();
+    subtaskCount: number = 0;
+    completedSubtaskCount = 0;
 }
 
 export class KanbanBoardsPageParameters implements BasePageParameters {

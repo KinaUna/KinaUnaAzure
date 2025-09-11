@@ -615,6 +615,8 @@ export class TodoItem {
         this.modifiedTime = new Date();
         this.isDeleted = false;
         this.progeny = new Progeny();
+        this.subtaskCount = 0;
+        this.completedSubtaskCount = 0;
     }
 }
 export class KanbanBoardsPageParameters {

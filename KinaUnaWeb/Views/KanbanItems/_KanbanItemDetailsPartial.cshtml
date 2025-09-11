@@ -153,6 +153,10 @@
                 <div class="row text-white">
                     <div class="col-12 text-white-75">
                         @await LocaleManager.GetTranslation("Subtasks", PageNames.Todos, Model.LanguageId)
+                        @if (Model.KanbanItem.TodoItem.SubtaskCount != 0)
+                        {
+                            <span class="text-appendage-light ml-2"> [@Model.KanbanItem.TodoItem.CompletedSubtaskCount / @Model.KanbanItem.TodoItem.SubtaskCount]</span>
+                        }
                     </div>
                 </div>
                 <div class="space-10"></div>
@@ -162,7 +166,7 @@
                         <div class="col-12">
                             <form id="add-subtask-inline-form" asp-controller="Subtasks" asp-action="AddSubtaskInline">
                                 <div class="form-group">
-                                    <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control w-75"
+                                    <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control"
                                            style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
                                     <button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
                                 </div>

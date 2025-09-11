@@ -153,6 +153,10 @@
                 <div class="row text-white">
                     <div class="col-12 text-white-75">
                         @await LocaleManager.GetTranslation("Subtasks", PageNames.Todos, Model.LanguageId)
+                        @if (Model.TodoItem.SubtaskCount != 0)
+                        {
+                            <span class="text-appendage-light ml-2"> [@Model.TodoItem.CompletedSubtaskCount / @Model.TodoItem.SubtaskCount]</span>
+                        }
                     </div>
                 </div>
                 <div class="space-10"></div>

@@ -13,7 +13,16 @@
         <div class="card-header rounded w-100 p-0 pt-2" style="padding-right: 5px; margin-bottom: 0;">
             <div class="row">
                 <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;" />
-                <div class="col-auto card-title text-left"><span class="pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">fact_check</i> </span><span class="h5">@Model.TodoItem.Title</span></div>
+                <div class="col-auto card-title text-left">
+                    <span class="pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">fact_check</i> </span>
+                    <span class="h5">
+                        @Model.TodoItem.Title
+                        @if (Model.TodoItem.SubtaskCount != 0)
+                        {
+                            <span class="text-appendage-light ml-2"> [@Model.TodoItem.CompletedSubtaskCount / @Model.TodoItem.SubtaskCount]</span>
+                        }
+                    </span>
+                </div>
                 @if (!string.IsNullOrEmpty(Model.TodoItem.Tags) || !string.IsNullOrEmpty(Model.TodoItem.Context))
                 {
                     <div class="col mr-5">

@@ -96,7 +96,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             TodoItem result = await todosService.GetTodoItem(id);
             if (result == null) return NotFound();
-
+            
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(result.ProgenyId, userEmail, result.AccessLevel);
 

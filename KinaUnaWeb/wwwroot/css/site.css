@@ -727,9 +727,9 @@ to {
 
 .btn.btn-add-note {
     color: #fff;
-    background: #507832;
-    background: linear-gradient(60deg, #507832, #306822);
-    border-color: #507832;
+    background: #757365;
+    background: linear-gradient(60deg, #757365, #636555);
+    border-color: #757365;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -1524,8 +1524,8 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 
 .bg-notes {
     color: #fff;
-    background: #507832;
-    background: linear-gradient(60deg, #507832, #306822);
+    background: #757365;
+    background: linear-gradient(60deg, #757365, #636555);
 }
 
 .bg-photo {
@@ -1590,11 +1590,11 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 }
 
 .bg-display-rich-text {
-    background: #ffffff33;
+    background: #ffffff10;
 }
 
 .bg-display-rich-text-dark {
-    background: #00000033;
+    background: #00000010;
 }
 
 .img-thumbnail {
@@ -3504,6 +3504,16 @@ noUi-handle:after, .noUi-handle:before {
     color: rgba(255, 255, 255, .75) !important;
 }
 
+.text-appendage-light {
+    color: #ffffffa8 !important;
+    font-size: smaller;
+}
+
+.text-appendage-dark {
+    color: #000000a8 !important;
+    font-size: smaller;
+}
+
 .calendar-event-popup-label {
     color: #ffbb92;
 }
@@ -3861,6 +3871,8 @@ noUi-handle:after, .noUi-handle:before {
 .kanban-board {
     width: 100%;
     overflow-x: auto;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 .kanban-board-container {

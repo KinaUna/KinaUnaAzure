@@ -17,7 +17,7 @@ import { popupVideoDetails } from "../videos/video-details.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
 import { initializeAddEditTodo } from "../todos/add-edit-todo.js";
 import { TimelineChangedEvent } from "../data-tools-v9.js";
-import { KanbanBoard, TimelineItem } from "../page-models-v9.js";
+import { KanbanBoard, TimelineItem, TimeLineType, TodoItem } from "../page-models-v9.js";
 import { popupTodoItem } from "../todos/todo-details.js";
 import { initializeAddEditKanbanBoard } from "../kanbans/add-edit-kanban-board.js";
 import { dispatchKanbanBoardChangedEvent, popupKanbanBoard } from "../kanbans/kanban-board-details.js";
@@ -691,7 +691,7 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
                 }
 
                 if (formAction.includes('/Subtasks/')) {
-                    console.log('returnItemId: ' + returnItemId);
+                    dispatchTimelineItemChangedEvent(TimeLineType.TodoItem.toString(), returnItemId);
                     await popupTodoItem(returnItemId);
                     return new Promise<void>(function (resolve, reject) {
                         resolve();
@@ -710,6 +710,8 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
 
                 if (formAction.includes('/DeleteTodo')) {
                     // Todo: reload the todos list.
+                    let todoItem = await response.json() as TodoItem;
+                    dispatchTimelineItemChangedEvent(TimeLineType.TodoItem.toString(), todoItem.todoItemId.toString());
                     return new Promise<void>(function (resolve, reject) {
                         resolve();
                     });
@@ -746,30 +748,39 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
  * Dispatches a TimelineItemChangedEvent if the timeline update div has the necessary attributes.
  * This is used to notify other parts of the application that a timeline item has changed.
  */
-function dispatchTimelineItemChangedEvent(): void {
-    console.log('dispatchTimelineItemChangedEvent');
-    const timelineUpdateDataDiv = document.querySelector<HTMLDivElement>('#timeline-update-data-div');
-    if (timelineUpdateDataDiv === null) {
-        // If the timeline update div is not found, do not dispatch the event.
-        return;
-    }
+function dispatchTimelineItemChangedEvent(itemType: string = '', itemId: string = ''): void {
+    let changedItemType: string | null = '';
+    let changedItemItemId: string | null = '';
 
-    let changedItemType = timelineUpdateDataDiv.getAttribute('data-changed-item-type');
-    let changedItemItemId = timelineUpdateDataDiv.getAttribute('data-changed-item-item-id');
+    if (itemType !== '') {
+        changedItemType = itemType;
+        changedItemItemId = itemId;
+    }
+    else {
+        const timelineUpdateDataDiv = document.querySelector<HTMLDivElement>('#timeline-update-data-div');
+        if (timelineUpdateDataDiv === null) {
+            // If the timeline update div is not found, do not dispatch the event.
+            return;
+        }
 
-    if (changedItemType === null || changedItemItemId === null) {
-        // If the item type or item id is null, do not dispatch the event.
-        return;
-    }
+        changedItemType = timelineUpdateDataDiv.getAttribute('data-changed-item-type');
+        changedItemItemId = timelineUpdateDataDiv.getAttribute('data-changed-item-item-id');
 
-    if (changedItemType === '0' || changedItemItemId === '0') {
-        // If the item type or item id is 0, do not dispatch the event.
-        return;
+        if (changedItemType === null || changedItemItemId === null) {
+            // If the item type or item id is null, do not dispatch the event.
+            return;
+        }
+
+        if (changedItemType === '0' || changedItemItemId === '0') {
+            // If the item type or item id is 0, do not dispatch the event.
+            return;
+        }
+        if (isNaN(parseInt(changedItemType)) || isNaN(parseInt(changedItemItemId))) {
+            // If the item type or item id is not a number, do not dispatch the event.
+            return;
+        }
     }
-    if (isNaN(parseInt(changedItemType)) || isNaN(parseInt(changedItemItemId))) {
-        // If the item type or item id is not a number, do not dispatch the event.
-        return;
-    }
+    
 
     const timelineItem = new TimelineItem();
     timelineItem.itemType = parseInt(changedItemType);
