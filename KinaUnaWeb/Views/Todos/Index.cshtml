@@ -23,10 +23,10 @@
     <div class="row">
         <div class="col-12">
             <div class="page-tab-container">
-                <div class="page-tab active" id="page-title-div"><a class="btn-page-tab active" asp-controller="Todos" asp-action="Index">
+                <div class="page-tab active" id="page-title-div"><a class="btn-page-tab active leave-page" asp-controller="Todos" asp-action="Index">
                     <i class="material-icons sidebar-icon">fact_check</i>@ViewData["Title"]
                 </a></div>
-                <div class="page-tab"><a class="btn-page-tab" asp-controller="Kanbans" asp-action="Index">
+                <div class="page-tab"><a class="btn-page-tab leave-page" asp-controller="Kanbans" asp-action="Index">
                     <i class="material-icons sidebar-icon">view_kanban</i> @await LocaleManager.GetTranslation("Kanban boards", PageNames.Todos, Model.LanguageId)
                 </a></div>
             </div>

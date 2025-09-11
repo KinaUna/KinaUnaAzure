@@ -2479,6 +2479,14 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     .mb-xxl-6 {
         margin-bottom: 4rem !important;
     }
+
+    .d-xxl-none {
+        display: none !important;
+    }
+
+    .d-xxl-inline-block {
+        display: inline-block !important;
+    }
 }
 
 @media (min-width: 1600px) {
@@ -2552,6 +2560,14 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
         -ms-flex: 0 0 100%;
         flex: 0 0 100%;
         max-width: 100%;
+    }
+
+    .d-xxxl-none {
+        display: none !important;
+    }
+
+    .d-xxxl-inline-block {
+        display: inline-block !important;
     }
 }
 
@@ -3884,7 +3900,7 @@ noUi-handle:after, .noUi-handle:before {
     flex-direction: column;
     gap: 0;
     padding: 0;
-    min-height: 400px;
+    min-height: 450px;
 }
 
 @media (min-width: 576px) {
