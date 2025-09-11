@@ -39,11 +39,17 @@
                     </a>
                 </div>
             }
-            <div class="btn-group" style="float: right; clear: right">
-                <a asp-controller="Sleep" asp-action="SleepCalendar" asp-route-childId="@Model.CurrentProgenyId" class="btn btn-primary leave-page">
-                    <i class="far fa-calendar-alt"></i> @await LocaleManager.GetTranslation("View sleep calendar", PageNames.Sleep, Model.LanguageId)
-                </a>
+            <div class="page-tab-container">
+                <div class="page-tab active" id="page-title-div"><a class="btn-page-tab active" asp-controller="Sleep" asp-action="Index" asp-route-childId="@Model.CurrentProgenyId">
+                    <i class="material-icons sidebar-icon">hotel</i>@sleepString
+                </a></div>
+                <div class="page-tab">
+                    <a class="btn-page-tab" asp-controller="Sleep" asp-action="SleepCalendar" asp-route-childId="@Model.CurrentProgenyId">
+                        <i class="far fa-calendar-alt"></i> @await LocaleManager.GetTranslation("View sleep calendar", PageNames.Sleep, Model.LanguageId)
+                    </a>
+                </div>
             </div>
+            <div class="space-20"></div>
             <h2>@ViewData["Title"]</h2>
         </div>
         <div class="table-responsive">
