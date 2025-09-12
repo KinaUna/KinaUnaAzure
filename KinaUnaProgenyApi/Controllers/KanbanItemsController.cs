@@ -108,6 +108,31 @@ namespace KinaUnaProgenyApi.Controllers
             return accessLevelResult.ToActionResult();
         }
 
+        [HttpGet]
+        [Route("[action]/{todoItemId:int}/{includeDeleted:bool}")]
+        public async Task<IActionResult> GetKanbanItemsForTodoItem(int todoItemId, bool includeDeleted = false)
+        {
+            TodoItem todoItem = await todosService.GetTodoItem(todoItemId);
+            if (todoItem == null)
+            {
+                return NotFound();
+            }
+
+            if (todoItem.ProgenyId == 0)
+            {
+                return BadRequest("The Todo item is not linked to a valid Progeny.");
+            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(todoItem.ProgenyId, userEmail, todoItem.AccessLevel);
+            if (accessLevelResult.IsSuccess)
+            {
+                List<KanbanItem> kanbanItems = await kanbanItemsService.GetKanbanItemsForTodoItem(todoItemId, includeDeleted);
+                return Ok(kanbanItems);
+            }
+            return accessLevelResult.ToActionResult();
+
+        }
+
         /// <summary>
         /// Creates a new Kanban item and associates it with an existing Todo item.
         /// </summary>

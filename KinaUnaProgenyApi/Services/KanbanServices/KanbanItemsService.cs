@@ -5,6 +5,7 @@ using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services.TodosServices;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using KinaUna.Data.Extensions;
 
 namespace KinaUnaProgenyApi.Services.KanbanServices
 {
@@ -39,6 +40,16 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// <returns>The added <see cref="KanbanItem"/> with its unique identifier assigned. Does not include the associated TodoItem.</returns>
         public async Task<KanbanItem> AddKanbanItem(KanbanItem kanbanItem)
         {
+            KanbanBoard kanbanBoard = await progenyDbContext.KanbanBoardsDb.SingleOrDefaultAsync(k => k.KanbanBoardId == kanbanItem.KanbanBoardId);
+            if (kanbanBoard == null)
+            {
+                return new KanbanItem();
+            }
+            kanbanBoard.SetColumnsListFromColumns();
+            if (!kanbanBoard.ColumnsList.Exists(k => k.Id == kanbanItem.ColumnId))
+            {
+                kanbanItem.ColumnId = kanbanBoard.ColumnsList[0].Id;
+            }
             int kanbanItemsCount = await progenyDbContext.KanbanItemsDb.CountAsync(k => k.KanbanBoardId == kanbanItem.KanbanBoardId && k.ColumnId == kanbanItem.ColumnId);
             kanbanItem.RowIndex = kanbanItemsCount;
 
@@ -138,6 +149,22 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 }
 
                 kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId);
+                resultItems.Add(kanbanItem);
+            }
+
+            return resultItems;
+        }
+
+        public async Task<List<KanbanItem>> GetKanbanItemsForTodoItem(int todoItemId, bool includeDeleted = false)
+        {
+            List<KanbanItem> kanbanItems = await progenyDbContext.KanbanItemsDb.AsNoTracking().Where(ki => ki.TodoItemId == todoItemId).ToListAsync();
+            List<KanbanItem> resultItems = [];
+            foreach (KanbanItem kanbanItem in kanbanItems)
+            {
+                if (!includeDeleted && kanbanItem.IsDeleted)
+                {
+                    continue;
+                }
                 resultItems.Add(kanbanItem);
             }
 

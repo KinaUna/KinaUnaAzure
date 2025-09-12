@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUnaWeb.Models.TypeScriptModels.TodoItems;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -25,7 +26,9 @@ namespace KinaUnaWeb.Controllers
         IViewModelSetupService viewModelSetupService,
         IUserInfosHttpClient userInfosHttpClient,
         IProgenyHttpClient progenyHttpClient,
-        ISubtasksHttpClient subtasksHttpClient) : Controller
+        ISubtasksHttpClient subtasksHttpClient,
+        IKanbanItemsHttpClient kanbanItemsHttpClient,
+        IKanbanBoardsHttpClient kanbanBoardsHttpClient) : Controller
     {
         /// <summary>
         /// The Index Page for Todos.
@@ -193,6 +196,44 @@ namespace KinaUnaWeb.Controllers
             UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.TodoItem.CreatedBy);
             model.TodoItem.CreatedBy = todoUserInfo.FullName();
             model.SetStatusList(model.TodoItem.Status);
+            model.KanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForTodoItem(todoId);
+            foreach (KanbanItem kanbanItem in model.KanbanItems)
+            {
+                kanbanItem.KanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanItem.KanbanBoardId);
+            }
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+
+            List<int> progenyIds = [];
+            progenyIds.AddRange(model.ProgenyList.ConvertAll(p => int.Parse(p.Value)));
+            KanbanBoardsRequest kanbanBoardsRequest = new()
+            {
+                ProgenyIds = progenyIds,
+                IncludeDeleted = false,
+                Skip = 0,
+                NumberOfItems = 0 // Get all.
+            };
+            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
+            model.KanbanBoards = kanbanBoardsResponse.KanbanBoards;
+            model.KanbanBoardsList = new List<SelectListItem>();
+            foreach (KanbanBoard kanbanBoard in model.KanbanBoards)
+            {
+                // If there is a KanbanItem with the KanbanBoardId for this TodoItem already, don't include it.
+                if (model.KanbanItems.Exists(k => k.KanbanBoardId == kanbanBoard.KanbanBoardId))
+                {
+                    continue;
+                }
+
+                kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
+                SelectListItem item = new()
+                {
+                    Text = kanbanBoard.Title + " (" + kanbanBoard.Progeny.NickName + ")",
+                    Value = kanbanBoard.KanbanBoardId.ToString()
+                };
+                model.KanbanBoardsList.Add(item);
+            }
+
             if (partialView)
             {
                 return PartialView("_TodoDetailsPartial", model);

@@ -684,6 +684,7 @@ async function removeCard(kanbanItemId: string) {
 }
 
 async function copyCardToBoard(kanbanItemId: string) {
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

@@ -67,5 +67,6 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// cref="KanbanItem"/> objects associated with the specified Kanban board. Each item includes  its
         /// corresponding to-do item details.</returns>
         Task<List<KanbanItem>> GetKanbanItemsForBoard(int kanbanBoardId, bool includeDeleted = false);
+        Task<List<KanbanItem>> GetKanbanItemsForTodoItem(int todoItemId, bool includeDeleted = false);
     }
 }

@@ -108,6 +108,24 @@ namespace KinaUnaWeb.Services.HttpClients
             return kanbanItems;
         }
 
+        public async Task<List<KanbanItem>> GetKanbanItemsForTodoItem(int todoItemId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            List<KanbanItem> kanbanItems = [];
+            string kanbanItemsApiPath = "/api/KanbanItems/GetKanbanItemsForTodoItem/" + todoItemId + "/false";
+            HttpResponseMessage kanbanItemsResponse = await _httpClient.GetAsync(kanbanItemsApiPath).ConfigureAwait(false);
+            if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItems;
+
+            string kanbanItemsAsString = await kanbanItemsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            kanbanItems = JsonConvert.DeserializeObject<List<KanbanItem>>(kanbanItemsAsString);
+
+            return kanbanItems;
+        }
+
         public async Task<KanbanItem> UpdateKanbanItem(KanbanItem kanbanItem)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;

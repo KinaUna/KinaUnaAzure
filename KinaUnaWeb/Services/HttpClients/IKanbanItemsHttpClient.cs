@@ -9,6 +9,7 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<KanbanItem> DeleteKanbanItem(KanbanItem kanbanItem);
         Task<KanbanItem> GetKanbanItem(int kanbanItemId);
         Task<List<KanbanItem>> GetKanbanItemsForBoard(int kanbanBoardId);
+        Task<List<KanbanItem>> GetKanbanItemsForTodoItem(int todoItemId);
         Task<KanbanItem> UpdateKanbanItem(KanbanItem kanbanItem);
     }
 }

@@ -84,7 +84,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         public async Task<TodoItem> GetTodoItem(int id)
         {
             TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == id);
-            List<TodoItem> subtasks = [.. progenyDbContext.TodoItemsDb.AsNoTracking().Where(t => t.ParentTodoItemId == id)];
+            List<TodoItem> subtasks = [.. progenyDbContext.TodoItemsDb.AsNoTracking().Where(t => t.ParentTodoItemId == id && !t.IsDeleted)];
             todoItem.SubtaskCount = subtasks.Count;
             todoItem.CompletedSubtaskCount = subtasks.FindAll(s => s.Status >= (int)KinaUnaTypes.TodoStatusType.Completed).Count;
             

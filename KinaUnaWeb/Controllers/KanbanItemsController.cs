@@ -5,6 +5,7 @@ using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
@@ -94,6 +95,47 @@ namespace KinaUnaWeb.Controllers
 
             return Json(kanbanItems);
         }
+
+        public async Task<IActionResult> AddKanbanItemFromTodoItem([FromBody] KanbanItem kanbanItem)
+        {
+            TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(kanbanItem.TodoItemId);
+            if (todoItem == null || todoItem.TodoItemId == 0)
+            {
+                return Json(new KanbanItem());
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            KanbanItemViewModel model = new(baseModel);
+            List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            if (progAdminList.Count == 0)
+            {
+                return Json(new KanbanItem());
+            }
+
+            KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanItem.KanbanBoardId);
+            kanbanBoard.SetColumnsListFromColumns();
+            KanbanBoardColumn column = kanbanBoard.ColumnsList.SingleOrDefault(k => k.ColumnIndex == 0);
+            if (column != null)
+            {
+                kanbanItem.ColumnId = column.Id;
+
+            }
+
+            kanbanItem.RowIndex = -1;
+            kanbanItem.TodoItem = todoItem;
+            KanbanItem addedKanbanItem = await kanbanItemsHttpClient.AddKanbanItem(kanbanItem);
+            if (addedKanbanItem == null || addedKanbanItem.KanbanItemId == 0) return Json(new KanbanItem());
+            addedKanbanItem.TodoItem = todoItem;
+            addedKanbanItem.TodoItem.Progeny = await progenyHttpClient.GetProgeny(addedKanbanItem.TodoItem.ProgenyId);
+            if (addedKanbanItem.TodoItem.Progeny != null)
+            {
+                addedKanbanItem.TodoItem.Progeny.PictureLink = addedKanbanItem.TodoItem.Progeny.GetProfilePictureUrl();
+            }
+            UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(addedKanbanItem.TodoItem.CreatedBy);
+            addedKanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
+            return Json(addedKanbanItem);
+        }
+
 
         public async Task<IActionResult> AddKanbanItem(int kanbanBoardId, int columnId, int rowIndex)
         {

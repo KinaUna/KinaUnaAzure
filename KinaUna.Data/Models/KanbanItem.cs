@@ -81,5 +81,7 @@ namespace KinaUna.Data.Models
         /// storage.</remarks>
         [NotMapped]
         public TodoItem TodoItem { get; set; }
+        [NotMapped]
+        public KanbanBoard KanbanBoard { get; set; } = new KanbanBoard();
     }
 }

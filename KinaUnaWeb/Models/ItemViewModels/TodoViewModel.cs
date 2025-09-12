@@ -12,6 +12,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> StatusList { get; set; }
         public int CopyFromTodoId { get; set; } = 0;
         public bool CopySubtasks { get; set; } = false;
+        public List<KanbanItem> KanbanItems { get; set; } = [];
+        public List<KanbanBoard> KanbanBoards { get; set; } = [];
+        public List<SelectListItem> KanbanBoardsList { get; set; } = [];
         public TodoViewModel()
         {
             ProgenyList = [];

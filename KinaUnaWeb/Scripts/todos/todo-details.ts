@@ -2,7 +2,7 @@
 import { TimelineChangedEvent } from '../data-tools-v9.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
-import { SubtasksPageParameters, TimelineItem, TodoItem } from '../page-models-v9.js';
+import { KanbanItem, SubtasksPageParameters, TimelineItem, TodoItem } from '../page-models-v9.js';
 import { addSubtask, getSubtasks, refreshSubtasks } from './subtasks.js';
 
 let subtaskPageParameters: SubtasksPageParameters = new SubtasksPageParameters();
@@ -323,6 +323,54 @@ async function setTodoDetailsEventListeners(itemId: string, todoDetailsPopupDiv:
         addSubtaskInput.removeEventListener('keydown', addSubtaskInputKeydownAction);
         addSubtaskInput.addEventListener('keydown', addSubtaskInputKeydownAction);
     }
+
+    const addTodoItemToKanbanBoardButton = document.querySelector<HTMLButtonElement>('#add-todo-item-to-kanban-board-button');
+    if (addTodoItemToKanbanBoardButton) {
+        const addTodoItemToKanbanBoardAction = async function (event: MouseEvent) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            let kanbanBoardSelectList = document.querySelector<HTMLSelectElement>('#add-todo-item-to-kanban-board-select');
+            let kanbanBoardId = kanbanBoardSelectList ? parseInt(kanbanBoardSelectList.value) : 0;
+            if (kanbanBoardId !== 0) {
+                let kanbanItem = new KanbanItem();
+                kanbanItem.todoItemId = parseInt(itemId);
+                kanbanItem.columnId = 0; // Default to first column.
+                kanbanItem.rowIndex = 0; // Default to top position.
+                kanbanItem.kanbanBoardId = kanbanBoardId;
+                startFullPageSpinner();
+                let url = '/KanbanItems/AddKanbanItemFromTodoItem';
+                await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(kanbanItem)
+                }).then(async function (response) {
+                    if (response.ok) {
+                        stopFullPageSpinner();
+                        await displayTodoItem(itemId);
+                        return;
+                    } else {
+                        console.error('Error adding todo item to kanban board. Status: ' + response.status + ', Message: ' + response.statusText);
+                    }
+                }).catch(function (error) {
+                    console.error('Error adding todo item to kanban board. Error: ' + error);
+                });
+
+                stopFullPageSpinner();
+            }
+
+            return new Promise<void>(function (resolve, reject) {
+                resolve();
+            });
+            
+        }
+
+        addTodoItemToKanbanBoardButton.removeEventListener('click', addTodoItemToKanbanBoardAction);
+        addTodoItemToKanbanBoardButton.addEventListener('click', addTodoItemToKanbanBoardAction);
+    }
 }
 
 /**
@@ -356,6 +404,7 @@ async function displayTodoItem(todoId: string): Promise<void> {
                 setEditItemButtonEventListeners();
                 setDeleteItemButtonEventListeners();
                 await getSubtaskList(todoId);
+                ($(".selectpicker") as any).selectpicker('refresh');
                 
             }
         } else {
