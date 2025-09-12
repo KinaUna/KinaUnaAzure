@@ -579,7 +579,7 @@ function addColumnEventListeners() {
             column.setAttribute('draggable', 'true');
             const columnDragStartFunction = function (event) {
                 event.stopPropagation();
-                event.preventDefault();
+                //event.preventDefault();
                 if (event.dataTransfer !== null) {
                     event.dataTransfer.setData('column-id', column.dataset.columnId || '');
                     event.dataTransfer.setData('kanban-column', 'kanban-column');
@@ -779,6 +779,7 @@ const showColumnMenu = function (event) {
     const button = event.currentTarget;
     const columnId = button.dataset.columnId;
     hideColumnMenus(columnId);
+    hideCardMenus();
     if (columnId) {
         // Toggle d-none class of .kanban-column-menu-content
         const menuContentDiv = document.querySelector('.kanban-column-menu-content[data-column-id="' + columnId + '"]');
@@ -1022,7 +1023,7 @@ function hideSettingsModals() {
         });
     }
 }
-function hideColumnMenus(columnId = '') {
+export function hideColumnMenus(columnId = '') {
     const allColumnMenus = document.querySelectorAll('.kanban-column-menu-content');
     allColumnMenus.forEach((menu) => {
         const menuColumnId = menu.dataset.columnId;
@@ -1031,7 +1032,7 @@ function hideColumnMenus(columnId = '') {
         }
     });
 }
-function hideCardMenus(kanbanItemId = '') {
+export function hideCardMenus(kanbanItemId = '') {
     const allCardMenus = document.querySelectorAll('.kanban-card-menu-content');
     allCardMenus.forEach((menu) => {
         const menuKanbanItemId = menu.dataset.kanbanItemId;

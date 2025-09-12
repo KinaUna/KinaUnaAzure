@@ -3979,10 +3979,14 @@ noUi-handle:after, .noUi-handle:before {
     border: none;
     background: transparent;
     color: white;
+    padding: 0 10px;
+    border: solid 1px transparent;
+    border-radius: 8px;
 }
 
     .kanban-column-menu-button:hover {
         color: #ffef2f;
+        border: solid 1px;
     }
 
 .kanban-column-menu-item-button {
@@ -4006,6 +4010,7 @@ noUi-handle:after, .noUi-handle:before {
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
     right: 0;
+    border-radius: 10px;
 }
 
 .kanban-column-menu-content button {
@@ -4048,7 +4053,12 @@ noUi-handle:after, .noUi-handle:before {
     padding: 0.5rem;
     cursor: grab;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.24);
+    border: solid 1px transparent;
 }
+
+    .kanban-card:hover {
+        border: solid 1px #ffffaa;
+    }
 
 .kanban-card-dragging {
     opacity: 0.5;
@@ -4083,10 +4093,14 @@ noUi-handle:after, .noUi-handle:before {
     border: none;
     background: transparent;
     color: white;
+    padding: 0 10px;
+    border: solid 1px transparent;
+    border-radius: 8px;
 }
 
     .kanban-card-menu-button:hover {
         color: #ffef2f;
+        border: solid 1px;
     }
 
 .kanban-card-menu-item-button {
@@ -4106,10 +4120,11 @@ noUi-handle:after, .noUi-handle:before {
     position: absolute;
     background-color: #3e836f;
     min-width: 160px;
+    max-width: fit-content;
     overflow: auto;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
-    right: 0;
+    border-radius: 10px;
 }
 
     .kanban-card-menu-content button {

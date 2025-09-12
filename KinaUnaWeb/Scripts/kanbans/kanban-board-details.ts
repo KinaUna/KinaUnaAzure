@@ -653,7 +653,7 @@ function addColumnEventListeners(): void {
             column.setAttribute('draggable', 'true');
             const columnDragStartFunction = function (event: DragEvent) {
                 event.stopPropagation();
-                event.preventDefault();
+                //event.preventDefault();
                 if (event.dataTransfer !== null) {
                     event.dataTransfer.setData('column-id', column.dataset.columnId || '');
                     event.dataTransfer.setData('kanban-column', 'kanban-column');
@@ -755,7 +755,7 @@ function addColumnEventListeners(): void {
                     }
                 }
             }
-            event.dataTransfer!.dropEffect = 'move';
+            event.dataTransfer.dropEffect = 'move';
         }
         (event.currentTarget as HTMLDivElement).classList.add('kanban-column-drag-over');
     }
@@ -868,6 +868,7 @@ const showColumnMenu = function (event: MouseEvent): void {
     const button = event.currentTarget as HTMLButtonElement;
     const columnId = button.dataset.columnId;
     hideColumnMenus(columnId);
+    hideCardMenus();
     if (columnId) {
         // Toggle d-none class of .kanban-column-menu-content
         const menuContentDiv = document.querySelector<HTMLDivElement>('.kanban-column-menu-content[data-column-id="' + columnId + '"]');
@@ -1134,7 +1135,7 @@ function hideSettingsModals() {
     }
 }
 
-function hideColumnMenus(columnId: string = '') {
+export function hideColumnMenus(columnId: string = '') {
     const allColumnMenus = document.querySelectorAll<HTMLDivElement>('.kanban-column-menu-content');
     allColumnMenus.forEach((menu) => {
         const menuColumnId = menu.dataset.columnId;
@@ -1144,7 +1145,7 @@ function hideColumnMenus(columnId: string = '') {
     });
 }
 
-function hideCardMenus(kanbanItemId: string = '') {
+export function hideCardMenus(kanbanItemId: string = '') {
     const allCardMenus = document.querySelectorAll<HTMLDivElement>('.kanban-card-menu-content');
     allCardMenus.forEach((menu) => {
         const menuKanbanItemId = menu.dataset.kanbanItemId;

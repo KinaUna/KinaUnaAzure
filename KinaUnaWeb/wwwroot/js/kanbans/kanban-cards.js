@@ -1,13 +1,16 @@
 import { getCurrentLanguageId } from "../data-tools-v9.js";
 import { getTranslation } from "../localization-v9.js";
 import { getStatusIconForTodoItems } from "../todos/todo-details.js";
-import { getKanbanBoard, getKanbanItems, hideAllMenusAndModals, setKanbanItems, updateKanbanItemsInColumn } from "./kanban-board-details.js";
+import { getKanbanBoard, getKanbanItems, hideCardMenus, hideColumnMenus, setKanbanItems, updateKanbanItemsInColumn } from "./kanban-board-details.js";
 import { displayKanbanItemDetails, getRemoveKanbanItemForm } from "./kanban-items.js";
+let draggedCard = null;
 let moveUpString = '';
 let moveDownString = '';
 let moveLeftString = '';
 let moveRightString = '';
 let removeCardString = '';
+let copyToBoardString = '';
+let moveToBoardString = '';
 export async function loadKanbanItemsTranslations() {
     if (moveUpString === '') {
         moveUpString = await getTranslation('Move up', 'Todos', getCurrentLanguageId());
@@ -23,6 +26,12 @@ export async function loadKanbanItemsTranslations() {
     }
     if (removeCardString === '') {
         removeCardString = await getTranslation('Remove card', 'Todos', getCurrentLanguageId());
+    }
+    if (copyToBoardString === '') {
+        copyToBoardString = await getTranslation('Copy card to...', 'Todos', getCurrentLanguageId());
+    }
+    if (moveToBoardString === '') {
+        moveToBoardString = await getTranslation('Move card to...', 'Todos', getCurrentLanguageId());
     }
     return new Promise(function (resolve, reject) {
         resolve();
@@ -49,16 +58,22 @@ export function createKanbanItemCardHTML(kanbanItem) {
                                 <div class="kanban-card-title">
                                     <div class="kanban-card-menu-div d-none float-right" data-kanban-item-id="${kanbanItem.kanbanItemId}">
                                     <button class="kanban-card-menu-button" data-kanban-item-id="${kanbanItem.kanbanItemId}">...</button>
-                                    <div class="kanban-card-menu-content d-none" data-kanban-item-id="${kanbanItem.kanbanItemId}">
-                                        <button class="kanban-card-menu-item-button" data-card-menu-action="moveup" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveUpString}</button>
-                                        <button class="kanban-card-menu-item-button" data-card-menu-action="movedown" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveDownString}</button>
-                                        <button class="kanban-card-menu-item-button" data-card-menu-action="moveleft" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveLeftString}</button>
-                                        <button class="kanban-card-menu-item-button" data-card-menu-action="moveright" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveRightString}</button>
-                                        <button class="kanban-card-menu-item-button" data-card-menu-action="removecard" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${removeCardString}</button>
-                                    </div>
                                 </div>
                                     ${kanbanItem.todoItem.title}
                                     <span class="${subtasksCountSpanClass}">[${kanbanItem.todoItem.completedSubtaskCount}/${kanbanItem.todoItem.subtaskCount}]</span>
+                                </div>
+                                <div class="w-100">
+                                    <div class="w-50 float-right">
+                                        <div class="kanban-card-menu-content d-none" data-kanban-item-id="${kanbanItem.kanbanItemId}">
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="moveup" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveUpString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="movedown" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveDownString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="moveleft" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveLeftString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="moveright" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveRightString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="removecard" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${removeCardString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="copytoboard" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${copyToBoardString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="movetoboard" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveToBoardString}</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>`;
     return cardDiv;
@@ -83,16 +98,21 @@ export function addCardEventListeners(kanbanItemId, userCanEdit) {
         const cardDragFunction = function (event) {
             event.stopPropagation();
             if (event.dataTransfer !== null) {
-                event.dataTransfer.setData('kanban-item-id', card.dataset.kanbanItemId || '');
-                event.dataTransfer.setData('kanban-item-card', 'kanban-item-card');
-                event.dataTransfer.setData('source-column-id', card.parentElement?.parentElement?.dataset.columnId || '');
-                event.dataTransfer.effectAllowed = 'move';
-                card.classList.add('kanban-item-dragging');
+                let draggedKanbanItemId = card.dataset.kanbanItemId;
+                draggedCard = event.target;
+                if (draggedKanbanItemId) {
+                    event.dataTransfer.setData('kanban-item-id', draggedKanbanItemId);
+                    event.dataTransfer.setData('kanban-item-card', 'kanban-item-card');
+                    event.dataTransfer.setData('source-column-id', card.parentElement?.parentElement?.dataset.columnId || '');
+                    event.dataTransfer.effectAllowed = 'move';
+                    card.classList.add('kanban-item-dragging');
+                }
             }
         };
         card.removeEventListener('dragstart', cardDragFunction);
         card.addEventListener('dragstart', cardDragFunction);
         const cardDragEndFunction = async function (event) {
+            draggedCard = null;
             card.classList.remove('kanban-item-dragging');
         };
         card.removeEventListener('dragend', cardDragEndFunction);
@@ -118,8 +138,6 @@ export function addCardDividerEventListeners(columnId, rowIndex) {
             const dividerDragEnterFunction = function (event) {
                 event.preventDefault();
                 event.stopPropagation();
-                console.log('Card dividerDragEnterFunction start.');
-                console.log('columnId: ' + columnId);
                 // Check if event.dataTransfer contains kanban-item-card
                 if (!event.dataTransfer || !event.dataTransfer.types.includes('kanban-item-card')) {
                     if (event.dataTransfer) {
@@ -130,25 +148,37 @@ export function addCardDividerEventListeners(columnId, rowIndex) {
                 // Check column WIP limit if the card is being moved to a different column.
                 const kanbanBoard = getKanbanBoard();
                 const kanbanItems = getKanbanItems();
-                const kanbanItemId = event.dataTransfer.getData('kanban-item-id');
+                let kanbanItemId = '';
+                if (draggedCard) {
+                    const draggedCardDiv = draggedCard;
+                    if (draggedCardDiv) {
+                        if (draggedCardDiv.dataset.kanbanItemId) {
+                            kanbanItemId = draggedCardDiv.dataset.kanbanItemId;
+                        }
+                    }
+                }
+                console.log('kanbanItemId: ' + kanbanItemId);
                 const kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
                 if (kanbanItem) {
                     const sourceColumnId = kanbanItem.columnId;
                     console.log('sourceColumnId: ' + sourceColumnId);
+                    console.log('targetColumnId: ' + columnId);
                     const targetColumn = kanbanBoard.columnsList.find(c => c.id.toString() === columnId.toString());
-                    if (targetColumn && sourceColumnId && sourceColumnId !== columnId) {
-                        const itemsInTargetColumn = kanbanItems.filter(k => k.columnId === targetColumn.id);
-                        if (itemsInTargetColumn.length >= targetColumn.wipLimit && targetColumn.wipLimit > 0) {
-                            if (event.dataTransfer) {
-                                event.dataTransfer.dropEffect = 'none';
+                    console.log('targetColumn: ');
+                    console.log(targetColumn);
+                    if (targetColumn && sourceColumnId) {
+                        if (sourceColumnId !== columnId) {
+                            const itemsInTargetColumn = kanbanItems.filter(k => k.columnId === targetColumn.id);
+                            if (itemsInTargetColumn.length >= targetColumn.wipLimit && targetColumn.wipLimit > 0) {
+                                if (event.dataTransfer) {
+                                    event.dataTransfer.dropEffect = 'none';
+                                }
+                                return;
                             }
-                            return;
                         }
-                        else {
-                            divider.classList.add('kanban-card-divider-drag-over');
-                            if (event.dataTransfer) {
-                                event.dataTransfer.dropEffect = 'move';
-                            }
+                        divider.classList.add('kanban-card-divider-drag-over');
+                        if (event.dataTransfer) {
+                            event.dataTransfer.dropEffect = 'move';
                             return;
                         }
                     }
@@ -162,7 +192,6 @@ export function addCardDividerEventListeners(columnId, rowIndex) {
             const dividerDragOverFunction = function (event) {
                 event.preventDefault();
                 event.stopPropagation();
-                console.log('Card dividerDragOverFunction start.');
                 // Check if event.dataTransfer contains kanban-item-card
                 if (!event.dataTransfer || !event.dataTransfer.types.includes('kanban-item-card')) {
                     if (event.dataTransfer) {
@@ -173,25 +202,32 @@ export function addCardDividerEventListeners(columnId, rowIndex) {
                 // Check column WIP limit if the card is being moved to a different column.
                 const kanbanBoard = getKanbanBoard();
                 const kanbanItems = getKanbanItems();
-                const kanbanItemId = event.dataTransfer.getData('kanban-item-id');
+                let kanbanItemId = event.dataTransfer.getData('kanban-item-id');
+                if (draggedCard) {
+                    const draggedCardDiv = draggedCard;
+                    if (draggedCardDiv) {
+                        if (draggedCardDiv.dataset.kanbanItemId) {
+                            kanbanItemId = draggedCardDiv.dataset.kanbanItemId;
+                        }
+                    }
+                }
                 const kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
                 if (kanbanItem) {
                     const sourceColumnId = kanbanItem.columnId;
-                    console.log('sourceColumnId: ' + sourceColumnId);
                     const targetColumn = kanbanBoard.columnsList.find(c => c.id.toString() === columnId.toString());
-                    if (targetColumn && sourceColumnId && sourceColumnId !== columnId) {
-                        const itemsInTargetColumn = kanbanItems.filter(k => k.columnId === targetColumn.id);
-                        if (itemsInTargetColumn.length >= targetColumn.wipLimit && targetColumn.wipLimit > 0) {
-                            if (event.dataTransfer) {
-                                event.dataTransfer.dropEffect = 'none';
+                    if (targetColumn && sourceColumnId) {
+                        if (sourceColumnId !== columnId) {
+                            const itemsInTargetColumn = kanbanItems.filter(k => k.columnId === targetColumn.id);
+                            if (itemsInTargetColumn.length >= targetColumn.wipLimit && targetColumn.wipLimit > 0) {
+                                if (event.dataTransfer) {
+                                    event.dataTransfer.dropEffect = 'none';
+                                }
+                                return;
                             }
-                            return;
                         }
-                        else {
-                            divider.classList.add('kanban-card-divider-drag-over');
-                            if (event.dataTransfer) {
-                                event.dataTransfer.dropEffect = 'move';
-                            }
+                        divider.classList.add('kanban-card-divider-drag-over');
+                        if (event.dataTransfer) {
+                            event.dataTransfer.dropEffect = 'move';
                             return;
                         }
                     }
@@ -285,7 +321,8 @@ const showCardMenu = function (event) {
     event.stopPropagation();
     const button = event.currentTarget;
     const kanbanItemId = button.dataset.kanbanItemId;
-    hideAllMenusAndModals(event);
+    hideCardMenus(kanbanItemId);
+    hideColumnMenus();
     if (kanbanItemId) {
         const menuContentDiv = document.querySelector('.kanban-card-menu-content[data-kanban-item-id="' + kanbanItemId + '"]');
         if (menuContentDiv) {
