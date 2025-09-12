@@ -74,13 +74,13 @@ export function createKanbanItemCardHTML(kanbanItem: KanbanItem):HTMLDivElement 
                                 <div class="w-100">
                                     <div class="w-50 float-right">
                                         <div class="kanban-card-menu-content d-none" data-kanban-item-id="${kanbanItem.kanbanItemId}">
-                                            <button class="kanban-card-menu-item-button" data-card-menu-action="moveup" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveUpString}</button>
-                                            <button class="kanban-card-menu-item-button" data-card-menu-action="movedown" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveDownString}</button>
-                                            <button class="kanban-card-menu-item-button" data-card-menu-action="moveleft" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveLeftString}</button>
-                                            <button class="kanban-card-menu-item-button" data-card-menu-action="moveright" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveRightString}</button>
-                                            <button class="kanban-card-menu-item-button" data-card-menu-action="removecard" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${removeCardString}</button>
-                                            <button class="kanban-card-menu-item-button" data-card-menu-action="copytoboard" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${copyToBoardString}</button>
-                                            <button class="kanban-card-menu-item-button" data-card-menu-action="movetoboard" data-kanban-item-id="${kanbanItem.kanbanItemId}" >${moveToBoardString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="moveup" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">move_up</span><span>${moveUpString}</span></button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="movedown" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">move_down</span> ${moveDownString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="moveleft" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">arrow_back</span> ${moveLeftString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="moveright" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">arrow_forward</span> ${moveRightString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="copytoboard" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">folder_copy</span> ${copyToBoardString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="movetoboard" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">drive_file_move</span> ${moveToBoardString}</button>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="removecard" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">delete</span> ${removeCardString}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -441,6 +441,39 @@ const showCardMenu = function (event: MouseEvent) {
                     removeCardButton.removeEventListener('click', removeCardFunction);
                     removeCardButton.addEventListener('click', removeCardFunction);
                 }
+
+                const copyCardToButton = menuContentDiv.querySelector<HTMLButtonElement>('button[data-card-menu-action="copytoboard"]');
+                if (copyCardToButton) {
+                    const copyCardToFunction = async function (event: MouseEvent) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        menuContentDiv.classList.add('d-none');
+                        await copyCardToBoard(kanbanItemId);
+
+                        return new Promise<void>(function (resolve, reject) {
+                            resolve();
+                        });
+                    }
+
+                    copyCardToButton.removeEventListener('click', copyCardToFunction);
+                    copyCardToButton.addEventListener('click', copyCardToFunction);
+                }
+
+                const moveCardToButton = menuContentDiv.querySelector<HTMLButtonElement>('button[data-card-menu-action="movetoboard"]');
+                if (moveCardToButton) {
+                    const moveCardToFunction = async function (event: MouseEvent) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        menuContentDiv.classList.add('d-none');
+                        await moveCardToBoard(kanbanItemId);
+
+                        return new Promise<void>(function (resolve, reject) {
+                            resolve();
+                        });
+                    }
+                    moveCardToButton.removeEventListener('click', moveCardToFunction);
+                    moveCardToButton.addEventListener('click', moveCardToFunction);
+                }
             } else {
                 menuContentDiv.classList.add('d-none');
             }
@@ -645,6 +678,18 @@ async function removeCard(kanbanItemId: string) {
         }
     }
 
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function copyCardToBoard(kanbanItemId: string) {
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function moveCardToBoard(kanbanItemId: string) {
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

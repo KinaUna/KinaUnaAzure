@@ -458,10 +458,10 @@ async function createKanbanBoardContainer(kanbanBoard: KanbanBoard): Promise<str
                                 <div class="kanban-column-menu-div d-none float-right" data-column-id="${column.id}">
                                     <button class="kanban-column-menu-button" data-column-id="${column.id}">...</button>
                                     <div class="kanban-column-menu-content d-none" data-column-id="${column.id}">
-                                        <button class="kanban-column-menu-item-button" data-column-menu-action="rename" data-column-id="${column.id}" >${renameString}</button>
-                                        <button class="kanban-column-menu-item-button" data-column-menu-action="setlimit" data-column-id="${column.id}" >${setLimitString}</button>
-                                        <button class="kanban-column-menu-item-button" data-column-menu-action="moveleft" data-column-id="${column.id}" >${moveLeftString}</button>
-                                        <button class="kanban-column-menu-item-button" data-column-menu-action="moveright" data-column-id="${column.id}" >${moveRightString}</button>
+                                        <button class="kanban-column-menu-item-button" data-column-menu-action="rename" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">edit</span> ${renameString}</button>
+                                        <button class="kanban-column-menu-item-button" data-column-menu-action="setlimit" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">compress</span> ${setLimitString}</button>
+                                        <button class="kanban-column-menu-item-button" data-column-menu-action="moveleft" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">arrow_back</span> ${moveLeftString}</button>
+                                        <button class="kanban-column-menu-item-button" data-column-menu-action="moveright" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">arrow_forward</span>${moveRightString}</button>
                                     </div>
                                 </div>
                                 <div class="kanban-column-title" data-column-id="${column.id}"><span class="mr-2" data-title-span-id="${column.id}">${column.title}</span><span class="kanban-card-wip-limit text-muted" data-wip-limit-id="${column.id}">${limitString}<span></div>
