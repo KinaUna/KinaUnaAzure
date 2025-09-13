@@ -38,7 +38,7 @@
                 @if (Model.ProgenyList.Count > 1)
                 {
                     <div class="form-group">
-                        <label class="col-auto control-label">@assignedToString </label>
+                        <label class="col-auto control-label" for="item-progeny-id-select">@assignedToString </label>
                         <div class="col-auto">
                             <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="TodoItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                         </div>

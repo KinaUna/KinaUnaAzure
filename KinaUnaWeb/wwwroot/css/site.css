@@ -2818,7 +2818,7 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 .timeline-card {
     border: 0;
     margin-bottom: 30px;
-    border-radius: 6px;
+    border-radius: 10px;
     width: auto;
     position: relative;
     display: flex;
@@ -2826,7 +2826,6 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     min-width: 0;
     word-wrap: break-word;
     background-clip: border-box;
-    border-radius: .25rem;
     font-size: 1rem;
     box-shadow: 0 2px 2px 0 rgb(0 0 0 / 14%), 0 3px 1px -2px rgb(0 0 0 / 20%), 0 1px 5px 0 rgb(0 0 0 / 12%);
     margin-top: 0;
@@ -2845,6 +2844,7 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     flex: 1 1 auto;
     min-height: 1px;
     padding: 0.5rem;
+    border-radius: 8px;
 }
 
 .item-details-content.timeline-card-body {
@@ -3612,6 +3612,7 @@ noUi-handle:after, .noUi-handle:before {
 .item-details-content {
     max-height: 100vh;
     overflow-y: auto;
+    border-radius: 10px;
 }
 
 @media (min-width: 576px) {
@@ -4177,6 +4178,7 @@ noUi-handle:after, .noUi-handle:before {
     margin-right: auto;
     margin-top: auto;
     margin-bottom: auto;
+    border-radius: 10px;
 }
 
 .modal-close-button {

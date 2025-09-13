@@ -1,9 +1,11 @@
 ﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -126,6 +128,119 @@ namespace KinaUnaWeb.Controllers
             KanbanItem addedKanbanItem = await kanbanItemsHttpClient.AddKanbanItem(kanbanItem);
             if (addedKanbanItem == null || addedKanbanItem.KanbanItemId == 0) return Json(new KanbanItem());
             addedKanbanItem.TodoItem = todoItem;
+            addedKanbanItem.TodoItem.Progeny = await progenyHttpClient.GetProgeny(addedKanbanItem.TodoItem.ProgenyId);
+            if (addedKanbanItem.TodoItem.Progeny != null)
+            {
+                addedKanbanItem.TodoItem.Progeny.PictureLink = addedKanbanItem.TodoItem.Progeny.GetProfilePictureUrl();
+            }
+            UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(addedKanbanItem.TodoItem.CreatedBy);
+            addedKanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
+            return Json(addedKanbanItem);
+        }
+
+        public async Task<IActionResult> CopyKanbanItemToKanbanBoard(int kanbanItemId)
+        {
+            KanbanItem kanbanItem = await kanbanItemsHttpClient.GetKanbanItem(kanbanItemId);
+            if (kanbanItem == null || kanbanItem.KanbanItemId == 0)
+            {
+                return NotFound();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanItem.TodoItem.ProgenyId);
+            KanbanItemViewModel model = new(baseModel)
+            {
+                KanbanItem = kanbanItem
+            };
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
+            {
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.SetProgenyList();
+                model.KanbanItem.TodoItem = await todoItemsHttpClient.GetTodoItem(model.KanbanItem.TodoItemId);
+                model.KanbanItem.TodoItem.Progeny = model.CurrentProgeny;
+            }
+
+            model.SetAccessLevelList();
+            model.SetStatusList(model.KanbanItem.TodoItem.Status);
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+
+            List<int> progenyIds = [];
+            progenyIds.AddRange(model.ProgenyList.ConvertAll(p => int.Parse(p.Value)));
+            KanbanBoardsRequest kanbanBoardsRequest = new()
+            {
+                ProgenyIds = progenyIds,
+                IncludeDeleted = false,
+                Skip = 0,
+                NumberOfItems = 0 // Get all.
+            };
+            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
+            model.KanbanBoards = kanbanBoardsResponse.KanbanBoards;
+            model.KanbanBoardsList = new List<SelectListItem>();
+            
+            foreach (KanbanBoard kanbanBoard in model.KanbanBoards)
+            {
+                List<KanbanItem> kanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForBoard(kanbanBoard.KanbanBoardId);
+                // If there is a KanbanItem with the KanbanBoardId for this TodoItem already, don't include it.
+                if (kanbanItems.Exists(k => k.KanbanItemId == kanbanItemId))
+                {
+                    continue;
+                }
+
+                kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
+                SelectListItem item = new()
+                {
+                    Text = kanbanBoard.Title + " (" + kanbanBoard.Progeny.NickName + ")",
+                    Value = kanbanBoard.KanbanBoardId.ToString()
+                };
+                model.KanbanBoardsList.Add(item);
+            }
+
+            return PartialView("_CopyKanbanItemToKanbanBoardPartial", model);
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> CopyKanbanItemToKanbanBoard([FromForm] KanbanItemViewModel model)
+        {
+            int kanbanBoardId = model.KanbanItem.KanbanBoardId;
+            KanbanItem kanbanItem = await kanbanItemsHttpClient.GetKanbanItem(model.KanbanItem.KanbanItemId);
+            if (kanbanItem == null || kanbanItem.KanbanItemId == 0)
+            {
+                return NotFound();
+            }
+
+            TodoItem existingTodoItem = await todoItemsHttpClient.GetTodoItem(kanbanItem.TodoItemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), existingTodoItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+            List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            if (progAdminList.Count == 0)
+            {
+                return BadRequest();
+            }
+
+            KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
+            kanbanBoard.SetColumnsListFromColumns();
+            KanbanBoardColumn column = kanbanBoard.ColumnsList.SingleOrDefault(k => k.ColumnIndex == 0);
+            if (column != null)
+            {
+                kanbanItem.ColumnId = column.Id;
+
+            }
+
+            KanbanItem newKanbanItem = new()
+            {
+                KanbanBoardId = kanbanBoard.KanbanBoardId,
+                ColumnId = kanbanItem.ColumnId,
+                RowIndex = -1,
+                TodoItemId = kanbanItem.TodoItemId,
+                CreatedBy = model.CurrentUser.UserEmail,
+                CreatedTime = System.DateTime.UtcNow
+            };
+
+            KanbanItem addedKanbanItem = await kanbanItemsHttpClient.AddKanbanItem(newKanbanItem);
+            if (addedKanbanItem == null || addedKanbanItem.KanbanItemId == 0) return Json(new KanbanItem());
+            addedKanbanItem.TodoItem = existingTodoItem;
             addedKanbanItem.TodoItem.Progeny = await progenyHttpClient.GetProgeny(addedKanbanItem.TodoItem.ProgenyId);
             if (addedKanbanItem.TodoItem.Progeny != null)
             {

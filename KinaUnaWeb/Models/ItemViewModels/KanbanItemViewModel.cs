@@ -11,7 +11,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> ProgenyList { get; set; }
         public List<SelectListItem> StatusList { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
-
+        public List<KanbanBoard> KanbanBoards { get; set; } = [];
+        public List<SelectListItem> KanbanBoardsList { get; set; } = [];
+        
         public KanbanItemViewModel()
         {
             ProgenyList = [];

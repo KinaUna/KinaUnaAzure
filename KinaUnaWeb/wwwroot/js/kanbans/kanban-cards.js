@@ -621,6 +621,57 @@ async function removeCard(kanbanItemId) {
     });
 }
 async function copyCardToBoard(kanbanItemId) {
+    // Get form html from server.
+    let url = '/KanbanItems/CopyKanbanItemToKanbanBoard?kanbanItemId=' + kanbanItemId;
+    const response = await fetch(url);
+    if (response.ok) {
+        const formHtml = await response.text();
+        const modalDiv = document.querySelector('#kanban-item-details-div');
+        if (modalDiv) {
+            modalDiv.innerHTML = formHtml;
+            modalDiv.classList.remove('d-none');
+            const cancelButton = modalDiv.querySelector('.copy-kanban-item-cancel-button');
+            if (cancelButton) {
+                const closeButtonFunction = function () {
+                    modalDiv.innerHTML = '';
+                    modalDiv.classList.add('d-none');
+                };
+                cancelButton.removeEventListener('click', closeButtonFunction);
+                cancelButton.addEventListener('click', closeButtonFunction);
+                const closeButton = modalDiv.querySelector('.modal-close-button');
+                if (closeButton) {
+                    closeButton.removeEventListener('click', closeButtonFunction);
+                    closeButton.addEventListener('click', closeButtonFunction);
+                }
+            }
+            $(".selectpicker").selectpicker('refresh');
+            const copyKanbanItemForm = modalDiv.querySelector('#copy-kanban-item-to-kanban-board-form');
+            if (copyKanbanItemForm) {
+                const copyKanbanItemFormFunction = async function (event) {
+                    event.preventDefault();
+                    const formData = new FormData(copyKanbanItemForm);
+                    const url = '/KanbanItems/CopyKanbanItemToKanbanBoard';
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(async function (response) {
+                        if (response.ok) {
+                            // Successfully copied the KanbanItem. Close the modal.
+                            modalDiv.innerHTML = '';
+                            modalDiv.classList.add('d-none');
+                        }
+                        else {
+                            console.error('Error copying kanban item. Status: ' + response.status);
+                        }
+                    }).catch(function (error) {
+                        console.error('Error copying kanban item: ' + error);
+                    });
+                };
+                copyKanbanItemForm.removeEventListener('submit', copyKanbanItemFormFunction);
+                copyKanbanItemForm.addEventListener('submit', copyKanbanItemFormFunction);
+            }
+        }
+    }
     return new Promise(function (resolve, reject) {
         resolve();
     });
