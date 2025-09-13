@@ -743,6 +743,76 @@ async function copyCardToBoard(kanbanItemId: string) {
 }
 
 async function moveCardToBoard(kanbanItemId: string) {
+    // Get form html from server.
+    let url = '/KanbanItems/MoveKanbanItemToKanbanBoard?kanbanItemId=' + kanbanItemId;
+    const response = await fetch(url);
+    if (response.ok) {
+        const formHtml = await response.text();
+        const modalDiv = document.querySelector<HTMLDivElement>('#kanban-item-details-div');
+        if (modalDiv) {
+            modalDiv.innerHTML = formHtml;
+            modalDiv.classList.remove('d-none');
+            const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.move-kanban-item-cancel-button');
+            if (cancelButton) {
+                const closeButtonFunction = function () {
+                    modalDiv.innerHTML = '';
+                    modalDiv.classList.add('d-none');
+                }
+                cancelButton.removeEventListener('click', closeButtonFunction);
+                cancelButton.addEventListener('click', closeButtonFunction);
+                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+                if (closeButton) {
+                    closeButton.removeEventListener('click', closeButtonFunction);
+                    closeButton.addEventListener('click', closeButtonFunction);
+                }
+            }
+
+            ($(".selectpicker") as any).selectpicker('refresh');
+
+            const moveKanbanItemForm = modalDiv.querySelector<HTMLFormElement>('#move-kanban-item-to-kanban-board-form');
+            if (moveKanbanItemForm) {
+                const moveKanbanItemFormFunction = async function (event: Event) {
+                    event.preventDefault();
+                    const formData = new FormData(moveKanbanItemForm);
+                    const url = '/KanbanItems/MoveKanbanItemToKanbanBoard';
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(async function (response) {
+                        if (response.ok) {
+                            // Successfully moved the KanbanItem. Close the modal.
+                            modalDiv.innerHTML = '';
+                            modalDiv.classList.add('d-none');
+                            // Remove the item from the kanbanItems array.
+                            let kanbanItems = getKanbanItems();
+                            let kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
+                            if (kanbanItem) {
+                                const columnId = kanbanItem.columnId;
+                                kanbanItems = kanbanItems.filter(k => k.kanbanItemId.toString() !== kanbanItemId);
+                                // Reassign rowIndex values for all items in the column.
+                                const itemsInColumn = kanbanItems.filter(k => k.columnId === columnId);
+                                // Sort by row index
+                                itemsInColumn.sort((a, b) => a.rowIndex - b.rowIndex);
+                                itemsInColumn.forEach((item, index) => {
+                                    item.rowIndex = index;
+                                });
+                                setKanbanItems(kanbanItems);
+                                // Save the updated KanbanItems to the server.
+                                await updateKanbanItemsInColumn(columnId);
+                            }
+                        } else {
+                            console.error('Error moving kanban item. Status: ' + response.status);
+                        }
+                    }).catch(function (error) {
+                        console.error('Error moving kanban item: ' + error);
+                    });
+                }
+                moveKanbanItemForm.removeEventListener('submit', moveKanbanItemFormFunction);
+                moveKanbanItemForm.addEventListener('submit', moveKanbanItemFormFunction);
+            }
+        }
+
+    }
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

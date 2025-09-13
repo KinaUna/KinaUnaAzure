@@ -14,6 +14,11 @@ export function addMeasurementItemListeners(itemId) {
         });
     }
 }
+/**
+ * Event handler for when a measurement item div is clicked.
+ * Calls the DisplayMeasurementItem function with the measurement id.
+ * @param {MouseEvent} event The click event.
+ */
 async function onMeasurmentItemDivClicked(event) {
     const measurementElement = event.currentTarget;
     if (measurementElement !== null) {
