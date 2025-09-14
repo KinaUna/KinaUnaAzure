@@ -20,17 +20,17 @@
 }
 
 <div id="popup-measurement-id-div" class="d-none" data-popup-measurement-id="@Model.MeasurementId"></div>
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+<div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
     @if (Model.MeasurementsList == null || !Model.MeasurementsList.Any())
     {
-        <h2>@ViewData["Title"]</h2>
+        <div class="h-4">@ViewData["Title"]</div>
         <div>
             @await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Measurements, Model.LanguageId)
         </div>
     }
     else
     {
-        <h2>@ViewData["Title"]</h2>
+        <div class="h-4">@ViewData["Title"]</div>
         <div class="table-responsive">
             <table class="table table-bordered table-striped" style="margin-top: 15px;">
                 <thead>

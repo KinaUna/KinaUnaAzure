@@ -86,7 +86,8 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             existingKanbanItem.RowIndex = kanbanItem.RowIndex;
             existingKanbanItem.ModifiedBy = kanbanItem.ModifiedBy;
             existingKanbanItem.ModifiedTime = kanbanItem.ModifiedTime;
-            
+            existingKanbanItem.KanbanBoardId = kanbanItem.KanbanBoardId;
+
             progenyDbContext.Update(existingKanbanItem);
             await progenyDbContext.SaveChangesAsync();
 

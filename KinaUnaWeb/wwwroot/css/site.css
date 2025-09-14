@@ -3127,20 +3127,20 @@ button.Zebra_DatePicker_Icon {
     vertical-align: middle;
 }
 .kinauna-main {
-    margin-left: 56px;
-    margin-right: 56px;
+    margin-left: 44px;
+    margin-right: 0px;
     transition: all 500ms ease-in-out 500ms;
 }
 
 @media (max-width: 576px) {
     .kinauna-main {
         margin-right: 0px;
-        margin-left: 56px;
+        margin-left: 44px;
     }
 }
 
 .kinauna-main-wide {
-    margin-left: 200px;
+    margin-left: 148px;
     transition: all 500ms ease-in-out 500ms;
 }
 
@@ -4217,7 +4217,7 @@ noUi-handle:after, .noUi-handle:before {
 }
 
 .page-tab {
-    padding-left: 35px;
+    padding-left: 46px;
     padding-right: 10px;
     margin-top: 32px;
     margin-left: -64px;

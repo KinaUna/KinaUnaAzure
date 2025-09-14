@@ -334,7 +334,7 @@ namespace KinaUnaWeb.Controllers
             }
             kanbanItem.KanbanBoardId = kanbanBoardId;
 
-            KanbanItem movedKanbanItem = await kanbanItemsHttpClient.AddKanbanItem(kanbanItem);
+            KanbanItem movedKanbanItem = await kanbanItemsHttpClient.UpdateKanbanItem(kanbanItem);
             
             return Json(movedKanbanItem);
         }

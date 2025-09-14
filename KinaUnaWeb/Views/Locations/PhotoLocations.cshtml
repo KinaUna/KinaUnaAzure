@@ -14,13 +14,13 @@
 
 <div id="locations-page-parameters" class="d-none" data-locations-page-parameters="@pageParameters"></div>
 <div id="here-maps-api-key-div" class="d-none" data-here-maps-api-key="@Model.HereMapsApiKey"></div>
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+<div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
     <div class="btn-group" style="float: right;">
         <a asp-controller="Locations" asp-action="Index" class="btn btn-info leave-page">
             <i class="fas fa-map-marked-alt"></i> @await LocaleManager.GetTranslation("Back to locations", PageNames.Locations, Model.LanguageId)
         </a>
     </div>
-    <h2>@ViewData["Title"]</h2>
+    <div class="h4 ml-1">@ViewData["Title"]</div>
     <div class="row" style="clear: both; margin-top: 25px;">
         @if (allowHereMaps)
         {
