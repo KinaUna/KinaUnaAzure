@@ -8,10 +8,10 @@
     string setAsInProgressString = await LocaleManager.GetTranslation("Set as in progress", PageNames.Todos, Model.LanguageId);
     string setAsCompletedString = await LocaleManager.GetTranslation("Set as completed", PageNames.Todos, Model.LanguageId);
     string setAsCancelledString = await LocaleManager.GetTranslation("Set as cancelled", PageNames.Todos, Model.LanguageId);
-
+    string addToKanbanBoardString = await LocaleManager.GetTranslation("Add to Kanban board", PageNames.Todos, Model.LanguageId);
 }
 <div class="row" data-subtask-element-id="@Model.TodoItem.TodoItemId" style="background: @Model.TodoItem.StatusBackgroundColor()">
-    <div class="col-auto lead">@Model.TodoItem.Title</div>
+    <div class="col-auto lead h5">@Model.TodoItem.Title</div>
     <div class="col text-white-75 text-right" style="align-content: end;">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)
         <i class="material-icons-small">@Model.TodoItem.StatusIcon()</i>
     </div>
@@ -24,29 +24,35 @@
             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
             {
                 <button class="btn btn-link btn-sm p-1 float-left text-white-75" data-set-subtask-not-started-id="@Model.TodoItem.TodoItemId">
-                    <i class="material-icons kinauna-icon-medium">pending_actions</i> @setAsNotStartedString
+                    <i class="material-icons-small kinauna-icon-medium">pending_actions</i> @setAsNotStartedString
                 </button>
             }
             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
             {
                 <button class="btn btn-link btn-sm p-1 float-left text-white-75" data-set-subtask-in-progress-id="@Model.TodoItem.TodoItemId">
-                    <i class="material-icons kinauna-icon-medium">assignment</i> @setAsInProgressString
+                    <i class="material-icons-small kinauna-icon-medium">assignment</i> @setAsInProgressString
                 </button>
             }
             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
             {
                 <button class="btn btn-link btn-sm p-1 float-left text-white-75" data-set-subtask-completed-id="@Model.TodoItem.TodoItemId">
-                    <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> @setAsCompletedString
+                    <i class="material-icons-small kinauna-icon-medium">assignment_turned_in</i> @setAsCompletedString
                 </button>
             }
             @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
             {
                 <button class="btn btn-link btn-sm p-1 float-left text-white-75" data-set-subtask-cancelled-id="@Model.TodoItem.TodoItemId">
-                    <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
+                    <i class="material-icons-small kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
                 </button>
             }
+            <button class="btn btn-link btn-sm p-1 float-right text-white-75" data-subtask-add-to-kanban-id="@Model.TodoItem.TodoItemId">
+                <i class="material-icons-small kinauna-icon-medium">view_kanban</i> @addToKanbanBoardString
+            </button>
         </div>
         <a data-delete-item-type="subtask" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-link delete-item-button btn-sm float-right" style="color: #ff9696;"><i class="fas fa-trash-alt"></i></a>
     }
 </div>
 <div class="space-10"></div>
+<div id="add-subtask-to-kanban-board-modal-@Model.TodoItem.TodoItemId" class="d-none settings-modal" tabindex="-1" role="dialog">
+
+</div>

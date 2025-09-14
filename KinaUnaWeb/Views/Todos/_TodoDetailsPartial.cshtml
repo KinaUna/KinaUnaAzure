@@ -179,10 +179,10 @@
                             <div class="row text-white">
                                 <div class="col-12">
                                     <form id="add-subtask-inline-form" asp-controller="Subtasks" asp-action="AddSubtaskInline">
-                                        <div class="form-group">
-                                            <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control w-100"
+                                        <div class="input-group">
+                                            <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control"
                                                    style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)"/>
-                                            <button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
+                                            <div class="input-group-append"><button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button></div>
                                         </div>
                                         <input name="ParentTodoItemId" type="hidden" value="@Model.TodoItem.TodoItemId"/>
                                         <input name="Status" type="hidden" value="0"/>
@@ -215,15 +215,24 @@
                                         }
                                     }
                                 }
-                                @if (Model.IsCurrentUserProgenyAdmin)
+                                else
                                 {
                                     <div class="row">
                                         <div class="col-12">
-                                            <div class="w-100">
-                                                <select id="add-todo-item-to-kanban-board-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.KanbanBoardsList.Count" asp-items="@Model.KanbanBoardsList"></select>
-                                            </div>
-                                            <div class="w-100">
-                                                <button id="add-todo-item-to-kanban-board-button" class="btn btn-success btn-sm" data-todo-item-id="@Model.TodoItem.TodoItemId">Add to Kanban board</button>
+                                            @await LocaleManager.GetTranslation("This item is not associated with any Kanban boards", PageNames.Todos, Model.LanguageId)
+                                        </div>
+                                    </div>
+                                }
+                                @if (Model.IsCurrentUserProgenyAdmin)
+                                {
+                                    <div class="space-10"></div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="input-group">
+                                                <select id="add-todo-item-to-kanban-board-select" class="selectpicker form-control" data-style="btn-kinaunaselect" data-size="@Model.KanbanBoardsList.Count" asp-items="@Model.KanbanBoardsList"></select>
+                                                <div class="input-group-append">
+                                                    <button id="add-todo-item-to-kanban-board-button" class="btn btn-success btn-sm" data-todo-item-id="@Model.TodoItem.TodoItemId">@await LocaleManager.GetTranslation("Add to Kanban board", PageNames.Todos, Model.LanguageId)</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

@@ -35,7 +35,7 @@ export async function getSubtasks(subtasksPageParameters, subtasksListElementId,
             subtasksPageParameters.totalPages = subtasksPageResponse.totalPages;
             subtasksPageParameters.totalItems = subtasksPageResponse.totalItems;
             if (subtasksPageResponse.totalItems < 1) {
-                getSubtaskElement(0, subtasksListElementId);
+                await getSubtaskElement(0, subtasksListElementId);
                 subtaskListElement?.classList.add('d-none');
             }
             else {
@@ -193,6 +193,82 @@ function addSubtaskListeners(itemId) {
             element.addEventListener('click', onSetAsNotStartedButtonClicked);
         });
     }
+    const subtaskElementsWithDataAddToKanbanId = document.querySelectorAll('[data-subtask-add-to-kanban-id="' + itemId + '"]');
+    if (subtaskElementsWithDataAddToKanbanId) {
+        subtaskElementsWithDataAddToKanbanId.forEach((element) => {
+            // Clear existing event listeners to avoid duplicates.
+            element.removeEventListener('click', onAddToKanbanButtonClicked);
+            element.addEventListener('click', onAddToKanbanButtonClicked);
+        });
+    }
+}
+async function onAddToKanbanButtonClicked(event) {
+    event.preventDefault();
+    const buttonElement = event.currentTarget;
+    if (buttonElement !== null) {
+        const subtaskId = buttonElement.dataset.subtaskAddToKanbanId;
+        if (subtaskId) {
+            await addSubtaskToBoard(subtaskId);
+        }
+    }
+}
+async function addSubtaskToBoard(subtaskId) {
+    // Get form html from server.
+    let url = '/Subtasks/AddSubtaskToKanbanBoard?subtaskId=' + subtaskId;
+    const response = await fetch(url);
+    if (response.ok) {
+        const formHtml = await response.text();
+        const modalDiv = document.querySelector('#add-subtask-to-kanban-board-modal-' + subtaskId);
+        if (modalDiv) {
+            modalDiv.innerHTML = formHtml;
+            modalDiv.classList.remove('d-none');
+            const cancelButton = modalDiv.querySelector('.add-subtask-to-kanban-board-cancel-button');
+            if (cancelButton) {
+                const closeButtonFunction = function () {
+                    modalDiv.innerHTML = '';
+                    modalDiv.classList.add('d-none');
+                };
+                cancelButton.removeEventListener('click', closeButtonFunction);
+                cancelButton.addEventListener('click', closeButtonFunction);
+                const closeButton = modalDiv.querySelector('.modal-close-button');
+                if (closeButton) {
+                    closeButton.removeEventListener('click', closeButtonFunction);
+                    closeButton.addEventListener('click', closeButtonFunction);
+                }
+            }
+            $(".selectpicker").selectpicker('refresh');
+            const addSubtaskForm = modalDiv.querySelector('#add-subtask-to-kanban-board-form');
+            if (addSubtaskForm) {
+                const addSubtaskFormFunction = async function (event) {
+                    event.preventDefault();
+                    startFullPageSpinner();
+                    const formData = new FormData(addSubtaskForm);
+                    const url = '/Subtasks/AddSubtaskToKanbanBoard';
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(async function (response) {
+                        if (response.ok) {
+                            // Successfully copied the KanbanItem. Close the modal.
+                            modalDiv.innerHTML = '';
+                            modalDiv.classList.add('d-none');
+                        }
+                        else {
+                            console.error('Error adding subtask to kanban board. Status: ' + response.status);
+                        }
+                    }).catch(function (error) {
+                        console.error('Error adding subtask to kanban: ' + error);
+                    });
+                    stopFullPageSpinner();
+                };
+                addSubtaskForm.removeEventListener('submit', addSubtaskFormFunction);
+                addSubtaskForm.addEventListener('submit', addSubtaskFormFunction);
+            }
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
 * Handles the click event for the "Set as Not Started" button.

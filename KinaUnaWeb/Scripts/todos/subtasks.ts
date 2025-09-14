@@ -43,7 +43,7 @@ export async function getSubtasks(subtasksPageParameters: SubtasksPageParameters
             subtasksPageParameters.totalItems = subtasksPageResponse.totalItems;
 
             if (subtasksPageResponse.totalItems < 1) {
-                getSubtaskElement(0, subtasksListElementId);
+                await getSubtaskElement(0, subtasksListElementId);
                 subtaskListElement?.classList.add('d-none');
             }
             else {
@@ -222,8 +222,88 @@ function addSubtaskListeners(itemId: string): void {
             element.addEventListener('click', onSetAsNotStartedButtonClicked);
         });
     }
+
+    const subtaskElementsWithDataAddToKanbanId = document.querySelectorAll<HTMLButtonElement>('[data-subtask-add-to-kanban-id="' + itemId + '"]');
+    if (subtaskElementsWithDataAddToKanbanId) {
+        subtaskElementsWithDataAddToKanbanId.forEach((element) => {
+            // Clear existing event listeners to avoid duplicates.
+            element.removeEventListener('click', onAddToKanbanButtonClicked);
+            element.addEventListener('click', onAddToKanbanButtonClicked);
+        });
+    }
 }
 
+async function onAddToKanbanButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const subtaskId = buttonElement.dataset.subtaskAddToKanbanId;
+        if (subtaskId) {
+            await addSubtaskToBoard(subtaskId);
+        }
+    }
+}
+
+async function addSubtaskToBoard(subtaskId: string) {
+    // Get form html from server.
+    let url = '/Subtasks/AddSubtaskToKanbanBoard?subtaskId=' + subtaskId;
+    const response = await fetch(url);
+    if (response.ok) {
+        const formHtml = await response.text();
+        const modalDiv = document.querySelector<HTMLDivElement>('#add-subtask-to-kanban-board-modal-' + subtaskId);
+        if (modalDiv) {
+            modalDiv.innerHTML = formHtml;
+            modalDiv.classList.remove('d-none');
+            const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.add-subtask-to-kanban-board-cancel-button');
+            if (cancelButton) {
+                const closeButtonFunction = function () {
+                    modalDiv.innerHTML = '';
+                    modalDiv.classList.add('d-none');
+                }
+                cancelButton.removeEventListener('click', closeButtonFunction);
+                cancelButton.addEventListener('click', closeButtonFunction);
+                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+                if (closeButton) {
+                    closeButton.removeEventListener('click', closeButtonFunction);
+                    closeButton.addEventListener('click', closeButtonFunction);
+                }
+            }
+
+            ($(".selectpicker") as any).selectpicker('refresh');
+
+            const addSubtaskForm = modalDiv.querySelector<HTMLFormElement>('#add-subtask-to-kanban-board-form');
+            if (addSubtaskForm) {
+                const addSubtaskFormFunction = async function (event: Event) {
+                    event.preventDefault();
+                    startFullPageSpinner();
+                    const formData = new FormData(addSubtaskForm);
+                    const url = '/Subtasks/AddSubtaskToKanbanBoard';
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(async function (response) {
+                        if (response.ok) {
+                            // Successfully copied the KanbanItem. Close the modal.
+                            modalDiv.innerHTML = '';
+                            modalDiv.classList.add('d-none');
+                        } else {
+                            console.error('Error adding subtask to kanban board. Status: ' + response.status);
+                        }
+                    }).catch(function (error) {
+                        console.error('Error adding subtask to kanban: ' + error);
+                    });
+                    stopFullPageSpinner();
+                }
+                addSubtaskForm.removeEventListener('submit', addSubtaskFormFunction);
+                addSubtaskForm.addEventListener('submit', addSubtaskFormFunction);
+            }
+        }
+
+    }
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
 /**
 * Handles the click event for the "Set as Not Started" button.
 * When clicked, it sends a request to set the todo item as not started.

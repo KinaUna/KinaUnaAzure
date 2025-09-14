@@ -2,7 +2,7 @@ import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } fr
 import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v9.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9.js";
 import { getTranslation } from "../localization-v9.js";
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
+import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
 import { KanbanBoardColumn, TimelineItem } from "../page-models-v9.js";
 import { initializeAddEditKanbanItem } from "./add-edit-kanban-item.js";
 import { addCardDividerEventListeners, addCardEventListeners, createKanbanItemCardHTML, loadKanbanItemsTranslations } from "./kanban-cards.js";
@@ -267,6 +267,7 @@ function addCardButtonsEventListners() {
                     if (addKanbanItemForm) {
                         const addKanbanItemFormFunction = async function (event) {
                             event.preventDefault();
+                            startFullPageSpinner();
                             const formData = new FormData(addKanbanItemForm);
                             const url = '/KanbanItems/AddKanbanItem';
                             await fetch(url, {
@@ -289,6 +290,7 @@ function addCardButtonsEventListners() {
                             }).catch(function (error) {
                                 console.error('Error adding kanban item: ' + error);
                             });
+                            stopFullPageSpinner();
                         };
                         addKanbanItemForm.removeEventListener('submit', addKanbanItemFormFunction);
                         addKanbanItemForm.addEventListener('submit', addKanbanItemFormFunction);

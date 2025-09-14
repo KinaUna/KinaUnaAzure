@@ -38,13 +38,17 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
             _mockViewModelSetupService = new Mock<IViewModelSetupService>();
             _mockUserInfosHttpClient = new Mock<IUserInfosHttpClient>();
             _mockProgenyHttpClient = new Mock<IProgenyHttpClient>();
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new Mock<IKanbanItemsHttpClient>();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new Mock<IKanbanBoardsHttpClient>();
 
             _controller = new KinaUnaWeb.Controllers.SubtasksController(
                 _mockSubtasksHttpClient.Object,
                 _mockTodoItemsHttpClient.Object,
                 _mockViewModelSetupService.Object,
                 _mockUserInfosHttpClient.Object,
-                _mockProgenyHttpClient.Object);
+                _mockProgenyHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
 
             SetupControllerContext();
         }

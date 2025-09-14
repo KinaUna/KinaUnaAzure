@@ -1,4 +1,5 @@
 import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
 import { TodoStatusType } from "../page-models-v9.js";
 import { addSubtask } from "../todos/subtasks.js";
 import { getSubtaskList, popupTodoItem } from "../todos/todo-details.js";
@@ -35,6 +36,7 @@ async function popupKanbanItem(kanbanItem, containerId) {
         console.error('Invalid kanban item or missing todo item.');
         return;
     }
+    startFullPageSpinner();
     popupKanbanItemObject = kanbanItem;
     let url = '/KanbanItems/KanbanItemDetails?kanbanItemId=' + kanbanItem.kanbanItemId;
     let kanbanItemHtml = '';
@@ -67,6 +69,7 @@ async function popupKanbanItem(kanbanItem, containerId) {
     else {
         console.error('Container element not found: ' + containerId);
     }
+    stopFullPageSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -497,6 +500,7 @@ export async function removeKanbanItemFunction(kanbanItemId) {
         if (removeKanbanItemForm) {
             const removeKanbanItemFormFunction = async function (event) {
                 event.preventDefault();
+                startFullPageSpinner();
                 const formData = new FormData(removeKanbanItemForm);
                 const url = '/KanbanItems/RemoveKanbanItem';
                 await fetch(url, {
@@ -522,6 +526,7 @@ export async function removeKanbanItemFunction(kanbanItemId) {
                 }).catch(function (error) {
                     console.error('Error removing kanban item: ' + error);
                 });
+                stopFullPageSpinner();
             };
             removeKanbanItemForm.removeEventListener('submit', removeKanbanItemFormFunction);
             removeKanbanItemForm.addEventListener('submit', removeKanbanItemFormFunction);
@@ -557,6 +562,7 @@ export async function editKanbanItemFunction(kanbanItemId) {
         if (editKanbanItemForm) {
             const editKanbanItemFormFunction = async function (event) {
                 event.preventDefault();
+                startFullPageSpinner();
                 const formData = new FormData(editKanbanItemForm);
                 const url = '/KanbanItems/EditKanbanItem';
                 await fetch(url, {
@@ -585,6 +591,7 @@ export async function editKanbanItemFunction(kanbanItemId) {
                 }).catch(function (error) {
                     console.error('Error editing kanban item: ' + error);
                 });
+                stopFullPageSpinner();
             };
             editKanbanItemForm.removeEventListener('submit', editKanbanItemFormFunction);
             editKanbanItemForm.addEventListener('submit', editKanbanItemFormFunction);

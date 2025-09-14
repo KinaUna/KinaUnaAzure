@@ -1,5 +1,6 @@
 import { getCurrentLanguageId } from "../data-tools-v9.js";
 import { getTranslation } from "../localization-v9.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
 import { getStatusIconForTodoItems } from "../todos/todo-details.js";
 import { getKanbanBoard, getKanbanItems, hideCardMenus, hideColumnMenus, setKanbanItems, updateKanbanItemsInColumn } from "./kanban-board-details.js";
 import { displayKanbanItemDetails, getRemoveKanbanItemForm } from "./kanban-items.js";
@@ -577,6 +578,7 @@ async function removeCard(kanbanItemId) {
             if (removeKanbanItemForm) {
                 const removeKanbanItemFormFunction = async function (event) {
                     event.preventDefault();
+                    startFullPageSpinner();
                     const formData = new FormData(removeKanbanItemForm);
                     const url = '/KanbanItems/RemoveKanbanItem';
                     await fetch(url, {
@@ -610,6 +612,7 @@ async function removeCard(kanbanItemId) {
                     }).catch(function (error) {
                         console.error('Error removing kanban item: ' + error);
                     });
+                    stopFullPageSpinner();
                 };
                 removeKanbanItemForm.removeEventListener('submit', removeKanbanItemFormFunction);
                 removeKanbanItemForm.addEventListener('submit', removeKanbanItemFormFunction);
@@ -649,6 +652,7 @@ async function copyCardToBoard(kanbanItemId) {
             if (copyKanbanItemForm) {
                 const copyKanbanItemFormFunction = async function (event) {
                     event.preventDefault();
+                    startFullPageSpinner();
                     const formData = new FormData(copyKanbanItemForm);
                     const url = '/KanbanItems/CopyKanbanItemToKanbanBoard';
                     await fetch(url, {
@@ -666,6 +670,7 @@ async function copyCardToBoard(kanbanItemId) {
                     }).catch(function (error) {
                         console.error('Error copying kanban item: ' + error);
                     });
+                    stopFullPageSpinner();
                 };
                 copyKanbanItemForm.removeEventListener('submit', copyKanbanItemFormFunction);
                 copyKanbanItemForm.addEventListener('submit', copyKanbanItemFormFunction);
@@ -705,6 +710,7 @@ async function moveCardToBoard(kanbanItemId) {
             if (moveKanbanItemForm) {
                 const moveKanbanItemFormFunction = async function (event) {
                     event.preventDefault();
+                    startFullPageSpinner();
                     const formData = new FormData(moveKanbanItemForm);
                     const url = '/KanbanItems/MoveKanbanItemToKanbanBoard';
                     await fetch(url, {
@@ -739,6 +745,7 @@ async function moveCardToBoard(kanbanItemId) {
                     }).catch(function (error) {
                         console.error('Error moving kanban item: ' + error);
                     });
+                    stopFullPageSpinner();
                 };
                 moveKanbanItemForm.removeEventListener('submit', moveKanbanItemFormFunction);
                 moveKanbanItemForm.addEventListener('submit', moveKanbanItemFormFunction);
