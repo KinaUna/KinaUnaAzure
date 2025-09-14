@@ -13,7 +13,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<KanbanBoard> KanbanBoards { get; set; } = [];
         public List<SelectListItem> KanbanBoardsList { get; set; } = [];
-        
+        public TodoItem ParentTodoItem { get; set; } = null;
         public KanbanItemViewModel()
         {
             ProgenyList = [];

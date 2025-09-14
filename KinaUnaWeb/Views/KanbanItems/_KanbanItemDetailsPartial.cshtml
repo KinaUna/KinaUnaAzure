@@ -6,6 +6,10 @@
 @inject ILocaleManager LocaleManager
 @{
     string title = Model.KanbanItem.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    if (Model.ParentTodoItem != null && Model.ParentTodoItem.TodoItemId != 0)
+    {
+        title = Model.KanbanItem.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Subtask", PageNames.Todos, Model.LanguageId);
+    }
     string setAsNotStartedString = await LocaleManager.GetTranslation("Set as not started", PageNames.Todos, Model.LanguageId);
     string setAsInProgressString = await LocaleManager.GetTranslation("Set as in progress", PageNames.Todos, Model.LanguageId);
     string setAsCompletedString = await LocaleManager.GetTranslation("Set as completed", PageNames.Todos, Model.LanguageId);
@@ -38,6 +42,12 @@
                             </button>
                         }
                         @Model.KanbanItem.TodoItem.Title
+                        @if (Model.ParentTodoItem != null && Model.ParentTodoItem.TodoItemId != 0)
+                        {
+                            <div class="text-white-75 small font-weight-light">
+                                Parent todo: @Model.ParentTodoItem.Title
+                            </div>
+                        }
                     </div>
                 </div>
                 <div class="row text-white">
@@ -148,48 +158,51 @@
             <div class="col-auto">
                 <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
             </div>
-            <div class="col">
-                <div class="space-50"></div>
-                <div class="row text-white">
-                    <div class="col-12 text-white-75">
-                        @await LocaleManager.GetTranslation("Subtasks", PageNames.Todos, Model.LanguageId)
-                        @if (Model.KanbanItem.TodoItem.SubtaskCount != 0)
-                        {
-                            <span class="text-appendage-light ml-2"> [@Model.KanbanItem.TodoItem.CompletedSubtaskCount / @Model.KanbanItem.TodoItem.SubtaskCount]</span>
-                        }
-                    </div>
-                </div>
-                <div class="space-10"></div>
-                @if (Model.IsCurrentUserProgenyAdmin)
-                {
+            @if (Model.ParentTodoItem == null || Model.ParentTodoItem.TodoItemId == 0)
+            {
+                <div class="col">
+                    <div class="space-50"></div>
                     <div class="row text-white">
-                        <div class="col-12">
-                            <form id="add-subtask-inline-form" asp-controller="Subtasks" asp-action="AddSubtaskInline">
-                                <div class="form-group">
-                                    <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control"
-                                           style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
-                                    <button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
-                                </div>
-                                <input name="ParentTodoItemId" type="hidden" value="@Model.KanbanItem.TodoItem.TodoItemId" />
-                                <input name="Status" type="hidden" value="0"/>
-                            </form>
+                        <div class="col-12 text-white-75">
+                            @await LocaleManager.GetTranslation("Subtasks", PageNames.Todos, Model.LanguageId)
+                            @if (Model.KanbanItem.TodoItem.SubtaskCount != 0)
+                            {
+                                <span class="text-appendage-light ml-2"> [@Model.KanbanItem.TodoItem.CompletedSubtaskCount / @Model.KanbanItem.TodoItem.SubtaskCount]</span>
+                            }
                         </div>
                     </div>
-                    <div class="space-20"></div>
-                }
-                <div id="todo-details-sub-tasks-div" class="row">
-                    <div class="ml-3 mr-3">
-                        <div id="todo-details-sub-tasks-list-div" class="col-12">
+                    <div class="space-10"></div>
+                    @if (Model.IsCurrentUserProgenyAdmin)
+                    {
+                        <div class="row text-white">
+                            <div class="col-12">
+                                <form id="add-subtask-inline-form" asp-controller="Subtasks" asp-action="AddSubtaskInline">
+                                    <div class="form-group">
+                                        <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control"
+                                               style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
+                                        <button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
+                                    </div>
+                                    <input name="ParentTodoItemId" type="hidden" value="@Model.KanbanItem.TodoItem.TodoItemId" />
+                                    <input name="Status" type="hidden" value="0" />
+                                </form>
+                            </div>
                         </div>
-                        <div id="load-more-subtasks-wrapper-div" class="col-12" style="height: 150px;">
-                            <button id="more-subtasks-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
-                            <div id="loading-subtasks-div" class="w-100">
-                                <div class="space-50"></div>
+                        <div class="space-20"></div>
+                    }
+                    <div id="todo-details-sub-tasks-div" class="row">
+                        <div class="ml-3 mr-3">
+                            <div id="todo-details-sub-tasks-list-div" class="col-12">
+                            </div>
+                            <div id="load-more-subtasks-wrapper-div" class="col-12" style="height: 150px;">
+                                <button id="more-subtasks-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+                                <div id="loading-subtasks-div" class="w-100">
+                                    <div class="space-50"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            }
             <div class="space-10"></div>
             <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.KanbanItem.TodoItem.CreatedBy</div>
             @if(Model.IsCurrentUserProgenyAdmin){

@@ -1,8 +1,9 @@
 ﻿import { onDeleteItemButtonClicked, onEditItemButtonClicked } from "../addItem/add-item.js";
 import { getCurrentLanguageId } from "../data-tools-v9.js";
 import { addTimelineItemEventListener } from "../item-details/items-display-v9.js";
+import { dispatchKanbanBoardChangedEvent } from "../kanbans/kanban-board-details.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
-import { SubtasksPageParameters, SubtasksPageResponse, TimelineItem, TodoItem, TodoItemParameters } from "../page-models-v9.js";
+import { KanbanItem, SubtasksPageParameters, SubtasksPageResponse, TimelineItem, TimeLineType, TodoItem, TodoItemParameters } from "../page-models-v9.js";
 
 let lastSubTaskPageParameters: SubtasksPageParameters;
 let containerElementId: string = '';
@@ -286,6 +287,12 @@ async function addSubtaskToBoard(subtaskId: string) {
                             // Successfully copied the KanbanItem. Close the modal.
                             modalDiv.innerHTML = '';
                             modalDiv.classList.add('d-none');
+                            // Dispatch event to update Kanban board
+                            const kanbanItem = await response.json() as KanbanItem;
+                            if (kanbanItem) {
+                                dispatchKanbanBoardChangedEvent(kanbanItem.kanbanBoardId.toString());
+                            }
+
                         } else {
                             console.error('Error adding subtask to kanban board. Status: ' + response.status);
                         }

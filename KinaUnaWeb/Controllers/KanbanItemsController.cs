@@ -70,6 +70,11 @@ namespace KinaUnaWeb.Controllers
             model.SetAccessLevelList();
             model.SetStatusList(kanbanItem.TodoItem.Status);
 
+            if (model.KanbanItem.TodoItem.ParentTodoItemId != 0)
+            {
+                model.ParentTodoItem = await todoItemsHttpClient.GetTodoItem(model.KanbanItem.TodoItem.ParentTodoItemId);
+            }
+
             return PartialView("_KanbanItemDetailsPartial", model);
 
         }
