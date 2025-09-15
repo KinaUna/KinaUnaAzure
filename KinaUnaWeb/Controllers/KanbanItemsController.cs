@@ -128,6 +128,13 @@ namespace KinaUnaWeb.Controllers
 
             }
 
+            foreach (KanbanBoardColumn columnItem in kanbanBoard.ColumnsList)
+            {
+                if (columnItem.SetStatus != todoItem.Status) continue;
+                kanbanItem.ColumnId = columnItem.Id;
+                break;
+            }
+
             kanbanItem.RowIndex = -1;
             kanbanItem.TodoItem = todoItem;
             KanbanItem addedKanbanItem = await kanbanItemsHttpClient.AddKanbanItem(kanbanItem);
@@ -231,6 +238,13 @@ namespace KinaUnaWeb.Controllers
             {
                 kanbanItem.ColumnId = column.Id;
 
+            }
+
+            foreach (KanbanBoardColumn columnItem in kanbanBoard.ColumnsList)
+            {
+                if (columnItem.SetStatus != existingTodoItem.Status) continue;
+                kanbanItem.ColumnId = columnItem.Id;
+                break;
             }
 
             KanbanItem newKanbanItem = new()
@@ -338,6 +352,13 @@ namespace KinaUnaWeb.Controllers
 
             }
             kanbanItem.KanbanBoardId = kanbanBoardId;
+            kanbanItem.TodoItem = existingTodoItem;
+            foreach (KanbanBoardColumn columnItem in kanbanBoard.ColumnsList)
+            {
+                if (columnItem.SetStatus != existingTodoItem.Status) continue;
+                kanbanItem.ColumnId = columnItem.Id;
+                break;
+            }
 
             KanbanItem movedKanbanItem = await kanbanItemsHttpClient.UpdateKanbanItem(kanbanItem);
             
@@ -369,8 +390,20 @@ namespace KinaUnaWeb.Controllers
             model.KanbanItem.RowIndex = rowIndex;
             model.KanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
 
+            // If the column has a set status, set the initial TodoItem status to that.
+            model.KanbanBoard.SetColumnsListFromColumns();
+            KanbanBoardColumn column = model.KanbanBoard.ColumnsList.SingleOrDefault(k => k.Id == columnId);
+            if (column != null)
+            {
+                model.KanbanItem.TodoItem.Status = column.SetStatus;
+            }
+            else
+            {
+                model.KanbanItem.TodoItem.Status = 0;
+            }
+
             model.SetAccessLevelList();
-            model.SetStatusList(0);
+            model.SetStatusList(model.KanbanItem.TodoItem.Status);
             return PartialView("_AddKanbanItemPartial", model);
         }
 
@@ -394,6 +427,16 @@ namespace KinaUnaWeb.Controllers
 
             model.KanbanItem.TodoItemId = todoItem.TodoItemId;
             model.KanbanItem.TodoItem = todoItem;
+
+            // If the there is a column with a set status matching the TodoItem status, set the ColumnId to that column.
+            KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(model.KanbanItem.KanbanBoardId);
+            kanbanBoard.SetColumnsListFromColumns();
+            foreach (KanbanBoardColumn kanbanBoardColumn in kanbanBoard.ColumnsList)
+            {
+                if (model.KanbanItem.TodoItem.Status != kanbanBoardColumn.SetStatus) continue;
+                model.KanbanItem.ColumnId = kanbanBoardColumn.Id;
+                break;
+            }
 
             KanbanItem addedKanbanItem = await kanbanItemsHttpClient.AddKanbanItem(model.KanbanItem);
             if (addedKanbanItem == null || addedKanbanItem.KanbanItemId == 0) return Json(kanbanItem);
@@ -422,11 +465,30 @@ namespace KinaUnaWeb.Controllers
                 return Json(new KanbanItem());
             }
 
+            TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(existingKanbanItem.TodoItemId);
+            existingKanbanItem.TodoItem = todoItem;
+            if (existingKanbanItem.ColumnId != kanbanItem.ColumnId)
+            {
+                // If the column has a set status and the TodoItem status is different, update the TodoItem status to that.
+                KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanItem.KanbanBoardId);
+                kanbanBoard.SetColumnsListFromColumns();
+                KanbanBoardColumn column = kanbanBoard.ColumnsList.SingleOrDefault(k => k.Id == kanbanItem.ColumnId);
+                if (column != null && column.SetStatus > -1)
+                {
+                    
+                    if (todoItem != null && todoItem.Status != column.SetStatus)
+                    {
+                        todoItem.Status = column.SetStatus;
+                        existingKanbanItem.TodoItem = await todoItemsHttpClient.UpdateTodoItem(todoItem);
+                    }
+                }
+            }
+
             existingKanbanItem.ColumnId = kanbanItem.ColumnId;
             existingKanbanItem.RowIndex = kanbanItem.RowIndex;
             existingKanbanItem.ModifiedBy = model.CurrentUser.UserEmail;
             existingKanbanItem.ModifiedTime = System.DateTime.UtcNow;
-
+            
             KanbanItem updatedKanbanItem = await kanbanItemsHttpClient.UpdateKanbanItem(existingKanbanItem);
             if (updatedKanbanItem == null || updatedKanbanItem.KanbanItemId == 0) return Json(new KanbanItem());
 
@@ -491,7 +553,15 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Kanbans");
             }
 
-            
+            // If the there is a column with a set status matching the TodoItem status, set the ColumnId to that column.
+            KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(model.KanbanItem.KanbanBoardId);
+            kanbanBoard.SetColumnsListFromColumns();
+            foreach (KanbanBoardColumn kanbanBoardColumn in kanbanBoard.ColumnsList)
+            {
+                if (model.KanbanItem.TodoItem.Status != kanbanBoardColumn.SetStatus) continue;
+                model.KanbanItem.ColumnId = kanbanBoardColumn.Id;
+                break;
+            }
 
             KanbanItem updatedKanbanItem = await kanbanItemsHttpClient.UpdateKanbanItem(model.KanbanItem);
             if (updatedKanbanItem == null || updatedKanbanItem.KanbanItemId == 0) return Json(kanbanItem);

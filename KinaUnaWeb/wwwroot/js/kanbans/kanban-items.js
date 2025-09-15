@@ -1,10 +1,9 @@
 import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
-import { TodoStatusType } from "../page-models-v9.js";
 import { addSubtask } from "../todos/subtasks.js";
 import { getSubtaskList, popupTodoItem } from "../todos/todo-details.js";
 import { initializeAddEditKanbanItem } from "./add-edit-kanban-item.js";
-import { getKanbanItems, setKanbanItems, updateKanbanItemsInColumn } from "./kanban-board-details.js";
+import { dispatchKanbanBoardChangedEvent, getKanbanItems, setKanbanItems, updateKanbanItemsInColumn } from "./kanban-board-details.js";
 let popupContainerId = '';
 let popupKanbanItemObject;
 export async function getKanbanItemsForBoard(kanbanBoardId) {
@@ -190,13 +189,7 @@ async function onSetAsNotStartedButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    let kanbanItems = getKanbanItems();
-                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId);
-                    if (kanbanItem && kanbanItem.todoItem) {
-                        kanbanItem.todoItem.status = TodoStatusType.NotStarted;
-                    }
-                    setKanbanItems(kanbanItems);
-                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
                     return new Promise(function (resolve, reject) {
                         resolve();
                     });
@@ -236,13 +229,7 @@ async function onSetAsInProgressButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    let kanbanItems = getKanbanItems();
-                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId);
-                    if (kanbanItem && kanbanItem.todoItem) {
-                        kanbanItem.todoItem.status = TodoStatusType.InProgress;
-                    }
-                    setKanbanItems(kanbanItems);
-                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
                     return new Promise(function (resolve, reject) {
                         resolve();
                     });
@@ -282,13 +269,7 @@ async function onSetAsCompletedButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    let kanbanItems = getKanbanItems();
-                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId);
-                    if (kanbanItem && kanbanItem.todoItem) {
-                        kanbanItem.todoItem.status = TodoStatusType.Completed;
-                    }
-                    setKanbanItems(kanbanItems);
-                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
                     return new Promise(function (resolve, reject) {
                         resolve();
                     });
@@ -328,13 +309,7 @@ async function onSetAsCancelledButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    let kanbanItems = getKanbanItems();
-                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId);
-                    if (kanbanItem && kanbanItem.todoItem) {
-                        kanbanItem.todoItem.status = TodoStatusType.Cancelled;
-                    }
-                    setKanbanItems(kanbanItems);
-                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
                     return new Promise(function (resolve, reject) {
                         resolve();
                     });
@@ -395,6 +370,16 @@ export async function updateKanbanItem(kanbanItem) {
     }).then(async function (response) {
         if (response.ok) {
             success = true;
+            // Update the KanbanItems array and re-render the board.
+            const updatedKanbanItem = await response.json();
+            if (updatedKanbanItem) {
+                let kanbanItems = getKanbanItems();
+                const index = kanbanItems.findIndex(k => k.kanbanItemId === updatedKanbanItem.kanbanItemId);
+                if (index !== -1) {
+                    kanbanItems[index] = updatedKanbanItem;
+                    setKanbanItems(kanbanItems);
+                }
+            }
         }
         else {
             console.error('Error updating kanban item. Status: ' + response.status);

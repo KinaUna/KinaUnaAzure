@@ -82,6 +82,13 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             {
                 existingKanbanItem.UId = System.Guid.NewGuid().ToString();
             }
+
+            if (kanbanItem.RowIndex < 0)
+            {
+                int kanbanItemsCount = await progenyDbContext.KanbanItemsDb.CountAsync(k => k.KanbanBoardId == kanbanItem.KanbanBoardId && k.ColumnId == kanbanItem.ColumnId);
+                kanbanItem.RowIndex = kanbanItemsCount;
+            }
+
             existingKanbanItem.ColumnId = kanbanItem.ColumnId;
             existingKanbanItem.RowIndex = kanbanItem.RowIndex;
             existingKanbanItem.ModifiedBy = kanbanItem.ModifiedBy;

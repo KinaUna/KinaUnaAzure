@@ -3,7 +3,7 @@ import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v9.js"
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9.js";
 import { getTranslation } from "../localization-v9.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
-import { KanbanBoard, KanbanBoardColumn, KanbanItem, TimelineItem } from "../page-models-v9.js";
+import { KanbanBoard, KanbanBoardColumn, KanbanItem, TimelineItem, TodoStatusType } from "../page-models-v9.js";
 import { getStatusIconForTodoItems } from "../todos/todo-details.js";
 import { initializeAddEditKanbanItem } from "./add-edit-kanban-item.js";
 import { addCardDividerEventListeners, addCardEventListeners, createKanbanItemCardHTML, loadKanbanItemsTranslations } from "./kanban-cards.js";
@@ -14,6 +14,17 @@ let kanbanBoard: KanbanBoard;
 let kanbanItems: KanbanItem[] = [];
 const defaultColumnTitle = 'To do';
 let userCanEdit: boolean = false;
+let renameString = '';
+let setLimitString = '';
+let changeStatusString = '';
+let moveLeftString = '';
+let moveRightString = '';
+let setLimitHeaderString = '';
+let noStatusString = '';
+let statusNotStartedString = '';
+let statusInProgressString = '';
+let statusDoneString = '';
+let statusCancelledString = '';
 
 export function getKanbanBoard(): KanbanBoard {
     return kanbanBoard;
@@ -438,20 +449,57 @@ function ensureColumnRowIndexesAreSequential(columnId: number): void {
     });
 }
 
+async function setColumnTranslations(): Promise<void> {
+    if (renameString === '') {
+        renameString = await getTranslation('Rename', 'Todos', getCurrentLanguageId());
+    }
+    if (setLimitString === '') {
+        setLimitString = await getTranslation('Set limit', 'Todos', getCurrentLanguageId());
+    }
+    if (changeStatusString === '') {
+        changeStatusString = await getTranslation('Set status', 'Todos', getCurrentLanguageId());
+    }
+    if (moveLeftString === '') {
+        moveLeftString = await getTranslation('Move left', 'Todos', getCurrentLanguageId());
+    }
+    if (moveRightString === '') {
+        moveRightString = await getTranslation('Move right', 'Todos', getCurrentLanguageId());
+    }
+    if (setLimitHeaderString === '') {
+        setLimitHeaderString = await getTranslation('Set WIP limit for column (0 = no limit):', 'Todos', getCurrentLanguageId());
+    }
+    if (noStatusString === '') {
+        noStatusString = await getTranslation('No status', 'Todos', getCurrentLanguageId());
+    }
+    if (statusNotStartedString === '') {
+        statusNotStartedString = `<i class="material-icons-small">${getStatusIconForTodoItems(TodoStatusType.NotStarted)}</i>` + await getTranslation('Not started', 'Todos', getCurrentLanguageId());
+    }
+    if (statusInProgressString === '') {
+        statusInProgressString = `<i class="material-icons-small">${getStatusIconForTodoItems(TodoStatusType.InProgress)}</i>` + await getTranslation('In progress', 'Todos', getCurrentLanguageId());
+    }
+    if (statusDoneString === '') {
+        statusDoneString = `<i class="material-icons-small">${getStatusIconForTodoItems(TodoStatusType.Completed)}</i>` + await getTranslation('Done', 'Todos', getCurrentLanguageId());
+    }
+    if (statusCancelledString === '') {
+        statusCancelledString = `<i class="material-icons-small">${getStatusIconForTodoItems(TodoStatusType.Cancelled)}</i>` + await getTranslation('Cancelled', 'Todos', getCurrentLanguageId());
+    }    
+}
+
 async function createKanbanBoardContainer(kanbanBoard: KanbanBoard): Promise<string> {
     let kanbanBoardHtml = '<div class="kanban-board-container"><div class="kanban-column-divider" data-column-divider-id="0"></div>';
     let dividerIndex = 1;
-    const renameString = await getTranslation('Rename', 'Todos', getCurrentLanguageId());
-    const setLimitString = await getTranslation('Set limit', 'Todos', getCurrentLanguageId());
-    const moveLeftString = await getTranslation('Move left', 'Todos', getCurrentLanguageId());
-    const moveRightString = await getTranslation('Move right', 'Todos', getCurrentLanguageId());
-    const setLimitHeaderString = await getTranslation('Set WIP limit for column (0 = no limit):', 'Todos', getCurrentLanguageId());
+
+    await setColumnTranslations();
 
     kanbanBoard.columnsList.forEach((column) => {
         let numberOfKanbanItems = (kanbanItems.filter(k => k.columnId === column.id)).length;
         let limitString = '[ ' + numberOfKanbanItems + '/' + column.wipLimit + ' ]';
         if (column.wipLimit === 0) {
             limitString = '[ ' + numberOfKanbanItems + '/&#8734; ]';
+        }
+        let statusIconHtml = '';
+        if (column.setStatus > -1) {
+            statusIconHtml = `<i class="material-icons-small">${ getStatusIconForTodoItems(column.setStatus)}</i>`;
         }
 
         kanbanBoardHtml += `
@@ -461,13 +509,15 @@ async function createKanbanBoardContainer(kanbanBoard: KanbanBoard): Promise<str
                                     <button class="kanban-column-menu-button" data-column-id="${column.id}">...</button>
                                     <div class="kanban-column-menu-content d-none" data-column-id="${column.id}">
                                         <button class="kanban-column-menu-item-button" data-column-menu-action="rename" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">edit</span> ${renameString}</button>
+                                        <div class="item-menu-divider"></div>
                                         <button class="kanban-column-menu-item-button" data-column-menu-action="setlimit" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">compress</span> ${setLimitString}</button>
+                                        <button class="kanban-column-menu-item-button" data-column-menu-action="setstatus" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">label</span> ${changeStatusString}</button>
                                         <div class="item-menu-divider"></div>
                                         <button class="kanban-column-menu-item-button" data-column-menu-action="moveleft" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">arrow_back</span> ${moveLeftString}</button>
                                         <button class="kanban-column-menu-item-button" data-column-menu-action="moveright" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">arrow_forward</span>${moveRightString}</button>
                                     </div>
                                 </div>
-                                <div class="kanban-column-title" data-column-id="${column.id}"><span class="mr-2" data-title-span-id="${column.id}">${column.title}</span><span class="kanban-card-wip-limit text-muted" data-wip-limit-id="${column.id}">${limitString}<span></div>
+                                <div class="kanban-column-title" data-column-id="${column.id}">${statusIconHtml}<span class="mr-2" data-title-span-id="${column.id}">${column.title}</span><span class="kanban-card-wip-limit text-muted" data-wip-limit-id="${column.id}">${limitString}<span></div>
                                 <div class="input-group kanban-column-rename-input-group d-none" id="rename-column-input-group-${column.id}" style="width: auto;" draggable="true" ondragstart="event.preventDefault(); event.stopPropagation();">
                                     <input type="text" class="form-control" id="rename-column-input-${column.id}" value="${column.title}" >
                                     <div class="input-group-append">
@@ -507,6 +557,21 @@ async function createKanbanBoardContainer(kanbanBoard: KanbanBoard): Promise<str
             </div>
         </div>`;
         kanbanBoardHtml += limitInputHTML;
+
+        const setStatusInputHTML = `
+        <div class="settings-modal d-none" tabindex="-1" role="dialog" id="set-column-status-modal-${column.id}">
+            <div class="form-group modal-settings-panel">
+                <div class="h5">${column.title + ': ' + changeStatusString}</div>
+                <div class="kanban-column-set-status-input-group" id="set-column-status-input-group-${column.id}" style="width: auto;" draggable="true" ondragstart="event.preventDefault(); event.stopPropagation();">
+                <button class="btn btn-success ${column.setStatus === -1 ? 'disabled' : ''}" type="button" id="set-column-status-none-button-${column.id}">${noStatusString}</button>
+                <button class="btn btn-success ${column.setStatus === 0 ? 'disabled' : ''}" type="button" id="set-column-status-not-started-button-${column.id}">${statusNotStartedString}</button>
+                <button class="btn btn-success ${column.setStatus === 1 ? 'disabled' : ''}" type="button" id="set-column-status-in-progress-button-${column.id}">${statusInProgressString}</button>
+                <button class="btn btn-success ${column.setStatus === 2 ? 'disabled' : ''}" type="button" id="set-column-status-done-button-${column.id}">${statusDoneString}</button>
+                <button class="btn btn-success ${column.setStatus === 3 ? 'disabled' : ''}" type="button" id="set-column-status-cancelled-button-${column.id}">${statusCancelledString}</button>
+                </div>
+            </div>
+        </div>`;
+        kanbanBoardHtml += setStatusInputHTML;
 
         const addCardInputHTML = `
         <div class="settings-modal d-none" tabindex="-1" role="dialog" id="add-card-modal-${column.id}"></div>`;
@@ -906,6 +971,21 @@ const showColumnMenu = function (event: MouseEvent): void {
                     setLimitButton.addEventListener('click', setLimitFunction);
                 }
 
+                const setColumnStatusButton = menuContentDiv.querySelector<HTMLButtonElement>('button[data-column-menu-action="setstatus"]');
+                if (setColumnStatusButton) {
+                    const setColumnStatusFunction = async function (event: MouseEvent) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        menuContentDiv.classList.add('d-none');
+                        await showSetColumnStatusPrompt(columnId);
+                        return new Promise<void>(function (resolve, reject) {
+                            resolve();
+                        });
+                    }
+                    setColumnStatusButton.removeEventListener('click', setColumnStatusFunction);
+                    setColumnStatusButton.addEventListener('click', setColumnStatusFunction);
+                }
+
                 const moveLeftButton = menuContentDiv.querySelector<HTMLButtonElement>('button[data-column-menu-action="moveleft"]');
                 if (moveLeftButton) {
                     // If this is the first column, disable the button.
@@ -1069,6 +1149,143 @@ async function showSetLimitPrompt(columnId: string): Promise<void> {
 
             saveButton.removeEventListener('click', saveFunction);
             saveButton.addEventListener('click', saveFunction);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function showSetColumnStatusPrompt(columnId: string): Promise<void> {
+    hideSettingsModals();
+
+    const kanbanBoardColumn = kanbanBoard.columnsList.find(c => c.id.toString() === columnId);
+    if (kanbanBoardColumn) {
+        const setStatusPromptDiv = document.querySelector<HTMLDivElement>('#set-column-status-modal-' + columnId);
+        if (setStatusPromptDiv === null) {
+            return new Promise<void>(function (resolve, reject) {
+                resolve();
+            });
+        }
+        setStatusPromptDiv.classList.remove('d-none');
+        const setStatusNoneButton = document.querySelector<HTMLButtonElement>('#set-column-status-none-button-' + columnId);
+        const setStatusNotStartedButton = document.querySelector<HTMLButtonElement>('#set-column-status-not-started-button-' + columnId);
+        const setStatusInProgressButton = document.querySelector<HTMLButtonElement>('#set-column-status-in-progress-button-' + columnId);
+        const setStatusDoneButton = document.querySelector<HTMLButtonElement>('#set-column-status-done-button-' + columnId);
+        const setStatusCancelledButton = document.querySelector<HTMLButtonElement>('#set-column-status-cancelled-button-' + columnId);
+        if (setStatusNoneButton) {
+            const setNoneFunction = async function () {
+                hideSettingsModals();
+                startLoadingItemsSpinner('kanban-board-main-div');
+                kanbanBoardColumn.setStatus = TodoStatusType.None;
+                kanbanBoard.columns = JSON.stringify(kanbanBoard.columnsList);
+                // Save the updated KanbanBoard to the server.
+                await updateKanbanBoardColumns(kanbanBoard);
+                await renderKanbanBoard(false);
+                stopLoadingItemsSpinner('kanban-board-main-div');
+                return new Promise<void>(function (resolve, reject) {
+                    resolve();
+                });
+            }
+            if (setStatusNoneButton.classList.contains('disabled')) {
+                setStatusNoneButton.disabled = true;
+            }
+            else {
+                setStatusNoneButton.removeEventListener('click', setNoneFunction);
+                setStatusNoneButton.addEventListener('click', setNoneFunction);
+            }
+            
+        }
+        if (setStatusNotStartedButton) {
+            const setNotStartedFunction = async function () {
+                hideSettingsModals();
+                startLoadingItemsSpinner('kanban-board-main-div');
+                kanbanBoardColumn.setStatus = TodoStatusType.NotStarted;
+                kanbanBoard.columns = JSON.stringify(kanbanBoard.columnsList);
+                // Save the updated KanbanBoard to the server.
+                await updateKanbanBoardColumns(kanbanBoard);
+                await renderKanbanBoard(false);
+                stopLoadingItemsSpinner('kanban-board-main-div');
+                return new Promise<void>(function (resolve, reject) {
+                    resolve();
+                });
+            }
+            if (setStatusNotStartedButton.classList.contains('disabled')) {
+                setStatusNotStartedButton.disabled = true;
+            }
+            else {
+                setStatusNotStartedButton.removeEventListener('click', setNotStartedFunction);
+                setStatusNotStartedButton.addEventListener('click', setNotStartedFunction);
+            }
+            
+        }
+        if (setStatusInProgressButton) {
+            const setInProgressFunction = async function () {
+                hideSettingsModals();
+                startLoadingItemsSpinner('kanban-board-main-div');
+                kanbanBoardColumn.setStatus = TodoStatusType.InProgress;
+                kanbanBoard.columns = JSON.stringify(kanbanBoard.columnsList);
+                // Save the updated KanbanBoard to the server.
+                await updateKanbanBoardColumns(kanbanBoard);
+                await renderKanbanBoard(false);
+                stopLoadingItemsSpinner('kanban-board-main-div');
+                return new Promise<void>(function (resolve, reject) {
+                    resolve();
+                });
+            }
+            if (setStatusInProgressButton.classList.contains('disabled')) {
+                setStatusInProgressButton.disabled = true;
+            }
+            else {
+                setStatusInProgressButton.removeEventListener('click', setInProgressFunction);
+                setStatusInProgressButton.addEventListener('click', setInProgressFunction);
+            }
+            
+        }
+        if (setStatusDoneButton) {
+            const setDoneFunction = async function () {
+                hideSettingsModals();
+                startLoadingItemsSpinner('kanban-board-main-div');
+                kanbanBoardColumn.setStatus = TodoStatusType.Completed;
+                kanbanBoard.columns = JSON.stringify(kanbanBoard.columnsList);
+                // Save the updated KanbanBoard to the server.
+                await updateKanbanBoardColumns(kanbanBoard);
+                await renderKanbanBoard(false);
+                stopLoadingItemsSpinner('kanban-board-main-div');
+                return new Promise<void>(function (resolve, reject) {
+                    resolve();
+                });
+            }
+            if (setStatusDoneButton.classList.contains('disabled')) {
+                setStatusDoneButton.disabled = true;
+            }
+            else {
+                setStatusDoneButton.removeEventListener('click', setDoneFunction);
+                setStatusDoneButton.addEventListener('click', setDoneFunction);
+            }            
+        }
+        if (setStatusCancelledButton) {
+            const setCancelledFunction = async function () {
+                hideSettingsModals();
+                startLoadingItemsSpinner('kanban-board-main-div');
+                kanbanBoardColumn.setStatus = TodoStatusType.Cancelled;
+                kanbanBoard.columns = JSON.stringify(kanbanBoard.columnsList);
+                // Save the updated KanbanBoard to the server.
+                await updateKanbanBoardColumns(kanbanBoard);
+                await renderKanbanBoard(false);
+                stopLoadingItemsSpinner('kanban-board-main-div');
+                return new Promise<void>(function (resolve, reject) {
+                    resolve();
+                });
+            }
+            if (setStatusCancelledButton.classList.contains('disabled')) {
+                setStatusCancelledButton.disabled = true;
+            }
+            else {
+                setStatusCancelledButton.removeEventListener('click', setCancelledFunction);
+                setStatusCancelledButton.addEventListener('click', setCancelledFunction);
+            }
         }
     }
 

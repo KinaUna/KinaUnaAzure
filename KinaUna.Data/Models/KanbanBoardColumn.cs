@@ -6,6 +6,6 @@
         public int ColumnIndex { get; set; }
         public string Title { get; set; } = string.Empty;
         public int WipLimit { get; set; }
-        
+        public int SetStatus { get; set; } = -1;
     }
 }

@@ -202,13 +202,7 @@ async function onSetAsNotStartedButtonClicked(event: MouseEvent): Promise<void> 
             }).then(async function (response) {
                 if (response.ok) {
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    let kanbanItems = getKanbanItems();
-                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId)
-                    if (kanbanItem && kanbanItem.todoItem) {
-                        kanbanItem.todoItem.status = TodoStatusType.NotStarted;
-                    }
-                    setKanbanItems(kanbanItems);
-                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
 
                     return new Promise<void>(function (resolve, reject) {
                         resolve();
@@ -250,13 +244,7 @@ async function onSetAsInProgressButtonClicked(event: MouseEvent): Promise<void> 
             }).then(async function (response) {
                 if (response.ok) {
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    let kanbanItems = getKanbanItems();
-                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId)
-                    if (kanbanItem && kanbanItem.todoItem) {
-                        kanbanItem.todoItem.status = TodoStatusType.InProgress;
-                    }
-                    setKanbanItems(kanbanItems);
-                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
 
                     return new Promise<void>(function (resolve, reject) {
                         resolve();
@@ -298,14 +286,9 @@ async function onSetAsCompletedButtonClicked(event: MouseEvent): Promise<void> {
                 },
             }).then(async function (response) {
                 if (response.ok) {
+
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    let kanbanItems = getKanbanItems();
-                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId)
-                    if (kanbanItem && kanbanItem.todoItem) {
-                        kanbanItem.todoItem.status = TodoStatusType.Completed;
-                    }
-                    setKanbanItems(kanbanItems);
-                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
 
                     return new Promise<void>(function (resolve, reject) {
                         resolve();
@@ -348,13 +331,7 @@ async function onSetAsCancelledButtonClicked(event: MouseEvent): Promise<void> {
             }).then(async function (response) {
                 if (response.ok) {
                     await popupKanbanItem(popupKanbanItemObject, popupContainerId);
-                    let kanbanItems = getKanbanItems();
-                    let kanbanItem = kanbanItems.find(k => k.kanbanItemId === popupKanbanItemObject.kanbanItemId)
-                    if (kanbanItem && kanbanItem.todoItem) {
-                        kanbanItem.todoItem.status = TodoStatusType.Cancelled;
-                    }
-                    setKanbanItems(kanbanItems);
-                    await updateKanbanItemsInColumn(popupKanbanItemObject.columnId);
+                    dispatchKanbanBoardChangedEvent(popupKanbanItemObject.kanbanBoardId.toString());
 
                     return new Promise<void>(function (resolve, reject) {
                         resolve();
@@ -418,6 +395,16 @@ export async function updateKanbanItem(kanbanItem: KanbanItem): Promise<boolean>
     }).then(async function (response) {
         if (response.ok) {
             success = true;
+            // Update the KanbanItems array and re-render the board.
+            const updatedKanbanItem = await response.json() as KanbanItem;
+            if (updatedKanbanItem) {
+                let kanbanItems = getKanbanItems();
+                const index = kanbanItems.findIndex(k => k.kanbanItemId === updatedKanbanItem.kanbanItemId);
+                if (index !== -1) {
+                    kanbanItems[index] = updatedKanbanItem;
+                    setKanbanItems(kanbanItems);
+                }
+            }
         } else {
             console.error('Error updating kanban item. Status: ' + response.status);
         }

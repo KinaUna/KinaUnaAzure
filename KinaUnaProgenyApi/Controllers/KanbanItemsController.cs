@@ -211,7 +211,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest();
             }
 
-            if (kanbanItem.TodoItem == null)
+            if (kanbanItem.TodoItemId == 0)
             {
                 return BadRequest("The Kanban item must be linked to a valid Todo item.");
             }

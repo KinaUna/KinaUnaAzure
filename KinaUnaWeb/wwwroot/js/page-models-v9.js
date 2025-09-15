@@ -463,6 +463,7 @@ export var TimeLineType;
 })(TimeLineType || (TimeLineType = {}));
 export var TodoStatusType;
 (function (TodoStatusType) {
+    TodoStatusType[TodoStatusType["None"] = -1] = "None";
     TodoStatusType[TodoStatusType["NotStarted"] = 0] = "NotStarted";
     TodoStatusType[TodoStatusType["InProgress"] = 1] = "InProgress";
     TodoStatusType[TodoStatusType["Completed"] = 2] = "Completed";
@@ -676,6 +677,7 @@ export class KanbanBoardColumn {
         this.columnIndex = 0;
         this.title = '';
         this.wipLimit = 0;
+        this.setStatus = -1;
     }
 }
 export class KanbanItem {

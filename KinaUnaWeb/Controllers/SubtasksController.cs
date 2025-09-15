@@ -509,6 +509,13 @@ namespace KinaUnaWeb.Controllers
 
             }
 
+            foreach (KanbanBoardColumn columnItem in kanbanBoard.ColumnsList)
+            {
+                if (columnItem.SetStatus != subtask.Status) continue;
+                model.KanbanItem.ColumnId = columnItem.Id;
+                break;
+            }
+
             KanbanItem newKanbanItem = new()
             {
                 KanbanBoardId = kanbanBoard.KanbanBoardId,
@@ -540,6 +547,9 @@ namespace KinaUnaWeb.Controllers
             subtask.Status = (int)KinaUnaTypes.TodoStatusType.NotStarted;
             TodoItem result = await subtasksHttpClient.UpdateSubtask(subtask);
 
+            // If there is a KanbanItem for this subtask, update its column too.
+            await UpdateKanbanItemsStatus(subtask);
+
             return Json(result);
         }
         
@@ -558,6 +568,9 @@ namespace KinaUnaWeb.Controllers
             subtask.CompletedDate = null;
             subtask.Status = (int)KinaUnaTypes.TodoStatusType.InProgress;
             TodoItem result = await subtasksHttpClient.UpdateSubtask(subtask);
+
+            // If there is a KanbanItem for this subtask, update its column too.
+            await UpdateKanbanItemsStatus(subtask);
 
             return Json(result);
         }
@@ -578,6 +591,9 @@ namespace KinaUnaWeb.Controllers
             subtask.Status = (int)KinaUnaTypes.TodoStatusType.Completed;
             TodoItem result = await subtasksHttpClient.UpdateSubtask(subtask);
 
+            // If there is a KanbanItem for this subtask, update its column too.
+            await UpdateKanbanItemsStatus(subtask);
+
             return Json(result);
         }
 
@@ -597,7 +613,34 @@ namespace KinaUnaWeb.Controllers
             subtask.Status = (int)KinaUnaTypes.TodoStatusType.Cancelled;
             TodoItem result = await subtasksHttpClient.UpdateSubtask(subtask);
 
+            // If there is a KanbanItem for this subtask, update its column too.
+            await UpdateKanbanItemsStatus(subtask);
+
             return Json(result);
+        }
+
+        private async Task UpdateKanbanItemsStatus(TodoItem subtask)
+        {
+            List<KanbanItem> kanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForTodoItem(subtask.TodoItemId);
+            if (kanbanItems.Count > 0)
+            {
+                foreach (KanbanItem kanbanItem in kanbanItems)
+                {
+                    KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanItem.KanbanBoardId);
+                    kanbanBoard.SetColumnsListFromColumns();
+                    foreach (KanbanBoardColumn kanbanBoardColumn in kanbanBoard.ColumnsList)
+                    {
+                        if (kanbanBoardColumn.SetStatus > -1 && subtask.Status == kanbanBoardColumn.SetStatus)
+                        {
+                            kanbanItem.ColumnId = kanbanBoardColumn.Id;
+                            kanbanItem.RowIndex = -1;
+                            kanbanItem.TodoItem = subtask;
+                            _ = await kanbanItemsHttpClient.UpdateKanbanItem(kanbanItem);
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

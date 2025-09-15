@@ -428,7 +428,7 @@ export enum TimeLineType {
 }
 
 export enum TodoStatusType {
-    NotStarted = 0, InProgress = 1, Completed = 2, Cancelled = 3, Overdue = 4
+    None = -1, NotStarted = 0, InProgress = 1, Completed = 2, Cancelled = 3, Overdue = 4
 }
 
 export enum OnThisDayPeriod {
@@ -621,6 +621,7 @@ export class KanbanBoardColumn {
     columnIndex: number = 0;
     title: string = '';
     wipLimit: number = 0;
+    setStatus: number = -1;
 }
 
 export class KanbanItem {

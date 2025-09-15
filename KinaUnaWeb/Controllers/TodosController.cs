@@ -2,15 +2,15 @@
 using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
+using KinaUnaWeb.Models.TypeScriptModels.TodoItems;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using KinaUnaWeb.Models.TypeScriptModels.TodoItems;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -360,6 +360,10 @@ namespace KinaUnaWeb.Controllers
             TodoItem editedTodoItem = model.CreateTodoItem();
 
             model.TodoItem = await todoItemsHttpClient.UpdateTodoItem(editedTodoItem);
+
+            // If there are any KanbanItems for this TodoItem, update the column for all of them.
+            await UpdateKanbanItemsStatus(model.TodoItem);
+
             model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             if (model.TodoItem.CompletedDate.HasValue)
             {
@@ -539,6 +543,9 @@ namespace KinaUnaWeb.Controllers
             todoItem.Status = (int)KinaUnaTypes.TodoStatusType.NotStarted;
             TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
 
+            // If there are any KanbanItems for this TodoItem, update the column for all of them.
+            await UpdateKanbanItemsStatus(result);
+
             return Json(result);
         }
 
@@ -565,6 +572,8 @@ namespace KinaUnaWeb.Controllers
             todoItem.CompletedDate = null;
             todoItem.Status = (int)KinaUnaTypes.TodoStatusType.InProgress;
             TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
+            // If there are any KanbanItems for this TodoItem, update the column for all of them.
+            await UpdateKanbanItemsStatus(result);
 
             return Json(result);
         }
@@ -594,6 +603,8 @@ namespace KinaUnaWeb.Controllers
             todoItem.CompletedDate = DateTime.UtcNow;
             todoItem.Status = (int)KinaUnaTypes.TodoStatusType.Completed;
             TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
+            // If there are any KanbanItems for this TodoItem, update the column for all of them.
+            await UpdateKanbanItemsStatus(result);
 
             return Json(result);
         }
@@ -623,8 +634,34 @@ namespace KinaUnaWeb.Controllers
             todoItem.CompletedDate = null;
             todoItem.Status = (int)KinaUnaTypes.TodoStatusType.Cancelled;
             TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
+            // If there are any KanbanItems for this TodoItem, update the column for all of them.
+            await UpdateKanbanItemsStatus(result);
 
             return Json(result);
+        }
+
+        private async Task UpdateKanbanItemsStatus(TodoItem todoItem)
+        {
+            List<KanbanItem> kanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForTodoItem(todoItem.TodoItemId);
+            if (kanbanItems.Count > 0)
+            {
+                foreach (KanbanItem kanbanItem in kanbanItems)
+                {
+                    KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanItem.KanbanBoardId);
+                    kanbanBoard.SetColumnsListFromColumns();
+                    foreach (KanbanBoardColumn kanbanBoardColumn in kanbanBoard.ColumnsList)
+                    {
+                        if (kanbanBoardColumn.SetStatus > -1 && todoItem.Status == kanbanBoardColumn.SetStatus)
+                        {
+                            kanbanItem.ColumnId = kanbanBoardColumn.Id;
+                            kanbanItem.RowIndex = -1;
+                            kanbanItem.TodoItem = todoItem;
+                            _ = await kanbanItemsHttpClient.UpdateKanbanItem(kanbanItem);
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 }
