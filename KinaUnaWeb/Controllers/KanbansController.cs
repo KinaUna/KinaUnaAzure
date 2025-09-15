@@ -109,7 +109,8 @@ namespace KinaUnaWeb.Controllers
             }
 
             KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(elementParameters.KanbanBoardId);
-
+            kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
+            
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(elementParameters.LanguageId, User.GetEmail(), kanbanBoard.ProgenyId);
             KanbanBoardElementResponse response = new()
             {
@@ -118,7 +119,7 @@ namespace KinaUnaWeb.Controllers
                 IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin,
                 KanbanBoard = kanbanBoard
             };
-
+            
             return PartialView("_KanbanBoardElementPartial", response);
         }
 
@@ -135,7 +136,6 @@ namespace KinaUnaWeb.Controllers
             };
 
             model.KanbanBoard.Progeny = model.CurrentProgeny;
-            model.KanbanBoard.Progeny.PictureLink = model.KanbanBoard.Progeny.GetProfilePictureUrl();
             UserInfo kanbanBoardUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.KanbanBoard.CreatedBy);
             model.KanbanBoard.CreatedBy = kanbanBoardUserInfo.FullName();
 

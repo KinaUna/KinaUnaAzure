@@ -3248,7 +3248,7 @@ button.Zebra_DatePicker_Icon {
 
     .form-control {
         background: no-repeat center bottom, center calc(100% - 1px), #302e36;
-        border: 1px solid rgb(20 60 100 / 60%);
+        border: 1px solid rgb(101 101 101 / 60%);
         color: #fff;
     }
 
@@ -3416,6 +3416,10 @@ button.Zebra_DatePicker_Icon {
     .horizontal-bar-thin {
         background-color: #363738;
     }
+}
+
+.form-control-inherit-color {
+    background: no-repeat center bottom, center calc(100% - 1px), #0000001a;
 }
 
 div.dataTables_wrapper div.dataTables_length select {

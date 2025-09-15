@@ -1,5 +1,6 @@
 ﻿@using System.Web
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.KanbanBoardViewModel
 @inject ILocaleManager LocaleManager
@@ -10,7 +11,7 @@
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-todos-header">
-                <img src="@Model.KanbanBoard.Progeny.PictureLink" class="item-details-title-picture" />
+                <img src="@Model.KanbanBoard.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>

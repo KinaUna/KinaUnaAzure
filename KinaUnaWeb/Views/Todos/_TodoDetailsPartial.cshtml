@@ -229,7 +229,7 @@
                                     <div class="row">
                                         <div class="col-12">
                                             <div class="input-group">
-                                                <select id="add-todo-item-to-kanban-board-select" class="selectpicker form-control" data-style="btn-kinaunaselect" data-size="@Model.KanbanBoardsList.Count" asp-items="@Model.KanbanBoardsList"></select>
+                                                <select id="add-todo-item-to-kanban-board-select" class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-size="@Model.KanbanBoardsList.Count" asp-items="@Model.KanbanBoardsList"></select>
                                                 <div class="input-group-append">
                                                     <button id="add-todo-item-to-kanban-board-button" class="btn btn-success btn-sm" data-todo-item-id="@Model.TodoItem.TodoItemId">@await LocaleManager.GetTranslation("Add to Kanban board", PageNames.Todos, Model.LanguageId)</button>
                                                 </div>
