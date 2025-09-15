@@ -1,4 +1,4 @@
-﻿const bodyContentDiv: any = $('.body-content');
+﻿const bodyContentDiv: any = $('body');
 /**
  * Displays the default cirle loading spinner in the middle of the page, and fades the rest of the page.
  */

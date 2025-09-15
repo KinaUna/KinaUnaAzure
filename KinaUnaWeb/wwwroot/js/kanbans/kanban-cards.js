@@ -68,10 +68,13 @@ export function createKanbanItemCardHTML(kanbanItem) {
                                         <div class="kanban-card-menu-content d-none" data-kanban-item-id="${kanbanItem.kanbanItemId}">
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="moveup" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">move_up</span><span>${moveUpString}</span></button>
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="movedown" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">move_down</span> ${moveDownString}</button>
+                                            <div class="item-menu-divider"></div>
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="moveleft" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">arrow_back</span> ${moveLeftString}</button>
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="moveright" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">arrow_forward</span> ${moveRightString}</button>
+                                            <div class="item-menu-divider"></div>
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="copytoboard" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">folder_copy</span> ${copyToBoardString}</button>
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="movetoboard" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">drive_file_move</span> ${moveToBoardString}</button>
+                                            <div class="item-menu-divider"></div>
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="removecard" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">delete</span> ${removeCardString}</button>
                                         </div>
                                     </div>
@@ -329,61 +332,109 @@ const showCardMenu = function (event) {
         if (menuContentDiv) {
             if (menuContentDiv.classList.contains('d-none')) {
                 menuContentDiv.classList.remove('d-none');
+                let kanbanItems = getKanbanItems();
+                let kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
                 const moveUpButton = menuContentDiv.querySelector('button[data-card-menu-action="moveup"]');
                 if (moveUpButton) {
-                    const moveCardUpFunction = async function (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        menuContentDiv.classList.add('d-none');
-                        await moveCardUp(kanbanItemId);
-                        return new Promise(function (resolve, reject) {
-                            resolve();
-                        });
-                    };
-                    moveUpButton.removeEventListener('click', moveCardUpFunction);
-                    moveUpButton.addEventListener('click', moveCardUpFunction);
+                    // If the card is the first in the column, hide the move up button.
+                    if (kanbanItem) {
+                        const itemsInColumn = kanbanItems.filter(k => k.columnId === kanbanItem.columnId);
+                        // Sort by row index
+                        itemsInColumn.sort((a, b) => a.rowIndex - b.rowIndex);
+                        if (itemsInColumn.length > 0 && itemsInColumn[0].kanbanItemId.toString() === kanbanItemId) {
+                            moveUpButton.disabled = true;
+                        }
+                        else {
+                            moveUpButton.disabled = false;
+                            const moveCardUpFunction = async function (event) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                menuContentDiv.classList.add('d-none');
+                                await moveCardUp(kanbanItemId);
+                                return new Promise(function (resolve, reject) {
+                                    resolve();
+                                });
+                            };
+                            moveUpButton.removeEventListener('click', moveCardUpFunction);
+                            moveUpButton.addEventListener('click', moveCardUpFunction);
+                        }
+                    }
                 }
                 const moveDownButton = menuContentDiv.querySelector('button[data-card-menu-action="movedown"]');
                 if (moveDownButton) {
-                    const moveCardDownFunction = async function (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        menuContentDiv.classList.add('d-none');
-                        await moveCardDown(kanbanItemId);
-                        return new Promise(function (resolve, reject) {
-                            resolve();
-                        });
-                    };
-                    moveDownButton.removeEventListener('click', moveCardDownFunction);
-                    moveDownButton.addEventListener('click', moveCardDownFunction);
+                    // If the card is the last in the column, hide the move down button.
+                    if (kanbanItem) {
+                        const itemsInColumn = kanbanItems.filter(k => k.columnId === kanbanItem.columnId);
+                        // Sort by row index
+                        itemsInColumn.sort((a, b) => a.rowIndex - b.rowIndex);
+                        if (itemsInColumn.length > 0 && itemsInColumn[itemsInColumn.length - 1].kanbanItemId.toString() === kanbanItemId) {
+                            moveDownButton.disabled = true;
+                        }
+                        else {
+                            moveDownButton.disabled = false;
+                            const moveCardDownFunction = async function (event) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                menuContentDiv.classList.add('d-none');
+                                await moveCardDown(kanbanItemId);
+                                return new Promise(function (resolve, reject) {
+                                    resolve();
+                                });
+                            };
+                            moveDownButton.removeEventListener('click', moveCardDownFunction);
+                            moveDownButton.addEventListener('click', moveCardDownFunction);
+                        }
+                    }
                 }
                 const moveLeftButton = menuContentDiv.querySelector('button[data-card-menu-action="moveleft"]');
                 if (moveLeftButton) {
-                    const moveCardLeftFunction = async function (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        menuContentDiv.classList.add('d-none');
-                        await moveCardLeft(kanbanItemId);
-                        return new Promise(function (resolve, reject) {
-                            resolve();
-                        });
-                    };
-                    moveLeftButton.removeEventListener('click', moveCardLeftFunction);
-                    moveLeftButton.addEventListener('click', moveCardLeftFunction);
+                    // If the card is in the first column, hide the move left button.
+                    if (kanbanItem) {
+                        const kanbanBoard = getKanbanBoard();
+                        const currentColumnIndex = kanbanBoard.columnsList.find(c => c.id === kanbanItem.columnId)?.columnIndex;
+                        if (currentColumnIndex !== undefined && currentColumnIndex === 0) {
+                            moveLeftButton.disabled = true;
+                        }
+                        else {
+                            moveLeftButton.disabled = false;
+                            const moveCardLeftFunction = async function (event) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                menuContentDiv.classList.add('d-none');
+                                await moveCardLeft(kanbanItemId);
+                                return new Promise(function (resolve, reject) {
+                                    resolve();
+                                });
+                            };
+                            moveLeftButton.removeEventListener('click', moveCardLeftFunction);
+                            moveLeftButton.addEventListener('click', moveCardLeftFunction);
+                        }
+                    }
                 }
                 const moveRightButton = menuContentDiv.querySelector('button[data-card-menu-action="moveright"]');
                 if (moveRightButton) {
-                    const moveCardRightFunction = async function (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        menuContentDiv.classList.add('d-none');
-                        await moveCardRight(kanbanItemId);
-                        return new Promise(function (resolve, reject) {
-                            resolve();
-                        });
-                    };
-                    moveRightButton.removeEventListener('click', moveCardRightFunction);
-                    moveRightButton.addEventListener('click', moveCardRightFunction);
+                    // If the card is in the last column, hide the move right button.
+                    if (kanbanItem) {
+                        const kanbanBoard = getKanbanBoard();
+                        const currentColumnIndex = kanbanBoard.columnsList.find(c => c.id === kanbanItem.columnId)?.columnIndex;
+                        if (currentColumnIndex !== undefined && currentColumnIndex === kanbanBoard.columnsList.length - 1) {
+                            moveRightButton.disabled = true;
+                        }
+                        else {
+                            moveRightButton.disabled = false;
+                            const moveCardRightFunction = async function (event) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                menuContentDiv.classList.add('d-none');
+                                await moveCardRight(kanbanItemId);
+                                return new Promise(function (resolve, reject) {
+                                    resolve();
+                                });
+                            };
+                            moveRightButton.removeEventListener('click', moveCardRightFunction);
+                            moveRightButton.addEventListener('click', moveCardRightFunction);
+                        }
+                    }
                 }
                 const removeCardButton = menuContentDiv.querySelector('button[data-card-menu-action="removecard"]');
                 if (removeCardButton) {

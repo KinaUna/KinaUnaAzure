@@ -61,6 +61,20 @@
     }
 }
 
+.bg-page-content {
+    color: #212529;
+    background-color: white;
+    background: white;
+}
+
+@media (prefers-color-scheme: dark) {
+    .bg-page-content {
+        color: white;
+        background-color: #262426;
+        background: #262426;
+    }
+}
+
 /* Carousel */
 .carousel-caption p {
     font-size: 20px;
@@ -1135,6 +1149,12 @@ to {
 .space-100 {
     height: 100px;
     display: block;
+}
+
+.item-menu-divider {
+    height: 1px;
+    display: block;
+    background-color: #aaffe940;
 }
 
 .kinauna-icon-medium {
@@ -3983,6 +4003,7 @@ noUi-handle:after, .noUi-handle:before {
     padding: 0 10px;
     border: solid 1px transparent;
     border-radius: 8px;
+    cursor: pointer !important;
 }
 
     .kanban-column-menu-button:hover {
@@ -4001,6 +4022,11 @@ noUi-handle:after, .noUi-handle:before {
 
     .kanban-column-menu-item-button:hover {
         color: #ffef2f;
+    }
+
+    .kanban-column-menu-item-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed !important;
     }
 
 .kanban-column-menu-content {
@@ -4097,6 +4123,7 @@ noUi-handle:after, .noUi-handle:before {
     padding: 0 10px;
     border: solid 1px transparent;
     border-radius: 8px;
+    cursor: pointer !important;
 }
 
     .kanban-card-menu-button:hover {
@@ -4120,6 +4147,11 @@ noUi-handle:after, .noUi-handle:before {
 
     .kanban-card-menu-item-button:hover {
         color: #ffef2f;
+    }
+
+    .kanban-card-menu-item-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed !important;
     }
 
 .kanban-menu-material-icons {

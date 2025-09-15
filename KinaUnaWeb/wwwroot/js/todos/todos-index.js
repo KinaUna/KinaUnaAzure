@@ -805,8 +805,7 @@ async function saveTodosPageSettings() {
  * This function is called when the DOM content is fully loaded.
  */
 async function onDomContentLoaded(event) {
-    console.log('todos-index.ts: DOMContentLoaded');
-    console.log(event);
+    startLoadingItemsSpinner('loading-todo-items-div');
     await showPopupAtLoad(pageModels.TimeLineType.TodoItem);
     setTodosPageParametersFromPageData();
     loadTodosPageSettings();
@@ -822,6 +821,7 @@ async function onDomContentLoaded(event) {
     }
     SettingsHelper.initPageSettings();
     await initialSettingsPanelSetup();
+    stopLoadingItemsSpinner('loading-todo-items-div');
     await getTodos();
     return new Promise(function (resolve, reject) {
         resolve();

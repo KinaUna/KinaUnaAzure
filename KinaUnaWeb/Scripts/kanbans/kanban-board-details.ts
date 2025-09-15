@@ -462,6 +462,7 @@ async function createKanbanBoardContainer(kanbanBoard: KanbanBoard): Promise<str
                                     <div class="kanban-column-menu-content d-none" data-column-id="${column.id}">
                                         <button class="kanban-column-menu-item-button" data-column-menu-action="rename" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">edit</span> ${renameString}</button>
                                         <button class="kanban-column-menu-item-button" data-column-menu-action="setlimit" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">compress</span> ${setLimitString}</button>
+                                        <div class="item-menu-divider"></div>
                                         <button class="kanban-column-menu-item-button" data-column-menu-action="moveleft" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">arrow_back</span> ${moveLeftString}</button>
                                         <button class="kanban-column-menu-item-button" data-column-menu-action="moveright" data-column-id="${column.id}" ><span class="material-icons kanban-menu-material-icons">arrow_forward</span>${moveRightString}</button>
                                     </div>
@@ -907,28 +908,40 @@ const showColumnMenu = function (event: MouseEvent): void {
 
                 const moveLeftButton = menuContentDiv.querySelector<HTMLButtonElement>('button[data-column-menu-action="moveleft"]');
                 if (moveLeftButton) {
-                    const moveLeftFunction = async function (event: MouseEvent) {
-                        menuContentDiv.classList.add('d-none');
-                        await moveColumnLeft(columnId);
-                        return new Promise<void>(function (resolve, reject) {
-                            resolve();
-                        });
-                    }
-                    moveLeftButton.removeEventListener('click', moveLeftFunction);
-                    moveLeftButton.addEventListener('click', moveLeftFunction);
+                    // If this is the first column, disable the button.
+                    if (kanbanBoard.columnsList.find(c => c.id.toString() === columnId)?.columnIndex === 0) {
+                        moveLeftButton.disabled = true;
+                    } else {
+                        moveLeftButton.disabled = false;
+                        const moveLeftFunction = async function (event: MouseEvent) {
+                            menuContentDiv.classList.add('d-none');
+                            await moveColumnLeft(columnId);
+                            return new Promise<void>(function (resolve, reject) {
+                                resolve();
+                            });
+                        }
+                        moveLeftButton.removeEventListener('click', moveLeftFunction);
+                        moveLeftButton.addEventListener('click', moveLeftFunction);
+                    }                    
                 }
 
                 const moveRightButton = menuContentDiv.querySelector<HTMLButtonElement>('button[data-column-menu-action="moveright"]');
                 if (moveRightButton) {
-                    const moveRightFunction = async function (event: MouseEvent) {
-                        menuContentDiv.classList.add('d-none');
-                        await moveColumnRight(columnId);
-                        return new Promise<void>(function (resolve, reject) {
-                            resolve();
-                        });
-                    }
-                    moveRightButton.removeEventListener('click', moveRightFunction);
-                    moveRightButton.addEventListener('click', moveRightFunction);
+                    // If this is the last column, disable the button.
+                    if (kanbanBoard.columnsList.find(c => c.id.toString() === columnId)?.columnIndex === kanbanBoard.columnsList.length - 1) {
+                        moveRightButton.disabled = true;
+                    } else {
+                        moveRightButton.disabled = false;
+                        const moveRightFunction = async function (event: MouseEvent) {
+                            menuContentDiv.classList.add('d-none');
+                            await moveColumnRight(columnId);
+                            return new Promise<void>(function (resolve, reject) {
+                                resolve();
+                            });
+                        }
+                        moveRightButton.removeEventListener('click', moveRightFunction);
+                        moveRightButton.addEventListener('click', moveRightFunction);
+                    }                    
                 }
 
             } else {
