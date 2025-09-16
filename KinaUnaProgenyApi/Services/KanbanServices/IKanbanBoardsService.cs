@@ -76,5 +76,6 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         Task<List<KanbanBoard>> GetKanbanBoardsForProgeny(int progenyId, int userAccessAccessLevel, KanbanBoardsRequest request);
 
         KanbanBoardsResponse CreateKanbanBoardsResponse(List<KanbanBoard> kanbanBoards, KanbanBoardsRequest request);
+        Task<List<KanbanBoard>> GetKanbanBoardsList(int progenyId, int accessLevel);
     }
 }

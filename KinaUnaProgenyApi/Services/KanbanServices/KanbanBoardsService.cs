@@ -222,5 +222,12 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             
             return kanbanBoardsResponse;
         }
+
+        public async Task<List<KanbanBoard>> GetKanbanBoardsList(int progenyId, int accessLevel)
+        {
+            List<KanbanBoard> kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
+                .Where(k => k.ProgenyId == progenyId && k.AccessLevel >= accessLevel && !k.IsDeleted).ToListAsync();
+            return kanbanBoards;
+        }
     }
 }

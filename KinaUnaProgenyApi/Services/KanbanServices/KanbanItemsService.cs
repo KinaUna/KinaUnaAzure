@@ -83,7 +83,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
 
             if (string.IsNullOrEmpty(existingKanbanItem.UId))
             {
-                existingKanbanItem.UId = System.Guid.NewGuid().ToString();
+                existingKanbanItem.UId = Guid.NewGuid().ToString();
             }
 
             if (kanbanItem.RowIndex < 0)
@@ -132,7 +132,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             }
             else
             {
-                existingKanbanItem.ModifiedTime = System.DateTime.UtcNow;
+                existingKanbanItem.ModifiedTime = DateTime.UtcNow;
                 existingKanbanItem.IsDeleted = true;
                 progenyDbContext.KanbanItemsDb.Update(existingKanbanItem);
             }

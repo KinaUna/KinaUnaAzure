@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.ItemInterfaces;
 
 namespace KinaUna.Data.Models
 {
@@ -11,7 +12,7 @@ namespace KinaUna.Data.Models
     /// <remarks>A Kanban board typically consists of tasks organized into columns that represent different
     /// stages of a workflow. This class provides properties to store metadata about the board, such as its name,
     /// creation and modification timestamps, and the users who created or last modified it.</remarks>
-    public class KanbanBoard
+    public class KanbanBoard: IContexted, ITaggable
     {
         /// <summary>
         /// Gets or sets the unique identifier for the Kanban board.

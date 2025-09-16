@@ -11,7 +11,7 @@ namespace KinaUna.Data.Models
     /// <remarks>This class is used to manage and track individual to-do items, including their assignment,
     /// status, and lifecycle events. It includes properties for metadata such as creation and modification details, as
     /// well as optional notes and tags for categorization.</remarks>
-    public class TodoItem : IContexted, ITaggable
+    public class TodoItem : IContexted, ITaggable, ILocatable
     {
         /// <summary>
         /// Gets or sets the unique identifier for the entity.
@@ -116,6 +116,11 @@ namespace KinaUna.Data.Models
         public int SubtaskCount { get; set; } = 0;
         [NotMapped]
         public int CompletedSubtaskCount { get; set; } = 0;
+
+        public string GetLocationString()
+        {
+            return Location;
+        }
 
     }
 }
