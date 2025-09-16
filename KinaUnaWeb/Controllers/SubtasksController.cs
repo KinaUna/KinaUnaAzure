@@ -276,6 +276,8 @@ namespace KinaUnaWeb.Controllers
 
             model.SetPropertiesFromTodoItem(subtask);
 
+            model.KanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForTodoItem(subtask.TodoItemId);
+            
             model.SetAccessLevelList();
             model.SetStatusList(model.TodoItem.Status);
 

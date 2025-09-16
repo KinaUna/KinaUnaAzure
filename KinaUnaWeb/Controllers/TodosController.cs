@@ -383,6 +383,8 @@ namespace KinaUnaWeb.Controllers
             model.SetAccessLevelList();
             model.SetStatusList(model.TodoItem.Status);
 
+            model.KanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForTodoItem(model.TodoItem.TodoItemId);
+
             return PartialView("_EditTodoPartial", model);
         }
 

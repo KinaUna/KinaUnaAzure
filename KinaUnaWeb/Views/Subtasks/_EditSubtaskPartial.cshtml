@@ -17,6 +17,20 @@
     {
         accessLevelItem.Text = await LocaleManager.GetTranslation(accessLevelItem.Text, PageNames.AccessManagement, Model.LanguageId);
     }
+
+    const int changedItemTypeTodoItem = (int)KinaUnaTypes.TimeLineType.TodoItem;
+    const int changedItemTypeKanbanBoard = (int)KinaUnaTypes.TimeLineType.KanbanBoard;
+    const int changedItemTypeKanbanItem = (int)KinaUnaTypes.TimeLineType.KanbanItem;
+}
+<div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeTodoItem" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
+<div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeTodoItem" data-changed-item-item-id="@Model.TodoItem.ParentTodoItemId"></div>
+@if (Model.KanbanItems.Count > 0)
+{
+    foreach (KanbanItem kanbanItem in Model.KanbanItems)
+    {
+        <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeKanbanItem" data-changed-item-item-id="@kanbanItem.KanbanItemId"></div>
+        <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeKanbanBoard" data-changed-item-item-id="@kanbanItem.KanbanBoardId"></div>
+    }
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-todo-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
