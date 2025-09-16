@@ -1487,6 +1487,43 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     color: inherit;
 }
 
+.card-compact {
+    border: 0;
+    margin-bottom: 6px;
+    color: inherit;
+    background: inherit;
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: inherit;
+    background-clip: border-box;
+    border-radius: .25rem;
+    font-size: 1rem;
+    box-shadow: 0 2px 2px 0 rgb(0 0 0 / 14%), 0 3px 1px -2px rgb(0 0 0 / 20%), 0 1px 5px 0 rgb(0 0 0 / 12%);
+}
+
+.card-compact-header {
+
+}
+
+.card-compact-title {
+    color: #ffffff;
+}
+
+.card-compact-body {
+    color: #d4e1be;
+    margin-left: 42px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.text-opacity-75 {
+    opacity: 0.75;
+}
+
 .bg-primary {
     background: linear-gradient(60deg, #ab47bc, #7b1fa2);
 }
@@ -3695,7 +3732,7 @@ noUi-handle:after, .noUi-handle:before {
     text-align: left;
     width: 100%;
     position: relative;
-    padding: 5px;
+    padding: 2px;
     margin: 0;
     text-decoration: none;
     text-transform: none;
@@ -3749,6 +3786,17 @@ noUi-handle:after, .noUi-handle:before {
 .item-details-title-picture {
     max-height: 2.5rem;
     margin-right: 10px;
+}
+
+.picture-element-image {
+    overflow: hidden;
+    width: 100%;
+    max-height: 800px;
+    background-color: #000000;
+    text-align: center;
+    display: inline-block;
+    position: relative;
+    border-radius: 6px;
 }
 
 .picture-details-image {
@@ -3911,7 +3959,6 @@ noUi-handle:after, .noUi-handle:before {
 
 .kanban-board {
     width: 100%;
-    overflow-x: auto;
     padding-left: 15px;
     padding-right: 15px;
 }
@@ -3926,6 +3973,7 @@ noUi-handle:after, .noUi-handle:before {
     gap: 0;
     padding: 0;
     min-height: 450px;
+    overflow-x: auto;
 }
 
 @media (min-width: 576px) {
@@ -3945,7 +3993,7 @@ noUi-handle:after, .noUi-handle:before {
     padding: 0;
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;
-    min-width: 200px;
+    min-width: 250px;
     display: flex;
     flex-direction: column;
     cursor: grab;
@@ -4108,6 +4156,7 @@ noUi-handle:after, .noUi-handle:before {
 
 .kanban-card-wip-limit {
     font-size: 14px;
+    text-wrap-mode: nowrap;
 }
 
 .kanban-card-body {
