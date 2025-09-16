@@ -175,7 +175,8 @@ namespace KinaUnaProgenyApi.Controllers
             
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanItem.TodoItem.ProgenyId, userEmail, kanbanItem.TodoItem.AccessLevel);
             if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
-            
+            kanbanItem.CreatedBy = User.GetUserId();
+            kanbanItem.ModifiedBy = User.GetUserId();
             KanbanItem savedKanbanItem = await kanbanItemsService.AddKanbanItem(kanbanItem);
             savedKanbanItem.TodoItem = kanbanItem.TodoItem;
 
@@ -235,8 +236,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
 
             kanbanItem.ModifiedBy = User.GetUserId();
-            kanbanItem.ModifiedTime = DateTime.UtcNow;
-
+            
             KanbanItem resultKanbanItem = await kanbanItemsService.UpdateKanbanItem(kanbanItem);
             resultKanbanItem.TodoItem = kanbanItem.TodoItem;
 
@@ -286,7 +286,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(existingKanbanItem.TodoItem.ProgenyId, userEmail, existingKanbanItem.TodoItem.AccessLevel);
             if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
-
+            existingKanbanItem.ModifiedBy = User.GetUserId();
             KanbanItem deletedKanbanItem = await kanbanItemsService.DeleteKanbanItem(existingKanbanItem);
             deletedKanbanItem.TodoItem = existingKanbanItem.TodoItem;
 

@@ -266,6 +266,35 @@ namespace KinaUnaWeb.Controllers
 
             model.SetAccessLevelList();
 
+            List<int> progenyIds = [];
+            progenyIds.AddRange(model.ProgenyList.ConvertAll(p => int.Parse(p.Value)));
+            KanbanBoardsRequest kanbanBoardsRequest = new()
+            {
+                ProgenyIds = progenyIds,
+                IncludeDeleted = false,
+                Skip = 0,
+                NumberOfItems = 0 // Get all.
+            };
+            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
+            model.KanbanBoards = kanbanBoardsResponse.KanbanBoards;
+            model.KanbanBoardsList = new List<SelectListItem>();
+            SelectListItem noKanbanBoardSelected = new SelectListItem();
+            noKanbanBoardSelected.Selected = true;
+            noKanbanBoardSelected.Text = "Do not add to a Kanban board";
+            noKanbanBoardSelected.Value = "0";
+            model.KanbanBoardsList.Add(noKanbanBoardSelected);
+            foreach (KanbanBoard kanbanBoard in model.KanbanBoards)
+            {
+                kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
+                SelectListItem item = new()
+                {
+                    Text = kanbanBoard.Title + " (" + kanbanBoard.Progeny.NickName + ")",
+                    Value = kanbanBoard.KanbanBoardId.ToString(),
+                    Selected = false
+                };
+                model.KanbanBoardsList.Add(item);
+            }
+
             return PartialView("_AddTodoPartial", model);
         }
 
@@ -291,6 +320,23 @@ namespace KinaUnaWeb.Controllers
             TodoItem todoItem = model.CreateTodoItem();
 
             model.TodoItem = await todoItemsHttpClient.AddTodoItem(todoItem);
+           
+            if (model.TodoItem.TodoItemId != 0 && model.AddToKanbanBoardId != 0)
+            {
+                KanbanItem kanbanItem = new KanbanItem()
+                {
+                    KanbanBoardId = model.AddToKanbanBoardId,
+                    TodoItemId = model.TodoItem.TodoItemId,
+                    ColumnId = -1,
+                    RowIndex = -1,
+                    CreatedBy = model.CurrentUser.UserId,
+                    CreatedTime = DateTime.UtcNow,
+                    ModifiedBy = model.CurrentUser.UserId,
+                    ModifiedTime = DateTime.UtcNow
+                };
+
+                await kanbanItemsHttpClient.AddKanbanItem(kanbanItem);
+            }
             model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             if (model.TodoItem.CompletedDate.HasValue)
             {

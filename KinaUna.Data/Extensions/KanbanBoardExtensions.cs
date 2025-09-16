@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using KinaUna.Data.Models;
 
@@ -21,6 +22,7 @@ namespace KinaUna.Data.Extensions
             if (!string.IsNullOrEmpty(kanbanBoard.Columns))
             {
                 kanbanBoard.ColumnsList = JsonSerializer.Deserialize<List<KanbanBoardColumn>>(kanbanBoard.Columns, JsonSerializerOptions.Web);
+                kanbanBoard.ColumnsList = [.. kanbanBoard.ColumnsList.OrderBy(c => c.ColumnIndex)];
             }
         }
 

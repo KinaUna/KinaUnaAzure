@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
@@ -53,7 +54,9 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             int kanbanItemsCount = await progenyDbContext.KanbanItemsDb.CountAsync(k => k.KanbanBoardId == kanbanItem.KanbanBoardId && k.ColumnId == kanbanItem.ColumnId);
             kanbanItem.RowIndex = kanbanItemsCount;
 
-            kanbanItem.UId = System.Guid.NewGuid().ToString();
+            kanbanItem.UId = Guid.NewGuid().ToString();
+            kanbanItem.CreatedTime = DateTime.UtcNow;
+            kanbanItem.ModifiedTime = DateTime.UtcNow;
             await progenyDbContext.KanbanItemsDb.AddAsync(kanbanItem);
             await progenyDbContext.SaveChangesAsync();
 
@@ -92,8 +95,12 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             existingKanbanItem.ColumnId = kanbanItem.ColumnId;
             existingKanbanItem.RowIndex = kanbanItem.RowIndex;
             existingKanbanItem.ModifiedBy = kanbanItem.ModifiedBy;
-            existingKanbanItem.ModifiedTime = kanbanItem.ModifiedTime;
+            existingKanbanItem.ModifiedTime = DateTime.UtcNow;
             existingKanbanItem.KanbanBoardId = kanbanItem.KanbanBoardId;
+            if (string.IsNullOrEmpty(existingKanbanItem.CreatedBy))
+            {
+                existingKanbanItem.CreatedBy = kanbanItem.ModifiedBy;
+            }
 
             progenyDbContext.Update(existingKanbanItem);
             await progenyDbContext.SaveChangesAsync();
@@ -125,6 +132,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             }
             else
             {
+                existingKanbanItem.ModifiedTime = System.DateTime.UtcNow;
                 existingKanbanItem.IsDeleted = true;
                 progenyDbContext.KanbanItemsDb.Update(existingKanbanItem);
             }

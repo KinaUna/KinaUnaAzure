@@ -17,6 +17,8 @@
     {
         accessLevelItem.Text = await LocaleManager.GetTranslation(accessLevelItem.Text, PageNames.AccessManagement, Model.LanguageId);
     }
+
+    Model.KanbanBoardsList[0].Text = await LocaleManager.GetTranslation("Do not add to a Kanban board", PageNames.Todos, Model.LanguageId);
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-todo-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
@@ -134,6 +136,13 @@
                     <label asp-for="TodoItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
                     <div class="col-auto">
                         <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="TodoItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                    </div>
+                </div>
+                <div class="space-10"></div>
+                <div class="form-group">
+                    <label asp-for="AddToKanbanBoardId" class="col-auto control-label">@await LocaleManager.GetTranslation("Add to Kanban Board", PageNames.Todos, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <select id="add-todo-item-to-kanban-board-select" class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-size="@Model.KanbanBoardsList.Count" asp-for="AddToKanbanBoardId" asp-items="@Model.KanbanBoardsList"></select>
                     </div>
                 </div>
                 <div class="space-20"></div>

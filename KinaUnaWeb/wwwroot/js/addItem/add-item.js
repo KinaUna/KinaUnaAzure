@@ -643,32 +643,44 @@ function dispatchTimelineItemChangedEvent(itemType = '', itemId = '') {
     if (itemType !== '') {
         changedItemType = itemType;
         changedItemItemId = itemId;
+        const timelineItem = new TimelineItem();
+        timelineItem.itemType = parseInt(changedItemType);
+        timelineItem.itemId = changedItemItemId;
+        const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+        window.dispatchEvent(timelineItemChangedEvent);
     }
     else {
-        const timelineUpdateDataDiv = document.querySelector('#timeline-update-data-div');
-        if (timelineUpdateDataDiv === null) {
+        const timelineUpdateDataDivs = document.querySelectorAll('.timeline-update-data-div');
+        if (timelineUpdateDataDivs === null) {
             // If the timeline update div is not found, do not dispatch the event.
             return;
         }
-        changedItemType = timelineUpdateDataDiv.getAttribute('data-changed-item-type');
-        changedItemItemId = timelineUpdateDataDiv.getAttribute('data-changed-item-item-id');
-        if (changedItemType === null || changedItemItemId === null) {
-            // If the item type or item id is null, do not dispatch the event.
+        // Iterate through the NodeList to dispatch the event for each element found.
+        if (timelineUpdateDataDivs.length === 0) {
+            // If the timeline update div is not found, do not dispatch the event.
             return;
         }
-        if (changedItemType === '0' || changedItemItemId === '0') {
-            // If the item type or item id is 0, do not dispatch the event.
-            return;
-        }
-        if (isNaN(parseInt(changedItemType)) || isNaN(parseInt(changedItemItemId))) {
-            // If the item type or item id is not a number, do not dispatch the event.
-            return;
-        }
+        timelineUpdateDataDivs.forEach(timelineUpdateDataDiv => {
+            changedItemType = timelineUpdateDataDiv.getAttribute('data-changed-item-type');
+            changedItemItemId = timelineUpdateDataDiv.getAttribute('data-changed-item-item-id');
+            if (changedItemType === null || changedItemItemId === null) {
+                // If the item type or item id is null, do not dispatch the event.
+                return;
+            }
+            if (changedItemType === '0' || changedItemItemId === '0') {
+                // If the item type or item id is 0, do not dispatch the event.
+                return;
+            }
+            if (isNaN(parseInt(changedItemType)) || isNaN(parseInt(changedItemItemId))) {
+                // If the item type or item id is not a number, do not dispatch the event.
+                return;
+            }
+            const timelineItem = new TimelineItem();
+            timelineItem.itemType = parseInt(changedItemType);
+            timelineItem.itemId = changedItemItemId;
+            const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+            window.dispatchEvent(timelineItemChangedEvent);
+        });
     }
-    const timelineItem = new TimelineItem();
-    timelineItem.itemType = parseInt(changedItemType);
-    timelineItem.itemId = changedItemItemId;
-    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
-    window.dispatchEvent(timelineItemChangedEvent);
 }
 //# sourceMappingURL=add-item.js.map

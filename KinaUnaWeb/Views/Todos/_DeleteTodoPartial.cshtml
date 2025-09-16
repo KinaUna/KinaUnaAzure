@@ -8,7 +8,7 @@
     string title = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
     const int changedItemType = (int)KinaUnaTypes.TimeLineType.TodoItem;
 }
-<div id="timeline-update-data-div" class="d-none" data-changed-item-type="@changedItemType" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
+<div class="d-none timeline-update-data-div" data-changed-item-type="@changedItemType" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row sticky-top m-0 item-details-header">

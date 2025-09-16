@@ -20,8 +20,13 @@
     }
 
     const int changedItemType = (int)KinaUnaTypes.TimeLineType.TodoItem;
+    const int changedItemType2 = (int)KinaUnaTypes.TimeLineType.KanbanBoard;
 }
-<div id="timeline-update-data-div" class="d-none" data-changed-item-type="@changedItemType" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
+<div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemType" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
+@if (Model.AddToKanbanBoardId != 0)
+{
+    <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemType2" data-changed-item-item-id="@Model.AddToKanbanBoardId"></div>
+}
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-todo-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>

@@ -10,14 +10,17 @@
     {
         accessLevelItem.Text = await LocaleManager.GetTranslation(accessLevelItem.Text, PageNames.AccessManagement, Model.LanguageId);
     }
+
+    const int changedItemType = (int)KinaUnaTypes.TimeLineType.KanbanBoard;
 }
+<div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemType" data-changed-item-item-id="@Model.KanbanBoard.KanbanBoardId"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="add-item-container-wide">
             <div class="row sticky-top m-0 item-details-header">
                 <div class="col-12 bg-add-item-header">
                     <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
-                    <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+                    <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="kanbanboard" data-previous-item-id="@Model.KanbanBoard.KanbanBoardId"><span>×</span></button>
                 </div>
             </div>
             <div class="space-20"></div>
@@ -97,7 +100,7 @@
                     <div class="col-auto control-label"></div>
                     <div class="col-auto">
                         <button id="save-kanban-board-button" disabled="disabled" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                        <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                        <a class="btn btn-danger item-details-cancel-button" data-previous-item-type="kanbanboard" data-previous-item-id="@Model.KanbanBoard.KanbanBoardId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                     </div>
                     <div id="validation-errors-div" class="col-auto">
                         <div id="kanban-board-title-required-div" class="d-none text-warning">

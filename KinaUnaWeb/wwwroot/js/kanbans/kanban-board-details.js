@@ -1294,6 +1294,14 @@ export function hideAllMenusAndModals(event) {
     if (!target.closest('.modal-settings-panel') && !target.closest('.modal-content') && !target.closest('.kanban-column-menu-div') && !target.closest('.add-edit-kanban-item-modal')) {
         hideSettingsModals();
     }
+    if (!target.closest('.item-details-content') && target.closest('.item-details-popup')) {
+        let itemDetailsPopupDiv = target.closest('.item-details-popup');
+        if (itemDetailsPopupDiv) {
+            itemDetailsPopupDiv.innerHTML = '';
+            itemDetailsPopupDiv.classList.add('d-none');
+            showBodyScrollbars();
+        }
+    }
 }
 async function updateKanbanBoardColumns(kanbanBoard) {
     let url = '/Kanbans/UpdateKanbanBoardColumns';
