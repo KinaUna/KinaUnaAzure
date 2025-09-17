@@ -1515,7 +1515,7 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 
 .card-compact-body {
     color: #d4e1be;
-    margin-left: 42px;
+    padding-left: 60px;
     margin-top: 10px;
     margin-bottom: 5px;
 }
@@ -1535,13 +1535,22 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 .bg-add-item-header {
     color: #fff;
     background: #262426;
-    align-content: center;
+    align-content: end;
+    height: inherit;
+    background: linear-gradient(219deg, #251a27, #2b023d);
 }
 
 .bg-calendar {
     color: #fff;
-    background: #581b2f;
+    background: #5c162d;
     background: linear-gradient(60deg, #621423, #5c162d);
+}
+
+.bg-calendar-header {
+    color: #fff;
+    background: #4c061d;
+    background: linear-gradient(60deg, #520413, #4c061d);
+    align-content: center;
 }
 
 .bg-contact {

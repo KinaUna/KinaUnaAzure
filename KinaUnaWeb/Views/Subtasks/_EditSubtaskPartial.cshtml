@@ -37,150 +37,148 @@
 <div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
-        <div class="add-item-container">
-            <div class="row sticky-top m-0 item-details-header">
-                <div class="col-12 bg-add-item-header">
-                    <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
-                    <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.ParentTodoItemId"><span>×</span></button>
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.ParentTodoItemId"><span>×</span></button>
+            </div>
+        </div>
+        <div class="space-20"></div>
+        <form id="save-item-form" asp-action="EditSubtask" asp-controller="Subtasks" role="form" method="post">
+            @if (Model.ProgenyList.Count > 1)
+            {
+                <div class="form-group">
+                    <label class="col-auto control-label">@assignedToString </label>
+                    <div class="col-auto">
+                        <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="TodoItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label class="col-auto control-label">@assignedToString</label>
+                    <div class="col-auto">
+                        <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                    </div>
+                    <input asp-for="TodoItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                </div>
+            }
+            <div class="form-group">
+                <label asp-for="TodoItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="todo-title-input" asp-for="TodoItem.Title" class="form-control" value="@Model.TodoItem.Title" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="TodoItem.Description" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Todos, Model.LanguageId)</label>
+                <div class="col-auto">
+                    @{
+                        string[] toolbarItems = new[]
+                        {
+                                        "Bold", "Italic", "Underline", "StrikeThrough",
+                                        "FontName", "FontSize", "FontColor", "BackgroundColor",
+                                        "LowerCase", "UpperCase", "|",
+                                        "Formats", "Alignments", "OrderedList", "UnorderedList",
+                                        "Outdent", "Indent", "|",
+                                        "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
+                                        "SourceCode", "FullScreen", "|", "Undo", "Redo"
+                                        };
+                    }
+                    <ejs-richtexteditor id="description-rich-text-editor" ejs-for="TodoItem.Description" height="300px" enableResize="true">
+                        <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
+                        <e-richtexteditor-insertimagesettings saveUrl="/AddItem/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
+                        <e-content-template>
+
+                        </e-content-template>
+                    </ejs-richtexteditor>
+
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="TodoItem.DueDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <div class="input-group date">
+                        <input id="todo-due-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.DueDate"
+                               value="@Model.TodoItem.DueDate?.ToString(longDateTimeFormat)" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="TodoItem.StartDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <div class="input-group date">
+                        <input id="todo-start-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.StartDate"
+                               value="@Model.TodoItem.StartDate?.ToString(longDateTimeFormat)" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="TodoItem.CompletedDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <div class="input-group date">
+                        <input id="todo-completed-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.CompletedDate"
+                               value="@Model.TodoItem.CompletedDate?.ToString(longDateTimeFormat)" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId) </label>
+                <div class="col-auto">
+                    <select id="todo-status-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.StatusList.Count" asp-for="TodoItem.Status" asp-items="@Model.StatusList"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="TodoItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Contacts, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="context-input" asp-for="TodoItem.Context" class="form-control" value="@Model.TodoItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-input" type="text" asp-for="TodoItem.Location" value="@Model.TodoItem.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="tag-list" type="text" asp-for="TodoItem.Tags" value="@Model.TodoItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="TodoItem.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Contacts, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <textarea rows="4" asp-for="TodoItem.Notes" class="form-control">@Model.TodoItem.Notes</textarea>
                 </div>
             </div>
             <div class="space-20"></div>
-            <form id="save-item-form" asp-action="EditSubtask" asp-controller="Subtasks" role="form" method="post">
-                @if (Model.ProgenyList.Count > 1)
-                {
-                    <div class="form-group">
-                        <label class="col-auto control-label">@assignedToString </label>
-                        <div class="col-auto">
-                            <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="TodoItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
-                        </div>
+            <input asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId" type="hidden" />
+            <input id="subtask-parent-todo-item-id-input" asp-for="TodoItem.ParentTodoItemId" value="@Model.TodoItem.ParentTodoItemId" type="hidden" />
+            <input asp-for="TodoItem.CreatedBy" value="@Model.TodoItem.CreatedBy" type="hidden" />
+            <input asp-for="TodoItem.AccessLevel" value="@Model.TodoItem.AccessLevel" type="hidden" />
+            <div class="form-group">
+                <div class="col-auto control-label"></div>
+                <div class="col-auto">
+                    <button id="save-todo-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <button type="button" class="btn btn-danger item-details-cancel-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.ParentTodoItemId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
+                </div>
+                <div id="validation-errors-div" class="col-auto">
+                    <div id="todo-title-required-div" class="d-none text-warning">
+                        @await LocaleManager.GetTranslation("Title is required and cannot be blank.", PageNames.Todos, Model.LanguageId)
                     </div>
-                }
-                else
-                {
-                    <div class="form-group">
-                        <label class="col-auto control-label">@assignedToString</label>
-                        <div class="col-auto">
-                            <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text"/>
-                        </div>
-                        <input asp-for="TodoItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden"/>
+                    <div id="todo-due-date-invalid-div" class="d-none text-warning">
+                        @await LocaleManager.GetTranslation("Due date is not a valid date.", PageNames.Todos, Model.LanguageId)
                     </div>
-                }
-                <div class="form-group">
-                    <label asp-for="TodoItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="todo-title-input" asp-for="TodoItem.Title" class="form-control" value="@Model.TodoItem.Title"/>
+                    <div id="todo-start-date-invalid-div" class="d-none text-warning">
+                        @await LocaleManager.GetTranslation("Start date is not a valid date.", PageNames.Todos, Model.LanguageId)
+                    </div>
+                    <div id="todo-completed-date-invalid-div" class="d-none text-warning">
+                        @await LocaleManager.GetTranslation("Completed date is not a valid date.", PageNames.Todos, Model.LanguageId)
                     </div>
                 </div>
-                <div class="form-group">
-                    <label asp-for="TodoItem.Description" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Todos, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        @{
-                            string[] toolbarItems = new[]
-                            {
-                                "Bold", "Italic", "Underline", "StrikeThrough",
-                                "FontName", "FontSize", "FontColor", "BackgroundColor",
-                                "LowerCase", "UpperCase", "|",
-                                "Formats", "Alignments", "OrderedList", "UnorderedList",
-                                "Outdent", "Indent", "|",
-                                "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
-                                "SourceCode", "FullScreen", "|", "Undo", "Redo"
-                            };
-                        }
-                        <ejs-richtexteditor id="description-rich-text-editor" ejs-for="TodoItem.Description" height="300px" enableResize="true">
-                            <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
-                            <e-richtexteditor-insertimagesettings saveUrl="/AddItem/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
-                            <e-content-template>
-
-                            </e-content-template>
-                        </ejs-richtexteditor>
-
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="TodoItem.DueDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <div class="input-group date">
-                            <input id="todo-due-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.DueDate"
-                                   value="@Model.TodoItem.DueDate?.ToString(longDateTimeFormat)"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="TodoItem.StartDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <div class="input-group date">
-                            <input id="todo-start-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.StartDate"
-                                   value="@Model.TodoItem.StartDate?.ToString(longDateTimeFormat)"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="TodoItem.CompletedDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <div class="input-group date">
-                            <input id="todo-completed-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="TodoItem.CompletedDate"
-                                   value="@Model.TodoItem.CompletedDate?.ToString(longDateTimeFormat)"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId) </label>
-                    <div class="col-auto">
-                        <select id="todo-status-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.StatusList.Count" asp-for="TodoItem.Status" asp-items="@Model.StatusList"></select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="TodoItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Contacts, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="context-input" asp-for="TodoItem.Context" class="form-control" value="@Model.TodoItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)"/>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-input" type="text" asp-for="TodoItem.Location" value="@Model.TodoItem.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="tag-list" type="text" asp-for="TodoItem.Tags" value="@Model.TodoItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control"/>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="TodoItem.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Contacts, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <textarea rows="4" asp-for="TodoItem.Notes" class="form-control">@Model.TodoItem.Notes</textarea>
-                    </div>
-                </div>
-                <div class="space-20"></div>
-                <input asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId" type="hidden"/>
-                <input id="subtask-parent-todo-item-id-input" asp-for="TodoItem.ParentTodoItemId" value="@Model.TodoItem.ParentTodoItemId" type="hidden"/>
-                <input asp-for="TodoItem.CreatedBy" value="@Model.TodoItem.CreatedBy" type="hidden"/>
-                <input asp-for="TodoItem.AccessLevel" value="@Model.TodoItem.AccessLevel" type="hidden"/>
-                <div class="form-group">
-                    <div class="col-auto control-label"></div>
-                    <div class="col-auto">
-                        <button id="save-todo-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                        <button type="button" class="btn btn-danger item-details-cancel-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.ParentTodoItemId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
-                    </div>
-                    <div id="validation-errors-div" class="col-auto">
-                        <div id="todo-title-required-div" class="d-none text-warning">
-                            @await LocaleManager.GetTranslation("Title is required and cannot be blank.", PageNames.Todos, Model.LanguageId)
-                        </div>
-                        <div id="todo-due-date-invalid-div" class="d-none text-warning">
-                            @await LocaleManager.GetTranslation("Due date is not a valid date.", PageNames.Todos, Model.LanguageId)
-                        </div>
-                        <div id="todo-start-date-invalid-div" class="d-none text-warning">
-                            @await LocaleManager.GetTranslation("Start date is not a valid date.", PageNames.Todos, Model.LanguageId)
-                        </div>
-                        <div id="todo-completed-date-invalid-div" class="d-none text-warning">
-                            @await LocaleManager.GetTranslation("Completed date is not a valid date.", PageNames.Todos, Model.LanguageId)
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 </div>
 <ejs-scripts></ejs-scripts>
