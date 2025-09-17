@@ -1,4 +1,5 @@
-﻿import { setMomentLocale } from '../data-tools-v9.js';
+﻿import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { setMomentLocale } from '../data-tools-v9.js';
 import { showPopupAtLoad } from '../item-details/items-display-v9.js';
 import { TimeLineType } from '../page-models-v9.js';
 
@@ -8,7 +9,7 @@ import { TimeLineType } from '../page-models-v9.js';
 function setupDataTable(): void {
     setMomentLocale();
     (<any>$.fn.dataTable).moment('DD-MMMM-YYYY');
-    $('#skillz-list').DataTable({ 'scrollX': false, 'order': [[3, 'desc']] });
+    $('#skillz-list').DataTable({ 'scrollX': false, 'order': [[3, 'desc']], drawCallback: setEditItemButtonEventListeners });
 }
 
 /**
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     await showPopupAtLoad(TimeLineType.Skill);
 
+    setEditItemButtonEventListeners();
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

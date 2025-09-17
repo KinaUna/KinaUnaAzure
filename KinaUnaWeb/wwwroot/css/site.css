@@ -1649,28 +1649,63 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     background: linear-gradient(60deg, #787864, #686854);
 }
 
+.bg-skill-header {
+    color: #fff;
+    background: #686854;
+    background: linear-gradient(60deg, #686854, #585844);
+    align-content: center;
+}
+
 .bg-sleep {
     color: #fff;
     background: #519966;
     background: linear-gradient(60deg, #30902c, #30802c);
 }
 
+.bg-sleep-header {
+    color: #fff;
+    background: #519966;
+    background: linear-gradient(60deg, #20802c, #20702c);
+    align-content: center;
+}
+
 .bg-vaccination {
     color: #fff;
-    background: #1d886e;
+    background: #009075;
     background: linear-gradient(60deg, #009075, #428667);
+}
+
+.bg-vaccination-header {
+    color: #fff;
+    background: #008065;
+    background: linear-gradient(60deg, #008065, #327657);
+    align-content: center;
 }
 
 .bg-video {
     color: #fff;
-    background: #953761;
+    background: #c53771;
     background: linear-gradient(60deg, #c53771, #a53761);
+}
+
+.bg-video-header {
+    color: #fff;
+    background: #b52761;
+    background: linear-gradient(60deg, #b52761, #952751);
+    align-content: center;
 }
 
 .bg-vocabulary {
     color: #fff;
     background: #641e1e;
     background: linear-gradient(60deg, #641e1e, #540e0e);
+}
+
+.bg-vocabulary-header {
+    color: #fff;
+    background: #540e0e;
+    background: linear-gradient(60deg, #540e0e, #440e0e);
+    align-content: center;
 }
 
 .bg-todos {

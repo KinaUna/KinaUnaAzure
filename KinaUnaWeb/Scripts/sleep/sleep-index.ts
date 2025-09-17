@@ -1,4 +1,5 @@
-﻿import { setMomentLocale } from '../data-tools-v9.js';
+﻿import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { setMomentLocale } from '../data-tools-v9.js';
 import { showPopupAtLoad } from '../item-details/items-display-v9.js';
 import { TimeLineType } from '../page-models-v9.js';
 
@@ -30,7 +31,7 @@ function timestamp(dateString: string): number {
 function setupDataTable(): void {
     setMomentLocale();
     (<any>$.fn.dataTable).moment('DD-MMMM-YYYY HH:mm');
-    $('#sleep-list').DataTable({ 'scrollX': false, 'order': [[0, 'desc']] });
+    $('#sleep-list').DataTable({ 'scrollX': false, 'order': [[0, 'desc']], drawCallback: setEditItemButtonEventListeners });
 }
 
 /**
@@ -164,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     setupSleepSlider();
 
     await showPopupAtLoad(TimeLineType.Sleep);
-
+    setEditItemButtonEventListeners();
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

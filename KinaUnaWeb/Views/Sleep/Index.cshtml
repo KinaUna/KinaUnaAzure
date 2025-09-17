@@ -84,7 +84,7 @@
                             {
                                 <td style="min-width: 120px;">
                                     <div>
-                                        <a asp-controller="Sleep" asp-action="EditSleep" asp-route-itemId="@sleepItem.SleepId" class="btn btn-info btn-round btn-sm leave-page">
+                                        <a data-edit-item-type="sleep" data-edit-item-item-id="@sleepItem.SleepId" class="btn btn-info btn-round btn-sm item-details-edit-button edit-item-button">
                                             <i class="fas fa-pencil-alt"></i>
                                         </a>
                                         <a asp-controller="Sleep" asp-action="DeleteSleep" asp-route-itemId="@sleepItem.SleepId" class="btn btn-danger btn-round btn-sm leave-page">

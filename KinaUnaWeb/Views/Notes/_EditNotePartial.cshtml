@@ -8,8 +8,9 @@
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+    const int changedItemTypeNoteItem = (int)KinaUnaTypes.TimeLineType.Note;
 }
-
+<div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeNoteItem" data-changed-item-item-id="@Model.NoteItem.NoteId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-note-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">

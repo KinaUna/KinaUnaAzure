@@ -6,7 +6,9 @@
     ViewData["Title"] = await LocaleManager.GetTranslation("Edit Measurement", PageNames.Measurements, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
+    const int changedItemTypeMeasurementItem = (int)KinaUnaTypes.TimeLineType.Measurement;
 }
+<div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeMeasurementItem" data-changed-item-item-id="@Model.MeasurementItem.MeasurementId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-measurement-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">

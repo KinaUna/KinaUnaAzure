@@ -24,16 +24,15 @@
                 <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">straighten</i></span>
             </div>
             <div class="col">
-                @if (Model.CurrentUser.CanUserAddItems)
-                {
-                    <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.MeasurementItem.MeasurementId" data-copy-item-type="measurement">
-                        <i class="material-icons kinauna-icon-medium">content_copy</i>
-                    </button>
-                }
                 <div class="timeline-title row">
                     <div class="col-12 h4">
+                        @if (Model.CurrentUser.CanUserAddItems)
+                        {
+                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.MeasurementItem.MeasurementId" data-copy-item-type="measurement">
+                                <i class="material-icons kinauna-icon-medium">content_copy</i>
+                            </button>
+                        }
                         @Model.MeasurementItem.Date.ToString("dd-MMM-yyyy")
-                        <div class="space-10"></div>
                     </div>
                 </div>
             </div>

@@ -61,7 +61,7 @@
                                 {
                                     <td style="min-width: 135px;">
                                         <div>
-                                            <a asp-controller="Skills" asp-action="EditSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-info btn-round btn-sm leave-page">
+                                            <a data-edit-item-type="skill" data-edit-item-item-id="@skillViewModel.SkillItem.SkillId" class="btn btn-info btn-round btn-sm item-details-edit-button edit-item-button">
                                                 <i class="fas fa-pencil-alt"></i>
                                             </a>
                                             <a asp-controller="Skills" asp-action="DeleteSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-danger btn-round btn-sm leave-page">
