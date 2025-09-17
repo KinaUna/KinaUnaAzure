@@ -8,8 +8,8 @@
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-measurement item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-measurement-header">
                 <img src="@Model.MeasurementItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
@@ -26,7 +26,7 @@
             <div class="col">
                 @if (Model.CurrentUser.CanUserAddItems)
                 {
-                    <button class="btn btn-link p-3 text-white-50 float-right mr-5 copy-item-button" data-copy-item-item-id="@Model.MeasurementItem.MeasurementId" data-copy-item-type="measurement">
+                    <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.MeasurementItem.MeasurementId" data-copy-item-type="measurement">
                         <i class="material-icons kinauna-icon-medium">content_copy</i>
                     </button>
                 }
@@ -36,39 +36,42 @@
                         <div class="space-10"></div>
                     </div>
                 </div>
-                <div class="row m-0 text-white">
-                    @if (Model.MeasurementItem.Height > 0.01)
-                    {
-                        <div class="col-12">@await LocaleManager.GetTranslation("Height:", PageNames.Measurements, Model.LanguageId) @Model.MeasurementItem.Height</div>
-                    }
-                    @if (Model.MeasurementItem.Weight > 0.01)
-                    {
-                        <div class="col-12">@await LocaleManager.GetTranslation("Weight:", PageNames.Measurements, Model.LanguageId) @Model.MeasurementItem.Weight</div>
-                    }
-                    @if (Model.MeasurementItem.Circumference > 0.01)
-                    {
-                        <div class="col-12">@await LocaleManager.GetTranslation("Circumference:", PageNames.Measurements, Model.LanguageId) @Model.MeasurementItem.Circumference</div>
-                    }
-                    @if (!string.IsNullOrEmpty(Model.MeasurementItem.EyeColor))
-                    {
-                        <div class="col-12">@await LocaleManager.GetTranslation("Eye color:", PageNames.Measurements, Model.LanguageId) @Model.MeasurementItem.EyeColor</div>
-                    }
-                    @if (!string.IsNullOrEmpty(Model.MeasurementItem.HairColor))
-                    {
-                        <div class="col-12">@await LocaleManager.GetTranslation("Hair color:", PageNames.Measurements, Model.LanguageId) @Model.MeasurementItem.HairColor</div>
-                    }
-                </div>
-
             </div>
-            @if (Model.IsCurrentUserProgenyAdmin)
-            {
-                <div class="space-20"></div>
-                <div class="col-12">
-                    <a data-edit-item-type="measurement" data-edit-item-item-id="@Model.MeasurementItem.MeasurementId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@Model.MeasurementItem.MeasurementId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
-                </div>
-
-            }
         </div>
+        <div class="row m-0">
+            <div class="col-auto d-none d-md-block">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0;">straighten</i></span>
+            </div>
+            <div class="row m-0 text-white">
+                @if (Model.MeasurementItem.Height > 0.01)
+                {
+                    <div class="col-12">@await LocaleManager.GetTranslation("Height:", PageNames.Measurements, Model.LanguageId) @Model.MeasurementItem.Height</div>
+                }
+                @if (Model.MeasurementItem.Weight > 0.01)
+                {
+                    <div class="col-12">@await LocaleManager.GetTranslation("Weight:", PageNames.Measurements, Model.LanguageId) @Model.MeasurementItem.Weight</div>
+                }
+                @if (Model.MeasurementItem.Circumference > 0.01)
+                {
+                    <div class="col-12">@await LocaleManager.GetTranslation("Circumference:", PageNames.Measurements, Model.LanguageId) @Model.MeasurementItem.Circumference</div>
+                }
+                @if (!string.IsNullOrEmpty(Model.MeasurementItem.EyeColor))
+                {
+                    <div class="col-12">@await LocaleManager.GetTranslation("Eye color:", PageNames.Measurements, Model.LanguageId) @Model.MeasurementItem.EyeColor</div>
+                }
+                @if (!string.IsNullOrEmpty(Model.MeasurementItem.HairColor))
+                {
+                    <div class="col-12">@await LocaleManager.GetTranslation("Hair color:", PageNames.Measurements, Model.LanguageId) @Model.MeasurementItem.HairColor</div>
+                }
+            </div>
+        </div>
+        @if (Model.IsCurrentUserProgenyAdmin)
+        { 
+            <div class="space-20"></div> 
+            <div class="col-12">
+                <a data-edit-item-type="measurement" data-edit-item-item-id="@Model.MeasurementItem.MeasurementId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@Model.MeasurementItem.MeasurementId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+            </div>
+        }
     </div>
 </div>

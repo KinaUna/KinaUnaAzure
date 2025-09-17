@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     SettingsHelper.initPageSettings();
     initialSettingsPanelSetup();
     setAddItemButtonEventListeners();
-    getKanbanBoards();
+    await getKanbanBoards();
     return new Promise(function (resolve, reject) {
         resolve();
     });

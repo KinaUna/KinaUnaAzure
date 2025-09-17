@@ -200,6 +200,7 @@ namespace KinaUnaWeb.Controllers
             foreach (KanbanItem kanbanItem in model.KanbanItems)
             {
                 kanbanItem.KanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanItem.KanbanBoardId);
+                kanbanItem.KanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanItem.KanbanBoard.ProgenyId);
             }
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);

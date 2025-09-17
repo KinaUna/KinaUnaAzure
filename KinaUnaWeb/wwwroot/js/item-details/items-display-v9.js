@@ -99,6 +99,7 @@ function getItemIdFromPopupDiv(itemTypeString) {
             }
         }
     }
+    console.log('item-id: ' + itemId);
     return itemId;
 }
 /**
@@ -106,6 +107,7 @@ function getItemIdFromPopupDiv(itemTypeString) {
  */
 export async function showPopupAtLoad(itemType) {
     startFullPageSpinner();
+    console.log('showPopupAtLoad: itemType: ' + itemType);
     if (itemType === 1) {
         let itemId = getItemIdFromPopupDiv('picture');
         if (itemId !== 0) {
@@ -202,7 +204,7 @@ export async function showPopupAtLoad(itemType) {
         }
     }
     if (itemType === 16) {
-        let itemId = getItemIdFromPopupDiv('kanbanboard');
+        let itemId = getItemIdFromPopupDiv('kanban-board');
         if (itemId !== 0) {
             await popupKanbanBoard(itemId.toString());
         }

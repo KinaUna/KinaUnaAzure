@@ -225,8 +225,8 @@
                                         if (kanbanItem.KanbanBoard != null)
                                         {
                                             <div class="row">
-                                                <div class="col-12">
-                                                    @kanbanItem.KanbanBoard.Title
+                                                <div class="col-12 p-3">
+                                                    <a asp-controller="Kanbans" asp-action="Index" asp-route-kanbanBoardId="@kanbanItem.KanbanBoardId" class="btn-link-green">@kanbanItem.KanbanBoard.Title (@kanbanItem.KanbanBoard.Progeny.NickName)</a> 
                                                 </div>
                                             </div>
                                             <div class="space-10"></div>

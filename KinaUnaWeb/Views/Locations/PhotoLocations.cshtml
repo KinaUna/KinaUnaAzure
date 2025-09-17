@@ -15,12 +15,23 @@
 <div id="locations-page-parameters" class="d-none" data-locations-page-parameters="@pageParameters"></div>
 <div id="here-maps-api-key-div" class="d-none" data-here-maps-api-key="@Model.HereMapsApiKey"></div>
 <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
-    <div class="btn-group" style="float: right;">
-        <a asp-controller="Locations" asp-action="Index" class="btn btn-info leave-page">
-            <i class="fas fa-map-marked-alt"></i> @await LocaleManager.GetTranslation("Back to locations", PageNames.Locations, Model.LanguageId)
-        </a>
+    <div class="row">
+        <div class="col-12">
+            <div class="page-tab-container">
+                <div class="page-tab" id="page-title-div">
+                    <a class="btn-page-tab leave-page" asp-controller="Locations" asp-action="Index">
+                        <i class="material-icons sidebar-icon">person_pin</i> @ViewData["Title"]
+                    </a>
+                </div>
+                <div class="page-tab active">
+                    <a class="btn-page-tab active leave-page" asp-controller="Locations" asp-action="PhotoLocations">
+                        <i class="fas fa-map-marked-alt sidebar-icon"></i> @await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId)
+                    </a>
+                </div>
+            </div>
+            <div id="settings-notification-div" class="mt-5 float-right small text-muted"></div>
+        </div>
     </div>
-    <div class="h4 ml-1">@ViewData["Title"]</div>
     <div class="row" style="clear: both; margin-top: 25px;">
         @if (allowHereMaps)
         {

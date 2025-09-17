@@ -358,7 +358,6 @@ async function saveKanbansPageSettings(): Promise<void> {
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     await showPopupAtLoad(TimeLineType.KanbanBoard);
-
     setKabansPageParametersFromPageData();
     loadKanbansPageSettings();
     addSelectedProgeniesChangedEventListener();
@@ -374,8 +373,9 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     SettingsHelper.initPageSettings();
     initialSettingsPanelSetup();
     setAddItemButtonEventListeners();
+    
 
-    getKanbanBoards();
+    await getKanbanBoards();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
