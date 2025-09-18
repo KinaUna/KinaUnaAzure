@@ -3,7 +3,7 @@ import { TimelineChangedEvent } from '../data-tools-v9.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
 import { KanbanItem, SubtasksPageParameters, TimelineItem } from '../page-models-v9.js';
-import { addSubtask, getSubtasks, refreshSubtasks } from './subtasks.js';
+import { addSubtask, getSubtasks, hideSubtaskMenus, refreshSubtasks } from './subtasks.js';
 let subtaskPageParameters = new SubtasksPageParameters();
 const subtasksListDivId = 'todo-details-sub-tasks-list-div';
 /**
@@ -82,7 +82,9 @@ async function onSetAsNotStartedButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await displayTodoItem(todoId);
+                    if (!buttonElement.classList.contains('no-pop-up')) {
+                        await displayTodoItem(todoId);
+                    }
                     dispatchTimelineItemChangedEvent(todoId);
                     return;
                 }
@@ -118,7 +120,9 @@ async function onSetAsInProgressButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await displayTodoItem(todoId);
+                    if (!buttonElement.classList.contains('no-pop-up')) {
+                        await displayTodoItem(todoId);
+                    }
                     dispatchTimelineItemChangedEvent(todoId);
                     return;
                 }
@@ -154,7 +158,9 @@ async function onSetAsCompletedButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await displayTodoItem(todoId);
+                    if (!buttonElement.classList.contains('no-pop-up')) {
+                        await displayTodoItem(todoId);
+                    }
                     dispatchTimelineItemChangedEvent(todoId);
                     return;
                 }
@@ -190,7 +196,9 @@ async function onSetAsCancelledButtonClicked(event) {
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await displayTodoItem(todoId);
+                    if (!buttonElement.classList.contains('no-pop-up')) {
+                        await displayTodoItem(todoId);
+                    }
                     dispatchTimelineItemChangedEvent(todoId);
                     return;
                 }
@@ -230,38 +238,7 @@ async function setTodoDetailsEventListeners(itemId, todoDetailsPopupDiv) {
             button.addEventListener('click', closeButtonActions);
         });
     }
-    const todoElementsWithDataCompletedId = document.querySelectorAll('[data-set-todo-item-completed-id="' + itemId + '"]');
-    if (todoElementsWithDataCompletedId) {
-        todoElementsWithDataCompletedId.forEach((element) => {
-            // Clear existing event listeners.
-            element.removeEventListener('click', onSetAsCompletedButtonClicked);
-            element.addEventListener('click', onSetAsCompletedButtonClicked);
-        });
-    }
-    const todoElementsWithDataCancelledId = document.querySelectorAll('[data-set-todo-item-cancelled-id="' + itemId + '"]');
-    if (todoElementsWithDataCancelledId) {
-        todoElementsWithDataCancelledId.forEach((element) => {
-            // Clear existing event listeners.
-            element.removeEventListener('click', onSetAsCancelledButtonClicked);
-            element.addEventListener('click', onSetAsCancelledButtonClicked);
-        });
-    }
-    const todoElementsWithDataInProgressId = document.querySelectorAll('[data-set-todo-item-in-progress-id="' + itemId + '"]');
-    if (todoElementsWithDataInProgressId) {
-        todoElementsWithDataInProgressId.forEach((element) => {
-            // Clear existing event listeners.
-            element.removeEventListener('click', onSetAsInProgressButtonClicked);
-            element.addEventListener('click', onSetAsInProgressButtonClicked);
-        });
-    }
-    const todoElementsWithDataNotStartedId = document.querySelectorAll('[data-set-todo-item-not-started-id="' + itemId + '"]');
-    if (todoElementsWithDataNotStartedId) {
-        todoElementsWithDataNotStartedId.forEach((element) => {
-            // Clear existing event listeners.
-            element.removeEventListener('click', onSetAsNotStartedButtonClicked);
-            element.addEventListener('click', onSetAsNotStartedButtonClicked);
-        });
-    }
+    setAssignStatusButtonsEventListeners(itemId);
     const addSubtaskForm = document.querySelector('#add-subtask-inline-form');
     if (addSubtaskForm) {
         const subtaskFormPreventDefaultAction = function (event) {
@@ -348,6 +325,40 @@ async function setTodoDetailsEventListeners(itemId, todoDetailsPopupDiv) {
         addTodoItemToKanbanBoardButton.addEventListener('click', addTodoItemToKanbanBoardAction);
     }
 }
+export function setAssignStatusButtonsEventListeners(itemId) {
+    const todoElementsWithDataCompletedId = document.querySelectorAll('[data-set-todo-item-completed-id="' + itemId + '"]');
+    if (todoElementsWithDataCompletedId) {
+        todoElementsWithDataCompletedId.forEach((element) => {
+            // Clear existing event listeners.
+            element.removeEventListener('click', onSetAsCompletedButtonClicked);
+            element.addEventListener('click', onSetAsCompletedButtonClicked);
+        });
+    }
+    const todoElementsWithDataCancelledId = document.querySelectorAll('[data-set-todo-item-cancelled-id="' + itemId + '"]');
+    if (todoElementsWithDataCancelledId) {
+        todoElementsWithDataCancelledId.forEach((element) => {
+            // Clear existing event listeners.
+            element.removeEventListener('click', onSetAsCancelledButtonClicked);
+            element.addEventListener('click', onSetAsCancelledButtonClicked);
+        });
+    }
+    const todoElementsWithDataInProgressId = document.querySelectorAll('[data-set-todo-item-in-progress-id="' + itemId + '"]');
+    if (todoElementsWithDataInProgressId) {
+        todoElementsWithDataInProgressId.forEach((element) => {
+            // Clear existing event listeners.
+            element.removeEventListener('click', onSetAsInProgressButtonClicked);
+            element.addEventListener('click', onSetAsInProgressButtonClicked);
+        });
+    }
+    const todoElementsWithDataNotStartedId = document.querySelectorAll('[data-set-todo-item-not-started-id="' + itemId + '"]');
+    if (todoElementsWithDataNotStartedId) {
+        todoElementsWithDataNotStartedId.forEach((element) => {
+            // Clear existing event listeners.
+            element.removeEventListener('click', onSetAsNotStartedButtonClicked);
+            element.addEventListener('click', onSetAsNotStartedButtonClicked);
+        });
+    }
+}
 /**
  * Displays a todo item in a popup.
  * @param {string} todoId The id of the todo item to display.
@@ -379,6 +390,8 @@ async function displayTodoItem(todoId) {
                 setDeleteItemButtonEventListeners();
                 await getSubtaskList(todoId);
                 $(".selectpicker").selectpicker('refresh');
+                document.removeEventListener('click', hideAllTodoDetailsMenusAndModals);
+                document.addEventListener('click', hideAllTodoDetailsMenusAndModals);
             }
         }
         else {
@@ -404,6 +417,20 @@ export async function getSubtaskList(todoId, resetList = false) {
         else {
             todoDetailsDiv.classList.add('d-none');
         }
+    }
+}
+function hideAllTodoDetailsMenusAndModals(event) {
+    const target = event.target;
+    if (!target.closest('.modal-settings-panel') && !target.closest('.modal-content')) {
+        const modalDivs = document.querySelectorAll('.settings-modal');
+        if (modalDivs) {
+            modalDivs.forEach((modalDiv) => {
+                modalDiv.classList.add('d-none');
+            });
+        }
+    }
+    if (!target.closest('.subtask-menu-content')) {
+        hideSubtaskMenus('');
     }
 }
 //# sourceMappingURL=todo-details.js.map

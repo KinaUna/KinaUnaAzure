@@ -174,6 +174,11 @@ function stopLoadingSpinner(): void {
 }
 
 function addSubtaskListeners(itemId: string): void {
+    const menuButtonElement = document.querySelector<HTMLButtonElement>('[data-subtask-menu-button-id="' + itemId + '"]');
+    if (menuButtonElement) {
+        menuButtonElement.removeEventListener('click', showSubtaskMenu);
+        menuButtonElement.addEventListener('click', showSubtaskMenu);
+    }
     const editButtonElement = document.querySelector<HTMLAnchorElement>('[data-edit-item-item-id="' + itemId + '"]');
     if (editButtonElement) {
         // Clear existing event listeners to avoid duplicates.
@@ -234,8 +239,37 @@ function addSubtaskListeners(itemId: string): void {
     }
 }
 
+const showSubtaskMenu = function (event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget as HTMLButtonElement;
+    const subtaskItemId = button.dataset.subtaskMenuButtonId;
+    if (subtaskItemId) {
+        hideSubtaskMenus(subtaskItemId);
+        const menuContentDiv = document.querySelector<HTMLDivElement>('.subtask-menu-content[data-subtask-menu-id="' + subtaskItemId + '"]');
+        if (menuContentDiv) {
+            if (menuContentDiv.classList.contains('d-none')) {
+                menuContentDiv.classList.remove('d-none');
+            } else {
+                menuContentDiv.classList.add('d-none');
+            }
+        }
+    }
+}
+
+export function hideSubtaskMenus(subtaskItemId: string) {
+    const allSubtaskMenus = document.querySelectorAll<HTMLDivElement>('.subtask-menu-content');
+    allSubtaskMenus.forEach((menu) => {
+        const menuSubtaskItemId = menu.dataset.subtaskMenuId;
+        if (subtaskItemId === '' || menuSubtaskItemId !== subtaskItemId) {
+            menu.classList.add('d-none');
+        }
+    });
+}
+
 async function onAddToKanbanButtonClicked(event: MouseEvent): Promise<void> {
     event.preventDefault();
+    hideSubtaskMenus('');
     const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
     if (buttonElement !== null) {
         const subtaskId = buttonElement.dataset.subtaskAddToKanbanId;

@@ -181,14 +181,12 @@
                         </div>
                         <div class="space-10"></div>
                         <div id="todo-details-sub-tasks-div" class="row">
-                            <div class="ml-3 mr-3">
-                                <div id="todo-details-sub-tasks-list-div" class="col-12">
-                                </div>
-                                <div id="load-more-subtasks-wrapper-div" class="col-12" style="height: 30px;">
-                                    <button id="more-subtasks-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
-                                    <div id="loading-subtasks-div" class="w-100">
-                                        <div class="space-20"></div>
-                                    </div>
+                            <div id="todo-details-sub-tasks-list-div" class="col-11 ml-3 mr-3">
+                            </div>
+                            <div id="load-more-subtasks-wrapper-div" class="col-11 ml-3 mr-3" style="height: 30px;">
+                                <button id="more-subtasks-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+                                <div id="loading-subtasks-div" class="w-100">
+                                    <div class="space-20"></div>
                                 </div>
                             </div>
                         </div>

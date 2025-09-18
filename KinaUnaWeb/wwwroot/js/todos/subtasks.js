@@ -150,6 +150,11 @@ function stopLoadingSpinner() {
     stopLoadingItemsSpinner('loading-subtasks-div');
 }
 function addSubtaskListeners(itemId) {
+    const menuButtonElement = document.querySelector('[data-subtask-menu-button-id="' + itemId + '"]');
+    if (menuButtonElement) {
+        menuButtonElement.removeEventListener('click', showSubtaskMenu);
+        menuButtonElement.addEventListener('click', showSubtaskMenu);
+    }
     const editButtonElement = document.querySelector('[data-edit-item-item-id="' + itemId + '"]');
     if (editButtonElement) {
         // Clear existing event listeners to avoid duplicates.
@@ -203,8 +208,36 @@ function addSubtaskListeners(itemId) {
         });
     }
 }
+const showSubtaskMenu = function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget;
+    const subtaskItemId = button.dataset.subtaskMenuButtonId;
+    if (subtaskItemId) {
+        hideSubtaskMenus(subtaskItemId);
+        const menuContentDiv = document.querySelector('.subtask-menu-content[data-subtask-menu-id="' + subtaskItemId + '"]');
+        if (menuContentDiv) {
+            if (menuContentDiv.classList.contains('d-none')) {
+                menuContentDiv.classList.remove('d-none');
+            }
+            else {
+                menuContentDiv.classList.add('d-none');
+            }
+        }
+    }
+};
+export function hideSubtaskMenus(subtaskItemId) {
+    const allSubtaskMenus = document.querySelectorAll('.subtask-menu-content');
+    allSubtaskMenus.forEach((menu) => {
+        const menuSubtaskItemId = menu.dataset.subtaskMenuId;
+        if (subtaskItemId === '' || menuSubtaskItemId !== subtaskItemId) {
+            menu.classList.add('d-none');
+        }
+    });
+}
 async function onAddToKanbanButtonClicked(event) {
     event.preventDefault();
+    hideSubtaskMenus('');
     const buttonElement = event.currentTarget;
     if (buttonElement !== null) {
         const subtaskId = buttonElement.dataset.subtaskAddToKanbanId;

@@ -67,8 +67,8 @@ export function createKanbanItemCardHTML(kanbanItem: KanbanItem):HTMLDivElement 
                                 </div>
                                 <div class="kanban-card-title">
                                     <div class="kanban-card-menu-div d-none float-right" data-kanban-item-id="${kanbanItem.kanbanItemId}">
-                                    <button class="kanban-card-menu-button" data-kanban-item-id="${kanbanItem.kanbanItemId}">...</button>
-                                </div>
+                                        <button class="kanban-card-menu-button" data-kanban-item-id="${kanbanItem.kanbanItemId}">...</button>
+                                    </div>
                                     ${kanbanItem.todoItem.title}
                                     <span class="${subtasksCountSpanClass}">[${kanbanItem.todoItem.completedSubtaskCount}/${kanbanItem.todoItem.subtaskCount}]</span>
                                 </div>

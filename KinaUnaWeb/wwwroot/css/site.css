@@ -1764,6 +1764,11 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     line-height: 1.5em;
 }
 
+.h5, h5 {
+    font-size: 1.15rem;
+}
+
+
 .kinauna-logo {
     position: absolute;
     /* top: 4px; */
@@ -4278,6 +4283,12 @@ noUi-handle:after, .noUi-handle:before {
         border: solid 1px;
     }
 
+    .kanban-card-menu-button:focus {
+        outline: none;
+        color: #ffef2f;
+        border: solid 1px;
+    }
+
 .kanban-card-menu-item-button {
     border: none;
     background: transparent;
@@ -4301,6 +4312,22 @@ noUi-handle:after, .noUi-handle:before {
         cursor: not-allowed !important;
     }
 
+    .kanban-card-menu-item-button.edit-item-button {
+        color: #90d0ff;
+    }
+
+        .kanban-card-menu-item-button.edit-item-button:hover {
+            color: #ffef2f;
+        }
+
+    .kanban-card-menu-item-button.delete-item-button {
+        color: #ff9696;
+    }
+
+        .kanban-card-menu-item-button.delete-item-button:hover {
+            color: #ffef2f;
+        }
+
 .kanban-menu-material-icons {
     font-size: 18px;
     margin-right: 8px;
@@ -4315,7 +4342,7 @@ noUi-handle:after, .noUi-handle:before {
     max-width: fit-content;
     overflow: auto;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
+    z-index: 1000;
     border-radius: 10px;
 }
 
@@ -4373,6 +4400,23 @@ noUi-handle:after, .noUi-handle:before {
 .kanban-card-profile-picture {
     max-height: 20px;
     border-radius: 10px;
+}
+
+.todo-item-menu-content{
+    padding: 10px;
+}
+
+.subtask-menu-content {
+    position: absolute;
+    background-color: #3e836f;
+    min-width: 160px;
+    max-width: fit-content;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 10px;
+    right: 0;
+    padding: 4px;
 }
 
 .page-tab-container {
