@@ -3,7 +3,7 @@ import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v9.js"
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9.js";
 import { getTranslation } from "../localization-v9.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
-import { KanbanBoardColumn, TimelineItem, TodoStatusType } from "../page-models-v9.js";
+import { KanbanBoardColumn, TimelineItem, TimeLineType, TodoStatusType } from "../page-models-v9.js";
 import { getStatusIconForTodoItems } from "../todos/todo-details.js";
 import { initializeAddEditKanbanItem } from "./add-edit-kanban-item.js";
 import { addCardDividerEventListeners, addCardEventListeners, createKanbanItemCardHTML, loadKanbanItemsTranslations } from "./kanban-cards.js";
@@ -53,7 +53,7 @@ function addTimelineChangedEventListener() {
  */
 export function dispatchKanbanBoardChangedEvent(kanbanBoardId) {
     const timelineItem = new TimelineItem();
-    timelineItem.itemType = 16;
+    timelineItem.itemType = TimeLineType.KanbanBoard;
     timelineItem.itemId = kanbanBoardId;
     const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
     window.dispatchEvent(timelineItemChangedEvent);

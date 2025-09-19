@@ -10,6 +10,7 @@
     string setAsCancelledString = await LocaleManager.GetTranslation("Set as cancelled", PageNames.Todos, Model.LanguageId);
     string addToKanbanBoardString = await LocaleManager.GetTranslation("Add to Kanban board", PageNames.Todos, Model.LanguageId);
     string showDetailsString = await LocaleManager.GetTranslation("Show details", PageNames.Todos, Model.LanguageId);
+    string assignToString = await LocaleManager.GetTranslation("Assign to ..", PageNames.Todos, Model.LanguageId);
 }
 <div class="col-12 cols-sm-10 col-md-9 col-lg-8 col-xl-7">
     <div class="card-compact bg-todos todo-item m-1" data-todo-id="@Model.TodoItemId" align="left" style="background: @Model.TodoItem.StatusBackgroundColor()">
@@ -31,34 +32,6 @@
                         }
                     </span>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col"></div>
-                @if (!string.IsNullOrEmpty(Model.TodoItem.Tags) || !string.IsNullOrEmpty(Model.TodoItem.Context))
-                {
-                    <div class="col">
-                        @if (!string.IsNullOrEmpty(Model.TodoItem.Tags))
-                        {
-                            List<string> tagsList = Model.TodoItem.Tags.Split(',').ToList();
-                            <div class="float-right ml-1 mr-1">
-                                @foreach (string tagString in tagsList)
-                                {
-                                    <span class="btn tag-item tag-item-xsm">@tagString</span>
-                                }
-                            </div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
-                        {
-                            List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
-                            <div class="float-right ml-1 mr-1">
-                                @foreach (string contextString in contextsList)
-                                {
-                                    <span class="btn context-item tag-item-xsm">@contextString</span>
-                                }
-                            </div>
-                        }
-                    </div>
-                }
             </div>
             <div id="todo-item-more-div-@Model.TodoItem.TodoItemId" class="row d-none todo-item-more-info" data-todo-item-more-id="@Model.TodoItem.TodoItemId">
                 <div class="col-12 card-compact-body">
@@ -89,16 +62,47 @@
                             <div class="col-auto text-left"><i class="material-icons" style="font-size: 18px;">location_on</i> @Model.TodoItem.Location</div>
                         }
                     </div>
+                    <div class="row">
+                        <div class="col"></div>
+                        @if (!string.IsNullOrEmpty(Model.TodoItem.Tags) || !string.IsNullOrEmpty(Model.TodoItem.Context))
+                        {
+                            <div class="col">
+                                @if (!string.IsNullOrEmpty(Model.TodoItem.Tags))
+                                {
+                                    List<string> tagsList = Model.TodoItem.Tags.Split(',').ToList();
+                                    <div class="float-right ml-1 mr-1">
+                                        @foreach (string tagString in tagsList)
+                                        {
+                                            <span class="btn tag-item tag-item-xsm">@tagString</span>
+                                        }
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
+                                {
+                                    List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
+                                    <div class="float-right ml-1 mr-1">
+                                        @foreach (string contextString in contextsList)
+                                        {
+                                            <span class="btn context-item tag-item-xsm">@contextString</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-12">
-                    <button class="kanban-card-menu-button m-0 w-100" data-todo-item-menu-button-id="@Model.TodoItem.TodoItemId"><i class="material-icons">expand_more</i></button>
+                    <div class="w-100 mt-2">
+                        <button class="kanban-card-menu-button" data-todo-item-more-info-button-id="@Model.TodoItem.TodoItemId"><i class="material-icons">expand_more</i></button>
+                        <button class="kanban-card-menu-button float-right" data-todo-item-menu-button-id="@Model.TodoItem.TodoItemId"><i class="material-icons">more_horiz</i></button>
+                    </div>
                 </div>
             </div>
         }
     </div>
-    <div class="col-12">
+    <div class="col-12 mb-1">
         <div class="todo-item-menu-content d-none" data-todo-item-menu-id="@Model.TodoItem.TodoItemId">
             <button class="kanban-card-menu-item-button" data-show-details-todo-item-id="@Model.TodoItem.TodoItemId">
                 <i class="material-icons kanban-menu-material-icons">fact_check</i> @showDetailsString
@@ -129,7 +133,11 @@
                     <button class="kanban-card-menu-item-button no-pop-up" data-set-todo-item-cancelled-id="@Model.TodoItem.TodoItemId">
                         <i class="material-icons kanban-menu-material-icons">playlist_remove</i> @setAsCancelledString
                     </button>
-                }
+                } 
+                <div class="item-menu-divider"></div>
+                <button class="kanban-card-menu-item-button" data-todo-assign-to-id="@Model.TodoItem.TodoItemId">
+                    <i class="material-icons kanban-menu-material-icons">assignment_ind</i> @assignToString
+                </button>
                 <div class="item-menu-divider"></div>
                 <button class="kanban-card-menu-item-button" data-todo-add-to-kanban-id="@Model.TodoItem.TodoItemId">
                     <i class="material-icons kanban-menu-material-icons">view_kanban</i> @addToKanbanBoardString

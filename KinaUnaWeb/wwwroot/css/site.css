@@ -3365,6 +3365,10 @@ button.Zebra_DatePicker_Icon {
     backface-visibility: hidden;
 }
 
+.modal-content {
+    box-shadow: 0 0px 8px 4px #9d00ff12;
+}
+
 @media (prefers-color-scheme: dark) {
 
     .input-group-text {
@@ -3501,6 +3505,7 @@ button.Zebra_DatePicker_Icon {
 
     .modal-content {
         background-color: #262426 !important;
+        box-shadow: 0 0px 8px 4px #9d00ff12;
     }
 
     .select-view-item {
@@ -4373,6 +4378,8 @@ noUi-handle:after, .noUi-handle:before {
     outline: 0;
     backdrop-filter: blur(2px) !important;
     align-content: center;
+    justify-items: center;
+    box-shadow: 0 2px 2px 0 hsl(0deg 0% 60% / 14%), 0 3px 1px -2px hsl(0deg 0% 60% / 20%), 0 1px 5px 0 hsl(0deg 0% 60% / 12%);
 }
 
 .modal-settings-panel {
@@ -4402,8 +4409,18 @@ noUi-handle:after, .noUi-handle:before {
     border-radius: 10px;
 }
 
-.todo-item-menu-content{
-    padding: 10px;
+.todo-item-menu-content {
+    position: absolute;
+    min-width: 160px;
+    max-width: fit-content;
+    background-color: #3e836f;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 10px;
+    right: -4px;
+    top: -4px;
+    padding: 4px;
 }
 
 .subtask-menu-content {

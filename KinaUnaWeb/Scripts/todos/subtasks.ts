@@ -4,6 +4,7 @@ import { addTimelineItemEventListener } from "../item-details/items-display-v9.j
 import { dispatchKanbanBoardChangedEvent } from "../kanbans/kanban-board-details.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
 import { KanbanItem, SubtasksPageParameters, SubtasksPageResponse, TimelineItem, TimeLineType, TodoItem, TodoItemParameters } from "../page-models-v9.js";
+import { popupTodoItem } from "./todo-details.js";
 
 let lastSubTaskPageParameters: SubtasksPageParameters;
 let containerElementId: string = '';
@@ -179,6 +180,21 @@ function addSubtaskListeners(itemId: string): void {
         menuButtonElement.removeEventListener('click', showSubtaskMenu);
         menuButtonElement.addEventListener('click', showSubtaskMenu);
     }
+
+    const showDetailsButton = document.querySelectorAll<HTMLButtonElement>('[data-show-details-subtask-id="' + itemId + '"]');
+    if (showDetailsButton) {
+        showDetailsButton.forEach((buttonElement) => {
+            buttonElement.removeEventListener('click', showSubtaskDetailsClicked);
+            buttonElement.addEventListener('click', showSubtaskDetailsClicked);
+        });
+    }
+
+    const moreInfoButton = document.querySelector<HTMLButtonElement>('[data-subtask-more-info-button-id="' + itemId + '"]');
+    if (moreInfoButton) {
+        moreInfoButton.removeEventListener('click', showMoreSubtaskInfo);
+        moreInfoButton.addEventListener('click', showMoreSubtaskInfo);
+    }
+
     const editButtonElement = document.querySelector<HTMLAnchorElement>('[data-edit-item-item-id="' + itemId + '"]');
     if (editButtonElement) {
         // Clear existing event listeners to avoid duplicates.
@@ -199,6 +215,15 @@ function addSubtaskListeners(itemId: string): void {
             // Clear existing event listeners to avoid duplicates.
             element.removeEventListener('click', onSetAsCompletedButtonClicked);
             element.addEventListener('click', onSetAsCompletedButtonClicked);
+        });
+    }
+
+    const subtaskElementsWithDataAssignToId = document.querySelectorAll<HTMLButtonElement>('[data-subtask-assign-to-id="' + itemId + '"]');
+    if (subtaskElementsWithDataAssignToId) {
+        subtaskElementsWithDataAssignToId.forEach((element) => {
+            // Clear existing event listeners to avoid duplicates.
+            element.removeEventListener('click', onAssignToButtonClicked);
+            element.addEventListener('click', onAssignToButtonClicked);
         });
     }
 
@@ -246,6 +271,7 @@ const showSubtaskMenu = function (event: MouseEvent) {
     const subtaskItemId = button.dataset.subtaskMenuButtonId;
     if (subtaskItemId) {
         hideSubtaskMenus(subtaskItemId);
+        hideSubtaskMoreInfoDivs('');
         const menuContentDiv = document.querySelector<HTMLDivElement>('.subtask-menu-content[data-subtask-menu-id="' + subtaskItemId + '"]');
         if (menuContentDiv) {
             if (menuContentDiv.classList.contains('d-none')) {
@@ -257,6 +283,40 @@ const showSubtaskMenu = function (event: MouseEvent) {
     }
 }
 
+async function showSubtaskDetailsClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoItemId = buttonElement.dataset.showDetailsSubtaskId;
+        if (todoItemId) {
+            await popupTodoItem(todoItemId);
+        }
+    }
+}
+
+const showMoreSubtaskInfo = function (event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget as HTMLButtonElement;
+    const todoItemId = button.dataset.subtaskMoreInfoButtonId;
+    if (todoItemId) {
+        hideSubtaskMenus('');
+        hideSubtaskMoreInfoDivs(todoItemId);
+        const todoItemMoreDiv = document.getElementById('subtask-more-div-' + todoItemId);
+        if (todoItemMoreDiv) {
+            if (todoItemMoreDiv.classList.contains('d-none')) {
+                todoItemMoreDiv.classList.remove('d-none');
+                button.innerHTML = `<i class="material-icons">expand_less</i>`;
+            }
+            else {
+                todoItemMoreDiv.classList.add('d-none');
+                button.innerHTML = `<i class="material-icons">expand_more</i>`;
+            }
+
+        }
+    }
+}
+
 export function hideSubtaskMenus(subtaskItemId: string) {
     const allSubtaskMenus = document.querySelectorAll<HTMLDivElement>('.subtask-menu-content');
     allSubtaskMenus.forEach((menu) => {
@@ -264,6 +324,103 @@ export function hideSubtaskMenus(subtaskItemId: string) {
         if (subtaskItemId === '' || menuSubtaskItemId !== subtaskItemId) {
             menu.classList.add('d-none');
         }
+    });    
+}
+
+export function hideSubtaskMoreInfoDivs(subtaskItemId: string) {
+    const allSubtaskMoreDivs = document.querySelectorAll<HTMLDivElement>('.subtask-more-info');
+    allSubtaskMoreDivs.forEach((divElement) => {
+        const divTodoItemId = divElement.dataset.subtaskMoreId;
+        if (subtaskItemId === '' || divTodoItemId !== subtaskItemId) {
+            divElement.classList.add('d-none');
+        }
+    });
+
+    const allMoreSubtaskButtons = document.querySelectorAll<HTMLButtonElement>('.kanban-card-menu-button[data-subtask-more-info-button-id]');
+    allMoreSubtaskButtons.forEach((moreButtonElement) => {
+        const moreButtonElementTodoItemId = moreButtonElement.dataset.subtaskMenuButtonId;
+        if (subtaskItemId === '' || moreButtonElementTodoItemId !== subtaskItemId) {
+            moreButtonElement.innerHTML = `<i class="material-icons">expand_more</i>`;
+        }
+    });
+}
+
+async function onAssignToButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoItemId = buttonElement.dataset.subtaskAssignToId;
+        if (todoItemId) {
+            await assignSubtaskTo(todoItemId);
+        }
+    }
+}
+
+async function assignSubtaskTo(todoItemId: string) {
+    // Get form html from server.
+    let url = '/Todos/AssignTodoItemTo?todoItemId=' + todoItemId;
+    const response = await fetch(url);
+    if (response.ok) {
+        const formHtml = await response.text();
+        const modalDiv = document.querySelector<HTMLDivElement>('#add-subtask-to-kanban-board-modal-' + todoItemId);
+        if (modalDiv) {
+            modalDiv.innerHTML = formHtml;
+            modalDiv.classList.remove('d-none');
+            const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.assign-todo-item-to-cancel-button');
+            if (cancelButton) {
+                const closeButtonFunction = function () {
+                    modalDiv.innerHTML = '';
+                    modalDiv.classList.add('d-none');
+                }
+                cancelButton.removeEventListener('click', closeButtonFunction);
+                cancelButton.addEventListener('click', closeButtonFunction);
+                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+                if (closeButton) {
+                    closeButton.removeEventListener('click', closeButtonFunction);
+                    closeButton.addEventListener('click', closeButtonFunction);
+                }
+            }
+
+            ($(".selectpicker") as any).selectpicker('refresh');
+
+            const assignForm = modalDiv.querySelector<HTMLFormElement>('#assign-todo-item-to-form');
+            if (assignForm) {
+                const assignTodoItemToFormFunction = async function (event: Event) {
+                    event.preventDefault();
+                    startFullPageSpinner();
+                    const formData = new FormData(assignForm);
+                    const url = '/Todos/AssignTodoItemTo';
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(async function (response) {
+                        if (response.ok) {
+                            // Successfully assigned the subtask. Close the modal.
+                            modalDiv.innerHTML = '';
+                            modalDiv.classList.add('d-none');
+                            // Update the todo-item's subtask list
+                            const updatedTodoItem = await response.json() as TodoItem;
+                            if (updatedTodoItem) {
+                                await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
+                            }
+
+                        } else {
+                            console.error('Error assigning person to subtask. Status: ' + response.status);
+                        }
+                    }).catch(function (error) {
+                        console.error('Error assigning person to subtask: ' + error);
+                    });
+                    stopFullPageSpinner();
+                }
+                assignForm.removeEventListener('submit', assignTodoItemToFormFunction);
+                assignForm.addEventListener('submit', assignTodoItemToFormFunction);
+            }
+        }
+
+    }
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
     });
 }
 

@@ -3,7 +3,7 @@ import { getTranslation } from "../localization-v9.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
 import { KanbanItem } from "../page-models-v9.js";
 import { getStatusIconForTodoItems } from "../todos/todo-details.js";
-import { getKanbanBoard, getKanbanItems, hideAllMenusAndModals, hideCardMenus, hideColumnMenus, setKanbanItems, updateKanbanItemsInColumn } from "./kanban-board-details.js";
+import { dispatchKanbanBoardChangedEvent, getKanbanBoard, getKanbanItems, hideAllMenusAndModals, hideCardMenus, hideColumnMenus, setKanbanItems, updateKanbanItemsInColumn } from "./kanban-board-details.js";
 import { displayKanbanItemDetails, getRemoveKanbanItemForm } from "./kanban-items.js";
 
 let draggedCard: EventTarget | null = null;
@@ -15,6 +15,8 @@ let moveRightString = '';
 let removeCardString = '';
 let copyToBoardString = '';
 let moveToBoardString = '';
+let showdetailsString = '';
+let assignToString = '';
 
 export async function loadKanbanItemsTranslations(): Promise<void> {
     if (moveUpString === '') {
@@ -37,6 +39,13 @@ export async function loadKanbanItemsTranslations(): Promise<void> {
     }
     if (moveToBoardString === '') {
         moveToBoardString = await getTranslation('Move card to...', 'Todos', getCurrentLanguageId());
+    }
+    if (showdetailsString === '') {
+        showdetailsString = await getTranslation('Show details', 'Todos', getCurrentLanguageId());
+    }
+
+    if (assignToString === '') {
+        assignToString = await getTranslation('Assign to ..', 'Todos', getCurrentLanguageId());
     }
 
     return new Promise<void>(function (resolve, reject) {
@@ -75,6 +84,8 @@ export function createKanbanItemCardHTML(kanbanItem: KanbanItem):HTMLDivElement 
                                 <div class="w-100">
                                     <div class="w-50 float-right">
                                         <div class="kanban-card-menu-content d-none" data-kanban-item-id="${kanbanItem.kanbanItemId}">
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="showdetails" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">fact_check</span><span>${showdetailsString}</span></button>
+                                            <div class="item-menu-divider"></div>
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="moveup" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">move_up</span><span>${moveUpString}</span></button>
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="movedown" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">move_down</span> ${moveDownString}</button>
                                             <div class="item-menu-divider"></div>
@@ -83,6 +94,8 @@ export function createKanbanItemCardHTML(kanbanItem: KanbanItem):HTMLDivElement 
                                             <div class="item-menu-divider"></div>
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="copytoboard" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">folder_copy</span> ${copyToBoardString}</button>
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="movetoboard" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">drive_file_move</span> ${moveToBoardString}</button>
+                                            <div class="item-menu-divider"></div>
+                                            <button class="kanban-card-menu-item-button" data-card-menu-action="assignto" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">assignment_ind</span> ${assignToString}</button>
                                             <div class="item-menu-divider"></div>
                                             <button class="kanban-card-menu-item-button" data-card-menu-action="removecard" data-kanban-item-id="${kanbanItem.kanbanItemId}" ><span class="material-icons kanban-menu-material-icons">delete</span> ${removeCardString}</button>
                                         </div>
@@ -368,6 +381,23 @@ const showCardMenu = function (event: MouseEvent) {
                 let kanbanItems = getKanbanItems();
                 let kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
 
+                const showDetailsButton = menuContentDiv.querySelector<HTMLButtonElement>('button[data-card-menu-action="showdetails"]');
+                if (showDetailsButton) {
+                    const showDetailsFunction = async function (event: MouseEvent) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        menuContentDiv.classList.add('d-none');
+                        if (kanbanItemId) {
+                            displayKanbanItemDetails(kanbanItemId, 'kanban-item-details-div');
+                        }
+                        return new Promise<void>(function (resolve, reject) {
+                            resolve();
+                        });
+                    }
+                    showDetailsButton.removeEventListener('click', showDetailsFunction);
+                    showDetailsButton.addEventListener('click', showDetailsFunction);
+                }
+
                 const moveUpButton = menuContentDiv.querySelector<HTMLButtonElement>('button[data-card-menu-action="moveup"]');
                 if (moveUpButton) {
                     // If the card is the first in the column, hide the move up button.
@@ -522,9 +552,90 @@ const showCardMenu = function (event: MouseEvent) {
                     moveCardToButton.removeEventListener('click', moveCardToFunction);
                     moveCardToButton.addEventListener('click', moveCardToFunction);
                 }
+
+                const assignToButton = menuContentDiv.querySelector<HTMLButtonElement>('button[data-card-menu-action="assignto"]');
+                if (assignToButton) {
+                    const assignToFunction = async function (event: MouseEvent) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        menuContentDiv.classList.add('d-none');
+                        await assignTo(kanbanItemId);
+
+                        return new Promise<void>(function (resolve, reject) {
+                            resolve();
+                        });
+                    }
+                    assignToButton.removeEventListener('click', assignToFunction);
+                    assignToButton.addEventListener('click', assignToFunction);
+                }
             } else {
                 menuContentDiv.classList.add('d-none');
             }
+        }
+    }
+}
+
+async function assignTo(kanbanItemId: string) {
+    let kanbanItems = getKanbanItems();
+    let kanbanItem = kanbanItems.find(k => k.kanbanItemId.toString() === kanbanItemId);
+    if (kanbanItem) {
+        // Get form html from server.
+        let url = '/Todos/AssignTodoItemTo?todoItemId=' + kanbanItem.todoItemId;
+        const response = await fetch(url);
+        if (response.ok) {
+            const formHtml = await response.text();
+            const modalDiv = document.querySelector<HTMLDivElement>('#kanban-item-details-div');
+            if (modalDiv) {
+                modalDiv.innerHTML = formHtml;
+                modalDiv.classList.remove('d-none');
+                const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.assign-todo-item-to-cancel-button');
+                if (cancelButton) {
+                    const closeButtonFunction = function () {
+                        modalDiv.innerHTML = '';
+                        modalDiv.classList.add('d-none');
+                    }
+                    cancelButton.removeEventListener('click', closeButtonFunction);
+                    cancelButton.addEventListener('click', closeButtonFunction);
+                    const closeButton = modalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+                    if (closeButton) {
+                        closeButton.removeEventListener('click', closeButtonFunction);
+                        closeButton.addEventListener('click', closeButtonFunction);
+                    }
+                }
+
+                ($(".selectpicker") as any).selectpicker('refresh');
+
+                const assignForm = modalDiv.querySelector<HTMLFormElement>('#assign-todo-item-to-form');
+                if (assignForm) {
+                    const assignTodoItemToFormFunction = async function (event: Event) {
+                        event.preventDefault();
+                        startFullPageSpinner();
+                        const formData = new FormData(assignForm);
+                        const url = '/Todos/AssignTodoItemTo';
+                        await fetch(url, {
+                            method: 'POST',
+                            body: formData
+                        }).then(async function (response) {
+                            if (response.ok) {
+                                // Successfully assigned the KanbanItem. Close the modal.
+                                modalDiv.innerHTML = '';
+                                modalDiv.classList.add('d-none');
+                                // Dispatch event to update Kanban board
+                                dispatchKanbanBoardChangedEvent(kanbanItem.kanbanBoardId.toString());
+
+                            } else {
+                                console.error('Error assigning person to kanban item. Status: ' + response.status);
+                            }
+                        }).catch(function (error) {
+                            console.error('Error assigning person to kanban item: ' + error);
+                        });
+                        stopFullPageSpinner();
+                    }
+                    assignForm.removeEventListener('submit', assignTodoItemToFormFunction);
+                    assignForm.addEventListener('submit', assignTodoItemToFormFunction);
+                }
+            }
+
         }
     }
 }

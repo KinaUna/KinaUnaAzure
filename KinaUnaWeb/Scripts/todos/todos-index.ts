@@ -7,7 +7,7 @@ import * as SettingsHelper from '../settings-tools-v9.js';
 import * as LocaleHelper from '../localization-v9.js';
 import { popupTodoItem, setAssignStatusButtonsEventListeners } from './todo-details.js';
 import { onDeleteItemButtonClicked, onEditItemButtonClicked } from '../addItem/add-item.js';
-import { KanbanItem } from '../page-models-v9.js';
+import { KanbanItem, TimelineItem, TimeLineType, TodoItem } from '../page-models-v9.js';
 import { dispatchKanbanBoardChangedEvent } from '../kanbans/kanban-board-details.js';
 
 let todosPageParameters = new pageModels.TodosPageParameters();
@@ -108,7 +108,6 @@ async function getTodos(): Promise<void> {
 }
 
 async function refreshTodos(changedTodoId: string) {
-    console.log('todos-index: refreshTodos')
     let tempPageNumber = todosPageParameters.currentPageNumber;
     todosPageParameters.currentPageNumber = 1;
     clearTodoItemsElements();
@@ -160,11 +159,17 @@ async function getTodoElement(id: number): Promise<void> {
 
 function addTodoElementEventListeners(todoItemId: string) {
     const menuButtonElement = document.querySelector<HTMLButtonElement>('[data-todo-item-menu-button-id="' + todoItemId + '"]');
-    
     if (menuButtonElement) {
         menuButtonElement.removeEventListener('click', showTodoElementMenu);
         menuButtonElement.addEventListener('click', showTodoElementMenu);
     }
+
+    const moreInfoButton = document.querySelector<HTMLButtonElement>('[data-todo-item-more-info-button-id="' + todoItemId + '"]');
+    if (moreInfoButton) {
+        moreInfoButton.removeEventListener('click', showMoreTodoInfo);
+        moreInfoButton.addEventListener('click', showMoreTodoInfo);
+    }
+
     const editButtonElement = document.querySelector<HTMLAnchorElement>('[data-edit-item-item-id="' + todoItemId + '"]');
     if (editButtonElement) {
         // Clear existing event listeners to avoid duplicates.
@@ -177,6 +182,15 @@ function addTodoElementEventListeners(todoItemId: string) {
         // Clear existing event listeners to avoid duplicates.
         deleteButtonElement.removeEventListener('click', onDeleteItemButtonClicked);
         deleteButtonElement.addEventListener('click', onDeleteItemButtonClicked);
+    }
+
+    const todoElementsWithDataAssignToId = document.querySelectorAll<HTMLButtonElement>('[data-todo-assign-to-id="' + todoItemId + '"]');
+    if (todoElementsWithDataAssignToId) {
+        todoElementsWithDataAssignToId.forEach((element) => {
+            // Clear existing event listeners to avoid duplicates.
+            element.removeEventListener('click', onAssignToButtonClicked);
+            element.addEventListener('click', onAssignToButtonClicked);
+        });
     }
 
     const todoElementsWithDataAddToKanbanId = document.querySelectorAll<HTMLButtonElement>('[data-todo-add-to-kanban-id="' + todoItemId + '"]');
@@ -200,6 +214,7 @@ function addTodoElementEventListeners(todoItemId: string) {
 
 async function showMoreDetailsClicked(event: MouseEvent): Promise<void> {
     event.preventDefault();
+    event.stopPropagation();
     const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
     if (buttonElement !== null) {
         const todoItemId = buttonElement.dataset.showDetailsTodoItemId;
@@ -209,9 +224,88 @@ async function showMoreDetailsClicked(event: MouseEvent): Promise<void> {
     }
 }
 
+async function onAssignToButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoItemId = buttonElement.dataset.todoAssignToId;
+        if (todoItemId) {
+            await assignTodoItemTo(todoItemId);
+        }
+    }
+}
+
+async function assignTodoItemTo(todoItemId: string) {
+    // Get form html from server.
+    let url = '/Todos/AssignTodoItemTo?todoItemId=' + todoItemId;
+    const response = await fetch(url);
+    if (response.ok) {
+        const formHtml = await response.text();
+        const modalDiv = document.querySelector<HTMLDivElement>('#add-todo-item-to-kanban-board-modal-' + todoItemId);
+        if (modalDiv) {
+            modalDiv.innerHTML = formHtml;
+            modalDiv.classList.remove('d-none');
+            const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.assign-todo-item-to-cancel-button');
+            if (cancelButton) {
+                const closeButtonFunction = function () {
+                    modalDiv.innerHTML = '';
+                    modalDiv.classList.add('d-none');
+                }
+                cancelButton.removeEventListener('click', closeButtonFunction);
+                cancelButton.addEventListener('click', closeButtonFunction);
+                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+                if (closeButton) {
+                    closeButton.removeEventListener('click', closeButtonFunction);
+                    closeButton.addEventListener('click', closeButtonFunction);
+                }
+            }
+
+            ($(".selectpicker") as any).selectpicker('refresh');
+
+            const addTodoItemForm = modalDiv.querySelector<HTMLFormElement>('#assign-todo-item-to-form');
+            if (addTodoItemForm) {
+                const assignTodoItemToFormFunction = async function (event: Event) {
+                    event.preventDefault();
+                    startFullPageSpinner();
+                    const formData = new FormData(addTodoItemForm);
+                    const url = '/Todos/AssignTodoItemTo';
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(async function (response) {
+                        if (response.ok) {
+                            // Successfully copied the KanbanItem. Close the modal.
+                            modalDiv.innerHTML = '';
+                            modalDiv.classList.add('d-none');
+                            // Dispatch event to update Kanban board
+                            const updatedTodoItem = await response.json() as TodoItem;
+                            if (updatedTodoItem) {
+                                dispatchTodoItemChangedEvent(updatedTodoItem.todoItemId.toString());
+                            }
+
+                        } else {
+                            console.error('Error assigning person to todo item. Status: ' + response.status);
+                        }
+                    }).catch(function (error) {
+                        console.error('Error assigning person to todo item: ' + error);
+                    });
+                    stopFullPageSpinner();
+                }
+                addTodoItemForm.removeEventListener('submit', assignTodoItemToFormFunction);
+                addTodoItemForm.addEventListener('submit', assignTodoItemToFormFunction);
+            }
+        }
+
+    }
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
 async function onAddToKanbanButtonClicked(event: MouseEvent): Promise<void> {
     event.preventDefault();
-    // hideTodoElementMenus('');
+
     const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
     if (buttonElement !== null) {
         const todoItemId = buttonElement.dataset.todoAddToKanbanId;
@@ -250,7 +344,7 @@ async function addTodoItemToBoard(todoItemId: string) {
 
             const addTodoItemForm = modalDiv.querySelector<HTMLFormElement>('#add-todo-item-to-kanban-board-form');
             if (addTodoItemForm) {
-                const addSubtaskFormFunction = async function (event: Event) {
+                const addTodoItemFormFunction = async function (event: Event) {
                     event.preventDefault();
                     startFullPageSpinner();
                     const formData = new FormData(addTodoItemForm);
@@ -270,15 +364,15 @@ async function addTodoItemToBoard(todoItemId: string) {
                             }
 
                         } else {
-                            console.error('Error adding subtask to kanban board. Status: ' + response.status);
+                            console.error('Error adding todo-item to kanban board. Status: ' + response.status);
                         }
                     }).catch(function (error) {
-                        console.error('Error adding subtask to kanban: ' + error);
+                        console.error('Error adding todo-item to kanban board: ' + error);
                     });
                     stopFullPageSpinner();
                 }
-                addTodoItemForm.removeEventListener('submit', addSubtaskFormFunction);
-                addTodoItemForm.addEventListener('submit', addSubtaskFormFunction);
+                addTodoItemForm.removeEventListener('submit', addTodoItemFormFunction);
+                addTodoItemForm.addEventListener('submit', addTodoItemFormFunction);
             }
         }
 
@@ -287,13 +381,15 @@ async function addTodoItemToBoard(todoItemId: string) {
         resolve();
     });
 }
-const showTodoElementMenu = function (event: MouseEvent) {
+
+const showMoreTodoInfo = function (event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
     const button = event.currentTarget as HTMLButtonElement;
-    const todoItemId = button.dataset.todoItemMenuButtonId;    
+    const todoItemId = button.dataset.todoItemMoreInfoButtonId;
     if (todoItemId) {
-        hideTodoElementMenus(todoItemId);
+        hideTodoElementMenus('');
+        hideTodoItemMoreInfoDivs(todoItemId);
         const todoItemMoreDiv = document.getElementById('todo-item-more-div-' + todoItemId);
         if (todoItemMoreDiv) {
             if (todoItemMoreDiv.classList.contains('d-none')) {
@@ -304,8 +400,19 @@ const showTodoElementMenu = function (event: MouseEvent) {
                 todoItemMoreDiv.classList.add('d-none');
                 button.innerHTML = `<i class="material-icons">expand_more</i>`;
             }
-            
+
         }
+    }
+}
+
+const showTodoElementMenu = function (event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget as HTMLButtonElement;
+    const todoItemId = button.dataset.todoItemMenuButtonId;    
+    if (todoItemId) {
+        hideTodoElementMenus(todoItemId);
+        hideTodoItemMoreInfoDivs('');
         const menuContentDiv = document.querySelector<HTMLDivElement>('.todo-item-menu-content[data-todo-item-menu-id="' + todoItemId + '"]');
         if (menuContentDiv) {
             if (menuContentDiv.classList.contains('d-none')) {
@@ -325,7 +432,10 @@ function hideTodoElementMenus(todoItemId: string) {
             menu.classList.add('d-none');
         }
     });
+        
+}
 
+function hideTodoItemMoreInfoDivs(todoItemId: string) {
     const allTodoItemMoreDivs = document.querySelectorAll<HTMLDivElement>('.todo-item-more-info');
     allTodoItemMoreDivs.forEach((divElement) => {
         const divTodoItemId = divElement.dataset.todoItemMoreId;
@@ -334,7 +444,7 @@ function hideTodoElementMenus(todoItemId: string) {
         }
     });
 
-    const allMoreTodoItemButtons = document.querySelectorAll<HTMLButtonElement>('.kanban-card-menu-button[data-todo-item-menu-button-id]');
+    const allMoreTodoItemButtons = document.querySelectorAll<HTMLButtonElement>('.kanban-card-menu-button[data-todo-item-more-info-button-id]');
     allMoreTodoItemButtons.forEach((moreButtonElement) => {
         const moreButtonElementTodoItemId = moreButtonElement.dataset.todoItemMenuButtonId;
         if (todoItemId === '' || moreButtonElementTodoItemId !== todoItemId) {
@@ -342,6 +452,7 @@ function hideTodoElementMenus(todoItemId: string) {
         }
     });
 }
+
 /**
  * Adds an event listener for progeniesChanged events.
  * This event is triggered when the selected progenies change.
@@ -1110,6 +1221,18 @@ function hideAllTodoIndexMenusAndModals(event: MouseEvent) {
     if (!target.closest('.todo-item-menu-content')) {
         hideTodoElementMenus('');
     }
+
+    if (!target.closest('.todo-item-more-info')) {
+        hideTodoItemMoreInfoDivs('');
+    }
+}
+
+function dispatchTodoItemChangedEvent(todoItemId: string): void {
+    const timelineItem = new TimelineItem();
+    timelineItem.itemType = TimeLineType.TodoItem;
+    timelineItem.itemId = todoItemId;
+    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+    window.dispatchEvent(timelineItemChangedEvent);
 }
 
 /** Initializes the Todos page by setting up event listeners and fetching initial data.
@@ -1117,7 +1240,7 @@ function hideAllTodoIndexMenusAndModals(event: MouseEvent) {
  */
 async function onDomContentLoaded(event: any): Promise<void> {
     startLoadingItemsSpinner('loading-todo-items-div');
-    await showPopupAtLoad(pageModels.TimeLineType.TodoItem);
+    await showPopupAtLoad(TimeLineType.TodoItem);
 
     setTodosPageParametersFromPageData();
     loadTodosPageSettings();

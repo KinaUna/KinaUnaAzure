@@ -3,7 +3,7 @@ import { TimelineChangedEvent } from '../data-tools-v9.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
 import { KanbanItem, SubtasksPageParameters, TimelineItem, TodoItem } from '../page-models-v9.js';
-import { addSubtask, getSubtasks, hideSubtaskMenus, refreshSubtasks } from './subtasks.js';
+import { addSubtask, getSubtasks, hideSubtaskMenus, hideSubtaskMoreInfoDivs, refreshSubtasks } from './subtasks.js';
 
 let subtaskPageParameters: SubtasksPageParameters = new SubtasksPageParameters();
 const subtasksListDivId = 'todo-details-sub-tasks-list-div';
@@ -462,5 +462,8 @@ function hideAllTodoDetailsMenusAndModals(event: MouseEvent) {
     }
     if (!target.closest('.subtask-menu-content')) {
         hideSubtaskMenus('');
+    }
+    if (!target.closest('.subtask-more-info')) {
+        hideSubtaskMoreInfoDivs('');
     }
 }

@@ -4,6 +4,10 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Edit todo", PageNames.Todos, Model.LanguageId);
+    if (Model.TodoItem.ParentTodoItemId != 0)
+    {
+        ViewData["Title"] = await LocaleManager.GetTranslation("Edit subtask", PageNames.Todos, Model.LanguageId);
+    }
     string assignedToString = await LocaleManager.GetTranslation("Assign todo to:", PageNames.Todos, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";

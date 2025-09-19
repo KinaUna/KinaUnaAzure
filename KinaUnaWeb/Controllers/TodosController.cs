@@ -692,18 +692,18 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> AddTodoItemToKanbanBoard(int todoItemId)
         {
-            TodoItem subtask = await todoItemsHttpClient.GetTodoItem(todoItemId);
-            if (subtask == null || subtask.TodoItemId == 0)
+            TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoItemId);
+            if (todoItem == null || todoItem.TodoItemId == 0)
             {
                 return NotFound();
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), subtask.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
             KanbanItemViewModel model = new(baseModel)
             {
                 KanbanItem = new KanbanItem
                 {
-                    TodoItem = subtask,
+                    TodoItem = todoItem,
                 }
             };
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
@@ -801,6 +801,66 @@ namespace KinaUnaWeb.Controllers
             KanbanItem addedKanbanItem = await kanbanItemsHttpClient.AddKanbanItem(newKanbanItem);
 
             return Json(addedKanbanItem);
+        }
+
+        public async Task<IActionResult> AssignTodoItemTo(int todoItemId)
+        {
+            TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoItemId);
+            if (todoItem == null || todoItem.TodoItemId == 0)
+            {
+                return NotFound();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            TodoViewModel model = new(baseModel)
+            {
+                TodoItem = todoItem
+            };
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
+            {
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.SetProgenyList();
+                model.TodoItem.Progeny = model.CurrentProgeny;
+            }
+
+            model.SetAccessLevelList();
+            model.SetStatusList(model.TodoItem.Status);
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
+            
+            return PartialView("_AssignTodoItemToPartial", model);
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> AssignTodoItemTo([FromForm] TodoViewModel model)
+        {
+            TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(model.TodoItem.TodoItemId);
+            if (todoItem == null || todoItem.TodoItemId == 0)
+            {
+                return NotFound();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            model.SetBaseProperties(baseModel);
+            List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            if (progAdminList.Count == 0)
+            {
+                return BadRequest();
+            }
+            // Check if user is allowed to assign to the new progeny id.
+            Progeny assignToProgeny = progAdminList.SingleOrDefault(p => p.Id == model.TodoItem.ProgenyId);
+            if (assignToProgeny == null || assignToProgeny.Id == 0)
+            {
+                return Unauthorized("Access denied.");
+            }
+
+            todoItem.ProgenyId = model.TodoItem.ProgenyId;
+            TodoItem updatedTodoItem = await todoItemsHttpClient.UpdateTodoItem(todoItem);
+
+            return Json(updatedTodoItem);
         }
 
         private async Task UpdateKanbanItemsStatus(TodoItem todoItem)
