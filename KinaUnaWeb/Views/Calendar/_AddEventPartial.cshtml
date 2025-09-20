@@ -106,7 +106,7 @@
         </div>
     </div>
     <div id="event-interval-input-div" class="form-group col-12 d-none">
-        <label class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat every", PageNames.Calendar, Model.LanguageId) </label>
+        <label asp-for="CalendarItem.RecurrenceRule.Frequency" class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat every", PageNames.Calendar, Model.LanguageId) </label>
         <div class="col-auto">
             <div class="row">
                 <div class="col-6 col-sm-3 col-md-2 col-lg-2 col-xl-2">
@@ -143,7 +143,7 @@
                 <label for="event-repeat-monthly-day-pattern-type-radio" class="m-2">Day name(s) of month</label>
             </div>
             <div id="event-repeat-monthly-on-day-number-div" class="form-group d-none">
-                <label class="control-label col-auto">Repeat on day number:</label>
+                <label asp-for="CalendarItem.RecurrenceRule.ByMonthDay" class="control-label col-auto">Repeat on day number:</label>
                 <div class="row m-3">
                     @for (int i = 1; i < 32; i++)
                     {
@@ -295,19 +295,19 @@
         </div>
         <div id="event-repeat-until-div" class="col-12 d-none">
             <div class="form-group">
-                <label class="control-label col-auto">@await LocaleManager.GetTranslation("Ends", PageNames.Calendar, Model.LanguageId)</label>
+                <label asp-for="CalendarItem.RecurrenceRule.EndOption" class="control-label col-auto">@await LocaleManager.GetTranslation("Ends", PageNames.Calendar, Model.LanguageId)</label>
                 <div class="col-auto">
                     <select id="event-end-option-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" asp-for="CalendarItem.RecurrenceRule.EndOption" asp-items="@Model.EndOptionsList"></select>
                 </div>
             </div>
             <div id="event-repeat-until-date-div" class="form-group">
-                <label class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat until", PageNames.Calendar, Model.LanguageId) </label>
+                <label asp-for="CalendarItem.RecurrenceRule.Until" class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat until", PageNames.Calendar, Model.LanguageId) </label>
                 <div class="col-auto">
                     <input id="event-repeat-until-date-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.RecurrenceRule.Until" value="@Model.CalendarItem.RecurrenceRule.Until?.ToString("dd-MMMM-yyyy")"/>
                 </div>
             </div>
             <div id="event-repeat-until-count-div" class="form-group">
-                <label class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat count", PageNames.Calendar, Model.LanguageId) </label>
+                <label asp-for="CalendarItem.RecurrenceRule.Count" class="control-label col-auto">@await LocaleManager.GetTranslation("Repeat count", PageNames.Calendar, Model.LanguageId) </label>
                 <div class="col-auto">
                     <input class="form-control d-inline" type="number" value="@Model.CalendarItem.RecurrenceRule.Count" asp-for="CalendarItem.RecurrenceRule.Count"/>
                 </div>

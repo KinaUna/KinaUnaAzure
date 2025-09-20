@@ -41,7 +41,7 @@
                 </div>
             }
             <div class="form-group">
-                <label id="photo-header-label" class="col-auto control-label">@await LocaleManager.GetTranslation("Photo", PageNames.Pictures, Model.LanguageId)</label>
+                <label for="select-photos-button" id="photo-header-label" class="col-auto control-label">@await LocaleManager.GetTranslation("Photo", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
                     <div id="upload-file-div">
                     </div>
@@ -58,13 +58,13 @@
                 </div>
             </div>
             <div id="location-form-group" class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
+                <label asp-for="Picture.Location" class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input id="location-input" type="text" asp-for="Picture.Location" value="@Model.Picture.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
                 </div>
             </div>
             <div id="tags-form-group" class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
+                <label asp-for="Picture.Tags" class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input id="tag-list" type="text" asp-for="Picture.Tags" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
                 </div>

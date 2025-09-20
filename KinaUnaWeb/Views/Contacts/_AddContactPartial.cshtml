@@ -126,7 +126,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Picture", PageNames.Contacts, Model.LanguageId)</label>
+                <label for="contact-picture-file-input" class="col-auto control-label">@await LocaleManager.GetTranslation("Picture", PageNames.Contacts, Model.LanguageId)</label>
                 <div class="col-auto">
                     <div class="fileinput fileinput-new text-center" data-provides="fileinput">
                         <div class="fileinput-new thumbnail img-raised">
@@ -137,7 +137,7 @@
                             <div class="btn btn-primary btn-round btn-file ">
                                 <span data-trigger="fileinput" class="fileinput-new">@await LocaleManager.GetTranslation("Select picture", PageNames.Contacts, Model.LanguageId)</span>
                                 <span class="fileinput-exists">@await LocaleManager.GetTranslation("Change picture", PageNames.Contacts, Model.LanguageId)</span>
-                                <input type="file" name="File" accept="image/*"/>
+                                <input id="contact-picture-file-input" type="file" name="File" accept="image/*"/>
                             </div>
                             <br/>
                             <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
@@ -169,7 +169,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
+                <label for="tag-list" class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input id="tag-list" type="text" asp-for="ContactItem.Tags" value="@Model.ContactItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control"/>
                 </div>

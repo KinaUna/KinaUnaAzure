@@ -13,7 +13,7 @@
 
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-note-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-add-item-header">
@@ -26,7 +26,7 @@
             @if (Model.ProgenyList.Count > 1)
             {
                 <div class="form-group">
-                    <label class="col-auto control-label">@copyNoteToString </label>
+                    <label asp-for="NoteItem.ProgenyId" class="col-auto control-label">@copyNoteToString </label>
                     <div class="col-auto">
                         <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="NoteItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
@@ -35,7 +35,7 @@
             else
             {
                 <div class="form-group">
-                    <label class="col-auto control-label">@copyNoteToString</label>
+                    <label asp-for="NoteItem.ProgenyId" class="col-auto control-label">@copyNoteToString</label>
                     <div class="col-auto">
                         <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                     </div>

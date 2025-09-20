@@ -58,31 +58,31 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
+                <label asp-for="Picture.Location" class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input id="location-input" type="text" asp-for="Picture.Location" value="@Model.Picture.Location" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Pictures, Model.LanguageId)</label>
+                <label asp-for="Picture.Latitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input id="latitude" type="text" asp-for="Picture.Latitude" value="@Model.Picture.Latitude" class="form-control"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Pictures, Model.LanguageId)</label>
+                <label asp-for="Picture.Longtitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input id="longitude" type="text" asp-for="Picture.Longtitude" value="@Model.Picture.Longtitude" class="form-control"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Altitude", PageNames.Pictures, Model.LanguageId)</label>
+                <label asp-for="Picture.Altitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Altitude", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input id="altitude" type="text" asp-for="Picture.Altitude" value="@Model.Picture.Altitude" class="form-control"/>
                 </div>
             </div>
             <div id="tags-form-group" class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
+                <label asp-for="Picture.Tags" class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input id="tag-list" type="text" asp-for="Picture.Tags" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
                 </div>

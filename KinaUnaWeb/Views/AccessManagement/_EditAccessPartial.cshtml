@@ -18,19 +18,19 @@
         <div class="space-20"></div>
         <form id="save-item-form" asp-action="EditAccess" role="form">
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.AccessManagement, Model.LanguageId)</label>
+                <label asp-for="Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.AccessManagement, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input asp-for="Email" value="@Model.Email" class="form-control" readonly="readonly" />
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Username", PageNames.AccessManagement, Model.LanguageId)</label>
+                <label asp-for="UserName" class="col-auto control-label">@await LocaleManager.GetTranslation("Username", PageNames.AccessManagement, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input asp-for="UserName" class="form-control" readonly="readonly" />
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+                <label asp-for="AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
                 <div class="col-auto">
                     <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
                 </div>

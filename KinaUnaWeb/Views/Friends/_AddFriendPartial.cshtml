@@ -22,7 +22,7 @@
             @if (Model.ProgenyList.Count > 1)
             {
                 <div class="form-group">
-                    <label class="control-label col-auto">@addFriendForString </label>
+                    <label asp-for="FriendItem.ProgenyId" class="control-label col-auto">@addFriendForString </label>
                     <div class="col-auto">
                         <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="FriendItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
@@ -31,7 +31,7 @@
             else
             {
                 <div class="form-group">
-                    <label class="control-label col-auto">@addFriendForString</label>
+                    <label asp-for="FriendItem.ProgenyId" class="control-label col-auto">@addFriendForString</label>
                     <div class="col-auto">
                         <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                     </div>
@@ -51,7 +51,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Picture", PageNames.Friends, Model.LanguageId)</label>
+                <label for="friend-profile-picture-file-input" class="col-auto control-label">@await LocaleManager.GetTranslation("Picture", PageNames.Friends, Model.LanguageId)</label>
                 <div class="col-auto">
                     <div class="fileinput fileinput-new text-center" data-provides="fileinput">
                         <div class="fileinput-new thumbnail img-raised">
@@ -62,7 +62,7 @@
                             <div class="btn btn-primary btn-round btn-file ">
                                 <span data-trigger="fileinput" class="fileinput-new">@await LocaleManager.GetTranslation("Select picture", PageNames.Friends, Model.LanguageId)</span>
                                 <span class="fileinput-exists">@await LocaleManager.GetTranslation("Change picture", PageNames.Friends, Model.LanguageId)</span>
-                                <input type="file" name="File" accept="image/*" />
+                                <input id="friend-profile-picture-file-input" type="file" name="File" accept="image/*" />
                             </div>
                             <br />
                             <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">

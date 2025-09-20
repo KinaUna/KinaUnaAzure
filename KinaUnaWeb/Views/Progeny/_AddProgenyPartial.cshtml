@@ -47,7 +47,7 @@
             </div>
             <input asp-for="Admins" class="form-control" value="@Model.Admins" type="hidden"/>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Profile picture", PageNames.Progeny, Model.LanguageId)</label>
+                <label asp-for="File" class="col-auto control-label">@await LocaleManager.GetTranslation("Profile picture", PageNames.Progeny, Model.LanguageId)</label>
                 <div class="col-auto">
                     <div class="fileinput fileinput-new text-center" data-provides="fileinput">
                         <div class="fileinput-new thumbnail img-raised">

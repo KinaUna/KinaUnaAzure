@@ -39,7 +39,7 @@
             @if (Model.ProgenyList.Count > 1)
             {
                 <div class="form-group">
-                    <label class="col-auto control-label">@assignedToString </label>
+                    <label asp-for="KanbanItem.TodoItem.ProgenyId" class="col-auto control-label">@assignedToString </label>
                     <div class="col-auto">
                         <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="KanbanItem.TodoItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
@@ -48,7 +48,7 @@
             else
             {
                 <div class="form-group">
-                    <label class="col-auto control-label">@assignedToString</label>
+                    <label asp-for="KanbanItem.TodoItem.ProgenyId" class="col-auto control-label">@assignedToString</label>
                     <div class="col-auto">
                         <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                     </div>
@@ -102,7 +102,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId) </label>
+                <label asp-for="KanbanItem.TodoItem.Status" class="col-auto control-label">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId) </label>
                 <div class="col-auto">
                     <select id="todo-status-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.StatusList.Count" asp-for="KanbanItem.TodoItem.Status" asp-items="@Model.StatusList"></select>
                 </div>
@@ -114,13 +114,13 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Locations, Model.LanguageId)</label>
+                <label asp-for="KanbanItem.TodoItem.Location" class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input id="location-input" type="text" asp-for="KanbanItem.TodoItem.Location" value="@Model.KanbanItem.TodoItem.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
+                <label asp-for="KanbanItem.TodoItem.Tags" class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input id="tag-list" type="text" asp-for="KanbanItem.TodoItem.Tags" value="@Model.KanbanItem.TodoItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
                 </div>
