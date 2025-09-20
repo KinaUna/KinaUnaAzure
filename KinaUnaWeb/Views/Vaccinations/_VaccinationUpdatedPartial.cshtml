@@ -37,9 +37,9 @@
                     {
                         <div class="col-12">@await LocaleManager.GetTranslation("Description", PageNames.Vaccinations, Model.LanguageId): @Model.VaccinationItem.VaccinationDescription</div>
                     }
-                    @if (!string.IsNullOrEmpty(Model.VaccinationItem.VaccinationDescription))
+                    @if (!string.IsNullOrEmpty(Model.VaccinationItem.Notes))
                     {
-                        <div class="col-12">@await LocaleManager.GetTranslation("Notes", PageNames.Vaccinations, Model.LanguageId): @Model.VaccinationItem.VaccinationDescription</div>
+                        <div class="col-12">@await LocaleManager.GetTranslation("Notes", PageNames.Vaccinations, Model.LanguageId): @Model.VaccinationItem.Notes</div>
                     }
                 </div>
             </div>
