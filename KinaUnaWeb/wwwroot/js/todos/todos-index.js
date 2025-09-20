@@ -373,7 +373,7 @@ const showTodoElementMenu = function (event) {
     const todoItemId = button.dataset.todoItemMenuButtonId;
     if (todoItemId) {
         hideTodoElementMenus(todoItemId);
-        hideTodoItemMoreInfoDivs('');
+        hideTodoItemMoreInfoDivs(todoItemId);
         const menuContentDiv = document.querySelector('.todo-item-menu-content[data-todo-item-menu-id="' + todoItemId + '"]');
         if (menuContentDiv) {
             if (menuContentDiv.classList.contains('d-none')) {

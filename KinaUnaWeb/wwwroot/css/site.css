@@ -509,6 +509,13 @@ to {
     font-size: 14px;
 }
 
+.row-plain {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
 .btn {
     position: relative;
     padding: 12px 30px;
@@ -3232,6 +3239,7 @@ button.Zebra_DatePicker_Icon {
 .sidebar-menu {
     position: fixed;
     left: -100px;
+    top: 45px;
     overflow: visible;
     transition: 0.5s;
     z-index: 1042;

@@ -12,7 +12,7 @@
     string showDetailsString = await LocaleManager.GetTranslation("Show details", PageNames.Todos, Model.LanguageId);
     string assignToString = await LocaleManager.GetTranslation("Assign to ..", PageNames.Todos, Model.LanguageId);
 }
-<div class="col-12 cols-sm-10 col-md-9 col-lg-8 col-xl-7">
+<div class="col-12 cols-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
     <div class="card-compact bg-todos todo-item m-1" data-todo-id="@Model.TodoItemId" align="left" style="background: @Model.TodoItem.StatusBackgroundColor()">
         @if (Model.TodoItem.TodoItemId == 0)
         {
@@ -20,29 +20,34 @@
         }
         else
         {
-            <div class="row">
+            <div class="row m-0">
                 <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; z-index: 10;" />
-                <div class="col-auto card-compact-title text-left">
-                    <span class="pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">@Model.TodoItem.StatusIcon()</i> </span>
-                    <span class="h5">
-                        @Model.TodoItem.Title
-                        @if (Model.TodoItem.SubtaskCount != 0)
-                        {
-                            <span class="text-appendage-light ml-2"> [@Model.TodoItem.CompletedSubtaskCount / @Model.TodoItem.SubtaskCount]</span>
-                        }
-                    </span>
+                <div class="col p-0 card-compact-title text-left">
+                    <div class="row m-0">
+                        <div class="col-auto pl-1 pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">@Model.TodoItem.StatusIcon()</i> </div>
+                        <div class="col col-md-auto p-0 pt-2 h5" style="white-space: nowrap; overflow: hidden;">
+                            <span style="white-space: nowrap; overflow: hidden;">@Model.TodoItem.Title</span>
+                        </div>
+                        <div class="col-auto p-0 pt-2 h5">
+                            @if (Model.TodoItem.SubtaskCount != 0)
+                            {
+                                <span class="text-appendage-light ml-2 mr-6"> [@Model.TodoItem.CompletedSubtaskCount / @Model.TodoItem.SubtaskCount]</span>
+                            }
+                        </div>
+                    </div>
                 </div>
+                
             </div>
-            <div id="todo-item-more-div-@Model.TodoItem.TodoItemId" class="row d-none todo-item-more-info" data-todo-item-more-id="@Model.TodoItem.TodoItemId">
-                <div class="col-12 card-compact-body">
-                    <div class="row">
+            <div id="todo-item-more-div-@Model.TodoItem.TodoItemId" class="row m-0 d-none todo-item-more-info" data-todo-item-more-id="@Model.TodoItem.TodoItemId">
+                <div class="col-12 p-0 card-compact-body">
+                    <div class="row m-0">
                         <div class="col-auto text-left mb-2">
 
                             <span class="text-opacity-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId):</span> @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)
                         </div>
                     </div>
 
-                    <div class="row">
+                    <div class="row m-0">
                         @if (Model.TodoItem.DueDate.HasValue)
                         {
                             <div class="col-auto text-left"><span class="text-opacity-75">@await LocaleManager.GetTranslation("Due", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.DueDate.Value.ToString("dd-MMM-yyyy")</div>
@@ -62,7 +67,7 @@
                             <div class="col-auto text-left"><i class="material-icons" style="font-size: 18px;">location_on</i> @Model.TodoItem.Location</div>
                         }
                     </div>
-                    <div class="row">
+                    <div class="row m-0">
                         <div class="col"></div>
                         @if (!string.IsNullOrEmpty(Model.TodoItem.Tags) || !string.IsNullOrEmpty(Model.TodoItem.Context))
                         {
@@ -92,8 +97,8 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-12">
+            <div class="row m-0">
+                <div class="col-12 p-0">
                     <div class="w-100 mt-2">
                         <button class="kanban-card-menu-button" data-todo-item-more-info-button-id="@Model.TodoItem.TodoItemId"><i class="material-icons">expand_more</i></button>
                         <button class="kanban-card-menu-button float-right" data-todo-item-menu-button-id="@Model.TodoItem.TodoItemId"><i class="material-icons">more_horiz</i></button>
