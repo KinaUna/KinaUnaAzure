@@ -1,4 +1,4 @@
-const bodyContentDiv = $('.body-content');
+const bodyContentDiv = $('body');
 /**
  * Displays the default cirle loading spinner in the middle of the page, and fades the rest of the page.
  */
@@ -82,18 +82,14 @@ export function stopLoadingItemsSpinner(spinnerElementId) {
  * Adds event listeners for the full page loading spinner.
  */
 export function setFullPageSpinnerEventListeners() {
-    window.addEventListener('waitMeStart', () => {
-        startFullPageLoadingSpinner();
-    });
-    window.addEventListener('waitMeStop', () => {
-        stopFullPageLoadingSpinner();
-    });
-    window.addEventListener('waitMeStart2', () => {
-        startFullPageLoadingSpinner2();
-    });
-    window.addEventListener('waitMeStop2', () => {
-        stopFullPageSpinner2();
-    });
+    window.removeEventListener('waitMeStart', startFullPageLoadingSpinner);
+    window.addEventListener('waitMeStart', startFullPageLoadingSpinner);
+    window.removeEventListener('waitMeStop', stopFullPageLoadingSpinner);
+    window.addEventListener('waitMeStop', stopFullPageLoadingSpinner);
+    window.removeEventListener('waitMeStart2', startFullPageLoadingSpinner2);
+    window.addEventListener('waitMeStart2', startFullPageLoadingSpinner2);
+    window.removeEventListener('waitMeStop2', stopFullPageSpinner2);
+    window.addEventListener('waitMeStop2', stopFullPageSpinner2);
 }
 /**
  * Triggers an event for showing the full page spinner.

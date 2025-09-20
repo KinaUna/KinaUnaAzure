@@ -107,6 +107,7 @@ function collapsePopupsAndModals(clickover) {
  * Also collapses pop-ups and modals if clicking outside the pop-up or modal.
  */
 function setDocumentClickEventListeners() {
+    document.removeEventListener('click', onDocumentClicked);
     document.addEventListener('click', onDocumentClicked);
     setFullPageSpinnerEventListeners();
 }
@@ -135,6 +136,7 @@ function showSelectProgenyDropdownWhenCurrentProgenyClicked() {
 function setSelectProgenyButtonsEventListeners() {
     let selectProgenyButtons = document.querySelectorAll('.select-progeny-button');
     selectProgenyButtons.forEach(function (button) {
+        button.removeEventListener('click', onSelectProgenyButtonClicked);
         button.addEventListener('click', onSelectProgenyButtonClicked);
     });
 }
@@ -174,6 +176,7 @@ function setSelectedProgenies() {
 function setSetDefaultProgenyEventListeners() {
     let setDefaultProgenyButtons = document.querySelectorAll('.set-default-progeny-button');
     setDefaultProgenyButtons.forEach(function (button) {
+        button.removeEventListener('click', onSetDefaultProgenyButtonClicked);
         button.addEventListener('click', onSetDefaultProgenyButtonClicked);
     });
 }
@@ -209,6 +212,7 @@ async function setDefaultProgeny(progenyId) {
  * Initializes the page settings when the website is first loaded.
  */
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('app.ts: DomContentLoaded');
     initPageSettings();
     showSelectProgenyDropdownWhenCurrentProgenyClicked();
     setDocumentClickEventListeners();

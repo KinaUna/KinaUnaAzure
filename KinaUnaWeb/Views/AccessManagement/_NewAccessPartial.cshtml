@@ -1,5 +1,6 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -9,26 +10,28 @@
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
-        <div class="add-item-container">
-            <div class="row">
-                <h2 class="col-12">@ViewData["Title"]</h2>
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@ViewData["Title"] @Model.CurrentProgeny.NickName</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
-            <div class="space-20"></div>
-            <div class="row">
-                <div class="col-12">
-                    @addUserForString : @Model.CurrentProgeny.NickName
-                </div>
-                <div class="col-12">
-                    <div class="space-20"></div>
-                    @addedUserString : @Model.Email
-                </div>
+        </div>
+        <div class="space-20"></div>
+        <div class="row m-0">
+            <div class="col-12">
+                @addUserForString : @Model.CurrentProgeny.NickName
+            </div>
+            <div class="col-12">
+                <div class="space-20"></div>
+                @addedUserString : @Model.Email
+            </div>
 
-                <div class="col-12">
-                    <div class="space-20"></div>
-                    @await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId) : @Model.AccessLevelListEn[Model.AccessLevel].Text
-                </div>
+            <div class="col-12">
+                <div class="space-20"></div>
+                @await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId) : @Model.AccessLevelListEn[Model.AccessLevel].Text
             </div>
         </div>
+        <div class="space-20"></div>
     </div>
 </div>

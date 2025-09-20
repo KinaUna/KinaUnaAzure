@@ -9,9 +9,9 @@
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-vaccination item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
-                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-vaccination-header">
+                <img src="@Model.VaccinationItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -27,23 +27,19 @@
             <div class="col">
                 <div class="timeline-title row">
                     <div class="col-12 h4">
-                        <div class="text-white">@Model.VaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy")</div>
-                        <div class="space-10"></div>
                         <div>@Model.VaccinationItem.VaccinationName</div>
                     </div>
                 </div>
                 <div class="row text-white-75">
+                    <div class="col-12 text-white text-large">@Model.VaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy")</div>
+                    <div class="space-10"></div>
                     @if (!string.IsNullOrEmpty(Model.VaccinationItem.VaccinationDescription))
                     {
-                        <div class="col-12">@await LocaleManager.GetTranslation("Sounds like", PageNames.Vocabulary, Model.LanguageId): @Model.VaccinationItem.VaccinationDescription</div>
+                        <div class="col-12">@await LocaleManager.GetTranslation("Description", PageNames.Vaccinations, Model.LanguageId): @Model.VaccinationItem.VaccinationDescription</div>
                     }
                     @if (!string.IsNullOrEmpty(Model.VaccinationItem.VaccinationDescription))
                     {
-                        <div class="col-12">@await LocaleManager.GetTranslation("Description", PageNames.Vocabulary, Model.LanguageId): @Model.VaccinationItem.VaccinationDescription</div>
-                    }
-                    @if (!string.IsNullOrEmpty(Model.VaccinationItem.Notes))
-                    {
-                        <div class="col-12">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId): @Model.VaccinationItem.Notes</div>
+                        <div class="col-12">@await LocaleManager.GetTranslation("Notes", PageNames.Vaccinations, Model.LanguageId): @Model.VaccinationItem.VaccinationDescription</div>
                     }
                 </div>
             </div>

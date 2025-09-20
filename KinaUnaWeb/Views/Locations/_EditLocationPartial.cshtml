@@ -8,146 +8,150 @@
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
+    const int changedItemTypeLocation = (int)KinaUnaTypes.TimeLineType.Location;
 }
+<div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeLocation" data-changed-item-item-id="@Model.LocationItem.LocationId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-location-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
-        <div class="add-item-container">
-            <h2 class="col-12">@ViewData["Title"]</h2>
-            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
-            <div class="space-20"></div>
-            <form id="save-item-form" asp-action="EditLocation" asp-controller="Locations" role="form" method="post" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label asp-for="LocationItem.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Name or label", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-name-input" asp-for="LocationItem.Name" value="@Model.LocationItem.Name" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.StreetName" class="col-auto control-label">@await LocaleManager.GetTranslation("Street", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-street-input" asp-for="LocationItem.StreetName" value="@Model.LocationItem.StreetName" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.HouseNumber" class="col-auto control-label">@await LocaleManager.GetTranslation("House number", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-house-number-input" asp-for="LocationItem.HouseNumber" value="@Model.LocationItem.HouseNumber" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.District" class="col-auto control-label">@await LocaleManager.GetTranslation("District", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-disctrict-input" asp-for="LocationItem.District" value="@Model.LocationItem.District" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.City" class="col-auto control-label">@await LocaleManager.GetTranslation("City", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-city-input" asp-for="LocationItem.City" value="@Model.LocationItem.City" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.PostalCode" class="col-auto control-label">@await LocaleManager.GetTranslation("Postal code", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-postal-code-input" asp-for="LocationItem.PostalCode" value="@Model.LocationItem.PostalCode" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.County" class="col-auto control-label">@await LocaleManager.GetTranslation("County", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-county-input" asp-for="LocationItem.County" value="@Model.LocationItem.County" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.State" class="col-auto control-label">@await LocaleManager.GetTranslation("State/region", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-state-input" asp-for="LocationItem.State" value="@Model.LocationItem.State" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.Country" class="col-auto control-label">@await LocaleManager.GetTranslation("Country", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-country-input" asp-for="LocationItem.Country" value="@Model.LocationItem.Country" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.Latitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-latitude-input" asp-for="LocationItem.Latitude" value="@Model.LocationItem.Latitude" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.Longitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="location-longitude-input" asp-for="LocationItem.Longitude" value="@Model.LocationItem.Longitude" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.Date" class="col-auto control-label">@await LocaleManager.GetTranslation("Date", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <div class="input-group date">
-                            @{
-                                string dateValue = "";
-                                if (Model.LocationItem.Date.HasValue)
-                                {
-                                    dateValue = Model.LocationItem.Date.Value.ToString(longDateTimeFormat);
-                                }
-                            }
-                            <input id="location-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="LocationItem.Date" value="@dateValue" />
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input asp-for="LocationItem.Notes" value="@Model.LocationItem.Notes" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Locations, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="tag-list" type="text" asp-for="LocationItem.Tags" value="@Model.LocationItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Locations, Model.LanguageId)" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="LocationItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="LocationItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                    </div>
-                </div>
-                <div class="space-20"></div>
-                <div>
-                    <div class="form-group">
-                        <input asp-for="LocationItem.LocationId" type="text" value="@Model.LocationItem.LocationId" hidden="hidden"/>
-                        <input asp-for="LocationItem.ProgenyId" value="@Model.LocationItem.ProgenyId" hidden="hidden"/>
-                        <div class="col-auto control-label"></div>
-                        <div class="col-auto">
-                            <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                            <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
-                        </div>
-                    </div>
-                </div>
-            </form>
-            @if (allowHereMaps)
-            {
-                <div>@await LocaleManager.GetTranslation("Click on the map below to get location information.", PageNames.Locations, Model.LanguageId)</div>
-                <div style="width: 100%; height: 480px" id="location-map-container-div"></div>
-            }
-            else
-            {
-                <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
-                    <div class="space-20"></div>
-                    <div>@await LocaleManager.GetTranslation("Cookie consent for Here maps has not been granted. To use maps allow cookies for Here Maps.", PageNames.Locations, Model.LanguageId)</div>
-                    <div class="space-20"></div>
-                    @if (Context.Request.ConsentCookieSet())
-                    {
-                        @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
-                    }
-                </div>
-            }
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
         </div>
+        <form id="save-item-form" asp-action="EditLocation" asp-controller="Locations" role="form" method="post" enctype="multipart/form-data">
+            <div class="space-20"></div>
+            <div class="form-group">
+                <label asp-for="LocationItem.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Name or label", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-name-input" asp-for="LocationItem.Name" value="@Model.LocationItem.Name" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.StreetName" class="col-auto control-label">@await LocaleManager.GetTranslation("Street", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-street-input" asp-for="LocationItem.StreetName" value="@Model.LocationItem.StreetName" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.HouseNumber" class="col-auto control-label">@await LocaleManager.GetTranslation("House number", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-house-number-input" asp-for="LocationItem.HouseNumber" value="@Model.LocationItem.HouseNumber" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.District" class="col-auto control-label">@await LocaleManager.GetTranslation("District", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-disctrict-input" asp-for="LocationItem.District" value="@Model.LocationItem.District" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.City" class="col-auto control-label">@await LocaleManager.GetTranslation("City", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-city-input" asp-for="LocationItem.City" value="@Model.LocationItem.City" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.PostalCode" class="col-auto control-label">@await LocaleManager.GetTranslation("Postal code", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-postal-code-input" asp-for="LocationItem.PostalCode" value="@Model.LocationItem.PostalCode" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.County" class="col-auto control-label">@await LocaleManager.GetTranslation("County", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-county-input" asp-for="LocationItem.County" value="@Model.LocationItem.County" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.State" class="col-auto control-label">@await LocaleManager.GetTranslation("State/region", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-state-input" asp-for="LocationItem.State" value="@Model.LocationItem.State" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.Country" class="col-auto control-label">@await LocaleManager.GetTranslation("Country", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-country-input" asp-for="LocationItem.Country" value="@Model.LocationItem.Country" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.Latitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-latitude-input" asp-for="LocationItem.Latitude" value="@Model.LocationItem.Latitude" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.Longitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-longitude-input" asp-for="LocationItem.Longitude" value="@Model.LocationItem.Longitude" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.Date" class="col-auto control-label">@await LocaleManager.GetTranslation("Date", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <div class="input-group date">
+                        @{
+                            string dateValue = "";
+                            if (Model.LocationItem.Date.HasValue)
+                            {
+                                dateValue = Model.LocationItem.Date.Value.ToString(longDateTimeFormat);
+                            }
+                        }
+                        <input id="location-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="LocationItem.Date" value="@dateValue"/>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input asp-for="LocationItem.Notes" value="@Model.LocationItem.Notes" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Locations, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="tag-list" type="text" asp-for="LocationItem.Tags" value="@Model.LocationItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Locations, Model.LanguageId)" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LocationItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="LocationItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div>
+                <div class="form-group">
+                    <input asp-for="LocationItem.LocationId" type="text" value="@Model.LocationItem.LocationId" hidden="hidden"/>
+                    <input asp-for="LocationItem.ProgenyId" value="@Model.LocationItem.ProgenyId" hidden="hidden"/>
+                    <div class="col-auto control-label"></div>
+                    <div class="col-auto">
+                        <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                        <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+        @if (allowHereMaps)
+        {
+            <div>@await LocaleManager.GetTranslation("Click on the map below to get location information.", PageNames.Locations, Model.LanguageId)</div>
+            <div style="width: 100%; height: 480px" id="location-map-container-div"></div>
+        }
+        else
+        {
+            <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
+                <div class="space-20"></div>
+                <div>@await LocaleManager.GetTranslation("Cookie consent for Here maps has not been granted. To use maps allow cookies for Here Maps.", PageNames.Locations, Model.LanguageId)</div>
+                <div class="space-20"></div>
+                @if (Context.Request.ConsentCookieSet())
+                {
+                    @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
+                }
+            </div>
+        }
     </div>
 </div>
 

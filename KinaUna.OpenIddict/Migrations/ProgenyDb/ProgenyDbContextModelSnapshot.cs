@@ -302,6 +302,10 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasMaxLength(4096)
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Context")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<string>("CreatedBy")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -313,6 +317,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasMaxLength(4096)
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("ModifiedBy")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -322,6 +329,10 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     b.Property<int>("ProgenyId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Tags")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Title")
                         .HasMaxLength(256)
@@ -344,7 +355,7 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("KanbanItemId"));
 
-                    b.Property<int>("ColumnIndex")
+                    b.Property<int>("ColumnId")
                         .HasColumnType("int");
 
                     b.Property<string>("CreatedBy")
@@ -353,6 +364,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<int>("KanbanBoardId")
                         .HasColumnType("int");

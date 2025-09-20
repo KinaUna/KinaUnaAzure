@@ -1,12 +1,18 @@
-﻿@using KinaUnaWeb.Services
+﻿@using System.Globalization
+@using KinaUnaWeb.Services
 @using KinaUna.Data
 @model KinaUnaWeb.Models.ItemViewModels.VaccinationViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Vaccinations", PageNames.Vaccinations, Model.LanguageId);
 }
+<link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css" rel="stylesheet"/>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
 <div id="popup-vaccination-id-div" class="d-none" data-popup-vaccination-id="@Model.VaccinationId"></div>
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
     @if (!Model.VaccinationList.Any())
     {
         <h2>@ViewData["Title"]</h2>
@@ -16,7 +22,7 @@
     {
         <h2>@ViewData["Title"]</h2>
         <div class="table-responsive">
-            <table class="table table-bordered table-striped">
+            <table id="vaccinations-list" class="table table-bordered table-striped">
                 <thead>
                 <tr>
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Vaccinations, Model.LanguageId)</th>
@@ -33,7 +39,7 @@
                 @foreach (Vaccination vaccinationViewModel in Model.VaccinationList)
                 {
                     <tr>
-                        <td style="min-width: 100px;">@vaccinationViewModel.VaccinationDate.ToString("dd-MMM-yyyy")</td>
+                        <td style="min-width: 100px;">@vaccinationViewModel.VaccinationDate.ToString("dd-MMM-yyyy", CultureInfo.InvariantCulture)</td>
                         <td style="min-width: 225px;">@vaccinationViewModel.VaccinationName</td>
                         <td style="min-width: 180px;">@vaccinationViewModel.VaccinationDescription</td>
                         <td>@vaccinationViewModel.Notes</td>
@@ -41,7 +47,7 @@
                         {
                             <td style="min-width: 135px;">
                                 <div>
-                                    <a asp-controller="Vaccinations" asp-action="EditVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-info btn-round btn-sm leave-page">
+                                    <a data-edit-item-type="vaccination" data-edit-item-item-id="@vaccinationViewModel.VaccinationId" class="btn btn-info btn-round btn-sm item-details-edit-button edit-item-button">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
                                     <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-danger btn-round btn-sm leave-page">

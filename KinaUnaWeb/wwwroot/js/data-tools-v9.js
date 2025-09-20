@@ -105,7 +105,7 @@ export async function setTagsAutoSuggestList(progenyIds, elementId = 'tag-list',
         const suggestInputElement = tagListElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (event) {
+            const suggestInputKeydownFunction = function (event) {
                 if (event.key === "Enter") {
                     event.preventDefault();
                     const originalInputElement = document.getElementById(elementId);
@@ -117,7 +117,9 @@ export async function setTagsAutoSuggestList(progenyIds, elementId = 'tag-list',
                     }
                     return false;
                 }
-            });
+            };
+            suggestInputElement.removeEventListener('keydown', suggestInputKeydownFunction);
+            suggestInputElement.addEventListener('keydown', suggestInputKeydownFunction);
         }
     }
     return new Promise(function (resolve, reject) {
@@ -165,7 +167,7 @@ export async function setContextAutoSuggestList(progenyIds, elementId = 'context
         const suggestInputElement = contextInputElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (event) {
+            const suggestInputKeydownFunction = function (event) {
                 if (event.key === "Enter") {
                     event.preventDefault();
                     const originalInputElement = document.getElementById(elementId);
@@ -177,7 +179,9 @@ export async function setContextAutoSuggestList(progenyIds, elementId = 'context
                     }
                     return false;
                 }
-            });
+            };
+            suggestInputElement.removeEventListener('keydown', suggestInputKeydownFunction);
+            suggestInputElement.addEventListener('keydown', suggestInputKeydownFunction);
         }
     }
     return new Promise(function (resolve, reject) {
@@ -225,7 +229,7 @@ export async function setLocationAutoSuggestList(progenyIds, elementId = 'locati
         const suggestInputElement = locationInputElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (event) {
+            const suggestInputKeydownFunction = function (event) {
                 if (event.key === "Enter") {
                     event.preventDefault();
                     const originalInputElement = document.getElementById(elementId);
@@ -237,7 +241,9 @@ export async function setLocationAutoSuggestList(progenyIds, elementId = 'locati
                     }
                     return false;
                 }
-            });
+            };
+            suggestInputElement.removeEventListener('keydown', suggestInputKeydownFunction);
+            suggestInputElement.addEventListener('keydown', suggestInputKeydownFunction);
         }
     }
     return new Promise(function (resolve, reject) {
@@ -285,7 +291,7 @@ export async function setCategoriesAutoSuggestList(progenyIds, elementId = 'cate
         const suggestInputElement = categoryInputElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (event) {
+            const suggestInputKeydownFunction = function (event) {
                 if (event.key === "Enter") {
                     event.preventDefault();
                     const originalInputElement = document.getElementById(elementId);
@@ -297,7 +303,9 @@ export async function setCategoriesAutoSuggestList(progenyIds, elementId = 'cate
                     }
                     return false;
                 }
-            });
+            };
+            suggestInputElement.removeEventListener('keydown', suggestInputKeydownFunction);
+            suggestInputElement.addEventListener('keydown', suggestInputKeydownFunction);
         }
     }
     return new Promise(function (resolve, reject) {
@@ -345,7 +353,7 @@ export async function setVocabularyLanguagesAutoSuggestList(progenyIds, elementI
         const suggestInputElement = languageInputElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (event) {
+            const suggestInputKeydownFunction = function (event) {
                 if (event.key === "Enter") {
                     event.preventDefault();
                     const originalInputElement = document.getElementById(elementId);
@@ -357,7 +365,9 @@ export async function setVocabularyLanguagesAutoSuggestList(progenyIds, elementI
                     }
                     return false;
                 }
-            });
+            };
+            suggestInputElement.removeEventListener('keydown', suggestInputKeydownFunction);
+            suggestInputElement.addEventListener('keydown', suggestInputKeydownFunction);
         }
     }
     return new Promise(function (resolve, reject) {
@@ -422,18 +432,26 @@ export function checkStartBeforeEndTime(startElementId, endElementId, pickerDate
     if (startElement === null || endElement === null) {
         return false;
     }
-    let sTime = moment(startElement.value, pickerDateTimeFormatMoment);
-    let eTime = moment(endElement?.value, pickerDateTimeFormatMoment);
     const notificationDiv = document.querySelector('#notification');
     const submitButton = document.querySelector('#submit-button');
-    if (sTime < eTime && sTime.isValid() && eTime.isValid()) {
-        if (notificationDiv !== null) {
-            notificationDiv.textContent = '';
+    let sTime = moment(startElement.value, pickerDateTimeFormatMoment);
+    let eTime = moment(endElement.value, pickerDateTimeFormatMoment);
+    if (sTime.isValid() && eTime.isValid()) {
+        if (sTime < eTime) {
+            if (notificationDiv !== null) {
+                notificationDiv.textContent = '';
+            }
+            if (submitButton !== null) {
+                submitButton.disabled = false;
+            }
+            return true;
         }
-        if (submitButton !== null) {
-            submitButton.disabled = false;
+        else {
+            console.log('sTime is after eTime. sTime: ' + sTime + ', eTime: ' + eTime);
         }
-        return true;
+    }
+    else {
+        console.log('sTime or eTime is not valid. sTime: ' + sTime + ', eTime: ' + eTime);
     }
     if (notificationDiv !== null) {
         notificationDiv.textContent = warningStartIsAfterEndString;

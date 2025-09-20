@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services.TodosServices;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using KinaUna.Data.Extensions;
 
 namespace KinaUnaProgenyApi.Services.KanbanServices
 {
@@ -39,7 +41,22 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// <returns>The added <see cref="KanbanItem"/> with its unique identifier assigned. Does not include the associated TodoItem.</returns>
         public async Task<KanbanItem> AddKanbanItem(KanbanItem kanbanItem)
         {
-            kanbanItem.UId = System.Guid.NewGuid().ToString();
+            KanbanBoard kanbanBoard = await progenyDbContext.KanbanBoardsDb.SingleOrDefaultAsync(k => k.KanbanBoardId == kanbanItem.KanbanBoardId);
+            if (kanbanBoard == null)
+            {
+                return new KanbanItem();
+            }
+            kanbanBoard.SetColumnsListFromColumns();
+            if (!kanbanBoard.ColumnsList.Exists(k => k.Id == kanbanItem.ColumnId))
+            {
+                kanbanItem.ColumnId = kanbanBoard.ColumnsList[0].Id;
+            }
+            int kanbanItemsCount = await progenyDbContext.KanbanItemsDb.CountAsync(k => k.KanbanBoardId == kanbanItem.KanbanBoardId && k.ColumnId == kanbanItem.ColumnId);
+            kanbanItem.RowIndex = kanbanItemsCount;
+
+            kanbanItem.UId = Guid.NewGuid().ToString();
+            kanbanItem.CreatedTime = DateTime.UtcNow;
+            kanbanItem.ModifiedTime = DateTime.UtcNow;
             await progenyDbContext.KanbanItemsDb.AddAsync(kanbanItem);
             await progenyDbContext.SaveChangesAsync();
 
@@ -66,13 +83,25 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
 
             if (string.IsNullOrEmpty(existingKanbanItem.UId))
             {
-                existingKanbanItem.UId = System.Guid.NewGuid().ToString();
+                existingKanbanItem.UId = Guid.NewGuid().ToString();
             }
-            existingKanbanItem.ColumnIndex = kanbanItem.ColumnIndex;
+
+            if (kanbanItem.RowIndex < 0)
+            {
+                int kanbanItemsCount = await progenyDbContext.KanbanItemsDb.CountAsync(k => k.KanbanBoardId == kanbanItem.KanbanBoardId && k.ColumnId == kanbanItem.ColumnId);
+                kanbanItem.RowIndex = kanbanItemsCount;
+            }
+
+            existingKanbanItem.ColumnId = kanbanItem.ColumnId;
             existingKanbanItem.RowIndex = kanbanItem.RowIndex;
             existingKanbanItem.ModifiedBy = kanbanItem.ModifiedBy;
-            existingKanbanItem.ModifiedTime = kanbanItem.ModifiedTime;
-            
+            existingKanbanItem.ModifiedTime = DateTime.UtcNow;
+            existingKanbanItem.KanbanBoardId = kanbanItem.KanbanBoardId;
+            if (string.IsNullOrEmpty(existingKanbanItem.CreatedBy))
+            {
+                existingKanbanItem.CreatedBy = kanbanItem.ModifiedBy;
+            }
+
             progenyDbContext.Update(existingKanbanItem);
             await progenyDbContext.SaveChangesAsync();
 
@@ -86,17 +115,28 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// database before attempting to delete it. If the item is not found, no changes are made to the
         /// database.</remarks>
         /// <param name="kanbanItem">The Kanban item to delete. The item must have a valid <see cref="KanbanItem.KanbanItemId"/>.</param>
+        /// <param name="hardDelete">If set to <see langword="true"/>, the Kanban item is permanently removed from the database.</param>
         /// <returns>The deleted Kanban item if it was successfully removed; otherwise, <see langword="null"/> if the item does
         /// not exist in the database. Does not include the associated TodoItem.</returns>
-        public async Task<KanbanItem> DeleteKanbanItem(KanbanItem kanbanItem)
+        public async Task<KanbanItem> DeleteKanbanItem(KanbanItem kanbanItem, bool hardDelete = false)
         {
             KanbanItem existingKanbanItem = await progenyDbContext.KanbanItemsDb.SingleOrDefaultAsync(k => k.KanbanItemId == kanbanItem.KanbanItemId);
             if (existingKanbanItem == null)
             {
                 return null;
             }
-            
-            progenyDbContext.KanbanItemsDb.Remove(existingKanbanItem);
+
+            if (hardDelete)
+            {
+                progenyDbContext.KanbanItemsDb.Remove(existingKanbanItem);
+            }
+            else
+            {
+                existingKanbanItem.ModifiedTime = DateTime.UtcNow;
+                existingKanbanItem.IsDeleted = true;
+                progenyDbContext.KanbanItemsDb.Update(existingKanbanItem);
+            }
+
             await progenyDbContext.SaveChangesAsync();
 
             return existingKanbanItem;
@@ -109,18 +149,42 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// populates  their associated to-do item details by retrieving them individually. The returned list will be 
         /// empty if no items are associated with the specified board. This method does not validate if a user has access to the data.</remarks>
         /// <param name="kanbanBoardId">The unique identifier of the Kanban board for which to retrieve the items.</param>
+        /// <param name="includeDeleted">If set to <see langword="true"/>, items marked as deleted will be included in the results.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of  <see
         /// cref="KanbanItem"/> objects associated with the specified Kanban board. Each item includes  its
         /// corresponding to-do item details.</returns>
-        public async Task<List<KanbanItem>> GetKanbanItemsForBoard(int kanbanBoardId)
+        public async Task<List<KanbanItem>> GetKanbanItemsForBoard(int kanbanBoardId, bool includeDeleted = false)
         {
             List<KanbanItem> kanbanItems = await progenyDbContext.KanbanItemsDb.AsNoTracking().Where(ki => ki.KanbanBoardId == kanbanBoardId).ToListAsync();
+            List<KanbanItem> resultItems = [];
             foreach (KanbanItem kanbanItem in kanbanItems)
             {
+                if (!includeDeleted && kanbanItem.IsDeleted)
+                {
+                    continue;
+                }
+
                 kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId);
+                resultItems.Add(kanbanItem);
             }
 
-            return kanbanItems;
+            return resultItems;
+        }
+
+        public async Task<List<KanbanItem>> GetKanbanItemsForTodoItem(int todoItemId, bool includeDeleted = false)
+        {
+            List<KanbanItem> kanbanItems = await progenyDbContext.KanbanItemsDb.AsNoTracking().Where(ki => ki.TodoItemId == todoItemId).ToListAsync();
+            List<KanbanItem> resultItems = [];
+            foreach (KanbanItem kanbanItem in kanbanItems)
+            {
+                if (!includeDeleted && kanbanItem.IsDeleted)
+                {
+                    continue;
+                }
+                resultItems.Add(kanbanItem);
+            }
+
+            return resultItems;
         }
     }
 }

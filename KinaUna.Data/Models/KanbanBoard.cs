@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.ItemInterfaces;
 
 namespace KinaUna.Data.Models
 {
@@ -9,7 +12,7 @@ namespace KinaUna.Data.Models
     /// <remarks>A Kanban board typically consists of tasks organized into columns that represent different
     /// stages of a workflow. This class provides properties to store metadata about the board, such as its name,
     /// creation and modification timestamps, and the users who created or last modified it.</remarks>
-    public class KanbanBoard
+    public class KanbanBoard: IContexted, ITaggable
     {
         /// <summary>
         /// Gets or sets the unique identifier for the Kanban board.
@@ -76,5 +79,34 @@ namespace KinaUna.Data.Models
         /// Gets or sets the access level required to view this Kanban board.
         /// </summary>
         public int AccessLevel { get; set; }
+
+        /// <summary>
+        /// Comma-separated list of tags associated with the entity for categorization and filtering.
+        /// </summary>
+        [MaxLength(256)]
+        public string Tags { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Context information associated with the entity, providing additional metadata or categorization.
+        /// </summary>
+        [MaxLength(256)]
+        public string Context { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the entity is marked as deleted.
+        /// </summary>
+        public bool IsDeleted { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the associated progeny data for the current entity.
+        /// </summary>
+        [NotMapped]
+        public Progeny Progeny { get; set; } = new Progeny();
+
+        /// <summary>
+        /// Gets or sets the list of columns associated with the Kanban board.
+        /// </summary>
+        [NotMapped]
+        public List<KanbanBoardColumn> ColumnsList { get; set; } = [];
     }
 }

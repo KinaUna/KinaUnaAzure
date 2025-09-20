@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using OpenIddict.Abstractions;
 using System.Security.Claims;
+using KinaUna.Data.Models.DTOs;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Tests.Controllers.TodosController
 {
@@ -17,6 +19,9 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
         private readonly Mock<ITodoItemsHttpClient> _mockTodoItemsHttpClient;
         private readonly Mock<IViewModelSetupService> _mockViewModelSetupService;
         private readonly Mock<IUserInfosHttpClient> _mockUserInfosHttpClient;
+        private readonly Mock<IProgenyHttpClient> _mockProgenyHttpClient;
+        private readonly Mock<IKanbanItemsHttpClient> _mockKanbanItemsHttpClient;
+        private readonly Mock<IKanbanBoardsHttpClient> _mockKanbanBoardsHttpClient;
         private readonly KinaUnaWeb.Controllers.TodosController _controller;
         private const string TestUserEmail = "test@kinauna.com";
         private const string TestUserId = "test-user-id";
@@ -26,15 +31,19 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
             _mockTodoItemsHttpClient = new Mock<ITodoItemsHttpClient>();
             _mockViewModelSetupService = new Mock<IViewModelSetupService>();
             _mockUserInfosHttpClient = new Mock<IUserInfosHttpClient>();
-            Mock<IProgenyHttpClient> mockProgenyHttpClient = new();
+            _mockProgenyHttpClient = new Mock<IProgenyHttpClient>();
             Mock<ISubtasksHttpClient> mockSubtasksHttpClient = new();
+            _mockKanbanItemsHttpClient = new Mock<IKanbanItemsHttpClient>();
+            _mockKanbanBoardsHttpClient = new Mock<IKanbanBoardsHttpClient>();
 
             _controller = new KinaUnaWeb.Controllers.TodosController(
                 _mockTodoItemsHttpClient.Object,
                 _mockViewModelSetupService.Object,
                 _mockUserInfosHttpClient.Object,
-                mockProgenyHttpClient.Object, 
-                mockSubtasksHttpClient.Object);
+                _mockProgenyHttpClient.Object, 
+                mockSubtasksHttpClient.Object,
+                _mockKanbanItemsHttpClient.Object,
+                _mockKanbanBoardsHttpClient.Object);
 
             SetupControllerContext();
         }
@@ -258,8 +267,13 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
                 .ReturnsAsync(todoItem);
             _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, todoItem.ProgenyId))
                 .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(It.IsAny<UserInfo>(), It.IsAny<int>())).ReturnsAsync(new List<SelectListItem>());
             _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(todoItem.CreatedBy))
                 .ReturnsAsync(userInfo);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeny(It.IsAny<int>())).ReturnsAsync(new Progeny());
+            _mockKanbanBoardsHttpClient.Setup(x => x.GetKanbanBoard(It.IsAny<int>())).ReturnsAsync(new KanbanBoard());
+            _mockKanbanBoardsHttpClient.Setup(x => x.GetProgeniesKanbanBoardsList(It.IsAny<KanbanBoardsRequest>())).ReturnsAsync(new KanbanBoardsResponse());
+            _mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(It.IsAny<int>())).ReturnsAsync([]);
         }
 
         #endregion

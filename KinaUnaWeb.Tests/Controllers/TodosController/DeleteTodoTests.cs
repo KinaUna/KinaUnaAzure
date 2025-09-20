@@ -24,17 +24,21 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
         public DeleteTodoTests()
         {
             _mockTodoItemsHttpClient = new Mock<ITodoItemsHttpClient>();
-            _mockViewModelSetupService = new Mock<IViewModelSetupService>();
+            _mockViewModelSetupService = new Mock<IViewModelSetupService>(); 
             Mock<IUserInfosHttpClient> mockUserInfosHttpClient = new();
             Mock<IProgenyHttpClient> mockProgenyHttpClient = new();
             Mock<ISubtasksHttpClient> mockSubtasksHttpClient = new();
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
 
             _controller = new KinaUnaWeb.Controllers.TodosController(
                 _mockTodoItemsHttpClient.Object,
                 _mockViewModelSetupService.Object,
                 mockUserInfosHttpClient.Object,
                 mockProgenyHttpClient.Object,
-                mockSubtasksHttpClient.Object);
+                mockSubtasksHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
 
             SetupControllerContext();
         }

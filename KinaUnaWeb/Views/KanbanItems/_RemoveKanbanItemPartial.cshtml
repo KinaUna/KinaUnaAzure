@@ -1,0 +1,83 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.KanbanItemViewModel
+@using KinaUnaWeb.Services
+@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Remove kanban card", PageNames.Todos, Model.LanguageId);
+    string title = Model.KanbanItem.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Kanban Card", PageNames.Todos, Model.LanguageId);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper add-edit-kanban-item-modal">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <img src="@Model.KanbanItem.TodoItem.Progeny.PictureLink" class="item-details-title-picture"/>
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link modal-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.KanbanItem.TodoItem.TodoItemId"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="space-50"></div>
+            <div class="row m-0">
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    <form id="remove-kanban-card-form" asp-action="RemoveKanbanItem" asp-controller="KanbanItems" role="form" method="post">
+                        <div class="row">
+                            <div class="col-12 h4">@ViewData["Title"]</div>
+                            <div class="col-12 h5">@await LocaleManager.GetTranslation("Are you sure you want to remove this kanban card?", PageNames.Todos, Model.LanguageId)</div>
+                        </div>
+                        <div class="space-20"></div>
+                        <div class="row">
+                            <div class="col-auto">
+                                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">fact_check</i></span>
+                            </div>
+                            <div class="col h4">
+                                @Model.KanbanItem.TodoItem.Title
+                            </div>
+                        </div>
+                        <div class="space-20"></div>
+                        <div class="row">
+                            <div class="col-12 text-white">
+                                <div class="col-auto">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.KanbanItem.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
+                            </div>
+                            @if (Model.KanbanItem.TodoItem.DueDate.HasValue)
+                            {
+                                <div class="col-12 text-white">
+                                    <div class="col-auto">@await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId) : @Model.KanbanItem.TodoItem.DueDate?.ToString("dd-MMM-yyyy")</div>
+                                </div>
+                            }
+                            @if (Model.KanbanItem.TodoItem.StartDate.HasValue)
+                            {
+                                <div class="col-12 text-white">
+                                    <div class="col-auto">@await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId) : @Model.KanbanItem.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                                </div>
+                            }
+                            @if (Model.KanbanItem.TodoItem.CompletedDate.HasValue && Model.KanbanItem.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
+                            {
+                                <div class="col-12 text-white">
+                                    <div class="col-auto">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId) : @Model.KanbanItem.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.KanbanItem.TodoItem.Description))
+                            {
+                                <div class="col-12">
+                                    <div class="col-auto">@await LocaleManager.GetTranslation("Description:", PageNames.Todos, Model.LanguageId) @Html.Raw(Model.KanbanItem.TodoItem.Description)</div>
+                                </div>
+                            }
+                        </div>
+                        <div class="space-20"></div>
+                        <div class="row">
+                            <input asp-for="KanbanItem.KanbanItemId" class="form-control" value="@Model.KanbanItem.KanbanItemId" type="hidden"/>
+                            <input asp-for="KanbanItem.TodoItemId" class="form-control" value="@Model.KanbanItem.TodoItemId" type="hidden" />
+                            <input asp-for="KanbanItem.TodoItem.TodoItemId" class="form-control" value="@Model.KanbanItem.TodoItem.TodoItemId" type="hidden"/>
+                            <div class="col-12">
+                                <Button id="remove-kanban-item-button" type="submit" class="btn btn-success leave-page">@await LocaleManager.GetTranslation("Yes - remove this kanban card", PageNames.Todos, Model.LanguageId)</Button>
+                                <Button type="button" class="remove-kanban-item-cancel-button btn btn-danger leave-page">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</Button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

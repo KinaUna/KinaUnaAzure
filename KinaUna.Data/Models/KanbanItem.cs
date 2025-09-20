@@ -35,9 +35,9 @@ namespace KinaUna.Data.Models
         public int TodoItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the index of the column (indicating status) in the Kanban board where this item is located.
+        /// Gets or sets the id of the column in the Kanban board where this item is located.
         /// </summary>
-        public int ColumnIndex { get; set; }
+        public int ColumnId { get; set; }
 
         /// <summary>
         /// Gets or sets the zero-based index of the row within the column, determining the vertical position of the item.
@@ -65,6 +65,11 @@ namespace KinaUna.Data.Models
         /// </summary>
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether the entity is marked as deleted.
+        /// </summary>
+        public bool IsDeleted { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the associated <see cref="TodoItem"/> for this entity.  This property is not mapped to the
@@ -76,5 +81,7 @@ namespace KinaUna.Data.Models
         /// storage.</remarks>
         [NotMapped]
         public TodoItem TodoItem { get; set; }
+        [NotMapped]
+        public KanbanBoard KanbanBoard { get; set; } = new KanbanBoard();
     }
 }

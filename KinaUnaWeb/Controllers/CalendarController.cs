@@ -304,7 +304,7 @@ namespace KinaUnaWeb.Controllers
         /// <returns>Redirects to Calendar/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteEvent(CalendarItemViewModel model)
+        public async Task<IActionResult> DeleteEvent([FromForm] CalendarItemViewModel model)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
             model.SetBaseProperties(baseModel);

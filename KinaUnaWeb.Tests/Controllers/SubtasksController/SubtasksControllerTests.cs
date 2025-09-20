@@ -38,13 +38,17 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
             _mockViewModelSetupService = new Mock<IViewModelSetupService>();
             _mockUserInfosHttpClient = new Mock<IUserInfosHttpClient>();
             _mockProgenyHttpClient = new Mock<IProgenyHttpClient>();
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new Mock<IKanbanItemsHttpClient>();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new Mock<IKanbanBoardsHttpClient>();
 
             _controller = new KinaUnaWeb.Controllers.SubtasksController(
                 _mockSubtasksHttpClient.Object,
                 _mockTodoItemsHttpClient.Object,
                 _mockViewModelSetupService.Object,
                 _mockUserInfosHttpClient.Object,
-                _mockProgenyHttpClient.Object);
+                _mockProgenyHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
 
             SetupControllerContext();
         }
@@ -661,7 +665,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
         }
 
         [Fact]
-        public async Task DeleteSubtask_Post_Should_Delete_Subtask_And_Return_PartialView()
+        public async Task DeleteSubtask_Post_Should_Delete_Subtask_And_Return_Json()
         {
             // Arrange
             TodoViewModel model = CreateMockTodoViewModelUserIsAdmin();
@@ -683,8 +687,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
             IActionResult result = await _controller.DeleteSubtask(model);
 
             // Assert
-            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-            Assert.Equal("../Todos/_TodoDetailsPartial", partialViewResult.ViewName);
+            Assert.IsType<JsonResult>(result);
             
             _mockSubtasksHttpClient.Verify(x => x.DeleteSubtask(TestSubtaskId), Times.Once);
         }

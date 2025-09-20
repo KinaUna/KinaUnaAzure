@@ -12,82 +12,84 @@
 <div id="add-skill-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
-        <div class="add-item-container">
-            <h2 class="col-12">@ViewData["Title"]</h2>
-            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
-            <div class="space-20"></div>
-            <form id="save-item-form" asp-action="CopySkill" asp-controller="Skills" role="form" method="post">
-                @if (Model.ProgenyList.Count > 1)
-                {
-                    <div class="form-group">
-                        <label class="col-auto control-label">@copySkillToString </label>
-                        <div class="col-auto">
-                            <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="SkillItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="form-group">
-                        <label class="col-auto control-label">@copySkillToString</label>
-                        <div class="col-auto">
-                            <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text"/>
-                        </div>
-                        <input asp-for="SkillItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden"/>
-                    </div>
-                }
-                <div class="form-group">
-                    <label asp-for="SkillItem.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Skill name", PageNames.Skills, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input asp-for="SkillItem.Name" class="form-control" value="@Model.SkillItem.Name"/>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="SkillItem.Description" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Skills, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <textarea asp-for="SkillItem.Description" class="form-control" rows="4" value="@Model.SkillItem.Description"></textarea>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="SkillItem.Category" class="col-auto control-label">@await LocaleManager.GetTranslation("Category", PageNames.Skills, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="category-input" asp-for="SkillItem.Category" class="form-control" value="@Model.SkillItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Skills, Model.LanguageId)"/>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="SkillItem.SkillFirstObservation" class="col-auto control-label">@await LocaleManager.GetTranslation("First observed", PageNames.Skills, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <div class="input-group date">
-                            @{
-                                DateTime firstObservation = DateTime.UtcNow;
-                            }
-                            @if (Model.SkillItem.SkillFirstObservation.HasValue)
-                            {
-                                firstObservation = Model.SkillItem.SkillFirstObservation.Value;
-                            }
-                            <input id="skill-date-time-picker" type="text"
-                                   class="form-control" data-zdp_readonly_element="false" asp-for="SkillItem.SkillFirstObservation"
-                                   value="@firstObservation.ToString(longDateTimeFormat)"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="SkillItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="SkillItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                    </div>
-                </div>
-                <div class="space-20"></div>
-                <div>
-                    <div class="form-group">
-                        <div class="col-auto control-label"></div>
-                        <div class="col-auto">
-                            <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                            <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
-                        </div>
-                    </div>
-                </div>
-            </form>
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
         </div>
+        <form id="save-item-form" asp-action="CopySkill" asp-controller="Skills" role="form" method="post">
+            <div class="space-20"></div>
+            @if (Model.ProgenyList.Count > 1)
+            {
+                <div class="form-group">
+                    <label class="col-auto control-label">@copySkillToString </label>
+                    <div class="col-auto">
+                        <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="SkillItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label class="col-auto control-label">@copySkillToString</label>
+                    <div class="col-auto">
+                        <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                    </div>
+                    <input asp-for="SkillItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                </div>
+            }
+            <div class="form-group">
+                <label asp-for="SkillItem.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Skill name", PageNames.Skills, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input asp-for="SkillItem.Name" class="form-control" value="@Model.SkillItem.Name" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="SkillItem.Description" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Skills, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <textarea asp-for="SkillItem.Description" class="form-control" rows="4" value="@Model.SkillItem.Description"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="SkillItem.Category" class="col-auto control-label">@await LocaleManager.GetTranslation("Category", PageNames.Skills, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="category-input" asp-for="SkillItem.Category" class="form-control" value="@Model.SkillItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Skills, Model.LanguageId)" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="SkillItem.SkillFirstObservation" class="col-auto control-label">@await LocaleManager.GetTranslation("First observed", PageNames.Skills, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <div class="input-group date">
+                        @{
+                            DateTime firstObservation = DateTime.UtcNow;
+                        }
+                        @if (Model.SkillItem.SkillFirstObservation.HasValue)
+                        {
+                            firstObservation = Model.SkillItem.SkillFirstObservation.Value;
+                        }
+                        <input id="skill-date-time-picker" type="text"
+                               class="form-control" data-zdp_readonly_element="false" asp-for="SkillItem.SkillFirstObservation"
+                               value="@firstObservation.ToString(longDateTimeFormat)" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="SkillItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="SkillItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div>
+                <div class="form-group">
+                    <div class="col-auto control-label"></div>
+                    <div class="col-auto">
+                        <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                        <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 </div>

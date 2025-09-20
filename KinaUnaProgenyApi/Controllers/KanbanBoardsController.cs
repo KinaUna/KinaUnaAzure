@@ -4,7 +4,6 @@ using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.KanbanServices;
-using KinaUnaProgenyApi.Services.TodosServices;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -195,6 +194,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <remarks>This method requires the user to have administrative access to the progeny associated
         /// with the Kanban board. The user's email is used to validate access permissions.</remarks>
         /// <param name="id">The unique identifier of the Kanban board to delete.</param>
+        /// <param name="hardDelete">If set to <see langword="true"/>, the Kanban board is permanently removed from the database; otherwise, it is marked as deleted.</param>
         /// <returns>An <see cref="IActionResult"/> indicating the result of the operation: <list type="bullet">
         /// <item><description><see cref="NotFoundResult"/> if the Kanban board with the specified ID does not
         /// exist.</description></item> <item><description><see cref="UnauthorizedResult"/> if the user does not have
@@ -203,7 +203,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <item><description><see cref="OkObjectResult"/> containing the deleted Kanban board if the operation is
         /// successful.</description></item> </list></returns>
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, [FromQuery] bool hardDelete = false)
         {
             KanbanBoard existingKanbanBoard = await kanbanBoardsService.GetKanbanBoardById(id);
             if (existingKanbanBoard == null)
@@ -229,7 +229,7 @@ namespace KinaUnaProgenyApi.Controllers
             CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(existingKanbanBoard.ProgenyId, userEmail, existingKanbanBoard.AccessLevel);
             if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
 
-            KanbanBoard deletedKanbanItem = await kanbanBoardsService.DeleteKanbanBoard(existingKanbanBoard);
+            KanbanBoard deletedKanbanItem = await kanbanBoardsService.DeleteKanbanBoard(existingKanbanBoard, hardDelete);
             return Ok(deletedKanbanItem);
         }
     }

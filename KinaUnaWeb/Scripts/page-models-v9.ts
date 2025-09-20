@@ -423,11 +423,12 @@ export class WebNotificationsList {
 export enum TimeLineType {
     Photo = 1, Video = 2, Calendar = 3, Vocabulary = 4, Skill = 5,
     Friend = 6, Measurement = 7, Sleep = 8, Note = 9, Contact = 10,
-    Vaccination = 11, Location = 12, User = 13, UserAccess = 14, TodoItem = 15, Child = 100
+    Vaccination = 11, Location = 12, User = 13, UserAccess = 14,
+    TodoItem = 15, KanbanBoard = 16, KanbanItem = 17, Child = 100
 }
 
 export enum TodoStatusType {
-    NotStarted = 0, InProgress = 1, Completed = 2, Cancelled = 3, Overdue = 4
+    None = -1, NotStarted = 0, InProgress = 1, Completed = 2, Cancelled = 3, Overdue = 4
 }
 
 export enum OnThisDayPeriod {
@@ -542,6 +543,7 @@ export class TodoItemParameters implements BaseItemParameters {
     todoItemId: number = 0;
     languageId: number = 0;
 }
+
 export class TodoItem {
     todoItemId: number = 0;
     uId: string = '';
@@ -562,4 +564,87 @@ export class TodoItem {
     createdTime: Date = new Date();
     modifiedTime: Date = new Date();
     isDeleted: boolean = false;
+    progeny: Progeny = new Progeny();
+    subtaskCount: number = 0;
+    completedSubtaskCount = 0;
+}
+
+export class KanbanBoardsPageParameters implements BasePageParameters {
+    progenyId: number = 0;
+    progenies: number[] = [];
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 10;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 0; // 0 Ascending, 1 Descending
+    tagFilter: string = '';
+    contextFilter: string = '';
+    includeDeleted: boolean = false;
+    showSettings: boolean = false;
+}
+
+export class KanbanBoardsPageResponse implements BaseItemsPageResponseModel {
+    pageNumber: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    kanbanBoards: KanbanBoard[] = [];
+    tagsList: string[] = [];
+    contextsList: string[] = [];
+}
+
+export class KanbanBoard {
+    kanbanBoardId: number = 0;
+    uId: string = '';
+    progenyId: number = 0;
+    title: string = '';
+    description: string = '';
+    columns: string = '';
+    accessLevel: number = 5;
+    tags: string[] = [];
+    context: string = '';
+    createdBy: string = '';
+    modifiedBy: string = '';
+    createdTime: Date = new Date();
+    modifiedTime: Date = new Date();
+    isDeleted: boolean = false;
+    columnsList: KanbanBoardColumn[] = [];
+}
+
+export class KanbanBoardElementParameters {
+    kanbanBoardId: number = 0;
+    languageId: number = 0;
+}
+
+export class KanbanBoardColumn {
+    id: number = 0;
+    columnIndex: number = 0;
+    title: string = '';
+    wipLimit: number = 0;
+    setStatus: number = -1;
+}
+
+export class KanbanItem {
+    kanbanItemId: number = 0;
+    uId: string = '';
+    kanbanBoardId: number = 0;
+    todoItemId: number = 0;
+    columnId: number = 0;
+    rowIndex: number = 0;
+    createdBy: string = '';
+    modifiedBy: string = '';
+    createdTime: Date = new Date();
+    modifiedTime: Date = new Date();
+    isDeleted: boolean = false;
+    todoItem?: TodoItem;
+}
+
+export class Progeny {
+    id: number = 0;
+    name: string = '';
+    nickName: string = '';
+    birthDay: Date = new Date();
+    timeZone: string = '';
+    pictureLink: string = '';
+    admins: string = '';
 }

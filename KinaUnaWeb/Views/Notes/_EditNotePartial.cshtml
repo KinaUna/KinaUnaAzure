@@ -8,77 +8,83 @@
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+    const int changedItemTypeNoteItem = (int)KinaUnaTypes.TimeLineType.Note;
 }
-
+<div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeNoteItem" data-changed-item-item-id="@Model.NoteItem.NoteId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-note-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide">
     <div class="timeline-card-body modal-content item-details-content">
-        <div class="add-item-container-wide">
-            <h2 class="col-12">@ViewData["Title"]</h2>
-            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
-            <div class="space-20"></div>
-            <form id="save-item-form" asp-action="EditNote" asp-controller="Notes" role="form" method="post">
-                <div class="form-group">
-                    <label asp-for="NoteItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input asp-for="NoteItem.Title" class="form-control" value="@Model.NoteItem.Title" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="NoteItem.Content" class="col-auto control-label">@await LocaleManager.GetTranslation("Content", PageNames.Notes, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        @{
-                            string[] toolbarItems = new[] {"Bold", "Italic", "Underline", "StrikeThrough",
-                        "FontName", "FontSize", "FontColor", "BackgroundColor",
-                        "LowerCase", "UpperCase", "|",
-                        "Formats", "Alignments", "OrderedList", "UnorderedList",
-                        "Outdent", "Indent", "|",
-                        "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
-                        "SourceCode", "FullScreen", "|", "Undo", "Redo" };
-                        }
-                        <ejs-richtexteditor id="content-rich-text-editor" ejs-for="NoteItem.Content" height="300px" enableResize="true">
-                            <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
-                            <e-richtexteditor-insertimagesettings saveUrl="/AddItem/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
-                            <e-content-template>
-
-                            </e-content-template>
-                        </ejs-richtexteditor>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="NoteItem.Category" class="col-auto control-label">@await LocaleManager.GetTranslation("Category", PageNames.Notes, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input id="category-input" asp-for="NoteItem.Category" class="form-control" value="@Model.NoteItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Notes, Model.LanguageId)" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="NoteItem.CreatedDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Date and time", PageNames.Notes, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <div class="input-group date">
-                            <input id="note-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="NoteItem.CreatedDate" value="@Model.NoteItem.CreatedDate.ToString(longDateTimeFormat)" />
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="NoteItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="NoteItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                    </div>
-                </div>
-                <div class="space-20"></div>
-                <input asp-for="NoteItem.ProgenyId" value="@Model.NoteItem.ProgenyId" type="hidden" />
-                <input asp-for="NoteItem.NoteId" value="@Model.NoteItem.NoteId" type="hidden" />
-                <input asp-for="NoteItem.Owner" value="@Model.NoteItem.Owner" type="hidden" />
-                <div class="form-group">
-                    <div class="col-auto control-label"></div>
-                    <div class="col-auto">
-                        <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                        <a class="btn btn-danger item-details-cancel-button" >@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
-                    </div>
-                </div>
-            </form>
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
         </div>
+        <form id="save-item-form" asp-action="EditNote" asp-controller="Notes" role="form" method="post">
+            <div class="space-20"></div>
+            <div class="form-group">
+                <label asp-for="NoteItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input asp-for="NoteItem.Title" class="form-control" value="@Model.NoteItem.Title" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="NoteItem.Content" class="col-auto control-label">@await LocaleManager.GetTranslation("Content", PageNames.Notes, Model.LanguageId)</label>
+                <div class="col-auto">
+                    @{
+                        string[] toolbarItems = new[]
+                        {
+                                        "Bold", "Italic", "Underline", "StrikeThrough",
+                                        "FontName", "FontSize", "FontColor", "BackgroundColor",
+                                        "LowerCase", "UpperCase", "|",
+                                        "Formats", "Alignments", "OrderedList", "UnorderedList",
+                                        "Outdent", "Indent", "|",
+                                        "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
+                                        "SourceCode", "FullScreen", "|", "Undo", "Redo"
+                                        };
+                    }
+                    <ejs-richtexteditor id="content-rich-text-editor" ejs-for="NoteItem.Content" height="300px" enableResize="true">
+                        <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
+                        <e-richtexteditor-insertimagesettings saveUrl="/AddItem/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
+                        <e-content-template>
+
+                        </e-content-template>
+                    </ejs-richtexteditor>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="NoteItem.Category" class="col-auto control-label">@await LocaleManager.GetTranslation("Category", PageNames.Notes, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="category-input" asp-for="NoteItem.Category" class="form-control" value="@Model.NoteItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Notes, Model.LanguageId)" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="NoteItem.CreatedDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Date and time", PageNames.Notes, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <div class="input-group date">
+                        <input id="note-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="NoteItem.CreatedDate" value="@Model.NoteItem.CreatedDate.ToString(longDateTimeFormat)" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="NoteItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="NoteItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <input asp-for="NoteItem.ProgenyId" value="@Model.NoteItem.ProgenyId" type="hidden" />
+            <input asp-for="NoteItem.NoteId" value="@Model.NoteItem.NoteId" type="hidden" />
+            <input asp-for="NoteItem.Owner" value="@Model.NoteItem.Owner" type="hidden" />
+            <div class="form-group">
+                <div class="col-auto control-label"></div>
+                <div class="col-auto">
+                    <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 <ejs-scripts></ejs-scripts>

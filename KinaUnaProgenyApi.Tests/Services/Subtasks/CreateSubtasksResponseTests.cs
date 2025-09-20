@@ -23,7 +23,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new();
+            List<TodoItem> subtasks = [];
 
             // Act & Assert
             ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(
@@ -43,12 +43,12 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new() { TodoItemId = 1, StartDate = new DateTime(2023, 1, 1) },
                 new() { TodoItemId = 2, StartDate = new DateTime(2023, 1, 15) },
                 new() { TodoItemId = 3, StartDate = new DateTime(2023, 2, 1) }
-            };
+            ];
 
             SubtasksRequest request = new()
             {
@@ -78,12 +78,12 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new() { TodoItemId = 1, DueDate = new DateTime(2023, 1, 1) },
                 new() { TodoItemId = 2, DueDate = new DateTime(2023, 1, 15) },
                 new() { TodoItemId = 3, DueDate = new DateTime(2023, 2, 1) }
-            };
+            ];
 
             SubtasksRequest request = new()
             {
@@ -113,13 +113,13 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new() { TodoItemId = 1, Tags = "urgent,important" },
                 new() { TodoItemId = 2, Tags = "important,work" },
                 new() { TodoItemId = 3, Tags = "personal" },
                 new() { TodoItemId = 4, Tags = null }
-            };
+            ];
 
             SubtasksRequest request = new()
             {
@@ -147,13 +147,13 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new() { TodoItemId = 1, Context = "work" },
                 new() { TodoItemId = 2, Context = "home" },
                 new() { TodoItemId = 3, Context = "work-project" },
                 new() { TodoItemId = 4, Context = null }
-            };
+            ];
 
             SubtasksRequest request = new()
             {
@@ -181,13 +181,13 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new() { TodoItemId = 1, Location = "office" },
                 new() { TodoItemId = 2, Location = "home" },
                 new() { TodoItemId = 3, Location = "office-building" },
                 new() { TodoItemId = 4, Location = null }
-            };
+            ];
 
             SubtasksRequest request = new()
             {
@@ -215,22 +215,22 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new() { TodoItemId = 1, Status = (int)KinaUnaTypes.TodoStatusType.NotStarted },
                 new() { TodoItemId = 2, Status = (int)KinaUnaTypes.TodoStatusType.InProgress },
                 new() { TodoItemId = 3, Status = (int)KinaUnaTypes.TodoStatusType.Completed },
                 new() { TodoItemId = 4, Status = (int)KinaUnaTypes.TodoStatusType.Cancelled }
-            };
+            ];
 
             SubtasksRequest request = new()
             {
                 ParentTodoItemId = TestParentTodoItemId,
-                StatusFilter = new List<KinaUnaTypes.TodoStatusType>
-                {
+                StatusFilter =
+                [
                     KinaUnaTypes.TodoStatusType.NotStarted,
                     KinaUnaTypes.TodoStatusType.InProgress
-                }
+                ]
             };
 
             // Act
@@ -253,7 +253,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new();
+            List<TodoItem> subtasks = [];
             for (int i = 1; i <= 10; i++)
             {
                 subtasks.Add(new TodoItem
@@ -297,12 +297,12 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new() { TodoItemId = 1, Status = (int)KinaUnaTypes.TodoStatusType.Completed, StartDate = new DateTime(2023, 1, 2), CreatedTime = new DateTime(2023, 1, 2) },
                 new() { TodoItemId = 2, Status = (int)KinaUnaTypes.TodoStatusType.NotStarted, StartDate = new DateTime(2023, 1, 1), CreatedTime = new DateTime(2023, 1, 1) },
                 new() { TodoItemId = 3, Status = (int)KinaUnaTypes.TodoStatusType.InProgress, StartDate = new DateTime(2023, 1, 3), CreatedTime = new DateTime(2023, 1, 3) }
-            };
+            ];
 
             SubtasksRequest request = new()
             {
@@ -333,12 +333,12 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new() { TodoItemId = 1, ProgenyId = 3, StartDate = new DateTime(2023, 1, 2), CreatedTime = new DateTime(2023, 1, 2) },
                 new() { TodoItemId = 2, ProgenyId = 1, StartDate = new DateTime(2023, 1, 1), CreatedTime = new DateTime(2023, 1, 1) },
                 new() { TodoItemId = 3, ProgenyId = 2, StartDate = new DateTime(2023, 1, 3), CreatedTime = new DateTime(2023, 1, 3) }
-            };
+            ];
 
             SubtasksRequest request = new()
             {
@@ -369,12 +369,12 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new() { TodoItemId = 1, Location = "home", StartDate = new DateTime(2023, 1, 2), CreatedTime = new DateTime(2023, 1, 2) },
                 new() { TodoItemId = 2, Location = "office", StartDate = new DateTime(2023, 1, 1), CreatedTime = new DateTime(2023, 1, 1) },
                 new() { TodoItemId = 3, Location = "store", StartDate = new DateTime(2023, 1, 3), CreatedTime = new DateTime(2023, 1, 3) }
-            };
+            ];
 
             SubtasksRequest request = new()
             {
@@ -405,12 +405,12 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new() { TodoItemId = 1, StartDate = new DateTime(2023, 1, 3), CreatedTime = new DateTime(2023, 1, 3) },
                 new() { TodoItemId = 2, StartDate = new DateTime(2023, 1, 1), CreatedTime = new DateTime(2023, 1, 1) },
                 new() { TodoItemId = 3, StartDate = new DateTime(2023, 1, 2), CreatedTime = new DateTime(2023, 1, 2) }
-            };
+            ];
 
             SubtasksRequest request = new()
             {
@@ -441,7 +441,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new();
+            List<TodoItem> subtasks = [];
             for (int i = 1; i <= 25; i++)
             {
                 subtasks.Add(new TodoItem
@@ -480,11 +480,11 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             await using ProgenyDbContext context = new(dbOptions);
             SubtasksService service = new(context);
 
-            List<TodoItem> subtasks = new()
-            {
+            List<TodoItem> subtasks =
+            [
                 new() { TodoItemId = 1, StartDate = new DateTime(2023, 1, 1), CreatedTime = new DateTime(2023, 1, 1) },
                 new() { TodoItemId = 2, StartDate = new DateTime(2023, 1, 2), CreatedTime = new DateTime(2023, 1, 2) }
-            };
+            ];
 
             SubtasksRequest request = new()
             {
