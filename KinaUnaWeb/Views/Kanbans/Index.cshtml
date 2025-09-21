@@ -8,32 +8,36 @@
 }
 <div id="kanbans-index-page-parameters-div" class="d-none" data-kanbans-index-page-parameters="@pageParameters"></div>
 <div id="popup-kanban-board-id-div" class="d-none" data-popup-kanban-board-id="@Model.PopUpKanbanBoardId"></div>
-<div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10 col-w1900-8 col-w2500-7 bg-page-content">
-    <div class="row">
-        <div class="col-12">
-            <div class="page-tab-container">
-                <div class="page-tab" id="page-title-div"><a class="btn-page-tab leave-page" asp-controller="Todos" asp-action="Index">
+<div class="row m-0">
+    <div class="col-12">
+        <div class="page-tab-container">
+            <div class="page-tab" id="page-title-div">
+                <a class="btn-page-tab leave-page" asp-controller="Todos" asp-action="Index">
                     <i class="material-icons sidebar-icon">fact_check</i> @await LocaleManager.GetTranslation("Todo List", PageNames.Todos, Model.LanguageId)
                 </a></div>
-                <div class="page-tab active"><a class="btn-page-tab active leave-page" asp-controller="Kanbans" asp-action="Index">
+            <div class="page-tab active">
+                <a class="btn-page-tab active leave-page" asp-controller="Kanbans" asp-action="Index">
                     <i class="material-icons sidebar-icon">view_kanban</i> @ViewData["Title"]
                 </a></div>
+        </div>
+        <div id="settings-notification-div" class="mt-5 float-right small text-muted"></div>
+    </div>
+</div>
+<div class="row m-0">
+    <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10 col-w1900-8 col-w2500-7 bg-page-content">
+        <div class="row">
+            <div class="col-12 text-right">
+                <button id="add-kanban-board-button" class="btn btn-primary add-item-button" data-add-item-type="kanbanboard" data-add-item-progeny-id="0"><i class="material-icons icon-top-4">add</i> @await LocaleManager.GetTranslation("Add kanban board", PageNames.Todos, Model.LanguageId)</button>
             </div>
-            <div id="settings-notification-div" class="mt-5 float-right small text-muted"></div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-12 text-right">
-            <button id="add-kanban-board-button" class="btn btn-primary add-item-button" data-add-item-type="kanbanboard" data-add-item-progeny-id="0"><i class="material-icons icon-top-4">add</i> @await LocaleManager.GetTranslation("Add kanban board", PageNames.Todos, Model.LanguageId)</button>
+        <div class="space-20"></div>
+        <div id="kanban-boards-list-div" class="row">
         </div>
-    </div>
-    <div class="space-20"></div>
-    <div id="kanban-boards-list-div" class="row">
-    </div>
-    <div class="row" style="height: 150px;">
-        <button id="more-kanban-boards-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
-        <div id="loading-kanban-boards-div" class="w-100">
-            <div class="space-50"></div>
+        <div class="row" style="height: 150px;">
+            <button id="more-kanban-boards-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+            <div id="loading-kanban-boards-div" class="w-100">
+                <div class="space-50"></div>
+            </div>
         </div>
     </div>
 </div>

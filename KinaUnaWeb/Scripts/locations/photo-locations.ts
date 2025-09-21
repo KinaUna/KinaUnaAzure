@@ -231,8 +231,8 @@ function setUpMap() {
 
             if (evt.target instanceof H.map.Marker) {
                 const locationTapped: LocationItem = new LocationItem();
-                locationTapped.latitude = evt.target.hm.lat;
-                locationTapped.longitude = evt.target.hm.lng;
+                locationTapped.latitude = evt.target.getGeometry().lat;
+                locationTapped.longitude = evt.target.getGeometry().lng;
                 locationTapped.progenyId = photoLocationsProgenyId;
 
                 selectedLocation = locationTapped;

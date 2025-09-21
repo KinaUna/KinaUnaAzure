@@ -1786,8 +1786,8 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 .kinauna-logo {
     position: absolute;
     /* top: 4px; */
-    height: 60px;
-    margin-top: -18px;
+    height: 54px;
+    margin-top: -24px;
     /* margin-left: 12px; */
     background: white;
     border-radius: 16px;
