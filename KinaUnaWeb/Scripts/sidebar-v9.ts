@@ -170,7 +170,19 @@ async function setSideBarPosition(): Promise<void> {
  * Sets the current page's icon to active, to indicate which section the user is in.
  */
 function highlightActivePageIcon(): void {
-    const currentUrl = document.location.pathname.replace('/', '');
+    let currentUrl = document.location.pathname.replace('/', '');
+    if (currentUrl.toLowerCase().startsWith('kanbans')){
+        currentUrl = 'todos';
+    }
+
+    if (currentUrl.toLowerCase().startsWith('timeline')) {
+        currentUrl = 'home';
+    }
+
+    if (currentUrl.toLowerCase().startsWith('today')) {
+        currentUrl = 'home';
+    }
+
     const sidebarMenuItems = document.querySelectorAll<HTMLLIElement>('.sidebar-item');
     sidebarMenuItems.forEach(function (sidebarMenuItem): void {
         if (currentUrl.toLowerCase().startsWith(sidebarMenuItem.dataset.sidebarId as string)) {
