@@ -100,12 +100,12 @@ async function setSideBarPosition() {
         if (sidebarSetting.showSidebarText && viewportWidth > 992) {
             kinaUnaMainElement.classList.add('kinauna-main-wide');
             kinaUnaMainElement.classList.remove('kinauna-main');
-            logoImageElement.style.marginRight = '148px';
+            logoImageElement.style.marginLeft = '148px';
         }
         else {
             kinaUnaMainElement.classList.add('kinauna-main');
             kinaUnaMainElement.classList.remove('kinauna-main-wide');
-            logoImageElement.style.marginRight = '50px';
+            logoImageElement.style.marginLeft = '50px';
         }
         sidebarElement.style.opacity = '1.0';
         sidebarTogglerElement.style.borderTopRightRadius = '25px';
