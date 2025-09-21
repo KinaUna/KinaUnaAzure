@@ -3203,6 +3203,7 @@ button.Zebra_DatePicker_Icon {
 
 .control-label {
     font-size: 14px;
+    margin-bottom: 0.25rem;
 }
 
 .dropdown, .dropleft, .dropright, .dropup {
