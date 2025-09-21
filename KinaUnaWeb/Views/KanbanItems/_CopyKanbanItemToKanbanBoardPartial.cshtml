@@ -20,18 +20,50 @@
                     @copyToBoardString
                 </div>
             </div>
+            <button type="button" class="btn btn-link modal-close-button copy-kanban-item-close-button"><span>×</span></button>
         </div>
         <div class="space-50"></div>
         <div class="row m-0">
+            <div class="col-12">
+                <div class="row m-0">
+                    <div class="col-12">
+                        <div class="h5">@Model.KanbanItem.TodoItem.Title</div>
+                    </div>
+                </div>
+            </div>
             <div class="col-12">
                 @if (Model.IsCurrentUserProgenyAdmin)
                 {
                     <form id="copy-kanban-item-to-kanban-board-form" asp-action="CopyKanbanItemToKanbanBoard" asp-controller="KanbanItems" role="form" method="post">
                         <div class="form-group">
+                            <label asp-for="KanbanItem.KanbanBoardId" class="col-auto control-label">@await LocaleManager.GetTranslation("Select board", PageNames.Todos, Model.LanguageId):</label>
                             <div class="col-auto">
                                 <select id="copy-kanban-item-to-kanban-board-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.KanbanBoardsList.Count" asp-for="KanbanItem.KanbanBoardId" asp-items="@Model.KanbanBoardsList"></select>
                             </div>
                         </div>
+                        <div class="space-20"></div>
+                        <div class="form-group">
+                            <div class="col-auto control-label">@await LocaleManager.GetTranslation("Todo reference", PageNames.Todos, Model.LanguageId)</div>
+                            <div class="col-auto">
+                                <div class="row m-0">
+                                    <div class="col-12">
+                                        <input id="link-to-current-todo-radio" type="radio" asp-for="TodoItemReference" value="0" checked="checked" class="form-check form-control form-control-inline form-control-radio"/>
+                                        <label for="link-to-current-todo-radio" class="control-label">
+                                            @await LocaleManager.GetTranslation("Link to current todo", PageNames.Todos, Model.LanguageId)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="row m-0">
+                                    <div class="col-12">
+                                        <input id="link-to-new-todo-radio" type="radio" asp-for="TodoItemReference" value="1" class="form-check form-control form-control-inline form-control-radio"/>
+                                        <label for="link-to-new-todo-radio" class="control-label">
+                                            @await LocaleManager.GetTranslation("Add new todo", PageNames.Todos, Model.LanguageId)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-20"></div>
                         <div class="form-group">
                             <input type="hidden" asp-for="KanbanItem.KanbanItemId" value="@Model.KanbanItem.KanbanItemId"/>
                             <div class="col">

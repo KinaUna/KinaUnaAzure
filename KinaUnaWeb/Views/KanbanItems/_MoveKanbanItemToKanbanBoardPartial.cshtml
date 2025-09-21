@@ -20,18 +20,28 @@
                     @moveToBoardString
                 </div>
             </div>
+            <button type="button" class="btn btn-link modal-close-button move-kanban-item-close-button"><span>×</span></button>
         </div>
         <div class="space-50"></div>
         <div class="row m-0">
+            <div class="col-12">
+                <div class="row m-0">
+                    <div class="col-12">
+                        <div class="h5">@Model.KanbanItem.TodoItem.Title</div>
+                    </div>
+                </div>
+            </div>
             <div class="col-12">
                 @if (Model.IsCurrentUserProgenyAdmin)
                 {
                     <form id="move-kanban-item-to-kanban-board-form" asp-action="MoveKanbanItemToKanbanBoard" asp-controller="KanbanItems" role="form" method="post">
                         <div class="form-group">
+                            <label asp-for="KanbanItem.KanbanBoardId" class="col-auto control-label">@await LocaleManager.GetTranslation("Select board", PageNames.Todos, Model.LanguageId):</label>
                             <div class="col-auto">
                                 <select id="move-kanban-item-to-kanban-board-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.KanbanBoardsList.Count" asp-for="KanbanItem.KanbanBoardId" asp-items="@Model.KanbanBoardsList"></select>
                             </div>
                         </div>
+                        <div class="space-20"></div>
                         <div class="form-group">
                             <input type="hidden" asp-for="KanbanItem.KanbanItemId" value="@Model.KanbanItem.KanbanItemId"/>
                             <div class="col">

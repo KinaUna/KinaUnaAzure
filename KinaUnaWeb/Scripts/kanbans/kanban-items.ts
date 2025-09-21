@@ -69,7 +69,7 @@ async function popupKanbanItem(kanbanItem: KanbanItem, containerId: string): Pro
         setKanbanItemDetailsEventListeners(kanbanItem.todoItemId.toString(), containerId);
         setEditItemButtonEventListeners();
         setDeleteItemButtonEventListeners();
-        await getSubtaskList(kanbanItem.todoItemId.toString());
+        await getSubtaskList(kanbanItem.todoItemId.toString(), true);
         containerElement.classList.remove('d-none');
     } else {
         console.error('Container element not found: ' + containerId);

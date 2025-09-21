@@ -854,7 +854,7 @@ async function copyCardToBoard(kanbanItemId: string) {
         if (modalDiv) {
             modalDiv.innerHTML = formHtml;
             modalDiv.classList.remove('d-none');
-            const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.copy-kanban-item-cancel-button');
+            const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.copy-kanban-item-cancel-button');            
             if (cancelButton) {
                 const closeButtonFunction = function () {
                     modalDiv.innerHTML = '';
@@ -862,7 +862,7 @@ async function copyCardToBoard(kanbanItemId: string) {
                 }
                 cancelButton.removeEventListener('click', closeButtonFunction);
                 cancelButton.addEventListener('click', closeButtonFunction);
-                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.copy-kanban-item-close-button');
                 if (closeButton) {
                     closeButton.removeEventListener('click', closeButtonFunction);
                     closeButton.addEventListener('click', closeButtonFunction);
@@ -923,7 +923,7 @@ async function moveCardToBoard(kanbanItemId: string) {
                 }
                 cancelButton.removeEventListener('click', closeButtonFunction);
                 cancelButton.addEventListener('click', closeButtonFunction);
-                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.move-kanban-item-close-button');
                 if (closeButton) {
                     closeButton.removeEventListener('click', closeButtonFunction);
                     closeButton.addEventListener('click', closeButtonFunction);

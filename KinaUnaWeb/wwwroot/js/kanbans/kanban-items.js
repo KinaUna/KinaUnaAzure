@@ -62,7 +62,7 @@ async function popupKanbanItem(kanbanItem, containerId) {
         setKanbanItemDetailsEventListeners(kanbanItem.todoItemId.toString(), containerId);
         setEditItemButtonEventListeners();
         setDeleteItemButtonEventListeners();
-        await getSubtaskList(kanbanItem.todoItemId.toString());
+        await getSubtaskList(kanbanItem.todoItemId.toString(), true);
         containerElement.classList.remove('d-none');
     }
     else {

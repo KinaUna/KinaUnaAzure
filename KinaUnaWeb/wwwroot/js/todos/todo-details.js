@@ -388,7 +388,7 @@ async function displayTodoItem(todoId) {
                 setTodoDetailsEventListeners(todoId, todoDetailsPopupDiv);
                 setEditItemButtonEventListeners();
                 setDeleteItemButtonEventListeners();
-                await getSubtaskList(todoId);
+                await getSubtaskList(todoId, true);
                 $(".selectpicker").selectpicker('refresh');
                 document.removeEventListener('click', hideAllTodoDetailsMenusAndModals);
                 document.addEventListener('click', hideAllTodoDetailsMenusAndModals);

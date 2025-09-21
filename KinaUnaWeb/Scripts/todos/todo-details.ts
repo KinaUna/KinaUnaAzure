@@ -415,7 +415,7 @@ async function displayTodoItem(todoId: string): Promise<void> {
                 setTodoDetailsEventListeners(todoId, todoDetailsPopupDiv);
                 setEditItemButtonEventListeners();
                 setDeleteItemButtonEventListeners();
-                await getSubtaskList(todoId);
+                await getSubtaskList(todoId, true);
                 ($(".selectpicker") as any).selectpicker('refresh');
                 document.removeEventListener('click', hideAllTodoDetailsMenusAndModals);
                 document.addEventListener('click', hideAllTodoDetailsMenusAndModals);

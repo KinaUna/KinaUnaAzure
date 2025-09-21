@@ -18,7 +18,8 @@ namespace KinaUnaWeb.Controllers
         ITodoItemsHttpClient todoItemsHttpClient,
         IViewModelSetupService viewModelSetupService,
         IProgenyHttpClient progenyHttpClient,
-        IUserInfosHttpClient userInfosHttpClient) : Controller
+        IUserInfosHttpClient userInfosHttpClient,
+        ISubtasksHttpClient subtasksHttpClient) : Controller
     {
         [HttpGet]
         public async Task<IActionResult> GetKanbanItem(int kanbanItemId)
@@ -229,6 +230,36 @@ namespace KinaUnaWeb.Controllers
             if (progAdminList.Count == 0)
             {
                 return BadRequest();
+            }
+
+            if (model.TodoItemReference == 1)
+            {
+                // Create a new TodoItem based on the existing one.
+                model.KanbanItem.TodoItem.TodoItemId = 0;
+                model.KanbanItem.TodoItem.CreatedBy = model.CurrentUser.UserEmail;
+                model.KanbanItem.TodoItem.CreatedTime = System.DateTime.UtcNow;
+                model.KanbanItem.TodoItem.ModifiedBy = model.CurrentUser.UserEmail;
+                model.KanbanItem.TodoItem.ModifiedTime = System.DateTime.UtcNow;
+                TodoItem newTodoItem = await todoItemsHttpClient.AddTodoItem(model.KanbanItem.TodoItem);
+                kanbanItem.TodoItem = newTodoItem;
+                kanbanItem.TodoItemId = newTodoItem.TodoItemId;
+
+                // If the existing TodoItem has subtasks, copy them as well.
+                SubtasksRequest subtasksRequest = new()
+                {
+                    ParentTodoItemId = existingTodoItem.TodoItemId,
+                    ProgenyId = existingTodoItem.ProgenyId,
+                    Skip = 0,
+                    NumberOfItems = 0 // Get all.
+                };
+                SubtasksResponse subtasksResponse = await subtasksHttpClient.GetSubtasksList(subtasksRequest);
+                foreach (TodoItem subTask in subtasksResponse.Subtasks)
+                {
+                    subTask.TodoItemId = 0;
+                    subTask.ParentTodoItemId = newTodoItem.TodoItemId;
+
+                    _ = await subtasksHttpClient.AddSubtask(subTask);
+                }
             }
 
             KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);

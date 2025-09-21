@@ -184,6 +184,17 @@
     box-shadow: 0 0 5px #aa22f1;
 }
 
+.form-control-inline {
+    width: auto;
+    display: inline-block;
+}
+
+.form-control-radio {
+    height: 20px;
+    width: 20px;
+    vertical-align: middle;
+}
+
 .form-control-noline:active {
     box-shadow: 0 0 5px #aa22f1;
 }

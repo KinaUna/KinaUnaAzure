@@ -14,6 +14,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<KanbanBoard> KanbanBoards { get; set; } = [];
         public List<SelectListItem> KanbanBoardsList { get; set; } = [];
         public TodoItem ParentTodoItem { get; set; } = null;
+        public int TodoItemReference { get; set; } = 0;
         public KanbanItemViewModel()
         {
             ProgenyList = [];

@@ -795,7 +795,7 @@ async function copyCardToBoard(kanbanItemId) {
                 };
                 cancelButton.removeEventListener('click', closeButtonFunction);
                 cancelButton.addEventListener('click', closeButtonFunction);
-                const closeButton = modalDiv.querySelector('.modal-close-button');
+                const closeButton = modalDiv.querySelector('.copy-kanban-item-close-button');
                 if (closeButton) {
                     closeButton.removeEventListener('click', closeButtonFunction);
                     closeButton.addEventListener('click', closeButtonFunction);
@@ -853,7 +853,7 @@ async function moveCardToBoard(kanbanItemId) {
                 };
                 cancelButton.removeEventListener('click', closeButtonFunction);
                 cancelButton.addEventListener('click', closeButtonFunction);
-                const closeButton = modalDiv.querySelector('.modal-close-button');
+                const closeButton = modalDiv.querySelector('.move-kanban-item-close-button');
                 if (closeButton) {
                     closeButton.removeEventListener('click', closeButtonFunction);
                     closeButton.addEventListener('click', closeButtonFunction);
