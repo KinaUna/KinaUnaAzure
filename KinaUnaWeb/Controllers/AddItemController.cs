@@ -44,7 +44,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteFile(FileItem model)
         {
-            
+            // Todo: Implement file deletion from blob storage.
             throw new NotImplementedException();
         }
 
@@ -176,7 +176,12 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("AddTodo", "Todos");
             }
-            
+
+            if (itemType == "kanbanboard")
+            {
+                return RedirectToAction("AddKanbanBoard", "Kanbans");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
@@ -275,6 +280,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("EditSubtask", "Subtasks", new { itemId });
             }
 
+            if (itemType == "kanbanboard")
+            {
+                return RedirectToAction("EditKanbanBoard", "Kanbans", new { kanbanBoardId = itemId });
+            }
+
             return PartialView("../Shared/_NotFoundPartial", new { itemId });
         }
 
@@ -315,6 +325,12 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("DeleteSubtask", "Subtasks", new { itemId });
             }
+
+            if (itemType == "kanbanboard")
+            {
+                return RedirectToAction("DeleteKanbanBoard", "Kanbans", new { kanbanBoardId = itemId });
+            }
+
             // Todo: Other item types can be added here as needed.
 
             return PartialView("../Shared/_NotFoundPartial");

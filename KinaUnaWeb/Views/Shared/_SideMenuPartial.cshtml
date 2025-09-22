@@ -23,7 +23,23 @@
                         </span>
                     </a>
                 </li>
-                <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="today">
+                <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="calendar">
+                    <a class="btn-sidebar leave-page" asp-controller="Calendar" asp-action="Index" asp-route-childId="@Model.ProgenyId">
+                        <i class="material-icons sidebar-icon">event_note</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Calendar", PageNames.Layout, Model.LanguageId)
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="todos">
+                    <a class="btn-sidebar leave-page" asp-controller="Todos" asp-action="Index" asp-route-childId="@Model.ProgenyId">
+                        <i class="material-icons sidebar-icon">fact_check</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Todos", PageNames.Layout, Model.LanguageId)
+                        </span>
+                    </a>
+                </li>
+                @* <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="today">
                     <a class="btn-sidebar leave-page" asp-controller="Today" asp-action="OnThisDay" asp-route-childId="@Model.ProgenyId">
                         <i class="material-icons sidebar-icon">today</i>
                         <span class="sidebar-item-text sidebar-item-text-hide">
@@ -38,15 +54,7 @@
                             @await LocaleManager.GetTranslation("Timeline", PageNames.Layout, Model.LanguageId)
                         </span>
                     </a>
-                </li>
-                <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="todos">
-                    <a class="btn-sidebar leave-page" asp-controller="Todos" asp-action="Index" asp-route-childId="@Model.ProgenyId">
-                        <i class="material-icons sidebar-icon">fact_check</i>
-                        <span class="sidebar-item-text sidebar-item-text-hide">
-                            @await LocaleManager.GetTranslation("Todos", PageNames.Layout, Model.LanguageId)
-                        </span>
-                    </a>
-                </li>
+                </li> *@
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="pictures">
                     <a class="btn-sidebar leave-page" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-childId="@Model.ProgenyId">
                         <i class="material-icons sidebar-icon">photo_library</i>
@@ -60,14 +68,6 @@
                         <i class="material-icons sidebar-icon">videocam</i>
                         <span class="sidebar-item-text sidebar-item-text-hide">
                             @await LocaleManager.GetTranslation("Videos", PageNames.Layout, Model.LanguageId)
-                        </span>
-                    </a>
-                </li>
-                <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="calendar">
-                    <a class="btn-sidebar leave-page" asp-controller="Calendar" asp-action="Index" asp-route-childId="@Model.ProgenyId">
-                        <i class="material-icons sidebar-icon">event_note</i>
-                        <span class="sidebar-item-text sidebar-item-text-hide">
-                            @await LocaleManager.GetTranslation("Calendar", PageNames.Layout, Model.LanguageId)
                         </span>
                     </a>
                 </li>

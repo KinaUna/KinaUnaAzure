@@ -19,7 +19,9 @@
                         @Model.Title
                     </div>
                     <div class="timeline-text text-white">
-                        <div><span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, languageId):</span> @await LocaleManager.GetTranslation(Model.StatusText(), PageNames.Todos, languageId)</div>
+                        <div><span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, languageId):</span> @await LocaleManager.GetTranslation(Model.StatusText(), PageNames.Todos, languageId)
+                            <i class="material-icons-small">@Model.StatusIcon()</i>
+                        </div>
                         @if (Model.CompletedDate.HasValue && Model.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
                         {
                             <div><span class="text-white-75">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, languageId):</span> @Model.CompletedDate?.ToString("dd-MMM-yyyy")</div>

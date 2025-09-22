@@ -12,6 +12,7 @@ import { addVocabularyItemListeners, popupVocabularyItem } from '../vocabulary/v
 import { addVaccinationItemListeners, popupVaccinationItem } from '../vaccinations/vaccination-details.js';
 import { addTodoItemListeners, popupTodoItem } from '../todos/todo-details.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
+import { addKanbanBoardListeners, popupKanbanBoard } from '../kanbans/kanban-board-details.js';
 /**
  * Adds event listeners for a given timeline item. Used to show popups for items.
  * @param {TimelineItem} item The timeline item to add event listeners for.
@@ -56,6 +57,12 @@ export async function addTimelineItemEventListener(item) {
     if (item.itemType === 15) {
         addTodoItemListeners(item.itemId);
     }
+    if (item.itemType === 16) {
+        addKanbanBoardListeners(item.itemId);
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Hides scrollbars on the body element, to prevent scrolling while a popup is displayed.
@@ -92,6 +99,7 @@ function getItemIdFromPopupDiv(itemTypeString) {
             }
         }
     }
+    console.log('item-id: ' + itemId);
     return itemId;
 }
 /**
@@ -99,6 +107,7 @@ function getItemIdFromPopupDiv(itemTypeString) {
  */
 export async function showPopupAtLoad(itemType) {
     startFullPageSpinner();
+    console.log('showPopupAtLoad: itemType: ' + itemType);
     if (itemType === 1) {
         let itemId = getItemIdFromPopupDiv('picture');
         if (itemId !== 0) {
@@ -192,6 +201,12 @@ export async function showPopupAtLoad(itemType) {
         let itemId = getItemIdFromPopupDiv('todo');
         if (itemId !== 0) {
             await popupTodoItem(itemId.toString());
+        }
+    }
+    if (itemType === 16) {
+        let itemId = getItemIdFromPopupDiv('kanban-board');
+        if (itemId !== 0) {
+            await popupKanbanBoard(itemId.toString());
         }
     }
     stopFullPageSpinner();

@@ -1,0 +1,53 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.KanbanItemViewModel;
+@using KinaUna.Data
+@using KinaUnaWeb.Services
+@inject ILocaleManager LocaleManager
+@{
+    string addToBoardString = await LocaleManager.GetTranslation("Add todo to Kanban board", PageNames.Todos, Model.LanguageId);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-dark modal-content item-details-content" style="width: fit-content;">
+        <div class="row text-white m-0 item-details-header">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">fact_check</i></span>
+            </div>
+            <div class="col">
+                <div class="h4 mr-3 align-bottom">
+                    @addToBoardString
+                </div>
+            </div>
+        </div>
+        <div class="space-20"></div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="row m-0">
+                    <div class="col-12">
+                        <div class="h5">@Model.KanbanItem.TodoItem.Title</div>
+                    </div>
+                </div>
+                <div class="space-20"></div>
+                @if (Model.IsCurrentUserProgenyAdmin)
+                {
+                    <form id="add-todo-item-to-kanban-board-form" asp-action="AddTodoItemToKanbanBoard" asp-controller="Todos" role="form" method="post">
+                        <div class="form-group">
+                            <div class="col-auto">
+                                <select id="add-todo-item-to-kanban-board-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.KanbanBoardsList.Count" asp-for="KanbanItem.KanbanBoardId" asp-items="@Model.KanbanBoardsList"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input type="hidden" asp-for="KanbanItem.TodoItem.TodoItemId" value="@Model.KanbanItem.TodoItem.TodoItemId"/>
+                            <div class="col">
+                                <button id="add-todo-item-to-kanban-board-submit-button" type="submit" class="btn btn-success" data-todo-item-id="@Model.KanbanItem.TodoItem.TodoItemId">@addToBoardString</button>
+                                <button type="button" class="btn btn-danger add-todo-item-to-kanban-board-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
+                            </div>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

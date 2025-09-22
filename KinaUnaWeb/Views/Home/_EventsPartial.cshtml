@@ -5,7 +5,7 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
 <div id="upcoming-events-parent-div" class="d-none">
-    <div>
+    <div class="ml-2">
         @await LocaleManager.GetTranslation("Current and upcoming events:", PageNames.Home, languageId)
     </div>
     <div id="upcoming-events-div">

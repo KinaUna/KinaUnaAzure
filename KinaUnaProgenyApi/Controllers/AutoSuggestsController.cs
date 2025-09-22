@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUnaProgenyApi.Services.KanbanServices;
 using KinaUnaProgenyApi.Services.TodosServices;
 
 namespace KinaUnaProgenyApi.Controllers
@@ -43,7 +44,8 @@ namespace KinaUnaProgenyApi.Controllers
         IVideosService videosService,
         ILocationService locationService,
         IVocabularyService vocabularyService,
-        ITodosService todosService)
+        ITodosService todosService,
+        IKanbanBoardsService kanbanBoardsService)
         : ControllerBase
     {
         /// <summary>
@@ -107,7 +109,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<TodoItem> allTodos = await todosService.GetTodosList(id, accessLevelResult.Value);
             autoSuggestListBuilder.AddItemsToContextsList(allTodos);
-
+            
+            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsList(id, accessLevelResult.Value);
+            autoSuggestListBuilder.AddItemsToContextsList(allKanbanBoards);
+            
             List<string> autoSuggestList = autoSuggestListBuilder.GetContextsList();
             autoSuggestList.Sort();
 
@@ -144,6 +149,9 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<Location> allLocations = await locationService.GetLocationsList(id, accessLevelResult.Value);
             autoSuggestListBuilder.AddItemsToLocationsList(allLocations);
+
+            List<TodoItem> allTodoItems = await todosService.GetTodosList(id, accessLevelResult.Value);
+            autoSuggestListBuilder.AddItemsToLocationsList(allTodoItems);
 
             List<string> autoSuggestList = autoSuggestListBuilder.GetLocationsList();
             autoSuggestList.Sort();
@@ -187,6 +195,9 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<TodoItem> allTodoItems = await todosService.GetTodosList(id, accessLevelResult.Value);
             autoSuggestListBuilder.AddItemsToTagsList(allTodoItems);
+
+            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsList(id, accessLevelResult.Value);
+            autoSuggestListBuilder.AddItemsToTagsList(allKanbanBoards);
 
             List<string> autoSuggestList = autoSuggestListBuilder.GetTagsList();
             autoSuggestList.Sort();

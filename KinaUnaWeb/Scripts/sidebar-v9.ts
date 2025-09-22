@@ -96,39 +96,30 @@ async function setSideBarPosition(): Promise<void> {
     const sidebarTogglerElement = document.getElementById('sidebar-toggler-div');
     const kinaUnaMainElement = document.getElementById('kinauna-main-div');
     const sidebarTextsButton = document.getElementById('side-bar-toggle-text-btn');
+    const logoImageElement = document.getElementById('kinauna-logo-home-img');
 
     if (navMainElement == null || topLanguageElement == null || sidebarTogglerElement == null || sidebarNavUlElement == null ||
-        sidebarElement == null || kinaUnaMainElement == null || sidebarMenuListWrapperElement == null || sidebarTextsButton == null) {
+        sidebarElement == null || kinaUnaMainElement == null || sidebarMenuListWrapperElement == null || sidebarTextsButton == null ||
+        logoImageElement == null) {
         return;
     }
-    const menuOffset = kinaUnaMainElement.offsetTop + 15;
-
-    const sidebarHeight = viewportHeight - (menuOffset + sidebarTogglerElement.offsetHeight);
-    const maxSidebarHeight = sidebarNavUlElement.scrollHeight + menuOffset + sidebarTogglerElement.offsetHeight + 20;
+    const menuOffset = Math.abs(sidebarElement.offsetTop);
+    let sidebarHeight = viewportHeight - (sidebarTogglerElement.scrollHeight + menuOffset);
+    const maxSidebarHeight = sidebarNavUlElement.scrollHeight + menuOffset + 85;
     sidebarElement.style.left = "0px";
-
     if (sidebarSetting.showSidebar) {
         sidebarTogglerElement.style.transition = 'border-bottom-right-radius 500ms ease-in-out 0ms';
         if (sidebarSetting.showSidebarText && viewportWidth > 992) {
             kinaUnaMainElement.classList.add('kinauna-main-wide');
             kinaUnaMainElement.classList.remove('kinauna-main');
+            logoImageElement.style.marginLeft = '148px';
         }
         else {
             kinaUnaMainElement.classList.add('kinauna-main');
             kinaUnaMainElement.classList.remove('kinauna-main-wide');
+            logoImageElement.style.marginLeft = '50px';
         }
         sidebarElement.style.opacity = '1.0';
-        if (viewportHeight > maxSidebarHeight) {
-            sidebarMenuListWrapperElement.style.overflowY = "hidden";
-            sidebarMenuListWrapperElement.style.height = (sidebarNavUlElement.scrollHeight + 50) + 'px';
-        }
-        else {
-            sidebarMenuListWrapperElement.style.overflowY = "auto";
-            sidebarMenuListWrapperElement.style.height = sidebarHeight + 'px';
-        };
-
-        sidebarElement.style.top = menuOffset + 'px';
-
         sidebarTogglerElement.style.borderTopRightRadius = '25px';
         sidebarTogglerElement.style.borderBottomRightRadius = '0px';
         sidebarTogglerElement.style.paddingBottom = '35px';
@@ -138,6 +129,17 @@ async function setSideBarPosition(): Promise<void> {
         await sidebarMenuDelay(500);
         sidebarTogglerElement.style.width = sidebarMenuListWrapperElement.offsetWidth + 'px';
         sidebarTextsButton.style.visibility = "visible";
+        sidebarElement.style.height = '';
+
+        if (viewportHeight > maxSidebarHeight) {
+            sidebarMenuListWrapperElement.style.overflowY = "hidden";
+            sidebarMenuListWrapperElement.style.height = '';
+        }
+        else {
+            sidebarMenuListWrapperElement.style.overflowY = "auto";
+            sidebarHeight = viewportHeight - (sidebarTogglerElement.scrollHeight + menuOffset);
+            sidebarMenuListWrapperElement.style.height = sidebarHeight + 'px';
+        };
     }
     else {
         sidebarMenuListWrapperElement.style.overflowY = "hidden";
@@ -146,7 +148,6 @@ async function setSideBarPosition(): Promise<void> {
         kinaUnaMainElement.classList.remove('kinauna-main');
         kinaUnaMainElement.classList.remove('kinauna-main-wide');
         sidebarElement.style.opacity = '.5';
-        sidebarElement.style.top = menuOffset + 'px';
         sidebarTogglerElement.style.borderTopRightRadius = '25px';
         sidebarTogglerElement.style.borderBottomRightRadius = '25px';
 
@@ -157,6 +158,7 @@ async function setSideBarPosition(): Promise<void> {
             sidebarTogglerElement.style.paddingBottom = '0';
         }, 1050);
         sidebarTextsButton.style.visibility = "collapse";
+        sidebarElement.style.height = '55px';
     };
 
     return new Promise<void>(function (resolve, reject) {
@@ -168,7 +170,19 @@ async function setSideBarPosition(): Promise<void> {
  * Sets the current page's icon to active, to indicate which section the user is in.
  */
 function highlightActivePageIcon(): void {
-    const currentUrl = document.location.pathname.replace('/', '');
+    let currentUrl = document.location.pathname.replace('/', '');
+    if (currentUrl.toLowerCase().startsWith('kanbans')){
+        currentUrl = 'todos';
+    }
+
+    if (currentUrl.toLowerCase().startsWith('timeline')) {
+        currentUrl = 'home';
+    }
+
+    if (currentUrl.toLowerCase().startsWith('today')) {
+        currentUrl = 'home';
+    }
+
     const sidebarMenuItems = document.querySelectorAll<HTMLLIElement>('.sidebar-item');
     sidebarMenuItems.forEach(function (sidebarMenuItem): void {
         if (currentUrl.toLowerCase().startsWith(sidebarMenuItem.dataset.sidebarId as string)) {
@@ -187,12 +201,14 @@ function highlightActivePageIcon(): void {
 function addSidebarEventListeners(): void {
     const toggleSideBarTextButton = document.querySelector<HTMLButtonElement>('#side-bar-toggle-text-btn');
     if (toggleSideBarTextButton !== null) {
-        toggleSideBarTextButton.addEventListener('click', () => { toggleSidebarText(); });
+        toggleSideBarTextButton.removeEventListener('click', toggleSidebarText);
+        toggleSideBarTextButton.addEventListener('click', toggleSidebarText);
     }
 
     const toggleSideBarButton = document.querySelector<HTMLButtonElement>('#side-bar-toggle-btn');
     if (toggleSideBarButton !== null) {
-        toggleSideBarButton.addEventListener('click', () => { toggleSideBar(); });
+        toggleSideBarButton.removeEventListener('click', toggleSideBar);
+        toggleSideBarButton.addEventListener('click', toggleSideBar);
     }
 
     window.onresize = setSideBarPosition;
@@ -269,7 +285,7 @@ export async function initSidebar(): Promise<void> {
     await setSideBarPosition().catch(function (error) {
         console.log('Error setting sidebar position. Error: ' + error);
     });
-
+        
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

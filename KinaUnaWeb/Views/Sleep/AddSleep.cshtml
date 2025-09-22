@@ -33,7 +33,7 @@
             @if (Model.ProgenyList.Count > 1)
             {
                 <div class="form-group">
-                    <label class="control-label col-auto">@addSleepForString </label>
+                    <label asp-for="SleepItem.ProgenyId" class="control-label col-auto">@addSleepForString </label>
                     <div class="col-auto">
                         <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="SleepItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
@@ -42,7 +42,7 @@
             else
             {
                 <div class="form-group">
-                    <label class="control-label col-auto">@addSleepForString</label>
+                    <label asp-for="SleepItem.ProgenyId" class="control-label col-auto">@addSleepForString</label>
                     <div class="col-auto">
                         <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                     </div>

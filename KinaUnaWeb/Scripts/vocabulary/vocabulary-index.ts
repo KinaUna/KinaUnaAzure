@@ -1,4 +1,5 @@
-﻿import { setMomentLocale } from '../data-tools-v9.js';
+﻿import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { setMomentLocale } from '../data-tools-v9.js';
 import { showPopupAtLoad } from '../item-details/items-display-v9.js';
 import { TimeLineType } from '../page-models-v9.js';
 
@@ -64,7 +65,8 @@ function setupVocabularyDataTable() {
     ($.fn.dataTable as any).moment('DD-MMMM-YYYY');
     $('#word-list-table').DataTable({
         'scrollX': false,
-        'order': [[4, 'desc']]
+        'order': [[4, 'desc']],
+        drawCallback: setEditItemButtonEventListeners
     });
 }
 
@@ -73,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     setupVocabularyDataTable();    
 
     await showPopupAtLoad(TimeLineType.Vocabulary);
-
+    setEditItemButtonEventListeners();
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

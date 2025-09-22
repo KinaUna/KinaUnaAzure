@@ -9,9 +9,9 @@
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-skill item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
-                <img src="@Model.SkillItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-skill-header">
+                <img src="@Model.SkillItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -25,14 +25,14 @@
                 <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">school</i></span>
             </div>
             <div class="col">
-                @if (Model.CurrentUser.CanUserAddItems)
-                {
-                    <button class="btn btn-link p-3 text-white-50 float-right mr-5 copy-item-button" data-copy-item-item-id="@Model.SkillItem.SkillId" data-copy-item-type="skill">
-                        <i class="material-icons kinauna-icon-medium">content_copy</i>
-                    </button>
-                }
                 <div class="timeline-title row">
                     <div class="col-12 h4">
+                        @if (Model.CurrentUser.CanUserAddItems)
+                        {
+                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.SkillItem.SkillId" data-copy-item-type="skill">
+                                <i class="material-icons kinauna-icon-medium">content_copy</i>
+                            </button>
+                        }
                         @if (Model.SkillItem.SkillFirstObservation.HasValue)
                         {
                             <div class="text-white">@Model.SkillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")</div>
@@ -41,6 +41,13 @@
                         <div>@Model.SkillItem.Name</div>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-auto d-none d-md-block">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">school</i></span>
+            </div>
+            <div class="col">
                 <div class="row">
                     @if (!string.IsNullOrEmpty(Model.SkillItem.Description))
                     {

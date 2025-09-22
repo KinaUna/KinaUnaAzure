@@ -5,50 +5,61 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Home", PageNames.Home, Model.LanguageId);
 }
-<div class="row m-0">
-    <div class="col-12">
-        <div class="row">
-            <div class="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 col-xxl-4 col-xxxl-5 col-w1900-5 col-w2500-4" style="margin-bottom: 10px; padding-left: 25px;">
-                @* <div class="row">
-                    <div class="col">
-                    </div>
-                    <div class="bg-white col-auto" style="border-radius: 25px;">
-                        <img src="~/images/KinaUnaLogo_246x80.png" alt="KinaUna Logo"/>
-                    </div>
-                    <div class="col">
-                    </div>
-                </div> *@
-                <div class="space-20"></div>
-                <div>
-                    @if (User.Identity != null && User.Identity.IsAuthenticated && ViewBag.OriginalProgeny != null)
-                    {
-                        <div>
-                            @await LocaleManager.GetTranslation("You don't have access to data for", PageNames.Home, Model.LanguageId) @ViewBag.OriginalProgeny.NickName<br />
-
-                            @await LocaleManager.GetTranslation("To request access click here:", PageNames.Home, Model.LanguageId)
-                            <a asp-controller="Home" asp-action="RequestAccess" asp-route-childId="@ViewBag.OriginalProgeny.Id" class="btn btn-success btn-round leave-page">
-                                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Request access", PageNames.Home, Model.LanguageId)
-                            </a><br />
-                            @await LocaleManager.GetTranslation("Displaying data for KinaUna.com instead.", PageNames.Home, Model.LanguageId)<br />
-                        </div>
-                    }
-                    @await Html.PartialAsync("_RandomPicturePartial", Model)
+<div class="col-12">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-tab-container">
+                <div class="page-tab active">
+                    <a class="btn-page-tab active " asp-controller="Home" asp-action="Index">
+                        <i class="material-icons sidebar-icon">home</i> @await LocaleManager.GetTranslation("Home", PageNames.Layout, Model.LanguageId)
+                    </a></div>
+                <div class="page-tab">
+                    <a class="btn-page-tab leave-page" asp-controller="Timeline" asp-action="Index">
+                        <i class="material-icons sidebar-icon">update</i> @await LocaleManager.GetTranslation("Timeline", PageNames.Layout, Model.LanguageId)
+                    </a>
                 </div>
+                <div class="page-tab">
+                    <a class="btn-page-tab leave-page" asp-controller="Today" asp-action="OnThisDay">
+                        <i class="material-icons sidebar-icon">today</i> @await LocaleManager.GetTranslation("On This Day", PageNames.Layout, Model.LanguageId)
+                    </a>
+                </div>
+
             </div>
-            <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-3 col-w1900-2 col-w2500-2">
-                <div class="space-20"></div>
-                @await Html.PartialAsync("_EventsPartial")
-            </div>
-            <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-3 col-w1900-2 col-w2500-2">
-                <div class="space-20"></div>
-                @await Html.PartialAsync("_LatestPostsPartial")
-            </div>
-            <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-4 col-w1900-2 col-w2500-2">
-                <div class="space-20"></div>
-                @await Html.PartialAsync("_YearAgoPartial")
-            </div>
+            <div id="settings-notification-div" class="mt-5 float-right small text-muted"></div>
         </div>
     </div>
-    <div class="space-20"></div>
+    <div class="row">
+        <div class="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 col-xxl-4 col-xxxl-5 col-w1900-5 col-w2500-4">
+            <div class="space-20"></div>
+            <div>
+                @if (User.Identity != null && User.Identity.IsAuthenticated && ViewBag.OriginalProgeny != null)
+                {
+                    <div>
+                        @await LocaleManager.GetTranslation("You don't have access to data for", PageNames.Home, Model.LanguageId) @ViewBag.OriginalProgeny.NickName<br/>
+
+                        @await LocaleManager.GetTranslation("To request access click here:", PageNames.Home, Model.LanguageId)
+                        <a asp-controller="Home" asp-action="RequestAccess" asp-route-childId="@ViewBag.OriginalProgeny.Id" class="btn btn-success btn-round leave-page">
+                            <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Request access", PageNames.Home, Model.LanguageId)
+                        </a><br/>
+                        @await LocaleManager.GetTranslation("Displaying data for KinaUna.com instead.", PageNames.Home, Model.LanguageId)<br/>
+                    </div>
+                }
+                @await Html.PartialAsync("_RandomPicturePartial", Model)
+            </div>
+            <div class="space-10"></div>
+        </div>
+        <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-3 col-w1900-2 col-w2500-2">
+            <div class="space-20"></div>
+            @await Html.PartialAsync("_EventsPartial")
+        </div>
+        <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-3 col-w1900-2 col-w2500-2">
+            <div class="space-20"></div>
+            @await Html.PartialAsync("_LatestPostsPartial")
+        </div>
+        <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-4 col-w1900-2 col-w2500-2">
+            <div class="space-20"></div>
+            @await Html.PartialAsync("_YearAgoPartial")
+        </div>
+    </div>
 </div>
 <script src="/js/home/home-index.js" type="module" asp-append-version="true"></script>

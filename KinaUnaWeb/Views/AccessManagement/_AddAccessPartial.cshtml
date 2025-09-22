@@ -8,53 +8,55 @@
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
-        <div class="add-item-container">
-            <h2 class="col-12">@ViewData["Title"]</h2>
-            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
-            <div class="space-20"></div>
-            <form id="save-item-form" asp-action="AddAccess" asp-controller="AccessManagement" role="form">
-                @if (Model.ProgenyList.Count > 1)
-                {
-                    <div class="form-group">
-                        <label class="control-label col-auto">@addUserForString</label>
-                        <div class="col-auto">
-                            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="CurrentProgenyId" asp-items="@Model.ProgenyList"></select>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="form-group">
-                        <label class="col-auto">@addUserForString</label>
-                        <div class="col-auto">
-                            <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
-                        </div>
-                        <input asp-for="CurrentProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
-                    </div>
-                }
-                <div class="form-group">
-                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.AccessManagement, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input asp-for="Email" class="form-control" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                    </div>
-                </div>
-                <div class="space-20"></div>
-                <div>
-                    <div class="form-group">
-                        <div class="col-auto control-label"></div>
-                        <div class="col-auto">
-                            <button id="save-add-user-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AccessManagement, Model.LanguageId)</button>
-                            <button class="btn btn-danger item-details-cancel-button" type="button">@await LocaleManager.GetTranslation("Cancel", PageNames.AccessManagement, Model.LanguageId)</button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
         </div>
+        <div class="space-20"></div>
+        <form id="save-item-form" asp-action="AddAccess" asp-controller="AccessManagement" role="form">
+            @if (Model.ProgenyList.Count > 1)
+            {
+                <div class="form-group">
+                    <label asp-for="CurrentProgenyId" class="control-label col-auto">@addUserForString</label>
+                    <div class="col-auto">
+                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="CurrentProgenyId" asp-items="@Model.ProgenyList"></select>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label asp-for="CurrentProgenyId" class="col-auto">@addUserForString</label>
+                    <div class="col-auto">
+                        <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                    </div>
+                    <input asp-for="CurrentProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                </div>
+            }
+            <div class="form-group">
+                <label asp-for="Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.AccessManagement, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input asp-for="Email" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div>
+                <div class="form-group">
+                    <div class="col-auto control-label"></div>
+                    <div class="col-auto">
+                        <button id="save-add-user-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AccessManagement, Model.LanguageId)</button>
+                        <button class="btn btn-danger item-details-cancel-button" type="button">@await LocaleManager.GetTranslation("Cancel", PageNames.AccessManagement, Model.LanguageId)</button>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 </div>

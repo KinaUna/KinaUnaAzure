@@ -18,7 +18,7 @@
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="popup-skill-id-div" class="d-none" data-popup-skill-id="@Model.SkillId"></div>
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+<div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
     @if (Model.SkillsList == null || !Model.SkillsList.Any())
     {
         <h2>@ViewData["Title"]</h2>
@@ -28,54 +28,55 @@
     {
         <div class="container">
             <h2>@ViewData["Title"]</h2>
-        </div>
-        <div class="table-responsive">
-            <table id="skillz-list" class="table table-bordered table-striped" style="border-spacing: 0;">
-                <thead>
-                    <tr>
-                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Name", PageNames.Skills, Model.LanguageId)</th>
-                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Skills, Model.LanguageId)</th>
-                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Category", PageNames.Skills, Model.LanguageId)</th>
-                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("First observation", PageNames.Skills, Model.LanguageId)</th>
-                        @if (Model.IsCurrentUserProgenyAdmin)
-                        {
-                            <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Skills, Model.LanguageId)</th>
-                        }
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (SkillViewModel skillViewModel in Model.SkillsList)
-                    {
+            <div class="table-responsive">
+                <table id="skillz-list" class="table table-bordered table-striped" style="border-spacing: 0;">
+                    <thead>
                         <tr>
-                            <td style="min-width: 100px;">@skillViewModel.SkillItem.Name</td>
-                            <td style="min-width: 100px;">@skillViewModel.SkillItem.Description</td>
-                            <td style="min-width: 100px;">@skillViewModel.SkillItem.Category</td>
-                            @if (skillViewModel.SkillItem.SkillFirstObservation != null)
-                            {
-                                <td style="min-width: 100px;">@skillViewModel.SkillItem.SkillFirstObservation.Value.ToString("dd-MMMM-yyyy")</td>
-                            }
-                            else
-                            {
-                                <td>N/A</td>
-                            }
+                            <th style="font-weight: bold">@await LocaleManager.GetTranslation("Name", PageNames.Skills, Model.LanguageId)</th>
+                            <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Skills, Model.LanguageId)</th>
+                            <th style="font-weight: bold">@await LocaleManager.GetTranslation("Category", PageNames.Skills, Model.LanguageId)</th>
+                            <th style="font-weight: bold">@await LocaleManager.GetTranslation("First observation", PageNames.Skills, Model.LanguageId)</th>
                             @if (Model.IsCurrentUserProgenyAdmin)
                             {
-                                <td style="min-width: 135px;">
-                                    <div>
-                                        <a asp-controller="Skills" asp-action="EditSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-info btn-round btn-sm leave-page">
-                                            <i class="fas fa-pencil-alt"></i>
-                                        </a>
-                                        <a asp-controller="Skills" asp-action="DeleteSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-danger btn-round btn-sm leave-page">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </a>
-                                    </div>
-                                </td>
+                                <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Skills, Model.LanguageId)</th>
                             }
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (SkillViewModel skillViewModel in Model.SkillsList)
+                        {
+                            <tr>
+                                <td style="min-width: 100px;">@skillViewModel.SkillItem.Name</td>
+                                <td style="min-width: 100px;">@skillViewModel.SkillItem.Description</td>
+                                <td style="min-width: 100px;">@skillViewModel.SkillItem.Category</td>
+                                @if (skillViewModel.SkillItem.SkillFirstObservation != null)
+                                {
+                                    <td style="min-width: 100px;">@skillViewModel.SkillItem.SkillFirstObservation.Value.ToString("dd-MMMM-yyyy")</td>
+                                }
+                                else
+                                {
+                                    <td>N/A</td>
+                                }
+                                @if (Model.IsCurrentUserProgenyAdmin)
+                                {
+                                    <td style="min-width: 135px;">
+                                        <div>
+                                            <a data-edit-item-type="skill" data-edit-item-item-id="@skillViewModel.SkillItem.SkillId" class="btn btn-info btn-round btn-sm item-details-edit-button edit-item-button">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </a>
+                                            <a asp-controller="Skills" asp-action="DeleteSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-danger btn-round btn-sm leave-page">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
+        
         <script src="/js/skills/skills-index.js" type="module" asp-append-version="true"></script>
     }
 </div>

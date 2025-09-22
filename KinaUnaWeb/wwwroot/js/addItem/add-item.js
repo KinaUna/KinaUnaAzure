@@ -17,8 +17,11 @@ import { popupVideoDetails } from "../videos/video-details.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
 import { initializeAddEditTodo } from "../todos/add-edit-todo.js";
 import { TimelineChangedEvent } from "../data-tools-v9.js";
-import { TimelineItem } from "../page-models-v9.js";
+import { TimelineItem, TimeLineType } from "../page-models-v9.js";
 import { popupTodoItem } from "../todos/todo-details.js";
+import { initializeAddEditKanbanBoard } from "../kanbans/add-edit-kanban-board.js";
+import { dispatchKanbanBoardChangedEvent, popupKanbanBoard } from "../kanbans/kanban-board-details.js";
+import { editKanbanItemFunction, removeKanbanItemFunction } from "../kanbans/kanban-items.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */
@@ -127,6 +130,9 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
         if (addItemType === 'todo') {
             await initializeAddEditTodo();
         }
+        if (addItemType === 'kanbanboard') {
+            await initializeAddEditKanbanBoard();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -211,6 +217,12 @@ async function popupEditItemModal(editItemType, editItemItemId) {
             resolve();
         });
     }
+    if (editItemType === 'kanbanitem') {
+        await editKanbanItemFunction(editItemItemId);
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
+    }
     let popup = document.getElementById('item-details-div');
     if (popup !== null) {
         popup.innerHTML = '';
@@ -276,6 +288,9 @@ async function popupEditItemModal(editItemType, editItemItemId) {
         }
         if (editItemType === 'subtask') {
             await initializeAddEditTodo();
+        }
+        if (editItemType === 'kanbanboard') {
+            await initializeAddEditKanbanBoard();
         }
         hideBodyScrollbars();
         addCloseButtonEventListener();
@@ -355,6 +370,9 @@ async function popupCopyItemModal(copyItemType, copyItemItemId) {
         if (copyItemType === 'todo') {
             await initializeAddEditTodo();
         }
+        if (copyItemType === 'kanbanboard') {
+            await initializeAddEditKanbanBoard();
+        }
         hideBodyScrollbars();
         addCloseButtonEventListener();
         addCancelButtonEventListener();
@@ -400,6 +418,12 @@ export async function onDeleteItemButtonClicked(event) {
  * @param editItemItemId
  */
 async function popupDeleteItemModal(deleteItemType, deleteItemItemId) {
+    if (deleteItemType === 'kanbanitem') {
+        await removeKanbanItemFunction(deleteItemItemId);
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
+    }
     let popup = document.getElementById('item-details-div');
     if (popup !== null) {
         popup.innerHTML = '';
@@ -491,6 +515,9 @@ async function popupPreviousItem(buttonClicked) {
         if (previousItemType === 'todo') {
             await popupTodoItem(previousItemId);
         }
+        if (previousItemType === 'kanbanboard') {
+            await popupKanbanBoard(previousItemId);
+        }
     }
     else {
         const itemDetailsPopupDiv = document.querySelector('#item-details-div');
@@ -543,37 +570,59 @@ async function onSaveItemFormSubmit(event) {
             returnItemId = parentTodoItemIdInput.value;
         }
     }
-    if (itemDetailsPopupDiv) {
-        itemDetailsPopupDiv.innerHTML = '';
-    }
     if (formAction) {
         await fetch(formAction, {
             method: 'POST',
             body: formData
         }).then(async function (response) {
             if (response.ok) {
+                dispatchTimelineItemChangedEvent();
+                if (itemDetailsPopupDiv) {
+                    itemDetailsPopupDiv.innerHTML = '';
+                }
                 if (formAction.includes('/Calendar/')) {
                     const calendarDataChangedEvent = new Event('calendarDataChanged');
                     window.dispatchEvent(calendarDataChangedEvent);
                 }
                 if (formAction.includes('/Subtasks/')) {
+                    dispatchTimelineItemChangedEvent(TimeLineType.TodoItem.toString(), returnItemId);
                     await popupTodoItem(returnItemId);
+                    return new Promise(function (resolve, reject) {
+                        resolve();
+                    });
                 }
-                else {
-                    if (itemDetailsPopupDiv) {
-                        let modalContent = await response.text();
-                        const fullScreenOverlay = document.createElement('div');
-                        fullScreenOverlay.classList.add('full-screen-bg');
-                        fullScreenOverlay.innerHTML = modalContent;
-                        itemDetailsPopupDiv.appendChild(fullScreenOverlay);
-                        itemDetailsPopupDiv.classList.remove('d-none');
-                        hideBodyScrollbars();
-                        addCloseButtonEventListener();
-                        setEditItemButtonEventListeners();
-                        setAddItemButtonEventListeners();
-                        dispatchTimelineItemChangedEvent();
-                    }
+                if (formAction.includes('/Kanbans/')) {
+                    const updatedKanbanBoard = await response.json();
+                    returnItemId = updatedKanbanBoard.kanbanBoardId.toString();
+                    dispatchKanbanBoardChangedEvent(returnItemId);
+                    await popupKanbanBoard(returnItemId);
+                    return new Promise(function (resolve, reject) {
+                        resolve();
+                    });
                 }
+                if (formAction.includes('/DeleteTodo')) {
+                    // Todo: reload the todos list.
+                    let todoItem = await response.json();
+                    dispatchTimelineItemChangedEvent(TimeLineType.TodoItem.toString(), todoItem.todoItemId.toString());
+                    return new Promise(function (resolve, reject) {
+                        resolve();
+                    });
+                }
+                if (itemDetailsPopupDiv) {
+                    let modalContent = await response.text();
+                    const fullScreenOverlay = document.createElement('div');
+                    fullScreenOverlay.classList.add('full-screen-bg');
+                    fullScreenOverlay.innerHTML = modalContent;
+                    itemDetailsPopupDiv.appendChild(fullScreenOverlay);
+                    itemDetailsPopupDiv.classList.remove('d-none');
+                    hideBodyScrollbars();
+                    addCloseButtonEventListener();
+                    setEditItemButtonEventListeners();
+                    setAddItemButtonEventListeners();
+                }
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
             }
         }).catch(function (error) {
             console.error('Error saving item:', error);
@@ -588,30 +637,50 @@ async function onSaveItemFormSubmit(event) {
  * Dispatches a TimelineItemChangedEvent if the timeline update div has the necessary attributes.
  * This is used to notify other parts of the application that a timeline item has changed.
  */
-function dispatchTimelineItemChangedEvent() {
-    const timelineUpdateDataDiv = document.querySelector('#timeline-update-data-div');
-    if (timelineUpdateDataDiv === null) {
-        // If the timeline update div is not found, do not dispatch the event.
-        return;
+function dispatchTimelineItemChangedEvent(itemType = '', itemId = '') {
+    let changedItemType = '';
+    let changedItemItemId = '';
+    if (itemType !== '') {
+        changedItemType = itemType;
+        changedItemItemId = itemId;
+        const timelineItem = new TimelineItem();
+        timelineItem.itemType = parseInt(changedItemType);
+        timelineItem.itemId = changedItemItemId;
+        const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+        window.dispatchEvent(timelineItemChangedEvent);
     }
-    let changedItemType = timelineUpdateDataDiv.getAttribute('data-changed-item-type');
-    let changedItemItemId = timelineUpdateDataDiv.getAttribute('data-changed-item-item-id');
-    if (changedItemType === null || changedItemItemId === null) {
-        // If the item type or item id is null, do not dispatch the event.
-        return;
+    else {
+        const timelineUpdateDataDivs = document.querySelectorAll('.timeline-update-data-div');
+        if (timelineUpdateDataDivs === null) {
+            // If the timeline update div is not found, do not dispatch the event.
+            return;
+        }
+        // Iterate through the NodeList to dispatch the event for each element found.
+        if (timelineUpdateDataDivs.length === 0) {
+            // If the timeline update div is not found, do not dispatch the event.
+            return;
+        }
+        timelineUpdateDataDivs.forEach(timelineUpdateDataDiv => {
+            changedItemType = timelineUpdateDataDiv.getAttribute('data-changed-item-type');
+            changedItemItemId = timelineUpdateDataDiv.getAttribute('data-changed-item-item-id');
+            if (changedItemType === null || changedItemItemId === null) {
+                // If the item type or item id is null, do not dispatch the event.
+                return;
+            }
+            if (changedItemType === '0' || changedItemItemId === '0') {
+                // If the item type or item id is 0, do not dispatch the event.
+                return;
+            }
+            if (isNaN(parseInt(changedItemType)) || isNaN(parseInt(changedItemItemId))) {
+                // If the item type or item id is not a number, do not dispatch the event.
+                return;
+            }
+            const timelineItem = new TimelineItem();
+            timelineItem.itemType = parseInt(changedItemType);
+            timelineItem.itemId = changedItemItemId;
+            const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+            window.dispatchEvent(timelineItemChangedEvent);
+        });
     }
-    if (changedItemType === '0' || changedItemItemId === '0') {
-        // If the item type or item id is 0, do not dispatch the event.
-        return;
-    }
-    if (isNaN(parseInt(changedItemType)) || isNaN(parseInt(changedItemItemId))) {
-        // If the item type or item id is not a number, do not dispatch the event.
-        return;
-    }
-    const timelineItem = new TimelineItem();
-    timelineItem.itemType = parseInt(changedItemType);
-    timelineItem.itemId = changedItemItemId;
-    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
-    window.dispatchEvent(timelineItemChangedEvent);
 }
 //# sourceMappingURL=add-item.js.map

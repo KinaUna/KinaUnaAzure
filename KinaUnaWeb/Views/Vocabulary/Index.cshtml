@@ -16,7 +16,7 @@
 
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="popup-vocabulary-id-div" class="d-none" data-popup-vocabulary-id="@Model.VocabularyId"></div>
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+<div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
     @if (!Model.VocabularyList.Any())
     {
         <h2>@ViewData["Title"]</h2>
@@ -64,7 +64,7 @@
                             {
                                 <td style="min-width: 135px">
                                     <div>
-                                        <a asp-controller="Vocabulary" asp-action="EditVocabulary" asp-route-itemId="@wordItem.VocabularyItem.WordId" class="btn btn-info btn-round btn-sm leave-page">
+                                        <a data-edit-item-type="vocabulary" data-edit-item-item-id="@wordItem.VocabularyItem.WordId" class="btn btn-info btn-round btn-sm item-details-edit-button edit-item-button">
                                             <i class="fas fa-pencil-alt"></i>
                                         </a>
                                         <a asp-controller="Vocabulary" asp-action="DeleteVocabulary" asp-route-itemId="@wordItem.VocabularyItem.WordId" class="btn btn-danger btn-round btn-sm leave-page">

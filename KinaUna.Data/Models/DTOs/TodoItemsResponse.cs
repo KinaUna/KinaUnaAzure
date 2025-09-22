@@ -14,6 +14,7 @@ namespace KinaUna.Data.Models.DTOs
         /// Gets or sets the collection of to-do items.
         /// </summary>
         public List<TodoItem> TodoItems { get; set; }
+
         /// <summary>
         /// Gets or sets the list of progeny associated with the current list of to do items.
         /// </summary>

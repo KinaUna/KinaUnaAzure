@@ -19,9 +19,11 @@ export function initPageSettings() {
         currentPageSettingsDiv?.parentElement?.appendChild(showPageSettingsButtonDiv);
     }
     if (currentPageSettingsButton !== null) {
+        currentPageSettingsButton.removeEventListener('click', toggleShowPageSettings);
         currentPageSettingsButton.addEventListener('click', toggleShowPageSettings);
     }
     if (closePageSettingsButton !== null) {
+        closePageSettingsButton.removeEventListener('click', toggleShowPageSettings);
         closePageSettingsButton.addEventListener('click', toggleShowPageSettings);
     }
 }

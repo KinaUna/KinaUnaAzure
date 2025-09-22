@@ -1,6 +1,7 @@
 ﻿@using System.Text.RegularExpressions
 @using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -31,9 +32,9 @@
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-calendar item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
-                <img src="@Model.CalendarItem.Progeny.PictureLink" class="item-details-title-picture"/>
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-calendar-header">
+                <img src="@Model.CalendarItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -54,57 +55,63 @@
                 }
                 
             </div>
-            <div class="col mr-5">
+            <div class="col">
+                @if (Model.CurrentUser.CanUserAddItems)
+                {
+                    <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.CalendarItem.EventId" data-copy-item-type="calendar">
+                        <i class="material-icons kinauna-icon-medium">content_copy</i>
+                    </button>
+                }
                 <div class="row text-white h5">
-
                     @if (Model.CalendarItem.AllDay)
                     {
                         if (string.IsNullOrEmpty(endDateString))
                         {
-                            <div class="col-auto font-weight-bold">@startDateString</div>
+                            <div class="col-auto font-weight-bold pt-2 pl-0">@startDateString</div>
                         }
                         else
                         {
-                            <div class="col-auto"><span class="font-weight-bold">@startDateString</span> - <span class="font-weight-bold">@endDateString</span></div>
+                            <div class="col-auto pt-2 pl-0"><span class="font-weight-bold">@startDateString</span> - <span class="font-weight-bold">@endDateString</span></div>
                         }
                     }
                     else
                     {
                         if (Model.CalendarItem.StartTime.Value.Date == Model.CalendarItem.EndTime.Value.Date)
                         {
-                            <div class="col-auto font-weight-bold">@startDateString</div>
-                            <div class="col-auto font-weight-normal">@startTimeString - @endTimeString</div>
+                            <div class="col-auto font-weight-bold pt-2 pl-0">@startDateString</div>
+                            <div class="col-auto font-weight-normal pt-2 pl-0">@startTimeString - @endTimeString</div>
                         }
                         else
                         {
                             <div class="col-auto">
                                 <div class="row">
-                                    <div class="col font-weight-bold">@startDateString</div>
+                                    <div class="col font-weight-bold pt-2 pl-0">@startDateString</div>
                                 </div>
                                 <div class="row">
-                                    <div class="col font-weight-normal text-right">@startTimeString</div>
+                                    <div class="col font-weight-normal text-right pl-0">@startTimeString</div>
                                 </div>
                             </div>
                             <div class="col-auto">
                                 <div class="row">
-                                    <div class="col font-weight-bold ">@endDateString</div>
+                                    <div class="col font-weight-bold pt-2 pl-0">@endDateString</div>
                                 </div>
                                 <div class="row">
-                                    <div class="col font-weight-normal ">@endTimeString</div>
+                                    <div class="col font-weight-normal pl-0">@endTimeString</div>
                                 </div>
                             </div>
                         }
                     }
                 </div>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-auto d-none d-md-block">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
+            </div>
+            <div class="col">
                 <div class="timeline-title row">
                     <div class="col-12 h4">
                         <div class="space-20"></div>
-                        @if (Model.CurrentUser.CanUserAddItems)
-                        {
-                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.CalendarItem.EventId" data-copy-item-type="calendar">
-                                <i class="material-icons kinauna-icon-medium">content_copy</i>
-                            </button>
-                        }
                         @Model.CalendarItem.Title
                     </div>
                 </div>
@@ -146,7 +153,8 @@
                     }
                 </div>
             </div>
-            
+        </div>
+        <div class="row m-0">    
             @if (Model.IsCurrentUserProgenyAdmin)
             {
                 

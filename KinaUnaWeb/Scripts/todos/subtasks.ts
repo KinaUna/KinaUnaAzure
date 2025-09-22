@@ -1,11 +1,14 @@
 ﻿import { onDeleteItemButtonClicked, onEditItemButtonClicked } from "../addItem/add-item.js";
 import { getCurrentLanguageId } from "../data-tools-v9.js";
 import { addTimelineItemEventListener } from "../item-details/items-display-v9.js";
+import { dispatchKanbanBoardChangedEvent } from "../kanbans/kanban-board-details.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
-import { SubtasksPageParameters, SubtasksPageResponse, TimelineItem, TodoItem, TodoItemParameters } from "../page-models-v9.js";
+import { KanbanItem, SubtasksPageParameters, SubtasksPageResponse, TimelineItem, TimeLineType, TodoItem, TodoItemParameters } from "../page-models-v9.js";
+import { popupTodoItem } from "./todo-details.js";
 
-let lastSubTaskPageParemeters: SubtasksPageParameters;
+let lastSubTaskPageParameters: SubtasksPageParameters;
 let containerElementId: string = '';
+
 export async function getSubtasks(subtasksPageParameters: SubtasksPageParameters, subtasksListElementId: string, resetList: boolean): Promise<SubtasksPageParameters> {
     startLoadingSpinner();
     if (subtasksPageParameters.currentPageNumber === 0) {
@@ -42,7 +45,7 @@ export async function getSubtasks(subtasksPageParameters: SubtasksPageParameters
             subtasksPageParameters.totalItems = subtasksPageResponse.totalItems;
 
             if (subtasksPageResponse.totalItems < 1) {
-                getSubtaskElement(0, subtasksListElementId);
+                await getSubtaskElement(0, subtasksListElementId);
                 subtaskListElement?.classList.add('d-none');
             }
             else {
@@ -59,7 +62,17 @@ export async function getSubtasks(subtasksPageParameters: SubtasksPageParameters
         }
     }
 
-    lastSubTaskPageParemeters = subtasksPageParameters;
+    const todoDetailsDiv = document.getElementById('todo-details-sub-tasks-div');
+    if (todoDetailsDiv) {
+        if (subtasksPageParameters.totalItems > 0) {
+            todoDetailsDiv.classList.remove('d-none');
+        }
+        else {
+            todoDetailsDiv.classList.add('d-none');
+        }
+    }
+
+    lastSubTaskPageParameters = subtasksPageParameters;
     containerElementId = subtasksListElementId;
     stopLoadingSpinner();
 
@@ -120,7 +133,7 @@ export async function addSubtask(subtask: TodoItem | null, containerElementId: s
 
         if (addSubtaskElementResponse.ok) {
             const addedSubtask: TodoItem = await addSubtaskElementResponse.json() as TodoItem;
-            await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+            await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
         }
         else {
             console.log('Error adding subtask. Status: ' + addSubtaskElementResponse.status + ', Message: ' + addSubtaskElementResponse.statusText);
@@ -137,7 +150,7 @@ export async function addSubtask(subtask: TodoItem | null, containerElementId: s
         });
         if (addSubtaskElementResponse.ok) {
             const addedSubtask: TodoItem = await addSubtaskElementResponse.json() as TodoItem;
-            await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+            await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
         }
         else {
             console.log('Error adding subtask. Status: ' + addSubtaskElementResponse.status + ', Message: ' + addSubtaskElementResponse.statusText);
@@ -162,6 +175,26 @@ function stopLoadingSpinner(): void {
 }
 
 function addSubtaskListeners(itemId: string): void {
+    const menuButtonElement = document.querySelector<HTMLButtonElement>('[data-subtask-menu-button-id="' + itemId + '"]');
+    if (menuButtonElement) {
+        menuButtonElement.removeEventListener('click', showSubtaskMenu);
+        menuButtonElement.addEventListener('click', showSubtaskMenu);
+    }
+
+    const showDetailsButton = document.querySelectorAll<HTMLButtonElement>('[data-show-details-subtask-id="' + itemId + '"]');
+    if (showDetailsButton) {
+        showDetailsButton.forEach((buttonElement) => {
+            buttonElement.removeEventListener('click', showSubtaskDetailsClicked);
+            buttonElement.addEventListener('click', showSubtaskDetailsClicked);
+        });
+    }
+
+    const moreInfoButton = document.querySelector<HTMLButtonElement>('[data-subtask-more-info-button-id="' + itemId + '"]');
+    if (moreInfoButton) {
+        moreInfoButton.removeEventListener('click', showMoreSubtaskInfo);
+        moreInfoButton.addEventListener('click', showMoreSubtaskInfo);
+    }
+
     const editButtonElement = document.querySelector<HTMLAnchorElement>('[data-edit-item-item-id="' + itemId + '"]');
     if (editButtonElement) {
         // Clear existing event listeners to avoid duplicates.
@@ -182,6 +215,15 @@ function addSubtaskListeners(itemId: string): void {
             // Clear existing event listeners to avoid duplicates.
             element.removeEventListener('click', onSetAsCompletedButtonClicked);
             element.addEventListener('click', onSetAsCompletedButtonClicked);
+        });
+    }
+
+    const subtaskElementsWithDataAssignToId = document.querySelectorAll<HTMLButtonElement>('[data-subtask-assign-to-id="' + itemId + '"]');
+    if (subtaskElementsWithDataAssignToId) {
+        subtaskElementsWithDataAssignToId.forEach((element) => {
+            // Clear existing event listeners to avoid duplicates.
+            element.removeEventListener('click', onAssignToButtonClicked);
+            element.addEventListener('click', onAssignToButtonClicked);
         });
     }
 
@@ -211,8 +253,255 @@ function addSubtaskListeners(itemId: string): void {
             element.addEventListener('click', onSetAsNotStartedButtonClicked);
         });
     }
+
+    const subtaskElementsWithDataAddToKanbanId = document.querySelectorAll<HTMLButtonElement>('[data-subtask-add-to-kanban-id="' + itemId + '"]');
+    if (subtaskElementsWithDataAddToKanbanId) {
+        subtaskElementsWithDataAddToKanbanId.forEach((element) => {
+            // Clear existing event listeners to avoid duplicates.
+            element.removeEventListener('click', onAddToKanbanButtonClicked);
+            element.addEventListener('click', onAddToKanbanButtonClicked);
+        });
+    }
 }
 
+const showSubtaskMenu = function (event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget as HTMLButtonElement;
+    const subtaskItemId = button.dataset.subtaskMenuButtonId;
+    if (subtaskItemId) {
+        hideSubtaskMenus(subtaskItemId);
+        hideSubtaskMoreInfoDivs('');
+        const menuContentDiv = document.querySelector<HTMLDivElement>('.subtask-menu-content[data-subtask-menu-id="' + subtaskItemId + '"]');
+        if (menuContentDiv) {
+            if (menuContentDiv.classList.contains('d-none')) {
+                menuContentDiv.classList.remove('d-none');
+            } else {
+                menuContentDiv.classList.add('d-none');
+            }
+        }
+    }
+}
+
+async function showSubtaskDetailsClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoItemId = buttonElement.dataset.showDetailsSubtaskId;
+        if (todoItemId) {
+            await popupTodoItem(todoItemId);
+        }
+    }
+}
+
+const showMoreSubtaskInfo = function (event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget as HTMLButtonElement;
+    const todoItemId = button.dataset.subtaskMoreInfoButtonId;
+    if (todoItemId) {
+        hideSubtaskMenus('');
+        hideSubtaskMoreInfoDivs(todoItemId);
+        const todoItemMoreDiv = document.getElementById('subtask-more-div-' + todoItemId);
+        if (todoItemMoreDiv) {
+            if (todoItemMoreDiv.classList.contains('d-none')) {
+                todoItemMoreDiv.classList.remove('d-none');
+                button.innerHTML = `<i class="material-icons">expand_less</i>`;
+            }
+            else {
+                todoItemMoreDiv.classList.add('d-none');
+                button.innerHTML = `<i class="material-icons">expand_more</i>`;
+            }
+
+        }
+    }
+}
+
+export function hideSubtaskMenus(subtaskItemId: string) {
+    const allSubtaskMenus = document.querySelectorAll<HTMLDivElement>('.subtask-menu-content');
+    allSubtaskMenus.forEach((menu) => {
+        const menuSubtaskItemId = menu.dataset.subtaskMenuId;
+        if (subtaskItemId === '' || menuSubtaskItemId !== subtaskItemId) {
+            menu.classList.add('d-none');
+        }
+    });    
+}
+
+export function hideSubtaskMoreInfoDivs(subtaskItemId: string) {
+    const allSubtaskMoreDivs = document.querySelectorAll<HTMLDivElement>('.subtask-more-info');
+    allSubtaskMoreDivs.forEach((divElement) => {
+        const divTodoItemId = divElement.dataset.subtaskMoreId;
+        if (subtaskItemId === '' || divTodoItemId !== subtaskItemId) {
+            divElement.classList.add('d-none');
+        }
+    });
+
+    const allMoreSubtaskButtons = document.querySelectorAll<HTMLButtonElement>('.kanban-card-menu-button[data-subtask-more-info-button-id]');
+    allMoreSubtaskButtons.forEach((moreButtonElement) => {
+        const moreButtonElementTodoItemId = moreButtonElement.dataset.subtaskMenuButtonId;
+        if (subtaskItemId === '' || moreButtonElementTodoItemId !== subtaskItemId) {
+            moreButtonElement.innerHTML = `<i class="material-icons">expand_more</i>`;
+        }
+    });
+}
+
+async function onAssignToButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoItemId = buttonElement.dataset.subtaskAssignToId;
+        if (todoItemId) {
+            await assignSubtaskTo(todoItemId);
+        }
+    }
+}
+
+async function assignSubtaskTo(todoItemId: string) {
+    // Get form html from server.
+    let url = '/Todos/AssignTodoItemTo?todoItemId=' + todoItemId;
+    const response = await fetch(url);
+    if (response.ok) {
+        const formHtml = await response.text();
+        const modalDiv = document.querySelector<HTMLDivElement>('#add-subtask-to-kanban-board-modal-' + todoItemId);
+        if (modalDiv) {
+            modalDiv.innerHTML = formHtml;
+            modalDiv.classList.remove('d-none');
+            const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.assign-todo-item-to-cancel-button');
+            if (cancelButton) {
+                const closeButtonFunction = function () {
+                    modalDiv.innerHTML = '';
+                    modalDiv.classList.add('d-none');
+                }
+                cancelButton.removeEventListener('click', closeButtonFunction);
+                cancelButton.addEventListener('click', closeButtonFunction);
+                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+                if (closeButton) {
+                    closeButton.removeEventListener('click', closeButtonFunction);
+                    closeButton.addEventListener('click', closeButtonFunction);
+                }
+            }
+
+            ($(".selectpicker") as any).selectpicker('refresh');
+
+            const assignForm = modalDiv.querySelector<HTMLFormElement>('#assign-todo-item-to-form');
+            if (assignForm) {
+                const assignTodoItemToFormFunction = async function (event: Event) {
+                    event.preventDefault();
+                    startFullPageSpinner();
+                    const formData = new FormData(assignForm);
+                    const url = '/Todos/AssignTodoItemTo';
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(async function (response) {
+                        if (response.ok) {
+                            // Successfully assigned the subtask. Close the modal.
+                            modalDiv.innerHTML = '';
+                            modalDiv.classList.add('d-none');
+                            // Update the todo-item's subtask list
+                            const updatedTodoItem = await response.json() as TodoItem;
+                            if (updatedTodoItem) {
+                                await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
+                            }
+
+                        } else {
+                            console.error('Error assigning person to subtask. Status: ' + response.status);
+                        }
+                    }).catch(function (error) {
+                        console.error('Error assigning person to subtask: ' + error);
+                    });
+                    stopFullPageSpinner();
+                }
+                assignForm.removeEventListener('submit', assignTodoItemToFormFunction);
+                assignForm.addEventListener('submit', assignTodoItemToFormFunction);
+            }
+        }
+
+    }
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function onAddToKanbanButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    hideSubtaskMenus('');
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const subtaskId = buttonElement.dataset.subtaskAddToKanbanId;
+        if (subtaskId) {
+            await addSubtaskToBoard(subtaskId);
+        }
+    }
+}
+
+async function addSubtaskToBoard(subtaskId: string) {
+    // Get form html from server.
+    let url = '/Subtasks/AddSubtaskToKanbanBoard?subtaskId=' + subtaskId;
+    const response = await fetch(url);
+    if (response.ok) {
+        const formHtml = await response.text();
+        const modalDiv = document.querySelector<HTMLDivElement>('#add-subtask-to-kanban-board-modal-' + subtaskId);
+        if (modalDiv) {
+            modalDiv.innerHTML = formHtml;
+            modalDiv.classList.remove('d-none');
+            const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.add-subtask-to-kanban-board-cancel-button');
+            if (cancelButton) {
+                const closeButtonFunction = function () {
+                    modalDiv.innerHTML = '';
+                    modalDiv.classList.add('d-none');
+                }
+                cancelButton.removeEventListener('click', closeButtonFunction);
+                cancelButton.addEventListener('click', closeButtonFunction);
+                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+                if (closeButton) {
+                    closeButton.removeEventListener('click', closeButtonFunction);
+                    closeButton.addEventListener('click', closeButtonFunction);
+                }
+            }
+
+            ($(".selectpicker") as any).selectpicker('refresh');
+
+            const addSubtaskForm = modalDiv.querySelector<HTMLFormElement>('#add-subtask-to-kanban-board-form');
+            if (addSubtaskForm) {
+                const addSubtaskFormFunction = async function (event: Event) {
+                    event.preventDefault();
+                    startFullPageSpinner();
+                    const formData = new FormData(addSubtaskForm);
+                    const url = '/Subtasks/AddSubtaskToKanbanBoard';
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(async function (response) {
+                        if (response.ok) {
+                            // Successfully copied the KanbanItem. Close the modal.
+                            modalDiv.innerHTML = '';
+                            modalDiv.classList.add('d-none');
+                            // Dispatch event to update Kanban board
+                            const kanbanItem = await response.json() as KanbanItem;
+                            if (kanbanItem) {
+                                dispatchKanbanBoardChangedEvent(kanbanItem.kanbanBoardId.toString());
+                            }
+
+                        } else {
+                            console.error('Error adding subtask to kanban board. Status: ' + response.status);
+                        }
+                    }).catch(function (error) {
+                        console.error('Error adding subtask to kanban: ' + error);
+                    });
+                    stopFullPageSpinner();
+                }
+                addSubtaskForm.removeEventListener('submit', addSubtaskFormFunction);
+                addSubtaskForm.addEventListener('submit', addSubtaskFormFunction);
+            }
+        }
+
+    }
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
 /**
 * Handles the click event for the "Set as Not Started" button.
 * When clicked, it sends a request to set the todo item as not started.
@@ -235,7 +524,7 @@ async function onSetAsNotStartedButtonClicked(event: MouseEvent): Promise<void> 
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+                    await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
                     return;
 
                 } else {
@@ -271,7 +560,7 @@ async function onSetAsInProgressButtonClicked(event: MouseEvent): Promise<void> 
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+                    await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
                     return;
 
                 } else {
@@ -307,7 +596,7 @@ async function onSetAsCompletedButtonClicked(event: MouseEvent): Promise<void> {
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+                    await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
                     return;
 
                 } else {
@@ -343,7 +632,7 @@ async function onSetAsCancelledButtonClicked(event: MouseEvent): Promise<void> {
             }).then(async function (response) {
                 if (response.ok) {
                     stopFullPageSpinner();
-                    await getSubtasks(lastSubTaskPageParemeters, containerElementId, true);
+                    await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
                     return;
 
                 } else {
@@ -355,4 +644,8 @@ async function onSetAsCancelledButtonClicked(event: MouseEvent): Promise<void> {
             stopFullPageSpinner();
         }
     }
+}
+
+export async function refreshSubtasks() {
+    await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
 }

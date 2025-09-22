@@ -15,26 +15,24 @@
         popupDateDay = popupItem.StartTime.Value.Day;
     }
 }
-<div class="row">
-    <div class="col-12">
-        <h2>@ViewData["Title"]</h2>
-        <div class="space-50"></div>
-        <div id="calendar-current-culture-div" class="d-none" data-current-culture="@Model.LanguageIdForCldr()"></div>
-        <div id="popup-event-id-div" class="d-none" data-popup-event-id="@Model.PopupEventId" data-popup-event-date-year="@popupDateYear" data-popup-event-date-month="@popupDateMonth" data-popup-event-date-day="@popupDateDay"></div>
-        <div class="" style="clear: both; height: 90vh; min-height: 600px; max-height: 1180px;">
-            <ejs-schedule id="schedule" height="95%" width="100%" dateFormat="dd/MMM/yyyy" views="@Model.ViewOptions">
-                <e-schedule-eventsettings>
-                    <e-eventsettings-fields id="EventId">
-                        <e-field-subject name="title"></e-field-subject>
-                        <e-field-location name="location"></e-field-location>
-                        <e-field-description name="notes"></e-field-description>
-                        <e-field-isallday name="allDay"></e-field-isallday>
-                        <e-field-starttime name="startTime"></e-field-starttime>
-                        <e-field-endtime name="endTime"></e-field-endtime>
-                    </e-eventsettings-fields>
-                </e-schedule-eventsettings>
-            </ejs-schedule>
-        </div>
+<div class="col-12">
+    <h2>@ViewData["Title"]</h2>
+    <div class="space-50"></div>
+    <div id="calendar-current-culture-div" class="d-none" data-current-culture="@Model.LanguageIdForCldr()"></div>
+    <div id="popup-event-id-div" class="d-none" data-popup-event-id="@Model.PopupEventId" data-popup-event-date-year="@popupDateYear" data-popup-event-date-month="@popupDateMonth" data-popup-event-date-day="@popupDateDay"></div>
+    <div class="" style="clear: both; height: 90vh; min-height: 600px; max-height: 1180px;">
+        <ejs-schedule id="schedule" height="95%" width="100%" dateFormat="dd/MMM/yyyy" views="@Model.ViewOptions">
+            <e-schedule-eventsettings>
+                <e-eventsettings-fields id="EventId">
+                    <e-field-subject name="title"></e-field-subject>
+                    <e-field-location name="location"></e-field-location>
+                    <e-field-description name="notes"></e-field-description>
+                    <e-field-isallday name="allDay"></e-field-isallday>
+                    <e-field-starttime name="startTime"></e-field-starttime>
+                    <e-field-endtime name="endTime"></e-field-endtime>
+                </e-eventsettings-fields>
+            </e-schedule-eventsettings>
+        </ejs-schedule>
     </div>
 </div>
 @await Html.PartialAsync("_SchedulerTranslationsPartial", Model.LanguageId)

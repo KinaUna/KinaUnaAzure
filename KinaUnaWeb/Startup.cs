@@ -86,6 +86,8 @@ namespace KinaUnaWeb
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
             services.AddTransient<ITodoItemsHttpClient, TodoItemsHttpClient>();
             services.AddTransient<ISubtasksHttpClient, SubtasksHttpClient>();
+            services.AddTransient<IKanbanBoardsHttpClient, KanbanBoardsHttpClient>();
+            services.AddTransient<IKanbanItemsHttpClient, KanbanItemsHttpClient>();
             services.AddHttpClient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddSingleton<ITokenService, TokenService>();
 

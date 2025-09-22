@@ -5,7 +5,7 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
 <div id="year-ago-posts-parent-div" class="d-none">
-    <div>
+    <div class="ml-2">
         @await LocaleManager.GetTranslation("On this day:", PageNames.Home, languageId)
     </div>
     <div id="year-ago-items-div">
