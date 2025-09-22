@@ -1,12 +1,12 @@
 const serviceWorkerVersion = 'v6';
 import { setAddItemButtonEventListeners } from './addItem/add-item.js';
-import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v8.js';
-import { hideBodyScrollbars, showBodyScrollbars } from './item-details/items-display-v8.js';
-import { startFullPageSpinner, stopFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v8.js';
-import { SetProgenyRequest } from './page-models-v8.js';
+import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v9.js';
+import { hideBodyScrollbars, showBodyScrollbars } from './item-details/items-display-v9.js';
+import { startFullPageSpinner, stopFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v9.js';
+import { SetProgenyRequest } from './page-models-v9.js';
 import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-details.js';
-import { getSelectedProgenies } from './settings-tools-v8.js';
-import { initSidebar } from './sidebar-v8.js';
+import { getSelectedProgenies } from './settings-tools-v9.js';
+import { initSidebar } from './sidebar-v9.js';
 
 const serviceWorkerVersion_key = 'service_worker_version';
 

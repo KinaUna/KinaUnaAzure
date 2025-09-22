@@ -35,11 +35,11 @@
                         </a>
                     </div>
                     <div class="col">
-                        <a class="btn btn-add-sleep add-item-button" data-add-item-type="sleep" data-add-item-progeny-id="0">
+                        <a class="btn btn-add-todo add-item-button" data-add-item-type="todo" data-add-item-progeny-id="0">
                             <div class="space-20"></div>
-                            <i class="material-icons" style="font-size: 42px;">hotel</i>
+                            <i class="material-icons" style="font-size: 42px;">fact_check</i>
                             <div class="space-20"></div>
-                            @await LocaleManager.GetTranslation("Sleep", PageNames.AddItem, languageId)
+                            @await LocaleManager.GetTranslation("Todo", PageNames.AddItem, languageId)
                         </a>
                     </div>
                     <div class="col">
@@ -112,6 +112,14 @@
                             <i class="material-icons" style="font-size: 42px;">person_pin</i>
                             <div class="space-20"></div>
                             @await LocaleManager.GetTranslation("Location", PageNames.AddItem, languageId)
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a class="btn btn-add-sleep add-item-button" data-add-item-type="sleep" data-add-item-progeny-id="0">
+                            <div class="space-20"></div>
+                            <i class="material-icons" style="font-size: 42px;">hotel</i>
+                            <div class="space-20"></div>
+                            @await LocaleManager.GetTranslation("Sleep", PageNames.AddItem, languageId)
                         </a>
                     </div>
                     <div class="col">

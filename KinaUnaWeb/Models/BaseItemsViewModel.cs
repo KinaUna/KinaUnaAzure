@@ -11,7 +11,7 @@ namespace KinaUnaWeb.Models;
 public class BaseItemsViewModel : BaseViewModel
 {
     public int CurrentProgenyId { get; set; }
-    public int CurrentAccessLevel { get; private set; }
+    public int CurrentAccessLevel { get; private set; } = (int)AccessLevel.NoAccess;
     public Progeny CurrentProgeny { get; set; }
     public List<UserAccess> CurrentProgenyAccessList { get; set; }
     public bool IsCurrentUserProgenyAdmin { get; set; }
@@ -45,6 +45,7 @@ public class BaseItemsViewModel : BaseViewModel
     public void SetCurrentUsersAccessLevel()
     {
         CurrentAccessLevel = (int)AccessLevel.NoAccess;
+        if (CurrentUser == null || CurrentProgeny == null) return;
 
         if (CurrentProgenyAccessList.Count != 0)
         {

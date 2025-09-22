@@ -1,7 +1,7 @@
-import { getCurrentProgenyId } from '../data-tools-v8.js';
-import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v8.js';
-import * as pageModels from '../page-models-v8.js';
-import { getSelectedProgenies } from '../settings-tools-v8.js';
+import { getCurrentProgenyId } from '../data-tools-v9.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v9.js';
+import * as pageModels from '../page-models-v9.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
 
 const notesPageSettingsStorageKey = 'notes_page_parameters'; 
 let notesPageParameters = new pageModels.NotesPageParameters();

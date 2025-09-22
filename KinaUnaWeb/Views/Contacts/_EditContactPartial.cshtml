@@ -36,7 +36,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-auto control-label">Picture</label>
+                    <label for="contact-profile-picture-input" class="col-auto control-label">Picture</label>
                     <div class="col-auto">
                         <div class="fileinput fileinput-new text-center" data-provides="fileinput">
                             <div class="fileinput-new thumbnail img-raised">
@@ -47,7 +47,7 @@
                                 <div class="btn btn-primary btn-round btn-file ">
                                     <span data-trigger="fileinput" class="fileinput-new">@await LocaleManager.GetTranslation("New picture", PageNames.Contacts, Model.LanguageId)</span>
                                     <span class="fileinput-exists">@await LocaleManager.GetTranslation("Change picture", PageNames.Contacts, Model.LanguageId)</span>
-                                    <input type="file" name="File" accept="image/*" />
+                                    <input id="contact-profile-picture-input" type="file" name="File" accept="image/*" />
                                 </div>
                                 <br />
                                 <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
@@ -170,7 +170,7 @@
                 <div class="form-group">
                     <label asp-for="ContactItem.Active" class="col-auto control-label">@await LocaleManager.GetTranslation("Active", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col" style="max-width: 5em;">
-                        <input type="checkbox" asp-for="ContactItem.Active" class="form-control" style="width: 3em; height: 3em;" checked="@Model.ContactItem.Active" value="@Model.ContactItem.Active" onchange="this.value=this.checked" />
+                        <input type="checkbox" asp-for="ContactItem.Active" class="form-control" style="width: 2em; height: 2em;" checked="@Model.ContactItem.Active" value="@Model.ContactItem.Active" onchange="this.value=this.checked" />
                     </div>
                 </div>
                 <input asp-for="ContactItem.AddressIdNumber" value="@Model.ContactItem.AddressIdNumber" type="hidden" />

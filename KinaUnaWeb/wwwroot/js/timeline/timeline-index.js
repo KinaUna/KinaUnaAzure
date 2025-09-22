@@ -1,10 +1,10 @@
-import * as LocaleHelper from '../localization-v8.js';
-import { TimeLineItemViewModel, TimelineRequest } from '../page-models-v8.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setCategoriesAutoSuggestList, setContextAutoSuggestList, setTagsAutoSuggestList } from '../data-tools-v8.js';
-import * as SettingsHelper from '../settings-tools-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
-import { getSelectedProgenies } from '../settings-tools-v8.js';
+import * as LocaleHelper from '../localization-v9.js';
+import { TimeLineItemViewModel, TimelineRequest } from '../page-models-v9.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setCategoriesAutoSuggestList, setContextAutoSuggestList, setTagsAutoSuggestList } from '../data-tools-v9.js';
+import * as SettingsHelper from '../settings-tools-v9.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
+import { addTimelineItemEventListener } from '../item-details/items-display-v9.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
 const timelinePageSettingsStorageKey = 'timeline_page_parameters';
 let timelineItemsList = [];
 let timeLineParameters = new TimelineRequest();
@@ -488,6 +488,9 @@ function refreshSelectPickers() {
         $(".selectpicker").selectpicker('refresh');
     }
 }
+/** Adds an event listener for the 'progeniesChanged' event, which is triggered when the selected progenies change.
+ * It updates the timeLineParameters with the new selected progenies and reloads the timeline items list.
+ */
 function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');

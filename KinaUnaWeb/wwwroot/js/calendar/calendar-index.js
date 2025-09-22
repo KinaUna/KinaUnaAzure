@@ -1,8 +1,8 @@
-import { showPopupAtLoad } from '../item-details/items-display-v8.js';
-import * as LocaleHelper from '../localization-v8.js';
-import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { CalendarItemsRequest, TimeLineType } from '../page-models-v8.js';
-import { getSelectedProgenies } from '../settings-tools-v8.js';
+import { showPopupAtLoad } from '../item-details/items-display-v9.js';
+import * as LocaleHelper from '../localization-v9.js';
+import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
+import { CalendarItemsRequest, TimeLineType } from '../page-models-v9.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
 import { popupEventItem } from './calendar-details.js';
 let progeniesList = [];
 let selectedEventId = 0;

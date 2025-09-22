@@ -1,0 +1,83 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
+@using KinaUnaWeb.Services
+@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Delete todo", PageNames.Todos, Model.LanguageId);
+    string title = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    const int changedItemType = (int)KinaUnaTypes.TimeLineType.TodoItem;
+}
+<div class="d-none timeline-update-data-div" data-changed-item-type="@changedItemType" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-todos item-details-content">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-todos-header">
+                <img src="@Model.TodoItem.Progeny.PictureLink" class="item-details-title-picture"/>
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.TodoItemId"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="space-50"></div>
+            <div class="row m-0">
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    <form id="save-item-form" asp-action="DeleteTodo" asp-controller="Todos" role="form" method="post">
+                        <div class="row">
+                            <div class="col-auto">
+                                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">fact_check</i></span>
+                            </div>
+                            <div class="col h4">
+                                @Model.TodoItem.Title
+                            </div>
+                        </div>
+                        <div class="space-20"></div>
+                        <div class="row">
+                            <div class="col-1"></div>
+                            <div class="col-11 h4">@ViewData["Title"]</div>
+                            <div class="col-1"></div>
+                            <div class="col-11 h5">@await LocaleManager.GetTranslation("Are you sure you want to delete this todo item?", PageNames.Todos, Model.LanguageId)</div>
+                        </div>
+                        <div class="space-20"></div>
+                        <div class="row">
+                            <div class="col-1"></div>
+                            <div class="col-11 text-white">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId): @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)</div>
+                            @if (Model.TodoItem.DueDate.HasValue)
+                            {
+                                <div class="col-1"></div>
+                                <div class="col-11 text-white">@await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.DueDate?.ToString("dd-MMM-yyyy")</div>
+                            }
+                            @if (Model.TodoItem.StartDate.HasValue)
+                            {
+                                <div class="col-1"></div>
+                                <div class="col-11 text-white">@await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                            }
+                            @if (Model.TodoItem.CompletedDate.HasValue && Model.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
+                            {
+                                <div class="col-1"></div>
+                                <div class="col-11 text-white">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId) : @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.TodoItem.Description))
+                            {
+                                <div class="col-1"></div>
+                                <div class="col-11">@await LocaleManager.GetTranslation("Description:", PageNames.Todos, Model.LanguageId)</div>
+                                <div class="col-1"></div>
+                                <div class="col-11">@Html.Raw(Model.TodoItem.Description)</div>
+                            }
+                        </div>
+                        <div class="space-20"></div>
+                        <div class="row">
+                            <div class="col-1"></div>
+                            <input asp-for="TodoItem.TodoItemId" class="form-control" value="@Model.TodoItem.TodoItemId" type="hidden"/>
+                            <div class="col-11">
+                                <Button type="submit" class="btn btn-success leave-page">@await LocaleManager.GetTranslation("Yes - delete this todo", PageNames.Todos, Model.LanguageId)</Button>
+                                <Button type="button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.TodoItemId" class="item-details-cancel-button btn btn-danger leave-page">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</Button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

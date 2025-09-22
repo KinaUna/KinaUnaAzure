@@ -16,6 +16,8 @@ using OpenIddict.Validation.AspNetCore;
 using System;
 using System.Security.Cryptography.X509Certificates;
 using KinaUna.Data.Utilities;
+using KinaUnaProgenyApi.Services.KanbanServices;
+using KinaUnaProgenyApi.Services.TodosServices;
 
 namespace KinaUnaProgenyApi
 {
@@ -89,6 +91,10 @@ namespace KinaUnaProgenyApi
             services.AddSingleton<IRepeatingTasksService, RepeatingTasksService>();
             services.AddScoped<ICalendarRemindersService, CalendarRemindersService>();
             services.AddScoped<ICalendarRecurrencesService, CalendarRecurrencesService>();
+            services.AddScoped<ITodosService, TodosService>();
+            services.AddScoped<ISubtasksService, SubtasksService>();
+            services.AddScoped<IKanbanItemsService, KanbanItemsService>();
+            services.AddScoped<IKanbanBoardsService, KanbanBoardsService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();

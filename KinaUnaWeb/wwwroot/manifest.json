@@ -492,6 +492,18 @@
           "sizes": "192x192"
         }
       ]
+    },
+    {
+      "name": "KinaUna Todos",
+      "short_name": "Todos",
+      "description": "View Todos",
+      "url": "/Todos",
+      "icons": [
+        {
+          "src": "/images/kinaunalogo192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
   "id": "web.kinauna.com",

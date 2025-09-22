@@ -285,6 +285,14 @@ namespace KinaUnaWeb.Controllers
             return PartialView("_TimeLineLocationPartial", model);
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult TimeLineTodoItemPartial(TodoItem model)
+        {
+            return PartialView("_TimeLineTodoItemPartial", model);
+        }
+
         /// <summary>
         /// Get method for fetching HTML for a TimeLineItem.
         /// </summary>

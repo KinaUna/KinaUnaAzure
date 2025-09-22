@@ -9,9 +9,9 @@
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-notes item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
-                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-notes-header">
+                <img src="@Model.NoteItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -35,8 +35,15 @@
                         <div class="space-10"></div>
                     </div>
                 </div>
-                <div class="timeline-text row m-0 text-white-75">
-                    <div class="timeline-noteitem-text text-dark bg-white col-12 p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.NoteItem.Content))</div>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-auto d-none d-md-block">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0;">note</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-text row m-0 text-white">
+                    <div class="bg-display-rich-text-dark col-12 p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.NoteItem.Content))</div>
                     @if (!string.IsNullOrEmpty(Model.NoteItem.Category))
                     {
                         List<string> categoriesList = Model.NoteItem.Category.Split(',').ToList();

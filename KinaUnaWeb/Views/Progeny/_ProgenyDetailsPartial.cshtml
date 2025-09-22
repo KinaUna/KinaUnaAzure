@@ -17,10 +17,10 @@
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
-    <div class="timeline-card-body bg-contact item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
-                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+    <div class="timeline-card-body item-details-content">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -192,10 +192,9 @@
                 <div class="space-100"></div>
                 <div class="col-12">
                     <a data-edit-item-type="progeny" data-edit-item-item-id="@Model.CurrentProgeny.Id" class="btn btn-info edit-item-button item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@Model.CurrentProgeny.Id.ToString()" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    <a data-delete-item-type="progeny" data-delete-item-item-id="@Model.CurrentProgeny.Id.ToString()" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                 </div>
             }
         </div>
-
     </div>
 </div>

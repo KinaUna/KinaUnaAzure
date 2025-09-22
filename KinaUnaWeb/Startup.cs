@@ -84,6 +84,10 @@ namespace KinaUnaWeb
             services.AddHttpClient<ICalendarRemindersHttpClient, CalendarRemindersHttpClient>();
             services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
+            services.AddTransient<ITodoItemsHttpClient, TodoItemsHttpClient>();
+            services.AddTransient<ISubtasksHttpClient, SubtasksHttpClient>();
+            services.AddTransient<IKanbanBoardsHttpClient, KanbanBoardsHttpClient>();
+            services.AddTransient<IKanbanItemsHttpClient, KanbanItemsHttpClient>();
             services.AddHttpClient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddSingleton<ITokenService, TokenService>();
 
@@ -241,15 +245,9 @@ namespace KinaUnaWeb
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
             }).AddNewtonsoftJson().AddViewLocalization();
-
-            IMvcBuilder mvcBuilder = services.AddRazorPages();
-
-            if (env.IsDevelopment())
-            {
-                mvcBuilder.AddRazorRuntimeCompilation();
-            }
-
+            
             services.AddExceptionHandler<AuthenticationExceptionHandler>();
+            services.AddExceptionHandler<GlobalExceptionHandler>();
             services.AddProblemDetails();
 
             services.AddSignalR().AddMessagePackProtocol().AddNewtonsoftJsonProtocol();

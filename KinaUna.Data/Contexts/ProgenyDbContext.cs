@@ -32,5 +32,8 @@ namespace KinaUna.Data.Contexts
         public DbSet<CalendarReminder> CalendarRemindersDb { get; init; }
         public DbSet<ProgenyInfo> ProgenyInfoDb { get; init; }
         public DbSet<RecurrenceRule> RecurrenceRulesDb { get; init; }
+        public DbSet<TodoItem> TodoItemsDb { get; init; }
+        public DbSet<KanbanItem> KanbanItemsDb { get; init; }
+        public DbSet<KanbanBoard> KanbanBoardsDb { get; init; }
     }
 }

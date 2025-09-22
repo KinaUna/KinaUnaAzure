@@ -1,0 +1,1273 @@
+﻿import { getCurrentProgenyId, getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setContextAutoSuggestList, setLocationAutoSuggestList, setMomentLocale, setTagsAutoSuggestList, TimelineChangedEvent, validateDateValue } from '../data-tools-v9.js';
+import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v9.js';
+import * as pageModels from '../page-models-v9.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
+import * as SettingsHelper from '../settings-tools-v9.js';
+import * as LocaleHelper from '../localization-v9.js';
+import { popupTodoItem, setAssignStatusButtonsEventListeners } from './todo-details.js';
+import { onDeleteItemButtonClicked, onEditItemButtonClicked } from '../addItem/add-item.js';
+import { KanbanItem, TimelineItem, TimeLineType, TodoItem } from '../page-models-v9.js';
+import { dispatchKanbanBoardChangedEvent } from '../kanbans/kanban-board-details.js';
+
+let todosPageParameters = new pageModels.TodosPageParameters();
+const todosPageSettingsStorageKey = 'todos_page_parameters';
+const todosIndexPageParametersDiv = document.querySelector<HTMLDivElement>('#todos-index-page-parameters');
+const todosListDiv = document.querySelector<HTMLDivElement>('#todos-list-div');
+const todosPageMainDiv = document.querySelector<HTMLDivElement>('#kinauna-main-div');
+let moreTodoItemsButton: HTMLButtonElement | null;
+const sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#todo-settings-sort-ascending-button');
+const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#todo-settings-sort-descending-button');
+const itemsPerPageInput = document.querySelector<HTMLInputElement>('#todo-items-per-page-input');
+const sortByDueDateSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-due-date-button');
+const sortByCreatedDateSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-created-date-button');
+const sortByStartDateSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-start-date-button');
+const sortByCompletedDateSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-completed-date-button');
+const groupByNoneSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-none-button');
+const groupByStatusSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-status-button');
+const groupByAssignedToSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-assigned-to-button');
+const groupByLocationSettingsButton = document.querySelector<HTMLButtonElement>('#settings-group-by-location-button');
+const todosStartDateTimePicker: any = $('#settings-start-date-datetimepicker');
+const todosEndDateTimePicker: any = $('#settings-end-date-datetimepicker');
+declare global {
+    interface WindowEventMap {
+        'timelineChanged': TimelineChangedEvent;
+    }
+}
+
+/**
+ * Sets the todos page parameters from the data attributes of the todosIndexPageParametersDiv.
+ * If the sort is 0, it sorts the todos in ascending order, otherwise in descending order.
+ */
+function setTodosPageParametersFromPageData(): void {
+    if (todosIndexPageParametersDiv !== null) {
+        const pageParameters = todosIndexPageParametersDiv.dataset.todosIndexPageParameters;
+        if (pageParameters) {
+            todosPageParameters = JSON.parse(pageParameters);
+            if (todosPageParameters.sort === 0) {
+                sortTodosAscending();
+            }
+            else {
+                sortTodosDescending();
+            }
+        }
+    }
+}
+
+/**
+ * Fetches the todo items from the server and appends them to the todos list div.
+ * If there are more todo items to fetch, it shows the "more" button.
+ * If there are no todo items, it calls getTodoElement with 0 to show an empty state.
+ * @returns A promise that resolves when the todo items are fetched and appended.
+ */
+async function getTodos(): Promise<void> {
+    startLoadingSpinner();
+    moreTodoItemsButton?.classList.add('d-none');
+    if (todosPageParameters.currentPageNumber < 1) {
+        todosPageParameters.currentPageNumber = 1;
+    }
+    const getMoreTodosResponse = await fetch('/Todos/GetTodoItemsList', {
+        method: 'POST',
+        body: JSON.stringify(todosPageParameters),
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+        }
+    });
+
+    if (getMoreTodosResponse.ok && getMoreTodosResponse.body !== null) {
+        const todosPageResponse = await getMoreTodosResponse.json() as pageModels.TodosPageResponse;
+        if (todosPageResponse) {
+            todosPageParameters.totalPages = todosPageResponse.totalPages;
+            todosPageParameters.totalItems = todosPageResponse.totalItems;
+
+            if (todosPageResponse.totalItems < 1) {
+                getTodoElement(0);
+            }
+            else {
+                for await (const todoItem of todosPageResponse.todosList) {
+                    await getTodoElement(todoItem.todoItemId);
+                    const timelineItem = new pageModels.TimelineItem();
+                    timelineItem.itemId = todoItem.todoItemId.toString();
+                    timelineItem.itemType = 15;
+                    addTimelineItemEventListener(timelineItem);
+                };
+            }
+            todosPageParameters.currentPageNumber++;
+            if (todosPageResponse.totalPages > todosPageResponse.pageNumber && moreTodoItemsButton !== null) {
+                moreTodoItemsButton.classList.remove('d-none');
+            }
+        }
+    }
+
+    stopLoadingSpinner();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function refreshTodos(changedTodoId: string) {
+    let tempPageNumber = todosPageParameters.currentPageNumber;
+    todosPageParameters.currentPageNumber = 1;
+    clearTodoItemsElements();
+    while (todosPageParameters.currentPageNumber <= tempPageNumber) {
+        await getTodos();
+    }
+
+    // If changedTodo is not zero, scroll to the todo item with data-todo-id={changedTodoId}, if it exists in the page.
+    if (parseInt(changedTodoId) > 0) {
+        const todoElement = document.querySelector<HTMLButtonElement>(`[data-todo-id="${changedTodoId}"]`);
+        if (todoElement !== null) {
+            todoElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+}
+
+/**
+ * Gets a todo element by its ID and appends it to the todos list div.
+ * Renders the todo item HTML and appends it to the todos list.
+ * @param id The ID of the todo item to fetch.
+ * @returns A promise that resolves when the todo element is fetched and appended.
+ */
+async function getTodoElement(id: number): Promise<void> {
+    const getTodoElementParameters = new pageModels.TodoItemParameters();
+    getTodoElementParameters.todoItemId = id;
+    getTodoElementParameters.languageId = todosPageParameters.languageId;
+
+    const getTodoElementResponse = await fetch('/Todos/TodoElement', {
+        method: 'POST',
+        body: JSON.stringify(getTodoElementParameters),
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    });
+
+    if (getTodoElementResponse.ok && getTodoElementResponse.text !== null) {
+        const todoHtml = await getTodoElementResponse.text();
+        if (todosListDiv != null) {
+            todosListDiv.insertAdjacentHTML('beforeend', todoHtml);
+            addTodoElementEventListeners(id.toString());
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+function addTodoElementEventListeners(todoItemId: string) {
+    const menuButtonElement = document.querySelector<HTMLButtonElement>('[data-todo-item-menu-button-id="' + todoItemId + '"]');
+    if (menuButtonElement) {
+        menuButtonElement.removeEventListener('click', showTodoElementMenu);
+        menuButtonElement.addEventListener('click', showTodoElementMenu);
+    }
+
+    const moreInfoButton = document.querySelector<HTMLButtonElement>('[data-todo-item-more-info-button-id="' + todoItemId + '"]');
+    if (moreInfoButton) {
+        moreInfoButton.removeEventListener('click', showMoreTodoInfo);
+        moreInfoButton.addEventListener('click', showMoreTodoInfo);
+    }
+
+    const editButtonElement = document.querySelector<HTMLAnchorElement>('[data-edit-item-item-id="' + todoItemId + '"]');
+    if (editButtonElement) {
+        // Clear existing event listeners to avoid duplicates.
+        editButtonElement.removeEventListener('click', onEditItemButtonClicked);
+        editButtonElement.addEventListener('click', onEditItemButtonClicked);
+    }
+
+    const deleteButtonElement = document.querySelector<HTMLAnchorElement>('[data-delete-item-item-id="' + todoItemId + '"]');
+    if (deleteButtonElement) {
+        // Clear existing event listeners to avoid duplicates.
+        deleteButtonElement.removeEventListener('click', onDeleteItemButtonClicked);
+        deleteButtonElement.addEventListener('click', onDeleteItemButtonClicked);
+    }
+
+    const todoElementsWithDataAssignToId = document.querySelectorAll<HTMLButtonElement>('[data-todo-assign-to-id="' + todoItemId + '"]');
+    if (todoElementsWithDataAssignToId) {
+        todoElementsWithDataAssignToId.forEach((element) => {
+            // Clear existing event listeners to avoid duplicates.
+            element.removeEventListener('click', onAssignToButtonClicked);
+            element.addEventListener('click', onAssignToButtonClicked);
+        });
+    }
+
+    const todoElementsWithDataAddToKanbanId = document.querySelectorAll<HTMLButtonElement>('[data-todo-add-to-kanban-id="' + todoItemId + '"]');
+    if (todoElementsWithDataAddToKanbanId) {
+        todoElementsWithDataAddToKanbanId.forEach((element) => {
+            // Clear existing event listeners to avoid duplicates.
+            element.removeEventListener('click', onAddToKanbanButtonClicked);
+            element.addEventListener('click', onAddToKanbanButtonClicked);
+        });
+    }
+
+    const showMoreDetailsButton = document.querySelectorAll<HTMLButtonElement>('[data-show-details-todo-item-id="' + todoItemId + '"]');
+    if (showMoreDetailsButton) {
+        showMoreDetailsButton.forEach((buttonElement) => {
+            buttonElement.removeEventListener('click', showMoreDetailsClicked);
+            buttonElement.addEventListener('click', showMoreDetailsClicked);
+        });
+    }
+    setAssignStatusButtonsEventListeners(todoItemId);
+}
+
+async function showMoreDetailsClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoItemId = buttonElement.dataset.showDetailsTodoItemId;
+        if (todoItemId) {
+            await popupTodoItem(todoItemId);
+        }
+    }
+}
+
+async function onAssignToButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoItemId = buttonElement.dataset.todoAssignToId;
+        if (todoItemId) {
+            await assignTodoItemTo(todoItemId);
+        }
+    }
+}
+
+async function assignTodoItemTo(todoItemId: string) {
+    // Get form html from server.
+    let url = '/Todos/AssignTodoItemTo?todoItemId=' + todoItemId;
+    const response = await fetch(url);
+    if (response.ok) {
+        const formHtml = await response.text();
+        const modalDiv = document.querySelector<HTMLDivElement>('#add-todo-item-to-kanban-board-modal-' + todoItemId);
+        if (modalDiv) {
+            modalDiv.innerHTML = formHtml;
+            modalDiv.classList.remove('d-none');
+            const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.assign-todo-item-to-cancel-button');
+            if (cancelButton) {
+                const closeButtonFunction = function () {
+                    modalDiv.innerHTML = '';
+                    modalDiv.classList.add('d-none');
+                }
+                cancelButton.removeEventListener('click', closeButtonFunction);
+                cancelButton.addEventListener('click', closeButtonFunction);
+                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+                if (closeButton) {
+                    closeButton.removeEventListener('click', closeButtonFunction);
+                    closeButton.addEventListener('click', closeButtonFunction);
+                }
+            }
+
+            ($(".selectpicker") as any).selectpicker('refresh');
+
+            const addTodoItemForm = modalDiv.querySelector<HTMLFormElement>('#assign-todo-item-to-form');
+            if (addTodoItemForm) {
+                const assignTodoItemToFormFunction = async function (event: Event) {
+                    event.preventDefault();
+                    startFullPageSpinner();
+                    const formData = new FormData(addTodoItemForm);
+                    const url = '/Todos/AssignTodoItemTo';
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(async function (response) {
+                        if (response.ok) {
+                            // Successfully copied the KanbanItem. Close the modal.
+                            modalDiv.innerHTML = '';
+                            modalDiv.classList.add('d-none');
+                            // Dispatch event to update Kanban board
+                            const updatedTodoItem = await response.json() as TodoItem;
+                            if (updatedTodoItem) {
+                                dispatchTodoItemChangedEvent(updatedTodoItem.todoItemId.toString());
+                            }
+
+                        } else {
+                            console.error('Error assigning person to todo item. Status: ' + response.status);
+                        }
+                    }).catch(function (error) {
+                        console.error('Error assigning person to todo item: ' + error);
+                    });
+                    stopFullPageSpinner();
+                }
+                addTodoItemForm.removeEventListener('submit', assignTodoItemToFormFunction);
+                addTodoItemForm.addEventListener('submit', assignTodoItemToFormFunction);
+            }
+        }
+
+    }
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+async function onAddToKanbanButtonClicked(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+
+    const buttonElement: HTMLButtonElement = event.currentTarget as HTMLButtonElement;
+    if (buttonElement !== null) {
+        const todoItemId = buttonElement.dataset.todoAddToKanbanId;
+        if (todoItemId) {
+            await addTodoItemToBoard(todoItemId);
+        }
+    }
+}
+
+async function addTodoItemToBoard(todoItemId: string) {
+    // Get form html from server.
+    let url = '/Todos/AddTodoItemToKanbanBoard?todoItemId=' + todoItemId;
+    const response = await fetch(url);
+    if (response.ok) {
+        const formHtml = await response.text();
+        const modalDiv = document.querySelector<HTMLDivElement>('#add-todo-item-to-kanban-board-modal-' + todoItemId);
+        if (modalDiv) {
+            modalDiv.innerHTML = formHtml;
+            modalDiv.classList.remove('d-none');
+            const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.add-todo-item-to-kanban-board-cancel-button');
+            if (cancelButton) {
+                const closeButtonFunction = function () {
+                    modalDiv.innerHTML = '';
+                    modalDiv.classList.add('d-none');
+                }
+                cancelButton.removeEventListener('click', closeButtonFunction);
+                cancelButton.addEventListener('click', closeButtonFunction);
+                const closeButton = modalDiv.querySelector<HTMLButtonElement>('.modal-close-button');
+                if (closeButton) {
+                    closeButton.removeEventListener('click', closeButtonFunction);
+                    closeButton.addEventListener('click', closeButtonFunction);
+                }
+            }
+
+            ($(".selectpicker") as any).selectpicker('refresh');
+
+            const addTodoItemForm = modalDiv.querySelector<HTMLFormElement>('#add-todo-item-to-kanban-board-form');
+            if (addTodoItemForm) {
+                const addTodoItemFormFunction = async function (event: Event) {
+                    event.preventDefault();
+                    startFullPageSpinner();
+                    const formData = new FormData(addTodoItemForm);
+                    const url = '/Todos/AddTodoItemToKanbanBoard';
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(async function (response) {
+                        if (response.ok) {
+                            // Successfully copied the KanbanItem. Close the modal.
+                            modalDiv.innerHTML = '';
+                            modalDiv.classList.add('d-none');
+                            // Dispatch event to update Kanban board
+                            const kanbanItem = await response.json() as KanbanItem;
+                            if (kanbanItem) {
+                                dispatchKanbanBoardChangedEvent(kanbanItem.kanbanBoardId.toString());
+                            }
+
+                        } else {
+                            console.error('Error adding todo-item to kanban board. Status: ' + response.status);
+                        }
+                    }).catch(function (error) {
+                        console.error('Error adding todo-item to kanban board: ' + error);
+                    });
+                    stopFullPageSpinner();
+                }
+                addTodoItemForm.removeEventListener('submit', addTodoItemFormFunction);
+                addTodoItemForm.addEventListener('submit', addTodoItemFormFunction);
+            }
+        }
+
+    }
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+const showMoreTodoInfo = function (event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget as HTMLButtonElement;
+    const todoItemId = button.dataset.todoItemMoreInfoButtonId;
+    if (todoItemId) {
+        hideTodoElementMenus('');
+        hideTodoItemMoreInfoDivs(todoItemId);
+        const todoItemMoreDiv = document.getElementById('todo-item-more-div-' + todoItemId);
+        if (todoItemMoreDiv) {
+            if (todoItemMoreDiv.classList.contains('d-none')) {
+                todoItemMoreDiv.classList.remove('d-none');
+                button.innerHTML = `<i class="material-icons">expand_less</i>`;
+            }
+            else {
+                todoItemMoreDiv.classList.add('d-none');
+                button.innerHTML = `<i class="material-icons">expand_more</i>`;
+            }
+
+        }
+    }
+}
+
+const showTodoElementMenu = function (event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget as HTMLButtonElement;
+    const todoItemId = button.dataset.todoItemMenuButtonId;    
+    if (todoItemId) {
+        hideTodoElementMenus(todoItemId);
+        hideTodoItemMoreInfoDivs(todoItemId);
+        const menuContentDiv = document.querySelector<HTMLDivElement>('.todo-item-menu-content[data-todo-item-menu-id="' + todoItemId + '"]');
+        if (menuContentDiv) {
+            if (menuContentDiv.classList.contains('d-none')) {
+                menuContentDiv.classList.remove('d-none');
+            } else {
+                menuContentDiv.classList.add('d-none');
+            }
+        }
+    }
+}
+
+function hideTodoElementMenus(todoItemId: string) {
+    const allTodoElementMenus = document.querySelectorAll<HTMLDivElement>('.todo-item-menu-content');
+    allTodoElementMenus.forEach((menu) => {
+        const menuTodoItemId = menu.dataset.todoItemMenuId;
+        if (todoItemId === '' || menuTodoItemId !== todoItemId) {
+            menu.classList.add('d-none');
+        }
+    });
+        
+}
+
+function hideTodoItemMoreInfoDivs(todoItemId: string) {
+    const allTodoItemMoreDivs = document.querySelectorAll<HTMLDivElement>('.todo-item-more-info');
+    allTodoItemMoreDivs.forEach((divElement) => {
+        const divTodoItemId = divElement.dataset.todoItemMoreId;
+        if (todoItemId === '' || divTodoItemId !== todoItemId) {
+            divElement.classList.add('d-none');
+        }
+    });
+
+    const allMoreTodoItemButtons = document.querySelectorAll<HTMLButtonElement>('.kanban-card-menu-button[data-todo-item-more-info-button-id]');
+    allMoreTodoItemButtons.forEach((moreButtonElement) => {
+        const moreButtonElementTodoItemId = moreButtonElement.dataset.todoItemMenuButtonId;
+        if (todoItemId === '' || moreButtonElementTodoItemId !== todoItemId) {
+            moreButtonElement.innerHTML = `<i class="material-icons">expand_more</i>`;
+        }
+    });
+}
+
+/**
+ * Adds an event listener for progeniesChanged events.
+ * This event is triggered when the selected progenies change.
+ */
+function addSelectedProgeniesChangedEventListener() {
+    window.addEventListener('progeniesChanged', async () => {
+        console.log('todos-index: progeniesChanged');
+        let selectedProgenies = localStorage.getItem('selectedProgenies');
+        if (selectedProgenies !== null) {
+            todosPageParameters.progenies = getSelectedProgenies();
+            todosPageParameters.currentPageNumber = 1;
+            await getTodos();
+        }
+
+    });
+}
+
+function addTimelineChangedEventListener() {
+    // Subscribe to the timelineChanged event to refresh the todos list when a todo is added, updated, or deleted.
+    window.addEventListener('timelineChanged', async (event: TimelineChangedEvent) => {
+        console.log('todos-index: timelineChanged');
+        let changedItem = event.TimelineItem;
+        if (changedItem !== null && changedItem.itemType === 15) { // 15 is the item type for todos.
+            if (changedItem.itemId !== '') {
+                await refreshTodos(changedItem.itemId);
+            }
+        }
+    });
+}
+
+/** Shows the loading spinner in the loading-todo-items-div.
+ */
+function startLoadingSpinner(): void {
+    startLoadingItemsSpinner('loading-todo-items-div');
+}
+
+/** Hides the loading spinner in the loading-todo-items-div.
+ */
+function stopLoadingSpinner(): void {
+    stopLoadingItemsSpinner('loading-todo-items-div');
+}
+
+/** Clears the list of todo elements in the todos-list-div and scrolls to above the todos-list-div.
+*/
+function clearTodoItemsElements(): void {
+    const pageTitleDiv = document.querySelector<HTMLDivElement>('#page-title-div');
+    if (pageTitleDiv !== null) {
+        pageTitleDiv.scrollIntoView();
+    }
+    
+    const todoItemsDiv = document.querySelector<HTMLDivElement>('#todos-list-div');
+    if (todoItemsDiv !== null) {
+        todoItemsDiv.innerHTML = '';
+    }
+
+    todosPageParameters.currentPageNumber = 1;
+}
+
+/**
+ * Updates parameters sort value, sets the sort buttons to show the ascending button as active, and the descending button as inactive.
+ */
+function sortTodosAscending(): void {
+    sortAscendingSettingsButton?.classList.add('active');
+    sortDescendingSettingsButton?.classList.remove('active');
+    todosPageParameters.sort = 0;
+}
+
+/**
+ * Updates parameters sort value, sets the sort buttons to show the descending button as active, and the ascending button as inactive.
+ */
+function sortTodosDescending(): void {
+    sortDescendingSettingsButton?.classList.add('active');
+    sortAscendingSettingsButton?.classList.remove('active');
+    todosPageParameters.sort = 1;
+}
+
+/**
+ * Decreases the number of todo items displayed per page.
+ * Updates the itemsPerPage property in todosPageParameters.
+ */
+function decreaseTodoItemsPerPage(): void {
+    if (itemsPerPageInput !== null) {
+        let itemsPerPageInputValue: number = itemsPerPageInput.valueAsNumber;
+        itemsPerPageInputValue--;
+        if (itemsPerPageInputValue > 0) {
+            itemsPerPageInput.value = itemsPerPageInputValue.toString();
+        }
+
+        todosPageParameters.itemsPerPage = itemsPerPageInput.valueAsNumber;
+    }
+}
+
+/**
+ * Increases the number of todo items displayed per page.
+ * Updates the itemsPerPage property in todosPageParameters.
+ */
+function increaseTodoItemsPerPage(): void {
+    if (itemsPerPageInput !== null) {
+        let itemsPerPageInputValue: number = itemsPerPageInput.valueAsNumber;
+        itemsPerPageInputValue++;
+        if (itemsPerPageInputValue < 101) {
+            itemsPerPageInput.value = itemsPerPageInputValue.toString();
+        }
+
+        todosPageParameters.itemsPerPage = itemsPerPageInput.valueAsNumber;
+    }
+}
+
+/**
+ * Sorts the todo items by due date.
+ * Updates the sortBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function sortByDueDate(): void {
+    todosPageParameters.sortBy = 0;
+    sortByDueDateSettingsButton?.classList.add('active');
+    sortByCreatedDateSettingsButton?.classList.remove('active');
+    sortByStartDateSettingsButton?.classList.remove('active');
+    sortByCompletedDateSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Sorts the todo items by created date.
+ * Updates the sortBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function sortByCreatedDate(): void {
+    todosPageParameters.sortBy = 1;
+    sortByDueDateSettingsButton?.classList.remove('active');
+    sortByCreatedDateSettingsButton?.classList.add('active');
+    sortByStartDateSettingsButton?.classList.remove('active');
+    sortByCompletedDateSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Sorts the todo items by start date.
+ * Updates the sortBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function sortByStartDate(): void {
+    todosPageParameters.sortBy = 2;
+    sortByDueDateSettingsButton?.classList.remove('active');
+    sortByCreatedDateSettingsButton?.classList.remove('active');
+    sortByStartDateSettingsButton?.classList.add('active');
+    sortByCompletedDateSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Sorts the todo items by completed date.
+ * Updates the sortBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function sortByCompletedDate(): void {
+    todosPageParameters.sortBy = 3;
+    sortByDueDateSettingsButton?.classList.remove('active');
+    sortByCreatedDateSettingsButton?.classList.remove('active');
+    sortByStartDateSettingsButton?.classList.remove('active');
+    sortByCompletedDateSettingsButton?.classList.add('active');
+}
+
+/**
+ * Disables grouping of the todo items.
+ * Updates the groupBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function groupByNone(): void {
+    todosPageParameters.groupBy = 0;
+    groupByNoneSettingsButton?.classList.add('active');
+    groupByStatusSettingsButton?.classList.remove('active');
+    groupByAssignedToSettingsButton?.classList.remove('active');
+    groupByLocationSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Groups the todo items by status.
+ * Updates the groupBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function groupByStatus(): void {
+    todosPageParameters.groupBy = 1;
+    groupByNoneSettingsButton?.classList.remove('active');
+    groupByStatusSettingsButton?.classList.add('active');
+    groupByAssignedToSettingsButton?.classList.remove('active');
+    groupByLocationSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Groups the todo items by the user they are assigned to.
+ * Updates the groupBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function groupByAssignedTo(): void {
+    todosPageParameters.groupBy = 2;
+    groupByNoneSettingsButton?.classList.remove('active');
+    groupByStatusSettingsButton?.classList.remove('active');
+    groupByAssignedToSettingsButton?.classList.add('active');
+    groupByLocationSettingsButton?.classList.remove('active');
+}
+
+/**
+ * Groups the todo items by location.
+ * Updates the groupBy property in todosPageParameters and sets the active class on the appropriate button.
+ */
+function groupByLocation(): void {
+    todosPageParameters.groupBy = 3;
+    groupByNoneSettingsButton?.classList.remove('active');
+    groupByStatusSettingsButton?.classList.remove('active');
+    groupByAssignedToSettingsButton?.classList.remove('active');
+    groupByLocationSettingsButton?.classList.add('active');
+}
+
+/**
+ * Sets event listeners for the items per page buttons.
+ * Decreases or increases the number of todo items displayed per page.
+ */
+function setEventListenersForItemsPerPage(): void {
+    const decreaseItemsPerPageButton = document.querySelector<HTMLButtonElement>('#decrease-todo-items-per-page-button');
+    const increaseItemsPerPageButton = document.querySelector<HTMLButtonElement>('#increase-todo-items-per-page-button');
+    if (decreaseItemsPerPageButton !== null) {
+        decreaseItemsPerPageButton.addEventListener('click', decreaseTodoItemsPerPage);
+    }
+    if (increaseItemsPerPageButton !== null) {
+        increaseItemsPerPageButton.addEventListener('click', increaseTodoItemsPerPage);
+    }
+}
+
+/**
+ * Toggles the active state of the tag filter button and updates the tag filter in the parameters.
+ */
+function toggleShowFilters(): void {
+    const filtersElements = document.querySelectorAll<HTMLDivElement>('.todos-filter-options');
+    const toggleShowFiltersChevron = document.getElementById('show-filters-chevron');
+    filtersElements.forEach(function (element: HTMLDivElement) {
+        if (element.classList.contains('d-none')) {
+            element.classList.remove('d-none');
+        }
+        else {
+            element.classList.add('d-none');
+        }
+    });
+
+    if (toggleShowFiltersChevron !== null) {
+        if (toggleShowFiltersChevron.classList.contains('chevron-right-rotate-down')) {
+            toggleShowFiltersChevron.classList.remove('chevron-right-rotate-down');
+        }
+        else {
+            toggleShowFiltersChevron.classList.add('chevron-right-rotate-down');
+        }
+    }
+}
+
+/**
+ * Adds or removes the TimeLineType in the onThisDayParameters.timeLineTypeFilter.
+ * @param type The TimeLineType to toggle.
+ */
+function toggleTodoFilterStatusType(type: pageModels.TodoStatusType): void {
+    const index = todosPageParameters.statusFilter.indexOf(type);
+    if (index > -1) {
+        todosPageParameters.statusFilter.splice(index, 1);
+    }
+    else {
+        todosPageParameters.statusFilter.push(type);
+    }
+
+    updateTodosFilterStatusButtons();
+}
+
+/**
+ * Updates the status filter buttons to reflect the current status filter in todosPageParameters.
+ */
+function updateTodosFilterStatusButtons(): void {
+    // If status filter is null or empty, set default status filters.
+    if (todosPageParameters.statusFilter === null || todosPageParameters.statusFilter.length === 0) {
+        todosPageParameters.statusFilter.push(pageModels.TodoStatusType.NotStarted);
+        todosPageParameters.statusFilter.push(pageModels.TodoStatusType.InProgress);
+        todosPageParameters.statusFilter.push(pageModels.TodoStatusType.Completed);
+    }
+
+    const typeButtons = document.querySelectorAll<HTMLButtonElement>('.filter-status-type-button');
+    typeButtons.forEach(function (button: HTMLButtonElement) {
+        button.classList.remove('active');
+        if (todosPageParameters.statusFilter.includes(parseInt(button.dataset.filterStatusType ?? '-1'))) {
+            button.classList.add('active');
+        }
+    });
+}
+
+/**
+ * Toggles the assigned to filter for a specific progeny ID.
+ * If the progeny ID is already in the assignedToFilter, it removes it.
+ * Otherwise, it adds the progeny ID to the assignedToFilter.
+ * @param progenyId The ID of the progeny to toggle in the assigned to filter.
+ */
+function toggleTodoFilterAssignedTo(progenyId: number): void {
+    if (todosPageParameters.progenies.includes(progenyId)) {
+        const index = todosPageParameters.progenies.indexOf(progenyId);
+        if (index > -1) {
+            todosPageParameters.progenies.splice(index, 1);
+        }
+    }
+    else {
+        todosPageParameters.progenies.push(progenyId);
+    }
+
+    updateTodosFilterAssignedToButtons();
+}
+
+/**
+ * Updates the assigned to filter buttons to reflect the current assigned to filter in todosPageParameters.
+ */
+function updateTodosFilterAssignedToButtons(): void {
+    const assignedToButtons = document.querySelectorAll<HTMLButtonElement>('.filter-assigned-to-button');
+    assignedToButtons.forEach(function (button: HTMLButtonElement) {
+        const checkedSpan = button.querySelector<HTMLSpanElement>('.filter-progeny-check-span');
+        if (checkedSpan !== null && todosPageParameters.progenies.includes(parseInt(button.dataset.filterAssignedTo ?? '-1'))) {
+            checkedSpan.classList.remove('d-none');
+        }
+        else if (checkedSpan !== null) {
+            checkedSpan.classList.add('d-none');
+        }
+    });
+}
+
+/** Gets the formatted date value from the start date picker and sets the start date in the parameters.
+* @param dateTimeFormatMoment The Moment format of the date, which is used by the date picker.
+*/
+async function setStartDate(dateTimeFormatMoment: string): Promise<void> {
+    let settingsStartValue: any = SettingsHelper.getPageSettingsStartDate(dateTimeFormatMoment);
+    todosPageParameters.startYear = settingsStartValue.year();
+    todosPageParameters.startMonth = settingsStartValue.month() + 1;
+    todosPageParameters.startDay = settingsStartValue.date();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/** Gets the formatted date value from the end date picker and sets the end date in the parameters.
+* @param dateTimeFormatMoment The Moment format of the date, which is used by the date picker.
+*/
+async function setEndDate(dateTimeFormatMoment: string): Promise<void> {
+    let settingsEndValue: any = SettingsHelper.getPageSettingsEndDate(dateTimeFormatMoment);
+
+    todosPageParameters.endYear = settingsEndValue.year();
+    todosPageParameters.endMonth = settingsEndValue.month() + 1;
+    todosPageParameters.endDay = settingsEndValue.date();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/**
+ * Sets the value of the startDateTimePicker to the given date in the format defined by startDateTimeFormatMoment.
+ * @param date The date to assign to the DateTimePicker.
+ */
+function updateStartDatePicker(date: Date): void {
+    if (todosStartDateTimePicker !== null) {
+        const todosDateTimeFormatMoment = getLongDateTimeFormatMoment();
+        const dateString = getFormattedDateString(date, todosDateTimeFormatMoment);
+        todosStartDateTimePicker.val(dateString);
+    }
+}
+
+/**
+ * Sets the value of the endDateTimePicker to the given date in the format defined by startDateTimeFormatMoment.
+ * @param date The date to assign to the DateTimePicker.
+ */
+function updateEndDatePicker(date: Date): void {
+    if (todosEndDateTimePicker !== null) {
+        const todosDateTimeFormatMoment = getLongDateTimeFormatMoment();
+        const dateString = getFormattedDateString(date, todosDateTimeFormatMoment);
+        todosEndDateTimePicker.val(dateString);
+    }
+}
+
+/**
+ * Loads the todos page settings from local storage and applies them to the page.
+ * If no settings are found, it uses default values.
+ */
+function loadTodosPageSettings(): void {
+    const pageSettingsFromStorage = SettingsHelper.getPageSettings<pageModels.TodosPageParameters>(todosPageSettingsStorageKey);
+    if (pageSettingsFromStorage !== null) {
+        todosPageParameters.sort = pageSettingsFromStorage.sort ?? 1;
+
+        if (todosPageParameters.sort === 0) {
+            sortTodosAscending();
+        }
+        else {
+            sortTodosDescending();
+        }
+
+        todosPageParameters.itemsPerPage = pageSettingsFromStorage.itemsPerPage ?? 10;
+        todosPageParameters.sortBy = pageSettingsFromStorage.sortBy ?? 0;
+        todosPageParameters.groupBy = pageSettingsFromStorage.groupBy ?? 0;
+        todosPageParameters.statusFilter = pageSettingsFromStorage.statusFilter;
+    }
+
+    if (itemsPerPageInput !== null) {
+        itemsPerPageInput.value = todosPageParameters.itemsPerPage.toString();
+    }
+
+    if (todosPageParameters.sortBy === 0) {
+        sortByDueDate();
+    }
+    else if (todosPageParameters.sortBy === 1) {
+        sortByCreatedDate();
+    }
+    else if (todosPageParameters.sortBy === 2) {
+        sortByStartDate();
+    }
+    else if (todosPageParameters.sortBy === 3) {
+        sortByCompletedDate();
+    }
+
+    if (todosPageParameters.groupBy === 0) {
+        groupByNone();
+    }
+    else if (todosPageParameters.groupBy === 1) {
+        groupByStatus();
+    }
+    else if (todosPageParameters.groupBy === 2) {
+        groupByAssignedTo();
+    }
+    else if (todosPageParameters.groupBy === 3) {
+        groupByLocation();
+    }
+    updateTodosFilterStatusButtons();
+}
+
+/**
+ * Configures the elements in the settings panel.
+ */
+async function initialSettingsPanelSetup(): Promise<void> {
+    const todosPageSaveSettingsButton = document.querySelector<HTMLButtonElement>('#todos-page-save-settings-button');
+    if (todosPageSaveSettingsButton !== null) {
+        // Clear event listeners
+        todosPageSaveSettingsButton.removeEventListener('click', saveTodosPageSettings);
+        todosPageSaveSettingsButton.addEventListener('click', saveTodosPageSettings);
+    }
+
+    if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.removeEventListener('click', sortTodosAscending);
+        sortDescendingSettingsButton.removeEventListener('click', sortTodosDescending);
+        sortAscendingSettingsButton.addEventListener('click', sortTodosAscending);
+        sortDescendingSettingsButton.addEventListener('click', sortTodosDescending);
+    }
+
+    setEventListenersForItemsPerPage();
+
+    if (sortByDueDateSettingsButton !== null) {
+        sortByDueDateSettingsButton.removeEventListener('click', sortByDueDate);
+        sortByDueDateSettingsButton.addEventListener('click', sortByDueDate);
+    }
+
+    if (sortByCreatedDateSettingsButton !== null) {
+        sortByCreatedDateSettingsButton.removeEventListener('click', sortByCreatedDate);
+        sortByCreatedDateSettingsButton.addEventListener('click', sortByCreatedDate);
+    }
+
+    if (sortByStartDateSettingsButton !== null) {
+        sortByStartDateSettingsButton.removeEventListener('click', sortByStartDate);
+        sortByStartDateSettingsButton.addEventListener('click', sortByStartDate);
+    }
+
+    if (sortByCompletedDateSettingsButton !== null) {
+        sortByCompletedDateSettingsButton.removeEventListener('click', sortByCompletedDate);
+        sortByCompletedDateSettingsButton.addEventListener('click', sortByCompletedDate);
+    }
+
+    if (groupByNoneSettingsButton !== null) {
+        groupByNoneSettingsButton.removeEventListener('click', groupByNone);
+        groupByNoneSettingsButton.addEventListener('click', groupByNone);
+    }
+
+    if (groupByStatusSettingsButton !== null) {
+        groupByStatusSettingsButton.removeEventListener('click', groupByStatus);
+        groupByStatusSettingsButton.addEventListener('click', groupByStatus);
+    }
+
+    if (groupByAssignedToSettingsButton !== null) {
+        groupByAssignedToSettingsButton.removeEventListener('click', groupByAssignedTo);
+        groupByAssignedToSettingsButton.addEventListener('click', groupByAssignedTo);
+    }
+
+    if (groupByLocationSettingsButton !== null) {
+        groupByLocationSettingsButton.removeEventListener('click', groupByLocation);
+        groupByLocationSettingsButton.addEventListener('click', groupByLocation);
+    }
+
+    const toggleShowFiltersButton = document.querySelector<HTMLButtonElement>('#todos-toggle-filters-button');
+    if (toggleShowFiltersButton !== null) {
+        const toggleShowFiltersFunction = function (event: Event) {
+            event.preventDefault();
+            toggleShowFilters();
+        }
+        toggleShowFiltersButton.removeEventListener('click', toggleShowFiltersFunction)
+        toggleShowFiltersButton.addEventListener('click', toggleShowFiltersFunction);
+    }
+
+    const statusTypeButtons = document.querySelectorAll<HTMLButtonElement>('.filter-status-type-button');
+    statusTypeButtons.forEach(function (button: HTMLButtonElement) {
+        const toggleTodoFilterStatusTypeFunction = function (event: Event) {
+            toggleTodoFilterStatusType(parseInt(button.dataset.filterStatusType ?? '-1'));
+        }
+        button.removeEventListener('click', toggleTodoFilterStatusTypeFunction);
+        button.addEventListener('click', toggleTodoFilterStatusTypeFunction);
+
+        if (todosPageParameters.statusFilter.includes(parseInt(button.dataset.filterStatusType ?? '-1'))) {
+            button.classList.add('active');
+        }
+        else {
+            button.classList.remove('active');
+        }
+    });
+
+    updateTodosFilterAssignedToButtons();
+    const assignedToButtons = document.querySelectorAll<HTMLButtonElement>('.filter-assigned-to-button');
+    assignedToButtons.forEach(function (button: HTMLButtonElement) {
+        const toggleTodoFilterAssignedToFunction = function (event: Event) {
+            toggleTodoFilterAssignedTo(parseInt(button.dataset.filterAssignedTo ?? '-1'));
+        }
+        button.removeEventListener('click', toggleTodoFilterAssignedToFunction);
+        button.addEventListener('click', toggleTodoFilterAssignedToFunction);
+
+        if (todosPageParameters.progenies.includes(parseInt(button.dataset.filterAssignedTo ?? '-1'))) {
+            button.classList.add('active');
+        }
+        else {
+            button.classList.remove('active');
+        }
+    });
+
+    setMomentLocale();
+    const zebraDateTimeFormat = getZebraDateTimeFormat();
+    const zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(todosPageParameters.languageId);
+    const todosDateTimeFormatMoment = getLongDateTimeFormatMoment();
+
+    todosStartDateTimePicker.Zebra_DatePicker({
+        format: zebraDateTimeFormat,
+        open_icon_only: true,
+        onSelect: function (a: any, b: any, c: any) { setStartDate(todosDateTimeFormatMoment); },
+        days: zebraDatePickerTranslations.daysArray,
+        months: zebraDatePickerTranslations.monthsArray,
+        lang_clear_date: zebraDatePickerTranslations.clearString,
+        show_select_today: zebraDatePickerTranslations.todayString,
+        select_other_months: true
+    });
+
+    todosEndDateTimePicker.Zebra_DatePicker({
+        format: zebraDateTimeFormat,
+        open_icon_only: true,
+        onSelect: function (a: any, b: any, c: any) { setEndDate(todosDateTimeFormatMoment); },
+        days: zebraDatePickerTranslations.daysArray,
+        months: zebraDatePickerTranslations.monthsArray,
+        lang_clear_date: zebraDatePickerTranslations.clearString,
+        show_select_today: zebraDatePickerTranslations.todayString,
+        select_other_months: true
+    });
+
+    const startPickerInput: HTMLInputElement = document.getElementById('settings-start-date-datetimepicker') as HTMLInputElement;
+    if (startPickerInput) {
+        startPickerInput.addEventListener('blur', function () {
+            if (!validateDateValue(startPickerInput.value, getLongDateTimeFormatMoment())) {
+                startPickerInput.value = '';
+                todosPageParameters.startYear = 0;
+                todosPageParameters.startMonth = 0;
+                todosPageParameters.startDay = 0;
+                // Todo: show error and focus on the input.
+            }
+        });
+    }
+
+    const endPickerInput: HTMLInputElement = document.getElementById('settings-end-date-datetimepicker') as HTMLInputElement;
+    if (endPickerInput) {
+        endPickerInput.addEventListener('blur', function () {
+            if (!validateDateValue(endPickerInput.value, getLongDateTimeFormatMoment())) {
+                endPickerInput.value = '';
+                todosPageParameters.endYear = 0;
+                todosPageParameters.endMonth = 0;
+                todosPageParameters.endDay = 0;
+                // Todo: show error and focus on the input.
+            }
+        });
+    }
+
+    await setTagsAutoSuggestList(todosPageParameters.progenies, 'tag-filter-input', true);
+    await setContextAutoSuggestList(todosPageParameters.progenies, 'context-filter-input', true);
+    await setLocationAutoSuggestList(todosPageParameters.progenies, 'location-filter-input', true);
+    updateSettingsNotificationDiv();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/**
+ * Updates the settings notification div with the current settings.
+ * This function is called when the settings are changed or saved.
+ */
+function updateSettingsNotificationDiv() {
+    let todoSettingsNotificationText: string = '';
+
+    const settingsSortLabelDiv = document.querySelector<HTMLDivElement>('settings-sort-label');
+    if (settingsSortLabelDiv !== null) {
+        todoSettingsNotificationText = settingsSortLabelDiv.innerHTML;
+    }
+
+    if (todosPageParameters.sort === 0) {
+        todoSettingsNotificationText += ' ' + sortAscendingSettingsButton?.innerHTML;
+    }
+    else {
+        todoSettingsNotificationText += ' ' + sortDescendingSettingsButton?.innerHTML;
+    }
+
+    const itemsPerPageSpan = document.querySelector<HTMLDivElement>('#settings-items-per-page-label');
+    if (itemsPerPageSpan !== null) {
+        todoSettingsNotificationText += '<br/>' + itemsPerPageSpan.innerHTML + ' ' + todosPageParameters.itemsPerPage;
+    }
+
+    const settingsSortByLabelDiv = document.querySelector<HTMLDivElement>('#settings-sort-by-label');
+    if (settingsSortByLabelDiv !== null) {
+        todoSettingsNotificationText += '<br/>' + settingsSortByLabelDiv.innerHTML;
+    }
+    if (todosPageParameters.sortBy === 0) {
+        todoSettingsNotificationText += ' ' + sortByDueDateSettingsButton?.innerHTML;
+    }
+    else if (todosPageParameters.sortBy === 1) {
+        todoSettingsNotificationText += ' ' + sortByCreatedDateSettingsButton?.innerHTML;
+    }
+    else if (todosPageParameters.sortBy === 2) {
+        todoSettingsNotificationText += ' ' + sortByStartDateSettingsButton?.innerHTML;
+    }
+    else if (todosPageParameters.sortBy === 3) {
+        todoSettingsNotificationText += ' ' + sortByCompletedDateSettingsButton?.innerHTML;
+    }
+
+    const settingsGroupByLabelDiv = document.querySelector<HTMLDivElement>('#settings-group-by-label');
+    if (settingsGroupByLabelDiv !== null) {
+        todoSettingsNotificationText += '<br/>' + settingsGroupByLabelDiv.innerHTML;
+    }
+    if (todosPageParameters.groupBy === 0) {
+        todoSettingsNotificationText += ' ' + groupByNoneSettingsButton?.innerHTML;
+    }
+    else if (todosPageParameters.groupBy === 1) {
+        todoSettingsNotificationText += ' ' + groupByStatusSettingsButton?.innerHTML;
+    }
+    else if (todosPageParameters.groupBy === 2) {
+        todoSettingsNotificationText += ' ' + groupByAssignedToSettingsButton?.innerHTML;
+    }
+    else if (todosPageParameters.groupBy === 3) {
+        todoSettingsNotificationText += ' ' + groupByLocationSettingsButton?.innerHTML;
+    }
+
+    const settingsStatusFilterLabelSpan = document.querySelector<HTMLSpanElement>('#settings-status-filter-label');
+    if (settingsStatusFilterLabelSpan !== null) {
+        todoSettingsNotificationText += '<br/>' + settingsStatusFilterLabelSpan.innerHTML;
+    }
+    const statusTypeButtons = document.querySelectorAll<HTMLButtonElement>('.filter-status-type-button');
+    statusTypeButtons.forEach(function (button: HTMLButtonElement) {
+        if (button.classList.contains('active')) {
+            todoSettingsNotificationText += ' [' + button.innerHTML + ']';
+        }
+    });
+
+    if (todosPageParameters.startYear > 0 && todosPageParameters.startMonth > 0 && todosPageParameters.startDay > 0) {
+        const settingsStartLabel = document.querySelector<HTMLSpanElement>('#start-filter-span');
+        if (settingsStartLabel !== null) {
+            todoSettingsNotificationText += '<br/>' + settingsStartLabel.innerHTML + ': ';
+        }
+        const settingsStartDateInput = document.querySelector<HTMLInputElement>('#settings-start-date-datetimepicker');
+        todoSettingsNotificationText += settingsStartDateInput?.value ?? '';
+    }
+
+    if (todosPageParameters.endYear > 0 && todosPageParameters.endMonth > 0 && todosPageParameters.endDay > 0) {
+        const settingsEndLabel = document.querySelector<HTMLSpanElement>('#end-filter-span');
+        if (settingsEndLabel !== null) {
+            todoSettingsNotificationText += '<br/>' + settingsEndLabel.innerHTML + ': ';
+        }
+        const settingsEndDateInput = document.querySelector<HTMLInputElement>('#settings-end-date-datetimepicker');
+        todoSettingsNotificationText += settingsEndDateInput?.value ?? '';
+    }
+
+    const locationFilterInput = document.querySelector<HTMLInputElement>('#location-filter-input');
+    if (locationFilterInput !== null && locationFilterInput.value.length > 0) {
+        const settingsLocationFilterLabel = document.querySelector<HTMLSpanElement>('#location-filter-span');
+        if (settingsLocationFilterLabel !== null) {
+            todoSettingsNotificationText += '<br/>' + settingsLocationFilterLabel.innerHTML;
+        }
+        todoSettingsNotificationText += ' [' + locationFilterInput.value + ']';
+    }
+
+    const contextFilterInput = document.querySelector<HTMLInputElement>('#context-filter-input');
+    if (contextFilterInput !== null && contextFilterInput.value.length > 0) {
+        const settingsContextFilterLabel = document.querySelector<HTMLSpanElement>('#context-filter-span');
+        if (settingsContextFilterLabel !== null) {
+            todoSettingsNotificationText += '<br/>' + settingsContextFilterLabel.innerHTML;
+        }
+        todoSettingsNotificationText += ' [' + contextFilterInput.value + ']';
+    }
+
+    const tagFilterInput = document.querySelector<HTMLInputElement>('#tag-filter-input');
+    if (tagFilterInput !== null && tagFilterInput.value.length > 0) {
+        const settingsTagFilterLabel = document.querySelector<HTMLSpanElement>('#tag-filter-span');
+        if (settingsTagFilterLabel !== null) {
+            todoSettingsNotificationText += '<br/>' + settingsTagFilterLabel.innerHTML;
+        }
+        todoSettingsNotificationText += ' [' + tagFilterInput.value + ']';
+    }
+    
+    const settingsNotificationsDiv = document.querySelector<HTMLDivElement>('#settings-notification-div');
+    if (settingsNotificationsDiv !== null && todoSettingsNotificationText !== undefined) {
+        settingsNotificationsDiv.innerHTML = todoSettingsNotificationText;
+    }
+}
+
+/**
+ * Saves the current page parameters to local storage and reloads the todo items list.
+ */
+async function saveTodosPageSettings(): Promise<void> {
+    const numberOfItemsToGetInput = document.querySelector<HTMLInputElement>('#todo-items-per-page-input');
+    if (numberOfItemsToGetInput !== null) {
+        todosPageParameters.itemsPerPage = parseInt(numberOfItemsToGetInput.value);
+    }
+    else {
+        todosPageParameters.itemsPerPage = 10;
+    }
+
+    todosPageParameters.sort = sortAscendingSettingsButton?.classList.contains('active') ? 0 : 1;   
+
+    const locationFilterInput = document.querySelector<HTMLInputElement>('#location-filter-input');
+    if (locationFilterInput !== null) {
+        todosPageParameters.locationFilter = locationFilterInput.value;
+    }
+
+    const tagFilterInput = document.querySelector<HTMLInputElement>('#tag-filter-input');
+    if (tagFilterInput !== null) {
+        todosPageParameters.tagFilter = tagFilterInput.value;
+    }
+        
+    const contextFilterInput = document.querySelector<HTMLInputElement>('#context-filter-input');
+    if (contextFilterInput !== null) {
+        todosPageParameters.contextFilter = contextFilterInput.value;
+    }
+
+    // If the 'set as default' checkbox is checked, save the page settings to local storage.
+    const setAsDefaultCheckbox = document.querySelector<HTMLInputElement>('#todo-settings-save-default-checkbox');
+    if (setAsDefaultCheckbox !== null && setAsDefaultCheckbox.checked) {
+        SettingsHelper.savePageSettings<pageModels.TodosPageParameters>(todosPageSettingsStorageKey, todosPageParameters);
+    }  
+    
+    SettingsHelper.toggleShowPageSettings();
+    clearTodoItemsElements();
+    updateSettingsNotificationDiv();
+    await getTodos();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+
+}
+
+function hideAllTodoIndexMenusAndModals(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.modal-settings-panel') && !target.closest('.modal-content')) {
+        const modalDivs = document.querySelectorAll<HTMLDivElement>('.settings-modal');
+        if (modalDivs) {
+            modalDivs.forEach((modalDiv) => {
+                modalDiv.classList.add('d-none');
+            });
+        }
+    }
+    if (!target.closest('.todo-item-menu-content')) {
+        hideTodoElementMenus('');
+    }
+
+    if (!target.closest('.todo-item-more-info')) {
+        hideTodoItemMoreInfoDivs('');
+    }
+}
+
+function dispatchTodoItemChangedEvent(todoItemId: string): void {
+    const timelineItem = new TimelineItem();
+    timelineItem.itemType = TimeLineType.TodoItem;
+    timelineItem.itemId = todoItemId;
+    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+    window.dispatchEvent(timelineItemChangedEvent);
+}
+
+/** Initializes the Todos page by setting up event listeners and fetching initial data.
+ * This function is called when the DOM content is fully loaded.
+ */
+async function onDomContentLoaded(event: any): Promise<void> {
+    startLoadingItemsSpinner('loading-todo-items-div');
+    await showPopupAtLoad(TimeLineType.TodoItem);
+
+    setTodosPageParametersFromPageData();
+    loadTodosPageSettings();
+    addSelectedProgeniesChangedEventListener();
+    addTimelineChangedEventListener();
+    todosPageParameters.progenies = getSelectedProgenies();
+
+    moreTodoItemsButton = document.querySelector<HTMLButtonElement>('#more-todo-items-button');
+    if (moreTodoItemsButton !== null) {
+        moreTodoItemsButton.addEventListener('click', async () => {
+            console.log('moreTodoItemsButton');
+            await getTodos();
+        });
+    }
+
+    document.removeEventListener('click', hideAllTodoIndexMenusAndModals);
+    document.addEventListener('click', hideAllTodoIndexMenusAndModals);
+
+    SettingsHelper.initPageSettings();
+    await initialSettingsPanelSetup();
+    stopLoadingItemsSpinner('loading-todo-items-div');
+    await getTodos();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+document.removeEventListener('DOMContentLoaded', onDomContentLoaded);
+document.addEventListener('DOMContentLoaded', onDomContentLoaded);

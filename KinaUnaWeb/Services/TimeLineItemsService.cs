@@ -33,6 +33,7 @@ namespace KinaUnaWeb.Services
         IContactsHttpClient contactsHttpClient,
         ICalendarsHttpClient calendarsHttpClient,
         ISleepHttpClient sleepHttpClient,
+        ITodoItemsHttpClient todoItemsHttpClient,
         IProgenyHttpClient progenyHttpClient)
         : ITimeLineItemsService
     {
@@ -251,6 +252,31 @@ namespace KinaUnaWeb.Services
                         loc.Progeny = await progenyHttpClient.GetProgeny(loc.ProgenyId);
 
                         return new TimeLineItemPartialViewModel("_TimeLineLocationPartial", loc);
+                    }
+                }
+            }
+
+            if (model.TypeId == (int)KinaUnaTypes.TimeLineType.TodoItem)
+            {
+                if (idParse)
+                {
+                    TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(itemId);
+                    if (todoItem != null && todoItem.TodoItemId > 0)
+                    {
+                        if (todoItem.DueDate.HasValue)
+                        {
+                            todoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        }
+
+                        if (todoItem.CompletedDate.HasValue)
+                        {
+                            todoItem.CompletedDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        }
+                        todoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(todoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+                        todoItem.Progeny = await progenyHttpClient.GetProgeny(todoItem.ProgenyId);
+
+                        return new TimeLineItemPartialViewModel("_TimeLineTodoItemPartial", todoItem);
                     }
                 }
             }

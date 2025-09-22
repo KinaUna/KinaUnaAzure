@@ -1,10 +1,10 @@
-import { getCurrentProgenyId } from '../data-tools-v8.js';
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { LocationItem, LocationsPageParameters, NearByPhotosRequest, PicturesLocationsRequest, TimeLineItemViewModel, TimelineItem } from '../page-models-v8.js';
+import { getCurrentProgenyId } from '../data-tools-v9.js';
+import { addTimelineItemEventListener } from '../item-details/items-display-v9.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
+import { LocationItem, LocationsPageParameters, NearByPhotosRequest, PicturesLocationsRequest, TimeLineItemViewModel, TimelineItem } from '../page-models-v9.js';
 import { setupHereMapsPhotoLocations } from './location-tools.js';
-import * as SettingsHelper from '../settings-tools-v8.js';
-import { getSelectedProgenies } from '../settings-tools-v8.js';
+import * as SettingsHelper from '../settings-tools-v9.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
 const photoLocationsPageSettingsStorageKey = 'photo_locations_page_parameters';
 const nearByPhotosSettingsStorageKey = 'near_by_photos_parameters';
 let locationsPageParameters = new LocationsPageParameters();
@@ -199,8 +199,8 @@ function setUpMap() {
         }
         if (evt.target instanceof H.map.Marker) {
             const locationTapped = new LocationItem();
-            locationTapped.latitude = evt.target.hm.lat;
-            locationTapped.longitude = evt.target.hm.lng;
+            locationTapped.latitude = evt.target.getGeometry().lat;
+            locationTapped.longitude = evt.target.getGeometry().lng;
             locationTapped.progenyId = photoLocationsProgenyId;
             selectedLocation = locationTapped;
             // scroll to photosDiv

@@ -1,11 +1,11 @@
-const serviceWorkerVersion = 'v6';
+const serviceWorkerVersion = 'v8';
 import { setAddItemButtonEventListeners } from './addItem/add-item.js';
-import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v8.js';
-import { startFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v8.js';
-import { SetProgenyRequest } from './page-models-v8.js';
+import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v9.js';
+import { startFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v9.js';
+import { SetProgenyRequest } from './page-models-v9.js';
 import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-details.js';
-import { getSelectedProgenies } from './settings-tools-v8.js';
-import { initSidebar } from './sidebar-v8.js';
+import { getSelectedProgenies } from './settings-tools-v9.js';
+import { initSidebar } from './sidebar-v9.js';
 const serviceWorkerVersion_key = 'service_worker_version';
 /**
  * Removes all service workers from the browser.
@@ -107,6 +107,7 @@ function collapsePopupsAndModals(clickover) {
  * Also collapses pop-ups and modals if clicking outside the pop-up or modal.
  */
 function setDocumentClickEventListeners() {
+    document.removeEventListener('click', onDocumentClicked);
     document.addEventListener('click', onDocumentClicked);
     setFullPageSpinnerEventListeners();
 }
@@ -135,6 +136,7 @@ function showSelectProgenyDropdownWhenCurrentProgenyClicked() {
 function setSelectProgenyButtonsEventListeners() {
     let selectProgenyButtons = document.querySelectorAll('.select-progeny-button');
     selectProgenyButtons.forEach(function (button) {
+        button.removeEventListener('click', onSelectProgenyButtonClicked);
         button.addEventListener('click', onSelectProgenyButtonClicked);
     });
 }
@@ -174,6 +176,7 @@ function setSelectedProgenies() {
 function setSetDefaultProgenyEventListeners() {
     let setDefaultProgenyButtons = document.querySelectorAll('.set-default-progeny-button');
     setDefaultProgenyButtons.forEach(function (button) {
+        button.removeEventListener('click', onSetDefaultProgenyButtonClicked);
         button.addEventListener('click', onSetDefaultProgenyButtonClicked);
     });
 }
@@ -209,6 +212,7 @@ async function setDefaultProgeny(progenyId) {
  * Initializes the page settings when the website is first loaded.
  */
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('app.ts: DomContentLoaded');
     initPageSettings();
     showSelectProgenyDropdownWhenCurrentProgenyClicked();
     setDocumentClickEventListeners();

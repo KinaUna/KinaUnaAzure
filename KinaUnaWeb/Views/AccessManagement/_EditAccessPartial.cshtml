@@ -1,5 +1,6 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -7,40 +8,43 @@
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
-        <div class="add-item-container">
-            <h2 class="col-12">@ViewData["Title"]</h2>
-            <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
-            <div class="space-20"></div>
-            <form id="save-item-form" asp-action="EditAccess" role="form">
-                <div class="form-group">
-                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.AccessManagement, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input asp-for="Email" value="@Model.Email" class="form-control" readonly="readonly"/>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Username", PageNames.AccessManagement, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <input asp-for="UserName" class="form-control" readonly="readonly"/>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                    <div class="col-auto">
-                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                    </div>
-                </div>
-                <div class="space-20"></div>
-                <div class="form-group">
-                    <div class="col-auto control-label"></div>
-                    <div class="col-auto">
-                        <input asp-for="CurrentProgenyId" class="form-control" value="@Model.CurrentProgenyId" type="hidden"/>
-                        <input asp-for="AccessId" class="form-control" value="@Model.AccessId" type="hidden"/>
-                        <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AccessManagement, Model.LanguageId)</button>
-                        <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AccessManagement, Model.LanguageId)</a>
-                    </div>
-                </div>
-            </form>
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
+                <span class="h4 mr-3 align-bottom">@ViewData["Title"] @Model.CurrentProgeny.NickName</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
         </div>
+        <div class="space-20"></div>
+        <form id="save-item-form" asp-action="EditAccess" role="form">
+            <div class="form-group">
+                <label asp-for="Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.AccessManagement, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input asp-for="Email" value="@Model.Email" class="form-control" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="UserName" class="col-auto control-label">@await LocaleManager.GetTranslation("Username", PageNames.AccessManagement, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input asp-for="UserName" class="form-control" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="form-group">
+                <div class="col-auto control-label"></div>
+                <div class="col-auto">
+                    <input asp-for="CurrentProgenyId" class="form-control" value="@Model.CurrentProgenyId" type="hidden" />
+                    <input asp-for="AccessId" class="form-control" value="@Model.AccessId" type="hidden" />
+                    <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AccessManagement, Model.LanguageId)</button>
+                    <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AccessManagement, Model.LanguageId)</a>
+                </div>
+            </div>
+        </form>
     </div>
 </div>

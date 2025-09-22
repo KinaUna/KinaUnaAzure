@@ -64,6 +64,7 @@ namespace KinaUnaWeb.Services
             if (!string.IsNullOrEmpty(cachedBaseViewModel))
             {
                 viewModel = JsonConvert.DeserializeObject<BaseItemsViewModel>(cachedBaseViewModel);
+                viewModel.SetCurrentUsersAccessLevel();
                 return viewModel;
             }
 

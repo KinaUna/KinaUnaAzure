@@ -1,0 +1,216 @@
+﻿@using System.Web
+@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.ItemViewModels.KanbanItemViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = Model.KanbanItem.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    if (Model.ParentTodoItem != null && Model.ParentTodoItem.TodoItemId != 0)
+    {
+        title = Model.KanbanItem.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Subtask", PageNames.Todos, Model.LanguageId);
+    }
+    string setAsNotStartedString = await LocaleManager.GetTranslation("Set as not started", PageNames.Todos, Model.LanguageId);
+    string setAsInProgressString = await LocaleManager.GetTranslation("Set as in progress", PageNames.Todos, Model.LanguageId);
+    string setAsCompletedString = await LocaleManager.GetTranslation("Set as completed", PageNames.Todos, Model.LanguageId);
+    string setAsCancelledString = await LocaleManager.GetTranslation("Set as cancelled", PageNames.Todos, Model.LanguageId);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body item-details-content modal-settings-panel bg-todos">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-todos-header">
+                <img src="@Model.KanbanItem.TodoItem.Progeny.PictureLink" class="item-details-title-picture"/>
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link kanban-item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0 bg-todos">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">fact_check</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        @if (Model.CurrentUser.CanUserAddItems)
+                        {
+                            <button class="btn btn-link p-3 text-white-50 float-right copy-item-button" data-copy-item-item-id="@Model.KanbanItem.TodoItem.TodoItemId" data-copy-item-type="todo">
+                                <i class="material-icons kinauna-icon-medium">content_copy</i>
+                            </button>
+                        }
+                        @Model.KanbanItem.TodoItem.Title
+                        @if (Model.ParentTodoItem != null && Model.ParentTodoItem.TodoItemId != 0)
+                        {
+                            <div class="text-white-75 small font-weight-light">
+                                Parent todo: @Model.ParentTodoItem.Title
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="row text-white">
+                    <div class="col-auto">
+                        <span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId):</span> @await LocaleManager.GetTranslation(Model.KanbanItem.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)
+                        <i class="material-icons-small">@Model.KanbanItem.TodoItem.StatusIcon()</i>
+                    </div>
+                </div>
+                @if (Model.KanbanItem.TodoItem.DueDate.HasValue)
+                {
+                    <div class="row text-white">
+                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Due Date", PageNames.Todos, Model.LanguageId):</span> @Model.KanbanItem.TodoItem.DueDate?.ToString("dd-MMM-yyyy")</div>
+                    </div>
+                }
+                @if (Model.KanbanItem.TodoItem.StartDate.HasValue)
+                {
+                    <div class="row text-white">
+                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Start Date", PageNames.Todos, Model.LanguageId):</span> @Model.KanbanItem.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                    </div>
+                }
+                @if (Model.KanbanItem.TodoItem.CompletedDate.HasValue && Model.KanbanItem.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
+                {
+                    <div class="row text-white">
+                        <div class="col-auto"><span class="text-white-75">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId):</span> @Model.KanbanItem.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</div>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.KanbanItem.TodoItem.Description))
+                {
+                    <div class="space-10"></div>
+                    <div class="row text-white">
+                        <div class="col-auto">
+                            <span class="text-white-75">@await LocaleManager.GetTranslation("Description", PageNames.Todos, Model.LanguageId):</span>
+                        </div>
+                    </div>
+                    <div class="timeline-text row m-0 text-white">
+                        <div class="col-12 bg-display-rich-text p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.KanbanItem.TodoItem.Description))</div>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.KanbanItem.TodoItem.Location))
+                {
+                    <div class="space-10"></div>
+                    <div class="row">
+                        <div class="col-auto text-white-75">
+                            <i class="material-icons" style="font-size: 18px;">location_on</i> @Model.KanbanItem.TodoItem.Location
+                        </div>
+                    </div>
+                }
+                <div class="space-20"></div>
+                <div class="row">
+                    <div class="col-12">
+                        @if (!string.IsNullOrEmpty(Model.KanbanItem.TodoItem.Tags))
+                        {
+                            List<string> tagsList = Model.KanbanItem.TodoItem.Tags.Split(',').ToList();
+                            <div class="float-right">
+                                @foreach (string tagString in tagsList)
+                                {
+                                    <span class="btn tag-item tag-item-sm">@tagString</span>
+                                }
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.KanbanItem.TodoItem.Context))
+                        {
+                            List<string> contextsList = Model.KanbanItem.TodoItem.Context.Split(',').ToList();
+                            <div class="float-right">
+                                @foreach (string contextsString in contextsList)
+                                {
+                                    <span class="btn context-item tag-item-sm">@contextsString</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="col-12">
+                    <div class="space-20"></div>
+                    <div class="row ml-5">
+                        <div class="col-12">
+                            @if (Model.KanbanItem.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-not-started-id="@Model.KanbanItem.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">pending_actions</i> @setAsNotStartedString
+                                </button>
+                            }
+                            @if (Model.KanbanItem.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-in-progress-id="@Model.KanbanItem.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">assignment</i> @setAsInProgressString
+                                </button>
+                            }
+                            @if (Model.KanbanItem.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-completed-id="@Model.KanbanItem.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> @setAsCompletedString
+                                </button>
+                            }
+                            @if (Model.KanbanItem.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
+                            {
+                                <button class="btn btn-link p-3 float-right text-white-75" data-set-todo-item-cancelled-id="@Model.KanbanItem.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
+            </div>
+            @if (Model.ParentTodoItem == null || Model.ParentTodoItem.TodoItemId == 0)
+            {
+                <div class="col">
+                    <div class="space-50"></div>
+                    <div class="row text-white">
+                        <div class="col-12 text-white-75">
+                            @await LocaleManager.GetTranslation("Subtasks", PageNames.Todos, Model.LanguageId)
+                            @if (Model.KanbanItem.TodoItem.SubtaskCount != 0)
+                            {
+                                <span class="text-appendage-light ml-2"> [@Model.KanbanItem.TodoItem.CompletedSubtaskCount / @Model.KanbanItem.TodoItem.SubtaskCount]</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="space-10"></div>
+                    @if (Model.IsCurrentUserProgenyAdmin)
+                    {
+                        <div class="row text-white">
+                            <div class="col-12">
+                                <form id="add-subtask-inline-form" asp-controller="Subtasks" asp-action="AddSubtaskInline">
+                                    <div class="form-group">
+                                        <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control"
+                                               style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
+                                        <button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
+                                    </div>
+                                    <input name="ParentTodoItemId" type="hidden" value="@Model.KanbanItem.TodoItem.TodoItemId" />
+                                    <input name="Status" type="hidden" value="0" />
+                                </form>
+                            </div>
+                        </div>
+                        <div class="space-20"></div>
+                    }
+                    <div id="todo-details-sub-tasks-div" class="row">
+                        <div class="w-100 ml-3 mr-3">
+                            <div id="todo-details-sub-tasks-list-div" class="col-12">
+                            </div>
+                            <div id="load-more-subtasks-wrapper-div" class="col-12" style="height: 150px;">
+                                <button id="more-subtasks-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+                                <div id="loading-subtasks-div" class="w-100">
+                                    <div class="space-50"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="space-10"></div>
+            <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.KanbanItem.TodoItem.CreatedBy</div>
+            @if(Model.IsCurrentUserProgenyAdmin){
+                <div class="col-12">
+                    <a data-edit-item-type="kanbanitem" data-edit-item-item-id="@Model.KanbanItem.KanbanItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a data-delete-item-type="kanbanitem" data-delete-item-item-id="@Model.KanbanItem.KanbanItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

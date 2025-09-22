@@ -1,6 +1,7 @@
-import { setMomentLocale } from '../data-tools-v8.js';
-import { showPopupAtLoad } from '../item-details/items-display-v8.js';
-import { TimeLineType } from '../page-models-v8.js';
+import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
+import { setMomentLocale } from '../data-tools-v9.js';
+import { showPopupAtLoad } from '../item-details/items-display-v9.js';
+import { TimeLineType } from '../page-models-v9.js';
 /**
  * Sets up the Vocabulary chart.
  */
@@ -56,13 +57,15 @@ function setupVocabularyDataTable() {
     $.fn.dataTable.moment('DD-MMMM-YYYY');
     $('#word-list-table').DataTable({
         'scrollX': false,
-        'order': [[4, 'desc']]
+        'order': [[4, 'desc']],
+        drawCallback: setEditItemButtonEventListeners
     });
 }
 document.addEventListener('DOMContentLoaded', async function () {
     setupVocabularyChart();
     setupVocabularyDataTable();
     await showPopupAtLoad(TimeLineType.Vocabulary);
+    setEditItemButtonEventListeners();
     return new Promise(function (resolve, reject) {
         resolve();
     });

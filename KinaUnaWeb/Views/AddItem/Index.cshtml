@@ -27,6 +27,14 @@
                 </a>
             </div>
             <div class="col">
+                <a asp-controller="Todos" asp-action="AddTodo" class="btn btn-add-note leave-page">
+                    <div class="space-10"></div>
+                    <i class="material-icons" style="font-size: 42px;">fact_check</i>
+                    <div class="space-10"></div>
+                    @await LocaleManager.GetTranslation("Todo", PageNames.AddItem, Model.LanguageId)
+                </a>
+            </div>
+            <div class="col">
                 <a asp-controller="Sleep" asp-action="AddSleep" class="btn btn-add-sleep leave-page">
                     <div class="space-10"></div>
                     <i class="material-icons" style="font-size: 42px;">hotel</i>

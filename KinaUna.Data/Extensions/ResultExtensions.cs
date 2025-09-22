@@ -26,9 +26,8 @@ namespace KinaUna.Data.Extensions
         /// <typeparam name="TOut"></typeparam>
         /// <param name="result"></param>
         /// <param name="func"></param>
-        /// <param name="error"></param>
         /// <returns></returns>
-        public static CustomResult<TOut> TryCatch<TIn, TOut>(this CustomResult<TIn> result, Func<TIn, TOut> func, CustomError error)
+        public static CustomResult<TOut> TryCatch<TIn, TOut>(this CustomResult<TIn> result, Func<TIn, TOut> func)
         {
             try
             {

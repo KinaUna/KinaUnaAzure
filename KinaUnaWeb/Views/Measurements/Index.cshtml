@@ -20,19 +20,19 @@
 }
 
 <div id="popup-measurement-id-div" class="d-none" data-popup-measurement-id="@Model.MeasurementId"></div>
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+<div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
     @if (Model.MeasurementsList == null || !Model.MeasurementsList.Any())
     {
-        <h2>@ViewData["Title"]</h2>
+        <div class="h-4">@ViewData["Title"]</div>
         <div>
             @await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Measurements, Model.LanguageId)
         </div>
     }
     else
     {
-        <h2>@ViewData["Title"]</h2>
+        <div class="h-4">@ViewData["Title"]</div>
         <div class="table-responsive">
-            <table class="table table-bordered table-striped" style="margin-top: 15px;">
+            <table id="measurements-list" class="table table-bordered table-striped" style="margin-top: 15px;">
                 <thead>
                     <tr>
                         <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Measurements, Model.LanguageId)</th>
@@ -61,7 +61,7 @@
                             {
                                 <td>
                                     <div>
-                                        <a asp-controller="Measurements" asp-action="EditMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-info btn-round btn-sm leave-page">
+                                        <a data-edit-item-type="measurement" data-edit-item-item-id="@measurementItem.MeasurementId" class="btn btn-info btn-round btn-sm item-details-edit-button edit-item-button">
                                             <i class="fas fa-pencil-alt"></i>
                                         </a>
                                         <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-danger btn-round btn-sm leave-page">

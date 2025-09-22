@@ -82,10 +82,10 @@ namespace KinaUna.OpenIddict.Services
             if (addResponse.IsSuccessStatusCode)
             {
                 string responseContent = await addResponse.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<List<UserInfo>>(responseContent) ?? new List<UserInfo>();
+                return JsonConvert.DeserializeObject<List<UserInfo>>(responseContent) ?? [];
             }
 
-            return new List<UserInfo>();
+            return [];
         }
 
         public async Task<UserInfo?> AddUserInfoToDeletedUserInfos(UserInfo userInfo)

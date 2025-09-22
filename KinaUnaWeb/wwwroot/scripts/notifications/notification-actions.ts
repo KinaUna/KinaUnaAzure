@@ -7,7 +7,7 @@ import { popupNoteItem } from "../notes/note-details.js";
 import { popupSleepItem } from "../sleep/sleep-details.js";
 import { popupLocationItem } from "../locations/location-details.js";
 import { popupMeasurementItem } from "../measurements/measurement-details.js";
-import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v8.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
 /**
  * Used to handle the click event on a notification.
  * Updates the notification as read if it is unread.

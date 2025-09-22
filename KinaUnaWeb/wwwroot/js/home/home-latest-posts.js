@@ -1,8 +1,8 @@
-import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v8.js';
-import { getCurrentProgenyId } from '../data-tools-v8.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v8.js';
-import { addTimelineItemEventListener } from '../item-details/items-display-v8.js';
-import { getSelectedProgenies } from '../settings-tools-v8.js';
+import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v9.js';
+import { getCurrentProgenyId } from '../data-tools-v9.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
+import { addTimelineItemEventListener } from '../item-details/items-display-v9.js';
+import { getSelectedProgenies } from '../settings-tools-v9.js';
 let timelineItemsList = [];
 const timeLineParameters = new TimelineParameters();
 let latestPostsProgenyId;
@@ -114,7 +114,7 @@ function addSelectedProgeniesChangedEventListener() {
  */
 document.addEventListener('DOMContentLoaded', async function () {
     latestPostsProgenyId = getCurrentProgenyId();
-    timeLineParameters.count = 5;
+    timeLineParameters.count = 10;
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
     timeLineParameters.progenies = getSelectedProgenies();

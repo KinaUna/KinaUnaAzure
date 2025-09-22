@@ -1,6 +1,6 @@
 import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
-import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
-import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
+import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
 /**
  * Adds event listeners to all elements with the data-note-id attribute.
  * When clicked, the DisplayNoteItem function is called.
@@ -53,6 +53,7 @@ async function displayNoteItem(noteId) {
             const noteElementHtml = await response.text();
             const noteDetailsPopupDiv = document.querySelector('#item-details-div');
             if (noteDetailsPopupDiv) {
+                noteDetailsPopupDiv.innerHTML = '';
                 const fullScreenOverlay = document.createElement('div');
                 fullScreenOverlay.classList.add('full-screen-bg');
                 fullScreenOverlay.innerHTML = noteElementHtml;

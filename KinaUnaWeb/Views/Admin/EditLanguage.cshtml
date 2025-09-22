@@ -8,19 +8,19 @@
         <div class="space-20"></div>
         <form asp-action="EditLanguage" role="form" method="post" enctype="multipart/form-data">
             <div class="form-group">
-                <label class="col-3 col-lg-2" for="languageNameInput">Language name</label>
+                <label asp-for="Name" class="col-3 col-lg-2" for="languageNameInput">Language name</label>
                 <div class="col-auto">
                     <input type="text" id="languageNameInput" class="form-control" placeholder="Language name" asp-for="Name" value="@Model.Name"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-3 col-lg-2" for="codeInput">Language name</label>
+                <label asp-for="Code" class="col-3 col-lg-2" for="codeInput">Language name</label>
                 <div class="col-auto">
                     <input type="text" id="codeInput" class="form-control" placeholder="Language code" asp-for="Code" value="@Model.Code"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-3 col-lg-2" for="iconInput">Icon</label>
+                <label asp-for="Icon" class="col-3 col-lg-2" for="iconInput">Icon</label>
                 <div class="col-auto">
                     <input type="text" id="iconInput" class="form-control" placeholder="Icon" asp-for="Icon" value="@Model.Icon"/>
                 </div>

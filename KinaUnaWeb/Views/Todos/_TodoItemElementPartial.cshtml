@@ -1,0 +1,165 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.TypeScriptModels.TodoItems.TodoItemResponse
+@inject ILocaleManager LocaleManager
+@{
+    string setAsNotStartedString = await LocaleManager.GetTranslation("Set as not started", PageNames.Todos, Model.LanguageId);
+    string setAsInProgressString = await LocaleManager.GetTranslation("Set as in progress", PageNames.Todos, Model.LanguageId);
+    string setAsCompletedString = await LocaleManager.GetTranslation("Set as completed", PageNames.Todos, Model.LanguageId);
+    string setAsCancelledString = await LocaleManager.GetTranslation("Set as cancelled", PageNames.Todos, Model.LanguageId);
+    string addToKanbanBoardString = await LocaleManager.GetTranslation("Add to Kanban board", PageNames.Todos, Model.LanguageId);
+    string showDetailsString = await LocaleManager.GetTranslation("Show details", PageNames.Todos, Model.LanguageId);
+    string assignToString = await LocaleManager.GetTranslation("Assign to ..", PageNames.Todos, Model.LanguageId);
+}
+<div class="col-12 cols-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
+    <div class="card-compact bg-todos todo-item m-1" data-todo-id="@Model.TodoItemId" align="left" style="background: @Model.TodoItem.StatusBackgroundColor()">
+        @if (Model.TodoItem.TodoItemId == 0)
+        {
+            <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
+        }
+        else
+        {
+            <div class="row m-0">
+                <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; z-index: 10;" />
+                <div class="col p-0 card-compact-title text-left">
+                    <div class="row m-0">
+                        <div class="col-auto pl-1 pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">@Model.TodoItem.StatusIcon()</i> </div>
+                        <div class="col col-md-auto p-0 pt-2 h5" style="white-space: nowrap; overflow: hidden;">
+                            <span style="white-space: nowrap; overflow: hidden;">@Model.TodoItem.Title</span>
+                        </div>
+                        <div class="col-auto p-0 pt-2 h5">
+                            @if (Model.TodoItem.SubtaskCount != 0)
+                            {
+                                <span class="text-appendage-light ml-2 mr-6"> [@Model.TodoItem.CompletedSubtaskCount / @Model.TodoItem.SubtaskCount]</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <div id="todo-item-more-div-@Model.TodoItem.TodoItemId" class="row m-0 d-none todo-item-more-info" data-todo-item-more-id="@Model.TodoItem.TodoItemId">
+                <div class="col-12 p-0 card-compact-body">
+                    <div class="row m-0">
+                        <div class="col-auto text-left mb-2">
+
+                            <span class="text-opacity-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId):</span> @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)
+                        </div>
+                    </div>
+
+                    <div class="row m-0">
+                        @if (Model.TodoItem.DueDate.HasValue)
+                        {
+                            <div class="col-auto text-left"><span class="text-opacity-75">@await LocaleManager.GetTranslation("Due", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.DueDate.Value.ToString("dd-MMM-yyyy")</div>
+                        }
+                        @if (Model.TodoItem.StartDate.HasValue)
+                        {
+                            <div class="col-auto text-left"><span class="text-opacity-75">@await LocaleManager.GetTranslation("Start", PageNames.Todos, Model.LanguageId):</span> @Model.TodoItem.StartDate.Value.ToString("dd-MMM-yyyy")</div>
+                        }
+                        @if (Model.TodoItem.CompletedDate.HasValue && Model.TodoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
+                        {
+                            <div class="col-auto text-left">
+                                <span class="text-opacity-75">@await LocaleManager.GetTranslation("Completed Date", PageNames.Todos, Model.LanguageId): @Model.TodoItem.CompletedDate?.ToString("dd-MMM-yyyy")</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.TodoItem.Location))
+                        {
+                            <div class="col-auto text-left"><i class="material-icons" style="font-size: 18px;">location_on</i> @Model.TodoItem.Location</div>
+                        }
+                    </div>
+                    <div class="row m-0">
+                        <div class="col"></div>
+                        @if (!string.IsNullOrEmpty(Model.TodoItem.Tags) || !string.IsNullOrEmpty(Model.TodoItem.Context))
+                        {
+                            <div class="col">
+                                @if (!string.IsNullOrEmpty(Model.TodoItem.Tags))
+                                {
+                                    List<string> tagsList = Model.TodoItem.Tags.Split(',').ToList();
+                                    <div class="float-right ml-1 mr-1">
+                                        @foreach (string tagString in tagsList)
+                                        {
+                                            <span class="btn tag-item tag-item-xsm">@tagString</span>
+                                        }
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.TodoItem.Context))
+                                {
+                                    List<string> contextsList = Model.TodoItem.Context.Split(',').ToList();
+                                    <div class="float-right ml-1 mr-1">
+                                        @foreach (string contextString in contextsList)
+                                        {
+                                            <span class="btn context-item tag-item-xsm">@contextString</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row m-0">
+                <div class="col-12 p-0">
+                    <div class="w-100 mt-2">
+                        <button class="kanban-card-menu-button" data-todo-item-more-info-button-id="@Model.TodoItem.TodoItemId"><i class="material-icons">expand_more</i></button>
+                        <button class="kanban-card-menu-button float-right" data-todo-item-menu-button-id="@Model.TodoItem.TodoItemId"><i class="material-icons">more_horiz</i></button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-12 mb-1">
+        <div class="todo-item-menu-content d-none" data-todo-item-menu-id="@Model.TodoItem.TodoItemId">
+            <button class="kanban-card-menu-item-button" data-show-details-todo-item-id="@Model.TodoItem.TodoItemId">
+                <i class="material-icons kanban-menu-material-icons">fact_check</i> @showDetailsString
+            </button>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="item-menu-divider"></div>
+                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
+                {
+                    <button class="kanban-card-menu-item-button no-pop-up" data-set-todo-item-not-started-id="@Model.TodoItem.TodoItemId">
+                        <i class="material-icons kanban-menu-material-icons">pending_actions</i> @setAsNotStartedString
+                    </button>
+                }
+                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
+                {
+                    <button class="kanban-card-menu-item-button no-pop-up" data-set-todo-item-in-progress-id="@Model.TodoItem.TodoItemId">
+                        <i class="material-icons kanban-menu-material-icons">assignment</i> @setAsInProgressString
+                    </button>
+                }
+                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
+                {
+                    <button class="kanban-card-menu-item-button no-pop-up" data-set-todo-item-completed-id="@Model.TodoItem.TodoItemId">
+                        <i class="material-icons kanban-menu-material-icons">assignment_turned_in</i> @setAsCompletedString
+                    </button>
+                }
+                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
+                {
+                    <button class="kanban-card-menu-item-button no-pop-up" data-set-todo-item-cancelled-id="@Model.TodoItem.TodoItemId">
+                        <i class="material-icons kanban-menu-material-icons">playlist_remove</i> @setAsCancelledString
+                    </button>
+                } 
+                <div class="item-menu-divider"></div>
+                <button class="kanban-card-menu-item-button" data-todo-assign-to-id="@Model.TodoItem.TodoItemId">
+                    <i class="material-icons kanban-menu-material-icons">assignment_ind</i> @assignToString
+                </button>
+                <div class="item-menu-divider"></div>
+                <button class="kanban-card-menu-item-button" data-todo-add-to-kanban-id="@Model.TodoItem.TodoItemId">
+                    <i class="material-icons kanban-menu-material-icons">view_kanban</i> @addToKanbanBoardString
+                </button>
+                <div class="item-menu-divider"></div>
+                <button class="kanban-card-menu-item-button edit-item-button" data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId">
+                    <i class="material-icons kanban-menu-material-icons">edit</i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
+                </button>
+
+                <button class="kanban-card-menu-item-button delete-item-button" data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId">
+                    <i class="material-icons kanban-menu-material-icons">delete</i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
+                </button>
+            }
+        </div>
+    </div>
+</div>
+@if (Model.IsCurrentUserProgenyAdmin)
+{
+    <div id="add-todo-item-to-kanban-board-modal-@Model.TodoItem.TodoItemId" class="d-none settings-modal" tabindex="-1" role="dialog"></div>
+}

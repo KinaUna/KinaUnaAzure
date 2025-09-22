@@ -1,6 +1,6 @@
 ﻿import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
-import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v8.js';
-import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v8.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
+import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
 
 /**
  * Adds event listeners to all elements with the data-measurement-id attribute.
@@ -16,6 +16,11 @@ export function addMeasurementItemListeners(itemId: string): void {
     }
 }
 
+/**
+ * Event handler for when a measurement item div is clicked.
+ * Calls the DisplayMeasurementItem function with the measurement id.
+ * @param {MouseEvent} event The click event.
+ */
 async function onMeasurmentItemDivClicked(event: MouseEvent): Promise<void> {
     const measurementElement: HTMLDivElement = event.currentTarget as HTMLDivElement;
     if (measurementElement !== null) {

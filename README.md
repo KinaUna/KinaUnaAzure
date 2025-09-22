@@ -1,10 +1,10 @@
 # KinaUnaAzure
 
 
-KinaUna is an app for managing family data, and the KinaUnaAzure solution contains the backend APIs, frontend web app, and IdentityServer.
+KinaUna is an app for managing family data, and the KinaUnaAzure solution contains the backend APIs, frontend web app, and OpenIddict.
 
 
-The APIs and IdentityServer are also intended to be used by mobile apps.
+The APIs and OpenIddict are also intended to be used by mobile apps.
 A mobile app exists here: [https://github.com/KinaUna/KinaUnaXamarin](https://github.com/KinaUna/KinaUnaXamarin) 
 For now it is too much work for me to keep the mobile app updated and dealing with the frequently changing requirements, so currently it is not being updated and shouldn't be used anymore.
 
@@ -100,6 +100,9 @@ Todo: Configuration Templates, showing where to put the above information and ho
     - Manage page texts (about page, terms and conditions, privacy, etc.)
     - Manage supported languages
 
+### Features currently in development:
+- Todo
+- Kanban
 
 ### Currently wanted/missing features:
 - Landing page
@@ -109,8 +112,6 @@ Todo: Configuration Templates, showing where to put the above information and ho
 
 
 ### Potential future features:
-- Todo
-- Kanban
 - Messaging
 - Documents
 - Copy items to another person
@@ -136,7 +137,8 @@ Todo: Configuration Templates, showing where to put the above information and ho
 ### Solution architecture
 The code is organized into 4 core projects, 2 test projects, and 1 experimental project:
 - KinaUna.Data: Shared data, models, constants for the other projects.
-- KinaUna.IDP: The identity, authorization, authentication service.
+- KinaUna.OpenIddict: The identity, authorization, authentication service.
+- KinaUna.OpenIddict.Tests: xUnit tests for KinaUna.OpenIddict
 - KinaUnaProgenyApi: The API for the web app and mobile app. (This used to be split in two, with a separate MediaApi, but to reduce costs they were merged)
 - KinaUnaProgenyApi.Tests: For xUnit unit tests.
 - KinaUnaWeb: The web application.

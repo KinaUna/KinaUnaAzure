@@ -1,4 +1,6 @@
-﻿using KinaUnaWeb.Models;
+﻿using KinaUna.Data.Extensions;
+using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.HomeViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -8,8 +10,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
-using KinaUnaWeb.Models.HomeViewModels;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -44,7 +44,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteFile(FileItem model)
         {
-            
+            // Todo: Implement file deletion from blob storage.
             throw new NotImplementedException();
         }
 
@@ -87,6 +87,18 @@ namespace KinaUnaWeb.Controllers
             return Content("");
         }
 
+        /// <summary>
+        /// Returns the appropriate modal content for adding a new item based on the specified item type.
+        /// </summary>
+        /// <remarks>This method dynamically determines the appropriate action to redirect to based on the
+        /// provided <paramref name="itemType"/>. If the item type is not recognized, a "Not Found" partial view is
+        /// returned.</remarks>
+        /// <param name="itemType">The type of item to add. Valid values include "user", "progeny", "note", "calendar", "sleep", "picture",
+        /// "video", "vocabulary", "friend", "measurement", "contact", "skill", "vaccination", "location", and "todo".</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the item, if applicable.</param>
+        /// <returns>An <see cref="IActionResult"/> that redirects to the appropriate action for adding the specified item type.
+        /// If the <paramref name="itemType"/> is invalid, returns a partial view indicating that the requested content
+        /// was not found.</returns>
         [HttpGet]
         public IActionResult GetAddItemModalContent(string itemType, int progenyId)
         {
@@ -160,9 +172,31 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("AddLocation", "Locations");
             }
 
+            if (itemType == "todo")
+            {
+                return RedirectToAction("AddTodo", "Todos");
+            }
+
+            if (itemType == "kanbanboard")
+            {
+                return RedirectToAction("AddKanbanBoard", "Kanbans");
+            }
+
             return PartialView("../Shared/_NotFoundPartial");
         }
 
+        /// <summary>
+        /// Retrieves the appropriate modal content for editing an item based on its type.
+        /// </summary>
+        /// <remarks>This method dynamically determines the appropriate controller and action to handle
+        /// the editing of the specified item type. If the item type is invalid or unsupported, a "Not Found" partial
+        /// view is returned.</remarks>
+        /// <param name="itemType">The type of the item to be edited. Valid values include "user", "progeny", "note", "calendar", "sleep",
+        /// "vocabulary", "friend", "measurement", "contact", "skill", "vaccination", "location", "picture", "video",
+        /// and "todo".</param>
+        /// <param name="itemId">The unique identifier of the item to be edited.</param>
+        /// <returns>An <see cref="IActionResult"/> that redirects to the appropriate edit action for the specified item type. If
+        /// the item type is not recognized, returns a partial view indicating that the item was not found.</returns>
         [HttpGet]
         public IActionResult GetEditItemModalContent(string itemType, int itemId)
         {
@@ -236,9 +270,34 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Video", "Videos", new { id = itemId, partialView = true });
             }
 
+            if (itemType == "todo")
+            {
+                return RedirectToAction("EditTodo", "Todos", new { itemId, partialView = true });
+            }
+
+            if (itemType == "subtask")
+            {
+                return RedirectToAction("EditSubtask", "Subtasks", new { itemId });
+            }
+
+            if (itemType == "kanbanboard")
+            {
+                return RedirectToAction("EditKanbanBoard", "Kanbans", new { kanbanBoardId = itemId });
+            }
+
             return PartialView("../Shared/_NotFoundPartial", new { itemId });
         }
 
+        /// <summary>
+        /// Retrieves the appropriate modal content for deleting an item based on its type.
+        /// </summary>
+        /// <remarks>This method determines the appropriate delete action based on the provided <paramref
+        /// name="itemType"/>  and redirects to the corresponding controller action. If the item type is unrecognized, a
+        /// "Not Found" partial view is returned.</remarks>
+        /// <param name="itemType">The type of the item to delete. Valid values are "user", "progeny", or "note".</param>
+        /// <param name="itemId">The unique identifier of the item to delete.</param>
+        /// <returns>An <see cref="IActionResult"/> that redirects to the corresponding delete action for the specified item
+        /// type,  or a partial view indicating that the item was not found if the type is invalid.</returns>
         [HttpGet]
         public IActionResult GetDeleteItemModalContent(string itemType, int itemId)
         {
@@ -256,6 +315,23 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("DeleteNote", "Notes", new { noteId = itemId });
             }
+
+            if (itemType == "todo")
+            {
+                return RedirectToAction("DeleteTodo", "Todos", new { itemId });
+            }
+
+            if (itemType == "subtask")
+            {
+                return RedirectToAction("DeleteSubtask", "Subtasks", new { itemId });
+            }
+
+            if (itemType == "kanbanboard")
+            {
+                return RedirectToAction("DeleteKanbanBoard", "Kanbans", new { kanbanBoardId = itemId });
+            }
+
+            // Todo: Other item types can be added here as needed.
 
             return PartialView("../Shared/_NotFoundPartial");
         }

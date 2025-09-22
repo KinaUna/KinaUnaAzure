@@ -5,12 +5,14 @@
 @inject ILocaleManager LocaleManager
 @{
     string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Measurement added", PageNames.Measurements, Model.LanguageId);
+    const int changedItemTypeMeasurement = (int)KinaUnaTypes.TimeLineType.Measurement;
 }
+<div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeMeasurement" data-changed-item-item-id="@Model.MeasurementItem.MeasurementId"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-measurement item-details-content">
-        <div class="row m-0">
-            <div class="col-12">
-                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-measurement-header">
+                <img src="@Model.MeasurementItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>

@@ -16,13 +16,32 @@
 <div id="timeline-page-parameters-div" class="d-none" data-timeline-page-parameters="@pageParameters"></div>
 <div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
-<div class="ml-md-auto mr-md-auto col" style="max-width: 600px;">
-    <div id="settings-notification-div" class="float-right small text-muted"></div>
-    <div id="page-title-div" class="h2">
-        @ViewData["Title"]
+<div class="col">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-tab-container">
+                <div class="page-tab">
+                    <a class="btn-page-tab " asp-controller="Home" asp-action="Index">
+                        <i class="material-icons sidebar-icon">home</i> @await LocaleManager.GetTranslation("Home", PageNames.Layout, Model.LanguageId)
+                    </a>
+                </div>
+                <div class="page-tab active">
+                    <a class="btn-page-tab active leave-page" asp-controller="Timeline" asp-action="Index">
+                        <i class="material-icons sidebar-icon">update</i> @await LocaleManager.GetTranslation("Timeline", PageNames.Layout, Model.LanguageId)
+                    </a>
+                </div>
+                <div class="page-tab">
+                    <a class="btn-page-tab leave-page" asp-controller="Today" asp-action="OnThisDay">
+                        <i class="material-icons sidebar-icon">today</i> @await LocaleManager.GetTranslation("On This Day", PageNames.Layout, Model.LanguageId)
+                    </a>
+                </div>
+
+            </div>
+            <div id="settings-notification-div" class="mt-5 float-right small text-muted"></div>
+        </div>
     </div>
     <div class="space-20"></div>
-    <div id="latest-posts-parent-div" class="d-none">
+    <div id="latest-posts-parent-div" class="d-none ml-md-auto mr-md-auto" style="max-width: 600px;">
         <div id="timeline-items-div">
 
         </div>
@@ -179,6 +198,11 @@
                         <div class="col">
                             <button class="btn btn-outline-info timeline-type-filter-button" data-type="12">
                                 @await LocaleManager.GetTranslation("Locations", PageNames.Layout, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-info timeline-type-filter-button" data-type="15">
+                                @await LocaleManager.GetTranslation("Todos", PageNames.Layout, Model.LanguageId)
                             </button>
                         </div>
                     </div>

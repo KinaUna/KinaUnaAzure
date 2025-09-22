@@ -1,0 +1,47 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.TypeScriptModels.Kanbans.KanbanBoardElementResponse
+@inject ILocaleManager LocaleManager
+<button class="col-12 card text-white bg-todos kanban-board-item" data-kanban-board-id="@Model.KanbanBoardId" align="left" style="min-width: 49%;">
+    @if (Model.KanbanBoard.KanbanBoardId == 0)
+    {
+        <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
+    }
+    else
+    {
+     
+        <div class="card-header rounded w-100 p-0 pt-2" style="padding-right: 5px; margin-bottom: 0;">
+            <div class="row">
+                <img src="@Model.KanbanBoard.Progeny.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;"/>
+                <div class="col-auto card-title text-left"><span class="pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">view_kanban</i> </span><span class="h5">@Model.KanbanBoard.Title</span></div>
+                @if (!string.IsNullOrEmpty(Model.KanbanBoard.Tags) || !string.IsNullOrEmpty(Model.KanbanBoard.Context))
+                {
+                    <div class="col mr-5">
+                        @if (!string.IsNullOrEmpty(Model.KanbanBoard.Tags))
+                        {
+                            List<string> tagsList = Model.KanbanBoard.Tags.Split(',').ToList();
+                            <div class="float-right ml-1 mr-1">
+                                @foreach (string tagString in tagsList)
+                                {
+                                    <span class="btn tag-item tag-item-xsm">@tagString</span>
+                                }
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.KanbanBoard.Context))
+                        {
+                            List<string> contextsList = Model.KanbanBoard.Context.Split(',').ToList();
+                            <div class="float-right ml-1 mr-1">
+                                @foreach (string contextString in contextsList)
+                                {
+                                    <span class="btn context-item tag-item-xsm">@contextString</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</button>
+<div class="space-20"></div>

@@ -4,6 +4,7 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Sleep calendar", PageNames.Sleep, Model.LanguageId);
+    string sleepString = await LocaleManager.GetTranslation("Sleep list", PageNames.Sleep, Model.LanguageId);
 }
 @section Scripts{
     <link href="/lib/fullcalendar/fullcalendar.min.css" rel="stylesheet" asp-append-version="true"/>
@@ -135,23 +136,32 @@
     });
 
 </script>
+<div class="col-12">
+    @if (Model.IsCurrentUserProgenyAdmin)
+    {
+        <div class="btn-group" style="float: right;">
+            <a asp-controller="Sleep" asp-action="AddSleep" class="btn btn-success btn-round leave-page">
+                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add sleep", PageNames.Sleep, Model.LanguageId)
+            </a>
+        </div>
+    }
+    <div class="page-tab-container ml-1">
+        <div class="page-tab" id="page-title-div">
+            <a class="btn-page-tab" asp-controller="Sleep" asp-action="Index" asp-route-childId="@Model.CurrentProgenyId">
+                <i class="fas fa-list"></i> @sleepString
+            </a></div>
+        <div class="page-tab active">
+            <a class="btn-page-tab active" asp-controller="Sleep" asp-action="SleepCalendar" asp-route-childId="@Model.CurrentProgenyId">
+                <i class="far fa-calendar-alt"></i> @await LocaleManager.GetTranslation("Sleep calendar", PageNames.Sleep, Model.LanguageId)
+            </a>
+        </div>
+    </div>
+    <div class="space-20"></div>
+    <div class="h2 ml-1">@ViewData["Title"]</div>
+    <br/>
+    <div style="clear: both;">
+        <div class="fc fc-unthemed fc-ltr" id="calendar">
+        </div>
+    </div>
+</div>
 
-<div class="btn-group" style="float: right;">
-    <a asp-controller="Sleep" asp-action="Index" asp-route-childId="@Model.CurrentProgenyId" class="btn btn-primary leave-page">
-        <i class="fas fa-list"></i> @await LocaleManager.GetTranslation("Go to sleep list", PageNames.Sleep, Model.LanguageId)
-    </a>
-</div>
-@if (Model.IsCurrentUserProgenyAdmin)
-{
-    <div class="btn-group" style="float: right;">
-        <a asp-controller="Sleep" asp-action="AddSleep" class="btn btn-success btn-round leave-page">
-            <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add sleep", PageNames.Sleep, Model.LanguageId)
-        </a>
-    </div>
-}
-<h2>@ViewData["Title"]</h2>
-<br />
-<div style="clear: both;">
-    <div class="fc fc-unthemed fc-ltr" id="calendar">
-    </div>
-</div>
