@@ -216,6 +216,14 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest("The Kanban item must be linked to a valid Todo item.");
             }
 
+            if (kanbanItem.TodoItem == null)
+            {
+                kanbanItem.TodoItem = await todoItemsService.GetTodoItemById(kanbanItem.TodoItemId);
+                if (kanbanItem.TodoItem == null)
+                {
+                    return BadRequest("The linked Todo item could not be found.");
+                }
+            }
             Progeny progeny = await progenyService.GetProgeny(kanbanItem.TodoItem.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (progeny != null)
