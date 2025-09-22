@@ -76,6 +76,15 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         Task<List<KanbanBoard>> GetKanbanBoardsForProgeny(int progenyId, int userAccessAccessLevel, KanbanBoardsRequest request);
 
         KanbanBoardsResponse CreateKanbanBoardsResponse(List<KanbanBoard> kanbanBoards, KanbanBoardsRequest request);
+        /// <summary>
+        /// Retrieves a list of Kanban boards for a specified progeny, filtered by the given access level.
+        /// </summary>
+        /// <param name="progenyId">The unique identifier of the progeny whose Kanban boards are to be retrieved.</param>
+        /// <param name="accessLevel">The minimum access level required to include a Kanban board in the result.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains a list of <see cref="KanbanBoard"/>
+        /// objects that match the specified progeny and access level. The list will be empty if no matching boards are found.
+        /// </returns>
         Task<List<KanbanBoard>> GetKanbanBoardsList(int progenyId, int accessLevel);
     }
 }
