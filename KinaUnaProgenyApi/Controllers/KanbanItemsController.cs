@@ -218,7 +218,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (kanbanItem.TodoItem == null)
             {
-                kanbanItem.TodoItem = await todoItemsService.GetTodoItemById(kanbanItem.TodoItemId);
+                kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId);
                 if (kanbanItem.TodoItem == null)
                 {
                     return BadRequest("The linked Todo item could not be found.");

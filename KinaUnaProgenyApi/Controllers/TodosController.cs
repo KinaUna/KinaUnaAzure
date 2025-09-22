@@ -214,6 +214,10 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             todoItem = await todosService.UpdateTodoItem(value);
+            if (todoItem == null || todoItem.TodoItemId == 0)
+            {
+                return BadRequest();
+            }
 
             // Update TimeLineItem for the TodoItem
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(todoItem.TodoItemId.ToString(), (int)KinaUnaTypes.TimeLineType.TodoItem);

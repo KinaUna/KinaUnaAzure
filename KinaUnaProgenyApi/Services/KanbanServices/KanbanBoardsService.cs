@@ -17,7 +17,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
     /// boards. It ensures that each Kanban board has a unique identifier and handles associated data, such as Kanban
     /// items, when deleting a board.</remarks>
     /// <param name="progenyDbContext">Service for accessing the Progeny database context.</param>
-    public class KanbanBoardsService(ProgenyDbContext progenyDbContext, IKanbanItemsService kanbanItemsService): IKanbanBoardsService
+    public class KanbanBoardsService(ProgenyDbContext progenyDbContext): IKanbanBoardsService
     {
         /// <summary>
         /// Retrieves a Kanban board by its unique identifier.
@@ -207,6 +207,18 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             return kanbanBoards;
         }
 
+        /// <summary>
+        /// Creates a response object containing a paginated list of Kanban boards and associated metadata.
+        /// </summary>
+        /// <remarks>The Kanban boards in the response are sorted in descending order by their last
+        /// modified time, and then by their creation time if the modified times are equal.  If the <paramref
+        /// name="request"/> specifies a positive number of items per page, the response will include only the specified
+        /// subset of Kanban boards. Otherwise, all Kanban boards are included in the response.</remarks>
+        /// <param name="kanbanBoards">The complete list of Kanban boards to include in the response.</param>
+        /// <param name="request">The request object specifying pagination parameters such as the number of items per page and the number of
+        /// items to skip.</param>
+        /// <returns>A <see cref="KanbanBoardsResponse"/> object containing the paginated list of Kanban boards, the total number
+        /// of items, the total number of pages, and the current page number.</returns>
         public KanbanBoardsResponse CreateKanbanBoardsResponse(List<KanbanBoard> kanbanBoards, KanbanBoardsRequest request)
         {
             KanbanBoardsResponse kanbanBoardsResponse = new()
@@ -231,6 +243,16 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             return kanbanBoardsResponse;
         }
 
+        /// <summary>
+        /// Retrieves a list of Kanban boards for the specified progeny, filtered by access level.
+        /// </summary>
+        /// <remarks>Only Kanban boards that are not marked as deleted (<c>IsDeleted</c> is <see
+        /// langword="false"/>)  and meet the specified access level are included in the results.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny for which to retrieve Kanban boards.</param>
+        /// <param name="accessLevel">The minimum access level required to include a Kanban board in the results.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of  <see
+        /// cref="KanbanBoard"/> objects that match the specified criteria. The list will be empty if no boards are
+        /// found.</returns>
         public async Task<List<KanbanBoard>> GetKanbanBoardsList(int progenyId, int accessLevel)
         {
             List<KanbanBoard> kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
