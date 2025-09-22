@@ -117,9 +117,17 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             List<KanbanItem> kanbanItemsToDelete = await progenyDbContext.KanbanItemsDb.Where(ki => ki.KanbanBoardId == kanbanBoardToDelete.KanbanBoardId).ToListAsync();
             if (kanbanItemsToDelete.Count != 0)
             {
-                foreach (KanbanItem kanbanItem in kanbanItemsToDelete)
+                if (hardDelete)
                 {
-                    await kanbanItemsService.DeleteKanbanItem(kanbanItem, hardDelete);
+                    progenyDbContext.KanbanItemsDb.RemoveRange(kanbanItemsToDelete);
+                }
+                else
+                {
+                    foreach (var kanbanItem in kanbanItemsToDelete)
+                    {
+                        kanbanItem.IsDeleted = true;
+                    }
+                    progenyDbContext.KanbanItemsDb.UpdateRange(kanbanItemsToDelete);
                 }
             }
 
