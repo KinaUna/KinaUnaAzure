@@ -23,7 +23,7 @@
             </div>
         </div>
     </div>
-    @if (Model.Family.Children != null && Model.Family.Children.Any())
+    @if (Model.FamilyDto.Children != null && Model.FamilyDto.Children.Any())
     {
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
@@ -42,7 +42,7 @@
                 @{
                     List<string> myFamilyProgenyList = new List<string>();
                 }
-                @foreach (Progeny progeny in Model.Family.Children)
+                @foreach (Progeny progeny in Model.FamilyDto.Children)
                 {
                     if (!myFamilyProgenyList.Contains(progeny.Id.ToString()))
                     {
@@ -91,7 +91,7 @@
                 @{
                     List<string> accessListProgenies = new List<string>();
                 }
-                @foreach (Progeny progeny in Model.Family.Children)
+                @foreach (Progeny progeny in Model.FamilyDto.Children)
                 {
                     if (!accessListProgenies.Contains(progeny.Id.ToString()))
                     {
@@ -106,7 +106,7 @@
             </div>
         </div>
     }
-    @if (Model.Family.AccessList.Any())
+    @if (Model.FamilyDto.AccessList.Any())
     {
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
@@ -121,14 +121,14 @@
                 </tr>
                 </thead>
                 <tbody>
-                @foreach (UserAccess item in Model.Family.AccessList)
+                @foreach (UserAccess item in Model.FamilyDto.AccessList)
                 {
                     <tr>
                         <td>@item.Progeny.NickName</td>
                         <td>@item.User.UserName</td>
                         <td>@item.User.FirstName @item.User.MiddleName @item.User.LastName</td>
                         <td>@item.UserId</td>
-                        <td>@Model.Family.AccessLevelList.AccessLevelListEn[item.AccessLevel].Text</td>
+                        <td>@Model.FamilyDto.AccessLevelList.AccessLevelListEn[item.AccessLevel].Text</td>
                         <td>
                             <a data-edit-item-type="user" data-edit-item-item-id="@item.AccessId" class="btn btn-info edit-item-button">
                                 <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
