@@ -101,6 +101,7 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IUserGroupService, UserGroupService>();
             services.AddScoped<IFamilyService, FamilyService>();
             services.AddScoped<IFamilyMembersService, FamilyMembersService>();
+            services.AddScoped<IPermissionAuditLogService, PermissionAuditLogService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();

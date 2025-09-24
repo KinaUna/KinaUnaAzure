@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
-using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 
-namespace KinaUnaProgenyApi.Services
+namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
     /// <summary>
     /// User group service. Handles user groups and their members.
