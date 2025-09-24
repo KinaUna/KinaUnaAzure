@@ -196,7 +196,13 @@ namespace KinaUnaProgenyApi.Services
             // Todo: Filter out members that the current user should not see?
             return members;
         }
-        
+
+        /// <summary>
+        /// Adds a new member to a user group.
+        /// </summary>
+        /// <param name="userGroupMember">The <see cref="UserGroupMember"/> object representing the member to add. The <see cref="UserGroupMember.UserGroupId"/> property must be set to the ID of the target user group.</param>
+        /// <param name="currentUserInfo">The <see cref="UserInfo"/> object representing the user performing the operation. This user must have sufficient permissions to add members to the specified user group.</param>
+        /// <returns>UserGroupMember object representing the newly added member, or <see langword="null"/> if the operation fails due to insufficient permissions or an invalid user group ID.</returns>
         public async Task<UserGroupMember> AddUserGroupMember(UserGroupMember userGroupMember, UserInfo currentUserInfo)
         {
             // Check if the user adding the member has Edit permission for the family or progeny.
@@ -241,6 +247,12 @@ namespace KinaUnaProgenyApi.Services
             return userGroupMember;
         }
 
+        /// <summary>
+        /// Updates a user group member.
+        /// </summary>
+        /// <param name="userGroupMember">The <see cref="UserGroupMember"/> object containing the updated details of the user group member. The <see cref="UserGroupMember.UserGroupMemberId"/> property must correspond to an existing user group member.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>The updated <see cref="UserGroupMember"/> object if the operation is successful; otherwise, <see langword="null"/> if the user group member does not exist or the current user lacks the required access rights.</returns>
         public async Task<UserGroupMember> UpdateUserGroupMember(UserGroupMember userGroupMember, UserInfo currentUserInfo)
         {
             UserGroupMember member = await progenyDbContext.UserGroupMembersDb.SingleOrDefaultAsync(u => u.UserGroupMemberId == userGroupMember.UserGroupMemberId);
@@ -294,6 +306,12 @@ namespace KinaUnaProgenyApi.Services
             return member;
         }
 
+        /// <summary>
+        /// Removes a user group member from the database.
+        /// </summary>
+        /// <param name="userGroupMemberId">The unique identifier of the user group member to be removed.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>True if the user group member was successfully removed; otherwise, false if the user group member does not exist or the current user lacks the required access rights.</returns>
         public async Task<bool> RemoveUserGroupMember(int userGroupMemberId, UserInfo currentUserInfo)
         {
             UserGroupMember member = await progenyDbContext.UserGroupMembersDb.SingleOrDefaultAsync(u => u.UserGroupMemberId == userGroupMemberId);

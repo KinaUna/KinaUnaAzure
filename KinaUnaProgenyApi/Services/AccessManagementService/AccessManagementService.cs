@@ -356,7 +356,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             // If the existing permission is admin, remove from Family Admins list.
-            if (existingPermission.PermissionLevel == PermissionLevel.Admin)
+            if (existingPermission.PermissionLevel == PermissionLevel.Admin && progenyPermission.PermissionLevel != PermissionLevel.Admin)
             {
                 Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progenyPermission.ProgenyId);
                 if (progeny != null)
@@ -593,21 +593,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     }
                 }
             }
-
-            // If the existing permission is not admin and the new permission is, add to the Family Admins list.
-            if (familyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
-            {
-                Family family = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == familyPermission.FamilyId);
-                if (family != null)
-                {
-                    if (!family.IsInAdminList(familyPermission.Email))
-                    {
-                        family.AddToAdminList(familyPermission.Email);
-                        progenyDbContext.FamiliesDb.Update(family);
-                    }
-                }
-            }
-
+            
             progenyDbContext.FamilyPermissionsDb.Remove(existingPermission);
             await progenyDbContext.SaveChangesAsync();
             
