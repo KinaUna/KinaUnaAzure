@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models.FamilyViewModels;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Services.HttpClients;
@@ -29,13 +30,13 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             FamilyViewModel model = new(baseModel)
             {
-                Family = new Family()
+                FamilyDto = new FamilyDTO()
             };
-            model.Family.Children = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            model.FamilyDto.Children = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
 
-            if (model.Family.Children != null && model.Family.Children.Count != 0)
+            if (model.FamilyDto.Children != null && model.FamilyDto.Children.Count != 0)
             {
-                foreach (Progeny progeny in model.Family.Children)
+                foreach (Progeny progeny in model.FamilyDto.Children)
                 {
                     if (progeny.BirthDay.HasValue)
                     {
@@ -48,11 +49,11 @@ namespace KinaUnaWeb.Controllers
                         userAccess.User = await userInfosHttpClient.GetUserInfo(userAccess.UserId);
                     }
 
-                    model.Family.AccessList.AddRange(userAccesses);
+                    model.FamilyDto.AccessList.AddRange(userAccesses);
                 }
             }
             
-            model.Family.SetAccessLevelList(model.LanguageId);
+            model.FamilyDto.SetAccessLevelList(model.LanguageId);
 
             return View(model);
         }

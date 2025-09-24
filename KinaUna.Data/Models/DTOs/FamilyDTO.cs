@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace KinaUna.Data.Models
+namespace KinaUna.Data.Models.DTOs
 {
-    public class Family
+    public class FamilyDTO
     {
         public int Id { get; set; }
         public List<Progeny> Children { get; set; } = [];

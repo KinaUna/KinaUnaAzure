@@ -1,8 +1,10 @@
-﻿namespace KinaUnaWeb.Models.FamilyViewModels
+﻿using KinaUna.Data.Models.DTOs;
+
+namespace KinaUnaWeb.Models.FamilyViewModels
 {
     public class FamilyViewModel: BaseItemsViewModel
     {
-        public Family Family { get; init; }
+        public FamilyDTO FamilyDto { get; init; }
 
         public FamilyViewModel(BaseItemsViewModel baseItemsViewModel)
         {
