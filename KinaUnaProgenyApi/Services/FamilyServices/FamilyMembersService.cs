@@ -223,7 +223,6 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
             existingFamilyMember.UserId = familyMember.UserId;
             existingFamilyMember.MemberType = familyMember.MemberType;
             existingFamilyMember.Email = familyMember.Email;
-            existingFamilyMember.MemberType = familyMember.MemberType;
             existingFamilyMember.ModifiedBy = currentUserInfo.UserId;
             existingFamilyMember.ModifiedTime = DateTime.UtcNow;
             existingFamilyMember.ProgenyId = familyMember.ProgenyId;
