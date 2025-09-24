@@ -175,7 +175,7 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
         {
             Family existingFamily = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f =>  f.FamilyId == family.FamilyId);
             // Only admins can update family details.
-            if (existingFamily == null || family.IsInAdminList(currentUserInfo.UserEmail))
+            if (existingFamily == null || !family.IsInAdminList(currentUserInfo.UserEmail))
             {
                 return null;
             }
