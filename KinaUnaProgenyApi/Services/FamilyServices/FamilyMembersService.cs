@@ -340,7 +340,7 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
         {
             // Check if user has access to this family.
             
-            if (await accessManagementService.HasFamilyPermission(familyId, currentUserInfo, PermissionLevel.View))
+            if (!await accessManagementService.HasFamilyPermission(familyId, currentUserInfo, PermissionLevel.View))
             {
                 return []; // No access to this family. Return empty list.
             }
