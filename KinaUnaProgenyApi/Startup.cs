@@ -17,6 +17,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamilyServices;
 using KinaUnaProgenyApi.Services.KanbanServices;
 using KinaUnaProgenyApi.Services.TodosServices;
 
@@ -97,6 +98,9 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IKanbanItemsService, KanbanItemsService>();
             services.AddScoped<IKanbanBoardsService, KanbanBoardsService>();
             services.AddScoped<IAccessManagementService, AccessManagementService>();
+            services.AddScoped<IUserGroupService, UserGroupService>();
+            services.AddScoped<IFamilyService, FamilyService>();
+            services.AddScoped<IFamilyMembersService, FamilyMembersService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();

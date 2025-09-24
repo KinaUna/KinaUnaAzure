@@ -10,9 +10,10 @@
     {
         None = 0,
         View = 1,
-        Add = 2, // For Timeline items only, not families or progenies, users should be able to add new items to share items with others.
+        Add = 2, // For adding Timeline items only, not families or progenies, users should be able to add new items to share items with others.
         Edit = 3,
         Admin = 4,
-        Private = 5 // For Timeline items only, not families or progenies, users should be able to set items as private (only visible to themselves).
+        CreatorOnly = 10, // For Timeline items only, not families or progenies, for draft items that only the creator should be able to see.
+        Private = 20 // For Timeline items only, not families or progenies, users should be able to set items as private (only visible to themselves).
     }
 }

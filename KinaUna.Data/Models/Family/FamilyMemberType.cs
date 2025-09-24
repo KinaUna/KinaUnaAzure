@@ -12,5 +12,8 @@
         Parent = 1,
         Child = 2,
         Pet = 3,
+        Grandparent = 4,
+        Grandchild = 5,
+        Other = 6
     }
 }

@@ -38,16 +38,14 @@ namespace KinaUna.Data.Models.AccessManagement
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the unique identifier of the user who owns the resource.
+        /// Gets or sets the unique identifier for the associated progeny, if applicable.
         /// </summary>
-        [MaxLength(256)]
-        public string UserOwnerUserId { get; set; } = string.Empty;
+        public int ProgenyId { get; set; } = 0;
 
         /// <summary>
-        /// Gets or sets the family owner identifier associated with the group.
-        /// Set to 0 if only one user is granted ownership of the resource.
+        /// Gets or sets the unique identifier for the associated family, if applicable.
         /// </summary>
-        public int FamilyOwnerId { get; set; } = 0;
+        public int FamilyId { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the date and time when the entity was created.

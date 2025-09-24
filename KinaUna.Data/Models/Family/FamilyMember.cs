@@ -8,8 +8,8 @@ namespace KinaUna.Data.Models.Family
     /// </summary>
     /// <remarks>This class is used to model a family member within a family structure. It includes properties
     /// for identifying the family member, their role within the family, and additional metadata such as creation and
-    /// modification details. The class supports associating a family member with a specific user, email, or progeny,
-    /// and allows for administrative information to be stored.</remarks>
+    /// modification details. The class supports associating a family member with a specific user, email, or progeny.
+    /// </remarks>
     public class FamilyMember
     {
         /// <summary>
@@ -46,9 +46,7 @@ namespace KinaUna.Data.Models.Family
         /// Gets or sets the unique identifier for the associated progeny, if it exists.
         /// </summary>
         public int ProgenyId { get; set; } = 0; // ProgenyId is 0 if the member is not associated with a specific progeny.
-        [MaxLength(4096)]
-        public string Admins { get; set; } // Comma separated list of emails
-
+        
         /// <summary>
         /// Gets or sets the date and time when the entity was created.
         /// </summary>

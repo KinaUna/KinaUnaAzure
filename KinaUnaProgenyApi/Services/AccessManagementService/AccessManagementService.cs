@@ -4,264 +4,688 @@ using KinaUna.Data.Models.AccessManagement;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.Family;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
+    /// <summary>
+    /// Service for managing access permissions for users and groups to various resources such as progeny, families, and timeline items.
+    /// </summary>
+    /// <param name="progenyDbContext"></param>
     public class AccessManagementService(ProgenyDbContext progenyDbContext) : IAccessManagementService
     {
         /// <summary>
-        /// Determines whether the specified user has the required permission level for a given resource.
+        /// Determines whether a user has the specified access level for a given timeline item (e.g., Note, TodoItem, Sleep, etc.).
         /// </summary>
-        /// <remarks>This method checks both the user's direct permissions and their group permissions for
-        /// the specified resource. If the user has sufficient direct permissions, the method returns <see
-        /// langword="true"/> immediately. Otherwise, it evaluates the highest permission level granted through the
-        /// user's group memberships.</remarks>
-        /// <param name="userId">The unique identifier of the user whose permissions are being checked. Cannot be <see langword="null"/> or
-        /// empty.</param>
-        /// <param name="permissionType">The type of permission to check (e.g., timeline item, family member, or family).</param>
-        /// <param name="requiredLevel">The minimum permission level required to access the resource.</param>
-        /// <param name="resourceId">The unique identifier of the resource for which permissions are being checked.</param>
-        /// <param name="timelineType">An optional parameter specifying the timeline type associated with the resource. Can be <see
-        /// langword="null"/> if not applicable.</param>
-        /// <returns><see langword="true"/> if the user has the required permission level for the resource; otherwise, <see
-        /// langword="false"/>.</returns>
-        public async Task<bool> HasPermissionAsync(string userId, PermissionType permissionType, PermissionLevel requiredLevel, int resourceId, KinaUnaTypes.TimeLineType? timelineType)
+        /// <param name="itemType">KinaUnaTypes.TimeLineType of the item whose access to is being checked.</param>
+        /// <param name="itemId">The unique identifier of the item whose access to is being checked.</param>
+        /// <param name="userInfo">The information of the user whose access is being verified.</param>
+        /// <param name="requiredLevel">The minimum permission level required for access.</param>
+        /// <returns>Boolean value indicating whether the user has the required access level for the timeline item.</returns>
+        public async Task<bool> HasItemPermission(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo userInfo, PermissionLevel requiredLevel)
         {
-            // Get user's direct permissions
-            PermissionLevel? userPermission = await GetDirectUserPermissionAsync(userId, permissionType, resourceId, timelineType);
-            if (userPermission.HasValue && userPermission.Value >= requiredLevel)
+            if (userInfo == null || itemId == 0)
+            {
+                return false;
+            }
+
+            TimelineItemPermission timelineItemPermission = await progenyDbContext.TimelineItemPermissionsDb
+                .AsNoTracking()
+                .SingleOrDefaultAsync(tp => tp.UserId == userInfo.UserId && tp.TimelineType == itemType && tp.ItemId == itemId);
+            if (timelineItemPermission != null && timelineItemPermission.PermissionLevel >= requiredLevel)
             {
                 return true;
             }
-
-            // Get user's group permissions
-            List<PermissionLevel> groupPermissions = await GetGroupPermissionsAsync(userId, permissionType, resourceId, timelineType);
-            PermissionLevel highestGroupPermission = groupPermissions.Count != 0 ? groupPermissions.Max() : PermissionLevel.None;
+            
+            List<TimelineItemPermission> groupPermissions = await progenyDbContext.TimelineItemPermissionsDb
+                .AsNoTracking()
+                .Where(tp => tp.GroupId > 0 && tp.TimelineType == itemType && tp.ItemId == itemId)
+                .ToListAsync();
+            
+            PermissionLevel highestGroupPermission = PermissionLevel.None;
+            foreach (TimelineItemPermission permission in groupPermissions)
+            {
+                bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
+                if (isMember && permission.PermissionLevel > highestGroupPermission)
+                {
+                    highestGroupPermission = permission.PermissionLevel;
+                }
+            }
 
             return highestGroupPermission >= requiredLevel;
         }
 
         /// <summary>
-        /// Grants a specified permission to a user or group for a resource, if the current user has the necessary
+        /// Grants a specified permission to a user or group for a timeline item, if the current user has the necessary
         /// access rights.
         /// </summary>
         /// <remarks>This method ensures that the current user has the necessary access rights to grant
         /// the specified permission. If the permission already exists,  or if the current user does not have sufficient
         /// privileges, the method returns <see langword="null"/>. The method also sets the creation and modification
         /// timestamps  for the new permission before saving it to the database.</remarks>
-        /// <param name="entityId">The identifier of the entity associated with the resource. E.g. ProgenyId, FamilyId, FamilyMemberId</param>
-        /// <param name="resourcePermission">The permission to be granted, including details such as the user or group, resource, and permission type.</param>
+        /// <param name="timelineItemPermission">The permission to be granted, including details such as the user or group, familyId, and permission type.</param>
         /// <param name="currentUserInfo">Information about the current user attempting to grant the permission.</param>
-        /// <returns>The granted <see cref="ResourcePermission"/> object if the operation is successful; otherwise, <see
+        /// <returns>The granted <see cref="ProgenyPermission"/> object if the operation is successful; otherwise, <see
         /// langword="null"/> if the current user lacks the required access rights  or if the specified permission
         /// already exists.</returns>
-        public async Task<ResourcePermission> GrantPermission(int entityId, ResourcePermission resourcePermission, UserInfo currentUserInfo)
+        public async Task<TimelineItemPermission> GrantItemPermission(TimelineItemPermission timelineItemPermission, UserInfo currentUserInfo)
         {
             // Check if the current user can grant the specified permission level.
-            if (!await IsUserAccessManager(currentUserInfo.UserId, resourcePermission.PermissionType, entityId))
+            if (timelineItemPermission.ProgenyId > 0)
+            {
+                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
+                {
+                    return null; // Todo: Use result object instead.
+                }
+            }
+            else
+            {
+                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
+                {
+                    return null; // Todo: Use result object instead.
+                }
+            }
+
+            // Check if the permission exists.
+            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb
+                .SingleOrDefaultAsync(tp => 
+                    tp.TimelineItemPermissionId == timelineItemPermission.TimelineItemPermissionId
+                    && tp.ProgenyId == timelineItemPermission.ProgenyId 
+                    && tp.FamilyId == timelineItemPermission.FamilyId);
+            
+            if (existingPermission == null)
+            {
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(
+                    tp => tp.ProgenyId == timelineItemPermission.ProgenyId
+                          && tp.FamilyId == timelineItemPermission.FamilyId
+                          && tp.UserId == timelineItemPermission.UserId);
+                if (existingPermission == null)
+                {
+                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp =>
+                        tp.ProgenyId == timelineItemPermission.ProgenyId && tp.FamilyId == timelineItemPermission.FamilyId && tp.Email == timelineItemPermission.Email);
+                    if (existingPermission == null)
+                    {
+                        return null; // Todo: Use result object instead
+                    }
+                }
+            }
+
+            timelineItemPermission.CreatedBy = currentUserInfo.UserId;
+            timelineItemPermission.CreatedTime = System.DateTime.UtcNow;
+            timelineItemPermission.ModifiedBy = currentUserInfo.UserId;
+            timelineItemPermission.ModifiedTime = System.DateTime.UtcNow;
+
+            progenyDbContext.TimelineItemPermissionsDb.Add(timelineItemPermission);
+            await progenyDbContext.SaveChangesAsync();
+
+            return timelineItemPermission; // Todo: Use result object instead.
+        }
+
+        /// <summary>
+        /// Revokes a specific permission for a timeline item from a user or group.
+        /// </summary>
+        /// <remarks>The method checks whether the current user has sufficient access rights to revoke the
+        /// specified permission. If the permission does not exist or the user lacks the necessary access rights, the
+        /// method returns <see langword="false"/>.</remarks>
+        /// <param name="timelineItemPermission">The permission to be revoked, including details such as the user or group, permission type, and progenyId.</param>
+        /// <param name="currentUserInfo">The information of the user attempting to revoke the permission.</param>
+        /// <returns><see langword="true"/> if the permission was successfully revoked; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> RevokeItemPermission(TimelineItemPermission timelineItemPermission, UserInfo currentUserInfo)
+        {
+            // Check if the current user can grant the specified permission level.
+            if (timelineItemPermission.ProgenyId > 0)
+            {
+                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
+                {
+                    return false; // Todo: Use result object instead.
+                }
+            }
+            else
+            {
+                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
+                {
+                    return false; // Todo: Use result object instead.
+                }
+            }
+
+            // Check if the permission exists.
+            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb
+                .SingleOrDefaultAsync(tp => tp.TimelineItemPermissionId == timelineItemPermission.TimelineItemPermissionId
+                                            && tp.ProgenyId == timelineItemPermission.ProgenyId && tp.FamilyId == timelineItemPermission.FamilyId);
+            if (existingPermission == null)
+            {
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp => tp.ProgenyId == timelineItemPermission.ProgenyId
+                                                                                                                 && tp.FamilyId == timelineItemPermission.FamilyId
+                                                                                                                 && tp.UserId == timelineItemPermission.UserId);
+                if (existingPermission == null)
+                {
+                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp =>
+                        tp.ProgenyId == timelineItemPermission.ProgenyId && tp.FamilyId == timelineItemPermission.FamilyId && tp.Email == timelineItemPermission.Email);
+                    if (existingPermission == null)
+                    {
+                        return false; // Todo: Use result object instead
+                    }
+                }
+            }
+            
+            progenyDbContext.TimelineItemPermissionsDb.Remove(existingPermission);
+            await progenyDbContext.SaveChangesAsync();
+
+            return true; // Todo: Use result object instead.
+        }
+
+        /// <summary>
+        /// Updates the permission level of an existing timelineItem permission.
+        /// </summary>
+        /// <remarks>This method validates whether the current user has the necessary access rights to
+        /// update the specified permission level. If the user does not have sufficient rights or the specified
+        /// permission does not exist, the method returns <see langword="null"/>.</remarks>
+        /// <param name="timelineItemPermission">The updated timelineItem permission details, including the new permission level.</param>
+        /// <param name="currentUserInfo">Information about the current user performing the update, used to validate access rights.</param>
+        /// <returns>The updated <see cref="TimelineItemPermission"/> object if the operation is successful; otherwise, <see
+        /// langword="null"/> if the user lacks sufficient access rights or the specified permission does not exist.</returns>
+        public async Task<TimelineItemPermission> UpdateItemPermission(TimelineItemPermission timelineItemPermission, UserInfo currentUserInfo)
+        {
+            // Check if the current user can grant the specified permission level.
+            if (timelineItemPermission.ProgenyId > 0)
+            {
+                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
+                {
+                    return null; // Todo: Use result object instead.
+                }
+            }
+            else
+            {
+                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
+                {
+                    return null; // Todo: Use result object instead.
+                }
+            }
+
+            // Check if the permission exists.
+            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb
+                .SingleOrDefaultAsync(tp => tp.TimelineItemPermissionId == timelineItemPermission.TimelineItemPermissionId
+                                            && tp.ProgenyId == timelineItemPermission.ProgenyId && tp.FamilyId == timelineItemPermission.FamilyId);
+            if (existingPermission == null)
+            {
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(
+                    tp => tp.ProgenyId == timelineItemPermission.ProgenyId 
+                          && tp.FamilyId == timelineItemPermission.FamilyId 
+                          && tp.UserId == timelineItemPermission.UserId);
+                if (existingPermission == null)
+                {
+                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(
+                        tp => tp.ProgenyId == timelineItemPermission.ProgenyId && tp.FamilyId == timelineItemPermission.FamilyId && tp.Email == timelineItemPermission.Email);
+                    if (existingPermission == null)
+                    {
+                        return null; // Todo: Use result object instead
+                    }
+                }
+            }
+            
+            existingPermission.PermissionLevel = timelineItemPermission.PermissionLevel;
+            existingPermission.ModifiedTime = System.DateTime.UtcNow;
+            existingPermission.ModifiedBy = currentUserInfo.UserId;
+
+            progenyDbContext.TimelineItemPermissionsDb.Update(existingPermission);
+            await progenyDbContext.SaveChangesAsync();
+
+            return existingPermission; // Todo: Use result object instead.
+        }
+
+        /// <summary>
+        /// Determines whether a user has the specified access level for a given progeny.
+        /// </summary>
+        /// <param name="progenyId">The unique identifier of the progeny whose access to is being checked.</param>
+        /// <param name="userInfo">The information of the user whose access is being verified.</param>
+        /// <param name="requiredLevel">The minimum permission level required for access.</param>
+        /// <returns>Boolean value indicating whether the user has the required access level for the progeny.</returns>
+        public async Task<bool> HasProgenyPermission(int progenyId, UserInfo userInfo, PermissionLevel requiredLevel)
+        {
+            if (userInfo == null || progenyId == 0)
+            {
+                return false;
+            }
+
+            ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb
+                .AsNoTracking()
+                .SingleOrDefaultAsync(pp => pp.UserId == userInfo.UserId && pp.ProgenyId == progenyId);
+            if (progenyPermission != null && progenyPermission.PermissionLevel >= requiredLevel)
+            {
+                return true;
+            }
+            
+            List<ProgenyPermission> groupPermissions = await progenyDbContext.ProgenyPermissionsDb
+                .AsNoTracking()
+                .Where(pp => pp.GroupId > 0 && pp.ProgenyId == progenyId)
+                .ToListAsync();
+            PermissionLevel highestGroupPermission = PermissionLevel.None;
+            foreach (ProgenyPermission permission in groupPermissions)
+            {
+                bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
+                if (isMember && permission.PermissionLevel > highestGroupPermission)
+                {
+                    highestGroupPermission = permission.PermissionLevel;
+                }
+            }
+
+            return highestGroupPermission >= requiredLevel;
+        }
+
+        /// <summary>
+        /// Grants a specified permission to a user or group for a progeny, if the current user has the necessary
+        /// access rights.
+        /// </summary>
+        /// <remarks>This method ensures that the current user has the necessary access rights to grant
+        /// the specified permission. If the permission already exists,  or if the current user does not have sufficient
+        /// privileges, the method returns <see langword="null"/>. The method also sets the creation and modification
+        /// timestamps  for the new permission before saving it to the database.</remarks>
+        /// <param name="progenyPermission">The permission to be granted, including details such as the user or group, familyId, and permission type.</param>
+        /// <param name="currentUserInfo">Information about the current user attempting to grant the permission.</param>
+        /// <returns>The granted <see cref="ProgenyPermission"/> object if the operation is successful; otherwise, <see
+        /// langword="null"/> if the current user lacks the required access rights  or if the specified permission
+        /// already exists.</returns>
+        public async Task<ProgenyPermission> GrantProgenyPermission(ProgenyPermission progenyPermission, UserInfo currentUserInfo)
+        {
+            // Check if the current user can grant the specified permission level.
+            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, progenyPermission.ProgenyId))
             {
                 return null; // Todo: Use result object instead.
             }
 
             // Check if the permission already exists.
-            ResourcePermission existingPermission = await progenyDbContext.ResourcePermissionsDb
-                .SingleOrDefaultAsync(r => r.UserId == resourcePermission.UserId && r.GroupId == resourcePermission.GroupId
-                                           && r.PermissionType == resourcePermission.PermissionType 
-                                           && r.ResourceId == resourcePermission.ResourceId 
-                                           && r.TimelineType == resourcePermission.TimelineType);
+            ProgenyPermission existingPermission = await progenyDbContext.ProgenyPermissionsDb
+                .SingleOrDefaultAsync(pp => pp.UserId == progenyPermission.UserId 
+                                            && pp.GroupId == progenyPermission.GroupId
+                                            && pp.ProgenyId == progenyPermission.ProgenyId);
             if (existingPermission != null)
             {
                 return null; // Todo: Use result object instead.
             }
 
-            resourcePermission.CreatedTime = System.DateTime.UtcNow;
-            resourcePermission.ModifiedTime = System.DateTime.UtcNow;
+            progenyPermission.CreatedBy = currentUserInfo.UserId;
+            progenyPermission.CreatedTime = System.DateTime.UtcNow;
+            progenyPermission.ModifiedBy = currentUserInfo.UserId;
+            progenyPermission.ModifiedTime = System.DateTime.UtcNow;
 
-            progenyDbContext.ResourcePermissionsDb.Add(resourcePermission);
+            progenyDbContext.ProgenyPermissionsDb.Add(progenyPermission);
             await progenyDbContext.SaveChangesAsync();
 
-            return resourcePermission; // Todo: Use result object instead.
+            return progenyPermission; // Todo: Use result object instead.
         }
 
         /// <summary>
-        /// Revokes a specific permission for a resource from a user or group.
+        /// Revokes a specific permission for a progeny from a user or group.
         /// </summary>
         /// <remarks>The method checks whether the current user has sufficient access rights to revoke the
         /// specified permission. If the permission does not exist or the user lacks the necessary access rights, the
         /// method returns <see langword="false"/>.</remarks>
-        /// <param name="entityId">The identifier of the entity (e.g., ProgenyId, FamilyId or FamilyMemberId) associated with the permission.</param>
-        /// <param name="resourcePermission">The permission to be revoked, including details such as the user or group, permission type, and resource.</param>
+        /// <param name="progenyPermission">The permission to be revoked, including details such as the user or group, permission type, and progenyId.</param>
         /// <param name="currentUserInfo">The information of the user attempting to revoke the permission.</param>
         /// <returns><see langword="true"/> if the permission was successfully revoked; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> RevokePermission(int entityId, ResourcePermission resourcePermission, UserInfo currentUserInfo)
+        public async Task<bool> RevokeProgenyPermission(ProgenyPermission progenyPermission, UserInfo currentUserInfo)
         {
             // Check if the current user can grant the specified permission level.
-            if (!await IsUserAccessManager(currentUserInfo.UserId, resourcePermission.PermissionType, entityId))
+            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, progenyPermission.ProgenyId))
             {
                 return false; // Todo: Use result object instead.
             }
-            
+
+            // Don't allow removing own admin rights. You need to assign admin rights to another user first, then they may remove your access.
+            if (progenyPermission.UserId == currentUserInfo.UserId)
+            {
+                return false; // Todo: Use result object instead.
+            }
+
             // Check if the permission exists.
-            ResourcePermission existingPermission = await progenyDbContext.ResourcePermissionsDb
-                .SingleOrDefaultAsync(r => r.UserId == resourcePermission.UserId && r.GroupId == resourcePermission.GroupId
-                                           && r.PermissionType == resourcePermission.PermissionType 
-                                           && r.ResourceId == resourcePermission.ResourceId 
-                                           && r.TimelineType == resourcePermission.TimelineType);
+            ProgenyPermission existingPermission = await progenyDbContext.ProgenyPermissionsDb
+                .SingleOrDefaultAsync(pp => pp.ProgenyPermissionId == progenyPermission.ProgenyPermissionId && pp.ProgenyId == progenyPermission.ProgenyId);
             if (existingPermission == null)
             {
-                return false; // Todo: Use result object instead.
+                existingPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progenyPermission.ProgenyId && pp.UserId == progenyPermission.UserId);
+                if (existingPermission == null)
+                {
+                    existingPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progenyPermission.ProgenyId && pp.Email == progenyPermission.Email);
+                    if (existingPermission == null)
+                    {
+                        return false; // Todo: Use result object instead
+                    }
+                }
             }
-            progenyDbContext.ResourcePermissionsDb.Remove(existingPermission);
+
+            // If the existing permission is admin, remove from Family Admins list.
+            if (existingPermission.PermissionLevel == PermissionLevel.Admin)
+            {
+                Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progenyPermission.ProgenyId);
+                if (progeny != null)
+                {
+                    if (progeny.IsInAdminList(progenyPermission.Email))
+                    {
+                        progeny.RemoveFromAdminList(progenyPermission.Email);
+                        progenyDbContext.ProgenyDb.Update(progeny);
+                    }
+                }
+            }
+
+            // If the existing permission is not admin and the new permission is, add to the Family Admins list.
+            if (progenyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
+            {
+                Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progenyPermission.ProgenyId);
+                if (progeny != null)
+                {
+                    if (!progeny.IsInAdminList(progenyPermission.Email))
+                    {
+                        progeny.AddToAdminList(progenyPermission.Email);
+                        progenyDbContext.ProgenyDb.Update(progeny);
+                    }
+                }
+            }
+
+            progenyDbContext.ProgenyPermissionsDb.Remove(existingPermission);
             await progenyDbContext.SaveChangesAsync();
+
             return true; // Todo: Use result object instead.
         }
 
         /// <summary>
-        /// Updates the permission level of an existing resource permission for a specified entity.
+        /// Updates the permission level of an existing progeny permission.
         /// </summary>
         /// <remarks>This method validates whether the current user has the necessary access rights to
         /// update the specified permission level. If the user does not have sufficient rights or the specified
         /// permission does not exist, the method returns <see langword="null"/>.</remarks>
-        /// <param name="entityId">The identifier of the entity associated with the resource permission (e.g., ProgenyId, FamilyId or FamilyMemberId).</param>
-        /// <param name="resourcePermission">The updated resource permission details, including the new permission level.</param>
+        /// <param name="progenyPermission">The updated progeny permission details, including the new permission level.</param>
         /// <param name="currentUserInfo">Information about the current user performing the update, used to validate access rights.</param>
-        /// <returns>The updated <see cref="ResourcePermission"/> object if the operation is successful; otherwise, <see
+        /// <returns>The updated <see cref="ProgenyPermission"/> object if the operation is successful; otherwise, <see
         /// langword="null"/> if the user lacks sufficient access rights or the specified permission does not exist.</returns>
-        public async Task<ResourcePermission> UpdatePermission(int entityId, ResourcePermission resourcePermission, UserInfo currentUserInfo)
+        public async Task<ProgenyPermission> UpdateProgenyPermission(ProgenyPermission progenyPermission, UserInfo currentUserInfo)
         {
             // Check if the current user can grant the specified permission level.
-            if (!await IsUserAccessManager(currentUserInfo.UserId, resourcePermission.PermissionType, entityId))
+            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, progenyPermission.ProgenyId))
             {
                 return null; // Todo: Use result object instead.
             }
 
             // Check if the permission exists.
-            ResourcePermission existingPermission = await progenyDbContext.ResourcePermissionsDb
-                .SingleOrDefaultAsync(r => r.UserId == resourcePermission.UserId && r.GroupId == resourcePermission.GroupId
-                                           && r.PermissionType == resourcePermission.PermissionType 
-                                           && r.ResourceId == resourcePermission.ResourceId 
-                                           && r.TimelineType == resourcePermission.TimelineType);
+            ProgenyPermission existingPermission = await progenyDbContext.ProgenyPermissionsDb
+                .SingleOrDefaultAsync(pp => pp.ProgenyPermissionId == progenyPermission.ProgenyPermissionId
+                                            && pp.ProgenyId == progenyPermission.ProgenyId);
             if (existingPermission == null)
             {
-                return null; // Todo: Use result object instead.
+                existingPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progenyPermission.ProgenyId && pp.UserId == progenyPermission.UserId);
+                if (existingPermission == null)
+                {
+                    existingPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progenyPermission.ProgenyId && pp.Email == progenyPermission.Email);
+                    if (existingPermission == null)
+                    {
+                        return null; // Todo: Use result object instead
+                    }
+                }
             }
 
-            existingPermission.PermissionLevel = resourcePermission.PermissionLevel;
+            // If the existing permission is admin and the new permission isn't, remove from Progeny Admins list.
+            if (progenyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
+            {
+                Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progenyPermission.ProgenyId);
+                if (progeny != null)
+                {
+                    if (progeny.IsInAdminList(progenyPermission.Email))
+                    {
+                        progeny.RemoveFromAdminList(progenyPermission.Email);
+                        progenyDbContext.ProgenyDb.Update(progeny);
+                    }
+                }
+            }
+
+            // If the existing permission is not admin and the new permission is, add to the Progeny Admins list.
+            if (progenyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
+            {
+                Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(f => f.Id == progenyPermission.ProgenyId);
+                if (progeny != null)
+                {
+                    if (!progeny.IsInAdminList(progenyPermission.Email))
+                    {
+                        progeny.AddToAdminList(progenyPermission.Email);
+                        progenyDbContext.ProgenyDb.Update(progeny);
+                    }
+                }
+            }
+
+            existingPermission.PermissionLevel = progenyPermission.PermissionLevel;
             existingPermission.ModifiedTime = System.DateTime.UtcNow;
             existingPermission.ModifiedBy = currentUserInfo.UserId;
-            progenyDbContext.ResourcePermissionsDb.Update(existingPermission);
+
+            progenyDbContext.ProgenyPermissionsDb.Update(existingPermission);
             await progenyDbContext.SaveChangesAsync();
+
             return existingPermission; // Todo: Use result object instead.
         }
 
         /// <summary>
-        /// Retrieves a list of permissions for a specific resource based on the specified criteria.
+        /// Determines whether a user has the specified access level for a given family.
         /// </summary>
-        /// <remarks>This method performs a database query to retrieve permissions that match the provided
-        /// <paramref name="permissionType"/>, <paramref name="resourceId"/>, and <paramref name="timelineType"/>. The
-        /// query is executed with no tracking to improve performance for read-only operations.</remarks>
-        /// <param name="permissionType">The type of permission to filter by (e.g. TimelineItem, FamilyMember, or Family). This determines the category of permissions to retrieve.</param>
-        /// <param name="resourceId">The unique identifier of the resource for which permissions are being retrieved.</param>
-        /// <param name="timelineType">An optional parameter specifying the timeline type associated with the resource. If null, only permissions
-        /// with a null timeline type will be considered.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
-        /// cref="ResourcePermission"/> objects matching the specified criteria. If no permissions are found, the list
-        /// will be empty.</returns>
-        public async Task<List<ResourcePermission>> GetPermissionsForResource(PermissionType permissionType, int resourceId, KinaUnaTypes.TimeLineType? timelineType)
+        /// <param name="familyId">The unique identifier of the family whose access to is being checked.</param>
+        /// <param name="userInfo">The information of the user whose access is being verified.</param>
+        /// <param name="requiredLevel">The minimum permission level required for access.</param>
+        /// <returns>Boolean value indicating whether the user has the required access level for the family.</returns>
+        public async Task<bool> HasFamilyPermission(int familyId, UserInfo userInfo, PermissionLevel requiredLevel)
         {
-            List<ResourcePermission> permissions = await progenyDbContext.ResourcePermissionsDb.AsNoTracking()
-                .Where(r => r.PermissionType == permissionType && r.ResourceId == resourceId && r.TimelineType == timelineType)
-                .ToListAsync();
-            return permissions;
-        }
-
-        /// <summary>
-        /// Retrieves a list of resource permissions associated with the specified user.
-        /// </summary>
-        /// <remarks>This method queries the database to retrieve permissions associated with the user.
-        /// Permissions can be  assigned directly to the user or inherited through their membership in user groups.</remarks>
-        /// <param name="userId">The unique identifier of the user whose permissions are to be retrieved. Cannot be null or empty.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of  <see
-        /// cref="ResourcePermission"/> objects representing the permissions assigned directly to the user  or through
-        /// their membership in user groups. Returns an empty list if no permissions are found.</returns>
-        public async Task<List<ResourcePermission>> GetPermissionsForUser(string userId)
-        {
-            List<ResourcePermission> permissions = await progenyDbContext.ResourcePermissionsDb.AsNoTracking()
-                .Where(r => r.UserId == userId || progenyDbContext.UserGroupMembersDb.Any(ug => ug.UserId == userId && ug.UserGroupId == r.GroupId))
-                .ToListAsync();
-            return permissions;
-        }
-
-        /// <summary>
-        /// Retrieves the list of resource permissions associated with the specified group.
-        /// </summary>
-        /// <remarks>This method queries the database for resource permissions linked to the specified
-        /// group. The results are retrieved without tracking changes to the entities.</remarks>
-        /// <param name="groupId">The unique identifier of the group whose permissions are to be retrieved.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
-        /// cref="ResourcePermission"/> objects associated with the specified group. If no permissions are found, an
-        /// empty list is returned.</returns>
-        public async Task<List<ResourcePermission>> GetPermissionsForGroup(int groupId)
-        {
-            List<ResourcePermission> permissions = await progenyDbContext.ResourcePermissionsDb.AsNoTracking()
-                .Where(r => r.GroupId == groupId)
-                .ToListAsync();
-            return permissions;
-        }
-
-        /// <summary>
-        /// Asynchronously retrieves the direct permission level for a specified user on a given resource.
-        /// </summary>
-        /// <remarks>This method queries the database for a direct permission entry that matches the
-        /// specified user, permission type,  resource, and timeline type. If no matching entry is found, the method
-        /// returns <see langword="null"/>.</remarks>
-        /// <param name="userId">The unique identifier of the user whose permission level is being retrieved. Cannot be <see
-        /// langword="null"/> or empty.</param>
-        /// <param name="permissionType">The type of permission to check for the user on the resource (e.g. TimelineItem, FamilyMember, Family).</param>
-        /// <param name="resourceId">The unique identifier of the resource for which the permission level is being checked.</param>
-        /// <param name="timelineType">The timeline type associated with the resource, or <see langword="null"/> if no specific timeline type is
-        /// applicable.</param>
-        /// <returns>A <see cref="PermissionLevel"/> representing the user's direct permission level for the specified resource, 
-        /// or <see langword="null"/> if no direct permission is found.</returns>
-        private async Task<PermissionLevel?> GetDirectUserPermissionAsync(string userId, PermissionType permissionType, int resourceId, KinaUnaTypes.TimeLineType? timelineType)
-        {
-            ResourcePermission permission = await progenyDbContext.ResourcePermissionsDb.AsNoTracking()
-                .SingleOrDefaultAsync(r => r.UserId == userId && r.PermissionType == permissionType && r.ResourceId == resourceId && r.TimelineType == timelineType);
-            return permission?.PermissionLevel;
-        }
-
-        /// <summary>
-        /// Retrieves the permission levels for a user based on their group memberships and the specified resource and
-        /// permission criteria.
-        /// </summary>
-        /// <remarks>This method checks the user's membership in groups that have permissions for the
-        /// specified resource and filters the results based on the provided criteria.</remarks>
-        /// <param name="userId">The unique identifier of the user whose group permissions are being retrieved. Cannot be null or empty.</param>
-        /// <param name="permissionType">The type of permission to filter by (e.g. TimelineItem, FamilyMember, Family).</param>
-        /// <param name="resourceId">The unique identifier of the resource for which permissions are being checked.</param>
-        /// <param name="timelineType">The timeline type associated with the resource, or <see langword="null"/> if no specific timeline type is
-        /// applicable.</param>
-        /// <returns>A list of <see cref="PermissionLevel"/> values representing the permission levels granted to the user
-        /// through their group memberships. The list will be empty if no matching permissions are found.</returns>
-        private async Task<List<PermissionLevel>> GetGroupPermissionsAsync(string userId, PermissionType permissionType, int resourceId, KinaUnaTypes.TimeLineType? timelineType)
-        {
-            List<ResourcePermission> permissions = await progenyDbContext.ResourcePermissionsDb.AsNoTracking()
-                .Where(r => r.GroupId > 0 && r.PermissionType == permissionType && r.ResourceId == resourceId && r.TimelineType == timelineType)
-                .ToListAsync();
-            List<PermissionLevel> groupPermissions = new List<PermissionLevel>();
-            foreach (var permission in permissions)
+            if (userInfo == null || familyId == 0)
             {
-                bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userId && ug.UserGroupId == permission.GroupId);
-                if (isMember)
+                return false;
+            }
+
+            FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb
+                .AsNoTracking()
+                .SingleOrDefaultAsync(fp => fp.UserId == userInfo.UserId && fp.FamilyId == familyId);
+            if (familyPermission != null && familyPermission.PermissionLevel >= requiredLevel)
+            {
+                return true;
+            }
+
+            List<FamilyPermission> groupPermissions = await progenyDbContext.FamilyPermissionsDb
+                .AsNoTracking()
+                .Where(fp => fp.GroupId > 0 && fp.FamilyId== familyId)
+                .ToListAsync();
+            PermissionLevel highestGroupPermission = PermissionLevel.None;
+            foreach (FamilyPermission permission in groupPermissions)
+            {
+                bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
+                if (isMember && permission.PermissionLevel > highestGroupPermission)
                 {
-                    groupPermissions.Add(permission.PermissionLevel);
+                    highestGroupPermission = permission.PermissionLevel;
                 }
             }
 
-            return groupPermissions;
+            return highestGroupPermission >= requiredLevel;
+        }
+        
+        /// <summary>
+        /// Grants a specified permission to a user or group for a family, if the current user has the necessary
+        /// access rights.
+        /// </summary>
+        /// <remarks>This method ensures that the current user has the necessary access rights to grant
+        /// the specified permission. If the permission already exists,  or if the current user does not have sufficient
+        /// privileges, the method returns <see langword="null"/>. The method also sets the creation and modification
+        /// timestamps  for the new permission before saving it to the database.</remarks>
+        /// <param name="familyPermission">The permission to be granted, including details such as the user or group, familyId, and permission type.</param>
+        /// <param name="currentUserInfo">Information about the current user attempting to grant the permission.</param>
+        /// <returns>The granted <see cref="FamilyPermission"/> object if the operation is successful; otherwise, <see
+        /// langword="null"/> if the current user lacks the required access rights  or if the specified permission
+        /// already exists.</returns>
+        public async Task<FamilyPermission> GrantFamilyPermission(FamilyPermission familyPermission, UserInfo currentUserInfo)
+        {
+            // Check if the current user can grant the specified permission level.
+            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, familyPermission.FamilyId))
+            {
+                return null; // Todo: Use result object instead.
+            }
+
+            // Check if the permission already exists.
+            FamilyPermission existingPermission = await progenyDbContext.FamilyPermissionsDb
+                .SingleOrDefaultAsync(fp => fp.UserId == familyPermission.UserId && fp.GroupId == familyPermission.GroupId
+                                           && fp.FamilyId == familyPermission.FamilyId);
+            if (existingPermission != null)
+            {
+                return null; // Todo: Use result object instead.
+            }
+
+            familyPermission.CreatedBy = currentUserInfo.UserId;
+            familyPermission.CreatedTime = System.DateTime.UtcNow;
+            familyPermission.ModifiedBy = currentUserInfo.UserId;
+            familyPermission.ModifiedTime = System.DateTime.UtcNow;
+            
+            progenyDbContext.FamilyPermissionsDb.Add(familyPermission);
+            await progenyDbContext.SaveChangesAsync();
+
+            return familyPermission; // Todo: Use result object instead.
         }
 
+        /// <summary>
+        /// Revokes a specific permission for a family from a user or group.
+        /// </summary>
+        /// <remarks>The method checks whether the current user has sufficient access rights to revoke the
+        /// specified permission. If the permission does not exist or the user lacks the necessary access rights, the
+        /// method returns <see langword="false"/>.</remarks>
+        /// <param name="familyPermission">The permission to be revoked, including details such as the user or group, permission type, and familyId.</param>
+        /// <param name="currentUserInfo">The information of the user attempting to revoke the permission.</param>
+        /// <returns><see langword="true"/> if the permission was successfully revoked; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> RevokeFamilyPermission(FamilyPermission familyPermission, UserInfo currentUserInfo)
+        {
+            // Check if the current user can grant the specified permission level.
+            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, familyPermission.FamilyId))
+            {
+                return false; // Todo: Use result object instead.
+            }
+
+            // Don't allow removing own admin rights. You need to assign admin rights to another user first, then they may remove your access.
+            if (familyPermission.UserId == currentUserInfo.UserId)
+            {
+                return false; // Todo: Use result object instead.
+            }
+
+            // Check if the permission exists.
+            FamilyPermission existingPermission = await progenyDbContext.FamilyPermissionsDb
+                .SingleOrDefaultAsync(fp => fp.FamilyPermissionId == familyPermission.FamilyPermissionId && fp.FamilyId == familyPermission.FamilyId);
+            if (existingPermission == null)
+            {
+                existingPermission = await progenyDbContext.FamilyPermissionsDb.SingleOrDefaultAsync(fp => fp.FamilyId == familyPermission.FamilyId && fp.UserId == familyPermission.UserId);
+                if (existingPermission == null) {
+                    existingPermission = await progenyDbContext.FamilyPermissionsDb.SingleOrDefaultAsync(fp => fp.FamilyId == familyPermission.FamilyId && fp.Email == familyPermission.Email);
+                    if (existingPermission == null)
+                    {
+                        return false; // Todo: Use result object instead
+                    }
+                }
+            }
+
+            // If the existing permission is admin, remove from Family Admins list.
+            if (existingPermission.PermissionLevel == PermissionLevel.Admin)
+            {
+                Family family = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == familyPermission.FamilyId);
+                if (family != null)
+                {
+                    if (family.IsInAdminList(familyPermission.Email))
+                    {
+                        family.RemoveFromAdminList(familyPermission.Email);
+                        progenyDbContext.FamiliesDb.Update(family);
+                    }
+                }
+            }
+
+            // If the existing permission is not admin and the new permission is, add to the Family Admins list.
+            if (familyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
+            {
+                Family family = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == familyPermission.FamilyId);
+                if (family != null)
+                {
+                    if (!family.IsInAdminList(familyPermission.Email))
+                    {
+                        family.AddToAdminList(familyPermission.Email);
+                        progenyDbContext.FamiliesDb.Update(family);
+                    }
+                }
+            }
+
+            progenyDbContext.FamilyPermissionsDb.Remove(existingPermission);
+            await progenyDbContext.SaveChangesAsync();
+            
+            return true; // Todo: Use result object instead.
+        }
+
+        /// <summary>
+        /// Updates the permission level of an existing family permission.
+        /// </summary>
+        /// <remarks>This method validates whether the current user has the necessary access rights to
+        /// update the specified permission level. If the user does not have sufficient rights or the specified
+        /// permission does not exist, the method returns <see langword="null"/>.</remarks>
+        /// <param name="familyPermission">The updated family permission details, including the new permission level.</param>
+        /// <param name="currentUserInfo">Information about the current user performing the update, used to validate access rights.</param>
+        /// <returns>The updated <see cref="FamilyPermission"/> object if the operation is successful; otherwise, <see
+        /// langword="null"/> if the user lacks sufficient access rights or the specified permission does not exist.</returns>
+        public async Task<FamilyPermission> UpdateFamilyPermission(FamilyPermission familyPermission, UserInfo currentUserInfo)
+        {
+            // Check if the current user can grant the specified permission level.
+            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, familyPermission.FamilyId))
+            {
+                return null; // Todo: Use result object instead.
+            }
+
+            // Check if the permission exists.
+            FamilyPermission existingPermission = await progenyDbContext.FamilyPermissionsDb
+                .SingleOrDefaultAsync(fp => fp.FamilyPermissionId == familyPermission.FamilyPermissionId && fp.FamilyId == familyPermission.FamilyId);
+            if (existingPermission == null)
+            {
+                existingPermission = await progenyDbContext.FamilyPermissionsDb.SingleOrDefaultAsync(fp => fp.FamilyId == familyPermission.FamilyId && fp.UserId == familyPermission.UserId);
+                if (existingPermission == null)
+                {
+                    existingPermission = await progenyDbContext.FamilyPermissionsDb.SingleOrDefaultAsync(fp => fp.FamilyId == familyPermission.FamilyId && fp.Email == familyPermission.Email);
+                    if (existingPermission == null)
+                    {
+                        return null; // Todo: Use result object instead
+                    }
+                }
+            }
+
+            // If the existing permission is admin and the new permission isn't, remove from Family Admins list.
+            if (familyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
+            {
+                Family family = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == familyPermission.FamilyId);
+                if (family != null)
+                {
+                    if (family.IsInAdminList(familyPermission.Email))
+                    {
+                        family.RemoveFromAdminList(familyPermission.Email);
+                        progenyDbContext.FamiliesDb.Update(family);
+                    }
+                }
+            }
+
+            // If the existing permission is not admin and the new permission is, add to the Family Admins list.
+            if (familyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
+            {
+                Family family = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == familyPermission.FamilyId);
+                if (family != null)
+                {
+                    if (!family.IsInAdminList(familyPermission.Email))
+                    {
+                        family.AddToAdminList(familyPermission.Email);
+                        progenyDbContext.FamiliesDb.Update(family);
+                    }
+                }
+            }
+
+            existingPermission.PermissionLevel = familyPermission.PermissionLevel;
+            existingPermission.ModifiedTime = System.DateTime.UtcNow;
+            existingPermission.ModifiedBy = currentUserInfo.UserId;
+            
+            progenyDbContext.FamilyPermissionsDb.Update(existingPermission);
+            await progenyDbContext.SaveChangesAsync();
+            
+            return existingPermission; // Todo: Use result object instead.
+        }
+        
         /// <summary>
         /// Determines whether the specified user has administrative access to a resource based on the given permission
         /// type, entity ID, and optional timeline type.
@@ -280,25 +704,25 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             if (permissionType == PermissionType.TimelineItem)
             {
                 // For timeline items, we need to check if the user has admin rights for the Progeny associated with the timeline item.
-                ResourcePermission progenyPermission = await progenyDbContext.ResourcePermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(r => r.UserId == userId 
-                                               && r.PermissionType == PermissionType.FamilyMember 
-                                               && r.ResourceId == entityId 
-                                               && r.PermissionLevel == PermissionLevel.Admin);
+                ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
+                    .SingleOrDefaultAsync(pp => pp.UserId == userId 
+                                               && pp.ProgenyId == entityId 
+                                               && pp.PermissionLevel == PermissionLevel.Admin);
+                
                 if (progenyPermission != null)
                 {
                     return true;
                 }
             }
 
-            if (permissionType == PermissionType.FamilyMember)
+            if (permissionType == PermissionType.Progeny)
             {
-                ResourcePermission familyPermission = await progenyDbContext.ResourcePermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(r => r.UserId == userId 
-                                               && r.PermissionType == PermissionType.FamilyMember 
-                                               && r.ResourceId == entityId 
-                                               && r.PermissionLevel == PermissionLevel.Admin);
-                if (familyPermission != null)
+                ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
+                    .SingleOrDefaultAsync(pp => pp.UserId == userId
+                                               && pp.ProgenyId == entityId
+                                               && pp.PermissionLevel == PermissionLevel.Admin);
+
+                if (progenyPermission != null)
                 {
                     return true;
                 }
@@ -306,11 +730,10 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             if (permissionType == PermissionType.Family)
             {
-                ResourcePermission familyPermission = await progenyDbContext.ResourcePermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(r => r.UserId == userId 
-                                               && r.PermissionType == PermissionType.Family 
-                                               && r.ResourceId == entityId 
-                                               && r.PermissionLevel == PermissionLevel.Admin);
+                FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
+                    .SingleOrDefaultAsync(fp => fp.UserId == userId 
+                                               && fp.FamilyId == entityId 
+                                               && fp.PermissionLevel == PermissionLevel.Admin);
                 if (familyPermission != null)
                 {
                     return true;

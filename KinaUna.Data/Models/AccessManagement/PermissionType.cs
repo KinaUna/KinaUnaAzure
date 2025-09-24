@@ -8,7 +8,7 @@
     public enum PermissionType
     {
         TimelineItem = 0,
-        FamilyMember = 1, // = Progeny
-        Family = 2
+        Progeny = 1,
+        Family = 2,
     }
 }

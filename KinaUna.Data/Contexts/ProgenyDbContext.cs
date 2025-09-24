@@ -1,5 +1,6 @@
 ﻿using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUna.Data.Contexts
@@ -38,6 +39,10 @@ namespace KinaUna.Data.Contexts
         public DbSet<KanbanBoard> KanbanBoardsDb { get; init; }
         public DbSet<UserGroup> UserGroupsDb { get; init; }
         public DbSet<UserGroupMember> UserGroupMembersDb { get; init; }
-        public DbSet<ResourcePermission> ResourcePermissionsDb { get; init; }
+        public DbSet<Family> FamiliesDb { get; init; }
+        public DbSet<FamilyMember> FamilyMembersDb { get; init; }
+        public DbSet<FamilyPermission> FamilyPermissionsDb { get; init; }
+        public DbSet<ProgenyPermission> ProgenyPermissionsDb { get; init; }
+        public DbSet<TimelineItemPermission> TimelineItemPermissionsDb { get; init; }
     }
 }

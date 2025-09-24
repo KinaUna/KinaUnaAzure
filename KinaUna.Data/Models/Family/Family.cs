@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models.Family
 {
@@ -58,5 +60,8 @@ namespace KinaUna.Data.Models.Family
         /// </summary>
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
+
+        [NotMapped]
+        public List<FamilyMember> FamilyMembers { get; set; } = [];
     }
 }
