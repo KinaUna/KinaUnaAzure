@@ -260,7 +260,7 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
             
             Family existingFamily = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == familyId);
             // Only admins can delete families.
-            if (existingFamily == null || existingFamily.IsInAdminList(currentUserInfo.UserEmail))
+            if (existingFamily == null || !existingFamily.IsInAdminList(currentUserInfo.UserEmail))
             {
                 return false;
             }
