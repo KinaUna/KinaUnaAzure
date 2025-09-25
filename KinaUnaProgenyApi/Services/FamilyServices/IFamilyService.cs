@@ -28,7 +28,7 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
         /// access. If the user does not have the required permissions, an empty <see cref="Family"/> object is
         /// returned.</returns>
         Task<Family> GetFamilyById(int familyId, UserInfo currentUserInfo);
-        
+
         /// <summary>
         /// Retrieves a list of families associated with the specified user's email address.
         /// This should not be used under normal circumstances, it is intended for use when a new user signs up,
@@ -39,9 +39,10 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
         /// provided email address.  Each family is included only once in the result, even if the user is associated
         /// with multiple roles within the same family.</remarks>
         /// <param name="userEmail">The email address of the user whose families are to be retrieved. This parameter cannot be null or empty.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>A list of <see cref="Family"/> objects representing the families associated with the specified email
         /// address.  If no families are found, an empty list is returned.</returns>
-        Task<List<Family>> GetUsersFamiliesByEmail(string userEmail);
+        Task<List<Family>> GetUsersFamiliesByEmail(string userEmail, UserInfo currentUserInfo);
 
         /// <summary>
         /// Retrieves a list of families associated with the specified user ID.
@@ -50,9 +51,10 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
         /// member of. Each family is included only once in the result,  even if the user has multiple memberships in
         /// the same family.</remarks>
         /// <param name="userId">The unique identifier of the user whose families are to be retrieved. Cannot be null or empty.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Family"/>
         /// objects associated with the user.  If the user is not associated with any families, the list will be empty.</returns>
-        Task<List<Family>> GetUsersFamiliesByUserId(string userId);
+        Task<List<Family>> GetUsersFamiliesByUserId(string userId, UserInfo currentUserInfo);
 
         /// <summary>
         /// Adds a new family to the database and assigns administrative permissions to the specified users.
