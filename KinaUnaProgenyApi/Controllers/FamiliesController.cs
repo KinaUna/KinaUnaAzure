@@ -47,7 +47,6 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpPost]
-        [Route("[action]")]
         public async Task<IActionResult> AddFamily([FromBody] Family family)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -58,8 +57,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(newFamily);
         }
 
-        [HttpPut]
-        [Route("[action]/{familyId:int}")]
+        [HttpPut("{familyId:int}")]
         public async Task<IActionResult> UpdateFamily(int familyId, [FromBody] Family family)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -86,8 +84,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(updatedFamily);
         }
 
-        [HttpDelete]
-        [Route("[action]/{familyId:int}")]
+        [HttpDelete("{familyId:int}")]
         public async Task<IActionResult> DeleteFamily(int familyId)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
