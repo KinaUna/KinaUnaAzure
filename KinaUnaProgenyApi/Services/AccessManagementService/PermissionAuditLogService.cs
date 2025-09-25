@@ -91,6 +91,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 ItemAfter = string.Empty
             };
 
+            if (action == PermissionAction.Add)
+            {
+                // Swap ItemBefore and ItemAfter for Add actions
+                logEntry.ItemAfter = logEntry.ItemBefore;
+                logEntry.ItemBefore = string.Empty;
+            }
+
             progenyDbContext.PermissionAuditLogsDb.Add(logEntry);
             await progenyDbContext.SaveChangesAsync();
 
@@ -120,6 +127,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 ItemBefore = JsonSerializer.Serialize(progenyPermissionBefore),
                 ItemAfter = string.Empty
             };
+
+            if (action == PermissionAction.Add)
+            {
+                // Swap ItemBefore and ItemAfter for Add actions
+                logEntry.ItemAfter = logEntry.ItemBefore;
+                logEntry.ItemBefore = string.Empty;
+            }
 
             progenyDbContext.PermissionAuditLogsDb.Add(logEntry);
             await progenyDbContext.SaveChangesAsync();
@@ -151,6 +165,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 ItemBefore = JsonSerializer.Serialize(familyPermissionBefore),
                 ItemAfter = string.Empty
             };
+
+            if (action == PermissionAction.Add)
+            {
+                // Swap ItemBefore and ItemAfter for Add actions
+                logEntry.ItemAfter = logEntry.ItemBefore;
+                logEntry.ItemBefore = string.Empty;
+            }
 
             progenyDbContext.PermissionAuditLogsDb.Add(logEntry);
             await progenyDbContext.SaveChangesAsync();

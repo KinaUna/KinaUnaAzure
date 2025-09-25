@@ -20,7 +20,8 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
     /// service interacts with the database to retrieve and modify family-related information.</remarks>
     /// <param name="progenyDbContext"></param>
     /// <param name="familyMembersService"></param>
-    public class FamilyService(ProgenyDbContext progenyDbContext, IFamilyMembersService familyMembersService, IAccessManagementService accessManagementService): IFamilyService
+    public class FamilyService(ProgenyDbContext progenyDbContext, IFamilyMembersService familyMembersService,
+        IAccessManagementService accessManagementService, IFamilyAuditLogService familyAuditLogService, IPermissionAuditLogService permissionAuditLogService): IFamilyService
     {
         /// <summary>
         /// Retrieves a family by its unique identifier, including its members, if the current user has the necessary
@@ -132,7 +133,8 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
             // Add the family to the database.
             await progenyDbContext.FamiliesDb.AddAsync(family);
             await progenyDbContext.SaveChangesAsync();
-            // Todo: Audit log entry.
+
+            await familyAuditLogService.AddFamilyCreatedAuditLogEntry(family, currentUserInfo);
 
             // Add FamilyPermissions for all admins in the family.
             foreach (string adminEmail in family.GetAdminsList())
@@ -181,6 +183,8 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
                 return null;
             }
 
+            FamilyAuditLog logEntry = await familyAuditLogService.AddFamilyUpdatedAuditLogEntry(existingFamily, currentUserInfo);
+
             // Cannot remove yourself from the admin list. This is to ensure there is always at least one valid admin.
             if (!family.IsInAdminList(currentUserInfo.UserEmail))
             {
@@ -198,7 +202,9 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
 
             progenyDbContext.FamiliesDb.Update(existingFamily);
             await progenyDbContext.SaveChangesAsync();
-            // Todo: Audit log entry.
+            
+            logEntry.EntityAfter = System.Text.Json.JsonSerializer.Serialize(existingFamily);
+            await familyAuditLogService.UpdateFamilyAuditLogEntry(logEntry);
 
             // Add FamilyPermissions for new admins
             foreach (string newAdmin in newAdmins)
@@ -268,6 +274,8 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
             progenyDbContext.FamiliesDb.Remove(existingFamily);
             await progenyDbContext.SaveChangesAsync();
 
+            await familyAuditLogService.AddFamilyDeletedAuditLogEntry(existingFamily, currentUserInfo);
+
             // Remove all family members and permissions as well.
             List<FamilyMember> familyMembers = await familyMembersService.GetFamilyMembersForFamily(familyId, currentUserInfo);
             if (familyMembers.Count > 0)
@@ -293,10 +301,9 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
             {
                 progenyDbContext.FamilyPermissionsDb.Remove(ownPermission);
                 await progenyDbContext.SaveChangesAsync();
+                await permissionAuditLogService.AddFamilyPermissionAuditLogEntry(PermissionAction.Delete, ownPermission, currentUserInfo);
             }
-
-            // Todo: Audit log the deletion of the family and related data.
-
+            
             return true;
         }
     }
