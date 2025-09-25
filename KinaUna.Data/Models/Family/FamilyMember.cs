@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUna.Data.Models.Family
 {
@@ -68,5 +70,11 @@ namespace KinaUna.Data.Models.Family
         /// </summary>
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the permission level associated with the entity.
+        /// </summary>
+        [NotMapped]
+        public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
     }
 }

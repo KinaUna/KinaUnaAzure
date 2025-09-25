@@ -57,23 +57,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(newFamily);
         }
 
-        [HttpPut("{familyId:int}")]
-        public async Task<IActionResult> UpdateFamily(int familyId, [FromBody] Family family)
+        [HttpPut]
+        public async Task<IActionResult> UpdateFamily([FromBody] Family family)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-            Family existingFamily = await familyService.GetFamilyById(familyId, currenUserInfo);
-            if (existingFamily.FamilyId == 0)
-            {
-                return Unauthorized();
-            }
-
-            if (family.FamilyId != familyId)
-            {
-                return BadRequest("Family ID in URL does not match Family ID in body.");
-            }
-
+            
             Family updatedFamily = await familyService.UpdateFamily(family, currenUserInfo);
             
             if (updatedFamily.FamilyId == 0)
@@ -104,17 +93,54 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(true);
         }
-
+        
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> GetFamilyMembers([FromBody]Family family)
+        public async Task<IActionResult> AddFamilyMember([FromBody] FamilyMember familyMember)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-            List<FamilyMember> familyMembers = await familyMembersService.GetFamilyMembersForFamily(family.FamilyId, currenUserInfo);
-
-            return Ok(familyMembers);
+            FamilyMember newFamilyMember = await familyMembersService.AddFamilyMember(familyMember, familyMember.PermissionLevel, currenUserInfo);
+            
+            if (newFamilyMember.FamilyMemberId == 0)
+            {
+                return Unauthorized();
+            }
+            
+            return Ok(newFamilyMember);
         }
+        
+        [HttpPut]
+        [Route("[action]")]
+        public async Task<IActionResult> UpdateFamilyMember([FromBody] FamilyMember familyMember)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            
+            FamilyMember updatedFamilyMember = await familyMembersService.UpdateFamilyMember(familyMember, currenUserInfo);
+            
+            if (updatedFamilyMember.FamilyMemberId == 0)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(updatedFamilyMember);
+        }
+
+        [HttpDelete]
+        [Route("[action]/{familyMemberId:int}")]
+        public async Task<IActionResult> DeleteFamilyMember(int familyMemberId)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            
+            bool result = await familyMembersService.DeleteFamilyMember(familyMemberId, currenUserInfo);
+            if (!result)
+            {
+                return Unauthorized();
+            }
+            return Ok(true);
+        }
+
     }
 }
