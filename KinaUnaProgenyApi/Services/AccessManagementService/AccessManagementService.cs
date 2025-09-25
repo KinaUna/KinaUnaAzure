@@ -14,7 +14,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     /// Service for managing access permissions for users and groups to various resources such as progeny, families, and timeline items.
     /// </summary>
     /// <param name="progenyDbContext"></param>
-    public class AccessManagementService(ProgenyDbContext progenyDbContext) : IAccessManagementService
+    public class AccessManagementService(ProgenyDbContext progenyDbContext, IPermissionAuditLogService permissionAuditLogService) : IAccessManagementService
     {
         /// <summary>
         /// Determines whether a user has the specified access level for a given timeline item (e.g., Note, TodoItem, Sleep, etc.).
@@ -313,6 +313,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.ProgenyPermissionsDb.Add(progenyPermission);
             await progenyDbContext.SaveChangesAsync();
 
+            await permissionAuditLogService.AddProgenyPermissionAuditLogEntry(PermissionAction.Add, progenyPermission, currentUserInfo);
             return progenyPermission; // Todo: Use result object instead.
         }
 
@@ -355,6 +356,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 }
             }
 
+            PermissionAuditLog logEntry = await permissionAuditLogService.AddProgenyPermissionAuditLogEntry(PermissionAction.Delete, progenyPermission, currentUserInfo);
+            
             // If the existing permission is admin, remove from Family Admins list.
             if (existingPermission.PermissionLevel == PermissionLevel.Admin && progenyPermission.PermissionLevel != PermissionLevel.Admin)
             {
@@ -385,7 +388,10 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             progenyDbContext.ProgenyPermissionsDb.Remove(existingPermission);
             await progenyDbContext.SaveChangesAsync();
-
+            
+            logEntry.ItemAfter = System.Text.Json.JsonSerializer.Serialize(existingPermission);
+            await permissionAuditLogService.UpdatePermissionAuditLogEntry(logEntry);
+            
             return true; // Todo: Use result object instead.
         }
 
@@ -424,6 +430,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 }
             }
 
+            PermissionAuditLog logEntry = await permissionAuditLogService.AddProgenyPermissionAuditLogEntry(PermissionAction.Update, progenyPermission, currentUserInfo);
+
             // If the existing permission is admin and the new permission isn't, remove from Progeny Admins list.
             if (progenyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
             {
@@ -458,6 +466,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             progenyDbContext.ProgenyPermissionsDb.Update(existingPermission);
             await progenyDbContext.SaveChangesAsync();
+
+            logEntry.ItemAfter = System.Text.Json.JsonSerializer.Serialize(existingPermission);
+            await permissionAuditLogService.UpdatePermissionAuditLogEntry(logEntry);
 
             return existingPermission; // Todo: Use result object instead.
         }

@@ -89,6 +89,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             progenyDbContext.UserGroupsDb.Add(userGroup);
             await progenyDbContext.SaveChangesAsync();
+
+            // Todo: Audit log entry.
             return userGroup;
         }
 
@@ -134,6 +136,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             group.ModifiedTime = DateTime.UtcNow;
             
             await progenyDbContext.SaveChangesAsync();
+
+            // Todo: Audit log entry.
             return group;
         }
 
@@ -181,6 +185,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             
             progenyDbContext.UserGroupsDb.Remove(group);
             await progenyDbContext.SaveChangesAsync();
+
+            // Todo: Audit log entry.
             return true;
         }
 
@@ -242,7 +248,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             progenyDbContext.UserGroupMembersDb.Add(userGroupMember);
             await progenyDbContext.SaveChangesAsync();
-            
+
+            // Todo: Audit log entry.
             return userGroupMember;
         }
 
@@ -301,7 +308,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             member.ModifiedTime = DateTime.UtcNow;
             
             await progenyDbContext.SaveChangesAsync();
-            
+
+            // Todo: Audit log entry.
             return member;
         }
 
@@ -343,7 +351,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             
             progenyDbContext.UserGroupMembersDb.Remove(member);
             await progenyDbContext.SaveChangesAsync();
-            
+
+            // Todo: Audit log entry.
             return true;
         }
         

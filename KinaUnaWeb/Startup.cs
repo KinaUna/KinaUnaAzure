@@ -212,7 +212,8 @@ namespace KinaUnaWeb
                 services.AddCors(options => options.AddDefaultPolicy(policy =>
                     policy.AllowAnyHeader()
                         .AllowAnyMethod()
-                        .WithOrigins(Constants.DevelopmentCorsList)));
+                        .WithOrigins(Constants.DevelopmentCorsList)
+                        .SetPreflightMaxAge(TimeSpan.FromMinutes(15))));
             }
             // If production, restrict to the specified origin.
             else
@@ -222,7 +223,8 @@ namespace KinaUnaWeb
                     services.AddCors(options => options.AddDefaultPolicy(policy =>
                         policy.AllowAnyHeader()
                             .AllowAnyMethod()
-                            .WithOrigins(Constants.StagingCorsList)));
+                            .WithOrigins(Constants.StagingCorsList)
+                            .SetPreflightMaxAge(TimeSpan.FromMinutes(15))));
                 }
                 else
                 {

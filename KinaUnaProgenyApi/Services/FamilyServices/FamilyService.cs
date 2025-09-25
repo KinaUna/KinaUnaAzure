@@ -132,6 +132,7 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
             // Add the family to the database.
             await progenyDbContext.FamiliesDb.AddAsync(family);
             await progenyDbContext.SaveChangesAsync();
+            // Todo: Audit log entry.
 
             // Add FamilyPermissions for all admins in the family.
             foreach (string adminEmail in family.GetAdminsList())
@@ -197,6 +198,7 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
 
             progenyDbContext.FamiliesDb.Update(existingFamily);
             await progenyDbContext.SaveChangesAsync();
+            // Todo: Audit log entry.
 
             // Add FamilyPermissions for new admins
             foreach (string newAdmin in newAdmins)
@@ -239,9 +241,7 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
                     _ = await accessManagementService.UpdateFamilyPermission(familyPermission, currentUserInfo);
                 }
             }
-
-            // Todo: Audit log the update of the family.
-
+            
             return existingFamily;
         }
 
