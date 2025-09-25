@@ -99,8 +99,11 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IKanbanBoardsService, KanbanBoardsService>();
             services.AddScoped<IAccessManagementService, AccessManagementService>();
             services.AddScoped<IUserGroupService, UserGroupService>();
+            services.AddScoped<IUserGroupAuditLogService, UserGroupAuditLogService>();
             services.AddScoped<IFamilyService, FamilyService>();
             services.AddScoped<IFamilyMembersService, FamilyMembersService>();
+            services.AddScoped<IFamilyAuditLogService, FamilyAuditLogService>();
+            services.AddScoped<IPermissionAuditLogService, PermissionAuditLogService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();
@@ -142,7 +145,8 @@ namespace KinaUnaProgenyApi
                 services.AddCors(options => options.AddDefaultPolicy(policy =>
                     policy.AllowAnyHeader()
                         .AllowAnyMethod()
-                        .WithOrigins(Constants.DevelopmentCorsList)));
+                        .WithOrigins(Constants.DevelopmentCorsList)
+                        .SetPreflightMaxAge(TimeSpan.FromMinutes(15))));
             }
             // If production, restrict to the specified origin.
             else
@@ -152,7 +156,8 @@ namespace KinaUnaProgenyApi
                     services.AddCors(options => options.AddDefaultPolicy(policy =>
                         policy.AllowAnyHeader()
                             .AllowAnyMethod()
-                            .WithOrigins(Constants.StagingCorsList)));
+                            .WithOrigins(Constants.StagingCorsList)
+                            .SetPreflightMaxAge(TimeSpan.FromMinutes(15))));
                 }
                 else
                 {

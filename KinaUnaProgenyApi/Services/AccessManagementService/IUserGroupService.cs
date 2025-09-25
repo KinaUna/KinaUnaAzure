@@ -2,7 +2,7 @@
 using KinaUna.Data.Models.AccessManagement;
 using System.Threading.Tasks;
 
-namespace KinaUnaProgenyApi.Services
+namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
     public interface IUserGroupService
     {

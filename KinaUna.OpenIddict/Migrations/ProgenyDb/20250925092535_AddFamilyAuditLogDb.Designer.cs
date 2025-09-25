@@ -4,16 +4,19 @@ using KinaUna.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace KinaUna.IDP.Migrations.ProgenyDb
+namespace KinaUna.OpenIddict.Migrations.ProgenyDb
 {
     [DbContext(typeof(ProgenyDbContext))]
-    partial class ProgenyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250925092535_AddFamilyAuditLogDb")]
+    partial class AddFamilyAuditLogDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -255,47 +258,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.HasKey("UserGroupId");
 
                     b.ToTable("UserGroupsDb");
-                });
-
-            modelBuilder.Entity("KinaUna.Data.Models.AccessManagement.UserGroupAuditLog", b =>
-                {
-                    b.Property<int>("UserGroupAuditLogId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserGroupAuditLogId"));
-
-                    b.Property<int>("Action")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ChangeTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ChangedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("EntityAfter")
-                        .HasMaxLength(8192)
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EntityBefore")
-                        .HasMaxLength(8192)
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EntityType")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<int>("UserGroupId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserGroupMemberId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserGroupAuditLogId");
-
-                    b.ToTable("UserGroupAuditLogsDb");
                 });
 
             modelBuilder.Entity("KinaUna.Data.Models.AccessManagement.UserGroupMember", b =>

@@ -5,17 +5,16 @@ using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
-using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 
-namespace KinaUnaProgenyApi.Services
+namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
     /// <summary>
     /// User group service. Handles user groups and their members.
     /// </summary>
     /// <param name="progenyDbContext"></param>
     /// <param name="accessManagementService"></param>
-    public class UserGroupService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService): IUserGroupService
+    public class UserGroupService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IUserGroupAuditLogService userGroupAuditLogService): IUserGroupService
     {
         /// <summary>
         /// Gets a user group by its unique identifier, including its members, if the current user has the necessary permissions.
@@ -90,6 +89,9 @@ namespace KinaUnaProgenyApi.Services
 
             progenyDbContext.UserGroupsDb.Add(userGroup);
             await progenyDbContext.SaveChangesAsync();
+
+            await userGroupAuditLogService.AddUserGroupCreatedAuditLogEntry(userGroup, currentUserInfo);
+
             return userGroup;
         }
 
@@ -126,6 +128,8 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
+            UserGroupAuditLog logEntry = await userGroupAuditLogService.AddUserGroupUpdatedAuditLogEntry(group, currentUserInfo);
+
             group.IsFamily = userGroup.IsFamily;
             group.Name = userGroup.Name;
             group.Description = userGroup.Description;
@@ -135,6 +139,9 @@ namespace KinaUnaProgenyApi.Services
             group.ModifiedTime = DateTime.UtcNow;
             
             await progenyDbContext.SaveChangesAsync();
+
+            logEntry.EntityAfter = System.Text.Json.JsonSerializer.Serialize(group);
+            await userGroupAuditLogService.UpdateUserGroupAuditLogEntry(logEntry);
             return group;
         }
 
@@ -182,6 +189,9 @@ namespace KinaUnaProgenyApi.Services
             
             progenyDbContext.UserGroupsDb.Remove(group);
             await progenyDbContext.SaveChangesAsync();
+
+            await userGroupAuditLogService.AddUserGroupDeletedAuditLogEntry(group, currentUserInfo);
+
             return true;
         }
 
@@ -243,7 +253,9 @@ namespace KinaUnaProgenyApi.Services
 
             progenyDbContext.UserGroupMembersDb.Add(userGroupMember);
             await progenyDbContext.SaveChangesAsync();
-            
+
+            await userGroupAuditLogService.AddUserGroupMemberAddedAuditLogEntry(userGroupMember, currentUserInfo);
+
             return userGroupMember;
         }
 
@@ -282,6 +294,9 @@ namespace KinaUnaProgenyApi.Services
             {
                 return null;
             }
+
+            UserGroupAuditLog logEntry = await userGroupAuditLogService.AddUserGroupMemberUpdatedAuditLogEntry(member, currentUserInfo);
+
             // If UserId is missing, trim email and check if there is a user with this email.
             if (string.IsNullOrWhiteSpace(userGroupMember.UserId) &&!string.IsNullOrEmpty(userGroupMember.Email))
             {
@@ -302,7 +317,10 @@ namespace KinaUnaProgenyApi.Services
             member.ModifiedTime = DateTime.UtcNow;
             
             await progenyDbContext.SaveChangesAsync();
-            
+
+            logEntry.EntityAfter = System.Text.Json.JsonSerializer.Serialize(member);
+            await userGroupAuditLogService.UpdateUserGroupAuditLogEntry(logEntry);
+
             return member;
         }
 
@@ -344,7 +362,9 @@ namespace KinaUnaProgenyApi.Services
             
             progenyDbContext.UserGroupMembersDb.Remove(member);
             await progenyDbContext.SaveChangesAsync();
-            
+
+            await userGroupAuditLogService.AddUserGroupMemberDeletedAuditLogEntry(member, currentUserInfo);
+
             return true;
         }
         

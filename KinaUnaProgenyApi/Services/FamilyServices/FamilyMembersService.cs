@@ -20,7 +20,7 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
     /// operations on family members. Permissions are determined based on the user's role within the family and their
     /// associated permission level.</remarks>
     /// <param name="progenyDbContext"></param>
-    public class FamilyMembersService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService) : IFamilyMembersService
+    public class FamilyMembersService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IFamilyAuditLogService familyAuditLogService) : IFamilyMembersService
     {
         /// <summary>
         /// Adds a new family member to the specified family and assigns the given permission level.
@@ -112,36 +112,27 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
             progenyDbContext.FamilyMembersDb.Add(familyMember);
             await progenyDbContext.SaveChangesAsync();
 
+            await familyAuditLogService.AddFamilyMemberAddedAuditLogEntry(familyMember, currentUserInfo);
+
             if (string.IsNullOrWhiteSpace(familyMember.Email)) return familyMember;
 
-            // Check if the family member already has a permission entry, if not, create one with the specified permission level.
-            FamilyPermission existingPermission = await progenyDbContext.FamilyPermissionsDb
-                .SingleOrDefaultAsync(fp => fp.FamilyId == familyMember.FamilyId && fp.Email == familyMember.Email);
-            if (existingPermission == null)
+            // Create or update permission for the new family member.
+            FamilyPermission familyPermission = new()
             {
-                FamilyPermission familyPermission = new()
-                {
-                    FamilyId = familyMember.FamilyId,
-                    UserId = familyMember.UserId,
-                    PermissionLevel = permissionLevel,
-                    CreatedBy = currentUserInfo.UserId,
-                    CreatedTime = DateTime.UtcNow,
-                    ModifiedBy = currentUserInfo.UserId,
-                    ModifiedTime = DateTime.UtcNow
-                };
-                progenyDbContext.FamilyPermissionsDb.Add(familyPermission);
-            }
-            else // Update the permission level to the specified level.
+                FamilyId = familyMember.FamilyId,
+                UserId = familyMember.UserId,
+                PermissionLevel = permissionLevel,
+                CreatedBy = currentUserInfo.UserId,
+                CreatedTime = DateTime.UtcNow,
+                ModifiedBy = currentUserInfo.UserId,
+                ModifiedTime = DateTime.UtcNow
+            };
+            FamilyPermission addedFamilyPermission = await accessManagementService.GrantFamilyPermission(familyPermission, currentUserInfo);
+            if (addedFamilyPermission == null)
             {
-                existingPermission.PermissionLevel = permissionLevel;
-                existingPermission.ModifiedBy = currentUserInfo.UserId;
-                existingPermission.ModifiedTime = DateTime.UtcNow;
+                await accessManagementService.UpdateFamilyPermission(familyPermission, currentUserInfo);
             }
-
-            await progenyDbContext.SaveChangesAsync();
             
-            // Todo: Audit log entry.
-
             return familyMember;
         }
 
@@ -220,6 +211,8 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
                 return null;
             }
 
+            FamilyAuditLog logEntry = await familyAuditLogService.AddFamilyMemberUpdatedAuditLogEntry(existingFamilyMember, currentUserInfo);
+
             existingFamilyMember.UserId = familyMember.UserId;
             existingFamilyMember.MemberType = familyMember.MemberType;
             existingFamilyMember.Email = familyMember.Email;
@@ -231,7 +224,8 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
             progenyDbContext.FamilyMembersDb.Update(existingFamilyMember);
             await progenyDbContext.SaveChangesAsync();
 
-            // Todo: Audit log entry.
+            logEntry.EntityAfter = System.Text.Json.JsonSerializer.Serialize(existingFamilyMember);
+            await familyAuditLogService.UpdateFamilyAuditLogEntry(logEntry);
 
             return existingFamilyMember;
         }
@@ -308,6 +302,9 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
             }
 
             progenyDbContext.FamilyMembersDb.Remove(familyMember);
+            await progenyDbContext.SaveChangesAsync();
+
+            await familyAuditLogService.AddFamilyMemberDeletedAuditLogEntry(familyMember, currentUserInfo);
 
             // Also remove any permissions associated with this family member.
             List<FamilyPermission> permissions = await progenyDbContext.FamilyPermissionsDb
@@ -315,13 +312,12 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
                 .ToListAsync();
             if (permissions.Count > 0)
             {
-                progenyDbContext.FamilyPermissionsDb.RemoveRange(permissions);
+                foreach (FamilyPermission permission in permissions)
+                {
+                    await accessManagementService.RevokeFamilyPermission(permission, currentUserInfo);
+                }
             }
             
-            await progenyDbContext.SaveChangesAsync();
-
-            // Todo: Audit log entry.
-
             return true;
         }
 
