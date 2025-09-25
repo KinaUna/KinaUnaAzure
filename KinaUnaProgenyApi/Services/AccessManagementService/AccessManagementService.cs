@@ -14,7 +14,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     /// Service for managing access permissions for users and groups to various resources such as progeny, families, and timeline items.
     /// </summary>
     /// <param name="progenyDbContext"></param>
-    public class AccessManagementService(ProgenyDbContext progenyDbContext, IPermissionAuditLogService permissionAuditLogService) : IAccessManagementService
+    public class AccessManagementService(ProgenyDbContext progenyDbContext, IPermissionAuditLogsService permissionAuditLogService) : IAccessManagementService
     {
         /// <summary>
         /// Determines whether a user has the specified access level for a given timeline item (e.g., Note, TodoItem, Sleep, etc.).

@@ -17,7 +17,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.Services.AccessManagementService;
-using KinaUnaProgenyApi.Services.FamilyServices;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 using KinaUnaProgenyApi.Services.KanbanServices;
 using KinaUnaProgenyApi.Services.TodosServices;
 
@@ -98,12 +98,12 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IKanbanItemsService, KanbanItemsService>();
             services.AddScoped<IKanbanBoardsService, KanbanBoardsService>();
             services.AddScoped<IAccessManagementService, AccessManagementService>();
-            services.AddScoped<IUserGroupService, UserGroupService>();
-            services.AddScoped<IUserGroupAuditLogService, UserGroupAuditLogService>();
-            services.AddScoped<IFamilyService, FamilyService>();
+            services.AddScoped<IUserGroupsService, UserGroupsService>();
+            services.AddScoped<IUserGroupAuditLogsService, UserGroupAuditLogsService>();
+            services.AddScoped<IFamiliesService, FamiliesService>();
             services.AddScoped<IFamilyMembersService, FamilyMembersService>();
-            services.AddScoped<IFamilyAuditLogService, FamilyAuditLogService>();
-            services.AddScoped<IPermissionAuditLogService, PermissionAuditLogService>();
+            services.AddScoped<IFamilyAuditLogsService, FamilyAuditLogsService>();
+            services.AddScoped<IPermissionAuditLogsService, PermissionAuditLogsService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddNewtonsoftJson();

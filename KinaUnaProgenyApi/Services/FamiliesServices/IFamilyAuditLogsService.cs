@@ -1,10 +1,10 @@
-﻿using KinaUna.Data.Models.Family;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.Family;
 
-namespace KinaUnaProgenyApi.Services.FamilyServices
+namespace KinaUnaProgenyApi.Services.FamiliesServices
 {
-    public interface IFamilyAuditLogService
+    public interface IFamilyAuditLogsService
     {
         Task<FamilyAuditLog> AddFamilyAuditLogEntry(FamilyAuditLog logEntry);
         Task<FamilyAuditLog> UpdateFamilyAuditLogEntry(FamilyAuditLog logEntry);

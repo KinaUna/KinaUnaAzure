@@ -4,9 +4,9 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.Family;
 
-namespace KinaUnaProgenyApi.Services.FamilyServices
+namespace KinaUnaProgenyApi.Services.FamiliesServices
 {
-    public class FamilyAuditLogService(ProgenyDbContext progenyDbContext): IFamilyAuditLogService
+    public class FamilyAuditLogsService(ProgenyDbContext progenyDbContext): IFamilyAuditLogsService
     {
         public async Task<FamilyAuditLog> AddFamilyAuditLogEntry(FamilyAuditLog logEntry)
         {

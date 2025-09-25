@@ -12,7 +12,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     /// permissions, progeny permissions,  and family permissions. Each log entry includes details about the change,
     /// such as the action performed, the user  who made the change, and the state of the item before and after the
     /// change.</remarks>
-    public interface IPermissionAuditLogService
+    public interface IPermissionAuditLogsService
     {
         /// <summary>
         /// Retrieves a specific permission audit log entry by its unique identifier.

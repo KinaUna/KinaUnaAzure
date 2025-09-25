@@ -4,7 +4,7 @@ using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
-    public interface IUserGroupAuditLogService
+    public interface IUserGroupAuditLogsService
     {
         Task<UserGroupAuditLog> GetUserGroupAuditLogEntry(int userGroupAuditLogId);
         Task<UserGroupAuditLog> AddUserGroupAuditLogEntry(UserGroupAuditLog logEntry);

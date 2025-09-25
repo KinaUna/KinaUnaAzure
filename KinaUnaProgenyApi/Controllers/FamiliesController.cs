@@ -3,11 +3,11 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.Family;
 using KinaUnaProgenyApi.Services;
-using KinaUnaProgenyApi.Services.FamilyServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -15,7 +15,7 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class FamilyController(IFamilyService familyService, IFamilyMembersService familyMembersService, IUserInfoService userInfoService) : ControllerBase
+    public class FamiliesController(IFamiliesService familyService, IFamilyMembersService familyMembersService, IUserInfoService userInfoService) : ControllerBase
     {
         [HttpGet]
         [Route("[action]/{familyId:int}")]

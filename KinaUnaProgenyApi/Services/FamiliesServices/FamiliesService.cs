@@ -9,7 +9,7 @@ using KinaUna.Data.Models.Family;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 
-namespace KinaUnaProgenyApi.Services.FamilyServices
+namespace KinaUnaProgenyApi.Services.FamiliesServices
 {
     /// <summary>
     /// Provides methods for managing families, including retrieving, creating, updating, and deleting family records,
@@ -20,8 +20,8 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
     /// service interacts with the database to retrieve and modify family-related information.</remarks>
     /// <param name="progenyDbContext"></param>
     /// <param name="familyMembersService"></param>
-    public class FamilyService(ProgenyDbContext progenyDbContext, IFamilyMembersService familyMembersService,
-        IAccessManagementService accessManagementService, IFamilyAuditLogService familyAuditLogService, IPermissionAuditLogService permissionAuditLogService): IFamilyService
+    public class FamiliesService(ProgenyDbContext progenyDbContext, IFamilyMembersService familyMembersService,
+        IAccessManagementService accessManagementService, IFamilyAuditLogsService familyAuditLogService, IPermissionAuditLogsService permissionAuditLogService): IFamiliesService
     {
         /// <summary>
         /// Retrieves a family by its unique identifier, including its members, if the current user has the necessary

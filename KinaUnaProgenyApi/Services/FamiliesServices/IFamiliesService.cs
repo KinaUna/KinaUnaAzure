@@ -1,10 +1,10 @@
-﻿using KinaUna.Data.Models;
-using KinaUna.Data.Models.Family;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
 
-namespace KinaUnaProgenyApi.Services.FamilyServices
+namespace KinaUnaProgenyApi.Services.FamiliesServices
 {
     /// <summary>
     /// Provides methods for managing families, including retrieving, creating, updating, and deleting family records,
@@ -13,7 +13,7 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
     /// <remarks>This service is designed to handle operations related to family entities, including access
     /// control based on user permissions. It ensures that only authorized users can perform actions on family data. The
     /// service interacts with the database to retrieve and modify family-related information.</remarks>
-    public interface IFamilyService
+    public interface IFamiliesService
     {
         /// <summary>
         /// Retrieves a family by its unique identifier, including its members, if the current user has the necessary

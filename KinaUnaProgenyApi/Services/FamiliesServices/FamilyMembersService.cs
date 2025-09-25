@@ -10,7 +10,7 @@ using KinaUna.Data.Models.Family;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 
-namespace KinaUnaProgenyApi.Services.FamilyServices
+namespace KinaUnaProgenyApi.Services.FamiliesServices
 {
     /// <summary>
     /// Provides functionality for managing family members within a family, including adding, updating, and deleting
@@ -20,7 +20,7 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
     /// operations on family members. Permissions are determined based on the user's role within the family and their
     /// associated permission level.</remarks>
     /// <param name="progenyDbContext"></param>
-    public class FamilyMembersService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IFamilyAuditLogService familyAuditLogService) : IFamilyMembersService
+    public class FamilyMembersService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IFamilyAuditLogsService familyAuditLogService) : IFamilyMembersService
     {
         /// <summary>
         /// Adds a new family member to the specified family and assigns the given permission level.

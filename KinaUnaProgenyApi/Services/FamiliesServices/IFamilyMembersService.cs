@@ -1,10 +1,10 @@
-﻿using KinaUna.Data.Models;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace KinaUnaProgenyApi.Services.FamilyServices
+namespace KinaUnaProgenyApi.Services.FamiliesServices
 {
     /// <summary>
     /// Provides functionality for managing family members within a family, including adding, updating, and deleting

@@ -16,7 +16,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     /// such as the action performed, the user  who made the change, and the state of the item before and after the
     /// change.</remarks>
     /// <param name="progenyDbContext"></param>
-    public class PermissionAuditLogService(ProgenyDbContext progenyDbContext): IPermissionAuditLogService
+    public class PermissionAuditLogsService(ProgenyDbContext progenyDbContext): IPermissionAuditLogsService
     {
         /// <summary>
         /// Adds a new permission audit log entry to the database.

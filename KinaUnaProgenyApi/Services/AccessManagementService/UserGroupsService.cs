@@ -14,7 +14,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     /// </summary>
     /// <param name="progenyDbContext"></param>
     /// <param name="accessManagementService"></param>
-    public class UserGroupService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IUserGroupAuditLogService userGroupAuditLogService): IUserGroupService
+    public class UserGroupsService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IUserGroupAuditLogsService userGroupAuditLogService): IUserGroupsService
     {
         /// <summary>
         /// Gets a user group by its unique identifier, including its members, if the current user has the necessary permissions.

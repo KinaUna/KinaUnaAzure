@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
-    public interface IUserGroupService
+    public interface IUserGroupsService
     {
         /// <summary>
         /// Gets a user group by its unique identifier, including its members, if the current user has the necessary permissions.

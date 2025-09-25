@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
-    public class UserGroupAuditLogService(ProgenyDbContext progenyDbContext): IUserGroupAuditLogService
+    public class UserGroupAuditLogsService(ProgenyDbContext progenyDbContext): IUserGroupAuditLogsService
     {
         public async Task<UserGroupAuditLog> GetUserGroupAuditLogEntry(int logEntryId)
         {
