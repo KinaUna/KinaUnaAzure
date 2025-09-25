@@ -23,9 +23,28 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             return logEntry;
         }
 
-        public async Task<PermissionAuditLog?> GetPermissionAuditLogEntry(int permissionAuditLogId)
+        public async Task<PermissionAuditLog> GetPermissionAuditLogEntry(int permissionAuditLogId)
         {
             PermissionAuditLog? logEntry = await progenyDbContext.PermissionAuditLogsDb.AsNoTracking().SingleOrDefaultAsync(pau => pau.PermissionAuditLogId == permissionAuditLogId);
+            return logEntry;
+        }
+
+        public async Task<PermissionAuditLog> AddTimelineItemPermissionAuditLogEntry(PermissionAction action, TimelineItemPermission itemPermissionBefore, UserInfo userInfo)
+        {
+            PermissionAuditLog logEntry = new PermissionAuditLog
+            {
+                EntityId = itemPermissionBefore.TimelineItemPermissionId,
+                EntityType = nameof(TimelineItemPermission),
+                Action = action,
+                ChangedBy = !string.IsNullOrEmpty(userInfo.UserId) ? userInfo.UserId : userInfo.UserEmail,
+                ChangeTime = System.DateTime.UtcNow,
+                ItemBefore = JsonSerializer.Serialize(itemPermissionBefore),
+                ItemAfter = string.Empty
+            };
+
+            progenyDbContext.PermissionAuditLogsDb.Add(logEntry);
+            await progenyDbContext.SaveChangesAsync();
+
             return logEntry;
         }
 
@@ -45,6 +64,25 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.PermissionAuditLogsDb.Add(logEntry);
             await progenyDbContext.SaveChangesAsync();
             
+            return logEntry;
+        }
+
+        public async Task<PermissionAuditLog> AddFamilyPermissionAuditLogEntry(PermissionAction action, FamilyPermission familyPermissionBefore, UserInfo userInfo)
+        {
+            PermissionAuditLog logEntry = new PermissionAuditLog
+            {
+                EntityId = familyPermissionBefore.FamilyPermissionId,
+                EntityType = nameof(FamilyPermission),
+                Action = action,
+                ChangedBy = !string.IsNullOrEmpty(userInfo.UserId) ? userInfo.UserId : userInfo.UserEmail,
+                ChangeTime = System.DateTime.UtcNow,
+                ItemBefore = JsonSerializer.Serialize(familyPermissionBefore),
+                ItemAfter = string.Empty
+            };
+
+            progenyDbContext.PermissionAuditLogsDb.Add(logEntry);
+            await progenyDbContext.SaveChangesAsync();
+
             return logEntry;
         }
 
