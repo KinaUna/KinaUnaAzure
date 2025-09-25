@@ -225,7 +225,7 @@ namespace KinaUnaProgenyApi.Services.FamilyServices
             await progenyDbContext.SaveChangesAsync();
 
             logEntry.EntityAfter = System.Text.Json.JsonSerializer.Serialize(existingFamilyMember);
-            progenyDbContext.FamilyAuditLogsDb.Update(logEntry);
+            await familyAuditLogService.UpdateFamilyAuditLogEntry(logEntry);
 
             return existingFamilyMember;
         }
