@@ -76,5 +76,7 @@ namespace KinaUna.Data.Models.Family
         /// </summary>
         [NotMapped]
         public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
+        [NotMapped]
+        public Progeny Progeny { get; set; } = new Progeny();
     }
 }

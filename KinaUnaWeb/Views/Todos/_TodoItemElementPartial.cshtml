@@ -12,7 +12,7 @@
     string showDetailsString = await LocaleManager.GetTranslation("Show details", PageNames.Todos, Model.LanguageId);
     string assignToString = await LocaleManager.GetTranslation("Assign to ..", PageNames.Todos, Model.LanguageId);
 }
-<div class="col-12 cols-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
+<div class="col-12 col-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
     <div class="card-compact bg-todos todo-item m-1" data-todo-id="@Model.TodoItemId" align="left" style="background: @Model.TodoItem.StatusBackgroundColor()">
         @if (Model.TodoItem.TodoItemId == 0)
         {
