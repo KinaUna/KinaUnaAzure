@@ -76,6 +76,10 @@ namespace KinaUna.Data.Models.Family
         /// </summary>
         [NotMapped]
         public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
+
+        /// <summary>
+        /// Gets or sets the associated progeny for the current entity.
+        /// </summary>
         [NotMapped]
         public Progeny Progeny { get; set; } = new Progeny();
     }

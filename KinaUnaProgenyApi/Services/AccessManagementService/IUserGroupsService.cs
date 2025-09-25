@@ -1,5 +1,6 @@
 ﻿using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
@@ -13,6 +14,31 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
         /// <returns>The <see cref="UserGroup"/> object representing the requested user group, including its members, if the user has access.</returns>
         Task<UserGroup> GetUserGroup(int groupId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Retrieves a list of user groups associated with the specified progeny that the current user has
+        /// administrative access to.
+        /// </summary>
+        /// <remarks>Each returned <see cref="UserGroup"/> includes its associated members. Only groups
+        /// for which the current user has  administrative permissions are included in the result.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose user groups are to be retrieved.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to determine access permissions.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="UserGroup"/> objects  that the current user has administrative access to. If no groups are accessible,
+        /// the list will be empty.</returns>
+        Task<List<UserGroup>> GetUserGroupsForProgeny(int progenyId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Retrieves a list of user groups associated with the specified family that the current user has access to.
+        /// </summary>
+        /// <remarks>Only user groups for which the current user has administrative permissions are
+        /// included in the result.</remarks>
+        /// <param name="familyId">The unique identifier of the family whose user groups are to be retrieved.</param>
+        /// <param name="currentUserInfo">The information of the current user, used to determine access permissions.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="UserGroup"/> objects  that the current user has access to. Each user group includes its associated
+        /// members.</returns>
+        Task<List<UserGroup>> GetUserGroupsForFamily(int familyId, UserInfo currentUserInfo);
 
         /// <summary>
         /// Adds a new user group to the database.
@@ -63,5 +89,6 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
         /// <returns>True if the user group member was successfully removed; otherwise, false if the user group member does not exist or the current user lacks the required access rights.</returns>
         Task<bool> RemoveUserGroupMember(int userGroupMemberId, UserInfo currentUserInfo);
+        Task<List<UserGroup>> GetUsersUserGroupsByUserId(string userId, UserInfo currentUserInfo);
     }
 }

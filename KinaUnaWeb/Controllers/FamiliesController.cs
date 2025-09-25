@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.FamiliesViewModels;
@@ -9,7 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class FamiliesController(IFamiliesHttpClient familiesHttpClient, IViewModelSetupService viewModelSetupService, IProgenyHttpClient progenyHttpClient) : Controller
+    public class FamiliesController(IFamiliesHttpClient familiesHttpClient, IViewModelSetupService viewModelSetupService,
+        IProgenyHttpClient progenyHttpClient, IUserGroupsHttpClient userGroupsHttpClient) : Controller
     {
         public async Task<IActionResult> Index()
         {
@@ -77,6 +80,22 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> UserAccess()
         {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            UserGroupsViewModel model = new UserGroupsViewModel(baseModel);
+            model.FamiliesList = await familiesHttpClient.GetMyFamilies();
+            model.ProgenyList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+
+            foreach (Family family in model.FamiliesList)
+            {
+                List<UserGroup> userGroupsList = await userGroupsHttpClient.GetUserGroupsForFamily(family.FamilyId);
+                model.UserGroups.AddRange(userGroupsList);
+            }
+            foreach (Progeny progeny in model.ProgenyList)
+            {
+                List<UserGroup> userGroupsList = await userGroupsHttpClient.GetUserGroupsForProgeny(progeny.Id);
+                model.UserGroups.AddRange(userGroupsList);
+            }
+
             return View();
         }
     }

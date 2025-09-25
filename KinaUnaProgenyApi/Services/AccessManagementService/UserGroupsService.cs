@@ -58,6 +58,116 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         }
 
         /// <summary>
+        /// Retrieves a list of user groups associated with the specified progeny that the current user has
+        /// administrative access to.
+        /// </summary>
+        /// <remarks>Each returned <see cref="UserGroup"/> includes its associated members. Only groups
+        /// for which the current user has  administrative permissions are included in the result.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose user groups are to be retrieved.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to determine access permissions.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="UserGroup"/> objects  that the current user has administrative access to. If no groups are accessible,
+        /// the list will be empty.</returns>
+        public async Task<List<UserGroup>> GetUserGroupsForProgeny(int progenyId, UserInfo currentUserInfo)
+        {
+            List<UserGroup> groups = await progenyDbContext.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == progenyId).ToListAsync();
+            List<UserGroup> accessibleGroups = [];
+            foreach (UserGroup group in groups)
+            {
+                bool hasAccess = await accessManagementService.HasProgenyPermission(progenyId, currentUserInfo, PermissionLevel.Admin);
+                if (!hasAccess) continue;
+                group.Members = await GetUserGroupMembersList(group.UserGroupId);
+                accessibleGroups.Add(group);
+            }
+
+            return accessibleGroups;
+        }
+
+        /// <summary>
+        /// Retrieves a list of user groups associated with the specified family that the current user has access to.
+        /// </summary>
+        /// <remarks>Only user groups for which the current user has administrative permissions are
+        /// included in the result.</remarks>
+        /// <param name="familyId">The unique identifier of the family whose user groups are to be retrieved.</param>
+        /// <param name="currentUserInfo">The information of the current user, used to determine access permissions.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="UserGroup"/> objects  that the current user has access to. Each user group includes its associated
+        /// members.</returns>
+        public async Task<List<UserGroup>> GetUserGroupsForFamily(int familyId, UserInfo currentUserInfo)
+        {
+            List<UserGroup> groups = await progenyDbContext.UserGroupsDb.AsNoTracking().Where(ug => ug.FamilyId == familyId).ToListAsync();
+            List<UserGroup> accessibleGroups = [];
+            foreach (UserGroup group in groups)
+            {
+                bool hasAccess = await accessManagementService.HasFamilyPermission(familyId, currentUserInfo, PermissionLevel.Admin);
+                if (!hasAccess) continue;
+                group.Members = await GetUserGroupMembersList(group.UserGroupId);
+                accessibleGroups.Add(group);
+            }
+            return accessibleGroups;
+        }
+
+        public async Task<List<UserGroup>> GetUsersUserGroupsByUserId(string userId, UserInfo currentUserInfo)
+        {
+            List<UserGroupMember> allUsersUserGroupMembers = await progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ugm => ugm.UserId == userId).ToListAsync();
+            List<UserGroup> accessibleUserGroups = [];
+            foreach (UserGroupMember member in allUsersUserGroupMembers)
+            {
+                UserGroup group = await progenyDbContext.UserGroupsDb.AsNoTracking().FirstOrDefaultAsync(ug => ug.UserGroupId == member.UserGroupId);
+                if (group == null) continue;
+                bool hasAccess = false;
+                if (group.FamilyId != 0)
+                {
+                    hasAccess = await accessManagementService.HasFamilyPermission(group.FamilyId, currentUserInfo, PermissionLevel.Edit);
+                }
+                else
+                {
+                    if (group.ProgenyId != 0)
+                    {
+                        hasAccess = await accessManagementService.HasProgenyPermission(group.ProgenyId, currentUserInfo, PermissionLevel.Edit);
+                    }
+                }
+                //
+                if (!hasAccess) continue;
+                
+                accessibleUserGroups.Add(group);
+            }
+
+            return accessibleUserGroups;
+        }
+
+        public async Task<List<UserGroup>> GetUsersUserGroupsByEmail(string userEmail, UserInfo currentUserInfo)
+        {
+            userEmail = userEmail.Trim();
+
+            List<UserGroupMember> allUsersUserGroupMembers = await progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ugm => ugm.Email.ToUpper() == userEmail.ToUpper()).ToListAsync();
+            List<UserGroup> accessibleUserGroups = [];
+            foreach (UserGroupMember member in allUsersUserGroupMembers)
+            {
+                UserGroup group = await progenyDbContext.UserGroupsDb.AsNoTracking().FirstOrDefaultAsync(ug => ug.UserGroupId == member.UserGroupId);
+                if (group == null) continue;
+                bool hasAccess = false;
+                if (group.FamilyId != 0)
+                {
+                    hasAccess = await accessManagementService.HasFamilyPermission(group.FamilyId, currentUserInfo, PermissionLevel.Edit);
+                }
+                else
+                {
+                    if (group.ProgenyId != 0)
+                    {
+                        hasAccess = await accessManagementService.HasProgenyPermission(group.ProgenyId, currentUserInfo, PermissionLevel.Edit);
+                    }
+                }
+
+                if (!hasAccess) continue;
+                
+                accessibleUserGroups.Add(group);
+            }
+
+            return accessibleUserGroups;
+        }
+
+        /// <summary>
         /// Adds a new user group to the database.
         /// </summary>
         /// <param name="userGroup">The <see cref="UserGroup"/> object to be added. This object must contain the necessary details about the user group.</param>

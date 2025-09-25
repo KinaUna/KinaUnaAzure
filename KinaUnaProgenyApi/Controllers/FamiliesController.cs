@@ -22,9 +22,9 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetFamily(int familyId)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            Family family = await familyService.GetFamilyById(familyId, currenUserInfo);
+            Family family = await familyService.GetFamilyById(familyId, currentUserInfo);
             
             if (family.FamilyId == 0)
             {
@@ -39,9 +39,9 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetCurrentUsersFamilies()
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            List<Family> families = await familyService.GetUsersFamiliesByUserId(currenUserInfo.UserId, currenUserInfo);
+            List<Family> families = await familyService.GetUsersFamiliesByUserId(currentUserInfo.UserId, currentUserInfo);
             
             return Ok(families);
         }
@@ -50,9 +50,9 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> AddFamily([FromBody] Family family)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            Family newFamily = await familyService.AddFamily(family, currenUserInfo);
+            Family newFamily = await familyService.AddFamily(family, currentUserInfo);
 
             return Ok(newFamily);
         }
@@ -61,9 +61,9 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> UpdateFamily([FromBody] Family family)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
             
-            Family updatedFamily = await familyService.UpdateFamily(family, currenUserInfo);
+            Family updatedFamily = await familyService.UpdateFamily(family, currentUserInfo);
             
             if (updatedFamily.FamilyId == 0)
             {
@@ -77,15 +77,15 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> DeleteFamily(int familyId)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
             
-            Family existingFamily = await familyService.GetFamilyById(familyId, currenUserInfo);
+            Family existingFamily = await familyService.GetFamilyById(familyId, currentUserInfo);
             if (existingFamily.FamilyId == 0)
             {
                 return Unauthorized();
             }
             
-            bool result = await familyService.DeleteFamily(existingFamily.FamilyId, currenUserInfo);
+            bool result = await familyService.DeleteFamily(existingFamily.FamilyId, currentUserInfo);
             if (!result)
             {
                 return Unauthorized();
@@ -99,8 +99,8 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> AddFamilyMember([FromBody] FamilyMember familyMember)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            FamilyMember newFamilyMember = await familyMembersService.AddFamilyMember(familyMember, familyMember.PermissionLevel, currenUserInfo);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            FamilyMember newFamilyMember = await familyMembersService.AddFamilyMember(familyMember, familyMember.PermissionLevel, currentUserInfo);
             
             if (newFamilyMember.FamilyMemberId == 0)
             {
@@ -115,9 +115,9 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> UpdateFamilyMember([FromBody] FamilyMember familyMember)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
             
-            FamilyMember updatedFamilyMember = await familyMembersService.UpdateFamilyMember(familyMember, currenUserInfo);
+            FamilyMember updatedFamilyMember = await familyMembersService.UpdateFamilyMember(familyMember, currentUserInfo);
             
             if (updatedFamilyMember.FamilyMemberId == 0)
             {
@@ -132,9 +132,9 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> DeleteFamilyMember(int familyMemberId)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserInfo currenUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
             
-            bool result = await familyMembersService.DeleteFamilyMember(familyMemberId, currenUserInfo);
+            bool result = await familyMembersService.DeleteFamilyMember(familyMemberId, currentUserInfo);
             if (!result)
             {
                 return Unauthorized();

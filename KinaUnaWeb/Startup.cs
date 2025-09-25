@@ -94,7 +94,8 @@ namespace KinaUnaWeb
             services.AddHttpClient<IKanbanItemsHttpClient, KanbanItemsHttpClient>();
             services.AddHttpClient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddHttpClient<IFamiliesHttpClient, FamiliesHttpClient>();
-            
+            services.AddHttpClient<IUserGroupsHttpClient, UserGroupsHttpClient>();
+
             string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
             string webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey) ?? throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + " was not found in the configuration data.");
             string webServerUrl = Configuration.GetValue<string>(AuthConstants.WebServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.WebServerUrlKey + " was not found in the configuration data.");
