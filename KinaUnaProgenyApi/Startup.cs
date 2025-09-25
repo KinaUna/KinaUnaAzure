@@ -99,6 +99,7 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IKanbanBoardsService, KanbanBoardsService>();
             services.AddScoped<IAccessManagementService, AccessManagementService>();
             services.AddScoped<IUserGroupService, UserGroupService>();
+            services.AddScoped<IUserGroupAuditLogService, UserGroupAuditLogService>();
             services.AddScoped<IFamilyService, FamilyService>();
             services.AddScoped<IFamilyMembersService, FamilyMembersService>();
             services.AddScoped<IFamilyAuditLogService, FamilyAuditLogService>();

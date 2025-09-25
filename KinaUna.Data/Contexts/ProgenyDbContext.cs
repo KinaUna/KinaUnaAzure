@@ -46,5 +46,6 @@ namespace KinaUna.Data.Contexts
         public DbSet<TimelineItemPermission> TimelineItemPermissionsDb { get; init; }
         public DbSet<PermissionAuditLog> PermissionAuditLogsDb { get; init; }
         public DbSet<FamilyAuditLog> FamilyAuditLogsDb { get; init; }
+        public DbSet<UserGroupAuditLog> UserGroupAuditLogsDb { get; init; }
     }
 }

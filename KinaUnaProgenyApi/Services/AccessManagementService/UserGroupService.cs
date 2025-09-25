@@ -14,7 +14,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     /// </summary>
     /// <param name="progenyDbContext"></param>
     /// <param name="accessManagementService"></param>
-    public class UserGroupService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService): IUserGroupService
+    public class UserGroupService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IUserGroupAuditLogService userGroupAuditLogService): IUserGroupService
     {
         /// <summary>
         /// Gets a user group by its unique identifier, including its members, if the current user has the necessary permissions.
@@ -90,7 +90,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.UserGroupsDb.Add(userGroup);
             await progenyDbContext.SaveChangesAsync();
 
-            // Todo: Audit log entry.
+            await userGroupAuditLogService.AddUserGroupCreatedAuditLogEntry(userGroup, currentUserInfo);
+
             return userGroup;
         }
 
@@ -127,6 +128,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return null;
             }
 
+            UserGroupAuditLog logEntry = await userGroupAuditLogService.AddUserGroupUpdatedAuditLogEntry(group, currentUserInfo);
+
             group.IsFamily = userGroup.IsFamily;
             group.Name = userGroup.Name;
             group.Description = userGroup.Description;
@@ -137,7 +140,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             
             await progenyDbContext.SaveChangesAsync();
 
-            // Todo: Audit log entry.
+            logEntry.EntityAfter = System.Text.Json.JsonSerializer.Serialize(group);
+            await userGroupAuditLogService.UpdateUserGroupAuditLogEntry(logEntry);
             return group;
         }
 
@@ -186,7 +190,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.UserGroupsDb.Remove(group);
             await progenyDbContext.SaveChangesAsync();
 
-            // Todo: Audit log entry.
+            await userGroupAuditLogService.AddUserGroupDeletedAuditLogEntry(group, currentUserInfo);
+
             return true;
         }
 
@@ -249,7 +254,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.UserGroupMembersDb.Add(userGroupMember);
             await progenyDbContext.SaveChangesAsync();
 
-            // Todo: Audit log entry.
+            await userGroupAuditLogService.AddUserGroupMemberAddedAuditLogEntry(userGroupMember, currentUserInfo);
+
             return userGroupMember;
         }
 
@@ -288,6 +294,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 return null;
             }
+
+            UserGroupAuditLog logEntry = await userGroupAuditLogService.AddUserGroupMemberUpdatedAuditLogEntry(member, currentUserInfo);
+
             // If UserId is missing, trim email and check if there is a user with this email.
             if (string.IsNullOrWhiteSpace(userGroupMember.UserId) &&!string.IsNullOrEmpty(userGroupMember.Email))
             {
@@ -309,7 +318,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             
             await progenyDbContext.SaveChangesAsync();
 
-            // Todo: Audit log entry.
+            logEntry.EntityAfter = System.Text.Json.JsonSerializer.Serialize(member);
+            await userGroupAuditLogService.UpdateUserGroupAuditLogEntry(logEntry);
+
             return member;
         }
 
@@ -352,7 +363,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.UserGroupMembersDb.Remove(member);
             await progenyDbContext.SaveChangesAsync();
 
-            // Todo: Audit log entry.
+            await userGroupAuditLogService.AddUserGroupMemberDeletedAuditLogEntry(member, currentUserInfo);
+
             return true;
         }
         
