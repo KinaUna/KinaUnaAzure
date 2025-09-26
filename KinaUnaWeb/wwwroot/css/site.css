@@ -4539,3 +4539,9 @@ noUi-handle:after, .noUi-handle:before {
             font-size: larger;
         }
 }
+
+.profile-picture-small {
+    max-height: 32px;
+    max-width: 40px;
+    border-radius: 10px;
+}

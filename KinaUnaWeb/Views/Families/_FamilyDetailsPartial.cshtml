@@ -1,1 +1,105 @@
-﻿@model KinaUnaWeb.Models.FamiliesViewModels.FamilyDetailsViewModel
+﻿@using System.Web
+@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.Family
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.FamiliesViewModels.FamilyDetailsViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = await LocaleManager.GetTranslation("Family Details", PageNames.Family, Model.LanguageId);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-todos item-details-content">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-todos-header">
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="space-10"></div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">people</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        @Model.Family.Name
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-auto d-none d-md-block">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
+            </div>
+            <div class="col">
+                @if (!string.IsNullOrWhiteSpace(Model.Family.Description))
+                {
+                    <div class="space-10"></div>
+                    <div class="row text-white">
+                        <div class="col-auto">
+                            <span class="text-white-75">@await LocaleManager.GetTranslation("Description", PageNames.Family, Model.LanguageId):</span>
+                        </div>
+                    </div>
+                    <div class="timeline-text row m-0 text-white">
+                        <div class="col-12 bg-display-rich-text p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.Family.Description))</div>
+                    </div>
+                }
+                @if (Model.IsCurrentUserFamilyAdmin)
+                {
+                    <div class="space-10"></div>
+                    <div class="row text-white">
+                        <div class="col-auto">
+                            <span class="text-white-75">@await LocaleManager.GetTranslation("Administrators", PageNames.Family, Model.LanguageId):</span>
+                        </div>
+                    </div>
+                    <div class="timeline-text row m-0 text-white">
+                        <div class="col-12">@Model.Family.Admins</div>
+                    </div>
+                    <div class="space-20"></div>
+                }
+                <div class="row m-0">
+                    @await LocaleManager.GetTranslation("Family members:", PageNames.Family, Model.LanguageId)
+                </div>
+                <div id="family-members-list-div" class="row m-0">
+                    @foreach (FamilyMember familyMember in Model.Family.FamilyMembers)
+                    {
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span>@familyMember.Email</span>
+                                    @if (familyMember.ProgenyId != 0 && familyMember.Progeny != null)
+                                    {
+                                        <span>@familyMember.Progeny.NickName</span>
+                                        <img src="@familyMember.Progeny.GetProfilePictureUrl()" class="profile-picture-small"/>
+                                    }
+                                    else
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(familyMember.UserId) && familyMember.UserInfo != null)
+                                        {
+                                            <span>@familyMember.UserInfo.FullName()</span>
+                                            <img src="@familyMember.UserInfo.GetProfilePictureUrl()" class="profile-picture-small"/>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (Model.IsCurrentUserFamilyAdmin)
+                {
+                    <div class="space-50"></div>
+                    <div class="col-12">
+                        <a data-edit-item-type="family" data-edit-item-item-id="@Model.Family.FamilyId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                        <a data-delete-item-type="family" data-delete-item-item-id="@Model.Family.FamilyId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

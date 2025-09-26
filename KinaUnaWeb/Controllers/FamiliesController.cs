@@ -25,7 +25,13 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> FamiliesList()
         {
             List<Family> families = await familiesHttpClient.GetMyFamilies();
+            if (families.Count != 0)
+            {
+                return Json(families);
+            }
 
+            Family family = new();
+            families.Add(family);
             return Json(families);
         }
 
@@ -37,24 +43,26 @@ namespace KinaUnaWeb.Controllers
                 Family = await familiesHttpClient.GetFamily(familyId)
             };
 
-            if (model.Family.FamilyMembers.Count > 0)
+            if (model.Family.FamilyMembers.Count <= 0)
             {
-                foreach (FamilyMember familyMember in model.Family.FamilyMembers)
+                return PartialView("_FamilyElementPartial", model);
+            }
+            
+            foreach (FamilyMember familyMember in model.Family.FamilyMembers)
+            {
+                if (familyMember.ProgenyId > 0)
                 {
-                    if (familyMember.ProgenyId > 0)
+                    familyMember.Progeny = await progenyHttpClient.GetProgeny(familyMember.ProgenyId);
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(familyMember.UserId))
                     {
-                        familyMember.Progeny = await progenyHttpClient.GetProgeny(familyMember.ProgenyId);
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrWhiteSpace(familyMember.UserId))
-                        {
-                            familyMember.UserInfo = await userInfosHttpClient.GetUserInfoByUserId(familyMember.UserId);
-                        }
+                        familyMember.UserInfo = await userInfosHttpClient.GetUserInfoByUserId(familyMember.UserId);
                     }
                 }
             }
-            
+
             return PartialView("_FamilyElementPartial", model);
         }
 
@@ -82,6 +90,11 @@ namespace KinaUnaWeb.Controllers
                         }
                     }
                 }
+            }
+
+            if (model.Family.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                model.IsCurrentUserFamilyAdmin = true;
             }
 
             return PartialView("_FamilyDetailsPartial", model);

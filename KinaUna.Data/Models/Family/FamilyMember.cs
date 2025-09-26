@@ -72,8 +72,10 @@ namespace KinaUna.Data.Models.Family
         public string ModifiedBy { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the permission level associated with the entity.
+        /// Gets or sets the permission level associated with the entity, for access to family specific data.
         /// </summary>
+        /// <remarks>This property is not mapped to the database and is intended for use in application
+        /// logic only. The actual permission is stored in with a FamilyPermission object.</remarks>
         [NotMapped]
         public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
 

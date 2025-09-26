@@ -1,5 +1,44 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.Family
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.FamiliesViewModels.FamilyElementViewModel
+@inject ILocaleManager LocaleManager
+<div class="col-12 col-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
+    <div class="card-compact bg-todos todo-item m-1" data-family-id="@Model.Family.FamilyId" align="left">
+        @if (Model.Family.FamilyId == 0)
+        {
+            <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
+        }
+        else
+        {
+            <div class="row m-0">
+                <div class="col-12">
+                    <span>@Model.Family.Name</span>
+                </div>
+            </div>
+            <div class="row m-0">
+                @foreach (FamilyMember familyMember in Model.Family.FamilyMembers)
+                {
+                    <div class="col-auto">
+                        <span>@familyMember.Email</span>
+                        @if (familyMember.ProgenyId != 0 && familyMember.Progeny != null)
+                        {
+                            <span>@familyMember.Progeny.NickName</span>
+                            <img src="@familyMember.Progeny.GetProfilePictureUrl()" class="profile-picture-small" />
+                        }
+                        else
+                        {
+                            if (!string.IsNullOrWhiteSpace(familyMember.UserId) && familyMember.UserInfo != null)
+                            {
+                                <span>@familyMember.UserInfo.FullName()</span>
+                                <img src="@familyMember.UserInfo.GetProfilePictureUrl()" class="profile-picture-small"/>
+                            }
+                        } 
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+

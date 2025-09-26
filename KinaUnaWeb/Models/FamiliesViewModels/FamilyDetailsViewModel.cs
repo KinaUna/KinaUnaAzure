@@ -9,5 +9,6 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
             SetBaseProperties(baseItemsViewModel);
         }
         public Family Family { get; set; } = new Family();
+        public bool IsCurrentUserFamilyAdmin { get; set; }
     }
 }

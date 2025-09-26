@@ -125,48 +125,45 @@
                 </div>
             </div>
         </div>
-
-
-            @if (Model.IsCurrentUserProgenyAdmin)
-            {
-                <div class="row m-0">
-                    <div class="col-auto d-none d-md-block">
-                        <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
-                    </div>
-                    <div class="col">
-                        <div class="space-20"></div>
-                        <div class="row">
-                            <div class="col-12">
-                                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
-                                {
-                                    <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-not-started-id="@Model.TodoItem.TodoItemId">
-                                        <i class="material-icons kinauna-icon-medium">pending_actions</i> @setAsNotStartedString
-                                    </button>
-                                }
-                                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
-                                {
-                                    <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-in-progress-id="@Model.TodoItem.TodoItemId">
-                                        <i class="material-icons kinauna-icon-medium">assignment</i> @setAsInProgressString
-                                    </button>
-                                }
-                                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
-                                {
-                                    <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-completed-id="@Model.TodoItem.TodoItemId">
-                                        <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> @setAsCompletedString
-                                    </button>
-                                }
-                                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
-                                {
-                                    <button class="btn btn-link p-3 float-right text-white-75" data-set-todo-item-cancelled-id="@Model.TodoItem.TodoItemId">
-                                        <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
-                                    </button>
-                                }
-                            </div>
+        @if (Model.IsCurrentUserProgenyAdmin)
+        {
+            <div class="row m-0">
+                <div class="col-auto d-none d-md-block">
+                    <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
+                </div>
+                <div class="col">
+                    <div class="space-20"></div>
+                    <div class="row">
+                        <div class="col-12">
+                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-not-started-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">pending_actions</i> @setAsNotStartedString
+                                </button>
+                            }
+                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-in-progress-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">assignment</i> @setAsInProgressString
+                                </button>
+                            }
+                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-completed-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> @setAsCompletedString
+                                </button>
+                            }
+                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
+                            {
+                                <button class="btn btn-link p-3 float-right text-white-75" data-set-todo-item-cancelled-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
+                                </button>
+                            }
                         </div>
                     </div>
                 </div>
-                
-            }
+            </div>
+        }
         <div class="row m-0">
             <div class="col-auto d-none d-md-block">
                 <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
