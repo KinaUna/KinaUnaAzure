@@ -1,6 +1,9 @@
-﻿import { hideBodyScrollbars } from "../item-details/items-display-v9.js";
+﻿import { getCurrentLanguageId } from "../data-tools-v9.js";
+import { hideBodyScrollbars } from "../item-details/items-display-v9.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
 import { GetFamiliesList } from "./families-index.js";
+
+let languageId = 1;
 
 export async function displayAddFamilyModal() {
     startFullPageSpinner();
@@ -24,7 +27,7 @@ export async function displayAddFamilyModal() {
             hideBodyScrollbars();
             familyDetailsDiv.classList.remove('d-none');
             addAddFamilyModalEventListeners();
-            setupRichTextEditor();
+            await initializeAddEditFamily();
         }
         else {
             return Promise.reject('Family details div not found in the document.');
@@ -112,7 +115,7 @@ export async function displayEditFamilyModal(familyId: number): Promise<void> {
             hideBodyScrollbars();
             familyDetailsDiv.classList.remove('d-none');
             addEditFamilyModalEventListeners();
-            setupRichTextEditor();
+            await initializeAddEditFamily();
         }
         else {
             return Promise.reject('Family details div not found in the document.');
@@ -274,4 +277,21 @@ function validateInputs(): void {
             saveButton.setAttribute('disabled', 'disabled');
         }
     }
+}
+
+export async function initializeAddEditFamily(): Promise<void> {
+    languageId = getCurrentLanguageId();
+
+    setupRichTextEditor();
+
+    const nameInput = document.getElementById('family-name-input') as HTMLInputElement;
+    if (nameInput) {
+        nameInput.addEventListener('input', validateInputs);
+    }
+
+    validateInputs();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
