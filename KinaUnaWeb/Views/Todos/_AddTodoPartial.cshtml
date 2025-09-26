@@ -3,7 +3,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = await LocaleManager.GetTranslation("Add todo", PageNames.Todos, Model.LanguageId);
+    string pageTitle = await LocaleManager.GetTranslation("Add todo", PageNames.Todos, Model.LanguageId);
     string addTodoForString = await LocaleManager.GetTranslation("Add todo for:", PageNames.Todos, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
@@ -27,7 +27,7 @@
     <div class="timeline-card-body modal-content item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-add-item-header">
-                <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                <span class="h4 mr-3 align-bottom">@pageTitle</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
         </div>

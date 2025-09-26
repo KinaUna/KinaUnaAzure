@@ -1,2 +1,72 @@
-﻿@model KinaUnaWeb.Models.FamiliesViewModels.FamilyDetailsViewModel
+﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.FamiliesViewModels.FamilyDetailsViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string pageTitle = await LocaleManager.GetTranslation("Add Family", PageNames.Family, Model.LanguageId);
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <span class="h4 mr-3 align-bottom">@pageTitle</span>
+                <button id="close-add-family-modal-button" type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <form id="edit-family-form" asp-action="EditFamily" asp-controller="Families" role="form" method="post">
+            <div class="space-20"></div>
+            <div class="form-group">
+                <label asp-for="Family.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Name", PageNames.Family, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="family-name-input" class="form-control" asp-for="Family.Name" value="@Model.Family.Name"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Family.Description" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Family, Model.LanguageId)</label>
+                <div class="col-auto">
+                    @{
+                        string[] toolbarItems =
+                        [
+                            "Bold", "Italic", "Underline", "StrikeThrough",
+                            "FontName", "FontSize", "FontColor", "BackgroundColor",
+                            "LowerCase", "UpperCase", "|",
+                            "Formats", "Alignments", "OrderedList", "UnorderedList",
+                            "Outdent", "Indent", "|",
+                            "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
+                            "SourceCode", "FullScreen", "|", "Undo", "Redo"
+                        ];
+                    }
+                    <ejs-richtexteditor id="description-rich-text-editor" ejs-for="Family.Description" height="300px" enableResize="true">
+                        <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
+                        <e-richtexteditor-insertimagesettings saveUrl="/AddItem/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
+                        <e-content-template>
 
+                        </e-content-template>
+                    </ejs-richtexteditor>
+
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Family.Admins" class="col-auto control-label">@await LocaleManager.GetTranslation("Administrators", PageNames.Contacts, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="admins-input" asp-for="Family.Admins" class="form-control" value="@Model.Family.Admins" placeholder="@await LocaleManager.GetTranslation("email addresses of administrators (comma separated)...", PageNames.Family, Model.LanguageId)" />
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="form-group">
+                <input asp-for="Family.FamilyId" value="@Model.Family.FamilyId" type="hidden" />
+                <div class="col-auto control-label"></div>
+                <div class="col-auto">
+                    <button id="save-family-button" disabled="disabled" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                </div>
+                <div id="validation-errors-div" class="col-auto">
+                    <div id="name-required-div" class="d-none text-warning">
+                        @await LocaleManager.GetTranslation("Name is required and cannot be blank.", PageNames.Family, Model.LanguageId)
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<ejs-scripts></ejs-scripts>
