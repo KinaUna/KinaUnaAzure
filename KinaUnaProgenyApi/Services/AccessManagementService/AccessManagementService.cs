@@ -89,7 +89,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             // Check if the permission exists.
-            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb
+            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
                 .SingleOrDefaultAsync(tp => 
                     tp.TimelineItemPermissionId == timelineItemPermission.TimelineItemPermissionId
                     && tp.ProgenyId == timelineItemPermission.ProgenyId 
@@ -97,19 +97,31 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             
             if (existingPermission == null)
             {
-                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(
                     tp => tp.ProgenyId == timelineItemPermission.ProgenyId
                           && tp.FamilyId == timelineItemPermission.FamilyId
                           && tp.UserId == timelineItemPermission.UserId);
                 if (existingPermission == null)
                 {
-                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp =>
-                        tp.ProgenyId == timelineItemPermission.ProgenyId && tp.FamilyId == timelineItemPermission.FamilyId && tp.Email == timelineItemPermission.Email);
+                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                        tp.ProgenyId == timelineItemPermission.ProgenyId 
+                        && tp.FamilyId == timelineItemPermission.FamilyId 
+                        && tp.Email == timelineItemPermission.Email);
+
                     if (existingPermission == null)
                     {
-                        return null; // Todo: Use result object instead
+                        existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                            tp.ProgenyId == timelineItemPermission.ProgenyId
+                            && tp.FamilyId == timelineItemPermission.FamilyId
+                            && tp.GroupId == timelineItemPermission.GroupId);
                     }
                 }
+            }
+
+            if (existingPermission != null)
+            {
+                // Permission for user or group already exists
+                return null; // Todo: Use result object instead.
             }
 
             timelineItemPermission.CreatedBy = currentUserInfo.UserId;
@@ -307,13 +319,23 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return null; // Todo: Use result object instead.
             }
 
-            // Check if the permission already exists.
-            ProgenyPermission existingPermission = await progenyDbContext.ProgenyPermissionsDb
+            // Check if a permission with the same user id or group id already exists for this progeny.
+            ProgenyPermission existingPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
                 .SingleOrDefaultAsync(pp => pp.UserId == progenyPermission.UserId 
                                             && pp.GroupId == progenyPermission.GroupId
                                             && pp.ProgenyId == progenyPermission.ProgenyId);
+
+            // Check if a permission with the same user email already exists for this progeny.
+            if (existingPermission == null)
+            {
+                existingPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
+                    .SingleOrDefaultAsync(pp => pp.Email == progenyPermission.Email
+                                                && pp.ProgenyId == progenyPermission.ProgenyId);
+            }
+
             if (existingPermission != null)
             {
+                // Permission for user or group already exists
                 return null; // Todo: Use result object instead.
             }
             
@@ -562,11 +584,20 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             // Check if the permission already exists.
-            FamilyPermission existingPermission = await progenyDbContext.FamilyPermissionsDb
+            FamilyPermission existingPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
                 .SingleOrDefaultAsync(fp => fp.UserId == familyPermission.UserId && fp.GroupId == familyPermission.GroupId
                                            && fp.FamilyId == familyPermission.FamilyId);
+
+            // Check if a permission with the same user email already exists for this family.
+            if (existingPermission == null)
+            {
+                existingPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
+                    .SingleOrDefaultAsync(fp => fp.Email == familyPermission.Email && fp.FamilyId == familyPermission.FamilyId);
+            }
+
             if (existingPermission != null)
             {
+                // Permission for user or group already exists
                 return null; // Todo: Use result object instead.
             }
 
@@ -737,7 +768,70 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             return existingPermission; // Todo: Use result object instead.
         }
-        
+
+        /// <summary>
+        /// Retrieves the permission settings for a specific progeny and user group.
+        /// </summary>
+        /// <remarks>This method checks whether the current user has the necessary access rights to
+        /// retrieve the permission settings. If the user does not have access, the method returns <see
+        /// langword="null"/>.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny. Must be greater than 0.</param>
+        /// <param name="userGroupId">The unique identifier of the user group. Must be greater than 0.</param>
+        /// <param name="currentUserInfo">The information of the current user making the request. Used to verify access permissions.</param>
+        /// <returns>A <see cref="ProgenyPermission"/> object representing the permission settings for the specified progeny and
+        /// user group,  or <see langword="null"/> if the progeny or user group does not exist, the user lacks access,
+        /// or the identifiers are invalid.</returns>
+        public async Task<ProgenyPermission> GetProgenyPermissionForGroup(int progenyId, int userGroupId, UserInfo currentUserInfo)
+        {
+            if (progenyId == 0 || userGroupId == 0)
+            {
+                return null;
+            }
+
+            bool hasAccess = await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, progenyId);
+            if (!hasAccess)
+            {
+                return null;
+            }
+            
+            ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb
+                .AsNoTracking()
+                .SingleOrDefaultAsync(pp => pp.ProgenyId == progenyId && pp.GroupId == userGroupId);
+
+            return progenyPermission;
+        }
+
+        /// <summary>
+        /// Retrieves the family permission associated with a specific family and user group.
+        /// </summary>
+        /// <remarks>The method checks whether the current user has access to manage permissions for the
+        /// specified family  before attempting to retrieve the associated family permission. If the user does not have
+        /// the required  access, the method returns <c>null</c>.</remarks>
+        /// <param name="familyId">The unique identifier of the family. Must be greater than zero.</param>
+        /// <param name="userGroupId">The unique identifier of the user group. Must be greater than zero.</param>
+        /// <param name="currentUserInfo">The information of the current user making the request. Cannot be <c>null</c>.</param>
+        /// <returns>A <see cref="FamilyPermission"/> object representing the permission for the specified family and user group,
+        /// or <c>null</c> if the identifiers are invalid, the user lacks access, or no matching permission is found.</returns>
+        public async Task<FamilyPermission> GetFamilyPermissionForGroup(int familyId, int userGroupId, UserInfo currentUserInfo)
+        {
+            if (familyId == 0 || userGroupId == 0)
+            {
+                return null;
+            }
+
+            bool hasAccess = await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, familyId);
+            if (!hasAccess)
+            {
+                return null;
+            }
+
+            FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb
+                .AsNoTracking()
+                .SingleOrDefaultAsync(pp => pp.FamilyId == familyId && pp.GroupId == userGroupId);
+
+            return familyPermission;
+        }
+
         /// <summary>
         /// Determines whether the specified user has administrative access to a resource based on the given permission
         /// type, entity ID, and optional timeline type.

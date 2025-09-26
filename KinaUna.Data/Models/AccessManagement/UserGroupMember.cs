@@ -68,17 +68,21 @@ namespace KinaUna.Data.Models.AccessManagement
         /// </summary>
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the permission level associated with the entity.
-        /// </summary>
-        [NotMapped]
-        public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
-
+        
         /// <summary>
         /// Gets or sets the associated progeny for the current entity.
         /// </summary>
+        /// <remarks>This property is not mapped to the database and is intended for use in application
+        /// logic only.</remarks>
         [NotMapped]
         public Progeny Progeny { get; set; } = new Progeny();
+
+        /// <summary>
+        /// Gets or sets the user information associated with this entity.
+        /// </summary>
+        /// <remarks>This property is not mapped to the database and is intended for use in application
+        /// logic only.</remarks>
+        [NotMapped]
+        public UserInfo UserInfo { get; set; } = new UserInfo();
     }
 }

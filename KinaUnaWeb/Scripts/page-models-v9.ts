@@ -648,3 +648,29 @@ export class Progeny {
     pictureLink: string = '';
     admins: string = '';
 }
+
+export class Family {
+    familyId: number = 0;
+    name: string = '';
+    description: string = '';
+    familyMembers: FamilyMember[] = [];
+}
+
+export class FamilyMember {
+    familyMemberId: number = 0;
+    familyId: number = 0;
+    familyMemberType: FamilyMemberType = 0;
+    userId: string = '';
+    email: string = '';
+    progenyId: number = 0;
+}
+
+export enum FamilyMemberType {
+    Unknown = 0,
+    Parent = 1,
+    Child = 2,
+    Pet = 3,
+    Grandparent = 4,
+    Grandchild = 5,
+    Other = 6
+}

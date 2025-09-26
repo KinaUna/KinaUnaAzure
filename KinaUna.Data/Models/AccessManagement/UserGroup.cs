@@ -69,7 +69,19 @@ namespace KinaUna.Data.Models.AccessManagement
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets the collection of user group members associated with this entity.
+        /// </summary>
+        /// <remarks>This property is not mapped to the database and is intended for use in application
+        /// logic only.</remarks>
         [NotMapped]
         public List<UserGroupMember> Members { get; set; } = [];
+        /// <summary>
+        /// Gets or sets the permission level associated with the entity.
+        /// </summary>
+        /// <remarks>This property is not mapped to the database and is intended for use in application
+        /// logic only.</remarks>
+        [NotMapped]
+        public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
     }
 }

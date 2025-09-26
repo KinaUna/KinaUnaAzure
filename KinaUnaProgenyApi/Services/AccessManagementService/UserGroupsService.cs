@@ -76,6 +76,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 bool hasAccess = await accessManagementService.HasProgenyPermission(progenyId, currentUserInfo, PermissionLevel.Admin);
                 if (!hasAccess) continue;
+                ProgenyPermission groupPermission = await accessManagementService.GetProgenyPermissionForGroup(group.ProgenyId, group.UserGroupId, currentUserInfo);
+                group.PermissionLevel = groupPermission.PermissionLevel;
                 group.Members = await GetUserGroupMembersList(group.UserGroupId);
                 accessibleGroups.Add(group);
             }
@@ -101,6 +103,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 bool hasAccess = await accessManagementService.HasFamilyPermission(familyId, currentUserInfo, PermissionLevel.Admin);
                 if (!hasAccess) continue;
+                FamilyPermission groupPermission = await accessManagementService.GetFamilyPermissionForGroup(group.FamilyId, group.UserGroupId, currentUserInfo);
+                group.PermissionLevel = groupPermission.PermissionLevel;
                 group.Members = await GetUserGroupMembersList(group.UserGroupId);
                 accessibleGroups.Add(group);
             }

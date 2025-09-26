@@ -12,50 +12,130 @@ using Microsoft.AspNetCore.Mvc;
 namespace KinaUnaWeb.Controllers
 {
     public class FamiliesController(IFamiliesHttpClient familiesHttpClient, IViewModelSetupService viewModelSetupService,
-        IProgenyHttpClient progenyHttpClient, IUserGroupsHttpClient userGroupsHttpClient) : Controller
+        IProgenyHttpClient progenyHttpClient, IUserGroupsHttpClient userGroupsHttpClient, IUserInfosHttpClient userInfosHttpClient) : Controller
     {
         public async Task<IActionResult> Index()
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            FamiliesViewModel model = new FamiliesViewModel(baseModel);
+            FamiliesViewModel model = new(baseModel);
 
-            model.Families = await familiesHttpClient.GetMyFamilies();
+            return View(model);
+        }
 
-            if (model.Families.Count == 0)
+        public async Task<IActionResult> FamiliesList()
+        {
+            List<Family> families = await familiesHttpClient.GetMyFamilies();
+
+            return Json(families);
+        }
+
+        public async Task<IActionResult> FamilyElement(int familyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            FamilyElementViewModel model = new(baseModel)
             {
-                Family family = new Family();
-                model.Families.Add(family);
-            }
-            else
+                Family = await familiesHttpClient.GetFamily(familyId)
+            };
+
+            if (model.Family.FamilyMembers.Count > 0)
             {
-                foreach (Family family in model.Families)
+                foreach (FamilyMember familyMember in model.Family.FamilyMembers)
                 {
-                    if (family.FamilyMembers.Count > 0)
+                    if (familyMember.ProgenyId > 0)
                     {
-                        foreach (FamilyMember familyMember in family.FamilyMembers)
+                        familyMember.Progeny = await progenyHttpClient.GetProgeny(familyMember.ProgenyId);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrWhiteSpace(familyMember.UserId))
                         {
-                            if (familyMember.ProgenyId > 0)
-                            {
-                                familyMember.Progeny = await progenyHttpClient.GetProgeny(familyMember.ProgenyId);
-                            }
+                            familyMember.UserInfo = await userInfosHttpClient.GetUserInfoByUserId(familyMember.UserId);
+                        }
+                    }
+                }
+            }
+            
+            return PartialView("_FamilyElementPartial", model);
+        }
+
+        public async Task<IActionResult> FamilyDetails(int familyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            FamilyDetailsViewModel model = new(baseModel)
+            {
+                Family = await familiesHttpClient.GetFamily(familyId)
+            };
+
+            if (model.Family.FamilyMembers.Count > 0)
+            {
+                foreach (FamilyMember familyMember in model.Family.FamilyMembers)
+                {
+                    if (familyMember.ProgenyId > 0)
+                    {
+                        familyMember.Progeny = await progenyHttpClient.GetProgeny(familyMember.ProgenyId);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrWhiteSpace(familyMember.UserId))
+                        {
+                            familyMember.UserInfo = await userInfosHttpClient.GetUserInfoByUserId(familyMember.UserId);
                         }
                     }
                 }
             }
 
-            return View(model);
+            return PartialView("_FamilyDetailsPartial", model);
+        }
+
+        public async Task<IActionResult> AddFamily()
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            FamilyDetailsViewModel model = new(baseModel);
+
+            Family family = new();
+            model.Family = family;
+
+            return PartialView("_AddFamilyPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddFamily([FromForm] Family family)
+        {
+            Family addedFamily = await familiesHttpClient.AddFamily(family);
+
+            return Json(addedFamily);
+        }
+
+        public async Task<IActionResult> EditFamily(int familyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            FamilyDetailsViewModel model = new(baseModel);
+            model.Family = await familiesHttpClient.GetFamily(familyId);
+
+            return PartialView("_EditFamilyPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditFamily([FromForm] Family family)
+        {
+            Family updatedFamily = await familiesHttpClient.UpdateFamily(family);
+
+            return Json(updatedFamily);
         }
 
         public async Task<IActionResult> Members()
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            FamiliesViewModel model = new FamiliesViewModel(baseModel);
-
-            model.Families = await familiesHttpClient.GetMyFamilies();
+            FamiliesViewModel model = new(baseModel)
+            {
+                Families = await familiesHttpClient.GetMyFamilies()
+            };
 
             if (model.Families.Count == 0)
             {
-                Family family = new Family();
+                Family family = new();
                 model.Families.Add(family);
             }
             else
@@ -81,8 +161,10 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> UserAccess()
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            UserGroupsViewModel model = new UserGroupsViewModel(baseModel);
-            model.FamiliesList = await familiesHttpClient.GetMyFamilies();
+            UserGroupsViewModel model = new(baseModel)
+            {
+                FamiliesList = await familiesHttpClient.GetMyFamilies()
+            };
             model.ProgenyList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
 
             foreach (Family family in model.FamiliesList)
@@ -96,7 +178,7 @@ namespace KinaUnaWeb.Controllers
                 model.UserGroups.AddRange(userGroupsList);
             }
 
-            return View();
+            return View(model);
         }
     }
 }

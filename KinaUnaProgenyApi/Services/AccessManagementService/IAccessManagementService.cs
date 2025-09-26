@@ -153,5 +153,32 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <returns>The updated <see cref="FamilyPermission"/> object if the operation is successful; otherwise, <see
         /// langword="null"/> if the user lacks sufficient access rights or the specified permission does not exist.</returns>
         Task<FamilyPermission> UpdateFamilyPermission(FamilyPermission familyPermission, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Retrieves the permission settings for a specific progeny and user group.
+        /// </summary>
+        /// <remarks>This method checks whether the current user has the necessary access rights to
+        /// retrieve the permission settings. If the user does not have access, the method returns <see
+        /// langword="null"/>.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny. Must be greater than 0.</param>
+        /// <param name="userGroupId">The unique identifier of the user group. Must be greater than 0.</param>
+        /// <param name="currentUserInfo">The information of the current user making the request. Used to verify access permissions.</param>
+        /// <returns>A <see cref="ProgenyPermission"/> object representing the permission settings for the specified progeny and
+        /// user group,  or <see langword="null"/> if the progeny or user group does not exist, the user lacks access,
+        /// or the identifiers are invalid.</returns>
+        Task<ProgenyPermission> GetProgenyPermissionForGroup(int progenyId, int userGroupId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Retrieves the family permission associated with a specific family and user group.
+        /// </summary>
+        /// <remarks>The method checks whether the current user has access to manage permissions for the
+        /// specified family  before attempting to retrieve the associated family permission. If the user does not have
+        /// the required  access, the method returns <c>null</c>.</remarks>
+        /// <param name="familyId">The unique identifier of the family. Must be greater than zero.</param>
+        /// <param name="userGroupId">The unique identifier of the user group. Must be greater than zero.</param>
+        /// <param name="currentUserInfo">The information of the current user making the request. Cannot be <c>null</c>.</param>
+        /// <returns>A <see cref="FamilyPermission"/> object representing the permission for the specified family and user group,
+        /// or <c>null</c> if the identifiers are invalid, the user lacks access, or no matching permission is found.</returns>
+        Task<FamilyPermission> GetFamilyPermissionForGroup(int familyId, int userGroupId, UserInfo currentUserInfo);
     }
 }

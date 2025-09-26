@@ -1,6 +1,4 @@
 ﻿@using KinaUna.Data
-@using KinaUna.Data.Extensions
-@using KinaUna.Data.Models.Family
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.FamiliesViewModels.FamiliesViewModel
 @inject ILocaleManager LocaleManager
@@ -30,33 +28,19 @@
 </div>
 <div class="row m-0">
     <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10 col-w1900-8 col-w2500-7 bg-page-content">
-        <div class="space-20"></div>
-        <div id="families-list-div" class="row row-cols-1">
-            @foreach (Family family in Model.Families)
-            {
-                <div class="card-header rounded w-100 p-0 pt-2" style="padding-right: 5px; margin-bottom: 0;">
-                    <div class="row">
-                        <div class="col-auto card-title text-left"><span class="pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">family_restroom</i> </span><span class="h5">@family.Name</span></div>
-                        <div class="col-12">
-                            <div class="row">
-                                @foreach (FamilyMember familyMember in family.FamilyMembers)
-                                {
-                                    if (familyMember.ProgenyId != 0 && familyMember.Progeny != null)
-                                    {
-                                        <div class="col">
-                                            <img src="@familyMember.Progeny.GetProfilePictureUrl()" style="max-height: 24px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; right: 8px; position: absolute;"/>
-                                            <div>
-                                                @familyMember.Progeny.NickName
-                                            </div>
-                                        </div>
-                                    }
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
+        <div class="row">
+            <div class="col-12 text-right">
+                <button id="add-new-family-button" class="btn btn-primary"><i class="material-icons icon-top-4">add</i> @await LocaleManager.GetTranslation("Add Family", PageNames.Family, Model.LanguageId)</button>
+            </div>
         </div>
-        
+        <div class="space-20"></div>
+        <div id="families-list-div" class="row">
+
+        </div>
+
     </div>
 </div>
+<div id="family-details-div" class="d-none">
+
+</div>
+<script src="/js/families/families-index.js" type="module" asp-append-version="true"></script>

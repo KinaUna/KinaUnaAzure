@@ -82,5 +82,13 @@ namespace KinaUna.Data.Models.Family
         /// </summary>
         [NotMapped]
         public Progeny Progeny { get; set; } = new Progeny();
+
+        /// <summary>
+        /// Gets or sets the user information associated with this entity.
+        /// </summary>
+        /// <remarks>This property is not mapped to the database and is intended for use in application
+        /// logic only.</remarks>
+        [NotMapped]
+        public UserInfo UserInfo { get; set; } = new UserInfo();
     }
 }

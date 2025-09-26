@@ -706,4 +706,32 @@ export class Progeny {
         this.admins = '';
     }
 }
+export class Family {
+    constructor() {
+        this.familyId = 0;
+        this.name = '';
+        this.description = '';
+        this.familyMembers = [];
+    }
+}
+export class FamilyMember {
+    constructor() {
+        this.familyMemberId = 0;
+        this.familyId = 0;
+        this.familyMemberType = 0;
+        this.userId = '';
+        this.email = '';
+        this.progenyId = 0;
+    }
+}
+export var FamilyMemberType;
+(function (FamilyMemberType) {
+    FamilyMemberType[FamilyMemberType["Unknown"] = 0] = "Unknown";
+    FamilyMemberType[FamilyMemberType["Parent"] = 1] = "Parent";
+    FamilyMemberType[FamilyMemberType["Child"] = 2] = "Child";
+    FamilyMemberType[FamilyMemberType["Pet"] = 3] = "Pet";
+    FamilyMemberType[FamilyMemberType["Grandparent"] = 4] = "Grandparent";
+    FamilyMemberType[FamilyMemberType["Grandchild"] = 5] = "Grandchild";
+    FamilyMemberType[FamilyMemberType["Other"] = 6] = "Other";
+})(FamilyMemberType || (FamilyMemberType = {}));
 //# sourceMappingURL=page-models-v9.js.map
