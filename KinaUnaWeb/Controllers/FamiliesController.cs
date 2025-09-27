@@ -73,25 +73,7 @@ namespace KinaUnaWeb.Controllers
             {
                 Family = await familiesHttpClient.GetFamily(familyId)
             };
-
-            if (model.Family.FamilyMembers.Count > 0)
-            {
-                foreach (FamilyMember familyMember in model.Family.FamilyMembers)
-                {
-                    if (familyMember.ProgenyId > 0)
-                    {
-                        familyMember.Progeny = await progenyHttpClient.GetProgeny(familyMember.ProgenyId);
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrWhiteSpace(familyMember.UserId))
-                        {
-                            familyMember.UserInfo = await userInfosHttpClient.GetUserInfoByUserId(familyMember.UserId);
-                        }
-                    }
-                }
-            }
-
+            
             if (model.Family.IsInAdminList(model.CurrentUser.UserEmail))
             {
                 model.IsCurrentUserFamilyAdmin = true;
@@ -123,8 +105,10 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditFamily(int familyId)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            FamilyDetailsViewModel model = new(baseModel);
-            model.Family = await familiesHttpClient.GetFamily(familyId);
+            FamilyDetailsViewModel model = new(baseModel)
+            {
+                Family = await familiesHttpClient.GetFamily(familyId)
+            };
 
             return PartialView("_EditFamilyPartial", model);
         }
@@ -151,26 +135,68 @@ namespace KinaUnaWeb.Controllers
                 Family family = new();
                 model.Families.Add(family);
             }
-            else
-            {
-                foreach (Family family in model.Families)
-                {
-                    if (family.FamilyMembers.Count > 0)
-                    {
-                        foreach (FamilyMember familyMember in family.FamilyMembers)
-                        {
-                            if (familyMember.ProgenyId > 0)
-                            {
-                                familyMember.Progeny = await progenyHttpClient.GetProgeny(familyMember.ProgenyId);
-                            }
-                        }
-                    }
-                }
-            }
-
+            
             return View(model);
         }
 
+        public async Task<IActionResult> FamilyMemberElement(int familyMemberId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            FamilyMemberDetailsViewModel model = new(baseModel)
+            {
+                FamilyMember = await familiesHttpClient.GetFamilyMember(familyMemberId)
+            };
+
+            Family family = await familiesHttpClient.GetFamily(model.FamilyMember.FamilyId);
+            if (family.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                model.IsCurrentUserFamilyAdmin = true;
+            }
+
+            return PartialView("_FamilyMemberElementPartial", model);
+        }
+
+        public async Task<IActionResult> FamilyMemberDetails(int familyMemberId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            FamilyMemberDetailsViewModel model = new(baseModel)
+            {
+                FamilyMember = await familiesHttpClient.GetFamilyMember(familyMemberId)
+            };
+
+            Family family = await familiesHttpClient.GetFamily(model.FamilyMember.FamilyId);
+            if (family.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                model.IsCurrentUserFamilyAdmin = true;
+            }
+
+            return PartialView("_FamilyMemberDetailsPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<FamilyMember> AddFamilyMember([FromForm] FamilyMember familyMember)
+        {
+            FamilyMember addedFamilyMember = await familiesHttpClient.AddFamilyMember(familyMember);
+            return addedFamilyMember;
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<FamilyMember> UpdateFamilyMember([FromForm] FamilyMember familyMember)
+        {
+            FamilyMember updatedFamilyMember = await familiesHttpClient.UpdateFamilyMember(familyMember);
+            return updatedFamilyMember;
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteFamilyMember(int familyMemberId)
+        {
+            bool result = await familiesHttpClient.DeleteFamilyMember(familyMemberId);
+            return Json(result);
+        }
+        
         public async Task<IActionResult> UserAccess()
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);

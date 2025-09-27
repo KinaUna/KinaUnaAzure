@@ -8,6 +8,8 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -22,12 +24,14 @@ namespace KinaUnaProgenyApi.Services
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly IImageStore _imageStore;
+        private readonly IAccessManagementService _accessManagementService;
 
-        public ProgenyService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, ILocationService locationService)
+        public ProgenyService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, ILocationService locationService, IAccessManagementService accessManagementService)
         {
             _context = context;
             _locationService = locationService;
             _imageStore = imageStore;
+            _accessManagementService = accessManagementService;
             _cache = cache;
             _ = _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _ = _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -38,9 +42,20 @@ namespace KinaUnaProgenyApi.Services
         /// First tries to get the Progeny from the cache, then from the database if it's not in the cache.
         /// </summary>
         /// <param name="id">The Id of the Progeny to get.</param>
+        /// <param name="currentUserInfo">Optional UserInfo object for the current user, to check permissions.</param>
         /// <returns>The Progeny with the given Id. Null if the Progeny doesn't exist.</returns>
-        public async Task<Progeny> GetProgeny(int id)
+        public async Task<Progeny> GetProgeny(int id, UserInfo currentUserInfo = null )
         {
+            // Todo: Remove nullable and null check when user permissions are implemented.
+            if (currentUserInfo != null)
+            {
+                if (!await _accessManagementService.HasProgenyPermission(id, currentUserInfo, PermissionLevel.View))
+                {
+                    // User doesn't have permissions to view this Progeny.
+                    return null;
+                }
+            }
+
             Progeny progeny = await GetProgenyFromCache(id);
             if (progeny == null || progeny.Id == 0)
             {

@@ -71,8 +71,8 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             {
                 if (!userFamilies.Exists(f => f.FamilyId == familyMember.FamilyId))
                 {
-                    Family family = await progenyDbContext.FamiliesDb.AsNoTracking().SingleOrDefaultAsync(f => f.FamilyId == familyMember.FamilyId);
-                    if (await accessManagementService.HasFamilyPermission(family.FamilyId, currentUserInfo, PermissionLevel.View))
+                    Family family = await GetFamilyById(familyMember.FamilyId, currentUserInfo);
+                    if (family.FamilyId != 0)
                     {
                         userFamilies.Add(family);
                     }
@@ -101,8 +101,8 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             {
                 if (!userFamilies.Exists(f => f.FamilyId == familyMember.FamilyId))
                 {
-                    Family family = await progenyDbContext.FamiliesDb.AsNoTracking().SingleOrDefaultAsync(f => f.FamilyId == familyMember.FamilyId);
-                    if (await accessManagementService.HasFamilyPermission(family.FamilyId, currentUserInfo, PermissionLevel.View))
+                    Family family = await GetFamilyById(familyMember.FamilyId, currentUserInfo);
+                    if (family.FamilyId != 0)
                     {
                         userFamilies.Add(family);
                     }

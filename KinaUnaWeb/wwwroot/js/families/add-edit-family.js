@@ -1,7 +1,7 @@
 import { getCurrentLanguageId } from "../data-tools-v9.js";
 import { hideBodyScrollbars } from "../item-details/items-display-v9.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
-import { GetFamiliesList } from "./families-index.js";
+import { getFamiliesList } from "./families-index.js";
 let languageId = 1;
 export async function displayAddFamilyModal() {
     startFullPageSpinner();
@@ -70,7 +70,7 @@ function addAddFamilyModalEventListeners() {
                     familyDetailsDiv.classList.add('d-none');
                     document.body.style.overflow = 'auto';
                     // Refresh the families list on the main page.
-                    await GetFamiliesList();
+                    await getFamiliesList();
                 }
             }
             else {
@@ -151,7 +151,7 @@ function addEditFamilyModalEventListeners() {
                     familyDetailsDiv.classList.add('d-none');
                     document.body.style.overflow = 'auto';
                     // Refresh the families list on the main page.
-                    await GetFamiliesList();
+                    await getFamiliesList();
                 }
             }
             else {

@@ -1,10 +1,12 @@
 ﻿import { Family } from "../page-models-v9.js";
 import { displayFamilyDetails } from "./family-details.js";
 import { displayAddFamilyModal, displayEditFamilyModal } from "./add-edit-family.js";
+import { getCurrentLanguageId } from "../data-tools-v9.js";
 
 let familiesList = new Array<Family>();
+let languageId = 1; // Default to English
 
-export async function GetFamiliesList(): Promise<void> {
+export async function getFamiliesList(): Promise<void> {
     const familiesListDiv = document.querySelector<HTMLDivElement>('#families-list-div');
     if (familiesListDiv) {
         familiesListDiv.innerHTML = '';
@@ -17,7 +19,7 @@ export async function GetFamiliesList(): Promise<void> {
         if (response.ok) {
             const data = await response.json() as Family[];
             for (const family of data) {
-                await RenderFamilyElement(family.familyId);
+                await renderFamilyElement(family.familyId);
             }
 
             return Promise.resolve();
@@ -29,7 +31,7 @@ export async function GetFamiliesList(): Promise<void> {
     return Promise.reject('Families list div not found in the document.');
 }
 
-async function RenderFamilyElement(familyId: number): Promise<void> {
+async function renderFamilyElement(familyId: number): Promise<void> {
         const response = await fetch('/Families/FamilyElement?familyId=' + familyId, {
         method: 'GET',
         headers: {
@@ -89,3 +91,12 @@ function addNewFamilyButtonEventListener(): void {
         addNewFamilyButton.addEventListener('click', addNewFamilyButtonClickedAction);
     }
 }
+
+document.addEventListener('DOMContentLoaded', async function () {
+    languageId = getCurrentLanguageId();
+
+    await getFamiliesList();
+    addNewFamilyButtonEventListener();
+
+    return Promise.resolve();
+});

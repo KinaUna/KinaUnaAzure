@@ -16,6 +16,19 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
     public interface IFamilyMembersService
     {
         /// <summary>
+        /// Retrieves a family member by their unique identifier, ensuring the current user has the necessary
+        /// permissions to access the data.
+        /// </summary>
+        /// <remarks>This method performs multiple permission checks to ensure the current user has access
+        /// to the requested family member's data.  If the family member belongs to a progeny, additional
+        /// progeny-specific permissions are verified.</remarks>
+        /// <param name="familyMemberId">The unique identifier of the family member to retrieve.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>The <see cref="FamilyMember"/> object corresponding to the specified <paramref name="familyMemberId"/>,  or
+        /// <see langword="null"/> if the family member does not exist or the user lacks the required permissions.</returns>
+        Task<FamilyMember> GetFamilyMember(int familyMemberId, UserInfo currentUserInfo);
+
+        /// <summary>
         /// Adds a new family member to the specified family and assigns the given permission level.
         /// </summary>
         /// <remarks>This method performs the following actions: <list type="bullet"> <item>Validates that

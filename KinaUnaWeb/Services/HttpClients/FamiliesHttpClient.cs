@@ -94,7 +94,6 @@ namespace KinaUnaWeb.Services.HttpClients
             
             Family family = await familiesResponse.Content.ReadAsAsync<Family>();
             return family;
-
         }
 
         /// <summary>
@@ -222,6 +221,50 @@ namespace KinaUnaWeb.Services.HttpClients
             HttpResponseMessage response = await _httpClient.DeleteAsync("/api/Families/DeleteFamilyMember/" + familyMemberId);
             
             return response.IsSuccessStatusCode;
+        }
+
+        /// <summary>
+        /// Retrieves a family member by their unique identifier.
+        /// </summary>
+        /// <remarks>This method sends an HTTP request to the Families API to retrieve the family member's
+        /// details. The caller must ensure that the signed-in user has the necessary permissions to access the
+        /// requested family member.</remarks>
+        /// <param name="familyMemberId">The unique identifier of the family member to retrieve.</param>
+        /// <returns>A <see cref="FamilyMember"/> object representing the family member with the specified identifier. If the
+        /// family member is not found or the request fails, an empty <see cref="FamilyMember"/> object is returned.</returns>
+        public async Task<FamilyMember> GetFamilyMember(int familyMemberId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string familiesApiPath = "/api/Families/GetFamilyMember/" + familyMemberId;
+            HttpResponseMessage familiesResponse = await _httpClient.GetAsync(familiesApiPath);
+
+            if (!familiesResponse.IsSuccessStatusCode) return new FamilyMember();
+
+            FamilyMember familyMember = await familiesResponse.Content.ReadAsAsync<FamilyMember>();
+            return familyMember;
+        }
+
+        /// <summary>
+        /// Retrieves the list of family members associated with a specific family.
+        /// </summary>
+        /// <param name="familyId">The unique identifier of the family whose members are to be retrieved.</param>
+        /// <returns>List of <see cref="FamilyMember"/> objects representing the members of the specified family. If no members are found or the request fails, an empty list is returned.</returns>
+        public async Task<List<FamilyMember>> GetFamilyMembersForFamily(int familyId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string familiesApiPath = "/api/Families/GetFamilyMembersForFamily/" + familyId;
+            HttpResponseMessage familiesResponse = await _httpClient.GetAsync(familiesApiPath);
+
+            if (!familiesResponse.IsSuccessStatusCode) return new List<FamilyMember>();
+
+            List<FamilyMember> familyMembersList = await familiesResponse.Content.ReadAsAsync<List<FamilyMember>>();
+            return familyMembersList;
         }
     }
 }

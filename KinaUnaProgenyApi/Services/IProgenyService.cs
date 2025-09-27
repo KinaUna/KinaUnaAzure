@@ -11,8 +11,9 @@ namespace KinaUnaProgenyApi.Services
         /// First tries to get the Progeny from the cache, then from the database if it's not in the cache.
         /// </summary>
         /// <param name="id">The Id of the Progeny to get.</param>
+        /// <param name="currentUserInfo">Optional UserInfo object for the current user, to check permissions.</param>
         /// <returns>The Progeny with the given Id. Null if the Progeny doesn't exist.</returns>
-        Task<Progeny> GetProgeny(int id);
+        Task<Progeny> GetProgeny(int id, UserInfo currentUserInfo = null);
 
         /// <summary>
         /// Adds a new Progeny to the database and the cache.

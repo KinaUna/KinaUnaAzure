@@ -97,5 +97,24 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="familyMemberId">The unique identifier of the family member to delete.</param>
         /// <returns><see langword="true"/> if the family member was successfully deleted; otherwise, <see langword="false"/>.</returns>
         Task<bool> DeleteFamilyMember(int familyMemberId);
+
+        /// <summary>
+        /// Retrieves a family member by their unique identifier.
+        /// </summary>
+        /// <remarks>This method sends an HTTP request to the Families API to retrieve the family member's
+        /// details. The caller must ensure that the signed-in user has the necessary permissions to access the
+        /// requested family member.</remarks>
+        /// <param name="familyMemberId">The unique identifier of the family member to retrieve.</param>
+        /// <returns>A <see cref="FamilyMember"/> object representing the family member with the specified identifier. If the
+        /// family member is not found or the request fails, an empty <see cref="FamilyMember"/> object is returned.</returns>
+        Task<FamilyMember> GetFamilyMember(int familyMemberId);
+
+        /// <summary>
+        /// Retrieves the list of family members associated with a specific family.
+        /// </summary>
+        /// <param name="familyId">The unique identifier of the family whose members are to be retrieved.</param>
+        /// <returns>List of <see cref="FamilyMember"/> objects representing the members of the specified family. If no members are found or the request fails, an empty list is returned.</returns>
+        Task<List<FamilyMember>> GetFamilyMembersForFamily(int familyId);
+
     }
 }

@@ -96,8 +96,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 PageNumber = 1
             };
 
-            _mockProgenyService.Setup(x => x.GetProgeny(1)).ReturnsAsync(progeny1);
-            _mockProgenyService.Setup(x => x.GetProgeny(2)).ReturnsAsync(progeny2);
+            _mockProgenyService.Setup(x => x.GetProgeny(1, null)).ReturnsAsync(progeny1);
+            _mockProgenyService.Setup(x => x.GetProgeny(2, null)).ReturnsAsync(progeny2);
             _mockUserAccessService.Setup(x => x.GetProgenyUserAccessForUser(1, TestUserEmail)).ReturnsAsync(userAccess1);
             _mockUserAccessService.Setup(x => x.GetProgenyUserAccessForUser(2, TestUserEmail)).ReturnsAsync(userAccess2);
             _mockTodosService.Setup(x => x.GetTodosForProgeny(1, 0, request)).ReturnsAsync([todoItems[0]]);
@@ -115,8 +115,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             Assert.Equal(todoItems, response.TodoItems);
 
             // Verify service integration
-            _mockProgenyService.Verify(x => x.GetProgeny(1), Times.Once);
-            _mockProgenyService.Verify(x => x.GetProgeny(2), Times.Once);
+            _mockProgenyService.Verify(x => x.GetProgeny(1, null), Times.Once);
+            _mockProgenyService.Verify(x => x.GetProgeny(2, null), Times.Once);
             _mockUserAccessService.Verify(x => x.GetProgenyUserAccessForUser(1, TestUserEmail), Times.Exactly(2));
             _mockUserAccessService.Verify(x => x.GetProgenyUserAccessForUser(2, TestUserEmail), Times.Exactly(2));
         }
@@ -195,7 +195,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 LastName = "User"
             };
 
-            _mockProgenyService.Setup(x => x.GetProgeny(1)).ReturnsAsync(progeny);
+            _mockProgenyService.Setup(x => x.GetProgeny(1, null)).ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.AddTodoItem(It.IsAny<TodoItem>())).ReturnsAsync(createdTodoItem);
             _mockTimelineService.Setup(x => x.AddTimeLineItem(It.IsAny<TimeLineItem>())).ReturnsAsync(timelineItem);
             _mockUserInfoService.Setup(x => x.GetUserInfoByEmail(TestUserEmail)).ReturnsAsync(userInfo);
@@ -210,7 +210,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             Assert.Equal(TestUserId, returnedTodo.CreatedBy);
 
             // Verify service integration - all services should be called in correct order
-            _mockProgenyService.Verify(x => x.GetProgeny(1), Times.Once);
+            _mockProgenyService.Verify(x => x.GetProgeny(1, null), Times.Once);
             _mockTodosService.Verify(x => x.AddTodoItem(It.Is<TodoItem>(t => 
                 t.CreatedBy == TestUserId && !string.IsNullOrWhiteSpace(t.UId))), Times.Once);
             _mockTimelineService.Verify(x => x.AddTimeLineItem(It.IsAny<TimeLineItem>()), Times.Once);
@@ -255,7 +255,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             _mockTodosService.Setup(x => x.GetTodoItem(1)).ReturnsAsync(existingTodoItem);
-            _mockProgenyService.Setup(x => x.GetProgeny(1)).ReturnsAsync(progeny);
+            _mockProgenyService.Setup(x => x.GetProgeny(1, null)).ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.UpdateTodoItem(It.IsAny<TodoItem>())).ReturnsAsync(updatedTodoItem);
             _mockTimelineService.Setup(x => x.GetTimeLineItemByItemId("1", (int)KinaUnaTypes.TimeLineType.TodoItem))
                 .ReturnsAsync(timelineItem);
@@ -271,7 +271,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Verify service integration
             _mockTodosService.Verify(x => x.GetTodoItem(1), Times.Once);
-            _mockProgenyService.Verify(x => x.GetProgeny(1), Times.Once);
+            _mockProgenyService.Verify(x => x.GetProgeny(1, null), Times.Once);
             _mockTodosService.Verify(x => x.UpdateTodoItem(It.Is<TodoItem>(t => 
                 t.ModifiedBy == TestUserId)), Times.Once);
             _mockTimelineService.Verify(x => x.GetTimeLineItemByItemId("1", (int)KinaUnaTypes.TimeLineType.TodoItem), Times.Once);
@@ -313,7 +313,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             _mockTodosService.Setup(x => x.GetTodoItem(1)).ReturnsAsync(todoItem);
-            _mockProgenyService.Setup(x => x.GetProgeny(1)).ReturnsAsync(progeny);
+            _mockProgenyService.Setup(x => x.GetProgeny(1, null)).ReturnsAsync(progeny);
             _mockTimelineService.Setup(x => x.GetTimeLineItemByItemId("1", (int)KinaUnaTypes.TimeLineType.TodoItem))
                 .ReturnsAsync(timelineItem);
             _mockTimelineService.Setup(x => x.DeleteTimeLineItem(timelineItem)).ReturnsAsync(timelineItem);
@@ -328,7 +328,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Verify service integration - all services called in correct order
             _mockTodosService.Verify(x => x.GetTodoItem(1), Times.Once);
-            _mockProgenyService.Verify(x => x.GetProgeny(1), Times.Once);
+            _mockProgenyService.Verify(x => x.GetProgeny(1, null), Times.Once);
             _mockTimelineService.Verify(x => x.GetTimeLineItemByItemId("1", (int)KinaUnaTypes.TimeLineType.TodoItem), Times.Once);
             _mockTimelineService.Verify(x => x.DeleteTimeLineItem(timelineItem), Times.Once);
             _mockTodosService.Verify(x => x.DeleteTodoItem(It.Is<TodoItem>(t => 
@@ -350,15 +350,15 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 Skip = 0
             };
 
-            _mockProgenyService.Setup(x => x.GetProgeny(It.IsAny<int>())).ReturnsAsync(null as Progeny);
+            _mockProgenyService.Setup(x => x.GetProgeny(It.IsAny<int>(), null)).ReturnsAsync(null as Progeny);
 
             // Act
             IActionResult? result = await _controller.GetProgeniesTodoItemsList(request);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
-            _mockProgenyService.Verify(x => x.GetProgeny(1), Times.Once);
-            _mockProgenyService.Verify(x => x.GetProgeny(2), Times.Once);
+            _mockProgenyService.Verify(x => x.GetProgeny(1, null), Times.Once);
+            _mockProgenyService.Verify(x => x.GetProgeny(2, null), Times.Once);
         }
 
         [Fact]
@@ -368,14 +368,14 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             TodoItem todoItem = new() { ProgenyId = 1 };
             Progeny progeny = new() { Id = 1, Admins = "other@example.com" };
 
-            _mockProgenyService.Setup(x => x.GetProgeny(1)).ReturnsAsync(progeny);
+            _mockProgenyService.Setup(x => x.GetProgeny(1, null)).ReturnsAsync(progeny);
 
             // Act
             IActionResult? result = await _controller.Post(todoItem);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
-            _mockProgenyService.Verify(x => x.GetProgeny(1), Times.Once);
+            _mockProgenyService.Verify(x => x.GetProgeny(1, null), Times.Once);
             _mockTodosService.Verify(x => x.AddTodoItem(It.IsAny<TodoItem>()), Times.Never);
         }
 
@@ -386,7 +386,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             TodoItem todoItem = new() { ProgenyId = 1 };
             Progeny progeny = new() { Id = 1, Admins = TestUserEmail };
 
-            _mockProgenyService.Setup(x => x.GetProgeny(1)).ReturnsAsync(progeny);
+            _mockProgenyService.Setup(x => x.GetProgeny(1, null)).ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.AddTodoItem(It.IsAny<TodoItem>())).ReturnsAsync(null as TodoItem);
 
             // Act

@@ -1,0 +1,35 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.FamiliesViewModels.FamilyMemberDetailsViewModel
+@inject ILocaleManager LocaleManager
+<div class="col-12 col-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
+    <div id="family-member-element-@Model.FamilyMember.FamilyMemberId" class="card-compact bg-todos todo-item m-1" data-family-member-id="@Model.FamilyMember.FamilyMemberId" align="left">
+        @if (Model.FamilyMember.FamilyMemberId == 0)
+        {
+            <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
+        }
+        else
+        {
+            <div class="row m-0">
+                <div class="col-12">
+                    @if (Model.FamilyMember.ProgenyId > 0 && Model.FamilyMember.Progeny != null)
+                    {
+                        <img src="@Model.FamilyMember.Progeny.GetProfilePictureUrl()" class="profile-picture-small"/>
+                        <span>@Model.FamilyMember.Progeny.NickName</span>
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrWhiteSpace(Model.FamilyMember.UserId) && Model.FamilyMember.UserInfo != null)
+                        {
+                            <img src="@Model.FamilyMember.UserInfo.GetProfilePictureUrl()" class="profile-picture-small"/>
+                            <span>@Model.FamilyMember.UserInfo.FullName()</span>
+                        }
+                    }
+                    <span>@Model.FamilyMember.Email</span>
+
+                </div>
+            </div>
+        }
+    </div>
+</div>

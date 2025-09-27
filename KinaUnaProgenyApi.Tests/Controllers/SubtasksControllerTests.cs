@@ -126,7 +126,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(parentTodoItem);
             _mockUserAccessService.Setup(x => x.GetValidatedAccessLevel(TestProgenyId, TestUserEmail, TestAccessLevel))
                 .ReturnsAsync(CustomResult<int>.Success(TestAccessLevel));
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockSubtasksService.Setup(x => x.GetSubtasksForTodoItem(TestParentTodoItemId))
                 .ReturnsAsync(subtasks);
@@ -193,7 +193,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(parentTodoItem);
             _mockUserAccessService.Setup(x => x.GetValidatedAccessLevel(TestProgenyId, TestUserEmail, TestAccessLevel))
                 .ReturnsAsync(CustomResult<int>.Success(TestAccessLevel));
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync((Progeny?)null);
 
             // Act
@@ -224,7 +224,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(parentTodoItem);
             _mockUserAccessService.Setup(x => x.GetValidatedAccessLevel(TestProgenyId, TestUserEmail, TestAccessLevel))
                 .ReturnsAsync(CustomResult<int>.Success(TestAccessLevel));
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockSubtasksService.Setup(x => x.GetSubtasksForTodoItem(TestParentTodoItemId))
                 .ReturnsAsync(subtasks);
@@ -310,7 +310,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
             TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId, TestAccessLevel);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
                 .ReturnsAsync(parentTodoItem);
@@ -339,7 +339,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, TestParentTodoItemId);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync((Progeny?)null);
 
             // Act
@@ -356,7 +356,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, TestParentTodoItemId);
             Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: false);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
 
             // Act
@@ -373,7 +373,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, TestParentTodoItemId);
             Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
                 .ReturnsAsync((TodoItem?)null);
@@ -394,7 +394,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId);
             Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
                 .ReturnsAsync(parentTodoItem);
@@ -418,7 +418,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
             TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
                 .ReturnsAsync(parentTodoItem);
@@ -452,7 +452,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
                 .ReturnsAsync(parentTodoItem);
@@ -500,7 +500,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync((Progeny?)null);
 
             // Act
@@ -520,7 +520,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
 
             // Act
@@ -540,7 +540,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
                 .ReturnsAsync((TodoItem?)null);
@@ -566,7 +566,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
                 .ReturnsAsync(parentTodoItem);
@@ -595,7 +595,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockSubtasksService.Setup(x => x.DeleteSubtask(It.IsAny<TodoItem>(), false))
                 .ReturnsAsync(true);
@@ -632,7 +632,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync((Progeny?)null);
 
             // Act
@@ -651,7 +651,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
 
             // Act
@@ -670,7 +670,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockSubtasksService.Setup(x => x.DeleteSubtask(It.IsAny<TodoItem>(), false))
                 .ReturnsAsync(false);
@@ -725,7 +725,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
             TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
                 .ReturnsAsync(parentTodoItem);
@@ -755,7 +755,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, null))
                 .ReturnsAsync(progeny);
             _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
                 .ReturnsAsync(parentTodoItem);

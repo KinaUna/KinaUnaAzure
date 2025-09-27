@@ -20,8 +20,59 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
     /// operations on family members. Permissions are determined based on the user's role within the family and their
     /// associated permission level.</remarks>
     /// <param name="progenyDbContext"></param>
-    public class FamilyMembersService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IFamilyAuditLogsService familyAuditLogService) : IFamilyMembersService
+    public class FamilyMembersService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService,
+        IFamilyAuditLogsService familyAuditLogService, IProgenyService progenyService, IUserInfoService userInfoService) : IFamilyMembersService
     {
+        /// <summary>
+        /// Retrieves a family member by their unique identifier, ensuring the current user has the necessary
+        /// permissions to access the data.
+        /// </summary>
+        /// <remarks>This method performs multiple permission checks to ensure the current user has access
+        /// to the requested family member's data.  If the family member belongs to a progeny, additional
+        /// progeny-specific permissions are verified.</remarks>
+        /// <param name="familyMemberId">The unique identifier of the family member to retrieve.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>The <see cref="FamilyMember"/> object corresponding to the specified <paramref name="familyMemberId"/>,  or
+        /// <see langword="null"/> if the family member does not exist or the user lacks the required permissions.</returns>
+        public async Task<FamilyMember> GetFamilyMember(int familyMemberId, UserInfo currentUserInfo)
+        {
+            FamilyMember familyMember = await progenyDbContext.FamilyMembersDb.AsNoTracking().SingleOrDefaultAsync(fm => fm.FamilyMemberId == familyMemberId);
+            if (familyMember == null)
+            {
+                return null;
+            }
+            // Check if user has access to this family.
+            if (!await accessManagementService.HasFamilyPermission(familyMember.FamilyId, currentUserInfo, PermissionLevel.View))
+            {
+                return null; // No access to this family. Return null.
+            }
+            // Check progeny permissions.
+            if (familyMember.ProgenyId > 0)
+            {
+                Progeny progeny = await progenyService.GetProgeny(familyMember.ProgenyId, currentUserInfo);
+                if (progeny == null || progeny.Id == 0)
+                {
+                    return null;
+                }
+                
+                if (progeny.IsInAdminList(currentUserInfo.UserEmail))
+                {
+                    return null;
+                }
+
+                familyMember.Progeny = progeny;
+
+            }
+
+            if (!string.IsNullOrWhiteSpace(familyMember.UserId))
+            {
+                // Todo: Permission Check for UserInfo.
+                familyMember.UserInfo = await userInfoService.GetUserInfoByUserId(familyMember.UserId);
+            }
+            
+            return familyMember;
+        }
+
         /// <summary>
         /// Adds a new family member to the specified family and assigns the given permission level.
         /// </summary>
@@ -67,33 +118,16 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                 return null;
             }
 
-            // Check progeny permissions.
-            Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == familyMember.ProgenyId);
-            if (progeny == null)
+            if (familyMember.ProgenyId > 0)
             {
-                return null;
-            }
-
-            bool hasProgenyAccess = false;
-            if (progeny.IsInAdminList(currentUserInfo.UserEmail))
-            {
-                hasProgenyAccess = true;
-            }
-            else
-            {
-                // Check if the user has at least view permission for the progeny.
-                
-                if (await accessManagementService.HasProgenyPermission(familyMember.ProgenyId, currentUserInfo, PermissionLevel.View))
+                // Check progeny permissions.
+                Progeny progeny = await progenyService.GetProgeny(familyMember.ProgenyId);
+                if (progeny == null || progeny.Id == 0)
                 {
-                    hasProgenyAccess = true;
+                    return null;
                 }
             }
-
-            if (!hasProgenyAccess)
-            {
-                return null;
-            }
-
+            
             familyMember.Email = familyMember.Email.Trim();
             if (!string.IsNullOrWhiteSpace(familyMember.Email))
             {
@@ -178,31 +212,14 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                 return null;
             }
 
-            // Check progeny permissions.
-            Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == familyMember.ProgenyId);
-            if (progeny == null)
+            if (familyMember.ProgenyId > 0)
             {
-                return null;
-            }
-
-            bool hasProgenyAccess = false;
-            if (progeny.IsInAdminList(currentUserInfo.UserEmail))
-            {
-                hasProgenyAccess = true;
-            }
-            else
-            {
-                // Check if the user has at least view permission for the progeny.
-
-                if (await accessManagementService.HasProgenyPermission(familyMember.ProgenyId, currentUserInfo, PermissionLevel.View))
+                // Check progeny permissions.
+                Progeny progeny = await progenyService.GetProgeny(familyMember.ProgenyId, currentUserInfo);
+                if (progeny == null || progeny.Id == 0)
                 {
-                    hasProgenyAccess = true;
+                    return null;
                 }
-            }
-
-            if (!hasProgenyAccess)
-            {
-                return null;
             }
 
             FamilyMember existingFamilyMember = await progenyDbContext.FamilyMembersDb.SingleOrDefaultAsync(fm => fm.FamilyMemberId == familyMember.FamilyMemberId);
@@ -274,33 +291,16 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                 return false;
             }
 
-            // Check progeny permissions.
-            Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == familyMember.ProgenyId);
-            if (progeny == null)
+            if (familyMember.ProgenyId > 0)
             {
-                return false;
-            }
-
-            bool hasProgenyAccess = false;
-            if (progeny.IsInAdminList(currentUserInfo.UserEmail))
-            {
-                hasProgenyAccess = true;
-            }
-            else
-            {
-                // Check if the user has at least view permission for the progeny.
-
-                if (await accessManagementService.HasProgenyPermission(familyMember.ProgenyId, currentUserInfo, PermissionLevel.View))
+                // Check progeny permissions.
+                Progeny progeny = await progenyService.GetProgeny(familyMember.ProgenyId, currentUserInfo);
+                if (progeny == null || progeny.Id == 0)
                 {
-                    hasProgenyAccess = true;
+                    return false;
                 }
             }
-
-            if (!hasProgenyAccess)
-            {
-                return false;
-            }
-
+            
             progenyDbContext.FamilyMembersDb.Remove(familyMember);
             await progenyDbContext.SaveChangesAsync();
 
@@ -345,12 +345,20 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             List<FamilyMember> accessibleFamilyMembers = [];
             foreach (FamilyMember familyMember in familyMembers)
             {
+                if (!string.IsNullOrWhiteSpace(familyMember.UserId))
+                {
+                    // Todo: Permission Check for UserInfo.
+                    familyMember.UserInfo = await userInfoService.GetUserInfoByUserId(familyMember.UserId);
+                }
                 if (familyMember.ProgenyId > 0)
                 {
-                    if (await accessManagementService.HasProgenyPermission(familyMember.ProgenyId, currentUserInfo, PermissionLevel.View))
+                    familyMember.Progeny = await progenyService.GetProgeny(familyMember.ProgenyId, currentUserInfo);
+                    if (familyMember.Progeny == null || familyMember.Progeny.Id == 0)
                     {
-                        accessibleFamilyMembers.Add(familyMember);
+                        continue;
                     }
+
+                    accessibleFamilyMembers.Add(familyMember);
                 }
                 else
                 {

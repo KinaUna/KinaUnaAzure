@@ -93,7 +93,34 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(true);
         }
-        
+
+        [HttpGet]
+        [Route("[action]/{familyId:int}")]
+        public async Task<IActionResult> GetFamilyMembersForFamily(int familyId)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            List<FamilyMember> familyMembers = await familyMembersService.GetFamilyMembersForFamily(familyId, currentUserInfo);
+            return Ok(familyMembers);
+        }
+
+        [HttpGet]
+        [Route("[action]/{familyMemberId:int}")]
+        public async Task<IActionResult> GetFamilyMember(int familyMemberId)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            FamilyMember familyMember = await familyMembersService.GetFamilyMember(familyMemberId, currentUserInfo);
+            
+            if (familyMember.FamilyMemberId == 0)
+            {
+                return Unauthorized();
+            }
+            
+            return Ok(familyMember);
+        }
+
+
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> AddFamilyMember([FromBody] FamilyMember familyMember)

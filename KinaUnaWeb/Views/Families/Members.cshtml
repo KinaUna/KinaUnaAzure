@@ -26,3 +26,19 @@
         </div>
     </div>
 </div>
+<div class="row m-0">
+    <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10 col-w1900-8 col-w2500-7 bg-page-content">
+        <div class="row">
+            <div class="col-12 text-right">
+                <button id="add-new-family-button" class="btn btn-primary"><i class="material-icons icon-top-4">add</i> @await LocaleManager.GetTranslation("Add Family", PageNames.Family, Model.LanguageId)</button>
+            </div>
+        </div>
+        <div class="space-20"></div>
+        <div id="family-members-list-div" class="row">
+        </div>
+
+    </div>
+</div>
+<div id="family-details-div" class="d-none">
+</div>
+<script src="/js/families/family-members.js" type="module" asp-append-version="true"></script>
