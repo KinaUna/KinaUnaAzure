@@ -22,6 +22,8 @@ namespace KinaUna.Data.Extensions
             currentContact.AddressString = otherContact.AddressString;
             currentContact.ProgenyId = otherContact.ProgenyId;
             currentContact.Author = otherContact.Author;
+            currentContact.ModifiedBy = otherContact.ModifiedBy;
+            currentContact.ModifiedTime = DateTime.UtcNow;
             if (otherContact.DateAdded.HasValue)
             {
                 currentContact.DateAdded = otherContact.DateAdded.Value;
@@ -63,6 +65,10 @@ namespace KinaUna.Data.Extensions
             currentContact.AddressString = otherContact.AddressString;
             currentContact.ProgenyId = otherContact.ProgenyId;
             currentContact.Author = otherContact.Author;
+            currentContact.CreatedBy = otherContact.CreatedBy;
+            currentContact.CreatedTime = DateTime.UtcNow;
+            currentContact.ModifiedBy = otherContact.CreatedBy;
+            currentContact.ModifiedTime = DateTime.UtcNow;
             currentContact.DateAdded = otherContact.DateAdded ?? DateTime.UtcNow;
             currentContact.Context = otherContact.Context;
             currentContact.DisplayName = otherContact.DisplayName;

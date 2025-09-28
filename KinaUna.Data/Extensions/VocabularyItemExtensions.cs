@@ -21,6 +21,8 @@ namespace KinaUna.Data.Extensions
             currentVocabularyItem.Language = otherVocabularyItem.Language;
             currentVocabularyItem.SoundsLike = otherVocabularyItem.SoundsLike;
             currentVocabularyItem.Word = otherVocabularyItem.Word;
+            currentVocabularyItem.ModifiedBy = otherVocabularyItem.ModifiedBy;
+            currentVocabularyItem.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -32,6 +34,10 @@ namespace KinaUna.Data.Extensions
         {
             currentVocabularyItem.AccessLevel = otherVocabularyItem.AccessLevel;
             currentVocabularyItem.Author = otherVocabularyItem.Author;
+            currentVocabularyItem.CreatedBy = otherVocabularyItem.CreatedBy;
+            currentVocabularyItem.CreatedTime = DateTime.UtcNow;
+            currentVocabularyItem.ModifiedBy = otherVocabularyItem.CreatedBy;
+            currentVocabularyItem.ModifiedTime = DateTime.UtcNow;
             currentVocabularyItem.Date = otherVocabularyItem.Date;
             currentVocabularyItem.DateAdded = DateTime.UtcNow;
             currentVocabularyItem.ProgenyId = otherVocabularyItem.ProgenyId;

@@ -125,7 +125,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             value.Author = User.GetUserId();
-
+            value.CreatedBy = User.GetUserId();
             CalendarItem calendarItem = await calendarService.AddCalendarItem(value);
 
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
@@ -189,12 +189,13 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest();
             }
 
+            value.ModifiedBy = User.GetUserId();
+
             calendarItem = await calendarService.UpdateCalendarItem(value);
 
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
-
             if (timeLineItem == null || !timeLineItem.CopyCalendarItemPropertiesForUpdate(calendarItem)) return Ok(calendarItem);
-
+            
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
             
             return Ok(calendarItem);
@@ -235,6 +236,8 @@ namespace KinaUnaProgenyApi.Controllers
                 _ = await timelineService.DeleteTimeLineItem(timeLineItem);
             }
 
+            calendarItem.ModifiedBy = User.GetUserId();
+            
             await calendarService.DeleteCalendarItem(calendarItem);
 
             if (timeLineItem == null) return NoContent();

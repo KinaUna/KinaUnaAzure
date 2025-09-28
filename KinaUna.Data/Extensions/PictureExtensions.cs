@@ -73,6 +73,8 @@ namespace KinaUna.Data.Extensions
             currentPicture.CommentThreadNumber = otherPicture.CommentThreadNumber;
             currentPicture.TimeZone = otherPicture.TimeZone;
             currentPicture.Owners = otherPicture.Owners;
+            currentPicture.ModifiedBy = otherPicture.ModifiedBy;
+            currentPicture.ModifiedTime = DateTime.UtcNow;
             currentPicture.PictureRotation = otherPicture.PictureRotation;
             currentPicture.PictureTime = otherPicture.PictureTime;
             currentPicture.PictureNumber = otherPicture.PictureNumber;
@@ -100,6 +102,10 @@ namespace KinaUna.Data.Extensions
             currentPicture.PictureLink600 = otherPicture.PictureLink600;
             currentPicture.PictureLink1200 = otherPicture.PictureLink1200;
             currentPicture.Author = otherPicture.Author;
+            currentPicture.CreatedBy = otherPicture.CreatedBy;
+            currentPicture.CreatedTime = DateTime.UtcNow;
+            currentPicture.ModifiedBy = otherPicture.CreatedBy;
+            currentPicture.ModifiedTime = DateTime.UtcNow;
             currentPicture.TimeZone = otherPicture.TimeZone;
             currentPicture.PictureTime = otherPicture.PictureTime;
             currentPicture.Owners = otherPicture.Owners;

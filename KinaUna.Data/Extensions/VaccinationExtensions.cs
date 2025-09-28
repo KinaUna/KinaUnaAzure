@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Models;
+﻿using System;
+using KinaUna.Data.Models;
 
 namespace KinaUna.Data.Extensions
 {
@@ -20,6 +21,8 @@ namespace KinaUna.Data.Extensions
             currentVaccinationItem.VaccinationDate = otherVaccinationItem.VaccinationDate;
             currentVaccinationItem.VaccinationDescription = otherVaccinationItem.VaccinationDescription;
             currentVaccinationItem.VaccinationName = otherVaccinationItem.VaccinationName;
+            currentVaccinationItem.ModifiedBy = otherVaccinationItem.ModifiedBy;
+            currentVaccinationItem.ModifiedTime = DateTime.UtcNow;
 
         }
 
@@ -32,6 +35,10 @@ namespace KinaUna.Data.Extensions
         {
             currentVaccinationItem.AccessLevel = otherVaccinationItem.AccessLevel;
             currentVaccinationItem.Author = otherVaccinationItem.Author;
+            currentVaccinationItem.CreatedBy = otherVaccinationItem.CreatedBy;
+            currentVaccinationItem.CreatedTime = DateTime.UtcNow;
+            currentVaccinationItem.ModifiedBy = otherVaccinationItem.CreatedBy;
+            currentVaccinationItem.ModifiedTime = DateTime.UtcNow;
             currentVaccinationItem.Notes = otherVaccinationItem.Notes;
             currentVaccinationItem.VaccinationDate = otherVaccinationItem.VaccinationDate;
             currentVaccinationItem.ProgenyId = otherVaccinationItem.ProgenyId;

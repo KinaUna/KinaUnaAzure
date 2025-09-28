@@ -105,6 +105,9 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
+
             VocabularyItem vocabularyItem = await vocabularyService.AddVocabularyItem(value);
 
 
@@ -154,6 +157,8 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            value.ModifiedBy = User.GetUserId();
+
             vocabularyItem = await vocabularyService.UpdateVocabularyItem(value);
 
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(vocabularyItem.WordId.ToString(), (int)KinaUnaTypes.TimeLineType.Vocabulary);
@@ -197,6 +202,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 _ = await timelineService.DeleteTimeLineItem(timeLineItem);
             }
+
+            vocabularyItem.ModifiedBy = User.GetUserId();
 
             _ = await vocabularyService.DeleteVocabularyItem(vocabularyItem);
 

@@ -121,6 +121,9 @@ namespace KinaUnaProgenyApi.Controllers
                 value.PictureLink = Constants.ProfilePictureUrl;
             }
 
+            value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
+
             Friend friendItem = await friendService.AddFriend(value);
 
             TimeLineItem timeLineItem = new();
@@ -172,6 +175,8 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            value.ModifiedBy = User.GetUserId();
+            
             friendItem.CopyPropertiesForUpdate(value);
 
             friendItem = await friendService.UpdateFriend(friendItem);
@@ -222,7 +227,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 _ = await timelineService.DeleteTimeLineItem(timeLineItem);
             }
-            
+
+            friendItem.ModifiedBy = User.GetUserId();
+
             _ = await friendService.DeleteFriend(friendItem);
 
             if (timeLineItem == null) return NoContent();

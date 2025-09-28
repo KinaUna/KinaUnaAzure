@@ -107,6 +107,8 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             value.Author = User.GetUserId();
+            value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
 
             Skill skillItem = await skillService.AddSkill(value);
 
@@ -157,10 +159,10 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            value.ModifiedBy = User.GetUserId();
+
             skillItem = await skillService.UpdateSkill(value);
-
             
-
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(skillItem.SkillId.ToString(), (int)KinaUnaTypes.TimeLineType.Skill);
             if (timeLineItem == null) return Ok(skillItem);
 
@@ -202,6 +204,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 _ = await timelineService.DeleteTimeLineItem(timeLineItem);
             }
+
+            skillItem.ModifiedBy = User.GetUserId();
 
             _ = await skillService.DeleteSkill(skillItem);
 

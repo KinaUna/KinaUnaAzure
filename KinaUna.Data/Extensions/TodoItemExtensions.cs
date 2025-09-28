@@ -146,10 +146,10 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.Tags = otherTodoItem.Tags;
             currentTodoItem.Context = otherTodoItem.Context;
             currentTodoItem.Location = otherTodoItem.Location;
-            currentTodoItem.CreatedBy = null; // Set to null or assign current user if available
+            currentTodoItem.CreatedBy = otherTodoItem.CreatedBy;
             currentTodoItem.CreatedTime = DateTime.UtcNow;
             currentTodoItem.ModifiedTime = DateTime.UtcNow;
-            currentTodoItem.ModifiedBy = null; // Set to null or assign current user if available
+            currentTodoItem.ModifiedBy = otherTodoItem.CreatedBy; // Set to null or assign current user if available
             currentTodoItem.IsDeleted = otherTodoItem.IsDeleted;
         }
 
@@ -206,6 +206,8 @@ namespace KinaUna.Data.Extensions
                 ItemType = (int)KinaUnaTypes.TimeLineType.TodoItem,
                 CreatedBy = todoItem.CreatedBy,
                 CreatedTime = DateTime.UtcNow,
+                ModifiedBy = todoItem.CreatedBy,
+                ModifiedTime = DateTime.UtcNow,
                 ProgenyTime = progenyTime
             };
 

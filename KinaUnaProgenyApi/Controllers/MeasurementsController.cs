@@ -106,6 +106,8 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             value.Author = User.GetUserId();
+            value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
 
             Measurement measurementItem = await measurementService.AddMeasurement(value);
 
@@ -155,6 +157,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
+            value.ModifiedBy = User.GetUserId();
 
             measurementItem = await measurementService.UpdateMeasurement(value);
 
@@ -199,6 +202,8 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     _ = await timelineService.DeleteTimeLineItem(timeLineItem);
                 }
+
+                measurementItem.ModifiedBy = User.GetUserId();
 
                 _ = await measurementService.DeleteMeasurement(measurementItem);
 

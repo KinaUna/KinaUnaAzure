@@ -17,6 +17,8 @@ namespace KinaUna.Data.Extensions
         {
             currentFriend.AccessLevel = otherFriend.AccessLevel;
             currentFriend.Author = otherFriend.Author;
+            currentFriend.ModifiedBy = otherFriend.ModifiedBy;
+            currentFriend.ModifiedTime = DateTime.UtcNow;
             currentFriend.Context = otherFriend.Context;
             currentFriend.Name = otherFriend.Name;
             currentFriend.Type = otherFriend.Type;
@@ -41,6 +43,10 @@ namespace KinaUna.Data.Extensions
         {
             currentFriend.AccessLevel = otherFriend.AccessLevel;
             currentFriend.Author = otherFriend.Author;
+            currentFriend.CreatedBy = otherFriend.CreatedBy;
+            currentFriend.CreatedTime = DateTime.UtcNow;
+            currentFriend.ModifiedBy = otherFriend.CreatedBy;
+            currentFriend.ModifiedTime = DateTime.UtcNow;
             currentFriend.Context = otherFriend.Context;
             currentFriend.Name = otherFriend.Name;
             currentFriend.Type = otherFriend.Type;

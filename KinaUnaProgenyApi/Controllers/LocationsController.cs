@@ -112,6 +112,8 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             value.Author = User.GetUserId();
+            value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
 
             Location location = await locationService.AddLocation(value);
 
@@ -158,6 +160,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
+
+            location.ModifiedBy = User.GetUserId();
 
             location = await locationService.UpdateLocation(value);
 
@@ -206,6 +210,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 _ = await timelineService.DeleteTimeLineItem(timeLineItem);
             }
+
+            location.ModifiedBy = User.GetUserId();
 
             _ = await locationService.DeleteLocation(location);
 

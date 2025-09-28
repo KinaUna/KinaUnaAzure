@@ -129,6 +129,7 @@ namespace KinaUnaProgenyApi.Controllers
                     value.AddressIdNumber = value.Address.AddressId;
                 }
             }
+            value.CreatedBy = User.GetUserId();
 
             Contact contactItem = await contactService.AddContact(value);
 
@@ -181,6 +182,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 value.PictureLink = Constants.ProfilePictureUrl;
             }
+
+            value.ModifiedBy = User.GetUserId();
 
             contactItem.CopyPropertiesForUpdate(value);
 
@@ -267,6 +270,8 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
             
+            contactItem.ModifiedBy = User.GetUserId();
+
             _ = await contactService.DeleteContact(contactItem);
 
             contactItem.Author = User.GetUserId();

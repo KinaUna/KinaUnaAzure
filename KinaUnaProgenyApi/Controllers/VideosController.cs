@@ -451,15 +451,15 @@ namespace KinaUnaProgenyApi.Controllers
         /// Adds a new Video to the database.
         /// Also adds a new CommentThread for the Video, a corresponding TimeLineItem and sends Notifications to users.
         /// </summary>
-        /// <param name="model">The Video to add.</param>
+        /// <param name="value">The Video to add.</param>
         /// <returns>The added Video.</returns>
         // POST api/videos
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Video model)
+        public async Task<IActionResult> Post([FromBody] Video value)
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(model.ProgenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(value.ProgenyId, userEmail);
 
             if (userAccess == null || userAccess.AccessLevel > 0)
             {
@@ -467,24 +467,28 @@ namespace KinaUnaProgenyApi.Controllers
             }
             
             CommentThread commentThread = await commentsService.AddCommentThread();
-            model.CommentThreadNumber = commentThread.Id;
+            value.CommentThreadNumber = commentThread.Id;
+            value.CreatedBy = User.GetUserId();
+            value.CreatedTime = DateTime.UtcNow;
+            value.ModifiedBy = User.GetUserId();
+            value.ModifiedTime = DateTime.UtcNow;
 
-            model = await videosService.AddVideo(model);
-            await videosService.SetVideoInCache(model.VideoId);
-            await commentsService.SetCommentsList(model.CommentThreadNumber);
+            value = await videosService.AddVideo(value);
+            await videosService.SetVideoInCache(value.VideoId);
+            await commentsService.SetCommentsList(value.CommentThreadNumber);
 
-            Progeny progeny = await progenyService.GetProgeny(model.ProgenyId);
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
             string notificationTitle = "New Video added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new video for " + progeny.NickName;
 
             TimeLineItem timeLineItem = new();
-            timeLineItem.CopyVideoPropertiesForAdd(model);
+            timeLineItem.CopyVideoPropertiesForAdd(value);
             _ = await timelineService.AddTimeLineItem(timeLineItem);
 
             await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendVideoNotification(model, userInfo, notificationTitle);
-            return Ok(model);
+            await webNotificationsService.SendVideoNotification(value, userInfo, notificationTitle);
+            return Ok(value);
         }
 
         /// <summary>
@@ -524,7 +528,8 @@ namespace KinaUnaProgenyApi.Controllers
             video.Longtitude = value.Longtitude;
             video.Latitude = value.Latitude;
             video.Altitude = value.Altitude;
-
+            video.ModifiedBy = User.GetUserId();
+            video.ModifiedTime = DateTime.UtcNow;
             video = await videosService.UpdateVideo(video);
 
             await videosService.SetVideoInCache(video.VideoId);
@@ -582,6 +587,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 _ = await timelineService.DeleteTimeLineItem(existingTimeLineItem);
             }
+
+            video.ModifiedBy = User.GetUserId();
+            video.ModifiedTime = DateTime.UtcNow;
 
             _ = await videosService.DeleteVideo(video);
             await videosService.RemoveVideoFromCache(video.VideoId, video.ProgenyId);

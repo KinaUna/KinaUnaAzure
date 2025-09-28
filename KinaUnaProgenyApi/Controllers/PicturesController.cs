@@ -499,6 +499,8 @@ namespace KinaUnaProgenyApi.Controllers
             model.CommentThreadNumber = commentThread.Id;
 
             model.Author = User.GetUserId();
+            model.CreatedBy = User.GetUserId();
+            model.ModifiedBy = User.GetUserId();
 
             model = await picturesService.AddPicture(model);
 
@@ -545,6 +547,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
+
+            value.ModifiedBy = User.GetUserId();
 
             picture = await picturesService.UpdatePicture(value);
 
@@ -608,6 +612,8 @@ namespace KinaUnaProgenyApi.Controllers
                 await timelineService.DeleteTimeLineItem(timeLineItem);
             }
             
+            picture.ModifiedBy = User.GetUserId();
+
             await picturesService.DeletePicture(picture);
             await picturesService.RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
 

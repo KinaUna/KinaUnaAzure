@@ -23,6 +23,8 @@ namespace KinaUna.Data.Extensions
             currentMeasurement.Height = otherMeasurement.Height;
             currentMeasurement.MeasurementNumber = otherMeasurement.MeasurementNumber;
             currentMeasurement.Weight = otherMeasurement.Weight;
+            currentMeasurement.ModifiedBy = otherMeasurement.ModifiedBy;
+            currentMeasurement.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -34,6 +36,10 @@ namespace KinaUna.Data.Extensions
         {
             currentMeasurement.ProgenyId = otherMeasurement.ProgenyId;
             currentMeasurement.CreatedDate = DateTime.UtcNow;
+            currentMeasurement.CreatedBy = otherMeasurement.CreatedBy;
+            currentMeasurement.CreatedTime = DateTime.UtcNow;
+            currentMeasurement.ModifiedBy = otherMeasurement.CreatedBy;
+            currentMeasurement.ModifiedTime = DateTime.UtcNow;
             currentMeasurement.Date = otherMeasurement.Date;
             currentMeasurement.Height = otherMeasurement.Height;
             currentMeasurement.Weight = otherMeasurement.Weight;

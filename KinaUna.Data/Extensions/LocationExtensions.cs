@@ -17,6 +17,8 @@ namespace KinaUna.Data.Extensions
         {
             currentLocation.AccessLevel = otherLocation.AccessLevel;
             currentLocation.Author = otherLocation.Author;
+            currentLocation.ModifiedBy = otherLocation.ModifiedBy;
+            currentLocation.ModifiedTime = DateTime.UtcNow;
             currentLocation.City = otherLocation.City;
             currentLocation.Country = otherLocation.Country;
             currentLocation.County = otherLocation.County;
@@ -44,6 +46,10 @@ namespace KinaUna.Data.Extensions
         {
             currentLocation.AccessLevel = otherLocation.AccessLevel;
             currentLocation.Author = otherLocation.Author;
+            currentLocation.CreatedBy = otherLocation.CreatedBy;
+            currentLocation.CreatedTime = DateTime.UtcNow;
+            currentLocation.ModifiedBy = otherLocation.CreatedBy;
+            currentLocation.ModifiedTime = DateTime.UtcNow;
             currentLocation.City = otherLocation.City;
             currentLocation.Country = otherLocation.Country;
             currentLocation.County = otherLocation.County;

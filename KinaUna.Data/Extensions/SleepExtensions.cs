@@ -24,6 +24,8 @@ namespace KinaUna.Data.Extensions
             currentSleepItem.SleepNumber = otherSleepItem.SleepNumber;
             currentSleepItem.StartString = otherSleepItem.StartString;
             currentSleepItem.EndString = otherSleepItem.EndString;
+            currentSleepItem.ModifiedBy = otherSleepItem.ModifiedBy;
+            currentSleepItem.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -35,6 +37,10 @@ namespace KinaUna.Data.Extensions
         {
             currentSleepItem.AccessLevel = otherSleepItem.AccessLevel;
             currentSleepItem.Author = otherSleepItem.Author;
+            currentSleepItem.CreatedBy = otherSleepItem.CreatedBy;
+            currentSleepItem.CreatedTime = DateTime.UtcNow;
+            currentSleepItem.ModifiedBy = otherSleepItem.CreatedBy;
+            currentSleepItem.ModifiedTime = DateTime.UtcNow;
             currentSleepItem.SleepNotes = otherSleepItem.SleepNotes;
             currentSleepItem.SleepRating = otherSleepItem.SleepRating;
             currentSleepItem.ProgenyId = otherSleepItem.ProgenyId;

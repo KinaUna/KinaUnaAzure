@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Models;
+﻿using System;
+using KinaUna.Data.Models;
 
 namespace KinaUna.Data.Extensions
 {
@@ -23,6 +24,8 @@ namespace KinaUna.Data.Extensions
             currentNote.Owner = otherNote.Owner;
             currentNote.Title = otherNote.Title;
             currentNote.Progeny = otherNote.Progeny;
+            currentNote.ModifiedBy = otherNote.ModifiedBy;
+            currentNote.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -34,6 +37,10 @@ namespace KinaUna.Data.Extensions
         {
             currentNote.AccessLevel = otherNote.AccessLevel;
             currentNote.Owner = otherNote.Owner;
+            currentNote.CreatedBy = otherNote.CreatedBy;
+            currentNote.CreatedTime = DateTime.UtcNow;
+            currentNote.ModifiedBy = otherNote.CreatedBy;
+            currentNote.ModifiedTime = DateTime.UtcNow;
             currentNote.Content = otherNote.Content;
             currentNote.Category = otherNote.Category;
             currentNote.ProgenyId = otherNote.ProgenyId;

@@ -17,6 +17,8 @@ namespace KinaUna.Data.Extensions
         {
             currentSkillItem.AccessLevel = otherSkillItem.AccessLevel;
             currentSkillItem.Author = otherSkillItem.Author;
+            currentSkillItem.ModifiedBy = otherSkillItem.ModifiedBy;
+            currentSkillItem.ModifiedTime = DateTime.UtcNow;
             currentSkillItem.Description = otherSkillItem.Description;
             currentSkillItem.Category = otherSkillItem.Category;
             currentSkillItem.Name = otherSkillItem.Name;
@@ -34,6 +36,10 @@ namespace KinaUna.Data.Extensions
         {
             currentSkillItem.AccessLevel = otherSkillItem.AccessLevel;
             currentSkillItem.Author = otherSkillItem.Author;
+            currentSkillItem.CreatedBy = otherSkillItem.CreatedBy;
+            currentSkillItem.CreatedTime = DateTime.UtcNow;
+            currentSkillItem.ModifiedBy = otherSkillItem.CreatedBy;
+            currentSkillItem.ModifiedTime = DateTime.UtcNow;
             currentSkillItem.Category = otherSkillItem.Category;
             currentSkillItem.Name = otherSkillItem.Name;
             currentSkillItem.ProgenyId = otherSkillItem.ProgenyId;

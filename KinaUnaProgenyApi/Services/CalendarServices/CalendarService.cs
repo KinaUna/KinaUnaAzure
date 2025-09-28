@@ -74,6 +74,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             {
                 calendarItemToAdd.UId = Guid.NewGuid().ToString();
             }
+
             _ = _context.CalendarDb.Add(calendarItemToAdd);
             _ = await _context.SaveChangesAsync();
 

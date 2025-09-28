@@ -17,6 +17,8 @@ namespace KinaUna.Data.Extensions
         {
             currentTimeLineItem.AccessLevel = otherTimeLineItem.AccessLevel;
             currentTimeLineItem.ProgenyTime = otherTimeLineItem.ProgenyTime;
+            currentTimeLineItem.ModifiedBy = otherTimeLineItem.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -29,7 +31,9 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.ProgenyId = otherTimeLineItem.ProgenyId;
             currentTimeLineItem.AccessLevel = otherTimeLineItem.AccessLevel;
             currentTimeLineItem.CreatedBy = otherTimeLineItem.CreatedBy;
-            currentTimeLineItem.CreatedTime = otherTimeLineItem.CreatedTime;
+            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ModifiedBy = otherTimeLineItem.CreatedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             currentTimeLineItem.ItemId = otherTimeLineItem.ItemId;
             currentTimeLineItem.ItemType = otherTimeLineItem.ItemType;
             currentTimeLineItem.ProgenyTime = otherTimeLineItem.ProgenyTime;
@@ -47,6 +51,8 @@ namespace KinaUna.Data.Extensions
 
             currentTimeLineItem.ProgenyTime = calendarItem.StartTime.Value;
             currentTimeLineItem.AccessLevel = calendarItem.AccessLevel;
+            currentTimeLineItem.ModifiedBy = calendarItem.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             return true;
 
         }
@@ -114,7 +120,9 @@ namespace KinaUna.Data.Extensions
 
             currentTimeLineItem.ProgenyTime = contactItem.DateAdded.Value;
             currentTimeLineItem.AccessLevel = contactItem.AccessLevel;
-                
+            currentTimeLineItem.ModifiedBy = contactItem.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
+
             return true;
 
         }
@@ -130,8 +138,10 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.AccessLevel = contactItem.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Contact;
             currentTimeLineItem.ItemId = contactItem.ContactId.ToString();
-            currentTimeLineItem.CreatedBy = contactItem.Author;
+            currentTimeLineItem.CreatedBy = contactItem.CreatedBy;
             currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ModifiedBy = contactItem.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             if (contactItem.DateAdded.HasValue)
             {
                 currentTimeLineItem.ProgenyTime = contactItem.DateAdded.Value;
@@ -154,6 +164,8 @@ namespace KinaUna.Data.Extensions
 
             currentTimeLineItem.ProgenyTime = friendItem.FriendSince.Value;
             currentTimeLineItem.AccessLevel = friendItem.AccessLevel;
+            currentTimeLineItem.ModifiedBy = friendItem.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
 
             return true;
 
@@ -170,9 +182,11 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.AccessLevel = friendItem.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Friend;
             currentTimeLineItem.ItemId = friendItem.FriendId.ToString();
-            currentTimeLineItem.CreatedBy = friendItem.Author;
+            currentTimeLineItem.CreatedBy = friendItem.CreatedBy;
             currentTimeLineItem.CreatedTime = DateTime.UtcNow;
-            
+            currentTimeLineItem.ModifiedBy = friendItem.CreatedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
+
             if (friendItem.FriendSince != null)
             {
                 currentTimeLineItem.ProgenyTime = friendItem.FriendSince.Value;
@@ -196,6 +210,8 @@ namespace KinaUna.Data.Extensions
             }
 
             currentTimeLineItem.AccessLevel = location.AccessLevel;
+            currentTimeLineItem.ModifiedBy = location.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -209,8 +225,10 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.AccessLevel = location.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Location;
             currentTimeLineItem.ItemId = location.LocationId.ToString();
-            currentTimeLineItem.CreatedBy = location.Author;
+            currentTimeLineItem.CreatedBy = location.CreatedBy;
             currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ModifiedBy = location.CreatedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             if (location.Date.HasValue)
             {
                 currentTimeLineItem.ProgenyTime = location.Date.Value;
@@ -232,8 +250,10 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.AccessLevel = measurement.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Measurement;
             currentTimeLineItem.ItemId = measurement.MeasurementId.ToString();
-            currentTimeLineItem.CreatedBy = measurement.Author;
+            currentTimeLineItem.CreatedBy = measurement.CreatedBy;
             currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ModifiedBy = measurement.CreatedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             currentTimeLineItem.ProgenyTime = measurement.Date;
         }
 
@@ -246,6 +266,8 @@ namespace KinaUna.Data.Extensions
         {
             currentTimeLineItem.ProgenyTime = measurement.Date;
             currentTimeLineItem.AccessLevel = measurement.AccessLevel;
+            currentTimeLineItem.ModifiedBy = measurement.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -259,9 +281,11 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.AccessLevel = note.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Note;
             currentTimeLineItem.ItemId = note.NoteId.ToString();
-            currentTimeLineItem.CreatedBy = note.Owner;
+            currentTimeLineItem.CreatedBy = note.CreatedBy;
             currentTimeLineItem.CreatedTime = note.CreatedDate;
             currentTimeLineItem.ProgenyTime = note.CreatedDate;
+            currentTimeLineItem.ModifiedBy = note.CreatedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -273,6 +297,8 @@ namespace KinaUna.Data.Extensions
         {
             currentTimeLineItem.ProgenyTime = note.CreatedDate;
             currentTimeLineItem.AccessLevel = note.AccessLevel;
+            currentTimeLineItem.ModifiedBy = note.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -291,8 +317,10 @@ namespace KinaUna.Data.Extensions
                 currentTimeLineItem.ProgenyTime = picture.PictureTime.Value;
             }
 
-            currentTimeLineItem.CreatedBy = picture.Author;
+            currentTimeLineItem.CreatedBy = picture.CreatedBy;
             currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ModifiedBy = picture.CreatedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
 
         }
 
@@ -304,6 +332,8 @@ namespace KinaUna.Data.Extensions
         public static void CopyPicturePropertiesForUpdate(this TimeLineItem currentTimeLineItem, Picture picture)
         {
             currentTimeLineItem.AccessLevel = picture.AccessLevel;
+            currentTimeLineItem.ModifiedBy = picture.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             if (picture.PictureTime.HasValue)
             {
                 currentTimeLineItem.ProgenyTime = picture.PictureTime.Value;
@@ -326,8 +356,10 @@ namespace KinaUna.Data.Extensions
                 currentTimeLineItem.ProgenyTime = video.VideoTime.Value;
             }
 
-            currentTimeLineItem.CreatedBy = video.Author;
+            currentTimeLineItem.CreatedBy = video.CreatedBy;
             currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ModifiedBy = video.CreatedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
 
         }
 
@@ -343,6 +375,9 @@ namespace KinaUna.Data.Extensions
             {
                 currentTimeLineItem.ProgenyTime = video.VideoTime.Value;
             }
+
+            currentTimeLineItem.ModifiedBy = video.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -356,8 +391,10 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.AccessLevel = skill.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Skill;
             currentTimeLineItem.ItemId = skill.SkillId.ToString();
-            currentTimeLineItem.CreatedBy = skill.Author;
+            currentTimeLineItem.CreatedBy = skill.CreatedBy;
             currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ModifiedBy = skill.CreatedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             if (skill.SkillFirstObservation != null)
             {
                 currentTimeLineItem.ProgenyTime = skill.SkillFirstObservation.Value;
@@ -385,6 +422,8 @@ namespace KinaUna.Data.Extensions
             }
 
             currentTimeLineItem.AccessLevel = skill.AccessLevel;
+            currentTimeLineItem.ModifiedBy = skill.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -396,6 +435,8 @@ namespace KinaUna.Data.Extensions
         {
             currentTimeLineItem.ProgenyTime = sleep.SleepStart;
             currentTimeLineItem.AccessLevel = sleep.AccessLevel;
+            currentTimeLineItem.ModifiedBy = sleep.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -409,8 +450,10 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.AccessLevel = sleep.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Sleep;
             currentTimeLineItem.ItemId = sleep.SleepId.ToString();
-            currentTimeLineItem.CreatedBy = sleep.Author;
+            currentTimeLineItem.CreatedBy = sleep.CreatedBy;
             currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ModifiedBy = sleep.CreatedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             currentTimeLineItem.ProgenyTime = sleep.SleepStart;
         }
 
@@ -425,8 +468,10 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.AccessLevel = vaccination.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Vaccination;
             currentTimeLineItem.ItemId = vaccination.VaccinationId.ToString();
-            currentTimeLineItem.CreatedBy = vaccination.Author;
+            currentTimeLineItem.CreatedBy = vaccination.CreatedBy;
             currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ModifiedBy = vaccination.CreatedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             currentTimeLineItem.ProgenyTime = vaccination.VaccinationDate;
         }
 
@@ -439,6 +484,8 @@ namespace KinaUna.Data.Extensions
         {
             currentTimeLineItem.AccessLevel = vaccination.AccessLevel;
             currentTimeLineItem.ProgenyTime = vaccination.VaccinationDate;
+            currentTimeLineItem.ModifiedBy = vaccination.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -452,8 +499,10 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.AccessLevel = vocabularyItem.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Vocabulary;
             currentTimeLineItem.ItemId = vocabularyItem.WordId.ToString();
-            currentTimeLineItem.CreatedBy = vocabularyItem.Author;
+            currentTimeLineItem.CreatedBy = vocabularyItem.CreatedBy;
             currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ModifiedBy = vocabularyItem.CreatedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             if (vocabularyItem.Date != null)
             {
                 currentTimeLineItem.ProgenyTime = vocabularyItem.Date.Value;
@@ -472,6 +521,8 @@ namespace KinaUna.Data.Extensions
         public static void CopyVocabularyItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, VocabularyItem vocabularyItem)
         {
             currentTimeLineItem.AccessLevel = vocabularyItem.AccessLevel;
+            currentTimeLineItem.ModifiedBy = vocabularyItem.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             if (vocabularyItem.Date.HasValue)
             {
                 currentTimeLineItem.ProgenyTime = vocabularyItem.Date.Value;
@@ -501,6 +552,8 @@ namespace KinaUna.Data.Extensions
             }
             currentTimeLineItem.ProgenyTime = progenyTime;
             currentTimeLineItem.AccessLevel = todoItem.AccessLevel;
+            currentTimeLineItem.ModifiedBy = todoItem.ModifiedBy;
+            currentTimeLineItem.ModifiedTime = DateTime.UtcNow;
             return true;
 
         }

@@ -113,6 +113,8 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             value.Author = User.GetUserId();
+            value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
 
             Vaccination vaccinationItem = await vaccinationService.AddVaccination(value);
 
@@ -163,6 +165,8 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            value.ModifiedBy = User.GetUserId();
+
             vaccinationItem = await vaccinationService.UpdateVaccination(value);
 
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(vaccinationItem.VaccinationId.ToString(), (int)KinaUnaTypes.TimeLineType.Vaccination);
@@ -206,6 +210,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 _ = await timelineService.DeleteTimeLineItem(timeLineItem);
             }
+
+            vaccinationItem.ModifiedBy = User.GetUserId();
 
             _ = await vaccinationService.DeleteVaccination(vaccinationItem);
 

@@ -111,6 +111,9 @@ namespace KinaUnaProgenyApi.Controllers
 
             value.Author = User.GetUserId();
 
+            value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
+
             Sleep sleepItem = await sleepService.AddSleep(value);
 
             TimeLineItem timeLineItem = new();
@@ -160,6 +163,8 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            value.ModifiedBy = User.GetUserId();
+
             sleepItem = await sleepService.UpdateSleep(value);
 
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(sleepItem.SleepId.ToString(), (int)KinaUnaTypes.TimeLineType.Sleep);
@@ -204,6 +209,8 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     _ = await timelineService.DeleteTimeLineItem(timeLineItem);
                 }
+
+                sleepItem.ModifiedBy = User.GetUserId();
 
                 _ = await sleepService.DeleteSleep(sleepItem);
 

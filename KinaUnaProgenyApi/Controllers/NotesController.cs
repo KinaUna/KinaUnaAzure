@@ -117,6 +117,9 @@ namespace KinaUnaProgenyApi.Controllers
 
             value.Owner = User.GetUserId();
 
+            value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
+
             Note noteItem = await noteService.AddNote(value);
 
             TimeLineItem timeLineItem = new();
@@ -164,6 +167,8 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            value.ModifiedBy = User.GetUserId();
+
             noteItem = await noteService.UpdateNote(value);
 
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note);
@@ -206,6 +211,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 _ = await timelineService.DeleteTimeLineItem(timeLineItem);
             }
+
+            noteItem.ModifiedBy = User.GetUserId();
 
             _ = await noteService.DeleteNote(noteItem);
 
