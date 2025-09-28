@@ -102,6 +102,8 @@ namespace KinaUnaProgenyApi.Controllers
                 progeny.PictureLink = await progenyService.ResizeImage(progeny.PictureLink);
             }
 
+            progeny.CreatedBy = User.GetUserId();
+
             progeny = await progenyService.AddProgeny(progeny);
 
             if (progeny.Admins.Contains(','))
@@ -214,6 +216,7 @@ namespace KinaUnaProgenyApi.Controllers
             progeny.NickName = value.NickName;
             progeny.TimeZone = value.TimeZone;
             progeny.PictureLink = value.PictureLink;
+            progeny.ModifiedBy = User.GetUserId();
 
             progeny = await progenyService.UpdateProgeny(progeny);
 
@@ -307,7 +310,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return BadRequest();
             }
-
+            progenyInfo.ModifiedBy = User.GetUserId();
             ProgenyInfo updatedProgenyInfo = await progenyService.UpdateProgenyInfo(progenyInfo);
 
             return Ok(updatedProgenyInfo);

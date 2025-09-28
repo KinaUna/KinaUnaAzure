@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
@@ -23,6 +24,18 @@ namespace KinaUna.Data.Models
         public string Website { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that last modified the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string ModifiedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the object was last modified.
+        /// </summary>
+        public DateTime ModifiedTime { get; set; }
+
         [NotMapped] public Address Address { get; set; } = new();
+
     }
 }

@@ -72,6 +72,10 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The added Progeny.</returns>
         public async Task<Progeny> AddProgeny(Progeny progeny)
         {
+            progeny.ModifiedBy = progeny.CreatedBy;
+            progeny.ModifiedTime = DateTime.UtcNow;
+            progeny.CreatedTime = DateTime.UtcNow;
+
             _ = _context.ProgenyDb.Add(progeny);
             _ = await _context.SaveChangesAsync();
 
@@ -106,6 +110,9 @@ namespace KinaUnaProgenyApi.Services
             {
                 progenyToUpdate.PictureLink = await ResizeImage(progenyToUpdate.PictureLink);
             }
+
+            progenyToUpdate.ModifiedBy = progeny.ModifiedBy;
+            progenyToUpdate.ModifiedTime = DateTime.UtcNow;
 
             _ = _context.ProgenyDb.Update(progenyToUpdate);
             _ = await _context.SaveChangesAsync();
@@ -384,6 +391,8 @@ namespace KinaUnaProgenyApi.Services
             progenyInfoToUpdate.MobileNumber = progenyInfo.MobileNumber ?? string.Empty;
             progenyInfoToUpdate.Notes = progenyInfo.Notes ?? string.Empty;
             progenyInfoToUpdate.Website = progenyInfo.Website ?? string.Empty;
+            progenyInfoToUpdate.ModifiedBy = progenyInfo.ModifiedBy;
+            progenyInfoToUpdate.ModifiedTime = DateTime.UtcNow;
 
             _ = _context.ProgenyInfoDb.Update(progenyInfoToUpdate);
             _ = await _context.SaveChangesAsync();
