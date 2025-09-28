@@ -16,16 +16,38 @@ namespace KinaUna.Data.Models
         public string Name { get; set; }
 
         [MaxLength(256)]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string Category { get; set; }
+        public string Category { get; set; } = string.Empty;
         public DateTime? SkillFirstObservation { get; set; }
-        public DateTime SkillAddedDate { get; set; }
-
+        public DateTime SkillAddedDate { get; set; } // Todo: Replace with CreatedTime?
+        
         [MaxLength(256)]
-        public string Author { get; set; }
+        public string Author { get; set; } = string.Empty; // Todo: Replace with CreatedBy?
         public int ProgenyId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that created the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string CreatedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the entity was created.
+        /// </summary>
+        public DateTime CreatedTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that last modified the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string ModifiedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the object was last modified.
+        /// </summary>
+        public DateTime ModifiedTime { get; set; }
         [NotMapped]
         public Progeny Progeny { get; set; }
 

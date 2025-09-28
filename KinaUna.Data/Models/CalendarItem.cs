@@ -72,6 +72,28 @@ namespace KinaUna.Data.Models
         /// 0 = No recurrence.
         /// </summary>
         public int RecurrenceRuleId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that created the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string CreatedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the entity was created.
+        /// </summary>
+        public DateTime CreatedTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that last modified the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string ModifiedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the object was last modified.
+        /// </summary>
+        public DateTime ModifiedTime { get; set; }
 
         /// <summary>
         /// String representation of the start time.

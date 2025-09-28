@@ -35,7 +35,7 @@ namespace KinaUna.Data.Models
         public string Location { get; set; }
 
         [MaxLength(128)]
-        public string Longtitude { get; set; }
+        public string Longtitude { get; set; } // Todo: Spell check - should be Longitude.
 
         [MaxLength(128)]
         public string Latitude { get; set; }
@@ -49,9 +49,31 @@ namespace KinaUna.Data.Models
         public string Owners { get; set; } // Comma separated list of emails.
 
         [MaxLength(256)]
-        public string Author { get; set; }
+        public string Author { get; set; } = string.Empty; // Todo: Replace with CreatedBy?
         public int AccessLevel { get; set; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUsers, 4= public.
         public int CommentThreadNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that created the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string CreatedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the entity was created.
+        /// </summary>
+        public DateTime CreatedTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that last modified the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string ModifiedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the object was last modified.
+        /// </summary>
+        public DateTime ModifiedTime { get; set; }
 
         [NotMapped] [JsonIgnore]
         public Progeny Progeny { get; set; }

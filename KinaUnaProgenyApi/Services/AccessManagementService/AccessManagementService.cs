@@ -14,7 +14,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     /// Service for managing access permissions for users and groups to various resources such as progeny, families, and timeline items.
     /// </summary>
     /// <param name="progenyDbContext"></param>
-    public class AccessManagementService(ProgenyDbContext progenyDbContext, IPermissionAuditLogsService permissionAuditLogService) : IAccessManagementService
+    public class AccessManagementService(ProgenyDbContext progenyDbContext, MediaDbContext mediaDbContext, IPermissionAuditLogsService permissionAuditLogService) : IAccessManagementService
     {
         /// <summary>
         /// Determines whether a user has the specified access level for a given timeline item (e.g., Note, TodoItem, Sleep, etc.).
@@ -31,6 +31,24 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return false;
             }
 
+            // Special cases, Creator only and Private.
+            if (requiredLevel == PermissionLevel.CreatorOnly)
+            {
+                if (await HasCreatorOnlyPermission(itemType, itemId, userInfo))
+                {
+                    return true;
+                }
+            }
+
+            if (requiredLevel == PermissionLevel.Private)
+            {
+                if (await HasPrivatePermission(itemType, itemId, userInfo))
+                {
+                    return true;
+                }
+            }
+
+            // Check direct user permissions.
             TimelineItemPermission timelineItemPermission = await progenyDbContext.TimelineItemPermissionsDb
                 .AsNoTracking()
                 .SingleOrDefaultAsync(tp => tp.UserId == userInfo.UserId && tp.TimelineType == itemType && tp.ItemId == itemId);
@@ -38,7 +56,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 return true;
             }
-            
+
+            // Check group permissions.
             List<TimelineItemPermission> groupPermissions = await progenyDbContext.TimelineItemPermissionsDb
                 .AsNoTracking()
                 .Where(tp => tp.GroupId > 0 && tp.TimelineType == itemType && tp.ItemId == itemId)
@@ -55,6 +74,290 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             return highestGroupPermission >= requiredLevel;
+        }
+
+        private async Task<bool> HasCreatorOnlyPermission(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo userInfo)
+        {
+            TimeLineItem item = await progenyDbContext.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(ti => ti.ItemId == itemId.ToString() && ti.ItemType == (int)itemType);
+            if (item != null )
+            {
+                if (item.CreatedBy != userInfo.UserId)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // Get the item from the specific table.
+                switch (itemType)
+                {
+                    case KinaUnaTypes.TimeLineType.Calendar:
+                        CalendarItem calendarItem = await progenyDbContext.CalendarDb.AsNoTracking().SingleOrDefaultAsync(c => c.EventId == itemId);
+                        if (calendarItem == null || calendarItem.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+                        break;
+                    case KinaUnaTypes.TimeLineType.Contact:
+                        Contact contact = await progenyDbContext.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == itemId);
+                        if (contact == null || contact.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+                        break;
+                    case KinaUnaTypes.TimeLineType.Friend:
+                        Friend friend = await progenyDbContext.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == itemId);
+                        if (friend == null || friend.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+                        break;
+                    case KinaUnaTypes.TimeLineType.KanbanBoard:
+                        KanbanBoard kanbanBoard = await progenyDbContext.KanbanBoardsDb.AsNoTracking().SingleOrDefaultAsync(k => k.KanbanBoardId == itemId);
+                        if (kanbanBoard == null || kanbanBoard.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+                        break;
+                    case KinaUnaTypes.TimeLineType.KanbanItem:
+                        KanbanItem kanbanItem = await progenyDbContext.KanbanItemsDb.AsNoTracking().SingleOrDefaultAsync(ki => ki.KanbanItemId == itemId);
+                        if (kanbanItem == null || kanbanItem.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+                        break;
+                    case KinaUnaTypes.TimeLineType.Location:
+                        Location location = await progenyDbContext.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == itemId);
+                        if (location == null || location.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Measurement:
+                        Measurement measurement = await progenyDbContext.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == itemId);
+                        if (measurement == null || measurement.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Note:
+                        Note note = await progenyDbContext.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == itemId);
+                        if (note == null || note.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Photo:
+                        Picture picture = await mediaDbContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == itemId);
+                        if (picture == null || picture.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Sleep:
+                        Sleep sleep = await progenyDbContext.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == itemId);
+                        if (sleep == null || sleep.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Skill:
+                        Skill skill = await progenyDbContext.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == itemId);
+                        if (skill == null || skill.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.TodoItem:
+                        TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(ti => ti.TodoItemId == itemId);
+                        if (todoItem == null || todoItem.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    
+                    case KinaUnaTypes.TimeLineType.Video:
+                        Video video = await mediaDbContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == itemId);
+                        if (video == null || video.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Vaccination:
+                        Vaccination vaccination = await progenyDbContext.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == itemId);
+                        if (vaccination == null || vaccination.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Vocabulary:
+                        VocabularyItem vocabulary = await progenyDbContext.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(v => v.WordId == itemId);
+                        if (vocabulary == null || vocabulary.CreatedBy != userInfo.UserId)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    default:
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> HasPrivatePermission(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo userInfo)
+        {
+            Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.UserId == userInfo.UserId);
+            if (progeny == null)
+            {
+                return false;
+            }
+            TimeLineItem item = await progenyDbContext.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(ti => ti.ItemId == itemId.ToString() && ti.ItemType == (int)itemType);
+            if (item != null)
+            {
+                if (item.ProgenyId != progeny.Id)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // Get the item from the specific table.
+                switch (itemType)
+                {
+                    case KinaUnaTypes.TimeLineType.Calendar:
+                        CalendarItem calendarItem = await progenyDbContext.CalendarDb.AsNoTracking().SingleOrDefaultAsync(c => c.EventId == itemId);
+                        if (calendarItem == null || calendarItem.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+                        break;
+                    case KinaUnaTypes.TimeLineType.Contact:
+                        Contact contact = await progenyDbContext.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == itemId);
+                        if (contact == null || contact.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+                        break;
+                    case KinaUnaTypes.TimeLineType.Friend:
+                        Friend friend = await progenyDbContext.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == itemId);
+                        if (friend == null || friend.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+                        break;
+                    case KinaUnaTypes.TimeLineType.KanbanBoard:
+                        KanbanBoard kanbanBoard = await progenyDbContext.KanbanBoardsDb.AsNoTracking().SingleOrDefaultAsync(k => k.KanbanBoardId == itemId);
+                        if (kanbanBoard == null || kanbanBoard.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+                        break;
+                    case KinaUnaTypes.TimeLineType.KanbanItem:
+                        KanbanItem kanbanItem = await progenyDbContext.KanbanItemsDb.AsNoTracking().SingleOrDefaultAsync(ki => ki.KanbanItemId == itemId);
+                        kanbanItem.TodoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(ti => ti.TodoItemId == kanbanItem.TodoItemId);
+                        if (kanbanItem.TodoItem?.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+                        break;
+                    case KinaUnaTypes.TimeLineType.Location:
+                        Location location = await progenyDbContext.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == itemId);
+                        if (location == null || location.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Measurement:
+                        Measurement measurement = await progenyDbContext.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == itemId);
+                        if (measurement == null || measurement.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Note:
+                        Note note = await progenyDbContext.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == itemId);
+                        if (note == null || note.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Photo:
+                        Picture picture = await mediaDbContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == itemId);
+                        if (picture == null || picture.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Sleep:
+                        Sleep sleep = await progenyDbContext.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == itemId);
+                        if (sleep == null || sleep.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Skill:
+                        Skill skill = await progenyDbContext.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == itemId);
+                        if (skill == null || skill.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.TodoItem:
+                        TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(ti => ti.TodoItemId == itemId);
+                        if (todoItem == null || todoItem.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+
+                        break;
+
+                    case KinaUnaTypes.TimeLineType.Video:
+                        Video video = await mediaDbContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == itemId);
+                        if (video == null || video.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Vaccination:
+                        Vaccination vaccination = await progenyDbContext.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == itemId);
+                        if (vaccination == null || vaccination.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case KinaUnaTypes.TimeLineType.Vocabulary:
+                        VocabularyItem vocabulary = await progenyDbContext.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(v => v.WordId == itemId);
+                        if (vocabulary == null || vocabulary.ProgenyId != progeny.Id)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    default:
+                        return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
