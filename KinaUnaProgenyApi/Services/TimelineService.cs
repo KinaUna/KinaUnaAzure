@@ -471,7 +471,7 @@ namespace KinaUnaProgenyApi.Services
                 progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
                 allTimeLineItems.AddRange(progenyTimeLineItems);
 
-                List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(progenyId);
+                List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(progenyId, currentUserInfo);
                 foreach (CalendarItem calendarItem in calendarItems)
                 {
                     if (calendarItem.StartTime.HasValue)

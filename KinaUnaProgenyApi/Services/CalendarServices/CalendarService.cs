@@ -337,7 +337,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             if (start != null && end != null)
             {
                 calendarList = [.. calendarList.Where(c => c.StartTime >= start && c.StartTime <= end)];
-                List<CalendarItem> recurringEvents = await GetRecurringEventsForProgeny(progenyId, start.Value, end.Value, false);
+                List<CalendarItem> recurringEvents = await GetRecurringEventsForProgeny(progenyId, start.Value, end.Value, false, currentUserInfo);
                 calendarList.AddRange(recurringEvents);
             }
             
@@ -389,11 +389,11 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// <param name="start">DateTime with the start date. Results include this day.</param>
         /// <param name="end">DateTime with the end date. Results include this day.</param>
         /// <param name="includeOriginal">Include the original event in the list.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>List of CalendarItems</returns>
-        private async Task<List<CalendarItem>> GetRecurringEventsForProgeny(int progenyId, DateTime start, DateTime end, bool includeOriginal)
+        private async Task<List<CalendarItem>> GetRecurringEventsForProgeny(int progenyId, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)
         {
-            // Todo: Check permissions, when we have permissions set up for recurring events.
-            List<CalendarItem> recurringEvents = await _calendarRecurrencesService.GetRecurringEventsForProgeny(progenyId, start, end, includeOriginal);
+            List<CalendarItem> recurringEvents = await _calendarRecurrencesService.GetRecurringEventsForProgeny(progenyId, start, end, includeOriginal, currentUserInfo);
             return recurringEvents;
         }
 
@@ -402,10 +402,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// Only includes items after 1900.
         /// </summary>
         /// <param name="progenyId">The id of the Progeny to get items for.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of CalendarItems.</returns>
-        public async Task<List<CalendarItem>> GetRecurringCalendarItemsOnThisDay(int progenyId)
+        public async Task<List<CalendarItem>> GetRecurringCalendarItemsOnThisDay(int progenyId, UserInfo currentUserInfo)
         {
-            // Todo: Check permissions, when we have permissions set up for recurring events.
             List<CalendarItem> recurringEvents = [];
             List<RecurrenceRule> recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId).ToListAsync();
             if (recurrenceRules.Count == 0) return recurringEvents;
@@ -414,7 +414,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             for (int i = 1900; i < today.Year; i++)
             {
                 DateTime onThisDayDateTime = new(i, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc);
-                List<CalendarItem> itemsForYear = await GetRecurringEventsForProgeny(progenyId, onThisDayDateTime, onThisDayDateTime, false);
+                List<CalendarItem> itemsForYear = await GetRecurringEventsForProgeny(progenyId, onThisDayDateTime, onThisDayDateTime, false, currentUserInfo);
                 if (itemsForYear.Count > 0)
                 {
                     recurringEvents.AddRange(itemsForYear);
@@ -429,15 +429,15 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// Only includes items after 1900.
         /// </summary>
         /// <param name="progenyId">The id of the Progeny to get items for.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>List of CalendarItems.</returns>
-        public async Task<List<CalendarItem>> GetRecurringCalendarItemsLatestPosts(int progenyId)
+        public async Task<List<CalendarItem>> GetRecurringCalendarItemsLatestPosts(int progenyId, UserInfo currentUserInfo)
         {
-            // Todo: Check permissions, when we have permissions set up for recurring events.
             List<CalendarItem> recurringEvents = [];
             List<RecurrenceRule> recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId).ToListAsync();
             if (recurrenceRules.Count == 0) return recurringEvents;
             DateTime start = new(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            recurringEvents = await GetRecurringEventsForProgeny(progenyId, start, DateTime.UtcNow.Date, false);
+            recurringEvents = await GetRecurringEventsForProgeny(progenyId, start, DateTime.UtcNow.Date, false, currentUserInfo);
 
             return recurringEvents;
         }

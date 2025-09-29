@@ -63,7 +63,7 @@ namespace KinaUnaProgenyApi.Controllers
             List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id, currentUserInfo);
             timeLineList = [.. timeLineList.Where(t => t.ProgenyTime < DateTime.UtcNow)];
 
-            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id);
+            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id, currentUserInfo);
             foreach (CalendarItem calendarItem in calendarItems)
             {
                 if (calendarItem.StartTime.HasValue)
@@ -96,7 +96,7 @@ namespace KinaUnaProgenyApi.Controllers
                 progenyTimeLineList = [.. progenyTimeLineList.Where(t => t.ProgenyTime < DateTime.UtcNow)];
                 timeLineList.AddRange(progenyTimeLineList);
 
-                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(progenyId);
+                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(progenyId, currentUserInfo);
                 foreach (CalendarItem calendarItem in calendarItems)
                 {
                     if (calendarItem.StartTime.HasValue)
@@ -134,7 +134,7 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineList = [.. timeLineList
                 .Where(t => t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime)];
 
-            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id);
+            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id, currentUserInfo);
             foreach (CalendarItem calendarItem in calendarItems)
             {
                 if (calendarItem.StartTime.HasValue)
@@ -201,7 +201,7 @@ namespace KinaUnaProgenyApi.Controllers
                                      && t.ProgenyTime.Day == DateTime.UtcNow.Day)
                 ];
                 timeLineList.AddRange(progenyTimeLineList);
-                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsOnThisDay(progenyId);
+                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsOnThisDay(progenyId, currentUserInfo);
                 foreach (CalendarItem calendarItem in calendarItems)
                 {
                     if (calendarItem.StartTime.HasValue)
