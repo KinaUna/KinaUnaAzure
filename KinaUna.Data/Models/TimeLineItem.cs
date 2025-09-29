@@ -12,7 +12,8 @@ namespace KinaUna.Data.Models
     {
         [Key]
         public int TimeLineId { get; init; }
-        public int ProgenyId { get; set; }
+        public int ProgenyId { get; set; } = 0;
+        public int FamilyId { get; set; } = 0;
         public DateTime ProgenyTime { get; set; }
 
         /// <summary>
@@ -21,7 +22,7 @@ namespace KinaUna.Data.Models
         public DateTime CreatedTime { get; set; }
         public int ItemType { get; set; }
         [MaxLength(256)]
-        public string ItemId { get; set; }
+        public string ItemId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the identifier of the user or system that created the entity.

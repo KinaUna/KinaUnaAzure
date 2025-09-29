@@ -44,16 +44,12 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="id">The Id of the Progeny to get.</param>
         /// <param name="currentUserInfo">Optional UserInfo object for the current user, to check permissions.</param>
         /// <returns>The Progeny with the given Id. Null if the Progeny doesn't exist.</returns>
-        public async Task<Progeny> GetProgeny(int id, UserInfo currentUserInfo = null )
+        public async Task<Progeny> GetProgeny(int id, UserInfo currentUserInfo)
         {
-            // Todo: Remove nullable and null check when user permissions are implemented.
-            if (currentUserInfo != null)
+            if (!await _accessManagementService.HasProgenyPermission(id, currentUserInfo, PermissionLevel.View))
             {
-                if (!await _accessManagementService.HasProgenyPermission(id, currentUserInfo, PermissionLevel.View))
-                {
-                    // User doesn't have permissions to view this Progeny.
-                    return null;
-                }
+                // User doesn't have permissions to view this Progeny.
+                return null;
             }
 
             Progeny progeny = await GetProgenyFromCache(id);
@@ -69,17 +65,79 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new Progeny to the database and the cache.
         /// </summary>
         /// <param name="progeny">The Progeny to add.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added Progeny.</returns>
-        public async Task<Progeny> AddProgeny(Progeny progeny)
+        public async Task<Progeny> AddProgeny(Progeny progeny, UserInfo currentUserInfo)
         {
             progeny.ModifiedBy = progeny.CreatedBy;
             progeny.ModifiedTime = DateTime.UtcNow;
             progeny.CreatedTime = DateTime.UtcNow;
+            if (!string.IsNullOrEmpty(progeny.Email))
+            {
+                UserInfo progenyUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToLower() == progeny.Email.ToLower());
+                if (progenyUserInfo != null)
+                {
+                    progeny.UserId = progenyUserInfo.UserId;
+                }
+                else
+                {
+                    progeny.UserId = string.Empty;
+                }
+            }
 
             _ = _context.ProgenyDb.Add(progeny);
             _ = await _context.SaveChangesAsync();
 
             _ = await SetProgenyInCache(progeny.Id);
+
+            // Add permissions for the user creating the progeny, the admins and the progeny (if email is provided).
+            List<string> adminEmails = progeny.GetAdminsList();
+            foreach (string adminEmail in adminEmails)
+            {
+                // Skip if the admin email is the same as the progeny email, this will be handled below.
+                if (adminEmail.Equals(progeny.Email, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }
+
+                UserInfo adminsUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToLower() == adminEmail.ToLower());
+                
+                ProgenyPermission progenyPermission = new()
+                {
+                    ProgenyId = progeny.Id,
+                    UserId = adminsUserInfo?.UserId ?? string.Empty,
+                    Email = adminEmail,
+                    PermissionLevel = PermissionLevel.Admin,
+                    CreatedBy = progeny.CreatedBy,
+                    CreatedTime = DateTime.UtcNow,
+                    ModifiedBy = progeny.CreatedBy,
+                    ModifiedTime = DateTime.UtcNow
+                };
+                _ = await _accessManagementService.GrantProgenyPermission(progenyPermission, currentUserInfo);
+            }
+
+            // Add permission for the progeny user, if email is provided.
+            if (!string.IsNullOrEmpty(progeny.Email))
+            {
+                ProgenyPermission progenyPermission = new()
+                {
+                    ProgenyId = progeny.Id,
+                    UserId = progeny.UserId,
+                    Email = progeny.Email,
+                    PermissionLevel = PermissionLevel.View,
+                    CreatedBy = progeny.CreatedBy,
+                    CreatedTime = DateTime.UtcNow,
+                    ModifiedBy = progeny.CreatedBy,
+                    ModifiedTime = DateTime.UtcNow
+                };
+
+                if (progeny.IsInAdminList(progeny.Email))
+                {
+                    progenyPermission.PermissionLevel = PermissionLevel.Admin;
+                }
+
+                _ = await _accessManagementService.GrantProgenyPermission(progenyPermission, currentUserInfo);
+            }
 
             return progeny;
         }
@@ -88,19 +146,41 @@ namespace KinaUnaProgenyApi.Services
         /// Updates a Progeny in the database and the cache.
         /// </summary>
         /// <param name="progeny">The Progeny with updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated Progeny.</returns>
-        public async Task<Progeny> UpdateProgeny(Progeny progeny)
+        public async Task<Progeny> UpdateProgeny(Progeny progeny, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasProgenyPermission(progeny.Id, currentUserInfo, PermissionLevel.Admin))
+            {
+                // User doesn't have permissions to view this Progeny.
+                return null;
+            }
+
             Progeny progenyToUpdate = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progeny.Id);
             if (progenyToUpdate == null) return null;
 
             string oldPictureLink = progenyToUpdate.PictureLink;
+            string oldAdmins = progenyToUpdate.Admins;
 
             progenyToUpdate.Admins = progeny.Admins;
             progenyToUpdate.BirthDay = progeny.BirthDay;
             progenyToUpdate.Name = progeny.Name;
             progenyToUpdate.NickName = progeny.NickName;
             progenyToUpdate.TimeZone = progeny.TimeZone;
+            if (progeny.Email != progenyToUpdate.Email)
+            {
+                UserInfo progenyUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToLower() == progeny.Email.ToLower());
+                if (progenyUserInfo != null)
+                {
+                    progenyToUpdate.UserId = progenyUserInfo.UserId;
+                }
+                else
+                {
+                    progenyToUpdate.UserId = string.Empty;
+                }
+            }
+            progenyToUpdate.Email = progeny.Email;
+
             if (!string.IsNullOrEmpty(progeny.PictureLink))
             {
                 progenyToUpdate.PictureLink = progeny.PictureLink;
@@ -111,12 +191,19 @@ namespace KinaUnaProgenyApi.Services
                 progenyToUpdate.PictureLink = await ResizeImage(progenyToUpdate.PictureLink);
             }
 
-            progenyToUpdate.ModifiedBy = progeny.ModifiedBy;
+            progenyToUpdate.ModifiedBy = currentUserInfo.UserId;
             progenyToUpdate.ModifiedTime = DateTime.UtcNow;
 
             _ = _context.ProgenyDb.Update(progenyToUpdate);
             _ = await _context.SaveChangesAsync();
 
+            // Update permissions, if admins have changed.
+            if (oldAdmins != progeny.Admins)
+            {
+                _ = await _accessManagementService.ProgenyAdminsUpdated(progeny.Id);
+            }
+
+            // Delete old picture from image store if it has changed.
             if (oldPictureLink != progeny.PictureLink)
             {
                 List<Progeny> progeniesWithThisPicture = await _context.ProgenyDb.AsNoTracking().Where(c => c.PictureLink == oldPictureLink).ToListAsync();
@@ -127,7 +214,7 @@ namespace KinaUnaProgenyApi.Services
             }
 
             _ = await SetProgenyInCache(progeny.Id);
-
+            
             return progenyToUpdate;
         }
 
@@ -135,9 +222,16 @@ namespace KinaUnaProgenyApi.Services
         /// Deletes a Progeny from the database and the cache.
         /// </summary>
         /// <param name="progeny">The Progeny to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The deleted Progeny.</returns>
-        public async Task<Progeny> DeleteProgeny(Progeny progeny)
+        public async Task<Progeny> DeleteProgeny(Progeny progeny, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasProgenyPermission(progeny.Id, currentUserInfo, PermissionLevel.Admin))
+            {
+                // User doesn't have permissions to view this Progeny.
+                return null;
+            }
+
             await RemoveProgenyFromCache(progeny.Id);
 
             Progeny progenyToDelete = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progeny.Id);
@@ -147,6 +241,8 @@ namespace KinaUnaProgenyApi.Services
             _ = await _context.SaveChangesAsync();
 
             _ = await _imageStore.DeleteImage(progeny.PictureLink, "progeny");
+
+            // Todo: Remove permissions for this progeny.
             return progenyToDelete;
         }
 
@@ -281,9 +377,9 @@ namespace KinaUnaProgenyApi.Services
         }
 
         // Todo: Add unit tests.
-        public async Task<ProgenyInfo> GetProgenyInfo(int progenyId)
+        public async Task<ProgenyInfo> GetProgenyInfo(int progenyId, UserInfo currentUserInfo)
         {
-            Progeny progeny = await GetProgeny(progenyId);
+            Progeny progeny = await GetProgeny(progenyId, currentUserInfo);
             if (progeny == null) return null;
 
             ProgenyInfo progenyInfo = await _context.ProgenyInfoDb.AsNoTracking().SingleOrDefaultAsync(p => p.ProgenyId == progenyId);
@@ -294,7 +390,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     ProgenyId = progenyId
                 };
-                progenyInfo = await AddProgenyInfo(progenyInfo);
+                progenyInfo = await AddProgenyInfo(progenyInfo, currentUserInfo);
             }
 
             if (progenyInfo.AddressIdNumber != 0)
@@ -309,7 +405,7 @@ namespace KinaUnaProgenyApi.Services
             progenyInfo.AddressIdNumber = address.AddressId;
             progenyInfo.Address = address;
 
-            progenyInfo = await UpdateProgenyInfo(progenyInfo);
+            progenyInfo = await UpdateProgenyInfo(progenyInfo, currentUserInfo);
 
             return progenyInfo;
         }
@@ -319,9 +415,16 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new ProgenyInfo object to the database.
         /// </summary>
         /// <param name="progenyInfo">The ProgenyInfo object to add to the database.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added ProgenyInfo object.</returns>
-        public async Task<ProgenyInfo> AddProgenyInfo(ProgenyInfo progenyInfo)
+        public async Task<ProgenyInfo> AddProgenyInfo(ProgenyInfo progenyInfo, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasProgenyPermission(progenyInfo.ProgenyId, currentUserInfo, PermissionLevel.Admin))
+            {
+                // User doesn't have permissions to edit this Progeny.
+                return null;
+            }
+
             if (progenyInfo.Address != null)
             {
                 Address address = new();
@@ -347,9 +450,15 @@ namespace KinaUnaProgenyApi.Services
         /// Updates a ProgenyInfo entity in the database.
         /// </summary>
         /// <param name="progenyInfo">The ProgenyInfo object with the updated properties.</param>
+        /// <param name="currentUser"></param>
         /// <returns>The updated ProgenyInfo object.</returns>
-        public async Task<ProgenyInfo> UpdateProgenyInfo(ProgenyInfo progenyInfo)
+        public async Task<ProgenyInfo> UpdateProgenyInfo(ProgenyInfo progenyInfo, UserInfo currentUser)
         {
+            if (!await _accessManagementService.HasProgenyPermission(progenyInfo.ProgenyId, currentUser, PermissionLevel.Admin))
+            {
+                // User doesn't have permissions to edit this Progeny.
+                return null;
+            }
             ProgenyInfo progenyInfoToUpdate = await _context.ProgenyInfoDb.SingleOrDefaultAsync(p => p.ProgenyId == progenyInfo.ProgenyId);
             if (progenyInfoToUpdate == null) return null;
 
@@ -405,9 +514,17 @@ namespace KinaUnaProgenyApi.Services
         /// Deletes a ProgenyInfo entity from the database.
         /// </summary>
         /// <param name="progenyInfo">The ProgenyInfo object to remove.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The deleted ProgenyInfo object.</returns>
-        public async Task<ProgenyInfo> DeleteProgenyInfo(ProgenyInfo progenyInfo)
+        public async Task<ProgenyInfo> DeleteProgenyInfo(ProgenyInfo progenyInfo, UserInfo currentUserInfo)
         {
+            bool hasPermission = await _accessManagementService.HasProgenyPermission(progenyInfo.ProgenyId, currentUserInfo, PermissionLevel.Admin);
+            if (!hasPermission)
+            {
+                // User doesn't have permissions to view this Progeny.
+                return null;
+            }
+
             ProgenyInfo progenyInfoToDelete = await _context.ProgenyInfoDb.SingleOrDefaultAsync(p => p.ProgenyId == progenyInfo.ProgenyId);
             if (progenyInfoToDelete == null) return null;
 

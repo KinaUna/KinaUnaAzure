@@ -6,6 +6,8 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -15,13 +17,15 @@ namespace KinaUnaProgenyApi.Services
     public class SkillService : ISkillService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public SkillService(ProgenyDbContext context, IDistributedCache cache)
+        public SkillService(ProgenyDbContext context, IDistributedCache cache, IAccessManagementService accessManagementService)
         {
             _context = context;
+            _accessManagementService = accessManagementService;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -32,9 +36,15 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the Skill from the database and adds it to the cache.
         /// </summary>
         /// <param name="id">The SkillId of the Skill to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The Skill object with the given SkillId. Null if it doesn't exist.</returns>
-        public async Task<Skill> GetSkill(int id)
+        public async Task<Skill> GetSkill(int id, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, id, currentUserInfo, PermissionLevel.View))
+            {
+                return null;
+            }
+
             Skill skill = await GetSkillFromCache(id);
             if (skill == null || skill.SkillId == 0)
             {
@@ -47,9 +57,15 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new Skill to the database and adds it to the cache.
         /// </summary>
         /// <param name="skill">The Skill object to add.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added Skill object.</returns>
-        public async Task<Skill> AddSkill(Skill skill)
+        public async Task<Skill> AddSkill(Skill skill, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasProgenyPermission(skill.ProgenyId, currentUserInfo, PermissionLevel.Add))
+            {
+                return null;
+            }
+
             Skill skillToAdd = new();
             skillToAdd.CopyPropertiesForAdd(skill);
             _ = _context.SkillsDb.Add(skillToAdd);
@@ -98,9 +114,15 @@ namespace KinaUnaProgenyApi.Services
         /// Updates a Skill in the database and the cache.
         /// </summary>
         /// <param name="skill">The SKill object with the updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated Skill object.</returns>
-        public async Task<Skill> UpdateSkill(Skill skill)
+        public async Task<Skill> UpdateSkill(Skill skill, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, skill.SkillId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
             Skill skillToUpdate = await _context.SkillsDb.SingleOrDefaultAsync(s => s.SkillId == skill.SkillId);
             if (skillToUpdate == null) return null;
 
@@ -118,9 +140,15 @@ namespace KinaUnaProgenyApi.Services
         /// Deletes a Skill from the database and the cache.
         /// </summary>
         /// <param name="skill">The Skill object to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The deleted Skill object.</returns>
-        public async Task<Skill> DeleteSkill(Skill skill)
+        public async Task<Skill> DeleteSkill(Skill skill, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, skill.SkillId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return null;
+            }
+
             Skill skillToDelete = await _context.SkillsDb.SingleOrDefaultAsync(s => s.SkillId == skill.SkillId);
             if (skillToDelete == null) return null;
 
@@ -149,9 +177,9 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Skills for.</param>
-        /// <param name="accessLevel">The access level required to view the Skill.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of Skill objects.</returns>
-        public async Task<List<Skill>> GetSkillsList(int progenyId, int accessLevel)
+        public async Task<List<Skill>> GetSkillsList(int progenyId, UserInfo currentUserInfo)
         {
             List<Skill> skillsList = await GetSkillsListFromCache(progenyId);
             if (skillsList.Count == 0)
@@ -159,13 +187,28 @@ namespace KinaUnaProgenyApi.Services
                 skillsList = await SetSkillsListInCache(progenyId);
             }
 
-            skillsList = [.. skillsList.Where(p => p.AccessLevel >= accessLevel)];
-            return skillsList;
+            List<Skill> filteredList = [];
+            foreach (Skill skill in skillsList)
+            {
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, skill.SkillId, currentUserInfo, PermissionLevel.View))
+                {
+                    filteredList.Add(skill);
+                }
+            }
+
+            return filteredList;
         }
 
-        public async Task<List<Skill>> GetSkillsWithCategory(int progenyId, string category, int accessLevel)
+        /// <summary>
+        /// Gets a list of all Skills for a Progeny that match the specified category.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get Skills for.</param>
+        /// <param name="category">The category to filter by.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
+        /// <returns>List of Skill objects that match the specified category.</returns>
+        public async Task<List<Skill>> GetSkillsWithCategory(int progenyId, string category, UserInfo currentUserInfo)
         {
-            List<Skill> allItems = await GetSkillsList(progenyId, accessLevel);
+            List<Skill> allItems = await GetSkillsList(progenyId, currentUserInfo);
             allItems = [.. allItems.Where(s => s.Category != null && s.Category.Contains(category, StringComparison.CurrentCultureIgnoreCase))];
             
             return allItems;

@@ -88,6 +88,17 @@ namespace KinaUnaProgenyApi.Services
             _ = await _context.SaveChangesAsync();
             _ = await SetUserInfoByEmail(userInfo.UserEmail);
 
+            List<Progeny> userIsThisProgenyList = await _context.ProgenyDb.Where(p => p.Email == userInfo.UserEmail).ToListAsync();
+            if (userIsThisProgenyList.Count > 0)
+            {
+                foreach (Progeny progeny in userIsThisProgenyList)
+                {
+                    progeny.UserId = userInfo.UserId;
+                }
+                _context.ProgenyDb.UpdateRange(userIsThisProgenyList);
+                _ = await _context.SaveChangesAsync();
+            }
+
             return userInfo;
         }
 

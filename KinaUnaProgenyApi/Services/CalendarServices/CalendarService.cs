@@ -6,6 +6,8 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -19,10 +21,12 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly ICalendarRecurrencesService _calendarRecurrencesService;
+        private readonly IAccessManagementService _accessManagementService;
 
-        public CalendarService(ProgenyDbContext context, IDistributedCache cache, ICalendarRecurrencesService calendarRecurrencesService)
+        public CalendarService(ProgenyDbContext context, IDistributedCache cache, ICalendarRecurrencesService calendarRecurrencesService, IAccessManagementService accessManagementService)
         {
             _context = context;
+            _accessManagementService = accessManagementService;
             _cache = cache;
             _calendarRecurrencesService = calendarRecurrencesService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
@@ -35,9 +39,15 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// If it doesn't exist in the database, returns null.
         /// </summary>
         /// <param name="id">The CalendarItem's EventId</param>
+        /// <param name="currentUserInfo">UserInfo object for the current user, to check permissions.</param>
         /// <returns>CalendarItem if it exists, null if it doesn't exist.</returns>
-        public async Task<CalendarItem> GetCalendarItem(int id)
+        public async Task<CalendarItem> GetCalendarItem(int id, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, id, currentUserInfo, PermissionLevel.View))
+            {
+                return new CalendarItem();
+            }
+
             CalendarItem calendarItem = await GetCalendarItemFromCache(id);
             if (calendarItem == null || calendarItem.EventId == 0)
             {
@@ -52,9 +62,38 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// Sets the CalendarItem in the cache.
         /// </summary>
         /// <param name="item">The CalendarItem to add.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The added CalendarItem.</returns>
-        public async Task<CalendarItem> AddCalendarItem(CalendarItem item)
+        public async Task<CalendarItem> AddCalendarItem(CalendarItem item, UserInfo currentUserInfo)
         {
+            // A CalendarItem must belong to either a Progeny or a Family, not both.
+            if (item.ProgenyId > 0 && item.FamilyId > 0)
+            {
+                return null;
+            }
+
+            bool hasAccess = false;
+            if (item.ProgenyId > 0)
+            {
+                if (await _accessManagementService.HasProgenyPermission(item.ProgenyId, currentUserInfo, PermissionLevel.Add))
+                {
+                    hasAccess = true;
+                }
+            }
+
+            if (item.FamilyId > 0)
+            {
+                if (await _accessManagementService.HasFamilyPermission(item.FamilyId, currentUserInfo, PermissionLevel.Add))
+                {
+                    hasAccess = true;
+                }
+            }
+            
+            if (!hasAccess)
+            {
+                return null;
+            }
+
             CalendarItem calendarItemToAdd = new();
             calendarItemToAdd.CopyPropertiesForAdd(item);
 
@@ -141,9 +180,20 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// Updates a CalendarItem in the database and sets the updated item in the cache.
         /// </summary>
         /// <param name="item">The CalendarItem with the updated properties.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The updated CalendarItem.</returns>
-        public async Task<CalendarItem> UpdateCalendarItem(CalendarItem item)
+        public async Task<CalendarItem> UpdateCalendarItem(CalendarItem item, UserInfo currentUserInfo)
         {
+            // A CalendarItem must belong to either a Progeny or a Family, not both.
+            if (item.ProgenyId > 0 && item.FamilyId > 0)
+            {
+                return null;
+            }
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, item.EventId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return new CalendarItem();
+            }
+
             CalendarItem calendarItemToUpdate = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
             if (calendarItemToUpdate == null) return null;
 
@@ -229,9 +279,15 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// Deletes a CalendarItem from the database and removes it from the cache.
         /// </summary>
         /// <param name="item">The CalendarItem to delete.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The deleted CalendarItem.</returns>
-        public async Task<CalendarItem> DeleteCalendarItem(CalendarItem item)
+        public async Task<CalendarItem> DeleteCalendarItem(CalendarItem item, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, item.EventId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return null;
+            }
+
             CalendarItem calendarItemToDelete = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
             if (calendarItemToDelete == null) return null;
 
@@ -264,11 +320,11 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// If the list isn't found in the cache, gets it from the database and sets it in the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all CalendarItems for.</param>
-        /// <param name="accessLevel">The required access level to view the event.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <param name="start">Optional start date for the list.</param>
         /// <param name="end">Optional end date for the list.</param>
         /// <returns>List of CalendarItems.</returns>
-        public async Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel, DateTime? start = null, DateTime? end = null)
+        public async Task<List<CalendarItem>> GetCalendarList(int progenyId, UserInfo currentUserInfo, DateTime? start = null, DateTime? end = null)
         {
             List<CalendarItem> calendarList = await GetCalendarListFromCache(progenyId);
             if (calendarList == null || calendarList.Count == 0)
@@ -276,18 +332,24 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 calendarList = await SetCalendarListInCache(progenyId);
             }
 
+            List<CalendarItem> accessibleCalendarItems = [];
+
             if (start != null && end != null)
             {
-                calendarList = [.. calendarList.Where(c => c.StartTime >= start && c.StartTime <= end && c.AccessLevel >= accessLevel)];
+                calendarList = [.. calendarList.Where(c => c.StartTime >= start && c.StartTime <= end)];
                 List<CalendarItem> recurringEvents = await GetRecurringEventsForProgeny(progenyId, start.Value, end.Value, false);
                 calendarList.AddRange(recurringEvents);
             }
-            else
+            
+            foreach (CalendarItem calendarItem in calendarList)
             {
-                calendarList = [.. calendarList.Where(c => c.AccessLevel >= accessLevel)];
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
+                {
+                    accessibleCalendarItems.Add(calendarItem);
+                }
             }
 
-            return calendarList;
+            return accessibleCalendarItems;
         }
         
         /// <summary>
@@ -330,6 +392,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// <returns>List of CalendarItems</returns>
         private async Task<List<CalendarItem>> GetRecurringEventsForProgeny(int progenyId, DateTime start, DateTime end, bool includeOriginal)
         {
+            // Todo: Check permissions, when we have permissions set up for recurring events.
             List<CalendarItem> recurringEvents = await _calendarRecurrencesService.GetRecurringEventsForProgeny(progenyId, start, end, includeOriginal);
             return recurringEvents;
         }
@@ -342,6 +405,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// <returns>List of CalendarItems.</returns>
         public async Task<List<CalendarItem>> GetRecurringCalendarItemsOnThisDay(int progenyId)
         {
+            // Todo: Check permissions, when we have permissions set up for recurring events.
             List<CalendarItem> recurringEvents = [];
             List<RecurrenceRule> recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId).ToListAsync();
             if (recurrenceRules.Count == 0) return recurringEvents;
@@ -368,6 +432,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// <returns>List of CalendarItems.</returns>
         public async Task<List<CalendarItem>> GetRecurringCalendarItemsLatestPosts(int progenyId)
         {
+            // Todo: Check permissions, when we have permissions set up for recurring events.
             List<CalendarItem> recurringEvents = [];
             List<RecurrenceRule> recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId).ToListAsync();
             if (recurrenceRules.Count == 0) return recurringEvents;
@@ -377,9 +442,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             return recurringEvents;
         }
 
-        public async Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context, int accessLevel)
+        public async Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context, UserInfo currentUserInfo)
         {
-            List<CalendarItem> allItems = await GetCalendarList(progenyId, accessLevel);
+            List<CalendarItem> allItems = await GetCalendarList(progenyId, currentUserInfo);
             if (!string.IsNullOrEmpty(context))
             {
                 allItems = [.. allItems.Where(c => c.Context != null && c.Context.Contains(context, StringComparison.CurrentCultureIgnoreCase))];

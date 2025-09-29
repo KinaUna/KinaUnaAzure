@@ -5,6 +5,8 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -14,13 +16,15 @@ namespace KinaUnaProgenyApi.Services
     public class MeasurementService : IMeasurementService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public MeasurementService(ProgenyDbContext context, IDistributedCache cache)
+        public MeasurementService(ProgenyDbContext context, IDistributedCache cache, IAccessManagementService accessManagementService)
         {
             _context = context;
+            _accessManagementService = accessManagementService;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -31,9 +35,15 @@ namespace KinaUnaProgenyApi.Services
         /// First tries to get the Measurement from the cache, then from the database if it's not in the cache.
         /// </summary>
         /// <param name="id">The MeasurementId of the Measurement entity to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The Measurement object with the given MeasurementId. Null if the Measurement doesn't exist.</returns>
-        public async Task<Measurement> GetMeasurement(int id)
+        public async Task<Measurement> GetMeasurement(int id, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, id, currentUserInfo, PermissionLevel.View))
+            {
+                return null;
+            }
+
             Measurement measurement = await GetMeasurementFromCache(id);
             if (measurement == null || measurement.MeasurementId == 0)
             {
@@ -82,9 +92,15 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new Measurement to the database and the cache.
         /// </summary>
         /// <param name="measurement">The Measurement object to add.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added Measurement object.</returns>
-        public async Task<Measurement> AddMeasurement(Measurement measurement)
+        public async Task<Measurement> AddMeasurement(Measurement measurement, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasProgenyPermission(measurement.ProgenyId, currentUserInfo, PermissionLevel.Add))
+            {
+                return null;
+            }
+
             Measurement measurementToAdd = new();
             measurementToAdd.CopyPropertiesForAdd(measurement);
 
@@ -99,9 +115,15 @@ namespace KinaUnaProgenyApi.Services
         /// Updates a Measurement in the database and the cache.
         /// </summary>
         /// <param name="measurement">The Measurement with the updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated Measurement.</returns>
-        public async Task<Measurement> UpdateMeasurement(Measurement measurement)
+        public async Task<Measurement> UpdateMeasurement(Measurement measurement, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, measurement.MeasurementId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
             Measurement measurementToUpdate = await _context.MeasurementsDb.SingleOrDefaultAsync(m => m.MeasurementId == measurement.MeasurementId);
             if (measurementToUpdate == null) return null;
 
@@ -119,9 +141,15 @@ namespace KinaUnaProgenyApi.Services
         /// Deletes a Measurement from the database and the cache.
         /// </summary>
         /// <param name="measurement">The Measurement to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The deleted Measurement object.</returns>
-        public async Task<Measurement> DeleteMeasurement(Measurement measurement)
+        public async Task<Measurement> DeleteMeasurement(Measurement measurement, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, measurement.MeasurementId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return null;
+            }
+
             Measurement measurementToDelete = await _context.MeasurementsDb.SingleOrDefaultAsync(m => m.MeasurementId == measurement.MeasurementId);
             if (measurementToDelete == null) return null;
 
@@ -152,9 +180,9 @@ namespace KinaUnaProgenyApi.Services
         /// First tries to get the list from the cache, then from the database if it's not in the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Measurements for.</param>
-        /// <param name="accessLevel">The access level of the user making the request.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of Measurements.</returns>
-        public async Task<List<Measurement>> GetMeasurementsList(int progenyId, int accessLevel)
+        public async Task<List<Measurement>> GetMeasurementsList(int progenyId, UserInfo currentUserInfo)
         {
             List<Measurement> measurementsList = await GetMeasurementsListFromCache(progenyId);
             if (measurementsList.Count == 0)
@@ -162,9 +190,16 @@ namespace KinaUnaProgenyApi.Services
                 measurementsList = await SetMeasurementsListInCache(progenyId);
             }
 
-            measurementsList = [.. measurementsList.Where(m => m.AccessLevel >= accessLevel)];
+            List<Measurement> accessibleMeasurements = [];
+            foreach (Measurement measurement in measurementsList)
+            {
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, measurement.MeasurementId, currentUserInfo, PermissionLevel.View))
+                {
+                    accessibleMeasurements.Add(measurement);
+                }
+            }
 
-            return measurementsList;
+            return accessibleMeasurements;
         }
 
         /// <summary>

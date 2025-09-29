@@ -11,8 +11,9 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the VocabularyItem from the database and adds it to the cache.
         /// </summary>
         /// <param name="id">The WordId of the VocabularyItem.</param>
+        /// <param name="currentUserInfo">The UserInfo object of the current user.For checking permissions.</param>
         /// <returns>The VocabularyItem with the given WordId. Null if the VocabularyItem doesn't exist.</returns>
-        Task<VocabularyItem> GetVocabularyItem(int id);
+        Task<VocabularyItem> GetVocabularyItem(int id, UserInfo currentUserInfo);
 
         /// <summary>
         /// Adds a new VocabularyItem entity to the database and adds it to the cache.
@@ -40,8 +41,8 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
-        /// <param name="accessLevel">The access level of the user.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of VocabularyItem objects.</returns>
-        Task<List<VocabularyItem>> GetVocabularyList(int progenyId, int accessLevel);
+        Task<List<VocabularyItem>> GetVocabularyList(int progenyId, UserInfo currentUserInfo);
     }
 }

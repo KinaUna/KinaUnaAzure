@@ -1,11 +1,8 @@
-﻿using KinaUna.Data;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
 using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -19,7 +16,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for retrieving auto suggest lists.
     /// </summary>
-    /// <param name="userAccessService"></param>
     /// <param name="calendarService"></param>
     /// <param name="contactService"></param>
     /// <param name="friendService"></param>
@@ -34,7 +30,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class AutoSuggestsController(
-        IUserAccessService userAccessService,
         ICalendarService calendarService,
         IContactService contactService,
         IFriendService friendService,
@@ -45,7 +40,8 @@ namespace KinaUnaProgenyApi.Controllers
         ILocationService locationService,
         IVocabularyService vocabularyService,
         ITodosService todosService,
-        IKanbanBoardsService kanbanBoardsService)
+        IKanbanBoardsService kanbanBoardsService,
+        IUserInfoService userInfoService)
         : ControllerBase
     {
         /// <summary>
@@ -58,19 +54,14 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCategoryAutoSuggestList(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             AutoSuggestListBuilder autoSuggestListBuilder = new();
             
-            List<Note> allNotes = await noteService.GetNotesList(id, accessLevelResult.Value);
+            List<Note> allNotes = await noteService.GetNotesList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToCategoriesList(allNotes);
 
-            List<Skill> allSkills = await skillService.GetSkillsList(id, accessLevelResult.Value);
+            List<Skill> allSkills = await skillService.GetSkillsList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToCategoriesList(allSkills);
             
             List<string> autoSuggestList = autoSuggestListBuilder.GetCategoriesList(); 
@@ -89,28 +80,23 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetContextAutoSuggestList(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             AutoSuggestListBuilder autoSuggestListBuilder = new();
 
-            List<Friend> allFriends = await friendService.GetFriendsList(id, accessLevelResult.Value);
+            List<Friend> allFriends = await friendService.GetFriendsList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allFriends);
             
-            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id, accessLevelResult.Value);
+            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allCalendarItems);
 
-            List<Contact> allContacts = await contactService.GetContactsList(id, accessLevelResult.Value);
+            List<Contact> allContacts = await contactService.GetContactsList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allContacts);
 
-            List<TodoItem> allTodos = await todosService.GetTodosList(id, accessLevelResult.Value);
+            List<TodoItem> allTodos = await todosService.GetTodosList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allTodos);
             
-            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsList(id, accessLevelResult.Value);
+            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsListForProgeny(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allKanbanBoards);
             
             List<string> autoSuggestList = autoSuggestListBuilder.GetContextsList();
@@ -129,28 +115,23 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetLocationAutoSuggestList(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             AutoSuggestListBuilder autoSuggestListBuilder = new();
 
-            List<Picture> allPictures = await picturesService.GetPicturesList(id, accessLevelResult.Value); 
+            List<Picture> allPictures = await picturesService.GetPicturesList(id, currentUserInfo); 
             autoSuggestListBuilder.AddItemsToLocationsList(allPictures);
             
-            List<Video> allVideos = await videosService.GetVideosList(id, accessLevelResult.Value);
+            List<Video> allVideos = await videosService.GetVideosList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToLocationsList(allVideos);
 
-            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id, accessLevelResult.Value);
+            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToLocationsList(allCalendarItems);
 
-            List<Location> allLocations = await locationService.GetLocationsList(id, accessLevelResult.Value);
+            List<Location> allLocations = await locationService.GetLocationsList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToLocationsList(allLocations);
 
-            List<TodoItem> allTodoItems = await todosService.GetTodosList(id, accessLevelResult.Value);
+            List<TodoItem> allTodoItems = await todosService.GetTodosList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToLocationsList(allTodoItems);
 
             List<string> autoSuggestList = autoSuggestListBuilder.GetLocationsList();
@@ -169,34 +150,29 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTagsAutoSuggestList(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             AutoSuggestListBuilder autoSuggestListBuilder = new();
 
-            List<Picture> allPictures = await picturesService.GetPicturesList(id, accessLevelResult.Value);
+            List<Picture> allPictures = await picturesService.GetPicturesList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allPictures);
 
-            List<Video> allVideos = await videosService.GetVideosList(id, accessLevelResult.Value);
+            List<Video> allVideos = await videosService.GetVideosList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allVideos);
 
-            List<Location> allLocations = await locationService.GetLocationsList(id, accessLevelResult.Value);
+            List<Location> allLocations = await locationService.GetLocationsList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allLocations);
 
-            List<Friend> allFriends = await friendService.GetFriendsList(id, accessLevelResult.Value);
+            List<Friend> allFriends = await friendService.GetFriendsList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allFriends);
 
-            List<Contact> allContacts = await contactService.GetContactsList(id, accessLevelResult.Value);
+            List<Contact> allContacts = await contactService.GetContactsList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allContacts);
 
-            List<TodoItem> allTodoItems = await todosService.GetTodosList(id, accessLevelResult.Value);
+            List<TodoItem> allTodoItems = await todosService.GetTodosList(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allTodoItems);
 
-            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsList(id, accessLevelResult.Value);
+            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsListForProgeny(id, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allKanbanBoards);
 
             List<string> autoSuggestList = autoSuggestListBuilder.GetTagsList();
@@ -215,14 +191,9 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetVocabularyLanguagesSuggestList(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            List<VocabularyItem> allVocabularyItems = await vocabularyService.GetVocabularyList(id, accessLevelResult.Value);
+            List<VocabularyItem> allVocabularyItems = await vocabularyService.GetVocabularyList(id, currentUserInfo);
             
             List<string> autoSuggestList = [];
             foreach (VocabularyItem vocabularyItem in allVocabularyItems)

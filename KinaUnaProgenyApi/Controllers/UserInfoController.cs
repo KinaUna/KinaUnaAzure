@@ -44,7 +44,11 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> UserInfoByEmail([FromBody] string id)
         {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+
+            // Todo: Rewrite this to use FamilyPermissions and ProgenyPermissions.
             bool allowAccess = await CanCurrentUserAccessUserInfo(userEmail, id);
             
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(id);
@@ -57,7 +61,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 foreach (UserAccess userAccess in userInfo.AccessList)
                 {
-                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId, currentUserInfo);
                     userInfo.ProgenyList.Add(progeny);
                     if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
                     {
@@ -91,7 +95,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                     foreach (UserAccess userAccess in userInfo.AccessList)
                     {
-                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId, currentUserInfo);
                         userInfo.ProgenyList.Add(progeny);
                         if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
                         {
@@ -155,8 +159,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetInfo(int id)
         {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             UserInfo userInfo = await userInfoService.GetUserInfoById(id);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            // Todo: Rewrite this to use FamilyPermissions and ProgenyPermissions.
             bool allowAccess = await CanCurrentUserAccessUserInfo(userEmail, userInfo.UserEmail);
             
             if (allowAccess)
@@ -168,7 +174,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 foreach (UserAccess ua in userInfo.AccessList)
                 {
-                    Progeny progeny = await progenyService.GetProgeny(ua.ProgenyId);
+                    Progeny progeny = await progenyService.GetProgeny(ua.ProgenyId, currentUserInfo);
                     userInfo.ProgenyList.Add(progeny);
                     if (ua.AccessLevel == 0 || ua.CanContribute)
                     {
@@ -201,6 +207,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> ByUserIdPost([FromBody] string id)
         {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             UserInfo userInfo = await userInfoService.GetUserInfoByUserId(id) ?? new UserInfo
             {
                 ViewChild = 0,
@@ -212,6 +219,7 @@ namespace KinaUnaProgenyApi.Controllers
             };
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
 
+            // Todo: Rewrite this to use FamilyPermissions and ProgenyPermissions.
             bool allowAccess = await CanCurrentUserAccessUserInfo(userEmail, userInfo.UserEmail);
 
             if (allowAccess)
@@ -223,7 +231,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 foreach (UserAccess userAccess in userInfo.AccessList)
                 {
-                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId, currentUserInfo);
                     userInfo.ProgenyList.Add(progeny);
                     if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
                     {
@@ -291,33 +299,36 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] UserInfo value)
         {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (!userEmail.Equals(value.UserEmail, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return Unauthorized();
+            }
+
             UserInfo userInfo = new()
             {
-                ViewChild = value?.ViewChild ?? 0,
-                UserEmail = value?.UserEmail ?? "",
-                UserId = value?.UserId ?? "",
-                Timezone = value?.Timezone ?? "Central European Standard Time",
-                FirstName = value?.FirstName ?? "",
-                MiddleName = value?.MiddleName ?? "",
-                LastName = value?.LastName ?? "",
-                PhoneNumber = value?.PhoneNumber ?? "",
-                ProfilePicture = value?.ProfilePicture ?? ""
+                ViewChild = value.ViewChild,
+                UserEmail = value.UserEmail,
+                UserId = value.UserId,
+                Timezone = value.Timezone,
+                FirstName = value.FirstName,
+                MiddleName = value.MiddleName,
+                LastName = value.LastName,
+                PhoneNumber = value.PhoneNumber,
+                ProfilePicture = value.ProfilePicture
             };
 
-            userInfo.UserName = value?.UserName ?? userInfo.UserEmail;
+            userInfo.UserName = value.UserName;
             userInfo.IsKinaUnaAdmin = false;
             userInfo.Deleted = false;
             userInfo.DeletedTime = DateTime.UtcNow;
             userInfo.UpdatedTime = DateTime.UtcNow;
             
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!userEmail.Equals(userInfo.UserEmail, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return Unauthorized();
-            }
+            
 
             userInfo = await userInfoService.AddUserInfo(userInfo);
 
+            // Todo: Use Permissions instead.
             userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userEmail);
 
             userInfo.ProgenyList = [];
@@ -325,7 +336,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 foreach (UserAccess userAccess in userInfo.AccessList)
                 {
-                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId, userInfo);
                     userInfo.ProgenyList.Add(progeny);
                     if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
                     {

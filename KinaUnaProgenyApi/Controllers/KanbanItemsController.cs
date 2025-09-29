@@ -20,7 +20,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="kanbanBoardsService">The Kanban boards service.</param>
     /// <param name="todosService">The Todos service.</param>
     /// <param name="userAccessService">The user access service.</param>
-    /// <param name="progenyService">The progeny service.</param>
     [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -29,7 +28,7 @@ namespace KinaUnaProgenyApi.Controllers
         IKanbanBoardsService kanbanBoardsService,
         ITodosService todosService,
         IUserAccessService userAccessService,
-        IProgenyService progenyService) : Controller
+        IUserInfoService userInfoService) : Controller
     {
         /// <summary>
         /// Retrieves a Kanban item by its unique identifier.
@@ -45,7 +44,9 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{kanbanItemId:int}")]
         public async Task<IActionResult> GetKanbanItem(int kanbanItemId)
         {
-            KanbanItem kanbanItem = await kanbanItemsService.GetKanbanItemById(kanbanItemId);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
+            KanbanItem kanbanItem = await kanbanItemsService.GetKanbanItemById(kanbanItemId, currentUserInfo);
             if (kanbanItem == null)
             {
                 return NotFound();
@@ -55,12 +56,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest("The Kanban item is not linked to a valid Todo item.");
             }
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanItem.TodoItem.ProgenyId, userEmail, kanbanItem.TodoItem.AccessLevel);
-
-            if (accessLevelResult.IsSuccess) return Ok(kanbanItem);
-
-            return accessLevelResult.ToActionResult();
+            return Ok(kanbanItem);
         }
 
         /// <summary>
@@ -79,7 +75,8 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{kanbanBoardId:int}/{includeDeleted:bool}")]
         public async Task<IActionResult> GetKanbanItemsForBoard(int kanbanBoardId, bool includeDeleted = false)
         {
-            KanbanBoard kanbanBoard = await kanbanBoardsService.GetKanbanBoardById(kanbanBoardId);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            KanbanBoard kanbanBoard = await kanbanBoardsService.GetKanbanBoardById(kanbanBoardId, currentUserInfo);
             if (kanbanBoard == null)
             {
                 return NotFound();
@@ -90,7 +87,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (accessLevelResult.IsSuccess)
             {
-                List<KanbanItem> kanbanItems = await kanbanItemsService.GetKanbanItemsForBoard(kanbanBoardId, includeDeleted);
+                List<KanbanItem> kanbanItems = await kanbanItemsService.GetKanbanItemsForBoard(kanbanBoardId, currentUserInfo, includeDeleted);
                 List<KanbanItem> allowedKanbanItems = [];
                 foreach (KanbanItem kanbanItem in kanbanItems)
                 {
@@ -111,7 +108,9 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{todoItemId:int}/{includeDeleted:bool}")]
         public async Task<IActionResult> GetKanbanItemsForTodoItem(int todoItemId, bool includeDeleted = false)
         {
-            TodoItem todoItem = await todosService.GetTodoItem(todoItemId);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
+            TodoItem todoItem = await todosService.GetTodoItem(todoItemId, currentUserInfo);
             if (todoItem == null)
             {
                 return NotFound();
@@ -121,15 +120,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return BadRequest("The Todo item is not linked to a valid Progeny.");
             }
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(todoItem.ProgenyId, userEmail, todoItem.AccessLevel);
-            if (accessLevelResult.IsSuccess)
-            {
-                List<KanbanItem> kanbanItems = await kanbanItemsService.GetKanbanItemsForTodoItem(todoItemId, includeDeleted);
-                return Ok(kanbanItems);
-            }
-            return accessLevelResult.ToActionResult();
-
+            List<KanbanItem> kanbanItems = await kanbanItemsService.GetKanbanItemsForTodoItem(todoItemId, currentUserInfo, includeDeleted);
+            
+            return Ok(kanbanItems);
         }
 
         /// <summary>
@@ -151,32 +144,37 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return BadRequest();
             }
-            kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId);
+            if (kanbanItem.TodoItemId == 0)
+            {
+                return BadRequest("The Kanban item must be linked to a valid Todo item.");
+            }
+            
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
+            kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId, currentUserInfo);
             if (kanbanItem.TodoItem == null)
             {
                 return BadRequest("The Kanban item must be linked to a valid Todo item.");
             }
 
-            Progeny progeny = await progenyService.GetProgeny(kanbanItem.TodoItem.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+            if (kanbanItem.TodoItem.ProgenyId > 0 && kanbanItem.TodoItem.FamilyId > 0)
             {
-
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
+                return BadRequest("A Kanban item cannot be linked to a Todo item that is associated with both a Progeny and a Family.");
             }
-            else
+
+            if (kanbanItem.TodoItem.ProgenyId == 0 && kanbanItem.TodoItem.FamilyId == 0)
+            {
+                return BadRequest("A Kanban item has to be linked to a Todo item that is associated with either a Progeny or a Family.");
+            }
+
+            kanbanItem.CreatedBy = User.GetUserId();
+            kanbanItem.ModifiedBy = User.GetUserId();
+            KanbanItem savedKanbanItem = await kanbanItemsService.AddKanbanItem(kanbanItem, currentUserInfo);
+            if (savedKanbanItem == null)
             {
                 return BadRequest();
             }
-            
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanItem.TodoItem.ProgenyId, userEmail, kanbanItem.TodoItem.AccessLevel);
-            if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
-            kanbanItem.CreatedBy = User.GetUserId();
-            kanbanItem.ModifiedBy = User.GetUserId();
-            KanbanItem savedKanbanItem = await kanbanItemsService.AddKanbanItem(kanbanItem);
+
             savedKanbanItem.TodoItem = kanbanItem.TodoItem;
 
             return Ok(savedKanbanItem);
@@ -205,7 +203,9 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest();
             }
 
-            KanbanItem existingKanbanItem = await kanbanItemsService.GetKanbanItemById(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
+            KanbanItem existingKanbanItem = await kanbanItemsService.GetKanbanItemById(id, currentUserInfo);
             if (existingKanbanItem == null)
             {
                 return BadRequest();
@@ -218,33 +218,30 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (kanbanItem.TodoItem == null)
             {
-                kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId);
+                kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId, currentUserInfo);
                 if (kanbanItem.TodoItem == null)
                 {
                     return BadRequest("The linked Todo item could not be found.");
                 }
             }
-            Progeny progeny = await progenyService.GetProgeny(kanbanItem.TodoItem.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
 
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
+            if (kanbanItem.TodoItem.ProgenyId > 0 && kanbanItem.TodoItem.FamilyId > 0)
             {
-                return BadRequest();
+                return BadRequest("A Kanban item cannot be linked to a Todo item that is associated with both a Progeny and a Family.");
             }
-
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanItem.TodoItem.ProgenyId, userEmail, kanbanItem.TodoItem.AccessLevel);
-            if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
+            if (kanbanItem.TodoItem.ProgenyId == 0 && kanbanItem.TodoItem.FamilyId == 0)
+            {
+                return BadRequest("A Kanban item has to be linked to a Todo item that is associated with either a Progeny or a Family.");
+            }
 
             kanbanItem.ModifiedBy = User.GetUserId();
             
-            KanbanItem resultKanbanItem = await kanbanItemsService.UpdateKanbanItem(kanbanItem);
+            KanbanItem resultKanbanItem = await kanbanItemsService.UpdateKanbanItem(kanbanItem, currentUserInfo);
+            if (resultKanbanItem == null)
+            {
+                return Unauthorized();
+            }
+
             resultKanbanItem.TodoItem = kanbanItem.TodoItem;
 
             return Ok(resultKanbanItem);
@@ -267,34 +264,21 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            KanbanItem existingKanbanItem = await kanbanItemsService.GetKanbanItemById(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
+            KanbanItem existingKanbanItem = await kanbanItemsService.GetKanbanItemById(id, currentUserInfo);
             if (existingKanbanItem == null)
             {
                 return NotFound();
             }
-            if (existingKanbanItem.TodoItem == null)
-            {
-                return BadRequest("The Kanban item is not linked to a valid Todo item.");
-            }
-
-            Progeny progeny = await progenyService.GetProgeny(existingKanbanItem.TodoItem.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
-
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return BadRequest();
-            }
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(existingKanbanItem.TodoItem.ProgenyId, userEmail, existingKanbanItem.TodoItem.AccessLevel);
-            if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
+            
             existingKanbanItem.ModifiedBy = User.GetUserId();
-            KanbanItem deletedKanbanItem = await kanbanItemsService.DeleteKanbanItem(existingKanbanItem);
+            KanbanItem deletedKanbanItem = await kanbanItemsService.DeleteKanbanItem(existingKanbanItem, currentUserInfo);
+            if (deletedKanbanItem == null)
+            {
+                return Unauthorized();
+            }
+
             deletedKanbanItem.TodoItem = existingKanbanItem.TodoItem;
 
             return Ok(deletedKanbanItem);

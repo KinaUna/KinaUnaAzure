@@ -5,6 +5,8 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -14,13 +16,17 @@ namespace KinaUnaProgenyApi.Services
     public class VocabularyService : IVocabularyService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IUserInfoService _userInfoService;
+        private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public VocabularyService(ProgenyDbContext context, IDistributedCache cache)
+        public VocabularyService(ProgenyDbContext context, IDistributedCache cache, IUserInfoService userInfoService, IAccessManagementService accessManagementService)
         {
             _context = context;
+            _userInfoService = userInfoService;
+            _accessManagementService = accessManagementService;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -31,9 +37,15 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the VocabularyItem from the database and adds it to the cache.
         /// </summary>
         /// <param name="id">The WordId of the VocabularyItem.</param>
+        /// <param name="currentUserInfo">The UserInfo object of the current user.For checking permissions.</param>
         /// <returns>The VocabularyItem with the given WordId. Null if the VocabularyItem doesn't exist.</returns>
-        public async Task<VocabularyItem> GetVocabularyItem(int id)
+        public async Task<VocabularyItem> GetVocabularyItem(int id, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, id, currentUserInfo, PermissionLevel.View))
+            {
+                return null;
+            }
+
             VocabularyItem vocabularyItem = await GetVocabularyItemFromCache(id);
             if (vocabularyItem == null || vocabularyItem.WordId == 0)
             {
@@ -50,6 +62,12 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The added VocabularyItem.</returns>
         public async Task<VocabularyItem> AddVocabularyItem(VocabularyItem vocabularyItem)
         {
+            UserInfo currentUserInfo = await _userInfoService.GetUserInfoByUserId(vocabularyItem.CreatedBy);
+            if (!await _accessManagementService.HasProgenyPermission(vocabularyItem.ProgenyId, currentUserInfo, PermissionLevel.Add))
+            {
+                return null;
+            }
+
             VocabularyItem vocabularyItemToAdd = new();
             vocabularyItemToAdd.CopyPropertiesForAdd(vocabularyItem);
 
@@ -101,6 +119,12 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The updated VocabularyItem object.</returns>
         public async Task<VocabularyItem> UpdateVocabularyItem(VocabularyItem vocabularyItem)
         {
+            UserInfo currentUserInfo = await _userInfoService.GetUserInfoByUserId(vocabularyItem.ModifiedBy);
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
             VocabularyItem vocabularyItemToUpdate = await _context.VocabularyDb.SingleOrDefaultAsync(v => v.WordId == vocabularyItem.WordId);
             if (vocabularyItemToUpdate == null) return null;
 
@@ -122,6 +146,12 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The deleted VocabularyItem object.</returns>
         public async Task<VocabularyItem> DeleteVocabularyItem(VocabularyItem vocabularyItem)
         {
+            UserInfo currentUserInfo = await _userInfoService.GetUserInfoByUserId(vocabularyItem.ModifiedBy);
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return null;
+            }
+
             VocabularyItem vocabularyItemToDelete = await _context.VocabularyDb.SingleOrDefaultAsync(v => v.WordId == vocabularyItem.WordId);
             if (vocabularyItemToDelete == null) return null;
 
@@ -151,9 +181,9 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
-        /// <param name="accessLevel">The access level of the user.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of VocabularyItem objects.</returns>
-        public async Task<List<VocabularyItem>> GetVocabularyList(int progenyId, int accessLevel)
+        public async Task<List<VocabularyItem>> GetVocabularyList(int progenyId, UserInfo currentUserInfo)
         {
             List<VocabularyItem> vocabularyList = await GetVocabularyListFromCache(progenyId);
             if (vocabularyList.Count == 0)
@@ -161,9 +191,16 @@ namespace KinaUnaProgenyApi.Services
                 vocabularyList = await SetVocabularyListInCache(progenyId);
             }
 
-            vocabularyList = [.. vocabularyList.Where(p => p.AccessLevel >= accessLevel)];
+            List<VocabularyItem> allowedVocabularyList = [];
+            foreach (VocabularyItem vocabularyItem in vocabularyList)
+            {
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, currentUserInfo, PermissionLevel.View))
+                {
+                    allowedVocabularyList.Add(vocabularyItem);
+                }
+            }
 
-            return vocabularyList;
+            return allowedVocabularyList;
         }
 
         /// <summary>

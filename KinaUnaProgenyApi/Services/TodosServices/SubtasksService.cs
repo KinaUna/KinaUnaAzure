@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 
 namespace KinaUnaProgenyApi.Services.TodosServices
 {
@@ -17,7 +19,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
     /// generating filtered and paginated responses for subtasks. It is designed to work with a database context to
     /// persist changes.</remarks>
     /// <param name="progenyDbContext">Database context for accessing the Progeny database.</param>
-    public class SubtasksService(ProgenyDbContext progenyDbContext) : ISubtasksService
+    public class SubtasksService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService) : ISubtasksService
     {
         /// <summary>
         /// Adds a new subtask to the database and initializes its properties.
@@ -26,10 +28,37 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// current UTC time  and sets its <c>IsDeleted</c> property to <see langword="false"/>. The subtask is then
         /// saved to the database.</remarks>
         /// <param name="value">The <see cref="TodoItem"/> containing the details of the subtask to add. The <c>CreatedBy</c> property must
-        /// be set.</param>
+        ///     be set.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>A <see cref="TodoItem"/> representing the newly added subtask, including its initialized properties.</returns>
-        public async Task<TodoItem> AddSubtask(TodoItem value)
+        public async Task<TodoItem> AddSubtask(TodoItem value, UserInfo currentUserInfo)
         {
+            if (currentUserInfo == null)
+            {
+                return null;
+            }
+
+            bool hasAccess = false;
+            if (value.ProgenyId > 0)
+            {
+                if (await accessManagementService.HasProgenyPermission(value.ProgenyId, currentUserInfo, PermissionLevel.Add))
+                {
+                    hasAccess = true;
+                }
+            }
+            
+            if (value.FamilyId > 0)
+            {
+                if (await accessManagementService.HasFamilyPermission(value.FamilyId, currentUserInfo, PermissionLevel.Add))
+                {
+                    hasAccess = true;
+                }
+            }
+            if (!hasAccess)
+            {
+                return null;
+            }
+
             TodoItem subtaskToAdd = new();
             subtaskToAdd.CopyPropertiesForAdd(value);
 
@@ -179,13 +208,23 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// as deleted by setting its  <c>IsDeleted</c> property to <see langword="true"/> and updating its modification
         /// metadata.</remarks>
         /// <param name="subtask">The subtask to delete. The <see cref="TodoItem.TodoItemId"/> property must match an existing subtask in the
-        /// database.</param>
+        ///     database.</param>
+        /// <param name="currentUserInfo"></param>
         /// <param name="hardDelete">A boolean value indicating whether the subtask should be permanently removed.  If <see langword="true"/>,
-        /// the subtask is permanently deleted; otherwise, it is marked as deleted.</param>
+        ///     the subtask is permanently deleted; otherwise, it is marked as deleted.</param>
         /// <returns><see langword="true"/> if the subtask was successfully deleted or marked as deleted;  otherwise, <see
         /// langword="false"/> if the subtask does not exist.</returns>
-        public async Task<bool> DeleteSubtask(TodoItem subtask, bool hardDelete = false)
+        public async Task<bool> DeleteSubtask(TodoItem subtask, UserInfo currentUserInfo, bool hardDelete = false)
         {
+            if (currentUserInfo == null)
+            {
+                return false;
+            }
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, subtask.TodoItemId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return false;
+            }
+
             TodoItem subtaskToDelete = await progenyDbContext.TodoItemsDb
                 .SingleOrDefaultAsync(t => t.TodoItemId == subtask.TodoItemId);
 
@@ -214,10 +253,16 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// Retrieves a subtask with the specified identifier.
         /// </summary>
         /// <param name="id">The unique identifier of the subtask to retrieve.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>A <see cref="TodoItem"/> representing the subtask with the specified identifier,  or <see langword="null"/>
         /// if no subtask with the given identifier exists.</returns>
-        public async Task<TodoItem> GetSubtask(int id)
+        public async Task<TodoItem> GetSubtask(int id, UserInfo currentUserInfo)
         {
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, id, currentUserInfo, PermissionLevel.View))
+            {
+                return null;
+            }
+
             TodoItem subtask = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == id);
 
             return subtask;
@@ -229,17 +274,27 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// <remarks>Subtasks are filtered to exclude any that are marked as deleted. The method performs
         /// a  database query and returns the results without tracking changes to the retrieved entities.</remarks>
         /// <param name="todoItemTodoItemId">The unique identifier of the parent to-do item for which subtasks are to be retrieved.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of  TodoItem objects
         /// representing the subtasks of the specified to-do item.  The list will be empty if no subtasks are found.</returns>
-        public async Task<List<TodoItem>> GetSubtasksForTodoItem(int todoItemTodoItemId)
+        public async Task<List<TodoItem>> GetSubtasksForTodoItem(int todoItemTodoItemId, UserInfo currentUserInfo)
         {
+
             List<TodoItem> subtasks = await progenyDbContext.TodoItemsDb
                 .AsNoTracking()
                 .Where(t => t.ParentTodoItemId == todoItemTodoItemId && !t.IsDeleted)
                 .ToListAsync();
 
-            
-            return subtasks;
+            List<TodoItem> subtasksWithAccess = [];
+            foreach (TodoItem subtask in subtasks)
+            {
+                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, subtask.TodoItemId, currentUserInfo, PermissionLevel.View))
+                {
+                    subtasksWithAccess.Add(subtask);
+                }
+            }
+
+            return subtasksWithAccess;
         }
 
         /// <summary>
@@ -256,11 +311,21 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// <see langword="null"/>. - For other statuses, the existing <see cref="TodoItem.CompletedDate"/> is
         /// preserved.</remarks>
         /// <param name="value">The <see cref="TodoItem"/> containing the updated values for the subtask. The <see
-        /// cref="TodoItem.TodoItemId"/> property must match an existing subtask.</param>
+        ///     cref="TodoItem.TodoItemId"/> property must match an existing subtask.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated <see cref="TodoItem"/> if the subtask is found and successfully updated; otherwise, <see
         /// langword="null"/> if no subtask with the specified <see cref="TodoItem.TodoItemId"/> exists.</returns>
-        public async Task<TodoItem> UpdateSubtask(TodoItem value)
+        public async Task<TodoItem> UpdateSubtask(TodoItem value, UserInfo currentUserInfo)
         {
+            if (currentUserInfo == null)
+            {
+                return null;
+            }
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, value.TodoItemId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
             TodoItem currentSubtask = await progenyDbContext.TodoItemsDb
                 .SingleOrDefaultAsync(t => t.TodoItemId == value.TodoItemId);
             if (currentSubtask == null)

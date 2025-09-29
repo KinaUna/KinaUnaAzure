@@ -6,6 +6,8 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -15,14 +17,16 @@ namespace KinaUnaProgenyApi.Services
     public class ContactService : IContactService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IAccessManagementService _accessManagementService;
         private readonly IImageStore _imageStore;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         
-        public ContactService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore)
+        public ContactService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService)
         {
             _context = context;
+            _accessManagementService = accessManagementService;
             _imageStore = imageStore;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
@@ -34,9 +38,14 @@ namespace KinaUnaProgenyApi.Services
         /// If the Contact isn't in the cache, it will be looked up in the database and added to the cache.
         /// </summary>
         /// <param name="id">The ContactId of the Contact to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>Contact object. Null if a Contact entity with the given ContactId doesn't exist.</returns>
-        public async Task<Contact> GetContact(int id)
+        public async Task<Contact> GetContact(int id, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, id, currentUserInfo, PermissionLevel.View))
+            {
+                return null;
+            }
             Contact contact = await GetContactFromCache(id);
             if (contact == null || contact.ContactId == 0)
             {
@@ -50,9 +59,32 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new Contact to the database and the cache.
         /// </summary>
         /// <param name="contact">The Contact object to add.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The updated Contact object.</returns>
-        public async Task<Contact> AddContact(Contact contact)
+        public async Task<Contact> AddContact(Contact contact, UserInfo currentUserInfo)
         {
+            bool hasAccess = false;
+            if (contact.ProgenyId > 0)
+            {
+                if (await _accessManagementService.HasProgenyPermission(contact.ProgenyId, currentUserInfo, PermissionLevel.Add))
+                {
+                    hasAccess = true;
+                }
+            }
+
+            if (contact.FamilyId > 0)
+            {
+                if (await _accessManagementService.HasFamilyPermission(contact.FamilyId, currentUserInfo, PermissionLevel.Add))
+                {
+                    hasAccess = true;
+                }
+            }
+
+            if (!hasAccess)
+            {
+                return null;
+            }
+
             Contact contactToAdd = new();
             contactToAdd.CopyPropertiesForAdd(contact);
 
@@ -86,7 +118,7 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="id">The ContactId of the Contact to get and set.</param>
         /// <returns>The Contact object. Null if a Contact with the given ContactId doesn't exist.</returns>
-        public async Task<Contact> SetContactInCache(int id)
+        private async Task<Contact> SetContactInCache(int id)
         {
             Contact contact = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
             if (contact == null) return null;
@@ -102,9 +134,24 @@ namespace KinaUnaProgenyApi.Services
         /// Updates a Contact in the database and the cache.
         /// </summary>
         /// <param name="contact">The Contact object with the updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated Contact object.</returns>
-        public async Task<Contact> UpdateContact(Contact contact)
+        public async Task<Contact> UpdateContact(Contact contact, UserInfo currentUserInfo)
         {
+            if (contact.ProgenyId > 0 && contact.FamilyId > 0)
+            {
+                return null;
+            }
+            if (contact.ProgenyId == 0 && contact.FamilyId == 0)
+            {
+                return null;
+            }
+
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, contact.ContactId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
             Contact contactToUpdate = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
             if (contactToUpdate == null) return null;
             
@@ -154,9 +201,15 @@ namespace KinaUnaProgenyApi.Services
         /// Deletes a Contact from the database and the cache. 
         /// </summary>
         /// <param name="contact">The Contact to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The deleted Contact.</returns>
-        public async Task<Contact> DeleteContact(Contact contact)
+        public async Task<Contact> DeleteContact(Contact contact, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, contact.ContactId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return null;
+            }
+
             Contact contactToDelete = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
             if (contactToDelete == null) return null;
 
@@ -178,7 +231,7 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="id">The ContactId of the Contact to delete.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny the Contact item belongs to.</param>
         /// <returns></returns>
-        public async Task RemoveContactFromCache(int id, int progenyId)
+        private async Task RemoveContactFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "contact" + id);
 
@@ -190,9 +243,9 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, it will be looked up in the database and added to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
-        /// <param name="accessLevel">The access level required to view the Contact.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of Contacts.</returns>
-        public async Task<List<Contact>> GetContactsList(int progenyId, int accessLevel)
+        public async Task<List<Contact>> GetContactsList(int progenyId, UserInfo currentUserInfo)
         {
             List<Contact> contactsList = await GetContactsListFromCache(progenyId);
             if (contactsList.Count == 0)
@@ -200,9 +253,16 @@ namespace KinaUnaProgenyApi.Services
                 contactsList = await SetContactsListInCache(progenyId);
             }
 
-            contactsList = [.. contactsList.Where(p => p.AccessLevel >= accessLevel)];
+            List<Contact> accessibleContacts = [];
+            foreach (Contact contact in contactsList)
+            {
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, contact.ContactId, currentUserInfo, PermissionLevel.View))
+                {
+                    accessibleContacts.Add(contact);
+                }
+            }
 
-            return contactsList;
+            return accessibleContacts;
         }
 
         /// <summary>
@@ -222,6 +282,14 @@ namespace KinaUnaProgenyApi.Services
             return contactsList;
         }
 
+        /// <summary>
+        /// Retrieves the list of contacts for the specified progeny and stores it in the cache.
+        /// </summary>
+        /// <remarks>The contacts are retrieved from the database and cached using a sliding expiration
+        /// policy.  The cache key is constructed using the application name, API version, and the progeny ID.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose contacts are to be retrieved and cached.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the list of contacts associated
+        /// with the specified progeny.</returns>
         private async Task<List<Contact>> SetContactsListInCache(int progenyId)
         {
             List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
@@ -230,9 +298,16 @@ namespace KinaUnaProgenyApi.Services
             return contactsList;
         }
 
-        public async Task<List<Contact>> GetContactsWithTag(int progenyId, string tag, int accessLevel)
+        /// <summary>
+        /// Gets a list of all Contacts for a Progeny with the given tag.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
+        /// <param name="tag">The tag to filter contacts by.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
+        /// <returns></returns>
+        public async Task<List<Contact>> GetContactsWithTag(int progenyId, string tag, UserInfo currentUserInfo)
         {
-            List<Contact> allItems = await GetContactsList(progenyId, accessLevel);
+            List<Contact> allItems = await GetContactsList(progenyId, currentUserInfo);
             if (!string.IsNullOrEmpty(tag))
             {
                 allItems = [.. allItems.Where(c => c.Tags != null && c.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];
@@ -241,9 +316,16 @@ namespace KinaUnaProgenyApi.Services
             return allItems;
         }
 
-        public async Task<List<Contact>> GetContactsWithContext(int progenyId, string context, int accessLevel)
+        /// <summary>
+        /// Gets a list of all Contacts for a Progeny with the given context.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
+        /// <param name="context">The context to filter contacts by.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
+        /// <returns></returns>
+        public async Task<List<Contact>> GetContactsWithContext(int progenyId, string context, UserInfo currentUserInfo)
         {
-            List<Contact> allItems = await GetContactsList(progenyId, accessLevel);
+            List<Contact> allItems = await GetContactsList(progenyId, currentUserInfo);
             if (!string.IsNullOrEmpty(context))
             {
                 allItems = [.. allItems.Where(c => c.Context != null && c.Context.Contains(context, StringComparison.CurrentCultureIgnoreCase))];

@@ -5,6 +5,8 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -14,13 +16,15 @@ namespace KinaUnaProgenyApi.Services
     public class SleepService : ISleepService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public SleepService(ProgenyDbContext context, IDistributedCache cache)
+        public SleepService(ProgenyDbContext context, IDistributedCache cache, IAccessManagementService accessManagementService)
         {
             _context = context;
+            _accessManagementService = accessManagementService;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -31,9 +35,15 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the Sleep from the database and adds it to the cache.
         /// </summary>
         /// <param name="id">The SleepId of the Sleep to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user. For checking permissions.</param>
         /// <returns>The Sleep object with the given SleepId. Null if the Sleep item doesn't exist.</returns>
-        public async Task<Sleep> GetSleep(int id)
+        public async Task<Sleep> GetSleep(int id, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Sleep, id, currentUserInfo, PermissionLevel.View))
+            {
+                return null;
+            }
+
             Sleep sleep = await GetSleepFromCache(id);
             if (sleep == null || sleep.SleepId == 0)
             {
@@ -47,9 +57,15 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new Sleep to the database and adds it to the cache.
         /// </summary>
         /// <param name="sleep">The Sleep object to add.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added Sleep object.</returns>
-        public async Task<Sleep> AddSleep(Sleep sleep)
+        public async Task<Sleep> AddSleep(Sleep sleep, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasProgenyPermission(sleep.ProgenyId, currentUserInfo, PermissionLevel.Add))
+            {
+                return null;
+            }
+
             Sleep sleepToAdd = new();
             sleepToAdd.CopyPropertiesForAdd(sleep);
 
@@ -100,9 +116,15 @@ namespace KinaUnaProgenyApi.Services
         /// Updates a Sleep in the database and the cache.
         /// </summary>
         /// <param name="sleep">The Sleep object with the updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated Sleep object.</returns>
-        public async Task<Sleep> UpdateSleep(Sleep sleep)
+        public async Task<Sleep> UpdateSleep(Sleep sleep, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Sleep, sleep.SleepId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
             Sleep sleepToUpdate = await _context.SleepDb.SingleOrDefaultAsync(s => s.SleepId == sleep.SleepId);
             if (sleepToUpdate == null) return null;
 
@@ -120,9 +142,15 @@ namespace KinaUnaProgenyApi.Services
         /// Deletes a Sleep from the database and the cache.
         /// </summary>
         /// <param name="sleep">The Sleep object to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The deleted Sleep object.</returns>
-        public async Task<Sleep> DeleteSleep(Sleep sleep)
+        public async Task<Sleep> DeleteSleep(Sleep sleep, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Sleep, sleep.SleepId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return null;
+            }
+
             Sleep sleepToDelete = await _context.SleepDb.SingleOrDefaultAsync(s => s.SleepId == sleep.SleepId);
             if (sleepToDelete == null) return null;
 
@@ -152,9 +180,9 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Sleep items for.</param>
-        /// <param name="accessLevel">The access level for the current user.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user. For checking permissions.</param>
         /// <returns>List of Sleep objects.</returns>
-        public async Task<List<Sleep>> GetSleepList(int progenyId, int accessLevel)
+        public async Task<List<Sleep>> GetSleepList(int progenyId, UserInfo currentUserInfo)
         {
             List<Sleep> sleepList = await GetSleepListFromCache(progenyId);
             if (sleepList.Count == 0)
@@ -162,9 +190,16 @@ namespace KinaUnaProgenyApi.Services
                 sleepList = await SetSleepListInCache(progenyId);
             }
 
-            sleepList = [.. sleepList.Where(s => s.AccessLevel >= accessLevel)];
+            List<Sleep> filteredList = [];
+            foreach (Sleep sleep in sleepList)
+            {
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Sleep, sleep.SleepId, currentUserInfo, PermissionLevel.View))
+                {
+                    filteredList.Add(sleep);
+                }
+            }
 
-            return sleepList;
+            return filteredList;
         }
 
         /// <summary>

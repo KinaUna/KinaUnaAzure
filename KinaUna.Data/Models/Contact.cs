@@ -15,47 +15,48 @@ namespace KinaUna.Data.Models
         public bool Active { get; set; }
 
         [MaxLength(256)]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string MiddleName { get; set; }
+        public string MiddleName { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string DisplayName { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
 
-        public int? AddressIdNumber { get; set; }
-
-        [MaxLength(256)]
-        public string Email1 { get; set; }
+        public int? AddressIdNumber { get; set; } 
 
         [MaxLength(256)]
-        public string Email2 { get; set; }
+        public string Email1 { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string PhoneNumber { get; set; }
+        public string Email2 { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string MobileNumber { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string Context { get; set; }
+        public string MobileNumber { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string Notes { get; set; }
+        public string Context { get; set; } = string.Empty;
+
+        [MaxLength(4096)]
+        public string Notes { get; set; } = string.Empty;
 
         [MaxLength(1024)]
-        public string PictureLink { get; set; }
+        public string PictureLink { get; set; } = string.Empty;
 
         [MaxLength(1024)]
-        public string Website { get; set; }
+        public string Website { get; set; } = string.Empty;
         public int AccessLevel { get; set; }
-        public int ProgenyId { get; set; }
+        public int ProgenyId { get; set; } = 0; // Which Progeny this contact belongs to. 0 if it belongs to a family
+        public int FamilyId { get; set; } = 0; // Which Family this contact belongs to. 0 if it belongs to a Progeny
 
         [MaxLength(512)]
-        public string Tags { get; set; }
+        public string Tags { get; set; } = string.Empty; // Comma separated list of tags.
         public DateTime? DateAdded { get; set; }
 
         [MaxLength(256)]
@@ -68,7 +69,7 @@ namespace KinaUna.Data.Models
         public Address Address { get; set; }
 
         [NotMapped]
-        public string AddressString { get; set; }
+        public string AddressString { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the identifier of the user or system that created the entity.

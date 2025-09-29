@@ -166,6 +166,8 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForUpdate(this TodoItem currentTodoItem, TodoItem otherTodoItem)
         {
             currentTodoItem.ProgenyId = otherTodoItem.ProgenyId;
+            currentTodoItem.FamilyId = otherTodoItem.FamilyId;
+            currentTodoItem.ParentTodoItemId = otherTodoItem.ParentTodoItemId;
             currentTodoItem.Title = otherTodoItem.Title;
             currentTodoItem.Description = otherTodoItem.Description;
             currentTodoItem.Status = otherTodoItem.Status;
@@ -202,6 +204,7 @@ namespace KinaUna.Data.Extensions
             {
                 ItemId = todoItem.TodoItemId.ToString(),
                 ProgenyId = todoItem.ProgenyId,
+                FamilyId = todoItem.FamilyId,
                 AccessLevel = todoItem.AccessLevel,
                 ItemType = (int)KinaUnaTypes.TimeLineType.TodoItem,
                 CreatedBy = todoItem.CreatedBy,

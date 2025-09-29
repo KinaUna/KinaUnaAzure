@@ -83,13 +83,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Comment value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id, currentUserInfo);
 
-            string userId = User.GetUserId();
-            // Todo: Check user's access level to the Progeny.
             if (progeny != null && value.CommentThreadNumber != 0)
             {
-                if (userId != value.Author)
+                if (currentUserInfo.UserId != value.Author)
                 {
                     return Unauthorized();
                 }
@@ -131,19 +130,19 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Comment value)
         {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             Comment comment = await commentsService.GetComment(id);
             if (comment == null)
             {
                 return NotFound();
             }
 
-            Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id);
+            Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id, currentUserInfo);
 
-            string userId = User.GetUserId();
             if (progeny != null)
             {
 
-                if (userId != comment.Author)
+                if (currentUserInfo.UserId != comment.Author)
                 {
                     return Unauthorized();
                 }

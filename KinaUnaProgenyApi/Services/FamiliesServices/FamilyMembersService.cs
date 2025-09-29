@@ -121,7 +121,7 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             if (familyMember.ProgenyId > 0)
             {
                 // Check progeny permissions.
-                Progeny progeny = await progenyService.GetProgeny(familyMember.ProgenyId);
+                Progeny progeny = await progenyService.GetProgeny(familyMember.ProgenyId, currentUserInfo);
                 if (progeny == null || progeny.Id == 0)
                 {
                     return null;

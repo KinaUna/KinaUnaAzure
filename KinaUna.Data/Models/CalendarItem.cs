@@ -20,23 +20,33 @@ namespace KinaUna.Data.Models
         /// </summary>
         [MaxLength(128)]
         public string UId { get; set; } = string.Empty;
+
         /// <summary>
         /// The Id of the Progeny the event belongs to.
         /// </summary>
-        public int ProgenyId { get; set; }
+        public int ProgenyId { get; set; } = 0; // 0 if associated with a family.
+
+        /// <summary>
+        /// Gets or sets the identifier for the family associated with this entity.
+        /// </summary>
+        public int FamilyId { get; set; } = 0; // 0 if associated with a progeny.
+
         /// <summary>
         /// The event title.
         /// </summary>
         [MaxLength(256)]
         public string Title { get; set; } = string.Empty;
+        
         /// <summary>
         /// Notes and detailed description of the event.
         /// </summary>
         public string Notes { get; set; } = string.Empty;
+        
         /// <summary>
         /// The start time and date of the event.
         /// </summary>
         public DateTime? StartTime { get; set; }
+        
         /// <summary>
         /// The end time and date of the event.
         /// </summary>

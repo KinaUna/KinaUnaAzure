@@ -1,10 +1,8 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,7 +17,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// </summary>
     /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
-    /// <param name="userAccessService"></param>
     /// <param name="timelineService"></param>
     /// <param name="skillService"></param>
     /// <param name="progenyService"></param>
@@ -31,7 +28,6 @@ namespace KinaUnaProgenyApi.Controllers
     public class SkillsController(
         IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
-        IUserAccessService userAccessService,
         ITimelineService timelineService,
         ISkillService skillService,
         IProgenyService progenyService,
@@ -48,14 +44,9 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            List<Skill> skillsList = await skillService.GetSkillsList(id, accessLevelResult.Value);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
+            List<Skill> skillsList = await skillService.GetSkillsList(id, currentUserInfo);
             
             return Ok(skillsList);
         }
@@ -69,13 +60,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetSkillItem(int id)
         {
-            Skill skill = await skillService.GetSkill(id);
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(skill.ProgenyId, userEmail, skill.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Skill skill = await skillService.GetSkill(id, currentUserInfo);
+            if (skill == null)
             {
-                return accessLevelResult.ToActionResult();
+                return NotFound();
             }
 
             return Ok(skill);
@@ -91,39 +80,29 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Skill value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
-
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
-            }
-
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
+            
             value.Author = User.GetUserId();
             value.CreatedBy = User.GetUserId();
             value.ModifiedBy = User.GetUserId();
 
-            Skill skillItem = await skillService.AddSkill(value);
-
+            Skill skillItem = await skillService.AddSkill(value, currentUserInfo);
+            if (skillItem == null)
+            {
+                return Unauthorized();
+            }
 
             TimeLineItem timeLineItem = new();
             timeLineItem.CopySkillPropertiesForAdd(skillItem);
-            _ = await timelineService.AddTimeLineItem(timeLineItem);
+            _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
+            
             string notificationTitle = "Skill added for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " added a new skill for " + progeny.NickName;
+            string notificationMessage = currentUserInfo.FullName() + " added a new skill for " + progeny.NickName;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendSkillNotification(skillItem, userInfo, notificationTitle);
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
+            await webNotificationsService.SendSkillNotification(skillItem, currentUserInfo, notificationTitle);
 
             return Ok(skillItem);
         }
@@ -139,35 +118,26 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Skill value)
         {
-            Skill skillItem = await skillService.GetSkill(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Skill skillItem = await skillService.GetSkill(id, currentUserInfo);
             if (skillItem == null)
             {
                 return NotFound();
             }
-
-            Progeny progeny = await progenyService.GetProgeny(skillItem.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
-                if (!progeny.IsInAdminList(userEmail.ToUpper()))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
-            }
-
+            
             value.ModifiedBy = User.GetUserId();
 
-            skillItem = await skillService.UpdateSkill(value);
-            
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(skillItem.SkillId.ToString(), (int)KinaUnaTypes.TimeLineType.Skill);
+            skillItem = await skillService.UpdateSkill(value, currentUserInfo);
+            if (skillItem == null)
+            {
+                return Unauthorized();
+            }
+
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(skillItem.SkillId.ToString(), (int)KinaUnaTypes.TimeLineType.Skill, currentUserInfo);
             if (timeLineItem == null) return Ok(skillItem);
 
             timeLineItem.CopySkillPropertiesForUpdate(skillItem);
-            _ = await timelineService.UpdateTimeLineItem(timeLineItem);
+            _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
 
             return Ok(skillItem);
         }
@@ -182,44 +152,34 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Skill skillItem = await skillService.GetSkill(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Skill skillItem = await skillService.GetSkill(id, currentUserInfo);
             if (skillItem == null) return NotFound();
 
-            Progeny progeny = await progenyService.GetProgeny(skillItem.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
-            }
-
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(skillItem.SkillId.ToString(), (int)KinaUnaTypes.TimeLineType.Skill);
-            if (timeLineItem != null)
-            {
-                _ = await timelineService.DeleteTimeLineItem(timeLineItem);
-            }
+            Progeny progeny = await progenyService.GetProgeny(skillItem.ProgenyId, currentUserInfo);
+            
+            
 
             skillItem.ModifiedBy = User.GetUserId();
 
-            _ = await skillService.DeleteSkill(skillItem);
+            Skill deletedSkill = await skillService.DeleteSkill(skillItem, currentUserInfo);
+            if (deletedSkill == null) return Unauthorized();
+            
 
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(skillItem.SkillId.ToString(), (int)KinaUnaTypes.TimeLineType.Skill, currentUserInfo);
+            if (timeLineItem != null)
+            {
+                _ = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
+            }
             if (timeLineItem == null) return NoContent();
-
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
+            
             string notificationTitle = "Skill deleted for " + progeny.NickName;
-            string notificationMessage = userInfo.FirstName + " " + userInfo.MiddleName + " " + userInfo.LastName + " deleted a skill for " + progeny.NickName + ". Measurement date: " + skillItem.Name;
+            string notificationMessage = currentUserInfo.FirstName + " " + currentUserInfo.MiddleName + " " + currentUserInfo.LastName + " deleted a skill for " + progeny.NickName + ". Measurement date: " + skillItem.Name;
 
             skillItem.AccessLevel = timeLineItem.AccessLevel = 0;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendSkillNotification(skillItem, userInfo, notificationTitle);
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
+            await webNotificationsService.SendSkillNotification(skillItem, currentUserInfo, notificationTitle);
 
             return NoContent();
 
@@ -236,19 +196,9 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]")]
         public async Task<IActionResult> GetSkillsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int sortBy = 1)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            if (pageIndex < 1)
-            {
-                pageIndex = 1;
-            }
-
-            List<Skill> allItems = await skillService.GetSkillsList(progenyId, accessLevelResult.Value);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
+            List<Skill> allItems = await skillService.GetSkillsList(progenyId, currentUserInfo);
             allItems = [.. allItems.OrderBy(s => s.SkillFirstObservation)];
 
             if (sortBy == 1)

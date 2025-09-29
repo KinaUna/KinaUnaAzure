@@ -57,9 +57,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetAccess(int id)
         {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess result = await userAccessService.GetUserAccess(id);
-            result.Progeny = await progenyService.GetProgeny(result.ProgenyId);
+            result.Progeny = await progenyService.GetProgeny(result.ProgenyId, currentUserInfo);
 
             // Only allow access if the user is an admin for the Progeny or if the UserAccess entity is for the user requesting it.
             if (result.Progeny.IsInAdminList(User.GetEmail()) || result.UserId.Equals(userEmail, System.StringComparison.CurrentCultureIgnoreCase))
@@ -80,7 +81,8 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] UserAccess value)
         {
-            value.Progeny = await progenyService.GetProgeny(value.ProgenyId);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            value.Progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
             if (value.Progeny != null)
             {
                 if (!value.Progeny.IsInAdminList(User.GetEmail()))
@@ -129,8 +131,9 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] UserAccess value)
         {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             UserAccess originalUserAccess = await userAccessService.GetUserAccess(id);
-            value.Progeny = await progenyService.GetProgeny(value.ProgenyId);
+            value.Progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
             if (value.Progeny != null && originalUserAccess != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -192,8 +195,8 @@ namespace KinaUnaProgenyApi.Controllers
             if (userAccess == null) return NotFound();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-            userAccess.Progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            userAccess.Progeny = await progenyService.GetProgeny(userAccess.ProgenyId, currentUserInfo);
             if (userAccess.Progeny != null)
             {
                 if (!userAccess.Progeny.IsInAdminList(userEmail))
@@ -242,12 +245,12 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> AccessListByUser([FromBody] string userEmail)
         {
             if (!userEmail.Equals(User.GetEmail() ?? Constants.DefaultUserEmail, System.StringComparison.CurrentCultureIgnoreCase)) return NotFound();
-
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(userEmail);
             
             foreach (UserAccess userAccess in userAccessList)
             {
-                userAccess.Progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                userAccess.Progeny = await progenyService.GetProgeny(userAccess.ProgenyId, currentUserInfo);
             }
 
             return Ok(userAccessList);
@@ -263,13 +266,13 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (!userEmail.Equals(id, System.StringComparison.CurrentCultureIgnoreCase)) return Ok();
-
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             List<UserAccess> userAccessList = await userAccessService.GetUsersUserAdminAccessList(id);
             List<Progeny> progenyList = [];
             
             foreach (UserAccess userAccess in userAccessList)
             {
-                Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId, currentUserInfo);
                 progenyList.Add(progeny);
             }
 
@@ -306,7 +309,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
 
-
+            // Todo: Rewrite and add updates to families, group members, and permissions.
             List<Progeny> progenyList = await progenyService.GetAllProgenies();
             progenyList = [.. progenyList.Where(p => p.IsInAdminList(model.OldEmail))];
             
@@ -315,8 +318,9 @@ namespace KinaUnaProgenyApi.Controllers
             foreach (Progeny prog in progenyList)
             {
                 string adminList = prog.Admins.ToUpper();
+                prog.ModifiedBy = User.GetUserId();
                 prog.Admins = adminList.Replace(model.OldEmail.ToUpper(), model.NewEmail.ToUpper());
-                await progenyService.UpdateProgeny(prog);
+                await progenyService.UpdateProgeny(prog, userInfo);
             }
 
             return Ok();

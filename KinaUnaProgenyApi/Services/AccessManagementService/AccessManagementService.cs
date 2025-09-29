@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Contexts;
+﻿using System;
+using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using System.Collections.Generic;
@@ -30,6 +31,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 return false;
             }
+            
+            // Todo: Allow access to default progeny items, for users who are not logged in.
 
             // Special cases, Creator only and Private.
             if (requiredLevel == PermissionLevel.CreatorOnly)
@@ -38,6 +41,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 {
                     return true;
                 }
+                return false;
             }
 
             if (requiredLevel == PermissionLevel.Private)
@@ -46,8 +50,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 {
                     return true;
                 }
+                return false;
             }
-
+            
             // Check direct user permissions.
             TimelineItemPermission timelineItemPermission = await progenyDbContext.TimelineItemPermissionsDb
                 .AsNoTracking()
@@ -428,9 +433,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             timelineItemPermission.CreatedBy = currentUserInfo.UserId;
-            timelineItemPermission.CreatedTime = System.DateTime.UtcNow;
+            timelineItemPermission.CreatedTime = DateTime.UtcNow;
             timelineItemPermission.ModifiedBy = currentUserInfo.UserId;
-            timelineItemPermission.ModifiedTime = System.DateTime.UtcNow;
+            timelineItemPermission.ModifiedTime = DateTime.UtcNow;
 
             progenyDbContext.TimelineItemPermissionsDb.Add(timelineItemPermission);
             await progenyDbContext.SaveChangesAsync();
@@ -550,7 +555,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             PermissionAuditLog logEntry = await permissionAuditLogService.AddTimelineItemPermissionAuditLogEntry(PermissionAction.Update, existingPermission, currentUserInfo);
 
             existingPermission.PermissionLevel = timelineItemPermission.PermissionLevel;
-            existingPermission.ModifiedTime = System.DateTime.UtcNow;
+            existingPermission.ModifiedTime = DateTime.UtcNow;
             existingPermission.ModifiedBy = currentUserInfo.UserId;
 
             progenyDbContext.TimelineItemPermissionsDb.Update(existingPermission);
@@ -658,9 +663,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
             
             progenyPermission.CreatedBy = currentUserInfo.UserId;
-            progenyPermission.CreatedTime = System.DateTime.UtcNow;
+            progenyPermission.CreatedTime = DateTime.UtcNow;
             progenyPermission.ModifiedBy = currentUserInfo.UserId;
-            progenyPermission.ModifiedTime = System.DateTime.UtcNow;
+            progenyPermission.ModifiedTime = DateTime.UtcNow;
 
             progenyDbContext.ProgenyPermissionsDb.Add(progenyPermission);
             await progenyDbContext.SaveChangesAsync();
@@ -814,7 +819,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             existingPermission.PermissionLevel = progenyPermission.PermissionLevel;
-            existingPermission.ModifiedTime = System.DateTime.UtcNow;
+            existingPermission.ModifiedTime = DateTime.UtcNow;
             existingPermission.ModifiedBy = currentUserInfo.UserId;
 
             progenyDbContext.ProgenyPermissionsDb.Update(existingPermission);
@@ -824,6 +829,81 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             await permissionAuditLogService.UpdatePermissionAuditLogEntry(logEntry);
 
             return existingPermission; // Todo: Use result object instead.
+        }
+
+        /// <summary>
+        /// Updates the administrative permissions for a specified progeny based on the current list of administrators.
+        /// </summary>
+        /// <remarks>This method synchronizes the administrative permissions for the specified progeny by
+        /// performing the following actions: <list type="bullet"> <item><description>Downgrades permissions for users
+        /// who are no longer in the current list of administrators.</description></item> <item><description>Adds or
+        /// updates permissions for new administrators in the list.</description></item> </list> The method ensures that
+        /// the database reflects the current state of the progeny's administrative list.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose administrative permissions are to be updated.</param>
+        /// <returns><see langword="true"/> if the administrative permissions were successfully updated;  otherwise, <see
+        /// langword="false"/> if the specified progeny does not exist.</returns>
+        public async Task<bool> ProgenyAdminsUpdated(int progenyId)
+        {
+            Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == progenyId);
+            if (progeny == null)
+            {
+                return false;
+            }
+
+            // Get all existing admin permissions for the progeny.
+            List<ProgenyPermission> adminPermissions = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
+                .Where(pp => pp.ProgenyId == progenyId && pp.PermissionLevel == PermissionLevel.Admin)
+                .ToListAsync();
+            
+            List<string> adminEmails = progeny.GetAdminsList();
+
+            // Downgrade permissions for users no longer in the admin list.
+            foreach (ProgenyPermission permission in adminPermissions)
+            {
+                if (!adminEmails.Contains(permission.Email, StringComparer.InvariantCultureIgnoreCase))
+                {
+                    permission.PermissionLevel = PermissionLevel.Edit;
+                    progenyDbContext.ProgenyPermissionsDb.Update(permission);
+                }
+            }
+
+            // Add admin permissions for new admins.
+            foreach (string email in adminEmails)
+            {
+                if (adminPermissions.All(ap => ap.Email != email))
+                {
+                    ProgenyPermission existingPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.Email.ToUpper() == email.ToUpper() && pp.ProgenyId == progenyId);
+                    if (existingPermission != null)
+                    {
+                        if(existingPermission.PermissionLevel != PermissionLevel.Admin)
+                        {
+                            existingPermission.PermissionLevel = PermissionLevel.Admin;
+                            progenyDbContext.ProgenyPermissionsDb.Update(existingPermission);
+                        }
+                        
+                        continue;
+                    }
+
+                    UserInfo adminsUserInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == email.ToUpper());
+                    ProgenyPermission newPermission = new ProgenyPermission
+                    {
+                        ProgenyId = progenyId,
+                        Email = email,
+                        UserId = adminsUserInfo?.UserId ?? string.Empty,
+                        GroupId = 0,
+                        PermissionLevel = PermissionLevel.Admin,
+                        CreatedBy = "System",
+                        CreatedTime = DateTime.UtcNow,
+                        ModifiedBy = "System",
+                        ModifiedTime = DateTime.UtcNow
+                    };
+                    progenyDbContext.ProgenyPermissionsDb.Add(newPermission);
+                }
+            }
+
+            await progenyDbContext.SaveChangesAsync();
+            return true;
+
         }
 
         /// <summary>
@@ -920,9 +1000,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             familyPermission.CreatedBy = currentUserInfo.UserId;
-            familyPermission.CreatedTime = System.DateTime.UtcNow;
+            familyPermission.CreatedTime = DateTime.UtcNow;
             familyPermission.ModifiedBy = currentUserInfo.UserId;
-            familyPermission.ModifiedTime = System.DateTime.UtcNow;
+            familyPermission.ModifiedTime = DateTime.UtcNow;
             
             progenyDbContext.FamilyPermissionsDb.Add(familyPermission);
             await progenyDbContext.SaveChangesAsync();
@@ -1060,7 +1140,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             existingPermission.PermissionLevel = familyPermission.PermissionLevel;
-            existingPermission.ModifiedTime = System.DateTime.UtcNow;
+            existingPermission.ModifiedTime = DateTime.UtcNow;
             existingPermission.ModifiedBy = currentUserInfo.UserId;
             
             progenyDbContext.FamilyPermissionsDb.Update(existingPermission);

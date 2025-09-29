@@ -108,6 +108,19 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         Task<ProgenyPermission> UpdateProgenyPermission(ProgenyPermission progenyPermission, UserInfo currentUserInfo);
 
         /// <summary>
+        /// Updates the administrative permissions for a specified progeny based on the current list of administrators.
+        /// </summary>
+        /// <remarks>This method synchronizes the administrative permissions for the specified progeny by
+        /// performing the following actions: <list type="bullet"> <item><description>Downgrades permissions for users
+        /// who are no longer in the current list of administrators.</description></item> <item><description>Adds or
+        /// updates permissions for new administrators in the list.</description></item> </list> The method ensures that
+        /// the database reflects the current state of the progeny's administrative list.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose administrative permissions are to be updated.</param>
+        /// <returns><see langword="true"/> if the administrative permissions were successfully updated;  otherwise, <see
+        /// langword="false"/> if the specified progeny does not exist.</returns>
+        Task<bool> ProgenyAdminsUpdated(int progenyId);
+
+        /// <summary>
         /// Determines whether a user has the specified access level for a given family.
         /// </summary>
         /// <param name="familyId">The unique identifier of the family whose access to is being checked.</param>

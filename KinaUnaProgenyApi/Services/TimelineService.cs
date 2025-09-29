@@ -6,8 +6,10 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Helpers;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -18,15 +20,17 @@ namespace KinaUnaProgenyApi.Services
     public class TimelineService : ITimelineService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IAccessManagementService _accessManagementService;
         private readonly ITimelineFilteringService _timelineFilteringService;
         private readonly ICalendarService _calendarService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public TimelineService(ProgenyDbContext context, ITimelineFilteringService timelineFilteringService, IDistributedCache cache, ICalendarService calendarService)
+        public TimelineService(ProgenyDbContext context, ITimelineFilteringService timelineFilteringService, IDistributedCache cache, ICalendarService calendarService, IAccessManagementService accessManagementService)
         {
             _context = context;
+            _accessManagementService = accessManagementService;
             _timelineFilteringService = timelineFilteringService;
             _calendarService = calendarService;
             _cache = cache;
@@ -38,8 +42,9 @@ namespace KinaUnaProgenyApi.Services
         /// Gets the TimeLineItem with the specified TimeLineId.
         /// </summary>
         /// <param name="id">The TimeLineId of the TimeLineItem to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The TimeLineItem with the given TimeLineId. Null if the TimeLineItem doesn't exist.</returns>
-        public async Task<TimeLineItem> GetTimeLineItem(int id)
+        public async Task<TimeLineItem> GetTimeLineItem(int id, UserInfo currentUserInfo)
         {
             TimeLineItem timeLineItem = await GetTimeLineItemFromCache(id);
             if (timeLineItem == null || timeLineItem.TimeLineId == 0)
@@ -47,20 +52,52 @@ namespace KinaUnaProgenyApi.Services
                 timeLineItem = await SetTimeLineItemInCache(id);
             }
 
-            return timeLineItem;
+            _ = int.TryParse(timeLineItem.ItemId, out int itemId);
+            KinaUnaTypes.TimeLineType itemType = (KinaUnaTypes.TimeLineType)timeLineItem.ItemType;
+            if (itemId <= 0) return null;
+            
+            if (await _accessManagementService.HasItemPermission(itemType, itemId, currentUserInfo, PermissionLevel.View))
+            {
+                return timeLineItem;
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Adds a new TimeLineItem to the database and adds it to the cache.
         /// </summary>
         /// <param name="timeLineItem">The TimeLineItem to add.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added TimeLineItem.</returns>
-        public async Task<TimeLineItem> AddTimeLineItem(TimeLineItem timeLineItem)
+        public async Task<TimeLineItem> AddTimeLineItem(TimeLineItem timeLineItem, UserInfo currentUserInfo)
         {
             TimeLineItem existingTimeLineItem = await _context.TimeLineDb.SingleOrDefaultAsync(t => t.ItemId == timeLineItem.ItemId && t.ItemType == timeLineItem.ItemType);
-            if (existingTimeLineItem != null)
+            // Only add the TimeLineItem if it doesn't already exist, and if it is linked to either a Progeny or a Family.
+            if (existingTimeLineItem != null || (timeLineItem.ProgenyId > 0 && timeLineItem.FamilyId > 0))
             {
-                return timeLineItem;
+                return null;
+            }
+
+            if (timeLineItem.ProgenyId == 0 && timeLineItem.FamilyId == 0)
+            {
+                return null;
+            }
+
+            if (timeLineItem.ProgenyId > 0)
+            {
+                if (!await _accessManagementService.HasProgenyPermission(timeLineItem.ProgenyId, currentUserInfo, PermissionLevel.Add))
+                {
+                    return null;
+                }
+            }
+
+            if (timeLineItem.FamilyId > 0)
+            {
+                if (!await _accessManagementService.HasFamilyPermission(timeLineItem.FamilyId, currentUserInfo, PermissionLevel.Add))
+                {
+                    return null;
+                }
             }
 
             TimeLineItem timeLineItemToAdd = new();
@@ -112,11 +149,34 @@ namespace KinaUnaProgenyApi.Services
         /// Updates a TimeLineItem in the database and the cache.
         /// </summary>
         /// <param name="item">The TimeLineItem with the updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated TimeLineItem. Null if a TimeLineItem with the TimeLineId doesn't already exist.</returns>
-        public async Task<TimeLineItem> UpdateTimeLineItem(TimeLineItem item)
+        public async Task<TimeLineItem> UpdateTimeLineItem(TimeLineItem item, UserInfo currentUserInfo)
         {
+            
             TimeLineItem timeLineItemToUpdate = await _context.TimeLineDb.SingleOrDefaultAsync(ti => ti.TimeLineId == item.TimeLineId);
-            if (timeLineItemToUpdate == null) return null;
+
+            if (timeLineItemToUpdate == null || (item.ProgenyId > 0 && item.FamilyId > 0))
+            {
+                return null;
+            }
+
+            if (item.ProgenyId == 0 && item.FamilyId == 0)
+            {
+                return null;
+            }
+            
+            if (timeLineItemToUpdate.ProgenyId != item.ProgenyId || timeLineItemToUpdate.FamilyId != item.FamilyId)
+            {
+                // ProgenyId or FamilyId change is not allowed.
+                return null;
+            }
+            KinaUnaTypes.TimeLineType itemTypeAsTimelineType = (KinaUnaTypes.TimeLineType)item.ItemType;
+            _ = int.TryParse(item.ItemId, out int itemIdAsInt);
+            if (!await _accessManagementService.HasItemPermission(itemTypeAsTimelineType, itemIdAsInt, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
 
             timeLineItemToUpdate.CopyPropertiesForUpdate(item);
 
@@ -132,10 +192,19 @@ namespace KinaUnaProgenyApi.Services
         /// Deletes a TimeLineItem from the database and the cache.
         /// </summary>
         /// <param name="item">The TimeLineItem to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The deleted TimeLineItem. Null if a TimeLineItem with the TimeLineId doesn't exist.</returns>
-        public async Task<TimeLineItem> DeleteTimeLineItem(TimeLineItem item)
+        public async Task<TimeLineItem> DeleteTimeLineItem(TimeLineItem item, UserInfo currentUserInfo)
         {
+            
             TimeLineItem timeLineItemToDelete = await _context.TimeLineDb.SingleOrDefaultAsync(ti => ti.TimeLineId == item.TimeLineId);
+            KinaUnaTypes.TimeLineType itemTypeAsTimelineType = (KinaUnaTypes.TimeLineType)item.ItemType;
+            _ = int.TryParse(item.ItemId, out int itemIdAsInt);
+            if (!await _accessManagementService.HasItemPermission(itemTypeAsTimelineType, itemIdAsInt, currentUserInfo, PermissionLevel.Admin))
+            {
+                return null;
+            }
+
             if (timeLineItemToDelete != null)
             {
                 _ = _context.TimeLineDb.Remove(timeLineItemToDelete);
@@ -167,9 +236,19 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="itemId">The ItemId of the TimeLineItem.</param>
         /// <param name="itemType">The ItemType (see KinaUnaTypes.TimeLineTypes enum) of the TimeLineItem.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The TimeLineItem with the given ItemId and ItemType. Null if the TimeLineItem doesn't exist.</returns>
-        public async Task<TimeLineItem> GetTimeLineItemByItemId(string itemId, int itemType)
+        public async Task<TimeLineItem> GetTimeLineItemByItemId(string itemId, int itemType, UserInfo currentUserInfo)
         {
+            _ = int.TryParse(itemId, out int itemIdAsInt);
+            KinaUnaTypes.TimeLineType itemTypeAsTimelineType = (KinaUnaTypes.TimeLineType)itemType;
+            if (itemIdAsInt <= 0) return null;
+
+            if (!await _accessManagementService.HasItemPermission(itemTypeAsTimelineType, itemIdAsInt, currentUserInfo, PermissionLevel.View))
+            {
+                return null;
+            }
+
             TimeLineItem timeLineItem = await GetTimeLineItemByItemIdFromCache(itemId, itemType);
             if (timeLineItem == null || timeLineItem.TimeLineId == 0)
             {
@@ -216,16 +295,29 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get TimeLineItems for.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of TimeLineItem objects.</returns>
-        public async Task<List<TimeLineItem>> GetTimeLineList(int progenyId)
+        public async Task<List<TimeLineItem>> GetTimeLineList(int progenyId, UserInfo currentUserInfo)
         {
+            
             List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(progenyId);
             if (timeLineList.Count == 0)
             {
                 timeLineList = await SetTimeLineListInCache(progenyId);
             }
 
-            return timeLineList;
+            List<TimeLineItem> filteredTimeLineList = [];
+            foreach (TimeLineItem timeLineItem in timeLineList)
+            {
+                _ = int.TryParse(timeLineItem.ItemId, out int itemId);
+                KinaUnaTypes.TimeLineType itemType = (KinaUnaTypes.TimeLineType)timeLineItem.ItemType;
+                if (itemId <= 0) continue;
+                if (await _accessManagementService.HasItemPermission(itemType, itemId, currentUserInfo, PermissionLevel.View))
+                {
+                    filteredTimeLineList.Add(timeLineItem);
+                }
+            }
+            return filteredTimeLineList;
         }
 
         /// <summary>
@@ -262,10 +354,9 @@ namespace KinaUnaProgenyApi.Services
         /// Creates a OnThisDayResponse for displaying TimeLineItems on the OnThisDay page.
         /// </summary>
         /// <param name="onThisDayRequest">The OnThisDayRequest object with the parameters.</param>
-        /// <param name="userInfo">The current users UserInfo.</param>
-        /// <param name="userAccessList">List of UserAccess objects for the current user and the progenies.</param>
+        /// <param name="currentUserInfo">The current users UserInfo.</param>
         /// <returns>OnThisDayResponse object.</returns>
-        public async Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest, UserInfo userInfo, List<UserAccess> userAccessList)
+        public async Task<OnThisDayResponse> GetOnThisDayData(OnThisDayRequest onThisDayRequest, UserInfo currentUserInfo)
         {
             OnThisDayResponse onThisDayResponse = new()
             {
@@ -275,9 +366,8 @@ namespace KinaUnaProgenyApi.Services
             List<TimeLineItem> allTimeLineItems = [];
             foreach (int progenyId in onThisDayRequest.Progenies)
             {
-                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId);
-                int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime <= DateTime.UtcNow)];
+                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId, currentUserInfo);
+                progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
                 allTimeLineItems.AddRange(progenyTimeLineItems);
             }
             
@@ -294,7 +384,7 @@ namespace KinaUnaProgenyApi.Services
             
             foreach (TimeLineItem timeLineItem in onThisDayResponse.TimeLineItems)
             {
-                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
+                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUserInfo.Timezone));
             }
 
             allTimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(allTimeLineItems, onThisDayRequest);
@@ -309,8 +399,7 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in onThisDayRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyTimeLineItems, onThisDayRequest.TagFilter, accessLevel));
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyTimeLineItems, onThisDayRequest.TagFilter, currentUserInfo));
                 }
             }
 
@@ -320,8 +409,7 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in onThisDayRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyTimeLineItems, onThisDayRequest.CategoryFilter, accessLevel));
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyTimeLineItems, onThisDayRequest.CategoryFilter, currentUserInfo));
                 }
             }
 
@@ -331,8 +419,7 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in onThisDayRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyTimeLineItems, onThisDayRequest.ContextFilter, accessLevel));
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyTimeLineItems, onThisDayRequest.ContextFilter, currentUserInfo));
                 }
             }
 
@@ -367,29 +454,27 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a TimelineResponse for displaying TimeLineItems on the Timeline page.
         /// </summary>
         /// <param name="timelineRequest">The TimelineRequest object with the parameters.</param>
-        /// <param name="userInfo">The current users UserInfo.</param>
-        /// <param name="userAccessList">List of UserAccess objects for the current user and the progenies.</param>
+        /// <param name="currentUserInfo">The current users UserInfo.</param>
         /// <returns>TimelineResponse with the filtered list of Timeline items.</returns>
-        public async Task<TimelineResponse> GetTimelineData(TimelineRequest timelineRequest, UserInfo userInfo, List<UserAccess> userAccessList)
+        public async Task<TimelineResponse> GetTimelineData(TimelineRequest timelineRequest, UserInfo currentUserInfo)
         {
             TimelineResponse timelineResponse = new()
             {
                 Request = timelineRequest
             };
 
-            List<TimeLineItem> allTimeLineItems = []; await GetTimeLineList(timelineRequest.ProgenyId);
+            List<TimeLineItem> allTimeLineItems = [];
 
             foreach (int progenyId in timelineRequest.Progenies)
             {
-                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId);
-                int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime <= DateTime.UtcNow)];
+                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId, currentUserInfo);
+                progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
                 allTimeLineItems.AddRange(progenyTimeLineItems);
 
                 List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(progenyId);
                 foreach (CalendarItem calendarItem in calendarItems)
                 {
-                    if (calendarItem.AccessLevel >= accessLevel && calendarItem.StartTime.HasValue)
+                    if (calendarItem.StartTime.HasValue)
                     {
                         TimeLineItem timeLineItem = new();
                         timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
@@ -410,7 +495,7 @@ namespace KinaUnaProgenyApi.Services
 
             foreach (TimeLineItem timeLineItem in allTimeLineItems)
             {
-                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
+                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUserInfo.Timezone));
             }
             
             // Todo: Implement Tags for TimeLineItems.
@@ -423,8 +508,7 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in timelineRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyTimeLineItems, timelineRequest.TagFilter, accessLevel));
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyTimeLineItems, timelineRequest.TagFilter, currentUserInfo));
                 }
             }
 
@@ -434,8 +518,7 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in timelineRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyTimeLineItems, timelineRequest.CategoryFilter, accessLevel));
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyTimeLineItems, timelineRequest.CategoryFilter, currentUserInfo));
                 }
             }
 
@@ -445,8 +528,7 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in timelineRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    int accessLevel = userAccessList.SingleOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyTimeLineItems, timelineRequest.ContextFilter, accessLevel));
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyTimeLineItems, timelineRequest.ContextFilter, currentUserInfo));
                 }
             }
 

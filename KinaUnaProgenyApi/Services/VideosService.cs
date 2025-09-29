@@ -6,6 +6,8 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -15,13 +17,15 @@ namespace KinaUnaProgenyApi.Services
     public class VideosService : IVideosService
     {
         private readonly MediaDbContext _mediaContext;
+        private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public VideosService(MediaDbContext mediaContext, IDistributedCache cache)
+        public VideosService(MediaDbContext mediaContext, IDistributedCache cache, IAccessManagementService accessManagementService)
         {
             _mediaContext = mediaContext;
+            _accessManagementService = accessManagementService;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
@@ -32,9 +36,15 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the Video from the database and adds it to the cache.
         /// </summary>
         /// <param name="id">The VideoId of the Video to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object of the current user.For checking permissions.</param>
         /// <returns>The Video object with the given VideoId. Null if the Video item doesn't exist.</returns>
-        public async Task<Video> GetVideo(int id)
+        public async Task<Video> GetVideo(int id, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, id, currentUserInfo, PermissionLevel.View))
+            {
+                return null;
+            }
+
             Video video = await GetVideoFromCache(id);
             if (video == null || video.VideoId == 0)
             {
@@ -49,11 +59,19 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="link">The VideoLink of the Video item to get.</param>
         /// <param name="progenyId">The ProgenyId of the Video item to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object of the current user.For checking permissions.</param>
         /// <returns>The Video with the given VideoLink and ProgenyId. Null if the Video doesn't exist.</returns>
-        public async Task<Video> GetVideoByLink(string link, int progenyId)
+        public async Task<Video> GetVideoByLink(string link, int progenyId, UserInfo currentUserInfo)
         {
             Video result = await _mediaContext.VideoDb.FirstOrDefaultAsync(v => v.VideoLink == link && v.ProgenyId == progenyId);
-            return result;
+            if (result != null)
+            {
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, result.VideoId, currentUserInfo, PermissionLevel.View))
+                {
+                    return result;
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -83,15 +101,14 @@ namespace KinaUnaProgenyApi.Services
             Video video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == id);
 
             if (video == null) return null;
-
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
-
             if (video.Tags != null && video.Tags.Trim().EndsWith(','))
             {
                 video.Tags = video.Tags.Trim().TrimEnd(',');
-                _ = await UpdateVideo(video);
+                video = await UpdateVideoAsSystem(video);
             }
 
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
+            
             await SetVideosListInCache(video.ProgenyId);
 
             return video;
@@ -101,9 +118,15 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new Video entity to the database and adds it to the cache.
         /// </summary>
         /// <param name="video">The Video object to add.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added Video object.</returns>
-        public async Task<Video> AddVideo(Video video)
+        public async Task<Video> AddVideo(Video video, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasProgenyPermission(video.ProgenyId, currentUserInfo, PermissionLevel.Add))
+            {
+                return null;
+            }
+
             video.RemoveNullStrings();
 
             _ = _mediaContext.VideoDb.Add(video);
@@ -117,9 +140,15 @@ namespace KinaUnaProgenyApi.Services
         /// Updates a Video entity in the database and the cache.
         /// </summary>
         /// <param name="video">The Video object with the updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated Video object.</returns>
-        public async Task<Video> UpdateVideo(Video video)
+        public async Task<Video> UpdateVideo(Video video, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, video.VideoId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
             video.RemoveNullStrings();
 
             Video videoToUpdate = await _mediaContext.VideoDb.SingleOrDefaultAsync(v => v.VideoId == video.VideoId);
@@ -136,12 +165,44 @@ namespace KinaUnaProgenyApi.Services
         }
 
         /// <summary>
+        /// Updates a Video entity in the database and the cache.
+        /// End users should not use this method, only system processes.
+        /// </summary>
+        /// <param name="video">The Video object with the updated properties.</param>
+        /// <returns>The updated Video object.</returns>
+        private async Task<Video> UpdateVideoAsSystem(Video video)
+        {
+            video.RemoveNullStrings();
+
+            Video videoToUpdate = await _mediaContext.VideoDb.SingleOrDefaultAsync(v => v.VideoId == video.VideoId);
+            if (videoToUpdate == null) return null;
+            string modifiedBy = videoToUpdate.ModifiedBy;
+            DateTime modifiedTime = videoToUpdate.ModifiedTime;
+            videoToUpdate.CopyPropertiesForUpdate(video);
+            videoToUpdate.ModifiedBy = modifiedBy;
+            videoToUpdate.ModifiedTime = modifiedTime;
+
+            _ = _mediaContext.VideoDb.Update(videoToUpdate);
+            _ = await _mediaContext.SaveChangesAsync();
+
+            _ = await SetVideoInCache(videoToUpdate.VideoId);
+
+            return video;
+        }
+
+        /// <summary>
         /// Deletes a Video entity from the database and the cache.
         /// </summary>
         /// <param name="video">The Video object to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The deleted Video object.</returns>
-        public async Task<Video> DeleteVideo(Video video)
+        public async Task<Video> DeleteVideo(Video video, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, video.VideoId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return null;
+            }
+
             Video videoToDelete = await _mediaContext.VideoDb.SingleOrDefaultAsync(v => v.VideoId == video.VideoId);
             if (videoToDelete == null) return null;
 
@@ -169,9 +230,9 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Videos for a Progeny.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Videos for.</param>
-        /// <param name="accessLevel">The access level of the user.</param>
+        /// <param name="currentUserInfo">The UserInfo object of the current user.For checking permissions.</param>
         /// <returns>List of Video objects.</returns>
-        public async Task<List<Video>> GetVideosList(int progenyId, int accessLevel)
+        public async Task<List<Video>> GetVideosList(int progenyId, UserInfo currentUserInfo)
         {
             List<Video> videosList = await GetVideosListFromCache(progenyId);
             if (videosList.Count == 0)
@@ -179,14 +240,31 @@ namespace KinaUnaProgenyApi.Services
                 videosList = await SetVideosListInCache(progenyId);
             }
 
-            videosList = [.. videosList.Where(p => p.AccessLevel >= accessLevel)];
+            List<Video> filteredList = [];
+            foreach (Video video in videosList)
+            {
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, video.VideoId, currentUserInfo, PermissionLevel.View))
+                {
+                    filteredList.Add(video);
+                }
+            }
 
-            return videosList;
+            return filteredList;
         }
 
-        public async Task<List<Video>> GetVideosWithTag(int progenyId, string tag, int accessLevel)
+        /// <summary>
+        /// Retrieves a list of videos associated with the specified progeny that match the given tag.
+        /// </summary>
+        /// <remarks>The method filters videos by the specified tag in a case-insensitive manner. If no
+        /// tag is provided, all videos for the specified progeny are returned.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose videos are to be retrieved.</param>
+        /// <param name="tag">The tag to filter videos by. If null or empty, all videos for the specified progeny are returned.</param>
+        /// <param name="currentUserInfo">The user information of the caller, used to determine access permissions.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Video"/>
+        /// objects that match the specified criteria.</returns>
+        public async Task<List<Video>> GetVideosWithTag(int progenyId, string tag, UserInfo currentUserInfo)
         {
-            List<Video> allItems = await GetVideosList(progenyId, accessLevel);
+            List<Video> allItems = await GetVideosList(progenyId, currentUserInfo);
             if (!string.IsNullOrEmpty(tag))
             {
                 allItems = [.. allItems.Where(v => v.Tags != null && v.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];

@@ -19,9 +19,10 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// <remarks>The added subtask is associated with the current to-do item. Ensure that the provided
         /// subtask is properly initialized before calling this method.</remarks>
         /// <param name="value">The subtask to add, represented as a <see cref="TodoItem"/>. The subtask must not be null.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the added subtask as a <see
         /// cref="TodoItem"/>.</returns>
-        Task<TodoItem> AddSubtask(TodoItem value);
+        Task<TodoItem> AddSubtask(TodoItem value, UserInfo currentUserInfo);
         
         /// <summary>
         /// Creates a response containing details about the subtasks of a to-do item.
@@ -43,19 +44,21 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// permanently removed or soft-deleted.  Soft-deleted subtasks may still be accessible depending on the
         /// application's retention policies.</remarks>
         /// <param name="subtask">The subtask to delete. Cannot be <see langword="null"/>.</param>
+        /// <param name="currentUserInfo"></param>
         /// <param name="hardDelete">A value indicating whether the subtask should be permanently deleted.  If <see langword="true"/>, the
-        /// subtask is permanently removed; otherwise, it is marked as deleted but retained for potential recovery.</param>
+        ///     subtask is permanently removed; otherwise, it is marked as deleted but retained for potential recovery.</param>
         /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if the subtask
         /// was successfully deleted; otherwise, <see langword="false"/>.</returns>
-        Task<bool> DeleteSubtask(TodoItem subtask, bool hardDelete = false);
+        Task<bool> DeleteSubtask(TodoItem subtask, UserInfo currentUserInfo, bool hardDelete = false);
 
         /// <summary>
         /// Retrieves a subtask with the specified identifier.
         /// </summary>
         /// <param name="id">The unique identifier of the subtask to retrieve.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the  <see cref="TodoItem"/>
         /// representing the subtask, or <see langword="null"/> if no subtask  with the specified identifier exists.</returns>
-        Task<TodoItem> GetSubtask(int id);
+        Task<TodoItem> GetSubtask(int id, UserInfo currentUserInfo);
 
         /// <summary>
         /// Retrieves the list of subtasks associated with a specified to-do item.
@@ -63,16 +66,18 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// <remarks>This method performs an asynchronous operation to fetch subtasks. Ensure that the
         /// provided to-do item ID corresponds to an existing item in the system.</remarks>
         /// <param name="todoItemTodoItemId">The unique identifier of the to-do item for which to retrieve subtasks.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="TodoItem"/>
         /// objects representing the subtasks. If no subtasks are found, the list will be empty.</returns>
-        Task<List<TodoItem>> GetSubtasksForTodoItem(int todoItemTodoItemId);
+        Task<List<TodoItem>> GetSubtasksForTodoItem(int todoItemTodoItemId, UserInfo currentUserInfo);
 
         /// <summary>
         /// Updates an existing subtask with the specified details.
         /// </summary>
         /// <param name="value">The <see cref="TodoItem"/> containing the updated details of the subtask. The subtask must already exist.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation. The task result contains the updated
         /// <see cref="TodoItem"/>.</returns>
-        Task<TodoItem> UpdateSubtask(TodoItem value);
+        Task<TodoItem> UpdateSubtask(TodoItem value, UserInfo currentUserInfo);
     }
 }

@@ -1,10 +1,8 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,7 +17,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// </summary>
     /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
-    /// <param name="userAccessService"></param>
     /// <param name="timelineService"></param>
     /// <param name="measurementService"></param>
     /// <param name="progenyService"></param>
@@ -31,7 +28,6 @@ namespace KinaUnaProgenyApi.Controllers
     public class MeasurementsController(
         IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
-        IUserAccessService userAccessService,
         ITimelineService timelineService,
         IMeasurementService measurementService,
         IProgenyService progenyService,
@@ -48,14 +44,9 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(id, accessLevelResult.Value);
+            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(id, currentUserInfo);
             
             return Ok(measurementsList);
         }
@@ -69,13 +60,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetMeasurementItem(int id)
         {
-            Measurement measurement = await measurementService.GetMeasurement(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(measurement.ProgenyId, userEmail, measurement.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
+            Measurement measurement = await measurementService.GetMeasurement(id, currentUserInfo);
+            if (measurement == null)
             {
-                return accessLevelResult.ToActionResult();
+                return NotFound();
             }
 
             return Ok(measurement);
@@ -91,38 +81,29 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Measurement value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
+            
             value.Author = User.GetUserId();
             value.CreatedBy = User.GetUserId();
             value.ModifiedBy = User.GetUserId();
 
-            Measurement measurementItem = await measurementService.AddMeasurement(value);
+            Measurement measurementItem = await measurementService.AddMeasurement(value, currentUserInfo);
+            if (measurementItem == null)
+            {
+                return Unauthorized();
+            }
 
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyMeasurementPropertiesForAdd(measurementItem);
-
-
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-            await timelineService.AddTimeLineItem(timeLineItem);
+            
+            await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
             string notificationTitle = "Measurement added for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " added a new measurement for " + progeny.NickName;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendMeasurementNotification(measurementItem, userInfo, notificationTitle);
+            string notificationMessage = currentUserInfo.FullName() + " added a new measurement for " + progeny.NickName;
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
+            await webNotificationsService.SendMeasurementNotification(measurementItem, currentUserInfo, notificationTitle);
 
             return Ok(measurementItem);
         }
@@ -138,34 +119,27 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Measurement value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
-            }
-
-            Measurement measurementItem = await measurementService.GetMeasurement(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
+            Measurement measurementItem = await measurementService.GetMeasurement(id, currentUserInfo);
             if (measurementItem == null)
             {
                 return NotFound();
             }
+
             value.ModifiedBy = User.GetUserId();
 
-            measurementItem = await measurementService.UpdateMeasurement(value);
+            measurementItem = await measurementService.UpdateMeasurement(value, currentUserInfo);
+            if (measurementItem == null)
+            {
+                return Unauthorized();
+            }
 
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(measurementItem.MeasurementId.ToString(), (int)KinaUnaTypes.TimeLineType.Measurement);
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(measurementItem.MeasurementId.ToString(), (int)KinaUnaTypes.TimeLineType.Measurement, currentUserInfo);
             if (timeLineItem == null) return Ok(measurementItem);
 
             timeLineItem.CopyMeasurementPropertiesForUpdate(measurementItem);
-            _ = await timelineService.UpdateTimeLineItem(timeLineItem);
+            _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
 
             return Ok(measurementItem);
         }
@@ -180,32 +154,26 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Measurement measurementItem = await measurementService.GetMeasurement(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Measurement measurementItem = await measurementService.GetMeasurement(id, currentUserInfo);
             if (measurementItem != null)
             {
-                Progeny progeny = await progenyService.GetProgeny(measurementItem.ProgenyId);
+                Progeny progeny = await progenyService.GetProgeny(measurementItem.ProgenyId, currentUserInfo);
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (progeny != null)
-                {
-                    if (!progeny.IsInAdminList(userEmail))
-                    {
-                        return Unauthorized();
-                    }
-                }
-                else
-                {
-                    return NotFound();
-                }
-
-                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(measurementItem.MeasurementId.ToString(), (int)KinaUnaTypes.TimeLineType.Measurement);
+                
+                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(measurementItem.MeasurementId.ToString(), (int)KinaUnaTypes.TimeLineType.Measurement, currentUserInfo);
                 if (timeLineItem != null)
                 {
-                    _ = await timelineService.DeleteTimeLineItem(timeLineItem);
+                    _ = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
                 }
 
                 measurementItem.ModifiedBy = User.GetUserId();
 
-                _ = await measurementService.DeleteMeasurement(measurementItem);
+                Measurement deletedMeasurement = await measurementService.DeleteMeasurement(measurementItem, currentUserInfo);
+                if (deletedMeasurement == null)
+                {
+                    return Unauthorized();
+                }
 
                 if (timeLineItem == null) return NoContent();
 
@@ -236,20 +204,14 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]")]
         public async Task<IActionResult> GetMeasurementsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int sortBy = 1)
         {
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             if (pageIndex < 1)
             {
                 pageIndex = 1;
             }
 
-            List<Measurement> allItems = await measurementService.GetMeasurementsList(progenyId, accessLevelResult.Value);
+            List<Measurement> allItems = await measurementService.GetMeasurementsList(progenyId, currentUserInfo);
             allItems = [.. allItems.OrderBy(m => m.Date)];
 
             if (sortBy == 1)

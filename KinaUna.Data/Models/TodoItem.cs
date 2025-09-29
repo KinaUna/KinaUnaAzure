@@ -22,10 +22,17 @@ namespace KinaUna.Data.Models
         /// Gets or sets the global identifier for this task, which can be used as a reference for copies and when importing/exporting TodoItems.
         /// </summary>
         [MaxLength(128)] public string UId { get; set; } = string.Empty;
+
         /// <summary>
-        /// Gets or sets the unique identifier for the progeny this task is assigned to.
+        /// Gets or sets the unique identifier for the progeny this task is assigned to. A value of 0 indicates that the entity is assigned to a family.
         /// </summary>
-        public int ProgenyId { get; set; } // Assigned to.
+        public int ProgenyId { get; set; } = 0; // Assigned to. 0 if assigned to a family.
+
+        /// <summary>
+        /// Gets or sets the unique identifier for the family.  A value of 0 indicates that the entity is assigned to a
+        /// progeny.
+        /// </summary>
+        public int FamilyId { get; set; } = 0; // 0 if assigned to a progeny.
         /// <summary>
         /// Gets or sets the title associated with the task.
         /// </summary>
@@ -112,6 +119,8 @@ namespace KinaUna.Data.Models
         [NotMapped]
         public Progeny Progeny { get; set; } = new Progeny();
 
+        [NotMapped]
+        public Family.Family Family { get; set; } = new Family.Family();
         [NotMapped]
         public int SubtaskCount { get; set; } = 0;
         [NotMapped]

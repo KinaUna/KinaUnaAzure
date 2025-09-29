@@ -9,17 +9,8 @@ namespace KinaUnaProgenyApi.Models
     {
         public List<Sleep> SleepList { get; private set; }
 
-        public void CreateSleepList(Sleep currentSleep, List<Sleep> allSleepList, int accessLevel, int sortOrder, string userTimeZone)
+        public void CreateSleepList(Sleep currentSleep, List<Sleep> sleepList, int sortOrder, string userTimeZone)
         {
-            List<Sleep> sleepList = [];
-            foreach (Sleep sleep in allSleepList)
-            {
-                if (sleep.AccessLevel >= accessLevel)
-                {
-                    sleepList.Add(sleep);
-                }
-            }
-
             if (sortOrder == 0)
             {
                 sleepList = [.. sleepList.OrderBy(s => s.SleepStart)];
