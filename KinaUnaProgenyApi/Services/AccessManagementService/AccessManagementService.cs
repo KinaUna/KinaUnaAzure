@@ -1271,5 +1271,90 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             
             return false;
         }
+
+        /// <summary>
+        /// Retrieves a list of progeny IDs that the specified user can access based on their permissions.
+        /// </summary>
+        /// <remarks>This method aggregates permissions directly assigned to the user as well as
+        /// permissions granted through user groups.</remarks>
+        /// <param name="userInfo">The user information, including the user's unique identifier.</param>
+        /// <param name="permissionLevel">The required permission level to access the progeny. This parameter is currently unused but may be used in
+        /// future implementations to filter results based on permission levels.</param>
+        /// <returns>A list of integers representing the IDs of progenies the user has access to. The list contains distinct IDs
+        /// and may be empty if the user has no access to any progeny.</returns>
+        public async Task<List<int>> ProgeniesUserCanAccess(UserInfo userInfo, PermissionLevel permissionLevel)
+        {
+            List<int> progenies = [];
+
+            // Get user specific permissions.
+            List<ProgenyPermission> progenyPermissions = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking().Where(pp => pp.UserId == userInfo.UserId).ToListAsync();
+            foreach (ProgenyPermission permission in progenyPermissions)
+            {
+                if (permission.PermissionLevel >= permissionLevel)
+                {
+                    progenies.Add(permission.ProgenyId);
+                }
+            }
+
+            // Get group permissions.
+            List<UserGroupMember> userGroups = await progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ug => ug.UserId == userInfo.UserId).ToListAsync();
+            foreach (UserGroupMember group in userGroups)
+            {
+                List<ProgenyPermission> groupPermissions = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking().Where(pp => pp.GroupId == group.UserGroupId).ToListAsync();
+                foreach (ProgenyPermission permission in groupPermissions)
+                {
+                    if (permission.PermissionLevel >= permissionLevel)
+                    {
+                        progenies.Add(permission.ProgenyId);
+                    }
+                }
+            }
+
+            List<int> resultProgenies = progenies.Distinct().ToList();
+            return resultProgenies;
+        }
+
+        /// <summary>
+        /// Retrieves a list of family IDs that the specified user can access based on the given permission level.
+        /// </summary>
+        /// <remarks>This method checks both user-specific permissions and permissions granted through
+        /// user groups. If the user  has sufficient permissions for a family either directly or through a group, the
+        /// family ID will be included  in the result.</remarks>
+        /// <param name="userInfo">The user information, including the user's unique identifier.</param>
+        /// <param name="permissionLevel">The minimum permission level required to access a family. Only families where the user has this level of
+        /// access  or higher will be included in the result.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of distinct family IDs 
+        /// that the user can access.</returns>
+        public async Task<List<int>> FamiliesUserCanAccess(UserInfo userInfo, PermissionLevel permissionLevel)
+        {
+            List<int> families = [];
+
+            // Get user specific permissions.
+            List<FamilyPermission> familyPermissions = await progenyDbContext.FamilyPermissionsDb.AsNoTracking().Where(pp => pp.UserId == userInfo.UserId).ToListAsync();
+            foreach (FamilyPermission permission in familyPermissions)
+            {
+                if (permission.PermissionLevel >= permissionLevel)
+                {
+                    families.Add(permission.FamilyId);
+                }
+            }
+
+            // Get group permissions.
+            List<UserGroupMember> userGroups = await progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ug => ug.UserId == userInfo.UserId).ToListAsync();
+            foreach (UserGroupMember group in userGroups)
+            {
+                List<FamilyPermission> groupPermissions = await progenyDbContext.FamilyPermissionsDb.AsNoTracking().Where(pp => pp.GroupId == group.UserGroupId).ToListAsync();
+                foreach (FamilyPermission permission in groupPermissions)
+                {
+                    if (permission.PermissionLevel >= permissionLevel)
+                    {
+                        families.Add(permission.FamilyId);
+                    }
+                }
+            }
+
+            List<int> resultFamilies = families.Distinct().ToList();
+            return resultFamilies;
+        }
     }
 }

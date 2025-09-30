@@ -1,5 +1,6 @@
 ﻿using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
@@ -193,5 +194,30 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <returns>A <see cref="FamilyPermission"/> object representing the permission for the specified family and user group,
         /// or <c>null</c> if the identifiers are invalid, the user lacks access, or no matching permission is found.</returns>
         Task<FamilyPermission> GetFamilyPermissionForGroup(int familyId, int userGroupId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Retrieves a list of progeny IDs that the specified user can access based on their permissions.
+        /// </summary>
+        /// <remarks>This method aggregates permissions directly assigned to the user as well as
+        /// permissions granted through user groups.</remarks>
+        /// <param name="userInfo">The user information, including the user's unique identifier.</param>
+        /// <param name="permissionLevel">The required permission level to access the progeny. This parameter is currently unused but may be used in
+        /// future implementations to filter results based on permission levels.</param>
+        /// <returns>A list of integers representing the IDs of progenies the user has access to. The list contains distinct IDs
+        /// and may be empty if the user has no access to any progeny.</returns>
+        Task<List<int>> ProgeniesUserCanAccess(UserInfo userInfo, PermissionLevel permissionLevel);
+
+        /// <summary>
+        /// Retrieves a list of family IDs that the specified user can access based on the given permission level.
+        /// </summary>
+        /// <remarks>This method checks both user-specific permissions and permissions granted through
+        /// user groups. If the user  has sufficient permissions for a family either directly or through a group, the
+        /// family ID will be included  in the result.</remarks>
+        /// <param name="userInfo">The user information, including the user's unique identifier.</param>
+        /// <param name="permissionLevel">The minimum permission level required to access a family. Only families where the user has this level of
+        /// access  or higher will be included in the result.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of distinct family IDs 
+        /// that the user can access.</returns>
+        Task<List<int>> FamiliesUserCanAccess(UserInfo userInfo, PermissionLevel permissionLevel);
     }
 }

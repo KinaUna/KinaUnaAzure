@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Extensions;
+﻿using System.Collections.Generic;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.AccessManagementService;
@@ -7,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -14,7 +17,10 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class AccessManagementController(IAccessManagementService accessManagementService, IUserInfoService userInfoService) : ControllerBase
+    public class AccessManagementController(IAccessManagementService accessManagementService,
+        IUserInfoService userInfoService,
+        IProgenyService progenyService,
+        IFamiliesService familiesService) : ControllerBase
     {
         [HttpGet]
         [Route("[action]/{progenyId:int}")]
@@ -38,6 +44,44 @@ namespace KinaUnaProgenyApi.Controllers
             bool hasAccess = await accessManagementService.HasFamilyPermission(familyId, currentUserInfo, PermissionLevel.Add);
 
             return Ok(hasAccess);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UserProgeniesList(PermissionLevel permissionLevel)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<int> progenyIds = await accessManagementService.ProgeniesUserCanAccess(currentUserInfo, permissionLevel);
+
+            List<Progeny> progenies = [];
+            foreach (int progenyId in progenyIds)
+            {
+                Progeny progeny = await progenyService.GetProgeny(progenyId, currentUserInfo);
+                if (progeny != null)
+                {
+                    progenies.Add(progeny);
+                }
+            }
+
+            return Ok(progenies);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UserFamiliesList(PermissionLevel permissionLevel)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<int> familyIds = await accessManagementService.FamiliesUserCanAccess(currentUserInfo, permissionLevel);
+
+            List<Family> families = [];
+            foreach (int familyId in familyIds)
+            {
+                Family family = await familiesService.GetFamilyById(familyId, currentUserInfo);
+                if (family != null)
+                {
+                    families.Add(family);
+                }
+            }
+
+            return Ok(families);
         }
     }
 }
