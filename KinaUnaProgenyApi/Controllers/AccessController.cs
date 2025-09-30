@@ -7,7 +7,6 @@ using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using KinaUnaProgenyApi.Services.FamiliesServices;
@@ -328,18 +327,8 @@ namespace KinaUnaProgenyApi.Controllers
             // Update families where the user is an admin.
             await familiesService.ChangeUsersEmailForFamilies(userInfo, model.NewEmail);
 
-            List<Progeny> progenyList = await progenyService.GetAllProgenies();
-            progenyList = [.. progenyList.Where(p => p.IsInAdminList(model.OldEmail))];
-            
-            if (progenyList.Count == 0) return Ok();
-
-            foreach (Progeny prog in progenyList)
-            {
-                string adminList = prog.Admins.ToUpper();
-                prog.ModifiedBy = User.GetUserId();
-                prog.Admins = adminList.Replace(model.OldEmail.ToUpper(), model.NewEmail.ToUpper());
-                await progenyService.UpdateProgeny(prog, userInfo);
-            }
+            // Update progenies where the user is an admin or is the progeny
+            await progenyService.ChangeUsersEmailForProgenies(userInfo, model.NewEmail);
 
             return Ok();
         }

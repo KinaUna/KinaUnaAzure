@@ -539,18 +539,37 @@ namespace KinaUnaProgenyApi.Services
             return progenyInfoToDelete;
         }
 
-        public async Task<List<Progeny>> GetAllProgenies()
+        /// <summary>
+        /// Updates the email address associated with a user in all relevant progeny records.
+        /// </summary>
+        /// <remarks>This method updates the user's email address in two contexts: <list type="bullet">
+        /// <item><description>Progeny records where the user is listed as the progeny (primary
+        /// email).</description></item> <item><description>Progeny records where the user is listed as an
+        /// administrator.</description></item> </list> For progeny records where the user is an administrator, the old
+        /// email address is removed from the admin list, and the new email address is added. Changes are persisted to
+        /// the database after all updates are completed.</remarks>
+        /// <param name="userInfo">The user information containing the current email address of the user.</param>
+        /// <param name="newEmail">The new email address to associate with the user.</param>
+        /// <returns></returns>
+        public async Task ChangeUsersEmailForProgenies(UserInfo userInfo, string newEmail)
         {
-            List<Progeny> progenies = await _context.ProgenyDb.AsNoTracking().ToListAsync();
-            foreach (Progeny progeny in progenies)
+            List<Progeny> userIsProgenyList = await _context.ProgenyDb.Where(p => p.Email.ToLower() == userInfo.UserEmail.ToLower()).ToListAsync();
+            foreach (Progeny progeny in userIsProgenyList)
             {
-                if (string.IsNullOrEmpty(progeny.PictureLink))
-                {
-                    progeny.PictureLink = Constants.ProfilePictureUrl;
-                }
+                progeny.Email = newEmail;
+                _ = await UpdateProgeny(progeny, userInfo);
             }
 
-            return progenies;
+            List<Progeny> userIsProgenyAdminList = await _context.ProgenyDb.Where(p => p.Admins.ToLower().Contains(userInfo.UserEmail.ToLower())).ToListAsync();
+            foreach (Progeny progeny in userIsProgenyAdminList)
+            {
+                progeny.RemoveFromAdminList(userInfo.UserEmail);
+                progeny.AddToAdminList(newEmail);
+                _ = await UpdateProgeny(progeny, userInfo);
+
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

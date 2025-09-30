@@ -88,6 +88,7 @@ namespace KinaUnaProgenyApi.Services
             _ = await _context.SaveChangesAsync();
             _ = await SetUserInfoByEmail(userInfo.UserEmail);
 
+            // If there are any Progeny entities with this email address, set their UserId to this user's UserId.
             List<Progeny> userIsThisProgenyList = await _context.ProgenyDb.Where(p => p.Email == userInfo.UserEmail).ToListAsync();
             if (userIsThisProgenyList.Count > 0)
             {

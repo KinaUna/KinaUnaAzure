@@ -1,5 +1,4 @@
 ﻿using KinaUna.Data.Models;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
@@ -77,14 +76,19 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="imageId">The current file name.</param>
         /// <returns>The new file name of the resized image.</returns>
         Task<string> ResizeImage(string imageId);
-
+        
         /// <summary>
-        /// Retrieves a list of all progeny records.
+        /// Updates the email address associated with a user in all relevant progeny records.
         /// </summary>
-        /// <remarks>This method performs an asynchronous operation to fetch all progeny data. The caller
-        /// should await the returned task to ensure the operation completes before accessing the result.</remarks>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Progeny"/>
-        /// objects representing all progeny records. If no records are found, the list will be empty.</returns>
-        Task<List<Progeny>> GetAllProgenies();
+        /// <remarks>This method updates the user's email address in two contexts: <list type="bullet">
+        /// <item><description>Progeny records where the user is listed as the progeny (primary
+        /// email).</description></item> <item><description>Progeny records where the user is listed as an
+        /// administrator.</description></item> </list> For progeny records where the user is an administrator, the old
+        /// email address is removed from the admin list, and the new email address is added. Changes are persisted to
+        /// the database after all updates are completed.</remarks>
+        /// <param name="userInfo">The user information containing the current email address of the user.</param>
+        /// <param name="newEmail">The new email address to associate with the user.</param>
+        /// <returns></returns>
+        Task ChangeUsersEmailForProgenies(UserInfo userInfo, string newEmail);
     }
 }

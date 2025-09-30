@@ -2,7 +2,6 @@
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -31,7 +32,8 @@ namespace KinaUnaProgenyApi.Controllers
         IProgenyService progenyService,
         IUserInfoService userInfoService,
         IUserAccessService userAccessService,
-        INotificationsService notificationsService)
+        INotificationsService notificationsService,
+        IAccessManagementService accessManagementService)
         : ControllerBase
     {
         /// <summary>
@@ -48,7 +50,6 @@ namespace KinaUnaProgenyApi.Controllers
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
 
-            // Todo: Rewrite this to use FamilyPermissions and ProgenyPermissions.
             bool allowAccess = await CanCurrentUserAccessUserInfo(userEmail, id);
             
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(id);
@@ -128,21 +129,32 @@ namespace KinaUnaProgenyApi.Controllers
                 // User is trying to access their own UserInfo.
                 return true;
             }
+            
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(currentUserEmail);
+            if (currentUserInfo == null || currentUserInfo.Id == 0) return false;
 
-            List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin(currentUserEmail);
-            if (progenyList.Count == 0) return false;
+            UserInfo otherUserInfo = await userInfoService.GetUserInfoByEmail(otherUserEmail);
+            if (otherUserInfo == null || otherUserInfo.Id == 0) return false;
 
-            foreach (Progeny progeny in progenyList)
+            List<int> familiesCurrentUserCanAccess = await accessManagementService.FamiliesUserCanAccess(currentUserInfo, PermissionLevel.View);
+            List<int> familiesOtherUserCanAccess = await accessManagementService.FamiliesUserCanAccess(otherUserInfo, PermissionLevel.View);
+            foreach (int familyId in familiesCurrentUserCanAccess)
             {
-                CustomResult<List<UserAccess>> accessListResult = await userAccessService.GetProgenyUserAccessList(progeny.Id, currentUserEmail);
-                if (accessListResult.IsFailure) continue;
-
-                foreach (UserAccess userAccess in accessListResult.Value)
+                if (familiesOtherUserCanAccess.Contains(familyId))
                 {
-                    if (userAccess.UserId.Equals(otherUserEmail, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        return true;
-                    }
+                    // Both users have access to at least one same family.
+                    return true;
+                }
+            }
+
+            List<int> progeniesCurrentUserCanAccess = await accessManagementService.ProgeniesUserCanAccess(currentUserInfo, PermissionLevel.View);
+            List<int> progeniesOtherUserCanAccess = await accessManagementService.ProgeniesUserCanAccess(otherUserInfo, PermissionLevel.View);
+            foreach (int progenyId in progeniesCurrentUserCanAccess)
+            {
+                if (progeniesOtherUserCanAccess.Contains(progenyId))
+                {
+                    // Both users have access to at least one same progeny.
+                    return true;
                 }
             }
 
@@ -162,7 +174,6 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             UserInfo userInfo = await userInfoService.GetUserInfoById(id);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            // Todo: Rewrite this to use FamilyPermissions and ProgenyPermissions.
             bool allowAccess = await CanCurrentUserAccessUserInfo(userEmail, userInfo.UserEmail);
             
             if (allowAccess)
@@ -300,6 +311,8 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Post([FromBody] UserInfo value)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+
+            // Only allow users to create their own UserInfo entity.
             if (!userEmail.Equals(value.UserEmail, StringComparison.CurrentCultureIgnoreCase))
             {
                 return Unauthorized();
@@ -371,7 +384,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo requester = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            // Only allow the user themselves to change their user info.
+            // Only allow the user themselves, or KinaUna admins, to change their user info.
             bool allowAccess = false;
             if (userEmail.Equals(userInfo.UserEmail, StringComparison.CurrentCultureIgnoreCase))
             {
@@ -410,7 +423,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 userInfo.Timezone = value.Timezone;
             }
-            
+
+            // Only KinaUnaAdmins can change the IsKinaUnaAdmin property.
             if (value.UpdateIsAdmin)
             {
                 if (requester.IsKinaUnaAdmin)
