@@ -122,5 +122,15 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="newEmail">The new email address to assign to the group members.</param>
         /// <returns></returns>
         Task ChangeUsersEmailForGroupMembers(UserInfo userInfo, string newEmail);
+
+        /// <summary>
+        /// Updates the user group memberships for a newly created user based on their email address.
+        /// </summary>
+        /// <remarks>This method associates existing user group memberships, identified by the user's
+        /// email address, with the user's unique identifier. If no matching user group memberships are found, the
+        /// method performs no action. Changes are persisted to the database.</remarks>
+        /// <param name="userInfo">The user information containing the user's email address and unique identifier.</param>
+        /// <returns></returns>
+        Task UpdateUserGroupMembersForNewUser(UserInfo userInfo);
     }
 }

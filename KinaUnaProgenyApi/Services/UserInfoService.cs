@@ -8,20 +8,32 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Services
 {
     public class UserInfoService : IUserInfoService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IProgenyService _progenyService;
+        private readonly IAccessManagementService _accessManagementService;
+        private readonly IUserGroupsService _userGroupsService;
+        private readonly IFamilyMembersService _familyMembersService;
         private readonly IImageStore _imageStore;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public UserInfoService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore)
+        public UserInfoService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore,
+            IProgenyService progenyService, IAccessManagementService accessManagementService,
+            IUserGroupsService userGroupsService, IFamilyMembersService familyMembersService)
         {
             _context = context;
+            _progenyService = progenyService;
+            _accessManagementService = accessManagementService;
+            _userGroupsService = userGroupsService;
+            _familyMembersService = familyMembersService;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -86,19 +98,16 @@ namespace KinaUnaProgenyApi.Services
             }
             _ = _context.UserInfoDb.Add(userInfo);
             _ = await _context.SaveChangesAsync();
-            _ = await SetUserInfoByEmail(userInfo.UserEmail);
+            UserInfo newUserInfo = await SetUserInfoByEmail(userInfo.UserEmail);
 
-            // If there are any Progeny entities with this email address, set their UserId to this user's UserId.
-            List<Progeny> userIsThisProgenyList = await _context.ProgenyDb.Where(p => p.Email == userInfo.UserEmail).ToListAsync();
-            if (userIsThisProgenyList.Count > 0)
-            {
-                foreach (Progeny progeny in userIsThisProgenyList)
-                {
-                    progeny.UserId = userInfo.UserId;
-                }
-                _context.ProgenyDb.UpdateRange(userIsThisProgenyList);
-                _ = await _context.SaveChangesAsync();
-            }
+            // Update Progenies for this user.
+            await _progenyService.UpdateProgeniesForNewUser(newUserInfo);
+
+            await _accessManagementService.UpdatePermissionsForNewUser(newUserInfo);
+
+            await _userGroupsService.UpdateUserGroupMembersForNewUser(newUserInfo);
+
+            await _familyMembersService.UpdateFamilyMembersForNewUser(newUserInfo);
 
             return userInfo;
         }

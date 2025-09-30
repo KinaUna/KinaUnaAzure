@@ -392,5 +392,29 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
 
             await progenyDbContext.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Updates the family members associated with the specified user's email address to include the user's unique
+        /// identifier.
+        /// </summary>
+        /// <remarks>This method retrieves all family members from the database whose email address
+        /// matches the specified user's email address (case-insensitive). If no matching family members are found, the
+        /// method exits without making any changes. For each matching family member, the user's unique identifier is
+        /// assigned to the family member, and the changes are saved to the database.</remarks>
+        /// <param name="userInfo">The user information containing the user's email address and unique identifier.</param>
+        /// <returns></returns>
+        public async Task UpdateFamilyMembersForNewUser(UserInfo userInfo)
+        {
+            List<FamilyMember> familyMembers = await progenyDbContext.FamilyMembersDb.Where(fm => fm.Email.ToUpper() == userInfo.UserEmail.ToUpper()).ToListAsync();
+            if (familyMembers.Count == 0) return;
+            
+            foreach (FamilyMember familyMember in familyMembers)
+            {
+                familyMember.UserId = userInfo.UserId;
+                progenyDbContext.FamilyMembersDb.Update(familyMember);
+            }
+
+            await progenyDbContext.SaveChangesAsync();
+        }
     }
 }

@@ -553,14 +553,14 @@ namespace KinaUnaProgenyApi.Services
         /// <returns></returns>
         public async Task ChangeUsersEmailForProgenies(UserInfo userInfo, string newEmail)
         {
-            List<Progeny> userIsProgenyList = await _context.ProgenyDb.Where(p => p.Email.ToLower() == userInfo.UserEmail.ToLower()).ToListAsync();
+            List<Progeny> userIsProgenyList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Email.ToLower() == userInfo.UserEmail.ToLower()).ToListAsync();
             foreach (Progeny progeny in userIsProgenyList)
             {
                 progeny.Email = newEmail;
                 _ = await UpdateProgeny(progeny, userInfo);
             }
 
-            List<Progeny> userIsProgenyAdminList = await _context.ProgenyDb.Where(p => p.Admins.ToLower().Contains(userInfo.UserEmail.ToLower())).ToListAsync();
+            List<Progeny> userIsProgenyAdminList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Admins.ToLower().Contains(userInfo.UserEmail.ToLower())).ToListAsync();
             foreach (Progeny progeny in userIsProgenyAdminList)
             {
                 progeny.RemoveFromAdminList(userInfo.UserEmail);
@@ -570,6 +570,28 @@ namespace KinaUnaProgenyApi.Services
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Updates the progeny records associated with a new user based on their email address.
+        /// </summary>
+        /// <remarks>This method checks for any progeny records in the database that are associated with
+        /// the specified user's email address. If such records are found, their <see cref="Progeny.UserId"/> is updated
+        /// to match the user's unique identifier.</remarks>
+        /// <param name="userInfo">The user information containing the user's email address and unique identifier.</param>
+        /// <returns></returns>
+        public async Task UpdateProgeniesForNewUser(UserInfo userInfo)
+        {
+            // If there are any Progeny entities with this email address, set their UserId to this user's UserId.
+            List<Progeny> userIsThisProgenyList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Email == userInfo.UserEmail).ToListAsync();
+            if (userIsThisProgenyList.Count > 0)
+            {
+                foreach (Progeny progeny in userIsThisProgenyList)
+                {
+                    progeny.UserId = userInfo.UserId;
+                    _ = await UpdateProgeny(progeny, userInfo);
+                }
+            }
         }
     }
 }

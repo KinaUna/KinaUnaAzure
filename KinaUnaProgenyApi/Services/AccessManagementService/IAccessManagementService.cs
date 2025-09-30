@@ -230,5 +230,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="newEmail">The new email address to associate with the user's permissions.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         Task ChangeUsersEmailForPermissions(UserInfo userInfo, string newEmail);
+
+        /// <summary>
+        /// Sets the user ID for all permissions associated with a new user based on their email address.
+        /// </summary>
+        /// <param name="userInfo">The user information containing the user's unique identifier and email address.</param>
+        /// <returns></returns>
+        Task UpdatePermissionsForNewUser(UserInfo userInfo);
     }
 }

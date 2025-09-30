@@ -1390,5 +1390,36 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             await progenyDbContext.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Sets the user ID for all permissions associated with a new user based on their email address.
+        /// </summary>
+        /// <param name="userInfo">The user information containing the user's unique identifier and email address.</param>
+        /// <returns></returns>
+        public async Task UpdatePermissionsForNewUser(UserInfo userInfo)
+        {
+            List<ProgenyPermission> progenyPermissions = await progenyDbContext.ProgenyPermissionsDb.Where(pp => pp.Email.ToUpper() == userInfo.UserEmail.ToUpper()).ToListAsync();
+            foreach (ProgenyPermission permission in progenyPermissions)
+            {
+                permission.UserId = userInfo.UserId;
+                progenyDbContext.ProgenyPermissionsDb.Update(permission);
+            }
+
+            List<FamilyPermission> familyPermissions = await progenyDbContext.FamilyPermissionsDb.Where(fp => fp.Email.ToUpper() == userInfo.UserEmail.ToUpper()).ToListAsync();
+            foreach (FamilyPermission permission in familyPermissions)
+            {
+                permission.UserId = userInfo.UserId;
+                progenyDbContext.FamilyPermissionsDb.Update(permission);
+            }
+
+            List<TimelineItemPermission> timelineItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.Where(tp => tp.Email.ToUpper() == userInfo.UserEmail.ToUpper()).ToListAsync();
+            foreach (TimelineItemPermission permission in timelineItemPermissions)
+            {
+                permission.UserId = userInfo.UserId;
+                progenyDbContext.TimelineItemPermissionsDb.Update(permission);
+            }
+
+            await progenyDbContext.SaveChangesAsync();
+        }
     }
 }

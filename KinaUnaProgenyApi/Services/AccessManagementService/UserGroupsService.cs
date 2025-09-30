@@ -520,6 +520,24 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             await progenyDbContext.SaveChangesAsync();
         }
-        
+
+        /// <summary>
+        /// Updates the user group memberships for a newly created user based on their email address.
+        /// </summary>
+        /// <remarks>This method associates existing user group memberships, identified by the user's
+        /// email address, with the user's unique identifier. If no matching user group memberships are found, the
+        /// method performs no action. Changes are persisted to the database.</remarks>
+        /// <param name="userInfo">The user information containing the user's email address and unique identifier.</param>
+        /// <returns></returns>
+        public async Task UpdateUserGroupMembersForNewUser(UserInfo userInfo)
+        {
+            List<UserGroupMember> members = await progenyDbContext.UserGroupMembersDb.Where(ugm => ugm.Email.ToLower() == userInfo.UserEmail.ToLower()).ToListAsync();
+            if (members.Count == 0) return;
+            foreach (UserGroupMember member in members)
+            {
+                member.UserId = userInfo.UserId;
+            }
+            await progenyDbContext.SaveChangesAsync();
+        }
     }
 }

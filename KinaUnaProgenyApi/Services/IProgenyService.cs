@@ -90,5 +90,15 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="newEmail">The new email address to associate with the user.</param>
         /// <returns></returns>
         Task ChangeUsersEmailForProgenies(UserInfo userInfo, string newEmail);
+
+        /// <summary>
+        /// Updates the progeny records associated with a new user based on their email address.
+        /// </summary>
+        /// <remarks>This method checks for any progeny records in the database that are associated with
+        /// the specified user's email address. If such records are found, their <see cref="Progeny.UserId"/> is updated
+        /// to match the user's unique identifier.</remarks>
+        /// <param name="userInfo">The user information containing the user's email address and unique identifier.</param>
+        /// <returns></returns>
+        Task UpdateProgeniesForNewUser(UserInfo userInfo);
     }
 }
