@@ -47,6 +47,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
+        [Route("[action]/{permissionLevel:int}")]
         public async Task<IActionResult> ProgeniesUserCanAccessList(PermissionLevel permissionLevel)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
@@ -66,6 +67,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
+        [Route("[action]/{permissionLevel:int}")]
         public async Task<IActionResult> FamiliesUserCanAccessList(PermissionLevel permissionLevel)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());

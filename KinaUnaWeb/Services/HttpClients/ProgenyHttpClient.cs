@@ -1,14 +1,16 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Duende.IdentityModel.Client;
+using KinaUna.Data;
+using KinaUna.Data.Models.Family;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Duende.IdentityModel.Client;
-using KinaUna.Data;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -90,6 +92,31 @@ namespace KinaUnaWeb.Services.HttpClients
             }
 
             return progeny;
+        }
+
+        /// <summary>
+        /// Retrieves a list of progenies that the currently signed-in user can access based on the specified permission
+        /// level.
+        /// </summary>
+        /// <remarks>This method uses the currently signed-in user's identity to determine access. The
+        /// user must be authenticated, and their access token must be valid.</remarks>
+        /// <param name="permissionLevel">The level of permission required to access the progenies. This determines which progenies are included in
+        /// the result.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Progeny"/>
+        /// objects that the user has access to. If no progenies are accessible, an empty list is returned.</returns>
+        public async Task<List<Progeny>> GetProgeniesUserCanAccess(PermissionLevel permissionLevel)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            
+            string accessManagementPath = "/api/AccessManagement/ProgeniesUserCanAccessList/" + permissionLevel;
+            HttpResponseMessage progeniesResponse = await _httpClient.GetAsync(accessManagementPath);
+
+            if (!progeniesResponse.IsSuccessStatusCode) return new List<Progeny>();
+
+            List<Progeny> progenies = await progeniesResponse.Content.ReadAsAsync<List<Progeny>>();
+            return progenies;
         }
 
         /// <summary>

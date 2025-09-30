@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Models.Family;
+﻿using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -23,6 +24,18 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <see cref="Family"/> objects representing the families associated with the user. If no families are found or
         /// the request fails, the list will be empty.</returns>
         Task<List<Family>> GetMyFamilies();
+
+        /// <summary>
+        /// Retrieves a list of families that the currently signed-in user can access based on the specified permission
+        /// level.
+        /// </summary>
+        /// <remarks>This method uses the currently signed-in user's context to determine access. The
+        /// user's access token is retrieved and used to authenticate the request.</remarks>
+        /// <param name="permissionLevel">The level of permission required to access the families. This determines which families are included in the
+        /// result.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Family"/>
+        /// objects the user has access to. If no families are accessible, an empty list is returned.</returns>
+        Task<List<Family>> GetFamiliesUserCanAccess(PermissionLevel permissionLevel);
 
         /// <summary>
         /// Retrieves the details of a family by its unique identifier.

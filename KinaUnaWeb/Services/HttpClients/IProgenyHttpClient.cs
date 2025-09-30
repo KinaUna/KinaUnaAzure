@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using KinaUna.Data.Models.AccessManagement;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -15,6 +16,18 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="progenyId">The Progeny's Id.</param>
         /// <returns>Progeny object with the given Id. If not found, a new Progeny object with Id=0 is returned.</returns>
         Task<Progeny> GetProgeny(int progenyId);
+
+        /// <summary>
+        /// Retrieves a list of progenies that the currently signed-in user can access based on the specified permission
+        /// level.
+        /// </summary>
+        /// <remarks>This method uses the currently signed-in user's identity to determine access. The
+        /// user must be authenticated, and their access token must be valid.</remarks>
+        /// <param name="permissionLevel">The level of permission required to access the progenies. This determines which progenies are included in
+        /// the result.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Progeny"/>
+        /// objects that the user has access to. If no progenies are accessible, an empty list is returned.</returns>
+        Task<List<Progeny>> GetProgeniesUserCanAccess(PermissionLevel permissionLevel);
 
         /// <summary>
         /// Adds a new Progeny.

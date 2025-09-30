@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -70,6 +71,31 @@ namespace KinaUnaWeb.Services.HttpClients
             List<Family> families = await familiesResponse.Content.ReadAsAsync<List<Family>>();
             return families;
 
+        }
+
+        /// <summary>
+        /// Retrieves a list of families that the currently signed-in user can access based on the specified permission
+        /// level.
+        /// </summary>
+        /// <remarks>This method uses the currently signed-in user's context to determine access. The
+        /// user's access token is retrieved and used to authenticate the request.</remarks>
+        /// <param name="permissionLevel">The level of permission required to access the families. This determines which families are included in the
+        /// result.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Family"/>
+        /// objects the user has access to. If no families are accessible, an empty list is returned.</returns>
+        public async Task<List<Family>> GetFamiliesUserCanAccess(PermissionLevel permissionLevel)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string accessManagementPath = "/api/AccessManagement/FamiliesUserCanAccessList/" + permissionLevel;
+            HttpResponseMessage familiesResponse = await _httpClient.GetAsync(accessManagementPath);
+
+            if (!familiesResponse.IsSuccessStatusCode) return new List<Family>();
+
+            List<Family> families = await familiesResponse.Content.ReadAsAsync<List<Family>>();
+            return families;
         }
 
         /// <summary>
