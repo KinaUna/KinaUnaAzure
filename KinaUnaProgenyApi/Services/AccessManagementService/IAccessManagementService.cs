@@ -219,5 +219,16 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of distinct family IDs 
         /// that the user can access.</returns>
         Task<List<int>> FamiliesUserCanAccess(UserInfo userInfo, PermissionLevel permissionLevel);
+
+        /// <summary>
+        /// Updates the email address associated with a user's permissions across all relevant entities.
+        /// </summary>
+        /// <remarks>This method updates the email address for all permissions related to the specified
+        /// user in the Progeny, Family, and TimelineItem permissions databases. The changes are persisted to the
+        /// database upon successful completion of the operation.</remarks>
+        /// <param name="userInfo">The user information containing the user's unique identifier.</param>
+        /// <param name="newEmail">The new email address to associate with the user's permissions.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        Task ChangeUsersEmailForPermissions(UserInfo userInfo, string newEmail);
     }
 }

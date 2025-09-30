@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -29,7 +31,11 @@ namespace KinaUnaProgenyApi.Controllers
         IProgenyService progenyService,
         IUserInfoService userInfoService,
         IUserAccessService userAccessService,
-        IWebNotificationsService webNotificationsService)
+        IWebNotificationsService webNotificationsService,
+        IAccessManagementService accessManagementService,
+        IUserGroupsService userGroupsService,
+        IFamiliesService familiesService,
+        IFamilyMembersService familyMembersService)
         : ControllerBase
     {
         /// <summary>
@@ -297,10 +303,12 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> UpdateUsersEmail([FromBody] UpdateUserEmailModel model)
         {
             UserInfo userInfo = await userInfoService.GetUserInfoByUserId(model.UserId);
+            // Verify that the user exists and the old email matches.
             if (!model.OldEmail.Equals(userInfo.UserEmail, System.StringComparison.CurrentCultureIgnoreCase))
             {
                 return NotFound("User with given id and email could not be found.");
             }
+
             List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(model.OldEmail);
             foreach (UserAccess userAccess in userAccessList)
             {
@@ -308,8 +316,18 @@ namespace KinaUnaProgenyApi.Controllers
                 await userAccessService.UpdateUserAccess(userAccess);
             }
 
+            // Update permissions.
+            await accessManagementService.ChangeUsersEmailForPermissions(userInfo, model.NewEmail);
+            
+            // Update user groups.
+            await userGroupsService.ChangeUsersEmailForGroupMembers(userInfo, model.NewEmail);
+            
+            // Update family members.
+            await familyMembersService.ChangeUsersEmailForFamilyMembers(userInfo, model.NewEmail);
+            
+            // Update families where the user is an admin.
+            await familiesService.ChangeUsersEmailForFamilies(userInfo, model.NewEmail);
 
-            // Todo: Rewrite and add updates to families, group members, and permissions.
             List<Progeny> progenyList = await progenyService.GetAllProgenies();
             progenyList = [.. progenyList.Where(p => p.IsInAdminList(model.OldEmail))];
             

@@ -315,5 +315,29 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             
             return true;
         }
+
+        /// <summary>
+        /// Updates the email address for a user in the admin lists of all families they manage.
+        /// </summary>
+        /// <remarks>This method identifies all families where the specified user is listed as an admin
+        /// and updates the admin list  to replace the user's current email address with the new email address. Changes
+        /// are persisted to the database.</remarks>
+        /// <param name="userInfo">The user information containing the current email address of the user.</param>
+        /// <param name="newEmail">The new email address to replace the user's current email address.</param>
+        /// <returns></returns>
+        public async Task ChangeUsersEmailForFamilies(UserInfo userInfo, string newEmail)
+        {
+            List<Family> families = await progenyDbContext.FamiliesDb.Where(fm => fm.Admins.ToUpper().Contains(userInfo.UserEmail.ToUpper())).ToListAsync();
+            if (families.Count == 0) return;
+            foreach (Family family in families)
+            {
+                family.RemoveFromAdminList(userInfo.UserEmail);
+                family.AddToAdminList(newEmail);
+
+                progenyDbContext.FamiliesDb.Update(family);
+            }
+
+            await progenyDbContext.SaveChangesAsync();
+        }
     }
 }

@@ -89,6 +89,38 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
         /// <returns>True if the user group member was successfully removed; otherwise, false if the user group member does not exist or the current user lacks the required access rights.</returns>
         Task<bool> RemoveUserGroupMember(int userGroupMemberId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Retrieves a list of user groups that the specified user belongs to and for which the current user has edit
+        /// permissions.
+        /// </summary>
+        /// <remarks>This method filters the user groups based on the current user's permissions. Only
+        /// user groups where the current user has edit-level access are included in the result.</remarks>
+        /// <param name="userId">The unique identifier of the user whose user groups are to be retrieved.</param>
+        /// <param name="currentUserInfo">The information of the current user, used to determine access permissions.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="UserGroup"/> objects that the specified user belongs to and the current user has access to edit. If no
+        /// such user groups are found, an empty list is returned.</returns>
         Task<List<UserGroup>> GetUsersUserGroupsByUserId(string userId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Gets the user groups a user belongs to by their email address, if the current user has access to those groups.
+        /// Should only be used when a user signs up, to check if the UserId should be assigned for each GroupMember entity.
+        /// </summary>
+        /// <param name="userEmail">The email address of the user whose groups are to be retrieved.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>List of user groups the user belongs to.</returns>
+        Task<List<UserGroup>> GetUsersUserGroupsByEmail(string userEmail, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Updates the email address for all group members associated with the specified user.
+        /// </summary>
+        /// <remarks>This method retrieves all group members associated with the specified user and
+        /// updates their email addresses to the provided value. If the user has no associated group members, the method
+        /// exits without making any changes.</remarks>
+        /// <param name="userInfo">The user information containing the user ID whose group members' email addresses will be updated.</param>
+        /// <param name="newEmail">The new email address to assign to the group members.</param>
+        /// <returns></returns>
+        Task ChangeUsersEmailForGroupMembers(UserInfo userInfo, string newEmail);
     }
 }

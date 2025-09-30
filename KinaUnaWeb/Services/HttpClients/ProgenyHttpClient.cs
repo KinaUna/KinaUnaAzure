@@ -1,6 +1,5 @@
 ﻿using Duende.IdentityModel.Client;
 using KinaUna.Data;
-using KinaUna.Data.Models.Family;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;

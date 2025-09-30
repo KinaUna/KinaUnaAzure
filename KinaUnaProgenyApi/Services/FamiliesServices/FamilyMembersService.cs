@@ -369,5 +369,28 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
 
             return accessibleFamilyMembers;
         }
+
+        /// <summary>
+        /// Updates the email address for all family members associated with the specified user.
+        /// </summary>
+        /// <remarks>This method retrieves all family members linked to the specified user and updates
+        /// their email addresses to the provided value. If no family members are associated with the user, the method
+        /// completes without making any changes.</remarks>
+        /// <param name="userInfo">The user information containing the unique identifier of the user whose family members' email addresses will
+        /// be updated.</param>
+        /// <param name="newEmail">The new email address to assign to the family members.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        public async Task ChangeUsersEmailForFamilyMembers(UserInfo userInfo, string newEmail)
+        {
+            List<FamilyMember> familyMembers = await progenyDbContext.FamilyMembersDb.Where(fm => fm.UserId == userInfo.UserId).ToListAsync();
+            if (familyMembers.Count == 0) return;
+            foreach (FamilyMember familyMember in familyMembers)
+            {
+                familyMember.Email = newEmail;
+                progenyDbContext.FamilyMembersDb.Update(familyMember);
+            }
+
+            await progenyDbContext.SaveChangesAsync();
+        }
     }
 }

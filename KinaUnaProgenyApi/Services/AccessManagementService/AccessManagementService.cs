@@ -1356,5 +1356,39 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             List<int> resultFamilies = families.Distinct().ToList();
             return resultFamilies;
         }
+
+        /// <summary>
+        /// Updates the email address associated with a user's permissions across all relevant entities.
+        /// </summary>
+        /// <remarks>This method updates the email address for all permissions related to the specified
+        /// user in the Progeny, Family, and TimelineItem permissions databases. The changes are persisted to the
+        /// database upon successful completion of the operation.</remarks>
+        /// <param name="userInfo">The user information containing the user's unique identifier.</param>
+        /// <param name="newEmail">The new email address to associate with the user's permissions.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        public async Task ChangeUsersEmailForPermissions(UserInfo userInfo, string newEmail)
+        {
+            List<ProgenyPermission> progenyPermissions = await progenyDbContext.ProgenyPermissionsDb.Where(pp => pp.UserId == userInfo.UserId).ToListAsync();
+            foreach (ProgenyPermission permission in progenyPermissions)
+            {
+                permission.Email = newEmail;
+                progenyDbContext.ProgenyPermissionsDb.Update(permission);
+            }
+
+            List<FamilyPermission> familyPermissions = await progenyDbContext.FamilyPermissionsDb.Where(fp => fp.UserId == userInfo.UserId).ToListAsync();
+            foreach (FamilyPermission permission in familyPermissions)
+            {
+                permission.Email = newEmail;
+                progenyDbContext.FamilyPermissionsDb.Update(permission);
+            }
+            List<TimelineItemPermission> timelineItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.Where(tp => tp.UserId == userInfo.UserId).ToListAsync();
+            foreach (TimelineItemPermission permission in timelineItemPermissions)
+            {
+                permission.Email = newEmail;
+                progenyDbContext.TimelineItemPermissionsDb.Update(permission);
+            }
+
+            await progenyDbContext.SaveChangesAsync();
+        }
     }
 }

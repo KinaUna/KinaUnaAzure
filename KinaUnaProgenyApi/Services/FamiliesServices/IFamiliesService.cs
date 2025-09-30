@@ -99,5 +99,16 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
         /// <param name="currentUserInfo">The user information of the caller, used to verify permissions.</param>
         /// <returns><see langword="true"/> if the family was successfully deleted; otherwise, <see langword="false"/>.</returns>
         Task<bool> DeleteFamily(int familyId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Updates the email address for a user in the admin lists of all families they manage.
+        /// </summary>
+        /// <remarks>This method identifies all families where the specified user is listed as an admin
+        /// and updates the admin list  to replace the user's current email address with the new email address. Changes
+        /// are persisted to the database.</remarks>
+        /// <param name="userInfo">The user information containing the current email address of the user.</param>
+        /// <param name="newEmail">The new email address to replace the user's current email address.</param>
+        /// <returns></returns>
+        Task ChangeUsersEmailForFamilies(UserInfo userInfo, string newEmail);
     }
 }

@@ -87,5 +87,17 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
         /// <returns>A list of <see cref="FamilyMember"/> objects representing the members of the specified family.  Returns an
         /// empty list if the user does not have permission to access the family.</returns>
         Task<List<FamilyMember>> GetFamilyMembersForFamily(int familyId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Updates the email address for all family members associated with the specified user.
+        /// </summary>
+        /// <remarks>This method retrieves all family members linked to the specified user and updates
+        /// their email addresses to the provided value. If no family members are associated with the user, the method
+        /// completes without making any changes.</remarks>
+        /// <param name="userInfo">The user information containing the unique identifier of the user whose family members' email addresses will
+        /// be updated.</param>
+        /// <param name="newEmail">The new email address to assign to the family members.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        Task ChangeUsersEmailForFamilyMembers(UserInfo userInfo, string newEmail);
     }
 }
