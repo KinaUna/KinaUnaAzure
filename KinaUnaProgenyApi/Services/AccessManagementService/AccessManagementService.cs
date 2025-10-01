@@ -451,50 +451,42 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
                 {
-                    return null; // Todo: Use result object instead.
+                    if(timelineItemPermission.PermissionLevel != PermissionLevel.CreatorOnly){
+                        return null; // Todo: Use result object instead.
+                    }
                 }
             }
             else
             {
                 if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
                 {
-                    return null; // Todo: Use result object instead.
+                    if (timelineItemPermission.PermissionLevel != PermissionLevel.CreatorOnly)
+                    {
+                        return null; // Todo: Use result object instead.
+                    }
                 }
             }
 
             // Check if the permission exists.
             TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
                 .SingleOrDefaultAsync(tp => 
-                    tp.TimelineItemPermissionId == timelineItemPermission.TimelineItemPermissionId
-                    && tp.ProgenyId == timelineItemPermission.ProgenyId 
-                    && tp.FamilyId == timelineItemPermission.FamilyId);
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.UserId == timelineItemPermission.UserId);
             
             if (existingPermission == null)
             {
-                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(
-                    tp => tp.ProgenyId == timelineItemPermission.ProgenyId
-                          && tp.FamilyId == timelineItemPermission.FamilyId
-                          && tp.UserId == timelineItemPermission.UserId);
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.Email == timelineItemPermission.Email);
                 if (existingPermission == null)
                 {
                     existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
-                        tp.ProgenyId == timelineItemPermission.ProgenyId 
-                        && tp.FamilyId == timelineItemPermission.FamilyId 
-                        && tp.Email == timelineItemPermission.Email);
-
-                    if (existingPermission == null)
-                    {
-                        existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
-                            tp.ProgenyId == timelineItemPermission.ProgenyId
-                            && tp.FamilyId == timelineItemPermission.FamilyId
-                            && tp.GroupId == timelineItemPermission.GroupId);
-                    }
+                        tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.GroupId == timelineItemPermission.GroupId);
                 }
             }
 
             if (existingPermission != null)
             {
-                // Permission for user or group already exists
+                // Permission for user or group already exists, returning here ensures that CreatorOnly and Private permissions cannot be granted to items that have other permissions.
+                // Use UpdateItemPermission to change existing permissions.
                 return null; // Todo: Use result object instead.
             }
 
@@ -522,42 +514,60 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <returns><see langword="true"/> if the permission was successfully revoked; otherwise, <see langword="false"/>.</returns>
         public async Task<bool> RevokeItemPermission(TimelineItemPermission timelineItemPermission, UserInfo currentUserInfo)
         {
-            // Check if the current user can grant the specified permission level.
-            if (timelineItemPermission.ProgenyId > 0)
+            // Check if the permission exists.
+            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                .SingleOrDefaultAsync(tp =>
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.UserId == timelineItemPermission.UserId);
+
+            if (existingPermission == null)
             {
-                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.Email == timelineItemPermission.Email);
+                if (existingPermission == null)
+                {
+                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                        tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.GroupId == timelineItemPermission.GroupId);
+                }
+            }
+            if (existingPermission == null)
+            {
+                return false; // Todo: Use result object instead.
+            }
+
+            if (existingPermission.PermissionLevel == PermissionLevel.CreatorOnly)
+            {
+                // CreatorOnly permissions can be revoked by the creator of the item.
+                if (!await HasCreatorOnlyPermission(timelineItemPermission.TimelineType, timelineItemPermission.ItemId, currentUserInfo))
                 {
                     return false; // Todo: Use result object instead.
+                }
+            }
+
+            if (existingPermission.PermissionLevel == PermissionLevel.Private)
+            {
+                // Private permissions can be revoked by the owner of the progeny.
+                if (!await HasPrivatePermission(timelineItemPermission.TimelineType, timelineItemPermission.ItemId, currentUserInfo))
+                {
+                    return false; // Todo: Use result object instead.
+                }
+            }
+            
+            // Check if the current user can grant the specified permission level.
+            if (existingPermission.ProgenyId > 0)
+            {
+                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
+                {
+                    return false;
                 }
             }
             else
             {
-                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
+                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
                 {
                     return false; // Todo: Use result object instead.
                 }
             }
-
-            // Check if the permission exists.
-            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb
-                .SingleOrDefaultAsync(tp => tp.TimelineItemPermissionId == timelineItemPermission.TimelineItemPermissionId
-                                            && tp.ProgenyId == timelineItemPermission.ProgenyId && tp.FamilyId == timelineItemPermission.FamilyId);
-            if (existingPermission == null)
-            {
-                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp => tp.ProgenyId == timelineItemPermission.ProgenyId
-                                                                                                                 && tp.FamilyId == timelineItemPermission.FamilyId
-                                                                                                                 && tp.UserId == timelineItemPermission.UserId);
-                if (existingPermission == null)
-                {
-                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp =>
-                        tp.ProgenyId == timelineItemPermission.ProgenyId && tp.FamilyId == timelineItemPermission.FamilyId && tp.Email == timelineItemPermission.Email);
-                    if (existingPermission == null)
-                    {
-                        return false; // Todo: Use result object instead
-                    }
-                }
-            }
-
+            
             PermissionAuditLog logEntry = await permissionAuditLogService.AddTimelineItemPermissionAuditLogEntry(PermissionAction.Delete, existingPermission, currentUserInfo);
 
             progenyDbContext.TimelineItemPermissionsDb.Remove(existingPermission);
@@ -581,43 +591,61 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// langword="null"/> if the user lacks sufficient access rights or the specified permission does not exist.</returns>
         public async Task<TimelineItemPermission> UpdateItemPermission(TimelineItemPermission timelineItemPermission, UserInfo currentUserInfo)
         {
+            // Check if the permission exists.
+            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                .SingleOrDefaultAsync(tp =>
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.UserId == timelineItemPermission.UserId);
+
+            if (existingPermission == null)
+            {
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.Email == timelineItemPermission.Email);
+                if (existingPermission == null)
+                {
+                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                        tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.GroupId == timelineItemPermission.GroupId);
+                }
+            }
+
+            if (existingPermission == null)
+            {
+                return null; // Todo: Use result object instead.
+            }
+
+            if (existingPermission.PermissionLevel == PermissionLevel.CreatorOnly)
+            {
+                // CreatorOnly permissions can be updated by the creator of the item.
+                if (!await HasCreatorOnlyPermission(timelineItemPermission.TimelineType, timelineItemPermission.ItemId, currentUserInfo))
+                {
+                    return null; // Todo: Use result object instead.
+                }
+            }
+
+            if (existingPermission.PermissionLevel == PermissionLevel.Private)
+            {
+                // Private permissions can be updated by the owner of the progeny.
+                if (!await HasPrivatePermission(timelineItemPermission.TimelineType, timelineItemPermission.ItemId, currentUserInfo))
+                {
+                    return null; // Todo: Use result object instead.
+                }
+            }
             // Check if the current user can grant the specified permission level.
             if (timelineItemPermission.ProgenyId > 0)
             {
-                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
+                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
                 {
                     return null; // Todo: Use result object instead.
+                    
                 }
             }
             else
             {
-                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
+                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
                 {
                     return null; // Todo: Use result object instead.
                 }
             }
-
-            // Check if the permission exists.
-            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb
-                .SingleOrDefaultAsync(tp => tp.TimelineItemPermissionId == timelineItemPermission.TimelineItemPermissionId
-                                            && tp.ProgenyId == timelineItemPermission.ProgenyId && tp.FamilyId == timelineItemPermission.FamilyId);
-            if (existingPermission == null)
-            {
-                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(
-                    tp => tp.ProgenyId == timelineItemPermission.ProgenyId 
-                          && tp.FamilyId == timelineItemPermission.FamilyId 
-                          && tp.UserId == timelineItemPermission.UserId);
-                if (existingPermission == null)
-                {
-                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(
-                        tp => tp.ProgenyId == timelineItemPermission.ProgenyId && tp.FamilyId == timelineItemPermission.FamilyId && tp.Email == timelineItemPermission.Email);
-                    if (existingPermission == null)
-                    {
-                        return null; // Todo: Use result object instead
-                    }
-                }
-            }
-
+            
             PermissionAuditLog logEntry = await permissionAuditLogService.AddTimelineItemPermissionAuditLogEntry(PermissionAction.Update, existingPermission, currentUserInfo);
 
             existingPermission.PermissionLevel = timelineItemPermission.PermissionLevel;
@@ -709,10 +737,16 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             if (existingPermission != null)
             {
-                // Permission for user or group already exists
+                // Permission for user or group already exists for this progeny. Use UpdateProgenyPermission to change existing permissions.
                 return null; // Todo: Use result object instead.
             }
-            
+
+            if (progenyPermission.PermissionLevel >= PermissionLevel.CreatorOnly)
+            {
+                // CreatorOnly and Private permissions are not allowed to be set on progeny level.
+                return null; // Todo: Use result object instead.
+            }
+
             // If the new permission is admin, add to the Progeny Admins list.
             if (progenyPermission.PermissionLevel == PermissionLevel.Admin)
             {
@@ -834,6 +868,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             // Check if the current user can grant the specified permission level.
             if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, progenyPermission.ProgenyId))
             {
+                return null; // Todo: Use result object instead.
+            }
+
+            if (progenyPermission.PermissionLevel >= PermissionLevel.CreatorOnly)
+            {
+                // CreatorOnly and Private permissions are not allowed to be set on progeny level.
                 return null; // Todo: Use result object instead.
             }
 
@@ -1052,6 +1092,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return null; // Todo: Use result object instead.
             }
 
+            if (familyPermission.PermissionLevel >= PermissionLevel.CreatorOnly)
+            {
+                // CreatorOnly and Private permissions are not allowed to be set on family level.
+                return null; // Todo: Use result object instead.
+            }
+
             // Check if the permission already exists.
             FamilyPermission existingPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
                 .SingleOrDefaultAsync(fp => fp.UserId == familyPermission.UserId && fp.GroupId == familyPermission.GroupId
@@ -1176,6 +1222,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             // Check if the current user can grant the specified permission level.
             if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, familyPermission.FamilyId))
             {
+                return null; // Todo: Use result object instead.
+            }
+
+            if (familyPermission.PermissionLevel >= PermissionLevel.CreatorOnly)
+            {
+                // CreatorOnly and Private permissions are not allowed to be set on family level.
                 return null; // Todo: Use result object instead.
             }
 
