@@ -82,9 +82,28 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             // Check direct user permissions.
             TimelineItemPermission timelineItemPermission = await progenyDbContext.TimelineItemPermissionsDb
                 .AsNoTracking()
-                .SingleOrDefaultAsync(tp => tp.UserId == userInfo.UserId && tp.TimelineType == itemType && tp.ItemId == itemId && tp.PermissionLevel < PermissionLevel.CreatorOnly);
+                .SingleOrDefaultAsync(tp => tp.UserId == userInfo.UserId && tp.TimelineType == itemType && tp.ItemId == itemId);
             if (timelineItemPermission != null)
             {
+                if (timelineItemPermission.PermissionLevel == PermissionLevel.CreatorOnly)
+                {
+                    if (await HasCreatorOnlyPermission(itemType, itemId, userInfo))
+                    {
+                        // User is the creator, return CreatorOnly permission.
+                        return timelineItemPermission;
+                    }
+                }
+
+                if (timelineItemPermission.PermissionLevel == PermissionLevel.Private)
+                {
+                    Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == timelineItemPermission.ProgenyId);
+                    if (await HasPrivatePermission(itemType, itemId, userInfo))
+                    {
+                        // User is the owner of the progeny, return Private permission.
+                        return timelineItemPermission;
+                    }
+                }
+
                 resultPermission = timelineItemPermission;
                 highestPermission = timelineItemPermission.PermissionLevel;
             }

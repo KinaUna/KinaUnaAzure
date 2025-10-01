@@ -1,12 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.FamiliesViewModels;
 using KinaUnaWeb.Models.FamilyViewModels;
+using KinaUnaWeb.Models.ProgeniesViewModels;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc;
+using Syncfusion.EJ2.FileManager.Base;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -16,7 +20,9 @@ namespace KinaUnaWeb.Controllers
     /// <param name="userInfosHttpClient"></param>
     /// <param name="userAccessHttpClient"></param>
     /// <param name="viewModelSetupService"></param>
-    public class AccessManagementController(IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient, IViewModelSetupService viewModelSetupService)
+    public class AccessManagementController(IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient,
+        IViewModelSetupService viewModelSetupService, IProgenyHttpClient progenyHttpClient, IFamiliesHttpClient familiesHttpClient,
+        IUserGroupsHttpClient userGroupsHttpClient)
         : Controller
     {
         /// <summary>
@@ -222,5 +228,43 @@ namespace KinaUnaWeb.Controllers
 
             return PartialView("_DeletedAccessPartial", model);
         }
+
+        public async Task<IActionResult> ProgenyItemPermissionsModal(int progenyId)
+        {
+            ProgenyItemPermissionsViewModel model = new();
+            model.UserGroupsList = await userGroupsHttpClient.GetUserGroupsForProgeny(progenyId);
+
+            model.ProgenyPermissionsList = await progenyHttpClient.GetProgenyPermissionsList(progenyId);
+            foreach (ProgenyPermission permission in model.ProgenyPermissionsList)
+            {
+                if (!string.IsNullOrWhiteSpace(permission.UserId))
+                {
+                    UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                    model.UserList.Add(userInfo);
+                }
+            }
+
+            return PartialView("_ProgenyItemPermissionsPartial", model);
+        }
+
+        public async Task<IActionResult> FamilyItemPermissionsModal(int familyId)
+        {
+            FamilyItemPermissionsViewModel model = new();
+
+            model.UserGroupsList = await userGroupsHttpClient.GetUserGroupsForFamily(familyId);
+
+            model.FamilyPermissionsList = await familiesHttpClient.GetFamilyPermissionsList(familyId);
+            foreach(FamilyPermission permission in model.FamilyPermissionsList)
+            {
+                if (!string.IsNullOrWhiteSpace(permission.UserId))
+                {
+                    UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                    model.UserList.Add(userInfo);
+                }
+            }
+
+            return PartialView("_ProgenyItemPermissionsPartial", model);
+        }
+
     }
 }

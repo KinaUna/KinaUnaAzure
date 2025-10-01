@@ -1,0 +1,134 @@
+﻿@using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
+@model KinaUnaWeb.Models.FamiliesViewModels.FamilyItemPermissionsViewModel
+<div>
+    Permission: No access
+    <div id="item-permissions-family-none-div">
+        @foreach (FamilyPermission permission in Model.FamilyPermissionsList)
+        {
+            if (permission.PermissionLevel == PermissionLevel.None)
+            {
+                if (permission.GroupId > 0)
+                {
+                    UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
+                    if (group != null)
+                    {
+                        <div class="ml-4">
+                            @group.Name
+                        </div>
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(permission.UserId))
+                {
+                    UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == permission.UserId);
+                    if (user != null)
+                    {
+                        <div class="ml-4">
+                            @user.UserEmail (@user.FullName())
+                        </div>
+                    }
+                }
+            }
+        }
+    </div>
+</div>
+<div>
+    Permission: View
+    <div id="item-permissions-family-view-div">
+        @foreach (FamilyPermission permission in Model.FamilyPermissionsList)
+        {
+            if (permission.PermissionLevel == PermissionLevel.View || permission.PermissionLevel == PermissionLevel.Add)
+            {
+                if (permission.GroupId > 0)
+                {
+                    UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
+                    if (group != null)
+                    {
+                        <div class="ml-4">
+                            @group.Name
+                        </div>
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(permission.UserId))
+                {
+                    UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == permission.UserId);
+                    if (user != null)
+                    {
+                        <div class="ml-4">
+                            @user.UserEmail (@user.FullName())
+                        </div>
+                    }
+                }
+            }
+        }
+    </div>
+    
+</div>
+<div>
+    Permission: Edit
+    <div id="item-permissions-family-edit-div">
+        @foreach (FamilyPermission permission in Model.FamilyPermissionsList)
+        {
+            if (permission.PermissionLevel == PermissionLevel.Edit)
+            {
+                if (permission.GroupId > 0)
+                {
+                    UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
+                    if (group != null)
+                    {
+                        <div class="ml-4">
+                            @group.Name
+                        </div>
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(permission.UserId))
+                {
+                    UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == permission.UserId);
+                    if (user != null)
+                    {
+                        <div class="ml-4">
+                            @user.UserEmail (@user.FullName())
+                        </div>
+                    }
+                }
+            }
+        }
+    </div>
+</div>
+<div>
+    Permission: Admin
+    <div id="item-permissions-family-admin-div">
+        @foreach (FamilyPermission permission in Model.FamilyPermissionsList)
+        {
+            if (permission.PermissionLevel == PermissionLevel.Admin)
+            {
+                if (permission.GroupId > 0)
+                {
+                    UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
+                    if (group != null)
+                    {
+                        <div class="ml-4">
+                            @group.Name
+                        </div>
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(permission.UserId))
+                {
+                    UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == permission.UserId);
+                    if (user != null)
+                    {
+                        <div class="ml-4">
+                            @user.UserEmail (@user.FullName())
+                        </div>
+                    }
+                }
+            }
+        }
+    </div>
+    
+</div>
+@* Todo: Permissions for CreatorOnly and Private items. *@
