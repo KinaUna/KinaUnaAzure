@@ -3,7 +3,7 @@ import { setContextAutoSuggestList, setTagsAutoSuggestList, TimelineChangedEvent
 import { addTimelineItemEventListener, showPopupAtLoad } from "../item-details/items-display-v9.js";
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
 import { KanbanBoardElementParameters, KanbanBoardsPageParameters, KanbanBoardsPageResponse, TimelineItem, TimeLineType } from "../page-models-v9.js";
-import { getSelectedProgenies } from "../settings-tools-v9.js";
+import { getSelectedFamilies, getSelectedProgenies } from "../settings-tools-v9.js";
 import * as SettingsHelper from '../settings-tools-v9.js';
 
 let kanbanBoardsPageParameters = new KanbanBoardsPageParameters();
@@ -268,8 +268,8 @@ async function initialSettingsPanelSetup(): Promise<void> {
         toggleShowFiltersButton.addEventListener('click', toggleShowFiltersFunction);
     }
     
-    await setTagsAutoSuggestList(kanbanBoardsPageParameters.progenies, 'tag-filter-input', true);
-    await setContextAutoSuggestList(kanbanBoardsPageParameters.progenies, 'context-filter-input', true);
+    await setTagsAutoSuggestList(kanbanBoardsPageParameters.progenies, kanbanBoardsPageParameters.families, 'tag-filter-input', true);
+    await setContextAutoSuggestList(kanbanBoardsPageParameters.progenies, kanbanBoardsPageParameters.families, 'context-filter-input', true);
 
     updateSettingsNotificationDiv();
 
@@ -363,6 +363,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     addSelectedProgeniesChangedEventListener();
     addTimelineChangedEventListener();
     kanbanBoardsPageParameters.progenies = getSelectedProgenies();
+    kanbanBoardsPageParameters.families = getSelectedFamilies();
 
     moreKanbanBoardsButton = document.querySelector<HTMLButtonElement>('#more-kanban-boards-button');
     if (moreKanbanBoardsButton !== null) {

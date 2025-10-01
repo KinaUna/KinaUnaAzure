@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.ItemInterfaces;
 
 namespace KinaUna.Data.Models
@@ -105,6 +106,12 @@ namespace KinaUna.Data.Models
         /// </summary>
         [NotMapped]
         public Progeny Progeny { get; set; } = new Progeny();
+
+        [NotMapped]
+        public Family.Family Family { get; set; }
+
+        [NotMapped]
+        public TimelineItemPermission ItemPerMission { get; set; }
 
         /// <summary>
         /// Gets or sets the list of columns associated with the Kanban board.

@@ -44,8 +44,8 @@ async function onProgenySelectListChanged() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         currentProgenyId = parseInt(progenyIdSelect.value);
-        await setTagsAutoSuggestList([currentProgenyId]);
-        await setLocationAutoSuggestList([currentProgenyId]);
+        await setTagsAutoSuggestList([currentProgenyId], []);
+        await setLocationAutoSuggestList([currentProgenyId], []);
     }
     return new Promise(function (resolve, reject) {
         resolve();
@@ -67,8 +67,8 @@ export async function initializeAddEditVideo() {
     currentProgenyId = getCurrentProgenyId();
     await setupDateTimePicker();
     setupProgenySelectList();
-    await setTagsAutoSuggestList([currentProgenyId]);
-    await setLocationAutoSuggestList([currentProgenyId]);
+    await setTagsAutoSuggestList([currentProgenyId], []);
+    await setLocationAutoSuggestList([currentProgenyId], []);
     addCopyLocationButtonEventListener();
     setupEditButton();
     setAddItemButtonEventListeners();

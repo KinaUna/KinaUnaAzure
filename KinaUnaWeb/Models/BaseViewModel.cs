@@ -13,17 +13,12 @@
         {
             get
             {
-                if (LanguageId == 2)
+                return LanguageId switch
                 {
-                    return "de";
-                }
-
-                if (LanguageId == 3)
-                {
-                    return "da";
-                }
-
-                return "en";
+                    2 => "de",
+                    3 => "da",
+                    _ => "en"
+                };
             }
         }
     }

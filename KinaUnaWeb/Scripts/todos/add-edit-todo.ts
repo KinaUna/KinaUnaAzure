@@ -77,9 +77,9 @@ function setupProgenySelectList(): void {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId]);
-            await setContextAutoSuggestList([currentProgenyId]);
-            await setLocationAutoSuggestList([currentProgenyId]);
+            await setTagsAutoSuggestList([currentProgenyId], []);
+            await setContextAutoSuggestList([currentProgenyId], []);
+            await setLocationAutoSuggestList([currentProgenyId], []);
             ($(".selectpicker") as any).selectpicker('refresh');
         });
     }
@@ -241,9 +241,9 @@ export async function initializeAddEditTodo(): Promise<void> {
 
     await setupDateTimePicker();
     setupProgenySelectList();
-    await setTagsAutoSuggestList([currentProgenyId]);
-    await setContextAutoSuggestList([currentProgenyId]);
-    await setLocationAutoSuggestList([currentProgenyId]);
+    await setTagsAutoSuggestList([currentProgenyId], []);
+    await setContextAutoSuggestList([currentProgenyId], []);
+    await setLocationAutoSuggestList([currentProgenyId], []);
     ($(".selectpicker") as any).selectpicker('refresh');
 
     setupRichTextEditor();

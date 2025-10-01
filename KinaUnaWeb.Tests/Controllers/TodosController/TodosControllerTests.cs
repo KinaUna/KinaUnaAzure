@@ -272,7 +272,7 @@
 //                .ReturnsAsync(userInfo);
 //            _mockProgenyHttpClient.Setup(x => x.GetProgeny(It.IsAny<int>())).ReturnsAsync(new Progeny());
 //            _mockKanbanBoardsHttpClient.Setup(x => x.GetKanbanBoard(It.IsAny<int>())).ReturnsAsync(new KanbanBoard());
-//            _mockKanbanBoardsHttpClient.Setup(x => x.GetProgeniesKanbanBoardsList(It.IsAny<KanbanBoardsRequest>())).ReturnsAsync(new KanbanBoardsResponse());
+//            _mockKanbanBoardsHttpClient.Setup(x => x.GetKanbanBoardsList(It.IsAny<KanbanBoardsRequest>())).ReturnsAsync(new KanbanBoardsResponse());
 //            _mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(It.IsAny<int>())).ReturnsAsync([]);
 //        }
 

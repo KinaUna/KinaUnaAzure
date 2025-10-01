@@ -216,7 +216,7 @@ namespace KinaUnaWeb.Controllers
                 Skip = 0,
                 NumberOfItems = 0 // Get all.
             };
-            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
+            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetKanbanBoardsList(kanbanBoardsRequest);
             model.KanbanBoards = kanbanBoardsResponse.KanbanBoards;
             model.KanbanBoardsList = new List<SelectListItem>();
             foreach (KanbanBoard kanbanBoard in model.KanbanBoards)
@@ -277,7 +277,7 @@ namespace KinaUnaWeb.Controllers
                 Skip = 0,
                 NumberOfItems = 0 // Get all.
             };
-            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
+            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetKanbanBoardsList(kanbanBoardsRequest);
             model.KanbanBoards = kanbanBoardsResponse.KanbanBoards;
             model.KanbanBoardsList = new List<SelectListItem>();
             SelectListItem noKanbanBoardSelected = new SelectListItem();
@@ -728,7 +728,7 @@ namespace KinaUnaWeb.Controllers
                 Skip = 0,
                 NumberOfItems = 0 // Get all.
             };
-            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
+            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetKanbanBoardsList(kanbanBoardsRequest);
             model.KanbanBoards = kanbanBoardsResponse.KanbanBoards;
             model.KanbanBoardsList = new List<SelectListItem>();
 

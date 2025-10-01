@@ -44,8 +44,8 @@ async function onProgenySelectListChanged(): Promise<void> {
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         currentProgenyId = parseInt(progenyIdSelect.value);
-        await setTagsAutoSuggestList([currentProgenyId]);
-        await setContextAutoSuggestList([currentProgenyId]);
+        await setTagsAutoSuggestList([currentProgenyId], []);
+        await setContextAutoSuggestList([currentProgenyId], []);
     }
 
     return new Promise<void>(function (resolve, reject) {
@@ -58,8 +58,8 @@ export async function initializeAddEditFriend(): Promise<void> {
     currentProgenyId = getCurrentProgenyId();
 
     await setupDateTimePicker();
-    await setTagsAutoSuggestList([currentProgenyId]);
-    await setContextAutoSuggestList([currentProgenyId]);
+    await setTagsAutoSuggestList([currentProgenyId], []);
+    await setContextAutoSuggestList([currentProgenyId], []);
 
     setupProgenySelectList();
 

@@ -1032,9 +1032,9 @@ async function initialSettingsPanelSetup(): Promise<void> {
         });
     }
 
-    await setTagsAutoSuggestList(todosPageParameters.progenies, 'tag-filter-input', true);
-    await setContextAutoSuggestList(todosPageParameters.progenies, 'context-filter-input', true);
-    await setLocationAutoSuggestList(todosPageParameters.progenies, 'location-filter-input', true);
+    await setTagsAutoSuggestList(todosPageParameters.progenies, todosPageParameters.families, 'tag-filter-input', true);
+    await setContextAutoSuggestList(todosPageParameters.progenies, todosPageParameters.families, 'context-filter-input', true);
+    await setLocationAutoSuggestList(todosPageParameters.progenies, todosPageParameters.families, 'location-filter-input', true);
     updateSettingsNotificationDiv();
 
     return new Promise<void>(function (resolve, reject) {

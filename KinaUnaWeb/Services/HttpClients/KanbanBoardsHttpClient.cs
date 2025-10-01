@@ -89,14 +89,14 @@ namespace KinaUnaWeb.Services.HttpClients
             return kanbanBoard;
         }
 
-        public async Task<KanbanBoardsResponse> GetProgeniesKanbanBoardsList(KanbanBoardsRequest kanbanBoardsRequest)
+        public async Task<KanbanBoardsResponse> GetKanbanBoardsList(KanbanBoardsRequest kanbanBoardsRequest)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             KanbanBoardsResponse kanbanBoardsResponse = new();
-            string kanbanBoardsApiPath = "/api/KanbanBoards/GetProgeniesKanbanBoardsList";
+            string kanbanBoardsApiPath = "/api/KanbanBoards/GetKanbanBoardsList";
             HttpResponseMessage kanbanBoardsListResponse = await _httpClient.PostAsJsonAsync(kanbanBoardsApiPath, kanbanBoardsRequest).ConfigureAwait(false);
             if (!kanbanBoardsListResponse.IsSuccessStatusCode) return kanbanBoardsResponse;
             

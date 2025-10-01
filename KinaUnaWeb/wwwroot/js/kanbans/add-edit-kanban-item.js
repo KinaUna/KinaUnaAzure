@@ -69,9 +69,9 @@ function setupProgenySelectList() {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId]);
-            await setContextAutoSuggestList([currentProgenyId]);
-            await setLocationAutoSuggestList([currentProgenyId]);
+            await setTagsAutoSuggestList([currentProgenyId], []);
+            await setContextAutoSuggestList([currentProgenyId], []);
+            await setLocationAutoSuggestList([currentProgenyId], []);
             $(".selectpicker").selectpicker('refresh');
         });
     }
@@ -217,9 +217,9 @@ export async function initializeAddEditKanbanItem(containerElementId) {
     currentProgenyId = getCurrentProgenyId();
     await setupDateTimePicker();
     setupProgenySelectList();
-    await setTagsAutoSuggestList([currentProgenyId]);
-    await setContextAutoSuggestList([currentProgenyId]);
-    await setLocationAutoSuggestList([currentProgenyId]);
+    await setTagsAutoSuggestList([currentProgenyId], []);
+    await setContextAutoSuggestList([currentProgenyId], []);
+    await setLocationAutoSuggestList([currentProgenyId], []);
     $(".selectpicker").selectpicker('refresh');
     setupRichTextEditor(containerElementId);
     const titleInput = document.getElementById('todo-title-input');

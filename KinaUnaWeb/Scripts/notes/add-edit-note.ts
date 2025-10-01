@@ -38,8 +38,8 @@ function setupProgenySelectList(): void {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId]);
-            await setCategoriesAutoSuggestList([currentProgenyId]);
+            await setTagsAutoSuggestList([currentProgenyId], []);
+            await setCategoriesAutoSuggestList([currentProgenyId], []);
         });
     }
 }
@@ -119,8 +119,8 @@ export async function initializeAddEditNote(): Promise<void> {
 
     await setupDateTimePicker();
     setupProgenySelectList();
-    await setTagsAutoSuggestList([currentProgenyId]);
-    await setCategoriesAutoSuggestList([currentProgenyId]);
+    await setTagsAutoSuggestList([currentProgenyId], []);
+    await setCategoriesAutoSuggestList([currentProgenyId], []);
     ($(".selectpicker") as any).selectpicker('refresh');
 
     setupRichTextEditor();

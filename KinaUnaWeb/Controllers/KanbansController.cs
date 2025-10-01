@@ -19,6 +19,7 @@ namespace KinaUnaWeb.Controllers
         IKanbanBoardsHttpClient kanbanBoardsHttpClient,
         IUserInfosHttpClient userInfosHttpClient,
         IProgenyHttpClient progenyHttpClient,
+        IFamiliesHttpClient familiesHttpClient,
         IKanbanItemsHttpClient kanbanItemsHttpClient,
         ITodoItemsHttpClient todoItemsHttpClient) : Controller
     {
@@ -31,12 +32,7 @@ namespace KinaUnaWeb.Controllers
             {
                 PopUpKanbanBoardId = kanbanBoardId ?? 0
             };
-
-            if (model.PopUpKanbanBoardId != 0)
-            {
-                model.KanbanBoardsList.Add(await kanbanBoardsHttpClient.GetKanbanBoard(model.PopUpKanbanBoardId));
-            }
-
+            
             return View(model);
         }
 
@@ -62,13 +58,14 @@ namespace KinaUnaWeb.Controllers
             KanbanBoardsRequest kanbanBoardsRequest = new()
             {
                 ProgenyIds = pageParameters.Progenies,
+                FamilyIds = pageParameters.Families,
                 Skip = (pageParameters.CurrentPageNumber - 1) * pageParameters.ItemsPerPage,
                 NumberOfItems = pageParameters.ItemsPerPage,
                 TagFilter = pageParameters.TagFilter,
                 ContextFilter = pageParameters.ContextFilter,
             };
 
-            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
+            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetKanbanBoardsList(kanbanBoardsRequest);
 
             return Json(kanbanBoardsResponse);
 
@@ -100,21 +97,26 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_KanbanBoardElementPartial", new KanbanBoardElementResponse()
                 {
-                    IsCurrentUserProgenyAdmin = false,
                     KanbanBoard = new KanbanBoard(),
                     LanguageId = elementParameters.LanguageId
                 });
             }
 
             KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(elementParameters.KanbanBoardId);
-            kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
+            if (kanbanBoard.ProgenyId > 0)
+            {
+                kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
+            }
+
+            if (kanbanBoard.FamilyId > 0)
+            {
+                kanbanBoard.Family = await familiesHttpClient.GetFamily(kanbanBoard.FamilyId);
+            }
             
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(elementParameters.LanguageId, User.GetEmail(), kanbanBoard.ProgenyId, kanbanBoard.FamilyId);
             KanbanBoardElementResponse response = new()
             {
                 KanbanBoardId = kanbanBoard.KanbanBoardId,
                 LanguageId = elementParameters.LanguageId,
-                IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin,
                 KanbanBoard = kanbanBoard
             };
             

@@ -46,7 +46,7 @@ async function onProgenySelectListChanged(): Promise<void> {
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         currentProgenyId = parseInt(progenyIdSelect.value);
-        await setCategoriesAutoSuggestList([currentProgenyId]);
+        await setCategoriesAutoSuggestList([currentProgenyId], []);
     }
 
     return new Promise<void>(function (resolve, reject) {
@@ -58,7 +58,7 @@ export async function initializeAddEditSkill(): Promise<void> {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
 
-    await setCategoriesAutoSuggestList([currentProgenyId]);
+    await setCategoriesAutoSuggestList([currentProgenyId], []);
     await setupDateTimePicker();
     setupProgenySelectList();
     ($(".selectpicker") as any).selectpicker('refresh');

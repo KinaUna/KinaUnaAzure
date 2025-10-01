@@ -53,34 +53,69 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return false;
             }
             
+            TimelineItemPermission itemPermission = await GetItemPermissionForUser(itemType, itemId, userInfo);
+
+            return itemPermission.PermissionLevel >= requiredLevel;
+        }
+
+        /// <summary>
+        /// Retrieves the permission level for a specific timeline item and user.
+        /// </summary>
+        /// <remarks>This method checks both direct user permissions and group-based permissions to
+        /// determine the highest applicable permission level. Group permissions are considered only if the user is a
+        /// member of the respective group.</remarks>
+        /// <param name="itemType">The type of the timeline item, represented as a <see cref="KinaUnaTypes.TimeLineType"/>.</param>
+        /// <param name="itemId">The unique identifier of the timeline item.</param>
+        /// <param name="userInfo">The user information, represented as a <see cref="UserInfo"/> object, for whom the permission is being
+        /// retrieved.</param>
+        /// <returns>A <see cref="TimelineItemPermission"/> object representing the highest permission level the specified user
+        /// has for the given timeline item. If no permissions are found, the returned object will have a <see
+        /// cref="PermissionLevel"/> of <see cref="PermissionLevel.None"/>.</returns>
+        public async Task<TimelineItemPermission> GetItemPermissionForUser(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo userInfo)
+        {
+            TimelineItemPermission resultPermission = new()
+            {
+                PermissionLevel = PermissionLevel.None
+            };
+
+            PermissionLevel highestPermission = PermissionLevel.None;
             // Check direct user permissions.
             TimelineItemPermission timelineItemPermission = await progenyDbContext.TimelineItemPermissionsDb
                 .AsNoTracking()
-                .SingleOrDefaultAsync(tp => tp.UserId == userInfo.UserId && tp.TimelineType == itemType && tp.ItemId == itemId);
-            if (timelineItemPermission != null && timelineItemPermission.PermissionLevel >= requiredLevel)
+                .SingleOrDefaultAsync(tp => tp.UserId == userInfo.UserId && tp.TimelineType == itemType && tp.ItemId == itemId && tp.PermissionLevel < PermissionLevel.CreatorOnly);
+            if (timelineItemPermission != null)
             {
-                return true;
+                resultPermission = timelineItemPermission;
+                highestPermission = timelineItemPermission.PermissionLevel;
             }
 
             // Check group permissions.
             List<TimelineItemPermission> groupPermissions = await progenyDbContext.TimelineItemPermissionsDb
                 .AsNoTracking()
-                .Where(tp => tp.GroupId > 0 && tp.TimelineType == itemType && tp.ItemId == itemId)
+                .Where(tp => tp.GroupId > 0 && tp.TimelineType == itemType && tp.ItemId == itemId && tp.PermissionLevel < PermissionLevel.CreatorOnly)
                 .ToListAsync();
+
             
-            PermissionLevel highestGroupPermission = PermissionLevel.None;
             foreach (TimelineItemPermission permission in groupPermissions)
             {
                 bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
-                if (isMember && permission.PermissionLevel > highestGroupPermission)
+                if (isMember && permission.PermissionLevel > highestPermission)
                 {
-                    highestGroupPermission = permission.PermissionLevel;
+                    highestPermission = permission.PermissionLevel;
+                    resultPermission = permission;
                 }
             }
 
-            return highestGroupPermission >= requiredLevel;
+            return resultPermission;
         }
 
+        /// <summary>
+        /// Determines whether a user has permission to access an item that is restricted to its creator only.
+        /// </summary>
+        /// <param name="itemType">The type of the timeline item (e.g., Note, TodoItem, Sleep, etc.).</param>
+        /// <param name="itemId">The unique identifier of the item.</param>
+        /// <param name="userInfo">The information of the user whose access is being verified.</param>
+        /// <returns></returns>
         private async Task<bool> HasCreatorOnlyPermission(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo userInfo)
         {
             TimeLineItem item = await progenyDbContext.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(ti => ti.ItemId == itemId.ToString() && ti.ItemType == (int)itemType);
@@ -220,6 +255,18 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             return true;
         }
 
+        /// <summary>
+        /// Determines whether the specified user has permission to access a private item of the given type and ID.
+        /// </summary>
+        /// <remarks>This method verifies whether the specified user has access to a private item by
+        /// checking the item's association with the user's progeny. The method supports various item types, such as
+        /// calendar events, contacts, photos, and more, as defined in the <see cref="KinaUnaTypes.TimeLineType"/>
+        /// enumeration.</remarks>
+        /// <param name="itemType">The type of the item to check, represented as a <see cref="KinaUnaTypes.TimeLineType"/> enumeration value.</param>
+        /// <param name="itemId">The unique identifier of the item to check.</param>
+        /// <param name="userInfo">The user information used to validate permissions.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if the user has
+        /// permission to access the item; otherwise, <see langword="false"/>.</returns>
         private async Task<bool> HasPrivatePermission(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo userInfo)
         {
             Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.UserId == userInfo.UserId);

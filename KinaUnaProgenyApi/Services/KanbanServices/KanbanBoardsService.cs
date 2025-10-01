@@ -38,7 +38,8 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 return new KanbanBoard();
             }
             KanbanBoard kanbanBoard = await progenyDbContext.KanbanBoardsDb.AsNoTracking().SingleOrDefaultAsync(k => k.KanbanBoardId == kanbanBoardId);
-            
+            kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo);
+
             return kanbanBoard;
         }
 
@@ -220,6 +221,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             {
                 if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo, PermissionLevel.View))
                 {
+                    kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo);
                     accessibleKanbanBoards.Add(kanbanBoard);
                 }
             }
@@ -312,6 +314,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             {
                 if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo, PermissionLevel.View))
                 {
+                    kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo);
                     accessibleKanbanBoards.Add(kanbanBoard);
                 }
             }
@@ -336,6 +339,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             {
                 if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo, PermissionLevel.View))
                 {
+                    kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo);
                     accessibleKanbanBoards.Add(kanbanBoard);
                 }
             }

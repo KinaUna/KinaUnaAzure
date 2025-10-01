@@ -38,8 +38,8 @@ async function onProgenySelectListChanged() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         currentProgenyId = parseInt(progenyIdSelect.value);
-        await setTagsAutoSuggestList([currentProgenyId]);
-        await setContextAutoSuggestList([currentProgenyId]);
+        await setTagsAutoSuggestList([currentProgenyId], []);
+        await setContextAutoSuggestList([currentProgenyId], []);
     }
     return new Promise(function (resolve, reject) {
         resolve();
@@ -49,8 +49,8 @@ export async function initializeAddEditFriend() {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
     await setupDateTimePicker();
-    await setTagsAutoSuggestList([currentProgenyId]);
-    await setContextAutoSuggestList([currentProgenyId]);
+    await setTagsAutoSuggestList([currentProgenyId], []);
+    await setContextAutoSuggestList([currentProgenyId], []);
     setupProgenySelectList();
     $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve, reject) {

@@ -8,7 +8,7 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<KanbanBoard> AddKanbanBoard(KanbanBoard kanbanBoard);
         Task<KanbanBoard> DeleteKanbanBoard(KanbanBoard kanbanBoard, bool hardDelete);
         Task<KanbanBoard> GetKanbanBoard(int kanbanBoardId);
-        Task<KanbanBoardsResponse> GetProgeniesKanbanBoardsList(KanbanBoardsRequest kanbanBoardsRequest);
+        Task<KanbanBoardsResponse> GetKanbanBoardsList(KanbanBoardsRequest kanbanBoardsRequest);
         Task<KanbanBoard> UpdateKanbanBoard(KanbanBoard kanbanBoard);
     }
 }

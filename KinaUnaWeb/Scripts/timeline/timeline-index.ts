@@ -530,9 +530,9 @@ async function initialSettingsPanelSetup(): Promise<void> {
         allButton.addEventListener('click', setTimeLineTypeFilterToAll);
     }
 
-    await setTagsAutoSuggestList(timeLineParameters.progenies, 'tag-filter-input', true);
-    await setCategoriesAutoSuggestList(timeLineParameters.progenies, 'category-filter-input', true);
-    await setContextAutoSuggestList(timeLineParameters.progenies, 'context-filter-input', true);
+    await setTagsAutoSuggestList(timeLineParameters.progenies, timeLineParameters.families, 'tag-filter-input', true);
+    await setCategoriesAutoSuggestList(timeLineParameters.progenies, timeLineParameters.families, 'category-filter-input', true);
+    await setContextAutoSuggestList(timeLineParameters.progenies, timeLineParameters.families, 'context-filter-input', true);
 
 
     return new Promise<void>(function (resolve, reject) {

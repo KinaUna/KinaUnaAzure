@@ -9,9 +9,9 @@ function setupProgenySelectList() {
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId]);
-            await setContextAutoSuggestList([currentProgenyId]);
-            await setLocationAutoSuggestList([currentProgenyId]);
+            await setTagsAutoSuggestList([currentProgenyId], []);
+            await setContextAutoSuggestList([currentProgenyId], []);
+            await setLocationAutoSuggestList([currentProgenyId], []);
             $(".selectpicker").selectpicker('refresh');
         });
     }
@@ -111,9 +111,9 @@ export async function initializeAddEditKanbanBoard() {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
     setupProgenySelectList();
-    await setTagsAutoSuggestList([currentProgenyId]);
-    await setContextAutoSuggestList([currentProgenyId]);
-    await setLocationAutoSuggestList([currentProgenyId]);
+    await setTagsAutoSuggestList([currentProgenyId], []);
+    await setContextAutoSuggestList([currentProgenyId], []);
+    await setLocationAutoSuggestList([currentProgenyId], []);
     $(".selectpicker").selectpicker('refresh');
     setupRichTextEditor();
     const titleInput = document.getElementById('kanban-board-title-input');

@@ -117,15 +117,15 @@ async function onProgenySelectListChanged() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         currentProgenyId = parseInt(progenyIdSelect.value);
-        await setContextAutoSuggestList([currentProgenyId]);
-        await setLocationAutoSuggestList([currentProgenyId]);
+        await setContextAutoSuggestList([currentProgenyId], []);
+        await setLocationAutoSuggestList([currentProgenyId], []);
     }
 }
 export async function initializeAddEditEvent() {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
-    await setContextAutoSuggestList([currentProgenyId]);
-    await setLocationAutoSuggestList([currentProgenyId]);
+    await setContextAutoSuggestList([currentProgenyId], []);
+    await setLocationAutoSuggestList([currentProgenyId], []);
     setupProgenySelectList();
     setupDateTimePickers();
     setupRemindersSection();

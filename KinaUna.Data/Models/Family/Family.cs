@@ -31,6 +31,12 @@ namespace KinaUna.Data.Models.Family
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
+        /// The filename of the picture for the family icon.
+        /// </summary>
+        [MaxLength(512)]
+        public string PictureLink { get; set; }
+
+        /// <summary>
         /// Gets or sets a comma-separated list of administrator email addresses.
         /// </summary>
         /// <remarks>Users with a matching email address should be granted admin access rights.

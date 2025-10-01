@@ -1,18 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.FamiliesViewModels;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
 {
     public class FamiliesController(IFamiliesHttpClient familiesHttpClient, IViewModelSetupService viewModelSetupService,
-        IProgenyHttpClient progenyHttpClient, IUserGroupsHttpClient userGroupsHttpClient, IUserInfosHttpClient userInfosHttpClient) : Controller
+        IProgenyHttpClient progenyHttpClient, IUserGroupsHttpClient userGroupsHttpClient, IUserInfosHttpClient userInfosHttpClient, ImageStore imageStore) : Controller
     {
         public async Task<IActionResult> Index()
         {
@@ -218,6 +220,29 @@ namespace KinaUnaWeb.Controllers
             }
 
             return View(model);
+        }
+
+        /// <summary>
+        /// Profile picture for a family. If the family has no picture or the user has no access to the picture, a default image is returned.
+        /// Images are stored in Azure Blob Storage, this provides a static URL for profile pictures.
+        /// </summary>
+        /// <param name="id">The Id of the family to get the profile picture for.</param>
+        /// <returns>FileContentResult with the image data.</returns>
+        [AllowAnonymous]
+        public async Task<FileContentResult> ProfilePicture(int id)
+        {
+            Family family = await familiesHttpClient.GetFamily(id);
+            if (family == null || family.FamilyId == 0 || string.IsNullOrEmpty(family.PictureLink))
+            {
+                MemoryStream fileContentNoAccess = await imageStore.GetStream("868b62e2-6978-41a1-97dc-1cc1116f65a6.jpg");
+                byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
+                return new FileContentResult(fileContentBytesNoAccess, "image/jpeg");
+            }
+
+            MemoryStream fileContent = await imageStore.GetStream(family.PictureLink, BlobContainers.Family);
+            byte[] fileContentBytes = fileContent.ToArray();
+
+            return new FileContentResult(fileContentBytes, family.GetPictureFileContentType());
         }
     }
 }

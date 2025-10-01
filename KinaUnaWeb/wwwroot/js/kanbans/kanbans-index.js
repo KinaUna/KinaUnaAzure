@@ -3,7 +3,7 @@ import { setContextAutoSuggestList, setTagsAutoSuggestList } from "../data-tools
 import { addTimelineItemEventListener, showPopupAtLoad } from "../item-details/items-display-v9.js";
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
 import { KanbanBoardElementParameters, KanbanBoardsPageParameters, TimelineItem, TimeLineType } from "../page-models-v9.js";
-import { getSelectedProgenies } from "../settings-tools-v9.js";
+import { getSelectedFamilies, getSelectedProgenies } from "../settings-tools-v9.js";
 import * as SettingsHelper from '../settings-tools-v9.js';
 let kanbanBoardsPageParameters = new KanbanBoardsPageParameters();
 const kanbansPageSettingsStorageKey = 'kanbans_page_parameters';
@@ -225,8 +225,8 @@ async function initialSettingsPanelSetup() {
         toggleShowFiltersButton.removeEventListener('click', toggleShowFiltersFunction);
         toggleShowFiltersButton.addEventListener('click', toggleShowFiltersFunction);
     }
-    await setTagsAutoSuggestList(kanbanBoardsPageParameters.progenies, 'tag-filter-input', true);
-    await setContextAutoSuggestList(kanbanBoardsPageParameters.progenies, 'context-filter-input', true);
+    await setTagsAutoSuggestList(kanbanBoardsPageParameters.progenies, kanbanBoardsPageParameters.families, 'tag-filter-input', true);
+    await setContextAutoSuggestList(kanbanBoardsPageParameters.progenies, kanbanBoardsPageParameters.families, 'context-filter-input', true);
     updateSettingsNotificationDiv();
     return new Promise(function (resolve, reject) {
         resolve();
@@ -305,6 +305,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     addSelectedProgeniesChangedEventListener();
     addTimelineChangedEventListener();
     kanbanBoardsPageParameters.progenies = getSelectedProgenies();
+    kanbanBoardsPageParameters.families = getSelectedFamilies();
     moreKanbanBoardsButton = document.querySelector('#more-kanban-boards-button');
     if (moreKanbanBoardsButton !== null) {
         moreKanbanBoardsButton.removeEventListener('click', getKanbanBoards);

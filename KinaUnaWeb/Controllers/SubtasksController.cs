@@ -458,7 +458,7 @@ namespace KinaUnaWeb.Controllers
                 Skip = 0,
                 NumberOfItems = 0 // Get all.
             };
-            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
+            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetKanbanBoardsList(kanbanBoardsRequest);
             model.KanbanBoards = kanbanBoardsResponse.KanbanBoards;
             model.KanbanBoardsList = new List<SelectListItem>();
 
