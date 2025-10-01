@@ -2,6 +2,7 @@
 using System.Linq;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.Family;
 
 namespace KinaUnaWeb.Models;
 
@@ -11,8 +12,10 @@ namespace KinaUnaWeb.Models;
 public class BaseItemsViewModel : BaseViewModel
 {
     public int CurrentProgenyId { get; set; }
+    public int CurrentFamilyId { get; set; } = 0;
     public int CurrentAccessLevel { get; private set; } = (int)AccessLevel.NoAccess;
     public Progeny CurrentProgeny { get; set; }
+    public Family CurrentFamily { get; set; }
     public List<UserAccess> CurrentProgenyAccessList { get; set; }
     public bool IsCurrentUserProgenyAdmin { get; set; }
     public string Tags { get; set; }

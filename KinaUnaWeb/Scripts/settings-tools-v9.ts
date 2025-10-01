@@ -174,3 +174,80 @@ export function getSelectedProgenies(): number[] {
     return progeniesIds;
 }
 
+export function getSelectedFamilies(): number[] {
+    let selectedFamilyIds: string[] = [];
+    let selectedFamilies = localStorage.getItem('selectedFamilies');
+    if (selectedFamilies !== null) {
+        let parsedSelectedFamilies = JSON.parse(selectedFamilies);
+        if (parsedSelectedFamilies as string[] !== null) {
+            selectedFamilyIds = parsedSelectedFamilies as string[];
+        }
+
+        // if family with id 0 is in the selectedProgenyIds, remove it.
+        if (selectedFamilyIds.includes('0')) {
+            selectedFamilyIds = selectedFamilyIds.filter(function (value) {
+                return value !== '0';
+            });
+        }
+
+        if (selectedFamilyIds.length === 0) {
+            let allFamilyButtons = document.querySelectorAll<HTMLAnchorElement>('.select-family-button');
+            allFamilyButtons.forEach(function (button) {
+                let selectedFamilyData = button.getAttribute('data-select-family-id');
+                if (selectedFamilyData) {
+                    selectedFamilyIds.push(selectedFamilyData);
+                    button.classList.add('selected');
+                }
+            });
+            
+            localStorage.setItem('selectedFamilies', JSON.stringify(selectedFamilyIds));
+        }
+
+        let selectFamilyButtons = document.querySelectorAll('.select-family-button');
+        selectFamilyButtons.forEach(function (button) {
+            let buttonElement = button as HTMLAnchorElement;
+            let familyCheckSpan = buttonElement.querySelector('.family-check-span');
+            let selectedFamilyData = button.getAttribute('data-select-family-id');
+            if (selectedFamilyData) {
+                if (selectedFamilyIds.includes(selectedFamilyData)) {
+                    buttonElement.classList.add('selected');
+
+                    if (familyCheckSpan !== null) {
+                        familyCheckSpan.classList.remove('d-none');
+                    }
+                }
+                else {
+                    buttonElement.classList.remove('selected');
+                    if (familyCheckSpan !== null) {
+                        familyCheckSpan.classList.add('d-none');
+                    }
+                }
+            }
+        });
+    }
+    else {
+        let selectedFamiliyButtons = document.querySelectorAll<HTMLButtonElement>('.select-family-button');
+        selectedFamiliyButtons.forEach(function (button) {
+            let buttonElement = button as HTMLButtonElement;
+            let familyCheckSpan = buttonElement.querySelector('.family-check-span');
+            let selectedFamilyData = button.getAttribute('data-select-family-id');
+            if (selectedFamilyData) {
+                selectedFamilyIds.push(selectedFamilyData);
+                buttonElement.classList.add('selected');
+                if (familyCheckSpan !== null) {
+                    familyCheckSpan.classList.remove('d-none');
+                }
+            }
+        });
+                
+        localStorage.setItem('selectedFamilies', JSON.stringify(selectedFamilyIds));
+    }
+
+
+    let familiesIds = selectedFamilyIds.map(function (id) {
+        return parseInt(id);
+    });
+        
+    return familiesIds;
+}
+

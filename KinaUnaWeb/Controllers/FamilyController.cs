@@ -27,7 +27,7 @@ namespace KinaUnaWeb.Controllers
         /// <returns>View with FamilyViewModel.</returns>
         public async Task<IActionResult> Index()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0);
             FamilyViewModel model = new(baseModel)
             {
                 FamilyDto = new FamilyDTO()

@@ -54,9 +54,10 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get TimeLineItems for.</param>
+        /// <param name="familyId"></param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of TimeLineItem objects.</returns>
-        Task<List<TimeLineItem>> GetTimeLineList(int progenyId, UserInfo currentUserInfo);
+        Task<List<TimeLineItem>> GetTimeLineList(int progenyId, int familyId, UserInfo currentUserInfo);
 
         /// <summary>
         /// Creates a OnThisDayResponse for displaying TimeLineItems on the OnThisDay page.

@@ -52,7 +52,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            List<Contact> contactsList = await contactService.GetContactsList(id, currentUserInfo);
+            List<Contact> contactsList = await contactService.GetContactsList(id, 0, currentUserInfo);
             
             if (contactsList.Count != 0)
             {

@@ -3,13 +3,14 @@ import { showPopupAtLoad } from '../item-details/items-display-v9.js';
 import * as LocaleHelper from '../localization-v9.js';
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
 import { CalendarItem, CalendarItemsRequest, TimeLineType, TimelineItem } from '../page-models-v9.js';
-import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v9.js';
 import { popupEventItem } from './calendar-details.js';
 
 declare var syncfusionReference: any;
 declare var isCurrentUserProgenyAdmin: boolean;
 
 let progeniesList: number[] = [];
+let familiesList: number[] = [];
 let selectedEventId: number = 0;
 let currentCulture = 'en';
 let calendarRequest: CalendarItemsRequest = new CalendarItemsRequest();
@@ -202,7 +203,7 @@ function addSelectedProgeniesChangedEventListener() {
 function initializeCalendarItemsRequest(): void {
     calendarRequest = new CalendarItemsRequest();
     calendarRequest.progenyIds = progeniesList;
-
+    calendarRequest.familyIds = familiesList;
     // Get current date and time
     
     // Default start date is 1 month before current date
@@ -234,6 +235,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     setLocale();
     
     progeniesList = getSelectedProgenies();
+    familiesList = getSelectedFamilies();
     startFullPageSpinner();
     initializeCalendarItemsRequest();
     await getCalendarItems();

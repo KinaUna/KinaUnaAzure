@@ -48,7 +48,7 @@ namespace KinaUnaWeb.Controllers
                 return NotFound();
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId);
             KanbanItemViewModel model = new(baseModel)
             {
                 KanbanItem = kanbanItem
@@ -112,7 +112,7 @@ namespace KinaUnaWeb.Controllers
                 return Json(new KanbanItem());
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId);
             KanbanItemViewModel model = new(baseModel);
             List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
             if (progAdminList.Count == 0)
@@ -159,7 +159,7 @@ namespace KinaUnaWeb.Controllers
                 return NotFound();
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanItem.TodoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanItem.TodoItem.ProgenyId, kanbanItem.TodoItem.FamilyId);
             KanbanItemViewModel model = new(baseModel)
             {
                 KanbanItem = kanbanItem
@@ -224,7 +224,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             TodoItem existingTodoItem = await todoItemsHttpClient.GetTodoItem(kanbanItem.TodoItemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), existingTodoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), existingTodoItem.ProgenyId, existingTodoItem.FamilyId);
             model.SetBaseProperties(baseModel);
             List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
             if (progAdminList.Count == 0)
@@ -301,7 +301,7 @@ namespace KinaUnaWeb.Controllers
                 return NotFound();
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanItem.TodoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanItem.TodoItem.ProgenyId, kanbanItem.TodoItem.FamilyId);
             KanbanItemViewModel model = new(baseModel)
             {
                 KanbanItem = kanbanItem
@@ -366,7 +366,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             TodoItem existingTodoItem = await todoItemsHttpClient.GetTodoItem(kanbanItem.TodoItemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), existingTodoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), existingTodoItem.ProgenyId, existingTodoItem.FamilyId);
             model.SetBaseProperties(baseModel);
             List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
             if (progAdminList.Count == 0)
@@ -399,7 +399,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> AddKanbanItem(int kanbanBoardId, int columnId, int rowIndex)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0);
             KanbanItemViewModel model = new(baseModel);
 
             List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
@@ -443,7 +443,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddKanbanItem([FromForm] KanbanItemViewModel model)
         {
             KanbanItem kanbanItem = new();
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanBoard.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanBoard.ProgenyId, model.KanbanBoard.FamilyId);
             model.SetBaseProperties(baseModel);
 
             List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
@@ -488,7 +488,7 @@ namespace KinaUnaWeb.Controllers
         {
             KanbanItem existingKanbanItem = await kanbanItemsHttpClient.GetKanbanItem(kanbanItem.KanbanItemId);
             if (existingKanbanItem == null || existingKanbanItem.KanbanItemId == 0) return Json(new KanbanItem());
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), existingKanbanItem.TodoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), existingKanbanItem.TodoItem.ProgenyId, existingKanbanItem.TodoItem.FamilyId);
             KanbanItemViewModel model = new(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -543,7 +543,7 @@ namespace KinaUnaWeb.Controllers
                 return NotFound();
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanItem.TodoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanItem.TodoItem.ProgenyId, kanbanItem.TodoItem.FamilyId);
             KanbanItemViewModel model = new(baseModel)
             {
                 KanbanItem = kanbanItem
@@ -574,7 +574,7 @@ namespace KinaUnaWeb.Controllers
 
             Progeny progeny = await progenyHttpClient.GetProgeny(model.KanbanItem.TodoItem.ProgenyId);
             
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progeny.Id);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanItem.TodoItem.ProgenyId, model.KanbanItem.TodoItem.FamilyId);
             model.SetBaseProperties(baseModel);
 
             List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
@@ -620,7 +620,7 @@ namespace KinaUnaWeb.Controllers
                 return NotFound();
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanItem.TodoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanItem.TodoItem.ProgenyId, kanbanItem.TodoItem.FamilyId);
             KanbanItemViewModel model = new(baseModel)
             {
                 KanbanItem = kanbanItem
@@ -658,7 +658,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             TodoItem existingTodoItem = await todoItemsHttpClient.GetTodoItem(kanbanItem.TodoItemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), existingTodoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), existingTodoItem.ProgenyId, existingTodoItem.FamilyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))

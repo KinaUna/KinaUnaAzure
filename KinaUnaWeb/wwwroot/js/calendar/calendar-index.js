@@ -2,9 +2,10 @@ import { showPopupAtLoad } from '../item-details/items-display-v9.js';
 import * as LocaleHelper from '../localization-v9.js';
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
 import { CalendarItemsRequest, TimeLineType } from '../page-models-v9.js';
-import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v9.js';
 import { popupEventItem } from './calendar-details.js';
 let progeniesList = [];
+let familiesList = [];
 let selectedEventId = 0;
 let currentCulture = 'en';
 let calendarRequest = new CalendarItemsRequest();
@@ -168,6 +169,7 @@ function addSelectedProgeniesChangedEventListener() {
 function initializeCalendarItemsRequest() {
     calendarRequest = new CalendarItemsRequest();
     calendarRequest.progenyIds = progeniesList;
+    calendarRequest.familyIds = familiesList;
     // Get current date and time
     // Default start date is 1 month before current date
     let startDate = new Date();
@@ -193,6 +195,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     await loadLocale();
     setLocale();
     progeniesList = getSelectedProgenies();
+    familiesList = getSelectedFamilies();
     startFullPageSpinner();
     initializeCalendarItemsRequest();
     await getCalendarItems();

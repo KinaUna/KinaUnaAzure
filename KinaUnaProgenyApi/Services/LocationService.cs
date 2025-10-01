@@ -84,7 +84,7 @@ namespace KinaUnaProgenyApi.Services
 
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "location" + id, JsonConvert.SerializeObject(location), _cacheOptionsSliding);
 
-            _ = await SetLocationsListInCache(location.ProgenyId);
+            _ = await SetLocationsListInCache(location.ProgenyId, location.FamilyId);
 
             return location;
         }
@@ -192,7 +192,7 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.LocationsDb.Remove(locationToDelete);
             _ = await _context.SaveChangesAsync();
 
-            await RemoveLocationFromCache(location.LocationId, location.ProgenyId);
+            await RemoveLocationFromCache(location.LocationId, location.ProgenyId, location.FamilyId);
 
             return location;
         }
@@ -202,12 +202,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="id">The LocationId of the Location to remove.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny that the Location belongs to.</param>
+        /// <param name="familyId"></param>
         /// <returns></returns>
-        private async Task RemoveLocationFromCache(int id, int progenyId)
+        private async Task RemoveLocationFromCache(int id, int progenyId, int familyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "location" + id);
 
-            _ = await SetLocationsListInCache(progenyId);
+            _ = await SetLocationsListInCache(progenyId, familyId);
         }
 
         /// <summary>
@@ -215,14 +216,15 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, it will be looked up in the database and added to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Location entities for.</param>
+        /// <param name="familyId"></param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of Locations.</returns>
-        public async Task<List<Location>> GetLocationsList(int progenyId, UserInfo currentUserInfo)
+        public async Task<List<Location>> GetLocationsList(int progenyId, int familyId, UserInfo currentUserInfo)
         {
-            List<Location> locationsList = await GetLocationsListFromCache(progenyId);
+            List<Location> locationsList = await GetLocationsListFromCache(progenyId, familyId);
             if (locationsList.Count == 0)
             {
-                locationsList = await SetLocationsListInCache(progenyId);
+                locationsList = await SetLocationsListInCache(progenyId, familyId);
             }
 
             List<Location> accessibleLocations = [];
@@ -240,11 +242,12 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Locations for a Progeny from the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Location entities for.</param>
+        /// <param name="familyId"></param>
         /// <returns>List of Locations.</returns>
-        private async Task<List<Location>> GetLocationsListFromCache(int progenyId)
+        private async Task<List<Location>> GetLocationsListFromCache(int progenyId, int familyId)
         {
             List<Location> locationsList = [];
-            string cachedLocationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId);
+            string cachedLocationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedLocationsList))
             {
                 locationsList = JsonConvert.DeserializeObject<List<Location>>(cachedLocationsList);
@@ -257,11 +260,12 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Locations for a Progeny from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Location entities for.</param>
+        /// <param name="familyId"></param>
         /// <returns>List of Locations.</returns>
-        private async Task<List<Location>> SetLocationsListInCache(int progenyId)
+        private async Task<List<Location>> SetLocationsListInCache(int progenyId, int familyId)
         {
-            List<Location> locationsList = await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
+            List<Location> locationsList = await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == progenyId && l.FamilyId == familyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
 
             return locationsList;
         }
@@ -387,13 +391,14 @@ namespace KinaUnaProgenyApi.Services
         /// <remarks>The method retrieves all locations for the specified progeny and filters them by the
         /// provided tag, if any.  The tag comparison is case-insensitive and culture-aware.</remarks>
         /// <param name="progenyId">The unique identifier of the progeny whose locations are to be retrieved.</param>
+        /// <param name="familyId"></param>
         /// <param name="tag">An optional tag used to filter the locations. If null or empty, all locations are returned.</param>
         /// <param name="currentUserInfo">The user information of the current user, used to determine access permissions.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Location"/>
         /// objects associated with the specified progeny ID, filtered by the specified tag if provided.</returns>
-        public async Task<List<Location>> GetLocationsWithTag(int progenyId, string tag, UserInfo currentUserInfo)
+        public async Task<List<Location>> GetLocationsWithTag(int progenyId, int familyId, string tag, UserInfo currentUserInfo)
         {
-            List<Location> allItems = await GetLocationsList(progenyId, currentUserInfo);
+            List<Location> allItems = await GetLocationsList(progenyId, familyId, currentUserInfo);
             if (!string.IsNullOrEmpty(tag))
             {
                 allItems = [.. allItems.Where(l => l.Tags != null && l.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];

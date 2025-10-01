@@ -42,8 +42,9 @@ namespace KinaUnaWeb.Services
         /// <param name="languageId">The language Id set for the current user.</param>
         /// <param name="userEmail">The user's email address.</param>
         /// <param name="progenyId">The ProgenyId for the Progeny.</param>
+        /// <param name="familyId">The FamilyId for the Family, if any.</param>
         /// <returns>BaseItemsViewModel</returns>
-        public async Task<BaseItemsViewModel> SetupViewModel(int languageId, string userEmail, int progenyId)
+        public async Task<BaseItemsViewModel> SetupViewModel(int languageId, string userEmail, int progenyId, int familyId = 0)
         {
             BaseItemsViewModel viewModel = new()
             {
@@ -60,7 +61,7 @@ namespace KinaUnaWeb.Services
                 viewModel.CurrentUser.ViewChild = progenyId;
             }
             
-            string cachedBaseViewModel = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId);
+            string cachedBaseViewModel = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedBaseViewModel))
             {
                 viewModel = JsonConvert.DeserializeObject<BaseItemsViewModel>(cachedBaseViewModel);
@@ -75,7 +76,7 @@ namespace KinaUnaWeb.Services
             viewModel.CurrentProgenyAccessList = await _userAccessHttpClient.GetProgenyAccessList(viewModel.CurrentProgenyId);
             viewModel.SetCurrentUsersAccessLevel();
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId, JsonConvert.SerializeObject(viewModel), _cacheOptions);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(viewModel), _cacheOptions);
            
             return viewModel;
         }

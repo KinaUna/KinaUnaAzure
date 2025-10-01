@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
@@ -14,6 +10,10 @@ using KinaUnaProgenyApi.Services.CalendarServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -140,7 +140,7 @@ namespace KinaUnaProgenyApi.Services
 
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
             _ = await SetTimeLineItemByItemIdInCache(timeLineItem.ItemId, timeLineItem.ItemType);
-            _ = await SetTimeLineListInCache(timeLineItem.ProgenyId);
+            _ = await SetTimeLineListInCache(timeLineItem.ProgenyId, timeLineItem.FamilyId);
 
             return timeLineItem;
         }
@@ -211,7 +211,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _context.SaveChangesAsync();
             }
 
-            await RemoveTimeLineItemFromCache(item.TimeLineId, item.ItemType, item.ProgenyId);
+            await RemoveTimeLineItemFromCache(item.TimeLineId, item.ItemType, item.ProgenyId, item.FamilyId);
 
             return item;
         }
@@ -222,12 +222,13 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="timeLineItemId">The ItemId of the TimeLineItem to remove.</param>
         /// <param name="timeLineType">The ItemType (see KinaUnaTypes.TimeLineTypes enum) of the TimeLineItem.</param>
         /// <param name="progenyId">The ProgenyId of the TimeLineItem.</param>
+        /// <param name="familyId"></param>
         /// <returns></returns>
-        private async Task RemoveTimeLineItemFromCache(int timeLineItemId, int timeLineType, int progenyId)
+        private async Task RemoveTimeLineItemFromCache(int timeLineItemId, int timeLineType, int progenyId, int familyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + timeLineItemId);
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + timeLineItemId + "type" + timeLineType);
-            _ = await SetTimeLineListInCache(progenyId);
+            _ = await SetTimeLineListInCache(progenyId, familyId);
         }
 
         /// <summary>
@@ -295,15 +296,16 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get TimeLineItems for.</param>
+        /// <param name="familyId"></param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of TimeLineItem objects.</returns>
-        public async Task<List<TimeLineItem>> GetTimeLineList(int progenyId, UserInfo currentUserInfo)
+        public async Task<List<TimeLineItem>> GetTimeLineList(int progenyId, int familyId, UserInfo currentUserInfo)
         {
             
-            List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(progenyId);
+            List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(progenyId, familyId);
             if (timeLineList.Count == 0)
             {
-                timeLineList = await SetTimeLineListInCache(progenyId);
+                timeLineList = await SetTimeLineListInCache(progenyId, familyId);
             }
 
             List<TimeLineItem> filteredTimeLineList = [];
@@ -324,11 +326,12 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all TimeLineItems for a Progeny from the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get TimeLineItems for.</param>
+        /// <param name="familyId"></param>
         /// <returns>List of TimeLineItem objects.</returns>
-        private async Task<List<TimeLineItem>> GetTimeLineListFromCache(int progenyId)
+        private async Task<List<TimeLineItem>> GetTimeLineListFromCache(int progenyId, int familyId)
         {
             List<TimeLineItem> timeLineList = [];
-            string cachedTimeLineList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId);
+            string cachedTimeLineList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedTimeLineList))
             {
                 timeLineList = JsonConvert.DeserializeObject<List<TimeLineItem>>(cachedTimeLineList);
@@ -341,11 +344,12 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all TimeLineItems for a Progeny from the database and sets it in the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get TimeLineItems for.</param>
+        /// <param name="familyId"></param>
         /// <returns>List of TimeLineItem objects.</returns>
-        private async Task<List<TimeLineItem>> SetTimeLineListInCache(int progenyId)
+        private async Task<List<TimeLineItem>> SetTimeLineListInCache(int progenyId, int familyId)
         {
-            List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
+            List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == progenyId && t.FamilyId == familyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
 
             return timeLineList;
         }
@@ -366,11 +370,18 @@ namespace KinaUnaProgenyApi.Services
             List<TimeLineItem> allTimeLineItems = [];
             foreach (int progenyId in onThisDayRequest.Progenies)
             {
-                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId, currentUserInfo);
+                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId, 0, currentUserInfo);
                 progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
                 allTimeLineItems.AddRange(progenyTimeLineItems);
             }
-            
+
+            foreach (int familyId in onThisDayRequest.Families)
+            {
+                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(0, familyId, currentUserInfo);
+                progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
+                allTimeLineItems.AddRange(progenyTimeLineItems);
+            }
+
             allTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
             if (allTimeLineItems.Count == 0)
             {
@@ -399,7 +410,13 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in onThisDayRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyTimeLineItems, onThisDayRequest.TagFilter, currentUserInfo));
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyId, 0, progenyTimeLineItems, onThisDayRequest.TagFilter, currentUserInfo));
+                }
+
+                foreach (int familyId in onThisDayRequest.Families)
+                {
+                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(0, familyId, familyTimeLineItems, onThisDayRequest.TagFilter, currentUserInfo));
                 }
             }
 
@@ -409,7 +426,13 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in onThisDayRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyTimeLineItems, onThisDayRequest.CategoryFilter, currentUserInfo));
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyId, 0, progenyTimeLineItems, onThisDayRequest.CategoryFilter, currentUserInfo));
+                }
+
+                foreach (int familyId in onThisDayRequest.Families)
+                {
+                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(0, familyId, familyTimeLineItems, onThisDayRequest.CategoryFilter, currentUserInfo));
                 }
             }
 
@@ -419,7 +442,13 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in onThisDayRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyTimeLineItems, onThisDayRequest.ContextFilter, currentUserInfo));
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyId, 0, progenyTimeLineItems, onThisDayRequest.ContextFilter, currentUserInfo));
+                }
+
+                foreach (int familyId in onThisDayRequest.Families)
+                {
+                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
+                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(0, familyId, familyTimeLineItems, onThisDayRequest.ContextFilter, currentUserInfo));
                 }
             }
 
@@ -467,11 +496,29 @@ namespace KinaUnaProgenyApi.Services
 
             foreach (int progenyId in timelineRequest.Progenies)
             {
-                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId, currentUserInfo);
+                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId, 0, currentUserInfo);
                 progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
                 allTimeLineItems.AddRange(progenyTimeLineItems);
 
-                List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(progenyId, currentUserInfo);
+                List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(progenyId, 0, currentUserInfo);
+                foreach (CalendarItem calendarItem in calendarItems)
+                {
+                    if (calendarItem.StartTime.HasValue)
+                    {
+                        TimeLineItem timeLineItem = new();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        allTimeLineItems.Add(timeLineItem);
+                    }
+                }
+            }
+
+            foreach (int familyId in timelineRequest.Families)
+            {
+                List<TimeLineItem> familyTimelineItems = await GetTimeLineList(0, familyId, currentUserInfo);
+                familyTimelineItems = [.. familyTimelineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
+                allTimeLineItems.AddRange(familyTimelineItems);
+
+                List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(0, familyId, currentUserInfo);
                 foreach (CalendarItem calendarItem in calendarItems)
                 {
                     if (calendarItem.StartTime.HasValue)
@@ -508,7 +555,13 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in timelineRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyTimeLineItems, timelineRequest.TagFilter, currentUserInfo));
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyId, 0, progenyTimeLineItems, timelineRequest.TagFilter, currentUserInfo));
+                }
+
+                foreach (int familyId in timelineRequest.Families)
+                {
+                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(0, familyId, familyTimeLineItems, timelineRequest.TagFilter, currentUserInfo));
                 }
             }
 
@@ -518,7 +571,13 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in timelineRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyTimeLineItems, timelineRequest.CategoryFilter, currentUserInfo));
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyId, 0, progenyTimeLineItems, timelineRequest.CategoryFilter, currentUserInfo));
+                }
+
+                foreach (int familyId in timelineRequest.Families)
+                {
+                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(0, familyId, familyTimeLineItems, timelineRequest.CategoryFilter, currentUserInfo));
                 }
             }
 
@@ -528,7 +587,13 @@ namespace KinaUnaProgenyApi.Services
                 foreach (int progenyId in timelineRequest.Progenies)
                 {
                     List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyTimeLineItems, timelineRequest.ContextFilter, currentUserInfo));
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyId, 0, progenyTimeLineItems, timelineRequest.ContextFilter, currentUserInfo));
+                }
+
+                foreach (int familyId in timelineRequest.Families)
+                {
+                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
+                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(0, familyId, familyTimeLineItems, timelineRequest.ContextFilter, currentUserInfo));
                 }
             }
 

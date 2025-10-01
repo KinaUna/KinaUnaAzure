@@ -12,29 +12,35 @@ namespace KinaUnaProgenyApi.Services
         /// <summary>
         /// Filters TimeLineItems based on tags.
         /// </summary>
+        /// <param name="progenyId"></param>
+        /// <param name="familyId"></param>
         /// <param name="timeLineItems">The list of items to filter.</param>
         /// <param name="tags">Comma separated list of tags.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of TimeLineItems that contain any of the tags.</returns>
-        Task<List<TimeLineItem>> GetTimeLineItemsWithTags(List<TimeLineItem> timeLineItems, string tags, UserInfo currentUserInfo);
+        Task<List<TimeLineItem>> GetTimeLineItemsWithTags(int progenyId, int familyId, List<TimeLineItem> timeLineItems, string tags, UserInfo currentUserInfo);
 
         /// <summary>
         /// Filters TimeLineItems based on categories.
         /// </summary>
+        /// <param name="progenyId"></param>
+        /// <param name="familyId"></param>
         /// <param name="timeLineItems">The list of items to filter.</param>
         /// <param name="categories">Comma separated list of categories.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of TimeLineItems that contain any of the categories</returns>
-        Task<List<TimeLineItem>> GetTimeLineItemsWithCategories(List<TimeLineItem> timeLineItems, string categories, UserInfo currentUserInfo);
+        Task<List<TimeLineItem>> GetTimeLineItemsWithCategories(int progenyId, int familyId, List<TimeLineItem> timeLineItems, string categories, UserInfo currentUserInfo);
 
         /// <summary>
         /// Filters TimeLineItems based on contexts.
         /// </summary>
+        /// <param name="progenyId">The ProgenyId to filter on.</param>
+        /// <param name="familyId">The FamilyId to filter on.</param>
         /// <param name="timeLineItems">The list of items to filter.</param>
         /// <param name="contexts">Comma separated list of contexts</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of TimeLineItems that contain any of the contexts.</returns>
-        Task<List<TimeLineItem>> GetTimeLineItemsWithContexts(List<TimeLineItem> timeLineItems, string contexts, UserInfo currentUserInfo);
+        Task<List<TimeLineItem>> GetTimeLineItemsWithContexts(int progenyId, int familyId, List<TimeLineItem> timeLineItems, string contexts, UserInfo currentUserInfo);
 
         /// <summary>
         /// Filters TimeLineItems based on keywords.

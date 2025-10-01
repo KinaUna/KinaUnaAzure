@@ -47,38 +47,42 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// If the list isn't found in the cache, gets it from the database and sets it in the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all CalendarItems for.</param>
+        /// <param name="familyId"></param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <param name="start">Optional start date for the list.</param>
         /// <param name="end">Optional end date for the list.</param>
         /// <returns>List of CalendarItems.</returns>
-        Task<List<CalendarItem>> GetCalendarList(int progenyId, UserInfo currentUserInfo, DateTime? start = null, DateTime? end = null);
+        Task<List<CalendarItem>> GetCalendarList(int progenyId, int familyId, UserInfo currentUserInfo, DateTime? start = null, DateTime? end = null);
 
         /// <summary>
         /// Gets the list of CalendarItems for a Progeny that are recurring events on this day.
         /// Only includes items after 1900.
         /// </summary>
         /// <param name="progenyId">The id of the Progeny to get items for.</param>
+        /// <param name="familyId"></param>
         /// <param name="currentUserInfo"></param>
         /// <returns>List of CalendarItems.</returns>
-        Task<List<CalendarItem>> GetRecurringCalendarItemsOnThisDay(int progenyId, UserInfo currentUserInfo);
+        Task<List<CalendarItem>> GetRecurringCalendarItemsOnThisDay(int progenyId, int familyId, UserInfo currentUserInfo);
 
         /// <summary>
         /// Gets the list of CalendarItems for a Progeny that are recurring events for the latest posts list.
         /// Only includes items after 1900.
         /// </summary>
         /// <param name="progenyId">The id of the Progeny to get items for.</param>
+        /// <param name="familyId"></param>
         /// <param name="currentUserInfo"></param>
         /// <returns>List of CalendarItems.</returns>
-        Task<List<CalendarItem>> GetRecurringCalendarItemsLatestPosts(int progenyId, UserInfo currentUserInfo);
+        Task<List<CalendarItem>> GetRecurringCalendarItemsLatestPosts(int progenyId, int familyId, UserInfo currentUserInfo);
 
         /// <summary>
         /// Gets a list of CalendarItems for a Progeny with a specific context.
         /// </summary>
         /// <param name="progenyId">The id of the Progeny.</param>
+        /// <param name="familyId"></param>
         /// <param name="context">String with the context to look for, any item containing the string in the context property, not case-sensitive.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of CalendarItems.</returns>
-        Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, string context, UserInfo currentUserInfo);
+        Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, int familyId, string context, UserInfo currentUserInfo);
 
         /// <summary>
         /// Assigns UIds to all CalendarItems that don't have one.

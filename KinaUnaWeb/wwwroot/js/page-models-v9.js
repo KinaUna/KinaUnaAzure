@@ -7,7 +7,9 @@ export class ContactItemParameters {
 export class ContactsPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.familyId = 0;
         this.progenies = [];
+        this.families = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 0;
@@ -38,6 +40,7 @@ export class FriendItemParameters {
 export class FriendsPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.familyId = 0;
         this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
@@ -64,6 +67,7 @@ export class LocationItem {
     constructor() {
         this.locationId = 0;
         this.progenyId = 0;
+        this.familyId = 0;
         this.name = '';
         this.latitude = 0;
         this.longitude = 0;
@@ -78,7 +82,9 @@ export class LocationItemParameters {
 export class LocationsPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.familyId = 0;
         this.progenies = [];
+        this.families = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 0;
@@ -141,6 +147,7 @@ export class NoteItemParameters {
 export class NotesPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.familyId = 0;
         this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
@@ -188,6 +195,7 @@ export class PictureViewModelRequest {
 export class PicturesPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.familyId = 0;
         this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
@@ -234,6 +242,7 @@ export class VideoViewModel {
 export class VideosPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.familyId = 0;
         this.progenies = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
@@ -316,8 +325,9 @@ export class TextTranslationPageListModel {
     }
 }
 export class AutoSuggestList {
-    constructor(_progenies) {
+    constructor(_progenies, _families) {
         this.progenies = _progenies;
+        this.families = _families;
         this.suggestions = [];
     }
 }
@@ -325,6 +335,7 @@ export class TimelineItem {
     constructor() {
         this.timeLineId = 0;
         this.progenyId = 0;
+        this.familyId = 0;
         this.itemType = 0;
         this.itemId = '0';
         this.itemYear = 0;
@@ -335,7 +346,9 @@ export class TimelineItem {
 export class TimelineParameters {
     constructor() {
         this.progenyId = 0;
+        this.familyId = 0;
         this.progenies = [];
+        this.families = [];
         this.skip = 0;
         this.count = 5;
         this.sortBy = 1;
@@ -349,7 +362,9 @@ export class TimelineParameters {
 export class TimelineRequest {
     constructor() {
         this.progenyId = 0;
+        this.familyId = 0;
         this.progenies = [];
+        this.families = [];
         this.accessLevel = 5;
         this.skip = 0;
         this.numberOfItems = 5;
@@ -392,7 +407,9 @@ export class TimelineList {
 export class OnThisDayRequest {
     constructor() {
         this.progenyId = 0;
+        this.familyId = 0;
         this.progenies = [];
+        this.families = [];
         this.accessLevel = 5;
         this.skip = 0;
         this.numberOfItems = 5;
@@ -477,6 +494,16 @@ export var OnThisDayPeriod;
     OnThisDayPeriod[OnThisDayPeriod["Quarter"] = 3] = "Quarter";
     OnThisDayPeriod[OnThisDayPeriod["Year"] = 4] = "Year";
 })(OnThisDayPeriod || (OnThisDayPeriod = {}));
+export var PermissionLevel;
+(function (PermissionLevel) {
+    PermissionLevel[PermissionLevel["None"] = 0] = "None";
+    PermissionLevel[PermissionLevel["View"] = 1] = "View";
+    PermissionLevel[PermissionLevel["Add"] = 2] = "Add";
+    PermissionLevel[PermissionLevel["Edit"] = 3] = "Edit";
+    PermissionLevel[PermissionLevel["Admin"] = 4] = "Admin";
+    PermissionLevel[PermissionLevel["CreatorOnly"] = 10] = "CreatorOnly";
+    PermissionLevel[PermissionLevel["Private"] = 20] = "Private";
+})(PermissionLevel || (PermissionLevel = {}));
 export class CalendarReminderRequest {
     constructor() {
         this.calendarReminderId = 0;
@@ -491,6 +518,7 @@ export class CalendarItem {
     constructor() {
         this.eventId = 0;
         this.progenyId = 0;
+        this.familyId = 0;
         this.title = '';
         this.notes = '';
         this.location = '';
@@ -505,6 +533,7 @@ export class CalendarItem {
 export class CalendarItemsRequest {
     constructor() {
         this.progenyIds = [];
+        this.familyIds = [];
         this.startYear = 0;
         this.startMonth = 0;
         this.startDay = 0;
@@ -522,7 +551,9 @@ export class SetProgenyRequest {
 export class TodosPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.familyId = 0;
         this.progenies = [];
+        this.families = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 0;
@@ -548,6 +579,7 @@ export class SubtasksPageParameters {
     constructor() {
         this.parentTodoItemId = 0;
         this.progenyId = 0;
+        this.familyId = 0;
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 0;
@@ -600,6 +632,7 @@ export class TodoItem {
         this.uId = '';
         this.parentTodoItemId = 0;
         this.progenyId = 0;
+        this.familyId = 0;
         this.title = '';
         this.description = '';
         this.status = 0;
@@ -623,7 +656,9 @@ export class TodoItem {
 export class KanbanBoardsPageParameters {
     constructor() {
         this.progenyId = 0;
+        this.familyId = 0;
         this.progenies = [];
+        this.families = [];
         this.languageId = 0;
         this.currentPageNumber = 0;
         this.itemsPerPage = 10;
@@ -651,6 +686,7 @@ export class KanbanBoard {
         this.kanbanBoardId = 0;
         this.uId = '';
         this.progenyId = 0;
+        this.familyId = 0;
         this.title = '';
         this.description = '';
         this.columns = '';

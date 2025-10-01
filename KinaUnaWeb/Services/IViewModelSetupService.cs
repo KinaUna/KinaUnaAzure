@@ -18,8 +18,9 @@ public interface IViewModelSetupService
     /// <param name="languageId">The language Id set for the current user.</param>
     /// <param name="userEmail">The user's email address.</param>
     /// <param name="progenyId">The ProgenyId for the Progeny.</param>
+    /// <param name="familyId">The FamilyId for the Family, if any. Default is 0.</param>
     /// <returns>BaseItemsViewModel</returns>
-    Task<BaseItemsViewModel> SetupViewModel(int languageId, string userEmail, int progenyId);
+    Task<BaseItemsViewModel> SetupViewModel(int languageId, string userEmail, int progenyId, int familyId = 0);
 
     /// <summary>
     /// Generates a SelectListItem list of Progeny for the given user.

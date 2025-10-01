@@ -45,9 +45,10 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, it will be looked up in the database and added to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Location entities for.</param>
+        /// <param name="familyId"></param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of Locations.</returns>
-        Task<List<Location>> GetLocationsList(int progenyId, UserInfo currentUserInfo);
+        Task<List<Location>> GetLocationsList(int progenyId, int familyId, UserInfo currentUserInfo);
 
         /// <summary>
         /// Gets an Address by AddressId.
@@ -84,10 +85,11 @@ namespace KinaUnaProgenyApi.Services
         /// <remarks>The method retrieves all locations for the specified progeny and filters them by the
         /// provided tag, if any.  The tag comparison is case-insensitive and culture-aware.</remarks>
         /// <param name="progenyId">The unique identifier of the progeny whose locations are to be retrieved.</param>
+        /// <param name="familyId"></param>
         /// <param name="tag">An optional tag used to filter the locations. If null or empty, all locations are returned.</param>
         /// <param name="currentUserInfo">The user information of the current user, used to determine access permissions.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Location"/>
         /// objects associated with the specified progeny ID, filtered by the specified tag if provided.</returns>
-        Task<List<Location>> GetLocationsWithTag(int progenyId, string tag, UserInfo currentUserInfo);
+        Task<List<Location>> GetLocationsWithTag(int progenyId, int familyId, string tag, UserInfo currentUserInfo);
     }
 }

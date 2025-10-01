@@ -230,7 +230,6 @@ namespace KinaUnaProgenyApi.Controllers
             };
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
 
-            // Todo: Rewrite this to use FamilyPermissions and ProgenyPermissions.
             bool allowAccess = await CanCurrentUserAccessUserInfo(userEmail, userInfo.UserEmail);
 
             if (allowAccess)

@@ -48,7 +48,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Progeny(int id)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            List<Location> locationsList = await locationService.GetLocationsList(id, currentUserInfo);
+            List<Location> locationsList = await locationService.GetLocationsList(id, 0, currentUserInfo);
             
             return Ok(locationsList);
         }
@@ -233,19 +233,20 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
 
         }
-        
+
         /// <summary>
         /// Retrieves the list of Location items to display on a page for a given Progeny.
         /// </summary>
         /// <param name="pageSize">The number of Location items per page.</param>
         /// <param name="pageIndex">The current page number.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny to display Locations for.</param>
+        /// <param name="familyId">The FamilyId of the Family to display Locations for.</param>
         /// <param name="sortBy">int: Sort order for the Location items. 0 = oldest first, 1 = newest first.</param>
         /// <returns></returns>
         [HttpGet("[action]")]
         public async Task<IActionResult> GetLocationsListPage([FromQuery] int pageSize = 8,
             [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId,
-            [FromQuery] int sortBy = 1)
+            [FromQuery] int familyId = 0, [FromQuery] int sortBy = 1)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (pageIndex < 1)
@@ -253,7 +254,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Location> allItems = await locationService.GetLocationsList(progenyId, currentUserInfo);
+            List<Location> allItems = await locationService.GetLocationsList(progenyId, familyId, currentUserInfo);
             allItems = [.. allItems.OrderBy(v => v.Date)];
 
             if (sortBy == 1)

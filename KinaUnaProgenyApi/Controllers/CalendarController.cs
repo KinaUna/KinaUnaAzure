@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.Family;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -31,6 +33,7 @@ namespace KinaUnaProgenyApi.Controllers
         ICalendarService calendarService,
         ITimelineService timelineService,
         IProgenyService progenyService,
+        IFamiliesService familiesService,
         IWebNotificationsService webNotificationsService,
         IAccessManagementService accessManagementService)
         : ControllerBase
@@ -59,13 +62,34 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
+            List<Family> familyList = [];
+            foreach (int familyId in request.FamilyIds)
+            {
+                Family family = await familiesService.GetFamilyById(familyId, currentUserInfo);
+                if (family != null)
+                {
+                    familyList.Add(family);
+                }
+            }
+
             List<CalendarItem> calendarList = [];
 
-            if (progenyList.Count == 0) return NotFound();
-            foreach (Progeny progeny in progenyList)
+            if (progenyList.Count > 0)
             {
-                List<CalendarItem> progenyCalendarItems = await calendarService.GetCalendarList(progeny.Id, currentUserInfo, request.StartDate, request.EndDate);
-                calendarList.AddRange(progenyCalendarItems);
+                foreach (Progeny progeny in progenyList)
+                {
+                    List<CalendarItem> progenyCalendarItems = await calendarService.GetCalendarList(progeny.Id, 0, currentUserInfo, request.StartDate, request.EndDate);
+                    calendarList.AddRange(progenyCalendarItems);
+                }
+            }
+            
+            if (familyList.Count > 0)
+            {
+                foreach (Family family in familyList)
+                {
+                    List<CalendarItem> familyCalendarItems = await calendarService.GetCalendarList(0, family.FamilyId, currentUserInfo, request.StartDate, request.EndDate);
+                    calendarList.AddRange(familyCalendarItems);
+                }
             }
 
             return Ok(calendarList);

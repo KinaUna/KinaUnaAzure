@@ -6,7 +6,9 @@ namespace KinaUna.Data.Models.DTOs
     public class OnThisDayRequest
     {
         public int ProgenyId { get; set; } = 0;
+        public int FamilyId { get; set; } = 0;
         public List<int> Progenies = [];
+        public List<int> Families = [];
         public DateTime ThisDayDateTime
         {
             get

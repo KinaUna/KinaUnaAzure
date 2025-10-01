@@ -31,14 +31,16 @@ namespace KinaUnaWeb.Controllers
         /// The Home Index page.
         /// </summary>
         /// <param name="childId">The Id of the Progeny to view data for.</param>
+        /// <param name="familyId">The Id of the Family to view data for.</param>
         /// <returns>View with HomeFeedViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0)
+        public async Task<IActionResult> Index(int childId = 0, int familyId = 0)
         {
             
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
             HomeFeedViewModel model = new(baseModel);
-           if (model.CurrentProgeny.Name == "401")
+           
+            if (model.CurrentProgeny.Name == "401")
             {
                 return RedirectToAction("LogOut", "Account");
             }

@@ -30,6 +30,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Parameters = new TimelineParameters
             {
                 ProgenyId = CurrentProgeny.Id,
+                FamilyId = CurrentFamily.FamilyId,
                 Skip = Skip,
                 Count = Items,
                 SortBy = SortBy,

@@ -35,8 +35,6 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetTimeLineRequestData([FromBody] TimelineRequest timelineRequest)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            Progeny progeny = await progenyService.GetProgeny(timelineRequest.ProgenyId, currentUserInfo);
-            if (progeny == null) return Ok(new TimelineResponse());
             
             if (timelineRequest.SortOrder == 1)
             {
@@ -60,10 +58,44 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Progeny(int id)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id, currentUserInfo);
+            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id, 0, currentUserInfo);
             timeLineList = [.. timeLineList.Where(t => t.ProgenyTime < DateTime.UtcNow)];
 
-            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id, currentUserInfo);
+            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id, 0, currentUserInfo);
+            foreach (CalendarItem calendarItem in calendarItems)
+            {
+                if (calendarItem.StartTime.HasValue)
+                {
+                    CalendarItem originalCalendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                    if (originalCalendarItem == null)
+                    {
+                        continue;
+                    }
+
+                    TimeLineItem timeLineItem = new();
+                    timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                    timeLineList.Add(timeLineItem);
+                }
+            }
+
+            return Ok(timeLineList.Count != 0 ? timeLineList : []);
+        }
+
+        /// <summary>
+        /// Gets a list of all TimeLineItems for a Progeny with the given ProgenyId that a user with a given access level can access.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get TimeLineItems for.</param>
+        /// <returns>List of TimeLineItems.</returns>
+        // GET api/timeline/progeny/[id]
+        [HttpGet]
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> Family(int id)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(0, id, currentUserInfo);
+            timeLineList = [.. timeLineList.Where(t => t.ProgenyTime < DateTime.UtcNow)];
+
+            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(0, id, currentUserInfo);
             foreach (CalendarItem calendarItem in calendarItems)
             {
                 if (calendarItem.StartTime.HasValue)
@@ -92,11 +124,45 @@ namespace KinaUnaProgenyApi.Controllers
             List<TimeLineItem> timeLineList = [];
             foreach (int progenyId in progenies)
             {
-                List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId, currentUserInfo);
+                List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId, 0, currentUserInfo);
                 progenyTimeLineList = [.. progenyTimeLineList.Where(t => t.ProgenyTime < DateTime.UtcNow)];
                 timeLineList.AddRange(progenyTimeLineList);
 
-                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(progenyId, currentUserInfo);
+                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(progenyId, 0, currentUserInfo);
+                foreach (CalendarItem calendarItem in calendarItems)
+                {
+                    if (calendarItem.StartTime.HasValue)
+                    {
+                        CalendarItem originalCalendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
+                        {
+                            continue;
+                        }
+
+                        TimeLineItem timeLineItem = new();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        timeLineList.Add(timeLineItem);
+                    }
+                }
+            }
+
+            return Ok(timeLineList.Count != 0 ? timeLineList : []);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> Families([FromBody] List<int> families)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
+            List<TimeLineItem> timeLineList = [];
+            foreach (int familyId in families)
+            {
+                List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(0, familyId, currentUserInfo);
+                progenyTimeLineList = [.. progenyTimeLineList.Where(t => t.ProgenyTime < DateTime.UtcNow)];
+                timeLineList.AddRange(progenyTimeLineList);
+
+                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(0, familyId, currentUserInfo);
                 foreach (CalendarItem calendarItem in calendarItems)
                 {
                     if (calendarItem.StartTime.HasValue)
@@ -130,11 +196,11 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id, currentUserInfo);
+            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id, 0, currentUserInfo);
             timeLineList = [.. timeLineList
                 .Where(t => t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime)];
 
-            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id, currentUserInfo);
+            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id, 0, currentUserInfo);
             foreach (CalendarItem calendarItem in calendarItems)
             {
                 if (calendarItem.StartTime.HasValue)
@@ -169,7 +235,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id, currentUserInfo);
+            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id, 0, currentUserInfo);
 
             timeLineList = [.. timeLineList
                 .Where(t => t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day)
@@ -192,7 +258,7 @@ namespace KinaUnaProgenyApi.Controllers
             foreach (int progenyId in progenies)
             {
                 // Todo: Rewrite, this is inefficient. We should not get the full timeline for each progeny, just to filter it down to a few items.
-                List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId, currentUserInfo);
+                List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId, 0, currentUserInfo);
                 progenyTimeLineList =
                 [
                     .. progenyTimeLineList
@@ -201,7 +267,7 @@ namespace KinaUnaProgenyApi.Controllers
                                      && t.ProgenyTime.Day == DateTime.UtcNow.Day)
                 ];
                 timeLineList.AddRange(progenyTimeLineList);
-                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsOnThisDay(progenyId, currentUserInfo);
+                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsOnThisDay(progenyId, 0, currentUserInfo);
                 foreach (CalendarItem calendarItem in calendarItems)
                 {
                     if (calendarItem.StartTime.HasValue)

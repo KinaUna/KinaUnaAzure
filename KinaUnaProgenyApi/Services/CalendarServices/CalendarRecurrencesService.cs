@@ -17,18 +17,22 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// Gets a list of CalendarItems generated from recurring events for a Progeny.
         /// </summary>
         /// <param name="progenyId"></param>
+        /// <param name="familyId"></param>
         /// <param name="start">DateTime with the start date. Results include this day.</param>
         /// <param name="end">DateTime with the end date. Results include this day.</param>
         /// <param name="includeOriginal">Include the original event in the list.</param>
         /// <param name="currentUserInfo"></param>
         /// <returns>List of CalendarItems</returns>
-        public async Task<List<CalendarItem>> GetRecurringEventsForProgeny(int progenyId, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)
+        public async Task<List<CalendarItem>> GetRecurringEventsForProgenyOrFamily(int progenyId, int familyId, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)
         {
             List<CalendarItem> recurringEvents = [];
-            List<RecurrenceRule> recurrenceRules = await context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId).ToListAsync();
+            if (progenyId == 0 && familyId == 0) return recurringEvents;
+            
+            List<RecurrenceRule> recurrenceRules = await context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId && r.FamilyId == familyId).ToListAsync();
             if (recurrenceRules.Count == 0) return recurringEvents;
 
             end = new DateTime(end.Year, end.Month, end.Day, 23, 59, 59, DateTimeKind.Utc);
+            
             foreach (RecurrenceRule recurrenceRule in recurrenceRules)
             {
                 recurringEvents.AddRange(await GetCalendarItemsForRecurrenceRule(recurrenceRule, start, end, includeOriginal, currentUserInfo));
@@ -73,7 +77,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
             if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
             {
                 return recurringEvents;
@@ -136,7 +140,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
             if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
             {
                 return recurringEvents;
@@ -200,7 +204,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
             if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
             {
                 return recurringEvents;
@@ -316,7 +320,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
             if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
             {
                 return recurringEvents;
@@ -379,7 +383,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
             if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
             {
                 return recurringEvents;
@@ -502,7 +506,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
             if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
             {
                 return recurringEvents;

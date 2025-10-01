@@ -16,7 +16,7 @@ namespace KinaUnaWeb.Controllers
     {
         public async Task<IActionResult> Index()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0);
             FamiliesViewModel model = new(baseModel);
 
             return View(model);
@@ -37,7 +37,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> FamilyElement(int familyId)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, familyId);
             FamilyElementViewModel model = new(baseModel)
             {
                 Family = await familiesHttpClient.GetFamily(familyId)
@@ -68,7 +68,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> FamilyDetails(int familyId)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, familyId);
             FamilyDetailsViewModel model = new(baseModel)
             {
                 Family = await familiesHttpClient.GetFamily(familyId)
@@ -84,7 +84,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> AddFamily()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0);
             FamilyDetailsViewModel model = new(baseModel);
 
             Family family = new();
@@ -104,7 +104,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> EditFamily(int familyId)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, familyId);
             FamilyDetailsViewModel model = new(baseModel)
             {
                 Family = await familiesHttpClient.GetFamily(familyId)
@@ -124,7 +124,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> Members()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0,0);
             FamiliesViewModel model = new(baseModel)
             {
                 Families = await familiesHttpClient.GetMyFamilies()
@@ -141,7 +141,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> FamilyMemberElement(int familyMemberId)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0);
             FamilyMemberDetailsViewModel model = new(baseModel)
             {
                 FamilyMember = await familiesHttpClient.GetFamilyMember(familyMemberId)
@@ -158,7 +158,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> FamilyMemberDetails(int familyMemberId)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0);
             FamilyMemberDetailsViewModel model = new(baseModel)
             {
                 FamilyMember = await familiesHttpClient.GetFamilyMember(familyMemberId)
@@ -199,7 +199,7 @@ namespace KinaUnaWeb.Controllers
         
         public async Task<IActionResult> UserAccess()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0);
             UserGroupsViewModel model = new(baseModel)
             {
                 FamiliesList = await familiesHttpClient.GetMyFamilies()

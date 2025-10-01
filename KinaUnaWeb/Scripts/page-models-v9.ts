@@ -3,6 +3,7 @@
 }
 interface BasePageParameters {
     progenyId: number;
+    familyId: number;
     languageId: number;
     currentPageNumber: number;
     itemsPerPage: number;
@@ -26,7 +27,9 @@ export class ContactItemParameters implements BaseItemParameters {
 
 export class ContactsPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    familyId: number = 0;
     progenies: number[] = [];
+    families: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;
@@ -54,6 +57,7 @@ export class FriendItemParameters implements BaseItemParameters {
 
 export class FriendsPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    familyId: number = 0;
     progenies: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
@@ -78,6 +82,7 @@ export class FriendsPageResponse implements BaseItemsPageResponseModel {
 export class LocationItem {
     locationId: number = 0;
     progenyId: number = 0;
+    familyId: number = 0;
     name: string = '';
     latitude: number = 0;
     longitude: number = 0;
@@ -90,7 +95,9 @@ export class LocationItemParameters implements BaseItemParameters {
 
 export class LocationsPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    familyId: number = 0;
     progenies: number[] = [];
+    families: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;
@@ -146,6 +153,7 @@ export class NoteItemParameters implements BaseItemParameters {
 
 export class NotesPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    familyId: number = 0;
     progenies: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
@@ -188,6 +196,7 @@ export class PictureViewModelRequest {
 
 export class PicturesPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    familyId: number = 0;
     progenies : number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
@@ -230,6 +239,7 @@ export class VideoViewModel {
 
 export class VideosPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    familyId: number = 0;
     progenies: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
@@ -306,9 +316,11 @@ export class TextTranslationPageListModel {
 
 export class AutoSuggestList {
     progenies: number[];
+    families: number[];
     suggestions: string[];
-    constructor(_progenies: number[]) {
+    constructor(_progenies: number[], _families: number[]) {
         this.progenies = _progenies;
+        this.families = _families;
         this.suggestions = [];
     }
 }
@@ -316,6 +328,7 @@ export class AutoSuggestList {
 export class TimelineItem {
     timeLineId: number = 0;
     progenyId: number = 0;
+    familyId: number = 0;
     itemType: number = 0;
     itemId: string = '0';
     itemYear: number = 0;
@@ -325,7 +338,9 @@ export class TimelineItem {
 
 export class TimelineParameters {
     progenyId: number = 0;
+    familyId: number = 0;
     progenies: number[] = [];
+    families: number[] = [];
     skip: number = 0;
     count: number = 5;
     sortBy: number = 1;
@@ -338,7 +353,9 @@ export class TimelineParameters {
 
 export class TimelineRequest {
     progenyId: number = 0;
+    familyId: number = 0;
     progenies: number[] = [];
+    families: number[] = [];
     accessLevel: number = 5;
     skip: number = 0;
     numberOfItems: number = 5;
@@ -377,7 +394,9 @@ export class TimelineList {
 
 export class OnThisDayRequest {
     progenyId: number = 0;
+    familyId: number = 0;
     progenies: number[] = [];
+    families: number[] = [];
     accessLevel: number = 5;
     skip: number = 0;
     numberOfItems: number = 5;
@@ -435,6 +454,10 @@ export enum OnThisDayPeriod {
     Week = 1, Month = 2, Quarter = 3, Year = 4
 }
 
+export enum PermissionLevel {
+    None = 0, View = 1, Add = 2, Edit = 3, Admin = 4, CreatorOnly = 10, Private = 20
+}
+
 export class CalendarReminderRequest {
     calendarReminderId: number = 0;
     eventId: number = 0;
@@ -447,6 +470,7 @@ export class CalendarReminderRequest {
 export class CalendarItem {
     eventId: number = 0;
     progenyId: number = 0;
+    familyId: number = 0;
     title: string = '';
     notes: string = '';
     location: string = '';
@@ -460,6 +484,7 @@ export class CalendarItem {
 
 export class CalendarItemsRequest {
     progenyIds: number[] = [];
+    familyIds: number[] = [];
     startYear: number = 0;
     startMonth: number = 0;
     startDay: number = 0;
@@ -475,7 +500,9 @@ export class SetProgenyRequest {
 
 export class TodosPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    familyId: number = 0;
     progenies: number[] = [];
+    families: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;
@@ -500,6 +527,7 @@ export class TodosPageParameters implements BasePageParameters {
 export class SubtasksPageParameters implements BasePageParameters {
     parentTodoItemId: number = 0;
     progenyId: number = 0;
+    familyId: number = 0;
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 0;
@@ -549,6 +577,7 @@ export class TodoItem {
     uId: string = '';
     parentTodoItemId: number = 0;
     progenyId: number = 0;
+    familyId: number = 0;
     title: string = '';
     description: string = '';
     status: number = 0;
@@ -571,7 +600,9 @@ export class TodoItem {
 
 export class KanbanBoardsPageParameters implements BasePageParameters {
     progenyId: number = 0;
+    familyId: number = 0;
     progenies: number[] = [];
+    families: number[] = [];
     languageId: number = 0;
     currentPageNumber: number = 0;
     itemsPerPage: number = 10;
@@ -597,6 +628,7 @@ export class KanbanBoard {
     kanbanBoardId: number = 0;
     uId: string = '';
     progenyId: number = 0;
+    familyId: number = 0;
     title: string = '';
     description: string = '';
     columns: string = '';

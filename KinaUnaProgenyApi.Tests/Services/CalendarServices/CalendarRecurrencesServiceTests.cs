@@ -23,7 +23,7 @@
 //            DateTime end = new(2023, 1, 31, 0, 0, 0, DateTimeKind.Utc);
             
 //            // Act
-//            List<CalendarItem> results = await service.GetRecurringEventsForProgeny(1, start, end, false, TODO);
+//            List<CalendarItem> results = await service.GetRecurringEventsForProgenyOrFamily(1, start, end, false, TODO);
             
 //            // Assert
 //            Assert.Empty(results);
@@ -76,7 +76,7 @@
 //            DateTime end = new(2023, 1, 5, 0, 0, 0, DateTimeKind.Utc);
             
 //            // Act
-//            List<CalendarItem> results = await service.GetRecurringEventsForProgeny(progenyId, start, end, false, TODO);
+//            List<CalendarItem> results = await service.GetRecurringEventsForProgenyOrFamily(progenyId, start, end, false, TODO);
             
 //            // Assert
 //            Assert.NotEmpty(results);
@@ -142,7 +142,7 @@
 //            DateTime end = new(2023, 1, 5, 23, 59, 59, DateTimeKind.Utc);
             
 //            // Act
-//            List<CalendarItem> results = await service.GetRecurringEventsForProgeny(progenyId, start, end, true, TODO);
+//            List<CalendarItem> results = await service.GetRecurringEventsForProgenyOrFamily(progenyId, start, end, true, TODO);
             
 //            // Assert
 //            Assert.NotEmpty(results);
@@ -755,7 +755,7 @@
 //            DateTime end = new(2023, 1, 31, 23, 59, 59, DateTimeKind.Utc);
             
 //            // Act
-//            List<CalendarItem> results = await service.GetRecurringEventsForProgeny(progenyId, start, end, false, TODO);
+//            List<CalendarItem> results = await service.GetRecurringEventsForProgenyOrFamily(progenyId, start, end, false, TODO);
             
 //            // Assert
 //            Assert.NotEmpty(results);

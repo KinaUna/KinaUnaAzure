@@ -26,20 +26,20 @@ namespace KinaUnaWeb.Controllers
         ICalendarRemindersHttpClient calendarRemindersHttpClient,
         ITodoItemsHttpClient todoItemsHttpClient,
         IViewModelSetupService viewModelSetupService,
-        IUserInfosHttpClient userInfosHttpClient,
-        IProgenyHttpClient progenyHttpClient) : Controller
+        IUserInfosHttpClient userInfosHttpClient) : Controller
     {
         /// <summary>
         /// Calendar Index page.
         /// </summary>
         /// <param name="eventId">Optional EventId of a CalendarItem to show in a popup.</param>
         /// <param name="childId">The Id of the Progeny to show the calendar for.</param>
+        /// <param name="familyId">The Id of the Family to show the calendar for.</param>
         /// <returns>View with a CalendarListViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int? eventId, int childId = 0)
+        public async Task<IActionResult> Index(int? eventId, int childId = 0, int familyId = 0)
         {
             // Todo: Add EventDate parameter for popup with recurring events.
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
             CalendarListViewModel model = new(baseModel)
             {
                 // model.SetEventsList(await calendarsHttpClient.GetCalendarList(model.CurrentProgenyId, model.CurrentAccessLevel));
@@ -65,7 +65,6 @@ namespace KinaUnaWeb.Controllers
 
             calendarItems = [.. calendarItems.OrderBy(e => e.StartTime)];
             List<CalendarItem> resultList = [];
-            List<Progeny> progeniesList = [];
             
             foreach (CalendarItem ev in calendarItems)
             {
@@ -80,14 +79,7 @@ namespace KinaUnaWeb.Controllers
                 ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
                 ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
                 
-                Progeny progeny = progeniesList.FirstOrDefault(p => p.Id == ev.ProgenyId);
-                if (progeny == null)
-                {
-                    progeny = await progenyHttpClient.GetProgeny(ev.ProgenyId);
-                    progeniesList.Add(progeny);
-                }
-                
-                ev.IsReadonly = !progeny.IsInAdminList(currentUserInfo.UserEmail);
+                ev.IsReadonly = true; // Todo: Check item permissions.
                 // Todo: Add color property
                 resultList.Add(ev);
             }
@@ -112,15 +104,13 @@ namespace KinaUnaWeb.Controllers
             }
 
             CalendarItem eventItem = await calendarsHttpClient.GetCalendarItem(eventId);
-            
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId);
-            CalendarItemViewModel model = new(baseModel);
-            
-            if (eventItem.AccessLevel < model.CurrentAccessLevel)
+            if (eventItem.EventId == 0)
             {
-                
                 return PartialView("_AccessDeniedPartial");
             }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId, eventItem.FamilyId);
+            CalendarItemViewModel model = new(baseModel);
             
             model.SetCalendarItem(eventItem);
             // Year, month and day are used for recurring events, and is in the user's timezone, make sure to update the event's start and end times after converting from UTC.
@@ -154,7 +144,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddEvent()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0);
             CalendarItemViewModel model = new(baseModel);
            
             if (model.CurrentUser == null)
@@ -191,7 +181,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddEvent([FromForm] CalendarItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CalendarItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CalendarItem.ProgenyId, model.CalendarItem.FamilyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -220,7 +210,7 @@ namespace KinaUnaWeb.Controllers
         {
             CalendarItem eventItem = await calendarsHttpClient.GetCalendarItem(itemId);
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId, eventItem.FamilyId);
             CalendarItemViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -254,7 +244,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditEvent([FromForm] CalendarItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CalendarItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CalendarItem.ProgenyId, model.CalendarItem.FamilyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -283,7 +273,7 @@ namespace KinaUnaWeb.Controllers
         {
             CalendarItem calendarItem = await calendarsHttpClient.GetCalendarItem(itemId);
             
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), calendarItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), calendarItem.ProgenyId, calendarItem.FamilyId);
             CalendarItemViewModel model = new(baseModel)
             {
                 CalendarItem = calendarItem
@@ -306,7 +296,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteEvent([FromForm] CalendarItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId, model.CurrentFamilyId);
             model.SetBaseProperties(baseModel);
 
             model.CalendarItem = await calendarsHttpClient.GetCalendarItem(model.CalendarItem.EventId);
@@ -331,14 +321,14 @@ namespace KinaUnaWeb.Controllers
         {
             CalendarItem eventItem = await calendarsHttpClient.GetCalendarItem(itemId);
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId);
-            CalendarItemViewModel model = new(baseModel);
-
-            if (model.CurrentAccessLevel > eventItem.AccessLevel)
+            if (eventItem == null || eventItem.EventId == 0)
             {
                 return PartialView("_AccessDeniedPartial");
             }
-
+            
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId, eventItem.FamilyId);
+            CalendarItemViewModel model = new(baseModel);
+            
             model.SetCalendarItem(eventItem);
 
             model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
@@ -373,7 +363,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CopyEvent([FromForm] CalendarItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CalendarItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CalendarItem.ProgenyId, model.CalendarItem.FamilyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -405,6 +395,7 @@ namespace KinaUnaWeb.Controllers
             CalendarItemsRequest calendarItemsRequest = new()
             {
                 ProgenyIds = parameters.Progenies,
+                FamilyIds = parameters.Families,
                 StartDate = DateTime.UtcNow.Date,
                 EndDate = DateTime.UtcNow.Date.AddYears(10) // ToDo: Make this configurable
             };

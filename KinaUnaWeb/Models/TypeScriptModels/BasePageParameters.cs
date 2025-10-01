@@ -8,12 +8,14 @@ namespace KinaUnaWeb.Models.TypeScriptModels
         /// Gets the unique identifier for the progeny associated with this entity.
         /// </summary>
         public int ProgenyId { get; init; }
+        public int FamilyId { get; init; }
 
         /// <summary>
         /// Gets or sets the list of progeny entities.
         /// </summary>
         public List<int> Progenies { get; set; }
 
+        public List<int> Families { get; set; }
         /// <summary>
         /// Gets or sets the identifier for the language.
         /// </summary>

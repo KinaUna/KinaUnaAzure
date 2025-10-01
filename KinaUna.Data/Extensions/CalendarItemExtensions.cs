@@ -28,6 +28,7 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.Location = otherCalendarItem.Location;
             currentCalendarItem.Notes = otherCalendarItem.Notes;
             currentCalendarItem.ProgenyId = otherCalendarItem.ProgenyId;
+            currentCalendarItem.FamilyId = otherCalendarItem.FamilyId;
             currentCalendarItem.StartString = otherCalendarItem.StartString;
             currentCalendarItem.Title = otherCalendarItem.Title;
             currentCalendarItem.Progeny = otherCalendarItem.Progeny;
@@ -54,6 +55,7 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.Location = otherCalendarItem.Location;
             currentCalendarItem.Notes = otherCalendarItem.Notes;
             currentCalendarItem.ProgenyId = otherCalendarItem.ProgenyId;
+            currentCalendarItem.FamilyId = otherCalendarItem.FamilyId;
             currentCalendarItem.StartString = otherCalendarItem.StartString;
             currentCalendarItem.Title = otherCalendarItem.Title;
             currentCalendarItem.Progeny = otherCalendarItem.Progeny;

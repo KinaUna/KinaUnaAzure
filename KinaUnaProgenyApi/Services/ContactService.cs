@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
@@ -11,6 +7,10 @@ using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -125,7 +125,7 @@ namespace KinaUnaProgenyApi.Services
             
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id, JsonConvert.SerializeObject(contact), _cacheOptionsSliding);
 
-            _ = await SetContactsListInCache(contact.ProgenyId);
+            _ = await SetContactsListInCache(contact.ProgenyId, contact.FamilyId);
 
             return contact;
         }
@@ -215,7 +215,7 @@ namespace KinaUnaProgenyApi.Services
 
             _context.ContactsDb.Remove(contactToDelete);
             _ = await _context.SaveChangesAsync();
-            await RemoveContactFromCache(contact.ContactId, contact.ProgenyId);
+            await RemoveContactFromCache(contact.ContactId, contact.ProgenyId, contact.FamilyId);
 
             List<Contact> contactsWithThisPicture = await _context.ContactsDb.AsNoTracking().Where(c => c.PictureLink == contactToDelete.PictureLink).ToListAsync();
             if (contactsWithThisPicture.Count == 0)
@@ -230,12 +230,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="id">The ContactId of the Contact to delete.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny the Contact item belongs to.</param>
+        /// <param name="familyId"></param>
         /// <returns></returns>
-        private async Task RemoveContactFromCache(int id, int progenyId)
+        private async Task RemoveContactFromCache(int id, int progenyId, int familyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "contact" + id);
 
-            _ = await SetContactsListInCache(progenyId);
+            _ = await SetContactsListInCache(progenyId, familyId);
         }
 
         /// <summary>
@@ -243,14 +244,15 @@ namespace KinaUnaProgenyApi.Services
         /// If the list is empty, it will be looked up in the database and added to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
+        /// <param name="familyId"></param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of Contacts.</returns>
-        public async Task<List<Contact>> GetContactsList(int progenyId, UserInfo currentUserInfo)
+        public async Task<List<Contact>> GetContactsList(int progenyId, int familyId, UserInfo currentUserInfo)
         {
-            List<Contact> contactsList = await GetContactsListFromCache(progenyId);
+            List<Contact> contactsList = await GetContactsListFromCache(progenyId, familyId);
             if (contactsList.Count == 0)
             {
-                contactsList = await SetContactsListInCache(progenyId);
+                contactsList = await SetContactsListInCache(progenyId, familyId);
             }
 
             List<Contact> accessibleContacts = [];
@@ -269,11 +271,12 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Contacts for a Progeny from the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
+        /// <param name="familyId"></param>
         /// <returns>List of Contacts.</returns>
-        private async Task<List<Contact>> GetContactsListFromCache(int progenyId)
+        private async Task<List<Contact>> GetContactsListFromCache(int progenyId, int familyId)
         {
             List<Contact> contactsList = [];
-            string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId);
+            string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedContactsList))
             {
                 contactsList = JsonConvert.DeserializeObject<List<Contact>>(cachedContactsList);
@@ -288,12 +291,13 @@ namespace KinaUnaProgenyApi.Services
         /// <remarks>The contacts are retrieved from the database and cached using a sliding expiration
         /// policy.  The cache key is constructed using the application name, API version, and the progeny ID.</remarks>
         /// <param name="progenyId">The unique identifier of the progeny whose contacts are to be retrieved and cached.</param>
+        /// <param name="familyId"></param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the list of contacts associated
         /// with the specified progeny.</returns>
-        private async Task<List<Contact>> SetContactsListInCache(int progenyId)
+        private async Task<List<Contact>> SetContactsListInCache(int progenyId, int familyId)
         {
-            List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
+            List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId && c.FamilyId == familyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
 
             return contactsList;
         }
@@ -302,12 +306,13 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Contacts for a Progeny with the given tag.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
+        /// <param name="familyId"></param>
         /// <param name="tag">The tag to filter contacts by.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns></returns>
-        public async Task<List<Contact>> GetContactsWithTag(int progenyId, string tag, UserInfo currentUserInfo)
+        public async Task<List<Contact>> GetContactsWithTag(int progenyId, int familyId, string tag, UserInfo currentUserInfo)
         {
-            List<Contact> allItems = await GetContactsList(progenyId, currentUserInfo);
+            List<Contact> allItems = await GetContactsList(progenyId, familyId, currentUserInfo);
             if (!string.IsNullOrEmpty(tag))
             {
                 allItems = [.. allItems.Where(c => c.Tags != null && c.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];
@@ -320,12 +325,13 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Contacts for a Progeny with the given context.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
+        /// <param name="familyId"></param>
         /// <param name="context">The context to filter contacts by.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns></returns>
-        public async Task<List<Contact>> GetContactsWithContext(int progenyId, string context, UserInfo currentUserInfo)
+        public async Task<List<Contact>> GetContactsWithContext(int progenyId, int familyId, string context, UserInfo currentUserInfo)
         {
-            List<Contact> allItems = await GetContactsList(progenyId, currentUserInfo);
+            List<Contact> allItems = await GetContactsList(progenyId, familyId, currentUserInfo);
             if (!string.IsNullOrEmpty(context))
             {
                 allItems = [.. allItems.Where(c => c.Context != null && c.Context.Contains(context, StringComparison.CurrentCultureIgnoreCase))];
