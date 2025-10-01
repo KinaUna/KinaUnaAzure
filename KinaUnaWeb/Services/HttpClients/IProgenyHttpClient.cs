@@ -30,6 +30,17 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<List<Progeny>> GetProgeniesUserCanAccess(PermissionLevel permissionLevel);
 
         /// <summary>
+        /// Retrieves the list of permissions associated with a specific progeny.
+        /// </summary>
+        /// <remarks>This method makes an HTTP request to an external service to retrieve the permissions.
+        /// Ensure that the signed-in user has a valid token, as it is required for authentication.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose permissions are to be retrieved.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="ProgenyPermission"/> objects representing the permissions for the specified progeny. Returns an empty
+        /// list if no permissions are found or if the request fails.</returns>
+        Task<List<ProgenyPermission>> GetProgenyPermissionsList(int progenyId);
+
+        /// <summary>
         /// Adds a new Progeny.
         /// </summary>
         /// <param name="progeny">The Progeny object to be added.</param>

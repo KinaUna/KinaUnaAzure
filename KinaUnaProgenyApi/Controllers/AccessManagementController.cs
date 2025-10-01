@@ -48,10 +48,10 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{permissionLevel:int}")]
-        public async Task<IActionResult> ProgeniesUserCanAccessList(PermissionLevel permissionLevel)
+        public async Task<IActionResult> ProgeniesUserCanAccessList(int permissionLevel)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            List<int> progenyIds = await accessManagementService.ProgeniesUserCanAccess(currentUserInfo, permissionLevel);
+            List<int> progenyIds = await accessManagementService.ProgeniesUserCanAccess(currentUserInfo, (PermissionLevel)permissionLevel);
 
             List<Progeny> progenies = [];
             foreach (int progenyId in progenyIds)
@@ -68,10 +68,10 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{permissionLevel:int}")]
-        public async Task<IActionResult> FamiliesUserCanAccessList(PermissionLevel permissionLevel)
+        public async Task<IActionResult> FamiliesUserCanAccessList(int permissionLevel)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            List<int> familyIds = await accessManagementService.FamiliesUserCanAccess(currentUserInfo, permissionLevel);
+            List<int> familyIds = await accessManagementService.FamiliesUserCanAccess(currentUserInfo, (PermissionLevel)permissionLevel);
 
             List<Family> families = [];
             foreach (int familyId in familyIds)
@@ -84,6 +84,33 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             return Ok(families);
+        }
+
+        [HttpGet]
+        [Route("[action]/{itemType:int}/{itemId:int}")]
+        public async Task<IActionResult> GetItemPermissionForUser(int itemType, int itemId)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            TimelineItemPermission permission = await accessManagementService.GetItemPermissionForUser((KinaUnaTypes.TimeLineType)itemType, itemId, currentUserInfo);
+            return Ok(permission.PermissionLevel);
+        }
+
+        [HttpGet]
+        [Route("[action]/{progenyId:int}")]
+        public async Task<List<ProgenyPermission>> GetProgenyPermissionsList(int progenyId)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<ProgenyPermission> permissions = await accessManagementService.GetProgenyPermissionsList(progenyId, currentUserInfo);
+            return permissions;
+        }
+
+        [HttpGet]
+        [Route("[action]/{familyId:int}")]
+        public async Task<List<FamilyPermission>> GetFamilyPermissionsList(int familyId)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<FamilyPermission> permissions = await accessManagementService.GetFamilyPermissionsList(familyId, currentUserInfo);
+            return permissions;
         }
     }
 }

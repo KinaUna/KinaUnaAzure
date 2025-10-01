@@ -38,6 +38,18 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<List<Family>> GetFamiliesUserCanAccess(PermissionLevel permissionLevel);
 
         /// <summary>
+        /// Retrieves the list of permissions associated with a specific family.
+        /// </summary>
+        /// <remarks>This method requires the caller to be authenticated. The method retrieves a valid
+        /// access token for the signed-in user and uses it to make an HTTP request to the access management
+        /// service.</remarks>
+        /// <param name="familyId">The unique identifier of the family whose permissions are to be retrieved.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="FamilyPermission"/> objects representing the permissions for the specified family. Returns an empty
+        /// list if the operation fails or no permissions are found.</returns>
+        Task<List<FamilyPermission>> GetFamilyPermissionsList(int familyId);
+
+        /// <summary>
         /// Retrieves the details of a family by its unique identifier.
         /// </summary>
         /// <remarks>This method requires the caller to be authenticated. The method retrieves a valid

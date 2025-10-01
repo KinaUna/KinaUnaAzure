@@ -261,7 +261,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             List<string> tagsList = [];
@@ -489,7 +489,7 @@ namespace KinaUnaWeb.Controllers
 
             
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             friend.PictureLink = friend.GetProfilePictureUrl();

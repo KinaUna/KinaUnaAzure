@@ -6,11 +6,6 @@
     ViewData["Title"] = await LocaleManager.GetTranslation("Copy kanban board", PageNames.Todos, Model.LanguageId);
     string assignedToString = await LocaleManager.GetTranslation("Copy kanban board to:", PageNames.Todos, Model.LanguageId);
     
-    foreach (SelectListItem accessLevelItem in Model.AccessLevelListEn)
-    {
-        accessLevelItem.Text = await LocaleManager.GetTranslation(accessLevelItem.Text, PageNames.AccessManagement, Model.LanguageId);
-    }
-
     foreach (SelectListItem copyOption in Model.CopyTodoItemsOptions)
     {
         copyOption.Text = await LocaleManager.GetTranslation(copyOption.Text, PageNames.Todos, Model.LanguageId);
@@ -26,7 +21,7 @@
         </div>
         <div class="space-20"></div>
         <form id="save-item-form" asp-action="CopyKanbanBoard" asp-controller="Kanbans" role="form" method="post">
-            @if (Model.ProgenyList.Count > 1)
+            @if (Model.ProgenyList.Count > 0)
             {
                 <div class="form-group">
                     <label asp-for="KanbanBoard.ProgenyId" class="col-auto control-label">@assignedToString </label>
@@ -35,14 +30,13 @@
                     </div>
                 </div>
             }
-            else
+            @if (Model.FamilyList.Count > 0)
             {
                 <div class="form-group">
-                    <label asp-for="KanbanBoard.ProgenyId" class="col-auto control-label">@assignedToString</label>
+                    <label asp-for="KanbanBoard.FamilyId" class="col-auto control-label">@assignedToString </label>
                     <div class="col-auto">
-                        <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                        <select id="item-family-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="KanbanBoard.FamilyId" asp-items="@Model.FamilyList"></select>
                     </div>
-                    <input asp-for="KanbanBoard.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
                 </div>
             }
             <div class="form-group">
@@ -88,12 +82,7 @@
                     <input id="tag-list" type="text" asp-for="KanbanBoard.Tags" value="@Model.KanbanBoard.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="KanbanBoard.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="KanbanBoard.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
+            
             <div class="form-group">
                 <label asp-for="CopyTodoItemsOption" class="col-auto control-label">@await LocaleManager.GetTranslation("Copy Todo items", PageNames.Todos, Model.LanguageId)</label>
                 <div class="col-auto">
@@ -110,6 +99,9 @@
                     <a class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                 </div>
                 <div id="validation-errors-div" class="col-auto">
+                    <div id="select-either-progeny-or-family-div" class="d-none text-warning">
+                        @await LocaleManager.GetTranslation("A family or family member must be selected.", PageNames.Todos, Model.LanguageId)
+                    </div>
                     <div id="kanban-board-title-required-div" class="d-none text-warning">
                         @await LocaleManager.GetTranslation("Title is required and cannot be blank.", PageNames.Todos, Model.LanguageId)
                     </div>

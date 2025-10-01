@@ -1,16 +1,39 @@
 ﻿@using System.Web
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.KanbanBoardViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.KanbanBoard.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Kanban board copied", PageNames.Todos, Model.LanguageId);
+    string assignedToName = "";
+    if (Model.KanbanBoard.ProgenyId > 0 && Model.KanbanBoard.Progeny != null)
+    {
+        assignedToName = Model.KanbanBoard.Progeny.NickName;
+    }
+    else
+    {
+        if (Model.KanbanBoard.FamilyId > 0 && Model.KanbanBoard.Family != null)
+        {
+            assignedToName = Model.KanbanBoard.Family.Name;
+        }
+    }
+    string title = assignedToName + " : " + await LocaleManager.GetTranslation("Kanban board copied", PageNames.Todos, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-todos-header">
-                <img src="@Model.KanbanBoard.Progeny.PictureLink" class="item-details-title-picture" />
+                @if(Model.KanbanBoard.ProgenyId > 0 && Model.KanbanBoard.Progeny != null)
+                {
+                    <img src="@Model.KanbanBoard.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                else
+                {
+                    if(Model.KanbanBoard.FamilyId > 0 && Model.KanbanBoard.Family != null)
+                    {
+                        <img src="@Model.KanbanBoard.Family.GetProfilePictureUrl()" class="item-details-title-picture" />
+                    }
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>

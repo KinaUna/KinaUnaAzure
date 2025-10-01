@@ -48,6 +48,8 @@ namespace KinaUna.Data.Models
         [NotMapped]
         public List<Progeny> ProgenyList { get; set; }
         [NotMapped]
+        public List<Family.Family> FamilyList { get; set; }
+        [NotMapped]
         public bool CanUserAddItems { get; set; }
         [NotMapped]
         public List<UserAccess> AccessList { get; set; }

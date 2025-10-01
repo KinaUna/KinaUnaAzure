@@ -95,7 +95,7 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             model.SetAccessLevelList();
@@ -240,7 +240,7 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             model.SetPropertiesFromMeasurement(measurement, model.IsCurrentUserProgenyAdmin);

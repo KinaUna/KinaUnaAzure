@@ -3,7 +3,6 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,18 +10,15 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
     /// <summary>
     /// API endpoints for UserInfo.
     /// </summary>
-    /// <param name="appDbContext"></param>
-    /// <param name="progenyService"></param>
-    /// <param name="userInfoService"></param>
-    /// <param name="userAccessService"></param>
-    /// <param name="notificationsService"></param>
     [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -30,10 +26,10 @@ namespace KinaUnaProgenyApi.Controllers
     public class UserInfoController(
         ApplicationDbContext appDbContext,
         IProgenyService progenyService,
+        IFamiliesService familiesService,
         IUserInfoService userInfoService,
-        IUserAccessService userAccessService,
-        INotificationsService notificationsService,
-        IAccessManagementService accessManagementService)
+        IAccessManagementService accessManagementService,
+        INotificationsService notificationsService)
         : ControllerBase
     {
         /// <summary>
@@ -56,17 +52,33 @@ namespace KinaUnaProgenyApi.Controllers
             if (allowAccess && userInfo != null && userInfo.Id != 0)
             {
                 userInfo.CanUserAddItems = false;
-                userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
                 userInfo.ProgenyList = [];
-                if (userInfo.AccessList.Count == 0) return Ok(userInfo);
-
-                foreach (UserAccess userAccess in userInfo.AccessList)
+                userInfo.FamilyList = [];
+                List<int> progeniesWithAddPermission = await accessManagementService.ProgeniesUserCanAccess(currentUserInfo, PermissionLevel.Add);
+                if (progeniesWithAddPermission.Count > 0)
                 {
-                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId, currentUserInfo);
-                    userInfo.ProgenyList.Add(progeny);
-                    if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
+                    userInfo.CanUserAddItems = true;
+                    foreach (int progenyId in progeniesWithAddPermission)
                     {
-                        userInfo.CanUserAddItems = true;
+                        Progeny progeny = await progenyService.GetProgeny(progenyId, currentUserInfo);
+                        if (progeny != null && progeny.Id != 0)
+                        {
+                            userInfo.ProgenyList.Add(progeny);
+                        }
+                    }
+                }
+
+                List<int> familiesWithAddPermission = await accessManagementService.FamiliesUserCanAccess(currentUserInfo, PermissionLevel.Add);
+                if (familiesWithAddPermission.Count > 0)
+                {
+                    userInfo.CanUserAddItems = true;
+                    foreach (int familyId in familiesWithAddPermission)
+                    {
+                        Family family = await familiesService.GetFamilyById(familyId, currentUserInfo);
+                        if (family != null && family.FamilyId != 0)
+                        {
+                            userInfo.FamilyList.Add(family);
+                        }
                     }
                 }
             }
@@ -88,19 +100,36 @@ namespace KinaUnaProgenyApi.Controllers
                     }
 
                     _ = await userInfoService.AddUserInfo(userInfoToAdd);
+                    
                     userInfo = await userInfoService.GetUserInfoByEmail(id);
                     userInfo.CanUserAddItems = false;
-                    userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
                     userInfo.ProgenyList = [];
-                    if (userInfo.AccessList.Count == 0) return Ok(userInfo);
-
-                    foreach (UserAccess userAccess in userInfo.AccessList)
+                    userInfo.FamilyList = [];
+                    List<int> progeniesWithAddPermission = await accessManagementService.ProgeniesUserCanAccess(currentUserInfo, PermissionLevel.Add);
+                    if (progeniesWithAddPermission.Count > 0)
                     {
-                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId, currentUserInfo);
-                        userInfo.ProgenyList.Add(progeny);
-                        if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
+                        userInfo.CanUserAddItems = true;
+                        foreach (int progenyId in progeniesWithAddPermission)
                         {
-                            userInfo.CanUserAddItems = true;
+                            Progeny progeny = await progenyService.GetProgeny(progenyId, currentUserInfo);
+                            if (progeny != null && progeny.Id != 0)
+                            {
+                                userInfo.ProgenyList.Add(progeny);
+                            }
+                        }
+                    }
+
+                    List<int> familiesWithAddPermission = await accessManagementService.FamiliesUserCanAccess(currentUserInfo, PermissionLevel.Add);
+                    if (familiesWithAddPermission.Count > 0)
+                    {
+                        userInfo.CanUserAddItems = true;
+                        foreach (int familyId in familiesWithAddPermission)
+                        {
+                            Family family = await familiesService.GetFamilyById(familyId, currentUserInfo);
+                            if (family != null && family.FamilyId != 0)
+                            {
+                                userInfo.FamilyList.Add(family);
+                            }
                         }
                     }
                 }
@@ -179,17 +208,33 @@ namespace KinaUnaProgenyApi.Controllers
             if (allowAccess)
             {
                 userInfo.CanUserAddItems = false;
-                userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
                 userInfo.ProgenyList = [];
-                if (userInfo.AccessList.Count == 0) return Ok(userInfo);
-
-                foreach (UserAccess ua in userInfo.AccessList)
+                userInfo.FamilyList = [];
+                List<int> progeniesWithAddPermission = await accessManagementService.ProgeniesUserCanAccess(currentUserInfo, PermissionLevel.Add);
+                if (progeniesWithAddPermission.Count > 0)
                 {
-                    Progeny progeny = await progenyService.GetProgeny(ua.ProgenyId, currentUserInfo);
-                    userInfo.ProgenyList.Add(progeny);
-                    if (ua.AccessLevel == 0 || ua.CanContribute)
+                    userInfo.CanUserAddItems = true;
+                    foreach (int progenyId in progeniesWithAddPermission)
                     {
-                        userInfo.CanUserAddItems = true;
+                        Progeny progeny = await progenyService.GetProgeny(progenyId, currentUserInfo);
+                        if (progeny != null && progeny.Id != 0)
+                        {
+                            userInfo.ProgenyList.Add(progeny);
+                        }
+                    }
+                }
+
+                List<int> familiesWithAddPermission = await accessManagementService.FamiliesUserCanAccess(currentUserInfo, PermissionLevel.Add);
+                if (familiesWithAddPermission.Count > 0)
+                {
+                    userInfo.CanUserAddItems = true;
+                    foreach (int familyId in familiesWithAddPermission)
+                    {
+                        Family family = await familiesService.GetFamilyById(familyId, currentUserInfo);
+                        if (family != null && family.FamilyId != 0)
+                        {
+                            userInfo.FamilyList.Add(family);
+                        }
                     }
                 }
             }
@@ -235,17 +280,33 @@ namespace KinaUnaProgenyApi.Controllers
             if (allowAccess)
             {
                 userInfo.CanUserAddItems = false;
-                userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
                 userInfo.ProgenyList = [];
-                if (userInfo.AccessList.Count == 0) return Ok(userInfo);
-
-                foreach (UserAccess userAccess in userInfo.AccessList)
+                userInfo.FamilyList = [];
+                List<int> progeniesWithAddPermission = await accessManagementService.ProgeniesUserCanAccess(currentUserInfo, PermissionLevel.Add);
+                if (progeniesWithAddPermission.Count > 0)
                 {
-                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId, currentUserInfo);
-                    userInfo.ProgenyList.Add(progeny);
-                    if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
+                    userInfo.CanUserAddItems = true;
+                    foreach (int progenyId in progeniesWithAddPermission)
                     {
-                        userInfo.CanUserAddItems = true;
+                        Progeny progeny = await progenyService.GetProgeny(progenyId, currentUserInfo);
+                        if (progeny != null && progeny.Id != 0)
+                        {
+                            userInfo.ProgenyList.Add(progeny);
+                        }
+                    }
+                }
+
+                List<int> familiesWithAddPermission = await accessManagementService.FamiliesUserCanAccess(currentUserInfo, PermissionLevel.Add);
+                if (familiesWithAddPermission.Count > 0)
+                {
+                    userInfo.CanUserAddItems = true;
+                    foreach (int familyId in familiesWithAddPermission)
+                    {
+                        Family family = await familiesService.GetFamilyById(familyId, currentUserInfo);
+                        if (family != null && family.FamilyId != 0)
+                        {
+                            userInfo.FamilyList.Add(family);
+                        }
                     }
                 }
             }
@@ -336,28 +397,39 @@ namespace KinaUnaProgenyApi.Controllers
             userInfo.DeletedTime = DateTime.UtcNow;
             userInfo.UpdatedTime = DateTime.UtcNow;
             
-            
-
             userInfo = await userInfoService.AddUserInfo(userInfo);
-
-            // Todo: Use Permissions instead.
-            userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userEmail);
-
+            _ = await userInfoService.SetUserInfoByEmail(userInfo.UserEmail);
+            
+            userInfo.CanUserAddItems = false;
             userInfo.ProgenyList = [];
-            if (userInfo.AccessList.Count != 0)
+            userInfo.FamilyList = [];
+            List<int> progeniesWithAddPermission = await accessManagementService.ProgeniesUserCanAccess(userInfo, PermissionLevel.Add);
+            if (progeniesWithAddPermission.Count > 0)
             {
-                foreach (UserAccess userAccess in userInfo.AccessList)
+                userInfo.CanUserAddItems = true;
+                foreach (int progenyId in progeniesWithAddPermission)
                 {
-                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId, userInfo);
-                    userInfo.ProgenyList.Add(progeny);
-                    if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
+                    Progeny progeny = await progenyService.GetProgeny(progenyId, userInfo);
+                    if (progeny != null && progeny.Id != 0)
                     {
-                        userInfo.CanUserAddItems = true;
+                        userInfo.ProgenyList.Add(progeny);
                     }
                 }
             }
 
-            _ = await userInfoService.SetUserInfoByEmail(userInfo.UserEmail);
+            List<int> familiesWithAddPermission = await accessManagementService.FamiliesUserCanAccess(userInfo, PermissionLevel.Add);
+            if (familiesWithAddPermission.Count > 0)
+            {
+                userInfo.CanUserAddItems = true;
+                foreach (int familyId in familiesWithAddPermission)
+                {
+                    Family family = await familiesService.GetFamilyById(familyId, userInfo);
+                    if (family != null && family.FamilyId != 0)
+                    {
+                        userInfo.FamilyList.Add(family);
+                    }
+                }
+            }
 
             return Ok(userInfo);
         }
@@ -454,7 +526,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Deletes a UserInfo entity.
-        /// Also removes the user entries from the UserAccess table and MobileNotification table.
+        /// Also removes the user entries from the permissions tables and MobileNotification table.
         /// This is a hard delete, to soft-delete update the UserInfo with UserInfo.Deleted = true.
         /// </summary>
         /// <param name="id">The UserInfo.Id</param>
@@ -473,11 +545,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
             
-            List<UserAccess> accessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
-            foreach (UserAccess access in accessList)
-            {
-                await userAccessService.RemoveUserAccess(access.AccessId, access.ProgenyId, access.UserId);
-            }
+            // Todo: Remove all permissions for user.
 
             List<MobileNotification> notificationsList = await notificationsService.GetUsersMobileNotifications(userInfo.UserId, "");
             foreach (MobileNotification notification in notificationsList)

@@ -99,6 +99,29 @@ namespace KinaUnaWeb.Services.HttpClients
         }
 
         /// <summary>
+        /// Retrieves the list of permissions associated with a specific family.
+        /// </summary>
+        /// <remarks>This method requires the caller to be authenticated. The method retrieves a valid
+        /// access token for the signed-in user and uses it to make an HTTP request to the access management
+        /// service.</remarks>
+        /// <param name="familyId">The unique identifier of the family whose permissions are to be retrieved.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="FamilyPermission"/> objects representing the permissions for the specified family. Returns an empty
+        /// list if the operation fails or no permissions are found.</returns>
+        public async Task<List<FamilyPermission>> GetFamilyPermissionsList(int familyId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string accessManagementPath = "/api/AccessManagement/GetFamilyPermissionsList/" + familyId;
+            HttpResponseMessage permissionsResponse = await _httpClient.GetAsync(accessManagementPath);
+            if (!permissionsResponse.IsSuccessStatusCode) return new List<FamilyPermission>();
+            List<FamilyPermission> permissions = await permissionsResponse.Content.ReadAsAsync<List<FamilyPermission>>();
+            return permissions;
+        }
+
+        /// <summary>
         /// Retrieves the details of a family by its unique identifier.
         /// </summary>
         /// <remarks>This method requires the caller to be authenticated. The method retrieves a valid

@@ -124,6 +124,18 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         Task<ProgenyPermission> UpdateProgenyPermission(ProgenyPermission progenyPermission, UserInfo currentUserInfo);
 
         /// <summary>
+        /// Retrieves a list of permissions associated with a specified progeny.
+        /// </summary>
+        /// <remarks>This method checks whether the current user has the necessary access rights to manage
+        /// permissions for the specified progeny. If the user does not have sufficient permissions, an empty list is
+        /// returned.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose permissions are to be retrieved.</param>
+        /// <param name="currentUserInfo">The user information of the current user making the request. This is used to verify access permissions.</param>
+        /// <returns>A list of <see cref="ProgenyPermission"/> objects representing the permissions for the specified progeny. 
+        /// Returns an empty list if the current user does not have the required access rights.</returns>
+        Task<List<ProgenyPermission>> GetProgenyPermissionsList(int progenyId, UserInfo currentUserInfo);
+
+        /// <summary>
         /// Updates the administrative permissions for a specified progeny based on the current list of administrators.
         /// </summary>
         /// <remarks>This method synchronizes the administrative permissions for the specified progeny by
@@ -182,6 +194,18 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <returns>The updated <see cref="FamilyPermission"/> object if the operation is successful; otherwise, <see
         /// langword="null"/> if the user lacks sufficient access rights or the specified permission does not exist.</returns>
         Task<FamilyPermission> UpdateFamilyPermission(FamilyPermission familyPermission, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Retrieves a list of permissions associated with a specific family.
+        /// </summary>
+        /// <remarks>The method checks whether the current user has the necessary access rights to manage
+        /// the specified family before retrieving the permissions. If the user lacks the required permissions, an empty
+        /// list is returned.</remarks>
+        /// <param name="familyId">The unique identifier of the family whose permissions are to be retrieved.</param>
+        /// <param name="currentUserInfo">The information of the user making the request, used to verify access permissions.</param>
+        /// <returns>A list of <see cref="FamilyPermission"/> objects representing the permissions for the specified family.
+        /// Returns an empty list if the user does not have access to manage the specified family.</returns>
+        Task<List<FamilyPermission>> GetFamilyPermissionsList(int familyId, UserInfo currentUserInfo);
 
         /// <summary>
         /// Retrieves the permission settings for a specific progeny and user group.

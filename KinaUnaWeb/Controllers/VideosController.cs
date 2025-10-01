@@ -233,7 +233,7 @@ namespace KinaUnaWeb.Controllers
             
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
                 model.Video.Owners = model.CurrentUser.UserEmail;
                 model.Video.Author = model.CurrentUser.UserId;
@@ -400,7 +400,7 @@ namespace KinaUnaWeb.Controllers
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
                 model.Video = await mediaHttpClient.GetVideo(itemId, model.CurrentUser.Timezone);
                 model.Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));

@@ -293,7 +293,7 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             model.SetAccessLevelList();
@@ -538,17 +538,16 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> CopyPicture(int itemId)
         {
             Picture picture = await mediaHttpClient.GetPicture(itemId, Constants.DefaultTimezone);
-
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
-            UploadPictureViewModel model = new(baseModel);
-
-            if (model.CurrentAccessLevel > picture.AccessLevel)
+            if (picture == null || picture.PictureId == 0)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
+            UploadPictureViewModel model = new(baseModel);
+            
             model.Picture = await mediaHttpClient.GetPicture(itemId, model.CurrentUser.Timezone);
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             model.SetAccessLevelList();

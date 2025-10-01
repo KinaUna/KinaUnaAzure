@@ -9,16 +9,16 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         public KanbanBoard KanbanBoard { get; set; } = new();
         public List<SelectListItem> ProgenyList { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
+        public List<SelectListItem> FamilyList { get; set; }
         public List<SelectListItem> CopyTodoItemsOptions { get; set; } =
         [
-            new SelectListItem { Value = "0", Text = "Copy to new item", Selected = true },
-            new SelectListItem { Value = "1", Text = "Copy reference to existing item" },
-            new SelectListItem { Value = "2", Text = "Do not copy" }
+            new() { Value = "0", Text = "Copy to new item", Selected = true },
+            new() { Value = "1", Text = "Copy reference to existing item" },
+            new() { Value = "2", Text = "Do not copy" }
         ];
 
         public int CopyTodoItemsOption { get; set; } = 0;
-        public bool DeleteTodoItems { get; set; } = false;
+        public bool DeleteTodoItems { get; set; }
 
         public KanbanBoardViewModel()
         {
@@ -27,23 +27,31 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public KanbanBoardViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
-            SetAccessLevelList();
             ProgenyList = [];
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListEn[KanbanBoard.AccessLevel].Selected = true;
-        }
-
+        
         public void SetProgenyList()
         {
             KanbanBoard.ProgenyId = CurrentProgenyId;
             foreach (SelectListItem item in ProgenyList)
             {
                 if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+
+        public void SetFamilyList()
+        {
+            KanbanBoard.FamilyId = CurrentFamilyId;
+            foreach (SelectListItem item in FamilyList)
+            {
+                if (item.Value == CurrentFamilyId.ToString())
                 {
                     item.Selected = true;
                 }
@@ -61,6 +69,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 KanbanBoardId = KanbanBoard.KanbanBoardId,
                 UId = KanbanBoard.UId,
                 ProgenyId = KanbanBoard.ProgenyId,
+                FamilyId = KanbanBoard.FamilyId,
                 Title = KanbanBoard.Title,
                 Description = KanbanBoard.Description,
                 Columns = KanbanBoard.Columns,
@@ -89,6 +98,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             KanbanBoard.KanbanBoardId = kanbanBoard.KanbanBoardId;
             KanbanBoard.ModifiedTime = kanbanBoard.ModifiedTime;
             KanbanBoard.ProgenyId = kanbanBoard.ProgenyId;
+            KanbanBoard.FamilyId = kanbanBoard.FamilyId;
             KanbanBoard.Tags = kanbanBoard.Tags;
             KanbanBoard.Title = kanbanBoard.Title;
             KanbanBoard.UId = kanbanBoard.UId;

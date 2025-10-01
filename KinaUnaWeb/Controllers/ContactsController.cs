@@ -280,7 +280,7 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
             
             model.SetAccessLevelList();
@@ -475,7 +475,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), contact.ProgenyId, contact.FamilyId);
             ContactViewModel model = new(baseModel);
             
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             if (contact.AddressIdNumber != null)

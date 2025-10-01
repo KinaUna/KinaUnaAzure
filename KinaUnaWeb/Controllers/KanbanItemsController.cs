@@ -64,7 +64,7 @@ namespace KinaUnaWeb.Controllers
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
             }
 
@@ -166,7 +166,7 @@ namespace KinaUnaWeb.Controllers
             };
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
                 model.KanbanItem.TodoItem = await todoItemsHttpClient.GetTodoItem(model.KanbanItem.TodoItemId);
                 model.KanbanItem.TodoItem.Progeny = model.CurrentProgeny;
@@ -175,7 +175,7 @@ namespace KinaUnaWeb.Controllers
             model.SetAccessLevelList();
             model.SetStatusList(model.KanbanItem.TodoItem.Status);
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             List<int> progenyIds = [];
@@ -308,7 +308,7 @@ namespace KinaUnaWeb.Controllers
             };
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
                 model.KanbanItem.TodoItem = await todoItemsHttpClient.GetTodoItem(model.KanbanItem.TodoItemId);
                 model.KanbanItem.TodoItem.Progeny = model.CurrentProgeny;
@@ -317,7 +317,7 @@ namespace KinaUnaWeb.Controllers
             model.SetAccessLevelList();
             model.SetStatusList(model.KanbanItem.TodoItem.Status);
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             List<int> progenyIds = [];
@@ -411,7 +411,7 @@ namespace KinaUnaWeb.Controllers
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
             }
 
@@ -550,7 +550,7 @@ namespace KinaUnaWeb.Controllers
             };
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
                 model.KanbanItem.TodoItem = await todoItemsHttpClient.GetTodoItem(model.KanbanItem.TodoItemId);
                 model.KanbanItem.TodoItem.Progeny = model.CurrentProgeny;
@@ -627,7 +627,7 @@ namespace KinaUnaWeb.Controllers
             };
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
                 model.KanbanItem.TodoItem = await todoItemsHttpClient.GetTodoItem(model.KanbanItem.TodoItemId);
                 model.KanbanItem.TodoItem.Progeny = model.CurrentProgeny;

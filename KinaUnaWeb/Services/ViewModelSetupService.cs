@@ -1,13 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services
 {
@@ -18,19 +21,19 @@ namespace KinaUnaWeb.Services
     public class ViewModelSetupService : IViewModelSetupService
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IFamiliesHttpClient _familiesHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ITranslationsHttpClient _translationsHttpClient;
-        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         
-        public ViewModelSetupService(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient,
-            ITranslationsHttpClient translationsHttpClient, IUserAccessHttpClient userAccessHttpClient,IDistributedCache cache)
+        public ViewModelSetupService(IProgenyHttpClient progenyHttpClient, IFamiliesHttpClient familiesHttpClient, IUserInfosHttpClient userInfosHttpClient,
+            ITranslationsHttpClient translationsHttpClient, IDistributedCache cache)
         {
             _progenyHttpClient = progenyHttpClient;
+            _familiesHttpClient = familiesHttpClient;
             _userInfosHttpClient = userInfosHttpClient;
             _translationsHttpClient = translationsHttpClient;
-            _userAccessHttpClient = userAccessHttpClient;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 0, 30)); // Expire after 30 seconds.
         }
@@ -43,82 +46,101 @@ namespace KinaUnaWeb.Services
         /// <param name="userEmail">The user's email address.</param>
         /// <param name="progenyId">The ProgenyId for the Progeny.</param>
         /// <param name="familyId">The FamilyId for the Family, if any.</param>
+        /// <param name="useViewChild"></param>
         /// <returns>BaseItemsViewModel</returns>
-        public async Task<BaseItemsViewModel> SetupViewModel(int languageId, string userEmail, int progenyId, int familyId = 0)
+        public async Task<BaseItemsViewModel> SetupViewModel(int languageId, string userEmail, int progenyId, int familyId = 0, bool useViewChild = true)
         {
             BaseItemsViewModel viewModel = new()
             {
                 CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail)
             };
-
-            if (progenyId == 0)
-            {
-               
-                progenyId = viewModel.CurrentUser.ViewChild;
-            }
-            else
-            {
-                viewModel.CurrentUser.ViewChild = progenyId;
-            }
             
             string cachedBaseViewModel = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedBaseViewModel))
             {
                 viewModel = JsonConvert.DeserializeObject<BaseItemsViewModel>(cachedBaseViewModel);
-                viewModel.SetCurrentUsersAccessLevel();
                 return viewModel;
             }
 
             viewModel.LanguageId = languageId;
            
-            viewModel.SetCurrentProgenyId(progenyId);
-            viewModel.CurrentProgeny = await _progenyHttpClient.GetProgeny(viewModel.CurrentProgenyId);
-            viewModel.CurrentProgenyAccessList = await _userAccessHttpClient.GetProgenyAccessList(viewModel.CurrentProgenyId);
-            viewModel.SetCurrentUsersAccessLevel();
+            viewModel.CurrentProgenyId = progenyId;
+            viewModel.CurrentFamilyId = familyId;
+            if (useViewChild)
+            {
+                viewModel.UseCurrentViewChildOrDefault();
+            }
 
+            if (viewModel.CurrentProgenyId > 0)
+            {
+                viewModel.CurrentProgeny = await _progenyHttpClient.GetProgeny(viewModel.CurrentProgenyId);
+            }
+            if (viewModel.CurrentFamilyId > 0)
+            {
+                viewModel.CurrentFamily = await _familiesHttpClient.GetFamily(viewModel.CurrentFamilyId);
+            }
+            
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(viewModel), _cacheOptions);
            
             return viewModel;
         }
 
+
         /// <summary>
         /// Generates a SelectListItem list of Progeny for the given user.
         /// </summary>
-        /// <param name="userInfo">The user's UserInfo data.</param>
         /// <param name="selectedProgenyId">The Id of the Progeny to select in the list. If 0, the current user's default progeny is selected.</param>
         /// <returns>List of SelectListItem objects.</returns>
-        public async Task<List<SelectListItem>> GetProgenySelectList(UserInfo userInfo, int selectedProgenyId = 0)
+        public async Task<List<SelectListItem>> GetProgenySelectList(int selectedProgenyId = 0)
         {
             List<SelectListItem> progenyList = [];
-            List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userInfo.UserEmail);
-            if (accessList.Count == 0) return progenyList;
+            List<Progeny> progeniesWithAddPermission = await _progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+            if (progeniesWithAddPermission.Count == 0) return progenyList;
 
-            foreach (Progeny progeny in accessList)
+            foreach (Progeny progeny in progeniesWithAddPermission)
             {
                 SelectListItem selItem = new()
                 {
-                    Text = accessList.Single(p => p.Id == progeny.Id).NickName,
+                    Text = progeniesWithAddPermission.Single(p => p.Id == progeny.Id).NickName,
                     Value = progeny.Id.ToString()
                 };
-                if (selectedProgenyId == 0)
+                if (progeny.Id == selectedProgenyId)
                 {
-                    if (progeny.Id == userInfo.ViewChild)
-                    {
-                        selItem.Selected = true;
-                    }
+                    selItem.Selected = true;
                 }
-                else
-                {
-                    if (progeny.Id == selectedProgenyId)
-                    {
-                        selItem.Selected = true;
-                    }
-                }
-
                 progenyList.Add(selItem);
             }
 
             return progenyList;
+        }
+
+        /// <summary>
+        /// Generates a SelectListItem list of families for the given user.
+        /// </summary>
+        /// <param name="selectedFamilyId">The Id of the Family to select in the list.</param>
+        /// <returns>List of SelectListItem objects.</returns>
+        public async Task<List<SelectListItem>> GetFamilySelectList(int selectedFamilyId = 0)
+        {
+            List<SelectListItem> familyList = [];
+            List<Family> familiesWithAddPermission = await _familiesHttpClient.GetFamiliesUserCanAccess(PermissionLevel.Add);
+            if (familiesWithAddPermission.Count == 0) return familyList;
+
+            foreach (Family family in familiesWithAddPermission)
+            {
+                SelectListItem selItem = new()
+                {
+                    Text = familiesWithAddPermission.Single(p => p.FamilyId == family.FamilyId).Name,
+                    Value = family.FamilyId.ToString()
+                };
+                if (family.FamilyId == selectedFamilyId)
+                {
+                    selItem.Selected = true;
+                }
+
+                familyList.Add(selItem);
+            }
+
+            return familyList;
         }
 
         /// <summary>

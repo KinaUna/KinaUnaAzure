@@ -262,7 +262,7 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
@@ -355,7 +355,7 @@ namespace KinaUnaWeb.Controllers
             List<string> tagsList = [];
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
 
                 List<Progeny> accessList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
                 if (accessList.Count != 0)
@@ -485,13 +485,13 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             List<string> tagsList = [];
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
 
                 List<Progeny> accessList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
                 if (accessList.Count != 0)

@@ -189,7 +189,7 @@ namespace KinaUnaWeb.Controllers
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
             }
 
@@ -346,7 +346,7 @@ namespace KinaUnaWeb.Controllers
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
             }
 

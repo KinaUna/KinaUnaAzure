@@ -24,8 +24,6 @@
                         <img src="@Model.KanbanBoard.Family.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;"/>
                     }
                 }
-    )
-                <img src="@Model.KanbanBoard.Progeny.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;"/>
                 <div class="col-auto card-title text-left"><span class="pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">view_kanban</i> </span><span class="h5">@Model.KanbanBoard.Title</span></div>
                 @if (!string.IsNullOrEmpty(Model.KanbanBoard.Tags) || !string.IsNullOrEmpty(Model.KanbanBoard.Context))
                 {

@@ -119,6 +119,28 @@ namespace KinaUnaWeb.Services.HttpClients
         }
 
         /// <summary>
+        /// Retrieves the list of permissions associated with a specific progeny.
+        /// </summary>
+        /// <remarks>This method makes an HTTP request to an external service to retrieve the permissions.
+        /// Ensure that the signed-in user has a valid token, as it is required for authentication.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose permissions are to be retrieved.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="ProgenyPermission"/> objects representing the permissions for the specified progeny. Returns an empty
+        /// list if no permissions are found or if the request fails.</returns>
+        public async Task<List<ProgenyPermission>> GetProgenyPermissionsList(int progenyId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            
+            string accessManagementPath = "/api/AccessManagement/GetProgenyPermissionsList/" + progenyId;
+            HttpResponseMessage permissionsResponse = await _httpClient.GetAsync(accessManagementPath);
+            if (!permissionsResponse.IsSuccessStatusCode) return new List<ProgenyPermission>();
+            List<ProgenyPermission> permissions = await permissionsResponse.Content.ReadAsAsync<List<ProgenyPermission>>();
+            return permissions;
+        }
+
+        /// <summary>
         /// Adds a new Progeny.
         /// </summary>
         /// <param name="progeny">The Progeny object to be added.</param>

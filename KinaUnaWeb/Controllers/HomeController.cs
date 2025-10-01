@@ -37,22 +37,19 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int childId = 0, int familyId = 0)
         {
             
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId, true);
             HomeFeedViewModel model = new(baseModel);
-           
+            
             if (model.CurrentProgeny.Name == "401")
             {
                 return RedirectToAction("LogOut", "Account");
             }
 
             model.SetBirthTimeData();
-            
-            if (model.CurrentAccessLevel < (int)AccessLevel.Public)
-            {
-                model.DisplayPicture = await mediaHttpClient.GetRandomPicture(model.CurrentProgeny.Id, model.CurrentUser.Timezone);
-            }
 
-            if (model.CurrentAccessLevel == (int)AccessLevel.Public || model.DisplayPicture == null)
+            model.DisplayPicture = await mediaHttpClient.GetRandomPicture(model.CurrentProgeny.Id, model.CurrentUser.Timezone);
+
+            if (model.DisplayPicture == null)
             {
                 model.DisplayPicture = await mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.CurrentUser.Timezone) ?? model.CreateTempPicture($"https://{Request.Host}{Request.PathBase}");
 

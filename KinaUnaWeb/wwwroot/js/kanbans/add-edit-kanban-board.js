@@ -1,5 +1,6 @@
 import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setLocationAutoSuggestList } from '../data-tools-v9.js';
 let currentProgenyId;
+let currentFamilyId;
 let languageId = 1;
 /**
  * Sets up the Progeny select list and adds an event listener to update the tags and categories auto suggest lists when the selected Progeny changes.
@@ -12,6 +13,32 @@ function setupProgenySelectList() {
             await setTagsAutoSuggestList([currentProgenyId], []);
             await setContextAutoSuggestList([currentProgenyId], []);
             await setLocationAutoSuggestList([currentProgenyId], []);
+            const familyIdSelect = document.querySelector('#item-family-id-select');
+            if (familyIdSelect !== null) {
+                currentFamilyId = 0;
+                familyIdSelect.value = '0';
+                // Deselect all items in the selectpicker.
+                familyIdSelect.selectedIndex = -1;
+            }
+            $(".selectpicker").selectpicker('refresh');
+        });
+    }
+}
+function setupFamilySelectList() {
+    const familyIdSelect = document.querySelector('#item-family-id-select');
+    if (familyIdSelect !== null) {
+        familyIdSelect.addEventListener('change', async () => {
+            currentFamilyId = parseInt(familyIdSelect.value);
+            await setTagsAutoSuggestList([], [currentFamilyId]);
+            await setContextAutoSuggestList([], [currentFamilyId]);
+            await setLocationAutoSuggestList([], [currentFamilyId]);
+            const progenyIdSelect = document.querySelector('#item-progeny-id-select');
+            if (progenyIdSelect !== null) {
+                currentProgenyId = 0;
+                progenyIdSelect.value = '0';
+                // Deselect all items in the selectpicker.
+                progenyIdSelect.selectedIndex = -1;
+            }
             $(".selectpicker").selectpicker('refresh');
         });
     }
@@ -95,6 +122,18 @@ function validateInputs() {
                 titleRequiredDiv.classList.add('d-none');
             }
         }
+        const selectEitherProgenyOrFamilyDiv = document.querySelector('select-either-progeny-or-family-div');
+        if ((currentFamilyId > 0 && currentProgenyId > 0) || (currentFamilyId === 0 && currentProgenyId === 0)) {
+            isValid = false;
+            if (selectEitherProgenyOrFamilyDiv) {
+                selectEitherProgenyOrFamilyDiv.classList.remove('d-none');
+            }
+        }
+        else {
+            if (selectEitherProgenyOrFamilyDiv) {
+                selectEitherProgenyOrFamilyDiv.classList.add('d-none');
+            }
+        }
         if (isValid) {
             saveButton.removeAttribute('disabled');
         }
@@ -111,6 +150,7 @@ export async function initializeAddEditKanbanBoard() {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
     setupProgenySelectList();
+    setupFamilySelectList();
     await setTagsAutoSuggestList([currentProgenyId], []);
     await setContextAutoSuggestList([currentProgenyId], []);
     await setLocationAutoSuggestList([currentProgenyId], []);

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -227,6 +228,33 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string userInfosApiPath = "/api/UserInfo/GetAll";
             await _httpClient.GetAsync(userInfosApiPath);
+        }
+
+        /// <summary>
+        /// Retrieves the permission level for the specified user on a given item.
+        /// </summary>
+        /// <remarks>This method uses the current user's authentication context to determine their
+        /// permission level for the specified item. Ensure that the user is authenticated before calling this
+        /// method.</remarks>
+        /// <param name="type">The type of the item, represented as a <see cref="KinaUnaTypes.TimeLineType"/>.</param>
+        /// <param name="itemId">The unique identifier of the item for which the permission level is being retrieved.</param>
+        /// <returns>The <see cref="PermissionLevel"/> indicating the user's access rights to the specified item.  Returns <see
+        /// cref="PermissionLevel.None"/> if the user does not have any permissions or if the request fails.</returns>
+        public async Task<PermissionLevel> GetItemPermissionForUser(KinaUnaTypes.TimeLineType type, int itemId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string accessManagementApiPath = "/api/AccessManagement/GetItemPermissionForUser/";
+
+            HttpResponseMessage accessManagementResponse = await _httpClient.GetAsync(accessManagementApiPath);
+            if (!accessManagementResponse.IsSuccessStatusCode) return PermissionLevel.None;
+
+            string accessManagementResponseString = await accessManagementResponse.Content.ReadAsStringAsync();
+            PermissionLevel permissionLevel = JsonConvert.DeserializeObject<PermissionLevel>(accessManagementResponseString);
+            
+            return permissionLevel;
         }
     }
 }

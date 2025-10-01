@@ -204,7 +204,7 @@ namespace KinaUnaWeb.Controllers
                 kanbanItem.KanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanItem.KanbanBoard.ProgenyId);
             }
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             List<int> progenyIds = [];
@@ -260,7 +260,7 @@ namespace KinaUnaWeb.Controllers
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
             }
 
@@ -376,7 +376,7 @@ namespace KinaUnaWeb.Controllers
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
             }
 
@@ -500,7 +500,7 @@ namespace KinaUnaWeb.Controllers
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
             }
 
@@ -708,7 +708,7 @@ namespace KinaUnaWeb.Controllers
             };
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
                 model.KanbanItem.TodoItem.Progeny = model.CurrentProgeny;
             }
@@ -716,7 +716,7 @@ namespace KinaUnaWeb.Controllers
             model.SetAccessLevelList();
             model.SetStatusList(model.KanbanItem.TodoItem.Status);
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             List<int> progenyIds = [];
@@ -819,7 +819,7 @@ namespace KinaUnaWeb.Controllers
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
                 model.SetProgenyList();
                 model.TodoItem.Progeny = model.CurrentProgeny;
             }
@@ -827,7 +827,7 @@ namespace KinaUnaWeb.Controllers
             model.SetAccessLevelList();
             model.SetStatusList(model.TodoItem.Status);
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
             
             return PartialView("_AssignTodoItemToPartial", model);
