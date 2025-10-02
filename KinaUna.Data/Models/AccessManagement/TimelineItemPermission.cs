@@ -23,32 +23,46 @@ namespace KinaUna.Data.Models.AccessManagement
 
         /// <summary>
         /// The unique identifier for the progeny the timeline item belongs to.
+        /// 0 if FamilyId is set.
         /// </summary>
-        public int ProgenyId { get; set; } // The ID of the progeny the timeline item belongs to. 0 if FamilyId is set.
+        public int ProgenyId { get; set; }
 
-        public int FamilyId { get; set; } // The ID of the family the timeline item belongs to. 0 if ProgenyId is set.
+        /// <summary>
+        /// The unique identifier for the family the timeline item belongs to.
+        /// 0 if ProgenyId is set.
+        /// </summary>
+        public int FamilyId { get; set; }
+
         /// <summary>
         /// Gets or sets the unique identifier for the user.
+        /// Empty string if permission is granted to a group.
         /// </summary>
         [MaxLength(256)]
         public string UserId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the email address associated with the user.
+        /// Gets or sets the email address associated with the user. Empty string if permission is granted to a group.
+        /// Only used as a fallback for UserId, in case we want to invite a user by email.
         /// </summary>
         [MaxLength(256)]
-        public string Email { get; set; } = string.Empty; // Fallback for UserId, in case we want to invite a user by email.
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the group identifier if the permission is granted to a group.
+        /// 0 if permission is granted to a user.
         /// </summary>
-        public int GroupId { get; set; } = 0; // GroupId is 0 if permission is granted to a user.
+        public int GroupId { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the permission level assigned to the user or entity.
         /// </summary>
         public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
 
+        /// <summary>
+        /// Indicates whether the item inherits permissions from a parent entity (e.g., family or progeny).
+        /// </summary>
+        public bool InheritPermissions { get; set; }
+        
         /// <summary>
         /// Gets or sets the date and time when the entity was created.
         /// </summary>

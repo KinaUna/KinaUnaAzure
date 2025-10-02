@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Models.ProgeniesViewModels
 {
@@ -8,7 +9,7 @@ namespace KinaUnaWeb.Models.ProgeniesViewModels
         public int ProgenyId { get; set; }
         public KinaUnaTypes.TimeLineType ItemType { get; set; }
         public int ItemId { get; set; }
-
+        public ItemPermissionsDto ItemPermissions { get; set; } = new ItemPermissionsDto();
         public List<ProgenyPermission> ProgenyPermissionsList { get; set; } = [];
         public List<UserInfo> UserList { get; set; } = [];
         public List<UserGroup> UserGroupsList { get; set; } = [];

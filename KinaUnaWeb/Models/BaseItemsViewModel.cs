@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using KinaUna.Data;
-using KinaUna.Data.Extensions;
 using KinaUna.Data.Models.Family;
 
 namespace KinaUnaWeb.Models;

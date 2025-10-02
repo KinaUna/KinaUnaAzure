@@ -37,20 +37,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             // Special cases, Creator only and Private.
             if (requiredLevel == PermissionLevel.CreatorOnly)
             {
-                if (await HasCreatorOnlyPermission(itemType, itemId, userInfo))
-                {
-                    return true;
-                }
-                return false;
+                return await HasCreatorOnlyPermission(itemType, itemId, userInfo);
             }
 
             if (requiredLevel == PermissionLevel.Private)
             {
-                if (await HasPrivatePermission(itemType, itemId, userInfo))
-                {
-                    return true;
-                }
-                return false;
+                return await HasPrivatePermission(itemType, itemId, userInfo);
             }
             
             TimelineItemPermission itemPermission = await GetItemPermissionForUser(itemType, itemId, userInfo);
@@ -77,8 +69,35 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 PermissionLevel = PermissionLevel.None
             };
-
+            
             PermissionLevel highestPermission = PermissionLevel.None;
+
+            // Check for inherited permissions.
+            TimelineItemPermission inheritedPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp => tp.InheritPermissions && tp.TimelineType == itemType && tp.ItemId == itemId);
+            if (inheritedPermission != null)
+            {
+                if (inheritedPermission.ProgenyId > 0)
+                {
+                    ProgenyPermission progenyPermission = await GetProgenyPermissionForUser(inheritedPermission.ProgenyId, userInfo);
+                    if (progenyPermission.PermissionLevel > highestPermission)
+                    {
+                        highestPermission = progenyPermission.PermissionLevel;
+                        resultPermission = inheritedPermission;
+
+                    }
+                }
+
+                if (inheritedPermission.FamilyId > 0)
+                {
+                    FamilyPermission familyPermission = await GetFamilyPermissionForUser(inheritedPermission.FamilyId, userInfo);
+                    if (familyPermission.PermissionLevel > highestPermission)
+                    {
+                        highestPermission = familyPermission.PermissionLevel;
+                        resultPermission = inheritedPermission;
+                    }
+                }
+            }
+            
             // Check direct user permissions.
             TimelineItemPermission timelineItemPermission = await progenyDbContext.TimelineItemPermissionsDb
                 .AsNoTracking()
@@ -118,16 +137,15 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             foreach (TimelineItemPermission permission in groupPermissions)
             {
                 bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
-                if (isMember && permission.PermissionLevel > highestPermission)
-                {
-                    highestPermission = permission.PermissionLevel;
-                    resultPermission = permission;
-                }
+                if (!isMember || permission.PermissionLevel <= highestPermission) continue;
+
+                highestPermission = permission.PermissionLevel;
+                resultPermission = permission;
             }
 
             return resultPermission;
         }
-
+        
         /// <summary>
         /// Determines whether a user has permission to access an item that is restricted to its creator only.
         /// </summary>
@@ -293,6 +311,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 return false;
             }
+
             TimeLineItem item = await progenyDbContext.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(ti => ti.ItemId == itemId.ToString() && ti.ItemType == (int)itemType);
             if (item != null)
             {
@@ -1371,6 +1390,96 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 .SingleOrDefaultAsync(pp => pp.FamilyId == familyId && pp.GroupId == userGroupId);
 
             return familyPermission;
+        }
+
+        /// <summary>
+        /// Gets the highest permission level for a specific progeny and user by checking both direct user permissions and group permissions.
+        /// </summary>
+        /// <param name="progenyId">The unique identifier of the progeny.</param>
+        /// <param name="userInfo">The information of the user whose permissions are being checked.</param>
+        /// <returns></returns>
+        private async Task<ProgenyPermission> GetProgenyPermissionForUser(int progenyId, UserInfo userInfo)
+        {
+            PermissionLevel highestPermission = PermissionLevel.None;
+            ProgenyPermission resultPermission = new()
+            {
+                PermissionLevel = PermissionLevel.None
+            };
+            // Check direct user permissions.
+            ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb
+                .AsNoTracking()
+                .SingleOrDefaultAsync(pp => pp.UserId == userInfo.UserId && pp.ProgenyId == progenyId);
+
+            if (progenyPermission != null)
+            {
+                highestPermission = progenyPermission.PermissionLevel;
+                resultPermission = progenyPermission;
+            }
+
+            // Check group permissions.
+            List<ProgenyPermission> groupPermissions = await progenyDbContext.ProgenyPermissionsDb
+                .AsNoTracking()
+                .Where(pp => pp.GroupId > 0 && pp.ProgenyId == progenyId && pp.PermissionLevel < PermissionLevel.CreatorOnly)
+                .ToListAsync();
+            foreach (ProgenyPermission permission in groupPermissions)
+            {
+                bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
+                if (!isMember || permission.PermissionLevel <= highestPermission) continue;
+
+                highestPermission = permission.PermissionLevel;
+                resultPermission = permission;
+            }
+
+            return resultPermission;
+        }
+
+        /// <summary>
+        /// Retrieves the highest permission level for a user within a specified family, considering both direct user
+        /// permissions and group memberships.
+        /// </summary>
+        /// <remarks>This method first checks for direct permissions assigned to the user for the
+        /// specified family. If no direct permissions are found, it evaluates the user's group memberships and their
+        /// associated permissions. Group permissions with a <see cref="PermissionLevel"/> of <see
+        /// cref="PermissionLevel.CreatorOnly"/> or higher are excluded from consideration.</remarks>
+        /// <param name="familyId">The unique identifier of the family for which the permissions are being retrieved.</param>
+        /// <param name="userInfo">An object containing information about the user whose permissions are being evaluated.</param>
+        /// <returns>A <see cref="FamilyPermission"/> object representing the highest permission level the user has within the
+        /// specified family. If the user has no permissions, the returned object will have a <see
+        /// cref="PermissionLevel"/> of <see cref="PermissionLevel.None"/>.</returns>
+        private async Task<FamilyPermission> GetFamilyPermissionForUser(int familyId, UserInfo userInfo)
+        {
+            PermissionLevel highestPermission = PermissionLevel.None;
+            FamilyPermission resultPermission = new()
+            {
+                PermissionLevel = PermissionLevel.None
+            };
+            // Check direct user permissions.
+            FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb
+                .AsNoTracking()
+                .SingleOrDefaultAsync(fp => fp.UserId == userInfo.UserId && fp.FamilyId == familyId);
+
+            if (familyPermission != null)
+            {
+                highestPermission = familyPermission.PermissionLevel;
+                resultPermission = familyPermission;
+            }
+
+            // Check group permissions.
+            List<FamilyPermission> groupPermissions = await progenyDbContext.FamilyPermissionsDb
+                .AsNoTracking()
+                .Where(fp => fp.GroupId > 0 && fp.FamilyId == familyId && fp.PermissionLevel < PermissionLevel.CreatorOnly)
+                .ToListAsync();
+            foreach (FamilyPermission permission in groupPermissions)
+            {
+                bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
+                if (isMember && permission.PermissionLevel > highestPermission)
+                {
+                    highestPermission = permission.PermissionLevel;
+                    resultPermission = permission;
+                }
+            }
+
+            return resultPermission;
         }
 
         /// <summary>

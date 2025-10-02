@@ -229,41 +229,46 @@ namespace KinaUnaWeb.Controllers
             return PartialView("_DeletedAccessPartial", model);
         }
 
-        public async Task<IActionResult> ProgenyItemPermissionsModal(int progenyId)
+        [HttpGet]
+        public async Task<IActionResult> ProgenyItemPermissionsModal(int progenyId, int itemType, int itemId)
         {
-            ProgenyItemPermissionsViewModel model = new();
-            model.UserGroupsList = await userGroupsHttpClient.GetUserGroupsForProgeny(progenyId);
+            ProgenyItemPermissionsViewModel model = new()
+            {
+                ItemId = itemId,
+                ItemType = (KinaUnaTypes.TimeLineType)itemType,
+                UserGroupsList = await userGroupsHttpClient.GetUserGroupsForProgeny(progenyId),
+                ProgenyPermissionsList = await progenyHttpClient.GetProgenyPermissionsList(progenyId)
+            };
 
-            model.ProgenyPermissionsList = await progenyHttpClient.GetProgenyPermissionsList(progenyId);
             foreach (ProgenyPermission permission in model.ProgenyPermissionsList)
             {
-                if (!string.IsNullOrWhiteSpace(permission.UserId))
-                {
-                    UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
-                    model.UserList.Add(userInfo);
-                }
+                if (string.IsNullOrWhiteSpace(permission.UserId)) continue;
+                UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                model.UserList.Add(userInfo);
             }
 
             return PartialView("_ProgenyItemPermissionsPartial", model);
         }
 
-        public async Task<IActionResult> FamilyItemPermissionsModal(int familyId)
+        [HttpGet]
+        public async Task<IActionResult> FamilyItemPermissionsModal(int familyId, int itemType, int itemId)
         {
-            FamilyItemPermissionsViewModel model = new();
+            FamilyItemPermissionsViewModel model = new()
+            {
+                ItemId = itemId,
+                ItemType = (KinaUnaTypes.TimeLineType)itemType,
+                UserGroupsList = await userGroupsHttpClient.GetUserGroupsForFamily(familyId),
+                FamilyPermissionsList = await familiesHttpClient.GetFamilyPermissionsList(familyId)
+            };
 
-            model.UserGroupsList = await userGroupsHttpClient.GetUserGroupsForFamily(familyId);
-
-            model.FamilyPermissionsList = await familiesHttpClient.GetFamilyPermissionsList(familyId);
             foreach(FamilyPermission permission in model.FamilyPermissionsList)
             {
-                if (!string.IsNullOrWhiteSpace(permission.UserId))
-                {
-                    UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
-                    model.UserList.Add(userInfo);
-                }
+                if (string.IsNullOrWhiteSpace(permission.UserId)) continue;
+                UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                model.UserList.Add(userInfo);
             }
 
-            return PartialView("_ProgenyItemPermissionsPartial", model);
+            return PartialView("_FamilyItemPermissionsPartial", model);
         }
 
     }
