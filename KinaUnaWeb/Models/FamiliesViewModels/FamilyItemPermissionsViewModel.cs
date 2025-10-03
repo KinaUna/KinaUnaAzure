@@ -40,10 +40,22 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
             IsUserAccessManager = FamilyPermissionsList.Count > 0; // If the user has access to the list, they are an access manager.
             PermissionTypeSelectListItems = new List<SelectListItem>
             {
-                new() { Value = "0", Text = "Inherit" },
-                new() { Value = "1", Text = "Only me" },
-                new() { Value = "2", Text = "Private" },
+                new() { Value = "0", Text = "Inherit" }
             };
+
+            // Only add "Only me" if the item is new (ItemId == 0) or if it is already set to "Only me".
+            // If a user wants to change an existing item to Only Me they will have to copy it, set the copy to Only Me and delete the original.
+            if (ItemId == 0 || selectedType == 1)
+            {
+                PermissionTypeSelectListItems.Add(new() { Value = "1", Text = "Only me" });
+            }
+
+            // Only add "Private" if the item is new (ItemId == 0) or if it is already set to "Private".
+            // If a user wants to change an existing item to Private they will have to copy it, set the copy to Private and delete the original.
+            if (ItemId == 0 || selectedType == 2)
+            {
+                PermissionTypeSelectListItems.Add(new() { Value = "2", Text = "Private" });
+            }
 
             if (IsUserAccessManager)
             {
