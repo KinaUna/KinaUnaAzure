@@ -172,5 +172,4 @@ export function setPermissions(): void {
 
         itemPermissionsListAsStringInput.value = JSON.stringify(timelineItemPermissionsList);
     }
-        
 }

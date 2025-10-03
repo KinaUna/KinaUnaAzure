@@ -37,9 +37,9 @@ namespace KinaUnaWeb.Models.ProgeniesViewModels
         {
             IsUserAccessManager = ProgenyPermissionsList.Count > 0; // If the user has access to the list, they are an access manager.
             PermissionTypeSelectListItems = new List<SelectListItem>{
-            new SelectListItem { Value = "0", Text = "Inherit" },
-            new SelectListItem { Value = "1", Text = "Only me" },
-            new SelectListItem { Value = "2", Text = "Private" },
+            new() { Value = "0", Text = "Inherit" },
+            new() { Value = "1", Text = "Only me" },
+            new() { Value = "2", Text = "Private" },
             };
 
             if (IsUserAccessManager)
@@ -59,6 +59,12 @@ namespace KinaUnaWeb.Models.ProgeniesViewModels
 
         public List<SelectListItem> CreatePermissionLevelsSelectListItems(int selectedLevel)
         {
+            // We do not want to have Add, CreatorOnly or Private as options in the select list.
+            if ((PermissionLevel)selectedLevel == PermissionLevel.Add || (PermissionLevel)selectedLevel >= PermissionLevel.CreatorOnly)
+            {
+                selectedLevel = (int)PermissionLevel.View;
+            }
+
             List<SelectListItem> permissionLevels = [];
             foreach (SelectListItem item in PermissionLevelsSelectListItems)
             {
