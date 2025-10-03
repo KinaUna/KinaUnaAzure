@@ -7,6 +7,8 @@
     string assignedToString = await LocaleManager.GetTranslation("Assign kanban board to:", PageNames.Todos, Model.LanguageId);
     const int changedItemType = (int)KinaUnaTypes.TimeLineType.KanbanBoard;
 }
+<div class="d-none" id="item-progeny-id-div" data-progeny-id="@Model.KanbanBoard.ProgenyId"></div>
+<div class="d-none" id="item-family-id-div" data-progeny-id="@Model.KanbanBoard.FamilyId"></div>
 <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemType" data-changed-item-item-id="@Model.KanbanBoard.KanbanBoardId"></div>
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
@@ -79,9 +81,10 @@
                     <input id="tag-list" type="text" asp-for="KanbanBoard.Tags" value="@Model.KanbanBoard.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
-            
+            <div id="item-permissions-editor-div" class="d-none"></div>
             <input asp-for="KanbanBoard.UId" value="@Model.KanbanBoard.UId" type="hidden" />
             <input asp-for="KanbanBoard.KanbanBoardId" value="@Model.KanbanBoard.KanbanBoardId" type="hidden" />
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden" />
             <div class="space-20"></div>
             <div class="form-group">
                 <div class="col-auto control-label"></div>

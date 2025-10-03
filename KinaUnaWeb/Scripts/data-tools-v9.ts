@@ -18,6 +18,34 @@ export function getCurrentProgenyId(): number {
     return 0;
 }
 
+/** Gets the Id of the current item's Progeny from the item-progeny-id-div's data-progeny-id attribute's value.
+  * @returns The Progeny's Id number.
+  */
+export function getCurrentItemProgenyId(): number {
+    const progenyIdDiv = document.querySelector<HTMLDivElement>('#item-progeny-id-div');
+    if (progenyIdDiv !== null) {
+        const progenyIdDivData = progenyIdDiv.dataset.progenyId;
+        if (progenyIdDivData) {
+            return parseInt(progenyIdDivData);
+        }
+    }
+    return 0;
+}
+
+/** Gets the Id of the current item's Progeny from the item-progeny-id-div's data-progeny-id attribute's value.
+  * @returns The Progeny's Id number.
+  */
+export function getCurrentItemFamilyId(): number {
+    const familyIdDiv = document.querySelector<HTMLDivElement>('#item-family-id-div');
+    if (familyIdDiv !== null) {
+        const familyIdDivData = familyIdDiv.dataset.familyId;
+        if (familyIdDivData) {
+            return parseInt(familyIdDivData);
+        }
+    }
+    return 0;
+}
+
 /** Gets the Id for the current language used from the language-id-div's data-current-locale attribute's value.
   * @returns The Progeny's Id number.
   */

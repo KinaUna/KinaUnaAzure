@@ -5,6 +5,8 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Add kanban board", PageNames.Todos, Model.LanguageId);
     string addKanbanForString = await LocaleManager.GetTranslation("Add kanban board for:", PageNames.Todos, Model.LanguageId);
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.KanbanBoard;
+
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
@@ -78,7 +80,9 @@
                     <input id="tag-list" type="text" asp-for="KanbanBoard.Tags" value="@Model.KanbanBoard.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
-            
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.KanbanBoard.KanbanBoardId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden" />
             <div class="space-20"></div>
             <div class="form-group">
                 <div class="col-auto control-label"></div>

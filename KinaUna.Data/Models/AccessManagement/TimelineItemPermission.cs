@@ -61,8 +61,8 @@ namespace KinaUna.Data.Models.AccessManagement
         /// <summary>
         /// Indicates whether the item inherits permissions from a parent entity (e.g., family or progeny).
         /// </summary>
-        public bool InheritPermissions { get; set; }
-        
+        public bool InheritPermissions { get; set; } = true;
+
         /// <summary>
         /// Gets or sets the date and time when the entity was created.
         /// </summary>

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -19,7 +21,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public int CopyTodoItemsOption { get; set; } = 0;
         public bool DeleteTodoItems { get; set; }
-
+        
         public KanbanBoardViewModel()
         {
             ProgenyList = [];
@@ -80,7 +82,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 AccessLevel = KanbanBoard.AccessLevel,
                 Tags = KanbanBoard.Tags,
                 Context = KanbanBoard.Context,
-                IsDeleted = false
+                IsDeleted = false,
+                ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };
 
             kanbanBoard.SetColumnsListFromColumns();

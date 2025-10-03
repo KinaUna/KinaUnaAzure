@@ -7,7 +7,6 @@ using KinaUnaWeb.Models.ProgeniesViewModels;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc;
-using Syncfusion.EJ2.FileManager.Base;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -230,46 +229,177 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ProgenyItemPermissionsModal(int progenyId, int itemType, int itemId)
+        public async Task<IActionResult> ItemPermissionsModal([FromBody] TimeLineItem timelineItem)
         {
-            ProgenyItemPermissionsViewModel model = new()
-            {
-                ItemId = itemId,
-                ItemType = (KinaUnaTypes.TimeLineType)itemType,
-                UserGroupsList = await userGroupsHttpClient.GetUserGroupsForProgeny(progenyId),
-                ProgenyPermissionsList = await progenyHttpClient.GetProgenyPermissionsList(progenyId)
-            };
+            int.TryParse(timelineItem.ItemId, out int itemId);
+            KinaUnaTypes.TimeLineType itemType = (KinaUnaTypes.TimeLineType)timelineItem.ItemType;
 
-            foreach (ProgenyPermission permission in model.ProgenyPermissionsList)
+            if (timelineItem.ProgenyId > 0)
             {
-                if (string.IsNullOrWhiteSpace(permission.UserId)) continue;
-                UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
-                model.UserList.Add(userInfo);
+                ProgenyItemPermissionsViewModel model = new()
+                {
+                    LanguageId = Request.GetLanguageIdFromCookie(),
+                    ItemId = itemId,
+                    ItemType = itemType,
+                    ProgenyId = timelineItem.ProgenyId,
+                    UserGroupsList = await userGroupsHttpClient.GetUserGroupsForProgeny(timelineItem.ProgenyId),
+                    ProgenyPermissionsList = await progenyHttpClient.GetProgenyPermissionsList(timelineItem.ProgenyId)
+                };
+                model.SetInitialPermissionLevelsSelectListItems();
+                
+                if (model.ItemId > 0)
+                {
+                    if (model.IsUserAccessManager)
+                    {
+                        model.ItemPermissionsList = await userAccessHttpClient.GetTimelineItemPermissionsList(itemType, itemId);
+                        int permissionType = 0;
+                        foreach (TimelineItemPermission permission in model.ItemPermissionsList)
+                        {
+                            if (permission.InheritPermissions)
+                            {
+                                permissionType = 0;
+                            }
+                            else
+                                permissionType = permission.PermissionLevel switch
+                                {
+                                    PermissionLevel.CreatorOnly => 1,
+                                    PermissionLevel.Private => 2,
+                                    _ => 3
+                                };
+
+                            if (string.IsNullOrWhiteSpace(permission.UserId) || model.UserList.Exists(u => u.UserId == permission.UserId))
+                            {
+                                continue;
+                            }
+
+                            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                            model.UserList.Add(userInfo);
+                        }
+                        model.SetPermissionTypeSelectListItems(permissionType);
+                    }
+                }
+                else
+                {
+                    model.SetPermissionTypeSelectListItems(0);
+                }
+
+                foreach (ProgenyPermission permission in model.ProgenyPermissionsList)
+                {
+                    if (string.IsNullOrWhiteSpace(permission.UserId) || model.UserList.Exists(u => u.UserId == permission.UserId))
+                    {
+                        continue;
+                    }
+                    UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                    model.UserList.Add(userInfo);
+                }
+
+                foreach (UserGroup group in model.UserGroupsList)
+                {
+                    foreach (UserGroupMember member in group.Members)
+                    {
+                        if (string.IsNullOrWhiteSpace(member.UserId) || model.UserList.Exists(u => u.UserId == member.UserId))
+                        {
+                            continue;
+                        }
+                        UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(member.UserId);
+                        model.UserList.Add(userInfo);
+                    }
+                }
+                return PartialView("_ProgenyItemPermissionsPartial", model);
             }
-
-            return PartialView("_ProgenyItemPermissionsPartial", model);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> FamilyItemPermissionsModal(int familyId, int itemType, int itemId)
-        {
-            FamilyItemPermissionsViewModel model = new()
+            else
             {
-                ItemId = itemId,
-                ItemType = (KinaUnaTypes.TimeLineType)itemType,
-                UserGroupsList = await userGroupsHttpClient.GetUserGroupsForFamily(familyId),
-                FamilyPermissionsList = await familiesHttpClient.GetFamilyPermissionsList(familyId)
-            };
+                FamilyItemPermissionsViewModel model = new()
+                {
+                    LanguageId = Request.GetLanguageIdFromCookie(),
+                    ItemId = itemId,
+                    ItemType = itemType,
+                    FamilyId = timelineItem.FamilyId,
+                    UserGroupsList = await userGroupsHttpClient.GetUserGroupsForFamily(timelineItem.FamilyId),
+                    FamilyPermissionsList = await familiesHttpClient.GetFamilyPermissionsList(timelineItem.FamilyId)
+                };
+                model.SetInitialPermissionLevelsSelectListItems();
 
-            foreach(FamilyPermission permission in model.FamilyPermissionsList)
-            {
-                if (string.IsNullOrWhiteSpace(permission.UserId)) continue;
-                UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
-                model.UserList.Add(userInfo);
+                if (model.ItemId > 0)
+                {
+                    if (model.IsUserAccessManager)
+                    {
+                        model.ItemPermissionsList = await userAccessHttpClient.GetTimelineItemPermissionsList(itemType, itemId);
+                        int permissionType = 0;
+                        foreach (TimelineItemPermission permission in model.ItemPermissionsList)
+                        {
+                            if (permission.InheritPermissions)
+                            {
+                                permissionType = 0;
+                            }
+                            else
+                                permissionType = permission.PermissionLevel switch
+                                {
+                                    PermissionLevel.CreatorOnly => 1,
+                                    PermissionLevel.Private => 2,
+                                    _ => 3
+                                };
+
+                            if (string.IsNullOrWhiteSpace(permission.UserId) || model.UserList.Exists(u => u.UserId == permission.UserId))
+                            {
+                                continue;
+                            }
+
+                            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                            model.UserList.Add(userInfo);
+                        }
+
+                        model.SetPermissionTypeSelectListItems(permissionType);
+                    }
+                }
+                else
+                {
+                    model.SetPermissionTypeSelectListItems(0);
+                }
+
+                if (model.ItemId > 0)
+                {
+                    if (model.IsUserAccessManager)
+                    {
+                        model.ItemPermissionsList = await userAccessHttpClient.GetTimelineItemPermissionsList(itemType, itemId);
+                        foreach (TimelineItemPermission permission in model.ItemPermissionsList)
+                        {
+                            if (string.IsNullOrWhiteSpace(permission.UserId) || model.UserList.Exists(u => u.UserId == permission.UserId))
+                            {
+                                continue;
+                            }
+                            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                            model.UserList.Add(userInfo);
+                        }
+                    }
+                }
+
+                foreach (FamilyPermission permission in model.FamilyPermissionsList)
+                {
+                    if (string.IsNullOrWhiteSpace(permission.UserId) || model.UserList.Exists(u => u.UserId == permission.UserId))
+                    {
+                        continue;
+                    }
+                    UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                    model.UserList.Add(userInfo);
+                }
+
+                foreach (UserGroup group in model.UserGroupsList)
+                {
+                    foreach (UserGroupMember member in group.Members)
+                    {
+                        if (string.IsNullOrWhiteSpace(member.UserId) || model.UserList.Exists(u => u.UserId == member.UserId))
+                        {
+                            continue;
+                        }
+
+                        UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(member.UserId);
+                        model.UserList.Add(userInfo);
+                    }
+                }
+
+                return PartialView("_FamilyItemPermissionsPartial", model);
             }
-
-            return PartialView("_FamilyItemPermissionsPartial", model);
         }
-
     }
 }

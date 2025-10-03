@@ -298,6 +298,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\TypeScriptModels\AccessManagement\" />
     <Folder Include="wwwroot\lib\signalr\" />
   </ItemGroup>
 

@@ -1,8 +1,11 @@
-﻿import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList } from '../data-tools-v9.js';
+﻿import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList, getCurrentItemProgenyId, getCurrentItemFamilyId } from '../data-tools-v9.js';
+import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 
 let currentProgenyId: number;
 let currentFamilyId: number;
 let languageId = 1;
+let timelineItem = new TimelineItem();
 
 /**
  * Sets up the Progeny select list and adds an event listener to update the tags and categories auto suggest lists when the selected Progeny changes.
@@ -162,9 +165,10 @@ function validateInputs(): void {
  * Initializes the Add/Edit KanbanBoard page by setting up the progeny select list, tags and context auto suggest lists, and the Rich Text Editor.
  * @returns {Promise<void>} A promise that resolves when the initialization is complete.
  * */
-export async function initializeAddEditKanbanBoard(): Promise<void> {
+export async function initializeAddEditKanbanBoard(itemId: string): Promise<void> {
     languageId = getCurrentLanguageId();
-    currentProgenyId = getCurrentProgenyId();
+    currentProgenyId = getCurrentItemProgenyId();
+    currentFamilyId = getCurrentItemFamilyId();
 
     setupProgenySelectList();
     setupFamilySelectList();
@@ -180,8 +184,16 @@ export async function initializeAddEditKanbanBoard(): Promise<void> {
         titleInput.addEventListener('input', validateInputs);
     }
 
-    validateInputs();
+    
+    timelineItem.itemId = itemId;
+    timelineItem.itemType = TimeLineType.KanbanBoard;
+    timelineItem.progenyId = currentProgenyId;
+    timelineItem.familyId = currentFamilyId;
 
+    await renderItemPermissionsEditor(timelineItem);
+
+    validateInputs();
+    
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

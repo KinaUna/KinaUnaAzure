@@ -1,13 +1,14 @@
-﻿using System;
-using KinaUna.Data.Contexts;
+﻿using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.Family;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
-using KinaUna.Data.Models.Family;
-using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
@@ -451,6 +452,67 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         }
 
         /// <summary>
+        /// Adds permissions to a timeline item for specified users or groups.
+        /// </summary>
+        /// <remarks>This method processes each permission in the <paramref
+        /// name="itemPermissionsDtoList"/> and associates it with the specified timeline item. Permissions can be
+        /// granted to individual users or groups based on the provided identifiers in the <see
+        /// cref="ItemPermissionDto"/> objects. If a permission references a non-existent progeny or family permission,
+        /// it will be skipped.</remarks>
+        /// <param name="itemType">The type of the timeline item to which permissions will be added.</param>
+        /// <param name="itemId">The unique identifier of the timeline item.</param>
+        /// <param name="progenyId">The unique identifier of the progeny associated with the timeline item.</param>
+        /// <param name="familyId">The unique identifier of the family associated with the timeline item.</param>
+        /// <param name="itemPermissionsDtoList">A list of <see cref="ItemPermissionDto"/> objects representing the permissions to be added.</param>
+        /// <param name="currentUserInfo">The information about the current user performing the operation.</param>
+        /// <returns></returns>
+        public async Task AddItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo)
+        {
+            foreach (ItemPermissionDto permissionDto in itemPermissionsDtoList)
+            {
+                string userId = string.Empty;
+                string email = string.Empty;
+                int groupId = 0;
+                if (permissionDto.ProgenyPermissionId > 0)
+                {
+                    ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyPermissionId == permissionDto.ProgenyPermissionId);
+                    if (progenyPermission == null)
+                    {
+                        continue;
+                    }
+                    userId = progenyPermission.UserId;
+                    email = progenyPermission.Email;
+                    groupId = progenyPermission.GroupId;
+                }
+                if (permissionDto.FamilyPermissionId > 0)
+                {
+                    FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(fp => fp.FamilyPermissionId == permissionDto.FamilyPermissionId);
+                    if (familyPermission == null)
+                    {
+                        continue;
+                    }
+                    userId = familyPermission.UserId;
+                    email = familyPermission.Email;
+                    groupId = familyPermission.GroupId;
+                }
+                TimelineItemPermission timelineItemPermission = new()
+                {
+                    ItemId = itemId,
+                    TimelineType = itemType,
+                    ProgenyId = progenyId,
+                    FamilyId = familyId,
+                    UserId = userId,
+                    Email = email,
+                    GroupId = groupId,
+                    PermissionLevel = permissionDto.PermissionLevel,
+                    InheritPermissions = permissionDto.InheritPermissions
+                };
+                _ = await GrantItemPermission(timelineItemPermission, currentUserInfo);
+            }
+        }
+
+
+        /// <summary>
         /// Grants a specified permission to a user or group for a timeline item, if the current user has the necessary
         /// access rights.
         /// </summary>
@@ -466,12 +528,28 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         public async Task<TimelineItemPermission> GrantItemPermission(TimelineItemPermission timelineItemPermission, UserInfo currentUserInfo)
         {
             // Check if the current user can grant the specified permission level.
+            bool canGrantAccess = false;
             if (timelineItemPermission.ProgenyId > 0)
             {
                 if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
                 {
-                    if(timelineItemPermission.PermissionLevel != PermissionLevel.CreatorOnly){
-                        return null; // Todo: Use result object instead.
+                    if(timelineItemPermission.PermissionLevel == PermissionLevel.CreatorOnly){
+                        canGrantAccess = true;
+                    }
+                    // If the user is not an access manager, they can only grant access for admins and view access for themselves.
+                    if (timelineItemPermission.UserId == currentUserInfo.UserId)
+                    {
+                        canGrantAccess = true;
+                        timelineItemPermission.PermissionLevel = PermissionLevel.View;
+                    }
+                    else
+                    {
+                        // If the user being assigned to is admin, add the permission.
+                        if (await IsUserAccessManager(timelineItemPermission.UserId, PermissionType.Progeny, timelineItemPermission.ProgenyId))
+                        {
+                            canGrantAccess = true;
+                            timelineItemPermission.PermissionLevel = PermissionLevel.Admin;
+                        }
                     }
                 }
             }
@@ -479,27 +557,56 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
                 {
-                    if (timelineItemPermission.PermissionLevel != PermissionLevel.CreatorOnly)
+                    if (timelineItemPermission.PermissionLevel == PermissionLevel.CreatorOnly)
                     {
-                        return null; // Todo: Use result object instead.
+                        canGrantAccess = true;
+                    }
+
+                    // If the user is not an access manager, they can only grant access for admins and view access for themselves.
+                    if (timelineItemPermission.UserId == currentUserInfo.UserId)
+                    {
+                        canGrantAccess = true;
+                        timelineItemPermission.PermissionLevel = PermissionLevel.View;
+                    }
+                    else
+                    {
+                        // If the user being assigned to is admin, add the permission.
+                        if (await IsUserAccessManager(timelineItemPermission.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
+                        {
+                            canGrantAccess = true;
+                            timelineItemPermission.PermissionLevel = PermissionLevel.Admin;
+                        }
                     }
                 }
             }
+            if (!canGrantAccess)
+            {
+                return null; // Todo: Use result object instead.
+            }
 
             // Check if the permission exists.
-            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
-                .SingleOrDefaultAsync(tp => 
-                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.UserId == timelineItemPermission.UserId);
-            
-            if (existingPermission == null)
+            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.Email.Length > 4 && tp.Email == timelineItemPermission.Email);
+
+            // If not found by email, try userId and groupId.
+            if (existingPermission == null && !string.IsNullOrWhiteSpace(timelineItemPermission.UserId))
+            {
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                    .SingleOrDefaultAsync(tp =>
+                        tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.UserId == timelineItemPermission.UserId);
+                
+            }
+
+            if (existingPermission == null && timelineItemPermission.GroupId > 0)
             {
                 existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
-                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.Email == timelineItemPermission.Email);
-                if (existingPermission == null)
-                {
-                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
-                        tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.GroupId == timelineItemPermission.GroupId);
-                }
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.GroupId == timelineItemPermission.GroupId);
+            }
+
+            if (existingPermission == null && timelineItemPermission.InheritPermissions)
+            {
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.InheritPermissions == timelineItemPermission.InheritPermissions);
             }
 
             if (existingPermission != null)
@@ -508,6 +615,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 // Use UpdateItemPermission to change existing permissions.
                 return null; // Todo: Use result object instead.
             }
+
 
             timelineItemPermission.CreatedBy = currentUserInfo.UserId;
             timelineItemPermission.CreatedTime = DateTime.UtcNow;
@@ -518,7 +626,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             await progenyDbContext.SaveChangesAsync();
             
             await permissionAuditLogService.AddTimelineItemPermissionAuditLogEntry(PermissionAction.Add, timelineItemPermission, currentUserInfo);
-            
+            // If inherited, remove all other permissions for this item?
+
             return timelineItemPermission; // Todo: Use result object instead.
         }
 
@@ -535,19 +644,29 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         {
             // Check if the permission exists.
             TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
-                .SingleOrDefaultAsync(tp =>
-                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.UserId == timelineItemPermission.UserId);
+                .SingleOrDefaultAsync(tp => tp.TimelineItemPermissionId == timelineItemPermission.TimelineItemPermissionId);
 
-            if (existingPermission == null)
+            // If not found by email, try userId and groupId.
+            if (existingPermission == null && !string.IsNullOrWhiteSpace(timelineItemPermission.UserId))
+            {
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                    .SingleOrDefaultAsync(tp =>
+                        tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.UserId == timelineItemPermission.UserId);
+
+            }
+
+            if (existingPermission == null && timelineItemPermission.GroupId > 0)
             {
                 existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
-                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.Email == timelineItemPermission.Email);
-                if (existingPermission == null)
-                {
-                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
-                        tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.GroupId == timelineItemPermission.GroupId);
-                }
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.GroupId == timelineItemPermission.GroupId);
             }
+
+            if (existingPermission == null && timelineItemPermission.InheritPermissions)
+            {
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.InheritPermissions == timelineItemPermission.InheritPermissions);
+            }
+
             if (existingPermission == null)
             {
                 return false; // Todo: Use result object instead.
@@ -612,18 +731,31 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         {
             // Check if the permission exists.
             TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
-                .SingleOrDefaultAsync(tp =>
-                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.UserId == timelineItemPermission.UserId);
+                .SingleOrDefaultAsync(tp => tp.TimelineItemPermissionId == timelineItemPermission.TimelineItemPermissionId);
 
-            if (existingPermission == null)
+            if (existingPermission == null && !string.IsNullOrWhiteSpace(timelineItemPermission.Email))
             {
                 existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
-                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.Email == timelineItemPermission.Email);
-                if (existingPermission == null)
-                {
-                    existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
-                        tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.GroupId == timelineItemPermission.GroupId);
-                }
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.Email.Length > 4 && tp.Email == timelineItemPermission.Email);
+                
+            }
+
+            if (existingPermission == null && !string.IsNullOrWhiteSpace(timelineItemPermission.UserId))
+            {
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                    .SingleOrDefaultAsync(tp =>
+                        tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.UserId == timelineItemPermission.UserId);
+
+            }
+            if (existingPermission == null && timelineItemPermission.GroupId > 0)
+            {
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.GroupId == timelineItemPermission.GroupId);
+            }
+            if (existingPermission == null && timelineItemPermission.InheritPermissions)
+            {
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                    tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.InheritPermissions == timelineItemPermission.InheritPermissions);
             }
 
             if (existingPermission == null)
@@ -654,7 +786,6 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
                 {
                     return null; // Todo: Use result object instead.
-                    
                 }
             }
             else
@@ -678,6 +809,62 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             await permissionAuditLogService.UpdatePermissionAuditLogEntry(logEntry);
 
             return existingPermission; // Todo: Use result object instead.
+        }
+
+        /// <summary>
+        /// Retrieves a list of permissions for a specific timeline item that the current user has access to view.
+        /// </summary>
+        /// <param name="itemType">The type of the timeline item, represented as a <see cref="KinaUnaTypes.TimeLineType"/> enumeration.</param>
+        /// <param name="itemId">The unique identifier of the timeline item.</param>
+        /// <param name="currentUserInfo">The information of the current user requesting the permissions.</param>
+        /// <returns>List of <see cref="TimelineItemPermission"/> objects representing the permissions for the specified timeline item that the current user has access to view.</returns>
+        public async Task<List<TimelineItemPermission>> GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo currentUserInfo)
+        {
+            List<TimelineItemPermission> allPermissionsForItem = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                .Where(tp => tp.TimelineType == itemType && tp.ItemId == itemId).ToListAsync();
+
+            List<TimelineItemPermission> accessibleItemPermissions = [];
+
+            foreach (TimelineItemPermission permission in allPermissionsForItem)
+            {
+                if (permission.PermissionLevel == PermissionLevel.CreatorOnly)
+                {
+                    // CreatorOnly permissions can be viewed by the creator of the item.
+                    if (await HasCreatorOnlyPermission(itemType, itemId, currentUserInfo))
+                    {
+                        accessibleItemPermissions.Add(permission);
+                    }
+                }
+                if (permission.PermissionLevel == PermissionLevel.Private)
+                {
+                    // Private permissions can be viewed by the owner of the progeny.
+                    if (await HasPrivatePermission(itemType, itemId, currentUserInfo))
+                    {
+                        accessibleItemPermissions.Add(permission);
+                    }
+                }
+                
+                if (permission.PermissionLevel < PermissionLevel.CreatorOnly)
+                {
+                    // Check if the current user can view the specified permission level.
+                    if (permission.ProgenyId > 0)
+                    {
+                        if (await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, permission.ProgenyId))
+                        {
+                            accessibleItemPermissions.Add(permission);
+                        }
+                    }
+                    else
+                    {
+                        if (await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, permission.FamilyId))
+                        {
+                            accessibleItemPermissions.Add(permission);
+                        }
+                    }
+                }
+            }
+
+            return accessibleItemPermissions;
         }
 
         /// <summary>
@@ -1489,19 +1676,19 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <remarks>This method evaluates the user's access by querying the resource permissions database
         /// for matching entries. The user must have an administrative permission level for the specified resource and
         /// permission type to be granted access.</remarks>
-        /// <param name="userId">The unique identifier of the user whose access is being checked. Cannot be <see langword="null"/> or empty.</param>
+        /// <param name="currentUserUserId">The unique identifier of the user who is adding/updating the access is being checked. Cannot be <see langword="null"/> or empty.</param>
         /// <param name="permissionType">The type of permission to evaluate. This determines the scope of the access check (e.g., timeline item,
         /// family member, or family).</param>
         /// <param name="entityId">The unique identifier of the resource entity for which admin access is being checked. (e.g., ProgenyId, FamilyMemberId, or FamilyId)</param>
         /// <returns><see langword="true"/> if the user has administrative access to the specified resource based on the provided
         /// parameters; otherwise, <see langword="false"/>.</returns>
-        private async Task<bool> IsUserAccessManager(string userId, PermissionType permissionType, int entityId)
+        private async Task<bool> IsUserAccessManager(string currentUserUserId, PermissionType permissionType, int entityId)
         {
             if (permissionType == PermissionType.TimelineItem)
             {
                 // For timeline items, we need to check if the user has admin rights for the Progeny associated with the timeline item.
                 ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(pp => pp.UserId == userId 
+                    .SingleOrDefaultAsync(pp => pp.UserId == currentUserUserId
                                                && pp.ProgenyId == entityId 
                                                && pp.PermissionLevel == PermissionLevel.Admin);
                 
@@ -1514,7 +1701,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             if (permissionType == PermissionType.Progeny)
             {
                 ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(pp => pp.UserId == userId
+                    .SingleOrDefaultAsync(pp => pp.UserId == currentUserUserId
                                                && pp.ProgenyId == entityId
                                                && pp.PermissionLevel == PermissionLevel.Admin);
 
@@ -1527,7 +1714,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             if (permissionType == PermissionType.Family)
             {
                 FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(fp => fp.UserId == userId 
+                    .SingleOrDefaultAsync(fp => fp.UserId == currentUserUserId
                                                && fp.FamilyId == entityId 
                                                && fp.PermissionLevel == PermissionLevel.Admin);
                 if (familyPermission != null)

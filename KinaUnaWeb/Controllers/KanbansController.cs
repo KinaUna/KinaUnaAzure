@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
@@ -177,6 +179,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddKanbanBoard([FromForm] KanbanBoardViewModel model)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanBoard.ProgenyId, model.KanbanBoard.FamilyId, false);
@@ -209,6 +212,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             KanbanBoard kanbanBoard = model.CreateKanbanBoard();
+            
             model.KanbanBoard = await kanbanBoardsHttpClient.AddKanbanBoard(kanbanBoard);
 
             return Json(model.KanbanBoard);

@@ -706,3 +706,23 @@ export enum FamilyMemberType {
     Grandchild = 5,
     Other = 6
 }
+export class TimelineItemPermission {
+    timelineItemPermissionId: number = 0;
+    timelineType: TimeLineType = TimeLineType.Note;
+    itemId: number = 0;
+    progenyId: number = 0;
+    familyId: number = 0;
+    userId: string = '';
+    email: string = '';
+    groupId: number = 0;
+    permissionLevel: PermissionLevel = PermissionLevel.None;
+    inheritPermissions: boolean = true;
+}
+
+export class ItemPermissionDto {
+    itemPermissionId: number = 0;
+    progenyPermissionId: number = 0;
+    familyPermissionId: number = 0;
+    inheritPermissions: boolean = true;
+    permissionLevel: PermissionLevel = PermissionLevel.None;
+}

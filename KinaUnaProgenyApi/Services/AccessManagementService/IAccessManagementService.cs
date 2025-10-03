@@ -1,5 +1,6 @@
 ﻿using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -276,5 +277,31 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="userInfo">The user information containing the user's unique identifier and email address.</param>
         /// <returns></returns>
         Task UpdatePermissionsForNewUser(UserInfo userInfo);
+
+        /// <summary>
+        /// Adds permissions to a timeline item for specified users or groups.
+        /// </summary>
+        /// <remarks>This method processes each permission in the <paramref
+        /// name="itemPermissionsDtoList"/> and associates it with the specified timeline item. Permissions can be
+        /// granted to individual users or groups based on the provided identifiers in the <see
+        /// cref="ItemPermissionDto"/> objects. If a permission references a non-existent progeny or family permission,
+        /// it will be skipped.</remarks>
+        /// <param name="itemType">The type of the timeline item to which permissions will be added.</param>
+        /// <param name="itemId">The unique identifier of the timeline item.</param>
+        /// <param name="progenyId">The unique identifier of the progeny associated with the timeline item.</param>
+        /// <param name="familyId">The unique identifier of the family associated with the timeline item.</param>
+        /// <param name="itemPermissionsDtoList">A list of <see cref="ItemPermissionDto"/> objects representing the permissions to be added.</param>
+        /// <param name="currentUserInfo">The information about the current user performing the operation.</param>
+        /// <returns></returns>
+        Task AddItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Retrieves a list of permissions for a specific timeline item that the current user has access to view.
+        /// </summary>
+        /// <param name="itemType">The type of the timeline item, represented as a <see cref="KinaUnaTypes.TimeLineType"/> enumeration.</param>
+        /// <param name="itemId">The unique identifier of the timeline item.</param>
+        /// <param name="currentUserInfo">The information of the current user requesting the permissions.</param>
+        /// <returns>List of <see cref="TimelineItemPermission"/> objects representing the permissions for the specified timeline item that the current user has access to view.</returns>
+        Task<List<TimelineItemPermission>> GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo currentUserInfo);
     }
 }

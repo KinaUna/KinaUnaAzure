@@ -1,7 +1,10 @@
-import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setLocationAutoSuggestList } from '../data-tools-v9.js';
+import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentLanguageId, setLocationAutoSuggestList, getCurrentItemProgenyId, getCurrentItemFamilyId } from '../data-tools-v9.js';
+import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 let currentProgenyId;
 let currentFamilyId;
 let languageId = 1;
+let timelineItem = new TimelineItem();
 /**
  * Sets up the Progeny select list and adds an event listener to update the tags and categories auto suggest lists when the selected Progeny changes.
  */
@@ -146,9 +149,10 @@ function validateInputs() {
  * Initializes the Add/Edit KanbanBoard page by setting up the progeny select list, tags and context auto suggest lists, and the Rich Text Editor.
  * @returns {Promise<void>} A promise that resolves when the initialization is complete.
  * */
-export async function initializeAddEditKanbanBoard() {
+export async function initializeAddEditKanbanBoard(itemId) {
     languageId = getCurrentLanguageId();
-    currentProgenyId = getCurrentProgenyId();
+    currentProgenyId = getCurrentItemProgenyId();
+    currentFamilyId = getCurrentItemFamilyId();
     setupProgenySelectList();
     setupFamilySelectList();
     await setTagsAutoSuggestList([currentProgenyId], []);
@@ -160,6 +164,11 @@ export async function initializeAddEditKanbanBoard() {
     if (titleInput) {
         titleInput.addEventListener('input', validateInputs);
     }
+    timelineItem.itemId = itemId;
+    timelineItem.itemType = TimeLineType.KanbanBoard;
+    timelineItem.progenyId = currentProgenyId;
+    timelineItem.familyId = currentFamilyId;
+    await renderItemPermissionsEditor(timelineItem);
     validateInputs();
     return new Promise(function (resolve, reject) {
         resolve();

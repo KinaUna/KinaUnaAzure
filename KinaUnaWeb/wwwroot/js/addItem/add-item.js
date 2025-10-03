@@ -22,6 +22,7 @@ import { popupTodoItem } from "../todos/todo-details.js";
 import { initializeAddEditKanbanBoard } from "../kanbans/add-edit-kanban-board.js";
 import { dispatchKanbanBoardChangedEvent, popupKanbanBoard } from "../kanbans/kanban-board-details.js";
 import { editKanbanItemFunction, removeKanbanItemFunction } from "../kanbans/kanban-items.js";
+import { setPermissions } from "../item-permissions.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */
@@ -131,7 +132,7 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
             await initializeAddEditTodo();
         }
         if (addItemType === 'kanbanboard') {
-            await initializeAddEditKanbanBoard();
+            await initializeAddEditKanbanBoard('0');
         }
         hideBodyScrollbars();
         addCloseButtonEventListener();
@@ -290,7 +291,7 @@ async function popupEditItemModal(editItemType, editItemItemId) {
             await initializeAddEditTodo();
         }
         if (editItemType === 'kanbanboard') {
-            await initializeAddEditKanbanBoard();
+            await initializeAddEditKanbanBoard(editItemItemId);
         }
         hideBodyScrollbars();
         addCloseButtonEventListener();
@@ -371,7 +372,7 @@ async function popupCopyItemModal(copyItemType, copyItemItemId) {
             await initializeAddEditTodo();
         }
         if (copyItemType === 'kanbanboard') {
-            await initializeAddEditKanbanBoard();
+            await initializeAddEditKanbanBoard('0');
         }
         hideBodyScrollbars();
         addCloseButtonEventListener();
@@ -560,6 +561,11 @@ async function onSaveItemFormSubmit(event) {
         return new Promise(function (resolve, reject) {
             resolve();
         });
+    }
+    // If there is an item permissions editor div, set the permissions for the item before saving.
+    const permissionsEditorDiv = document.querySelector('#item-permissions-editor-div');
+    if (permissionsEditorDiv) {
+        setPermissions();
     }
     let formData = new FormData(addItemForm);
     let formAction = addItemForm.getAttribute('action');

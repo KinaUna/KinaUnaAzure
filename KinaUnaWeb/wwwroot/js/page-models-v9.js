@@ -770,4 +770,27 @@ export var FamilyMemberType;
     FamilyMemberType[FamilyMemberType["Grandchild"] = 5] = "Grandchild";
     FamilyMemberType[FamilyMemberType["Other"] = 6] = "Other";
 })(FamilyMemberType || (FamilyMemberType = {}));
+export class TimelineItemPermission {
+    constructor() {
+        this.timelineItemPermissionId = 0;
+        this.timelineType = TimeLineType.Note;
+        this.itemId = 0;
+        this.progenyId = 0;
+        this.familyId = 0;
+        this.userId = '';
+        this.email = '';
+        this.groupId = 0;
+        this.permissionLevel = PermissionLevel.None;
+        this.inheritPermissions = true;
+    }
+}
+export class ItemPermissionDto {
+    constructor() {
+        this.itemPermissionId = 0;
+        this.progenyPermissionId = 0;
+        this.familyPermissionId = 0;
+        this.inheritPermissions = true;
+        this.permissionLevel = PermissionLevel.None;
+    }
+}
 //# sourceMappingURL=page-models-v9.js.map

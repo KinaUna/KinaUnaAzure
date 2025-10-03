@@ -16,7 +16,8 @@ public class BaseItemsViewModel : BaseViewModel
     public bool IsCurrentUserProgenyAdmin { get; set; }
     public string Tags { get; set; } = string.Empty;
     public string TagsList { get; set; } = "[]";
-
+    public string ItemPermissionsListAsString { get; set; } = "";
+    public bool InheritPermissions { get; set; }
     /// <summary>
     /// Sets the base properties for the ViewModel, used by classes inheriting from this class.
     /// </summary>

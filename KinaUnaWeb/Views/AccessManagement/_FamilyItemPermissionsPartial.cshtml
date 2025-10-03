@@ -1,137 +1,148 @@
-﻿@using KinaUna.Data.Extensions
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUna.Data.Models.AccessManagement
+@using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.FamiliesViewModels.FamilyItemPermissionsViewModel
-<div>Use Family.Name's default Permissions [CheckBox]</div>
+@inject ILocaleManager LocaleManager
+@{
+    foreach (SelectListItem selectListItem in Model.PermissionLevelsSelectListItems)
+    {
+        selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text + "_select_", PageNames.AccessManagement, Model.LanguageId);
+    }
+
+    foreach (SelectListItem selectListItem in Model.PermissionTypeSelectListItems)
+    {
+        selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text, PageNames.AccessManagement, Model.LanguageId);
+    }
+
+    string noUserAccountString = await LocaleManager.GetTranslation("No user account", PageNames.AccessManagement, Model.LanguageId);
+    string groupMembersString = await LocaleManager.GetTranslation("Group members", PageNames.AccessManagement, Model.LanguageId);
+}
+<div>@await LocaleManager.GetTranslation("Permission type", PageNames.AccessManagement, Model.LanguageId): <select id="permission-type-select" asp-items="@Model.PermissionTypeSelectListItems"></select></div>
 <div class="space-20"></div>
-<div>Custom Permissions:</div>
-<div>
-    Permission: No access
-    <div id="item-permissions-family-none-div">
-        @foreach (FamilyPermission permission in Model.FamilyPermissionsList)
-        {
-            if (permission.PermissionLevel == PermissionLevel.None)
+<div id="custom-permissions-div" class="d-none">
+    <div>@await LocaleManager.GetTranslation("Custom Permissions", PageNames.AccessManagement, Model.LanguageId):</div>
+    <div>
+        @await LocaleManager.GetTranslation("Group permissions", PageNames.AccessManagement, Model.LanguageId):
+        <div id="item-permissions-groups-div">
+            @foreach (FamilyPermission permission in Model.FamilyPermissionsList)
             {
+                int permissionLevelValue = (int)permission.PermissionLevel;
                 if (permission.GroupId > 0)
                 {
                     UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
                     if (group != null)
                     {
-                        <div class="ml-4">
-                            @group.Name
+                        <div class="permission-group-div" data-family-permission-id="@permission.FamilyPermissionId" data-permission-level="@permissionLevelValue">
+                            @group.Name <select data-family-permission-id="@permission.FamilyPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
                         </div>
-                    }
-                }
+                        <div class="d-none">
+                            <div>@groupMembersString:</div>
+                            <div>
+                                @foreach (UserGroupMember member in group.Members)
+                                {
+                                    UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
+                                    if (user != null)
+                                    {
+                                        <div class="ml-4">
+                                            @user.UserEmail (@user.FullName())
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="ml-4">
+                                            @member.Email (@noUserAccountString)
+                                        </div>
+                                    }
+                                }
+                            </div>
 
-                if (!string.IsNullOrWhiteSpace(permission.UserId))
-                {
-                    UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == permission.UserId);
-                    if (user != null)
-                    {
-                        <div class="ml-4">
-                            @user.UserEmail (@user.FullName())
                         </div>
                     }
                 }
             }
-        }
-    </div>
-</div>
-<div>
-    Permission: View
-    <div id="item-permissions-family-view-div">
-        @foreach (FamilyPermission permission in Model.FamilyPermissionsList)
-        {
-            if (permission.PermissionLevel == PermissionLevel.View || permission.PermissionLevel == PermissionLevel.Add)
+            @foreach (TimelineItemPermission permission in Model.ItemPermissionsList)
             {
+                int permissionLevelValue = (int)permission.PermissionLevel;
                 if (permission.GroupId > 0)
                 {
                     UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
                     if (group != null)
                     {
-                        <div class="ml-4">
-                            @group.Name
+                        <div class="permission-group-div" data-item-permission-id="@permission.TimelineItemPermissionId" data-permission-level="@permissionLevelValue">
+                            @group.Name <select data-item-permission-id="@permission.TimelineItemPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
                         </div>
-                    }
-                }
+                        <div class="d-none">
+                            <div>@groupMembersString:</div>
+                            <div>
+                                @foreach (UserGroupMember member in group.Members)
+                                {
+                                    UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
+                                    if (user != null)
+                                    {
+                                        <div class="ml-4">
+                                            @user.UserEmail (@user.FullName())
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="ml-4">
+                                            @member.Email (@noUserAccountString)
+                                        </div>
+                                    }
+                                }
+                            </div>
 
-                if (!string.IsNullOrWhiteSpace(permission.UserId))
-                {
-                    UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == permission.UserId);
-                    if (user != null)
-                    {
-                        <div class="ml-4">
-                            @user.UserEmail (@user.FullName())
                         </div>
                     }
                 }
             }
-        }
+        </div>
     </div>
-    
-</div>
-<div>
-    Permission: Edit
-    <div id="item-permissions-family-edit-div">
-        @foreach (FamilyPermission permission in Model.FamilyPermissionsList)
-        {
-            if (permission.PermissionLevel == PermissionLevel.Edit)
+    <div>
+        @await LocaleManager.GetTranslation("User permissions", PageNames.AccessManagement, Model.LanguageId):
+        <div id="item-permissions-users-div">
+            @foreach (FamilyPermission permission in Model.FamilyPermissionsList)
             {
-                if (permission.GroupId > 0)
-                {
-                    UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
-                    if (group != null)
-                    {
-                        <div class="ml-4">
-                            @group.Name
-                        </div>
-                    }
-                }
-
+                int permissionLevelValue = (int)permission.PermissionLevel;
                 if (!string.IsNullOrWhiteSpace(permission.UserId))
                 {
                     UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == permission.UserId);
                     if (user != null)
                     {
-                        <div class="ml-4">
-                            @user.UserEmail (@user.FullName())
+                        <div class="permission-user-div" data-family-permission-id="@permission.FamilyPermissionId" data-permission-level="@permissionLevelValue">
+                            @user.UserEmail (@user.FullName()) <select data-family-permission-id="@permission.FamilyPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
                         </div>
                     }
                 }
+                else
+                {
+                    <div class="permission-user-div" data-family-permission-id="@permission.FamilyPermissionId" data-permission-level="@permissionLevelValue">
+                        @permission.Email (@noUserAccountString) <select data-family-permission-id="@permission.FamilyPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
+                    </div>
+                }
             }
-        }
-    </div>
-</div>
-<div>
-    Permission: Admin
-    <div id="item-permissions-family-admin-div">
-        @foreach (FamilyPermission permission in Model.FamilyPermissionsList)
-        {
-            if (permission.PermissionLevel == PermissionLevel.Admin)
+            @foreach (TimelineItemPermission permission in Model.ItemPermissionsList)
             {
-                if (permission.GroupId > 0)
-                {
-                    UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
-                    if (group != null)
-                    {
-                        <div class="ml-4">
-                            @group.Name
-                        </div>
-                    }
-                }
-
+                int permissionLevelValue = (int)permission.PermissionLevel;
                 if (!string.IsNullOrWhiteSpace(permission.UserId))
                 {
                     UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == permission.UserId);
                     if (user != null)
                     {
-                        <div class="ml-4">
-                            @user.UserEmail (@user.FullName())
+                        <div class="permission-user-div" data-item-permission-id="@permission.TimelineItemPermissionId" data-permission-level="@permissionLevelValue">
+                            @user.UserEmail (@user.FullName()) <select data-item-permission-id="@permission.TimelineItemPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
                         </div>
                     }
                 }
+                else
+                {
+                    <div class="permission-user-div" data-item-permission-id="@permission.TimelineItemPermissionId" data-permission-level="@permissionLevelValue">
+                        @permission.Email (@noUserAccountString) <select data-item-permission-id="@permission.TimelineItemPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
+                    </div>
+                }
             }
-        }
+        </div>
+
     </div>
-    
 </div>
-@* Todo: Permissions for CreatorOnly and Private items. *@

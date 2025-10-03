@@ -82,6 +82,8 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             kanbanBoard.ModifiedTime = DateTime.UtcNow;
             await progenyDbContext.KanbanBoardsDb.AddAsync(kanbanBoard);
             await progenyDbContext.SaveChangesAsync();
+
+            await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, kanbanBoard.ItemPermissionsDtoList, currentUserInfo);
             return kanbanBoard;
         }
 

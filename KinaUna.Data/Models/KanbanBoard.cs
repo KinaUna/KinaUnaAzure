@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
 using KinaUna.Data.Models.ItemInterfaces;
 
 namespace KinaUna.Data.Models
@@ -113,6 +114,10 @@ namespace KinaUna.Data.Models
         [NotMapped]
         public TimelineItemPermission ItemPerMission { get; set; }
 
+        [NotMapped]
+        public List<TimelineItemPermission> ItemPermissionsList { get; set; } = new List<TimelineItemPermission>();
+        [NotMapped]
+        public List<ItemPermissionDto> ItemPermissionsDtoList { get; set; } = new List<ItemPermissionDto>();
         /// <summary>
         /// Gets or sets the list of columns associated with the Kanban board.
         /// </summary>
