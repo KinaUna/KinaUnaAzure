@@ -466,7 +466,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="itemPermissionsDtoList">A list of <see cref="ItemPermissionDto"/> objects representing the permissions to be added.</param>
         /// <param name="currentUserInfo">The information about the current user performing the operation.</param>
         /// <returns></returns>
-        public async Task AddItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo)
+        public async Task AddItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId,
+            List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo)
         {
             foreach (ItemPermissionDto permissionDto in itemPermissionsDtoList)
             {
@@ -511,6 +512,150 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
         }
 
+        public async Task<List<TimelineItemPermission>> UpdateItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId,
+            List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo)
+        {
+            List<TimelineItemPermission> changedItemPermissions = [];
+            bool wasPreviouslyCreatorOnly = false;
+            bool wasPreviouslyPrivate = false;
+            bool wasPreviouslyInheriting = false;
+            bool isNowInheriting = false;
+            TimelineItemPermission inheritedPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp => tp.InheritPermissions && tp.TimelineType == itemType && tp.ItemId == itemId);
+            TimelineItemPermission usersPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                .SingleOrDefaultAsync(tp => tp.UserId == currentUserInfo.UserId && tp.TimelineType == itemType && tp.ItemId == itemId);
+            if (itemPermissionsDtoList.Count == 1)
+            {
+                ItemPermissionDto itemPermissionDto = itemPermissionsDtoList.First();
+                if (itemPermissionDto.InheritPermissions)
+                {
+                    isNowInheriting = true;
+                    if (inheritedPermission != null)
+                    {
+                        // Nothing has changed, return.
+                        return changedItemPermissions;
+                    }
+                }
+
+                if (itemPermissionDto.PermissionLevel == PermissionLevel.CreatorOnly)
+                {
+                    // Not allowed to change this: If a user wants to change an existing item to Only Me they will have to copy it, set the copy to Only Me and delete the original.
+                    return changedItemPermissions;
+                }
+
+                if (itemPermissionDto.PermissionLevel == PermissionLevel.Private)
+                {
+                    // Not allowed to change this: If a user wants to change an existing item to private they will have to copy it, set the copy to private and delete the original.
+                    return changedItemPermissions;
+                }
+            }
+            
+            // Check if the Timeline item's existing permission is Private or CreatorOnly.
+            if (usersPermission != null)
+            {
+                if (usersPermission.PermissionLevel == PermissionLevel.CreatorOnly)
+                {
+                    wasPreviouslyCreatorOnly = true;
+                    ItemPermissionDto usersItemPermissionDto = itemPermissionsDtoList.SingleOrDefault(i => i.ItemPermissionId == usersPermission.TimelineItemPermissionId);
+                    if (usersItemPermissionDto != null)
+                    {
+                        if (usersItemPermissionDto.PermissionLevel == usersPermission.PermissionLevel)
+                        {
+                            // Nothing changed.
+                            return changedItemPermissions;
+                        }
+                    }
+                }
+
+                if (usersPermission.PermissionLevel == PermissionLevel.Private)
+                {
+                    wasPreviouslyPrivate = true;
+                    ItemPermissionDto usersItemPermissionDto = itemPermissionsDtoList.SingleOrDefault(i => i.ItemPermissionId == usersPermission.TimelineItemPermissionId);
+                    if (usersItemPermissionDto != null)
+                    {
+                        if (usersItemPermissionDto.PermissionLevel == usersPermission.PermissionLevel)
+                        {
+                            // Nothing changed.
+                            return changedItemPermissions;
+                        }
+                    }
+                }
+            }
+
+            if (!wasPreviouslyCreatorOnly && !wasPreviouslyPrivate)
+            {
+                if (inheritedPermission != null)
+                {
+                    wasPreviouslyInheriting = true;
+                }
+            }
+
+            List<TimelineItemPermission> existingItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.TimelineType == itemType && tp.ItemId == itemId).ToListAsync();
+
+            if (!wasPreviouslyInheriting && !wasPreviouslyCreatorOnly && !wasPreviouslyPrivate)
+            {
+                // Simplest case, update the permission levels for existing items if needed.
+                foreach (TimelineItemPermission existingPermission in existingItemPermissions)
+                {
+                    ItemPermissionDto itemPermissionDto = itemPermissionsDtoList.SingleOrDefault(i => i.ItemPermissionId == existingPermission.TimelineItemPermissionId);
+                    if (itemPermissionDto != null && itemPermissionDto.PermissionLevel != existingPermission.PermissionLevel)
+                    {
+                        existingPermission.PermissionLevel = itemPermissionDto.PermissionLevel;
+                        await UpdateItemPermission(existingPermission, currentUserInfo);
+                        changedItemPermissions.Add(existingPermission);
+                    }
+                }
+
+                return changedItemPermissions;
+            }
+
+            usersPermission.PermissionLevel = PermissionLevel.View;
+            if (progenyId > 0)
+            {
+                ProgenyPermission progenyPermission = await GetProgenyPermissionForUser(progenyId, currentUserInfo);
+                if (progenyPermission != null)
+                {
+                    if (progenyPermission.PermissionLevel > PermissionLevel.Add)
+                    {
+                        usersPermission.PermissionLevel = progenyPermission.PermissionLevel;
+                    }
+                }
+            }
+
+            if (familyId > 0)
+            {
+                FamilyPermission familyPermission = await GetFamilyPermissionForUser(familyId, currentUserInfo);
+                if (familyPermission != null)
+                {
+                    if (familyPermission.PermissionLevel > PermissionLevel.Add)
+                    {
+                        usersPermission.PermissionLevel = familyPermission.PermissionLevel;
+                    }
+                }
+            }
+
+            usersPermission = await UpdateItemPermission(usersPermission, currentUserInfo);
+            changedItemPermissions.Add(usersPermission);
+            if (isNowInheriting)
+            {
+                // Add new inherit permission.
+                TimelineItemPermission inheritPermission = new TimelineItemPermission();
+                inheritPermission.InheritPermissions = true;
+                inheritPermission.FamilyId = familyId;
+                inheritPermission.ProgenyId = progenyId;
+                inheritPermission.ItemId = itemId;
+                inheritPermission.TimelineType = itemType;
+                inheritPermission = await GrantItemPermission(inheritPermission, currentUserInfo);
+                changedItemPermissions.Add(inheritPermission);
+            }
+            else
+            {
+                // Add new permission for all permissions. If we are here, the user has changed from CreatorOnly or Private or Inherit to Custom.
+                // The current users permission will fail in the GrantPermission method, but we already set that one.
+                await AddItemPermissions(itemType, itemId, progenyId, familyId, itemPermissionsDtoList, currentUserInfo);
+            }
+
+            return changedItemPermissions;
+        }
 
         /// <summary>
         /// Grants a specified permission to a user or group for a timeline item, if the current user has the necessary

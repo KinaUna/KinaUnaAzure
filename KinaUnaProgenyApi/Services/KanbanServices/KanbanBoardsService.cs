@@ -130,6 +130,8 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             
             progenyDbContext.KanbanBoardsDb.Update(existingKanbanBoard);
             await progenyDbContext.SaveChangesAsync();
+            
+            await accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, existingKanbanBoard.KanbanBoardId, existingKanbanBoard.ProgenyId, existingKanbanBoard.FamilyId, kanbanBoard.ItemPermissionsDtoList, currentUserInfo);
 
             return existingKanbanBoard;
         }

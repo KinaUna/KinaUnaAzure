@@ -115,7 +115,6 @@ export function setPermissions(): void {
             itemPermission.inheritPermissions = false;
             itemPermission.permissionLevel = PermissionLevel.CreatorOnly;
             timelineItemPermissionsList.push(itemPermission);
-            itemPermissionsListAsStringInput.value = JSON.stringify(timelineItemPermissionsList);
         }
     }
 
@@ -127,7 +126,6 @@ export function setPermissions(): void {
             itemPermission.inheritPermissions = false;
             itemPermission.permissionLevel = PermissionLevel.Private;
             timelineItemPermissionsList.push(itemPermission);
-            itemPermissionsListAsStringInput.value = JSON.stringify(timelineItemPermissionsList);
         }
     }
 
@@ -169,7 +167,7 @@ export function setPermissions(): void {
                 timelineItemPermissionsList.push(itemPermission);
             }
         });
-
-        itemPermissionsListAsStringInput.value = JSON.stringify(timelineItemPermissionsList);
     }
+
+    itemPermissionsListAsStringInput.value = JSON.stringify(timelineItemPermissionsList);
 }

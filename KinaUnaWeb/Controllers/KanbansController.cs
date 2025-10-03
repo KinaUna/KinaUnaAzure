@@ -193,7 +193,6 @@ namespace KinaUnaWeb.Controllers
                 {
                     canUserAdd = true;
                 }
-
             }
 
             if (model.KanbanBoard.FamilyId > 0)

@@ -107,7 +107,6 @@ export function setPermissions() {
             itemPermission.inheritPermissions = false;
             itemPermission.permissionLevel = PermissionLevel.CreatorOnly;
             timelineItemPermissionsList.push(itemPermission);
-            itemPermissionsListAsStringInput.value = JSON.stringify(timelineItemPermissionsList);
         }
     }
     // Private permission type
@@ -118,7 +117,6 @@ export function setPermissions() {
             itemPermission.inheritPermissions = false;
             itemPermission.permissionLevel = PermissionLevel.Private;
             timelineItemPermissionsList.push(itemPermission);
-            itemPermissionsListAsStringInput.value = JSON.stringify(timelineItemPermissionsList);
         }
     }
     // Custom permission type
@@ -157,7 +155,7 @@ export function setPermissions() {
                 timelineItemPermissionsList.push(itemPermission);
             }
         });
-        itemPermissionsListAsStringInput.value = JSON.stringify(timelineItemPermissionsList);
     }
+    itemPermissionsListAsStringInput.value = JSON.stringify(timelineItemPermissionsList);
 }
 //# sourceMappingURL=item-permissions.js.map
