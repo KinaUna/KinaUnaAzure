@@ -296,6 +296,29 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         Task AddItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo);
 
         /// <summary>
+        /// Updates the permissions for a specific timeline item based on the provided parameters.
+        /// </summary>
+        /// <remarks>This method updates the permissions for a timeline item based on the provided list of
+        /// desired permissions. It ensures that certain permission levels, such as <see
+        /// cref="PermissionLevel.CreatorOnly"/> and <see cref="PermissionLevel.Private"/>, cannot be directly modified.
+        /// If the item is set to inherit permissions, the method will handle the inheritance logic accordingly.  The
+        /// method also validates the current user's permissions and updates them as necessary, taking into account any
+        /// family or progeny-level permissions that may apply. If the permissions are changed from inheritance or
+        /// restricted levels to custom permissions, the method ensures that all necessary permissions are updated or
+        /// added.  This method is asynchronous and performs database operations to retrieve and update
+        /// permissions.</remarks>
+        /// <param name="itemType">The type of the timeline item to update.</param>
+        /// <param name="itemId">The unique identifier of the timeline item.</param>
+        /// <param name="progenyId">The unique identifier of the progeny associated with the timeline item.</param>
+        /// <param name="familyId">The unique identifier of the family associated with the timeline item.</param>
+        /// <param name="itemPermissionsDtoList">A list of <see cref="ItemPermissionDto"/> objects representing the desired permissions for the timeline
+        /// item.</param>
+        /// <param name="currentUserInfo">The user information of the current user making the update request.</param>
+        /// <returns>A list of <see cref="TimelineItemPermission"/> objects representing the permissions that were changed as a
+        /// result of the update. If no changes were made, the list will be empty.</returns>
+        Task<List<TimelineItemPermission>> UpdateItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo);
+
+        /// <summary>
         /// Retrieves a list of permissions for a specific timeline item that the current user has access to view.
         /// </summary>
         /// <param name="itemType">The type of the timeline item, represented as a <see cref="KinaUnaTypes.TimeLineType"/> enumeration.</param>

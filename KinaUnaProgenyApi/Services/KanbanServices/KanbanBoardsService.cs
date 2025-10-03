@@ -80,8 +80,8 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             kanbanBoard.UId = Guid.NewGuid().ToString();
             kanbanBoard.CreatedTime = DateTime.UtcNow;
             kanbanBoard.ModifiedTime = DateTime.UtcNow;
-            await progenyDbContext.KanbanBoardsDb.AddAsync(kanbanBoard);
-            await progenyDbContext.SaveChangesAsync();
+            _ = await progenyDbContext.KanbanBoardsDb.AddAsync(kanbanBoard);
+            _ = await progenyDbContext.SaveChangesAsync();
 
             await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, kanbanBoard.ItemPermissionsDtoList, currentUserInfo);
             return kanbanBoard;
@@ -129,9 +129,9 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             existingKanbanBoard.EnsureColumnsAreValid();
             
             progenyDbContext.KanbanBoardsDb.Update(existingKanbanBoard);
-            await progenyDbContext.SaveChangesAsync();
+            _ = await progenyDbContext.SaveChangesAsync();
             
-            await accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, existingKanbanBoard.KanbanBoardId, existingKanbanBoard.ProgenyId, existingKanbanBoard.FamilyId, kanbanBoard.ItemPermissionsDtoList, currentUserInfo);
+            _ = await accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, existingKanbanBoard.KanbanBoardId, existingKanbanBoard.ProgenyId, existingKanbanBoard.FamilyId, kanbanBoard.ItemPermissionsDtoList, currentUserInfo);
 
             return existingKanbanBoard;
         }
@@ -188,7 +188,9 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 progenyDbContext.KanbanBoardsDb.Update(kanbanBoardToDelete);
             }
 
-            await progenyDbContext.SaveChangesAsync();
+            _ = await progenyDbContext.SaveChangesAsync();
+
+            // Todo: Remove permissions.
 
             return kanbanBoardToDelete;
         }

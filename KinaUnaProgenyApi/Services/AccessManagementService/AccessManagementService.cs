@@ -512,6 +512,27 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
         }
 
+        /// <summary>
+        /// Updates the permissions for a specific timeline item based on the provided parameters.
+        /// </summary>
+        /// <remarks>This method updates the permissions for a timeline item based on the provided list of
+        /// desired permissions. It ensures that certain permission levels, such as <see
+        /// cref="PermissionLevel.CreatorOnly"/> and <see cref="PermissionLevel.Private"/>, cannot be directly modified.
+        /// If the item is set to inherit permissions, the method will handle the inheritance logic accordingly.  The
+        /// method also validates the current user's permissions and updates them as necessary, taking into account any
+        /// family or progeny-level permissions that may apply. If the permissions are changed from inheritance or
+        /// restricted levels to custom permissions, the method ensures that all necessary permissions are updated or
+        /// added.  This method is asynchronous and performs database operations to retrieve and update
+        /// permissions.</remarks>
+        /// <param name="itemType">The type of the timeline item to update.</param>
+        /// <param name="itemId">The unique identifier of the timeline item.</param>
+        /// <param name="progenyId">The unique identifier of the progeny associated with the timeline item.</param>
+        /// <param name="familyId">The unique identifier of the family associated with the timeline item.</param>
+        /// <param name="itemPermissionsDtoList">A list of <see cref="ItemPermissionDto"/> objects representing the desired permissions for the timeline
+        /// item.</param>
+        /// <param name="currentUserInfo">The user information of the current user making the update request.</param>
+        /// <returns>A list of <see cref="TimelineItemPermission"/> objects representing the permissions that were changed as a
+        /// result of the update. If no changes were made, the list will be empty.</returns>
         public async Task<List<TimelineItemPermission>> UpdateItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId,
             List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo)
         {
@@ -591,7 +612,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             List<TimelineItemPermission> existingItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.TimelineType == itemType && tp.ItemId == itemId).ToListAsync();
 
-            if (!wasPreviouslyInheriting && !wasPreviouslyCreatorOnly && !wasPreviouslyPrivate)
+            if (!wasPreviouslyInheriting && !wasPreviouslyCreatorOnly && !wasPreviouslyPrivate && !isNowInheriting)
             {
                 // Simplest case, update the permission levels for existing items if needed.
                 foreach (TimelineItemPermission existingPermission in existingItemPermissions)
@@ -608,33 +629,38 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return changedItemPermissions;
             }
 
-            usersPermission.PermissionLevel = PermissionLevel.View;
-            if (progenyId > 0)
+            if (usersPermission != null)
             {
-                ProgenyPermission progenyPermission = await GetProgenyPermissionForUser(progenyId, currentUserInfo);
-                if (progenyPermission != null)
+                // We have the current users permission, update that one first.
+                usersPermission.PermissionLevel = PermissionLevel.View;
+                if (progenyId > 0)
                 {
-                    if (progenyPermission.PermissionLevel > PermissionLevel.Add)
+                    ProgenyPermission progenyPermission = await GetProgenyPermissionForUser(progenyId, currentUserInfo);
+                    if (progenyPermission != null)
                     {
-                        usersPermission.PermissionLevel = progenyPermission.PermissionLevel;
+                        if (progenyPermission.PermissionLevel > PermissionLevel.Add)
+                        {
+                            usersPermission.PermissionLevel = progenyPermission.PermissionLevel;
+                        }
                     }
                 }
-            }
 
-            if (familyId > 0)
-            {
-                FamilyPermission familyPermission = await GetFamilyPermissionForUser(familyId, currentUserInfo);
-                if (familyPermission != null)
+                if (familyId > 0)
                 {
-                    if (familyPermission.PermissionLevel > PermissionLevel.Add)
+                    FamilyPermission familyPermission = await GetFamilyPermissionForUser(familyId, currentUserInfo);
+                    if (familyPermission != null)
                     {
-                        usersPermission.PermissionLevel = familyPermission.PermissionLevel;
+                        if (familyPermission.PermissionLevel > PermissionLevel.Add)
+                        {
+                            usersPermission.PermissionLevel = familyPermission.PermissionLevel;
+                        }
                     }
                 }
-            }
 
-            usersPermission = await UpdateItemPermission(usersPermission, currentUserInfo);
-            changedItemPermissions.Add(usersPermission);
+                usersPermission = await UpdateItemPermission(usersPermission, currentUserInfo);
+                changedItemPermissions.Add(usersPermission);
+            }
+            
             if (isNowInheriting)
             {
                 // Add new inherit permission.
