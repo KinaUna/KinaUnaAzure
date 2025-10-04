@@ -1,5 +1,4 @@
 ﻿using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
 using KinaUna.Data.Models.Family;
@@ -13,8 +12,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
@@ -164,10 +161,6 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
             KanbanBoardViewModel model = new(baseModel);
-            if (model.CurrentUser == null)
-            {
-                return PartialView("_NotFoundPartial");
-            }
             
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
@@ -221,19 +214,22 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditKanbanBoard(int kanbanBoardId)
         {
             KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
-            
+            if (kanbanBoard == null || kanbanBoard.KanbanBoardId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            if (kanbanBoard.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return Unauthorized();
+            }
+
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanBoard.ProgenyId, kanbanBoard.FamilyId, false);
             KanbanBoardViewModel model = new(baseModel)
             {
                 KanbanBoard = kanbanBoard
             };
             
-            PermissionLevel userPermissionLevel = await userInfosHttpClient.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoardId);
-            if (userPermissionLevel < PermissionLevel.Edit)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList(kanbanBoard.ProgenyId);
             model.SetProgenyList();
             model.FamilyList = await viewModelSetupService.GetFamilySelectList(kanbanBoard.FamilyId);
@@ -256,9 +252,8 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_NotFoundPartial");
             }
-
-            PermissionLevel userPermissionLevel = await userInfosHttpClient.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, model.KanbanBoard.KanbanBoardId);
-            if (userPermissionLevel < PermissionLevel.Edit)
+           
+            if (existingKanbanBoard.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
@@ -284,13 +279,7 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
             
             KanbanBoard existingKanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoard.KanbanBoardId);
-            if (existingKanbanBoard == null || existingKanbanBoard.KanbanBoardId == 0)
-            {
-                return Json(kanbanBoard);
-            }
-
-            PermissionLevel userPermissionLevel = await userInfosHttpClient.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId);
-            if (userPermissionLevel < PermissionLevel.Edit)
+            if (existingKanbanBoard == null || existingKanbanBoard.KanbanBoardId == 0 || existingKanbanBoard.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return Json(kanbanBoard);
             }
@@ -306,8 +295,8 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteKanbanBoard(int kanbanBoardId)
         {
             KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
-            PermissionLevel userPermissionLevel = await userInfosHttpClient.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId);
-            if (kanbanBoard.KanbanBoardId == 0 || userPermissionLevel < PermissionLevel.Admin)
+            
+            if (kanbanBoard == null || kanbanBoard.KanbanBoardId == 0 || kanbanBoard.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
@@ -346,8 +335,7 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_NotFoundPartial");
             }
 
-            PermissionLevel userPermissionLevel = await userInfosHttpClient.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, existingKanbanBoard.KanbanBoardId);
-            if (existingKanbanBoard.KanbanBoardId == 0 || userPermissionLevel < PermissionLevel.Admin)
+            if (existingKanbanBoard.KanbanBoardId == 0 || existingKanbanBoard.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
@@ -357,6 +345,10 @@ namespace KinaUnaWeb.Controllers
                 List<KanbanItem> kanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForBoard(model.KanbanBoard.KanbanBoardId);
                 foreach (KanbanItem kanbanItem in kanbanItems)
                 {
+                    if (kanbanItem.TodoItem == null || kanbanItem.TodoItem.TodoItemId == 0 || kanbanItem.TodoItem.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+                    {
+                        continue;
+                    }
                     await todoItemsHttpClient.DeleteTodoItem(kanbanItem.TodoItemId);
                 }
             }
@@ -403,7 +395,6 @@ namespace KinaUnaWeb.Controllers
                 {
                     canUserAdd = true;
                 }
-
             }
 
             if (model.KanbanBoard.FamilyId > 0)
@@ -417,7 +408,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!canUserAdd)
             {
-                // Todo: Show that no children are available to add kanban for.
+                // Todo: Show that no family or family members are available to add kanban for.
                 return PartialView("_AccessDeniedPartial");
             }
 
@@ -436,27 +427,28 @@ namespace KinaUnaWeb.Controllers
                     // If CopyTodoItemsOption is 0, we need to create a new TodoItem for each KanbanItem.
                     if (model.CopyTodoItemsOption == 0)
                     {
-                        TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(kanbanItem.TodoItemId);
-                        todoItem.TodoItemId = 0;
-                        todoItem.UId = Guid.NewGuid().ToString();
-                        todoItem.CreatedBy = model.CurrentUser.UserId;
-                        todoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                        todoItem.ModifiedBy = model.CurrentUser.UserId;
-                        todoItem.ModifiedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                        todoItem.ProgenyId = model.KanbanBoard.ProgenyId;
-                        TodoItem newTodoItem = await todoItemsHttpClient.AddTodoItem(todoItem);
+                        
+                        if (kanbanItem.TodoItem == null || kanbanItem.TodoItem.TodoItemId == 0)
+                        {
+                            continue;
+                        }
+
+                        kanbanItem.TodoItem.TodoItemId = 0;
+                        kanbanItem.TodoItem.UId = Guid.NewGuid().ToString();
+                        kanbanItem.TodoItem.CreatedBy = model.CurrentUser.UserId;
+                        kanbanItem.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        kanbanItem.TodoItem.ModifiedBy = model.CurrentUser.UserId;
+                        kanbanItem.TodoItem.ModifiedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        kanbanItem.TodoItem.ProgenyId = model.KanbanBoard.ProgenyId;
+                        kanbanItem.TodoItem.FamilyId = model.KanbanBoard.FamilyId;
+                        TodoItem newTodoItem = await todoItemsHttpClient.AddTodoItem(kanbanItem.TodoItem);
                         kanbanItem.TodoItemId = newTodoItem.TodoItemId;
                     }
 
                     kanbanItem.KanbanItemId = 0;
                     kanbanItem.KanbanBoardId = model.KanbanBoard.KanbanBoardId;
                     kanbanItem.CreatedBy = model.CurrentUser.UserId;
-                    kanbanItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                    kanbanItem.ModifiedBy = model.CurrentUser.UserId;
-                    kanbanItem.ModifiedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                    kanbanItem.UId = Guid.NewGuid().ToString();
-
-
+                    
                     await kanbanItemsHttpClient.AddKanbanItem(kanbanItem);
                 }
             }

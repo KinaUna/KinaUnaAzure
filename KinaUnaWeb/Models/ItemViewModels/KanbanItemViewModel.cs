@@ -1,6 +1,8 @@
-﻿using System;
+﻿using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -9,12 +11,13 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public KanbanItem KanbanItem { get; set; } = new();
         public KanbanBoard KanbanBoard { get; set; } = new();
         public List<SelectListItem> ProgenyList { get; set; }
+        public List<SelectListItem> FamilyList { get; set; }
         public List<SelectListItem> StatusList { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<KanbanBoard> KanbanBoards { get; set; } = [];
         public List<SelectListItem> KanbanBoardsList { get; set; } = [];
         public TodoItem ParentTodoItem { get; set; } = null;
         public int TodoItemReference { get; set; } = 0;
+
         public KanbanItemViewModel()
         {
             ProgenyList = [];
@@ -24,18 +27,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public KanbanItemViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
-            SetAccessLevelList();
             ProgenyList = [];
             KanbanItem.TodoItem = new TodoItem();
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListEn[KanbanItem.TodoItem?.AccessLevel ?? 0].Selected = true;
-        }
-
+        
         public void SetStatusList(int selectedStatus)
         {
             SelectListItem notStartedStatus = new()
@@ -106,6 +101,22 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
         }
 
+        public void SetFamilyList()
+        {
+            KanbanBoard.FamilyId = CurrentFamilyId;
+            foreach (SelectListItem item in FamilyList)
+            {
+                if (item.Value == CurrentFamilyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+
         /// <summary>
         /// Creates a new <see cref="TodoItem"/> instance based on the current state of the application.
         /// </summary>
@@ -120,6 +131,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 TodoItemId = KanbanItem.TodoItem.TodoItemId,
                 ParentTodoItemId = KanbanItem.TodoItem.ParentTodoItemId,
                 ProgenyId = KanbanItem.TodoItem.ProgenyId,
+                FamilyId = KanbanItem.TodoItem.FamilyId,
                 Description = KanbanItem.TodoItem.Description,
                 AccessLevel = KanbanItem.TodoItem.AccessLevel,
                 Context = KanbanItem.TodoItem.Context,
@@ -136,6 +148,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Tags = KanbanItem.TodoItem.Tags,
                 Location = KanbanItem.TodoItem.Location,
                 UId = KanbanItem.TodoItem.UId,
+                ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };
 
             return todoItem;

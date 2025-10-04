@@ -49,7 +49,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 measurement = await SetMeasurementInCache(id);
             }
-
+            measurement.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Measurement, measurement.MeasurementId, measurement.ProgenyId, 0, currentUserInfo);
             return measurement;
         }
 
@@ -106,6 +106,9 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.MeasurementsDb.Add(measurementToAdd);
             _ = await _context.SaveChangesAsync();
+
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Measurement, measurementToAdd.MeasurementId, measurementToAdd.ProgenyId, 0, measurementToAdd.ItemPermissionsDtoList,
+                currentUserInfo);
             _ = await SetMeasurementInCache(measurementToAdd.MeasurementId);
 
             return measurementToAdd;
@@ -132,6 +135,8 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.MeasurementsDb.Update(measurementToUpdate);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Measurement, measurementToUpdate.MeasurementId, measurementToUpdate.ProgenyId, 0, measurementToUpdate.ItemPermissionsDtoList,
+                currentUserInfo);
             _ = await SetMeasurementInCache(measurement.MeasurementId);
 
             return measurementToUpdate;
@@ -156,6 +161,7 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.MeasurementsDb.Remove(measurementToDelete);
             _ = await _context.SaveChangesAsync();
 
+            // Todo: Remove all permissions for this item.
             await RemoveMeasurementFromCache(measurement.MeasurementId, measurement.ProgenyId);
 
 
@@ -195,6 +201,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, measurement.MeasurementId, currentUserInfo, PermissionLevel.View))
                 {
+                    measurement.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Measurement, measurement.MeasurementId, measurement.ProgenyId, 0, currentUserInfo);
                     accessibleMeasurements.Add(measurement);
                 }
             }

@@ -82,26 +82,9 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
             
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanBoard.ProgenyId, userEmail, kanbanBoard.AccessLevel);
-
-            if (accessLevelResult.IsSuccess)
-            {
-                List<KanbanItem> kanbanItems = await kanbanItemsService.GetKanbanItemsForBoard(kanbanBoardId, currentUserInfo, includeDeleted);
-                List<KanbanItem> allowedKanbanItems = [];
-                foreach (KanbanItem kanbanItem in kanbanItems)
-                {
-                    CustomResult<int> itemAccessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanItem.TodoItem.ProgenyId, userEmail, kanbanItem.TodoItem.AccessLevel);
-                    if (itemAccessLevelResult.IsSuccess)
-                    {
-                        allowedKanbanItems.Add(kanbanItem);
-                    }
-                }
-
-                return Ok(allowedKanbanItems);
-            }
-
-            return accessLevelResult.ToActionResult();
+            List<KanbanItem> kanbanItems = await kanbanItemsService.GetKanbanItemsForBoard(kanbanBoardId, currentUserInfo, includeDeleted);
+            
+            return Ok(kanbanItems);
         }
 
         [HttpGet]
@@ -115,11 +98,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
-            if (todoItem.ProgenyId == 0)
-            {
-                return BadRequest("The Todo item is not linked to a valid Progeny.");
-            }
+            
             List<KanbanItem> kanbanItems = await kanbanItemsService.GetKanbanItemsForTodoItem(todoItemId, currentUserInfo, includeDeleted);
             
             return Ok(kanbanItems);
@@ -152,19 +131,9 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId, currentUserInfo);
-            if (kanbanItem.TodoItem == null)
+            if (kanbanItem.TodoItem == null || kanbanItem.TodoItem.TodoItemId == 0)
             {
                 return BadRequest("The Kanban item must be linked to a valid Todo item.");
-            }
-
-            if (kanbanItem.TodoItem.ProgenyId > 0 && kanbanItem.TodoItem.FamilyId > 0)
-            {
-                return BadRequest("A Kanban item cannot be linked to a Todo item that is associated with both a Progeny and a Family.");
-            }
-
-            if (kanbanItem.TodoItem.ProgenyId == 0 && kanbanItem.TodoItem.FamilyId == 0)
-            {
-                return BadRequest("A Kanban item has to be linked to a Todo item that is associated with either a Progeny or a Family.");
             }
 
             kanbanItem.CreatedBy = User.GetUserId();
@@ -184,14 +153,14 @@ namespace KinaUnaProgenyApi.Controllers
         /// Updates an existing Kanban item with the specified ID.
         /// </summary>
         /// <remarks>This method validates the provided Kanban item and ensures that the user has the
-        /// necessary permissions to update it.  The Kanban item must be linked to a valid Todo item, and the user must
+        /// necessary permissions to update it.  The Kanban item must be linked to a valid TodoItem, and the user must
         /// have administrative access to the associated progeny.</remarks>
         /// <param name="id">The unique identifier of the Kanban item to update.</param>
         /// <param name="kanbanItem">The updated Kanban item data. The <see cref="KanbanItem.KanbanItemId"/> property must match the <paramref
         /// name="id"/> parameter.</param>
         /// <returns>An <see cref="IActionResult"/> indicating the result of the operation: <list type="bullet">
         /// <item><description><see cref="BadRequestResult"/> if the input is invalid, the Kanban item does not exist,
-        /// or the item is not linked to a valid Todo item.</description></item> <item><description><see
+        /// or the item is not linked to a valid TodoItem.</description></item> <item><description><see
         /// cref="UnauthorizedResult"/> if the user does not have sufficient permissions to update the Kanban
         /// item.</description></item> <item><description><see cref="OkObjectResult"/> containing the updated Kanban
         /// item, with the associated TodoItem, if the operation is successful.</description></item> </list></returns>
@@ -216,24 +185,12 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest("The Kanban item must be linked to a valid Todo item.");
             }
 
-            if (kanbanItem.TodoItem == null)
+            kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId, currentUserInfo);
+            if (kanbanItem.TodoItem == null || kanbanItem.TodoItem.TodoItemId == 0)
             {
-                kanbanItem.TodoItem = await todosService.GetTodoItem(kanbanItem.TodoItemId, currentUserInfo);
-                if (kanbanItem.TodoItem == null)
-                {
-                    return BadRequest("The linked Todo item could not be found.");
-                }
+                return BadRequest("The linked Todo item could not be found.");
             }
-
-            if (kanbanItem.TodoItem.ProgenyId > 0 && kanbanItem.TodoItem.FamilyId > 0)
-            {
-                return BadRequest("A Kanban item cannot be linked to a Todo item that is associated with both a Progeny and a Family.");
-            }
-            if (kanbanItem.TodoItem.ProgenyId == 0 && kanbanItem.TodoItem.FamilyId == 0)
-            {
-                return BadRequest("A Kanban item has to be linked to a Todo item that is associated with either a Progeny or a Family.");
-            }
-
+            
             kanbanItem.ModifiedBy = User.GetUserId();
             
             KanbanItem resultKanbanItem = await kanbanItemsService.UpdateKanbanItem(kanbanItem, currentUserInfo);

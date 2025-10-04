@@ -49,7 +49,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 note = await SetNoteInCache(id);
             }
-
+            note.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Note, note.NoteId, note.ProgenyId, 0, currentUserInfo);
             return note;
         }
 
@@ -108,6 +108,8 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.NotesDb.Add(noteToAdd);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Note, noteToAdd.NoteId, noteToAdd.ProgenyId, 0, noteToAdd.ItemPermissionsDtoList, currentUserInfo);
+
             _ = await SetNoteInCache(noteToAdd.NoteId);
 
             return noteToAdd;
@@ -134,6 +136,7 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.NotesDb.Update(noteToUpdate);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Note, noteToUpdate.NoteId, noteToUpdate.ProgenyId, 0, noteToUpdate.ItemPermissionsDtoList, currentUserInfo);
             _ = await SetNoteInCache(noteToUpdate.NoteId);
 
             return noteToUpdate;
@@ -161,6 +164,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.NotesDb.Remove(noteToDelete);
             _ = await _context.SaveChangesAsync();
+            // Todo: Remove permissions.
             await RemoveNoteFromCache(note.NoteId, note.ProgenyId);
 
             return note;
@@ -199,6 +203,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Note, note.NoteId, currentUserInfo, PermissionLevel.View))
                 {
+                    note.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Note, note.NoteId, note.ProgenyId, 0, currentUserInfo);
                     accessibleNotes.Add(note);
                 }
             }

@@ -105,11 +105,11 @@
                 </div>
                 <div class="row">
                     <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.KanbanBoard.CreatedBy</div>
-                    @if (Model.KanbanBoard.ItemPerMission.PermissionLevel >= PermissionLevel.Edit )
+                    @if (Model.KanbanBoard.ItemPerMission.PermissionLevel > PermissionLevel.Add )
                     {
                         <div class="col-12">
                             <a data-edit-item-type="kanbanboard" data-edit-item-item-id="@Model.KanbanBoard.KanbanBoardId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                            @if (Model.KanbanBoard.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                            @if (Model.KanbanBoard.ItemPerMission.PermissionLevel > PermissionLevel.Edit)
                             {
                                 <a data-delete-item-type="kanbanboard" data-delete-item-item-id="@Model.KanbanBoard.KanbanBoardId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
                             }

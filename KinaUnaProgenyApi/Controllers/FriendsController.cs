@@ -48,6 +48,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Progeny(int id)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
             List<Friend> friendsList = await friendService.GetFriendsList(id, currentUserInfo);
 
             return Ok(friendsList);
@@ -100,7 +101,7 @@ namespace KinaUnaProgenyApi.Controllers
             value.CreatedBy = User.GetUserId();
             value.ModifiedBy = User.GetUserId();
 
-            Friend friendItem = await friendService.AddFriend(value);
+            Friend friendItem = await friendService.AddFriend(value, currentUserInfo);
             if (friendItem == null)
             {
                 return Unauthorized();
@@ -110,7 +111,7 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopyFriendPropertiesForAdd(friendItem);
             await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
             Progeny progeny = await progenyService.GetProgeny(friendItem.ProgenyId, currentUserInfo);
-            string notificationTitle = "Friend added for " + progeny.NickName;
+            string notificationTitle = "Friend added for " + progeny.NickName; // Todo: Localize.
             string notificationMessage = currentUserInfo.FullName() + " added a new friend for " + progeny.NickName;
             await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendFriendNotification(friendItem, currentUserInfo, notificationTitle);
@@ -150,7 +151,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             friendItem.CopyPropertiesForUpdate(value);
 
-            friendItem = await friendService.UpdateFriend(friendItem);
+            friendItem = await friendService.UpdateFriend(friendItem, currentUserInfo);
             if (friendItem == null)
             {
                 return Unauthorized();
@@ -193,7 +194,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             friendItem.ModifiedBy = User.GetUserId();
 
-            Friend deletedFriend = await friendService.DeleteFriend(friendItem);
+            Friend deletedFriend = await friendService.DeleteFriend(friendItem, currentUserInfo);
             if (deletedFriend == null)
             {
                 return Unauthorized();
@@ -208,7 +209,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             friendItem.Author = User.GetUserId();
             
-            string notificationTitle = "Friend deleted for " + progeny.NickName;
+            string notificationTitle = "Friend deleted for " + progeny.NickName; // Todo: Localize.
             string notificationMessage = currentUserInfo.FullName() + " deleted a friend for " + progeny.NickName + ". Friend: " + friendItem.Name;
 
             friendItem.AccessLevel = timeLineItem.AccessLevel = 0;
@@ -232,7 +233,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             Friend friend = await friendService.GetFriend(friendId, currentUserInfo);
 
-            if (friend == null)
+            if (friend == null || friend.FriendId == 0 || friend.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return NotFound();
             }
@@ -244,7 +245,7 @@ namespace KinaUnaProgenyApi.Controllers
                 friend.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Friends, friend.GetPictureFileContentType());
             }
 
-            friend = await friendService.UpdateFriend(friend);
+            friend = await friendService.UpdateFriend(friend, currentUserInfo);
 
             return Ok(friend);
 

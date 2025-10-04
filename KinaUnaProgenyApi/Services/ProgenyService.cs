@@ -381,7 +381,7 @@ namespace KinaUnaProgenyApi.Services
         {
             Progeny progeny = await GetProgeny(progenyId, currentUserInfo);
             if (progeny == null) return null;
-
+            
             ProgenyInfo progenyInfo = await _context.ProgenyInfoDb.AsNoTracking().SingleOrDefaultAsync(p => p.ProgenyId == progenyId);
 
             if (progenyInfo == null)

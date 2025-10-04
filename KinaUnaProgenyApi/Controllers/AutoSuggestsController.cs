@@ -97,7 +97,7 @@ namespace KinaUnaProgenyApi.Controllers
             List<TodoItem> allTodos = await todosService.GetTodosList(progenyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allTodos);
             
-            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsListForProgeny(progenyId, currentUserInfo);
+            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsListForProgenyOrFamily(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allKanbanBoards);
             
             List<string> autoSuggestList = autoSuggestListBuilder.GetContextsList();
@@ -175,7 +175,7 @@ namespace KinaUnaProgenyApi.Controllers
             List<TodoItem> allTodoItems = await todosService.GetTodosList(progenyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allTodoItems);
 
-            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsListForProgeny(progenyId, currentUserInfo);
+            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsListForProgenyOrFamily(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allKanbanBoards);
 
             List<string> autoSuggestList = autoSuggestListBuilder.GetTagsList();

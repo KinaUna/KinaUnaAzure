@@ -1,16 +1,34 @@
 ﻿@using System.Web
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.KanbanBoardViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.KanbanBoard.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Kanban board added", PageNames.Todos, Model.LanguageId);
+    string nameString = "";
+    if(Model.KanbanBoard.ProgenyId > 0)
+    {
+        nameString = Model.KanbanBoard.Progeny.NickName;
+    }
+    if(Model.KanbanBoard.FamilyId > 0)
+    {
+        nameString = Model.KanbanBoard.Family.Name;
+    }
+    string title = nameString + " : " + await LocaleManager.GetTranslation("Kanban board added", PageNames.Todos, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-todos-header">
-                <img src="@Model.KanbanBoard.Progeny.PictureLink" class="item-details-title-picture"/>
+                @if (Model.KanbanBoard.ProgenyId > 0)
+                {
+                    <img src="@Model.KanbanBoard.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                @if (Model.KanbanBoard.FamilyId > 0)
+                {
+                    <img src="@Model.KanbanBoard.Family.GetProfilePictureUrl()" class="item-details-title-picture"/>
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -81,11 +99,14 @@
                 <div class="space-10"></div>
                 <div class="row">
                     <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.KanbanBoard.CreatedBy</div>
-                    @if (Model.IsCurrentUserProgenyAdmin)
+                    @if (Model.KanbanBoard.ItemPerMission.PermissionLevel > PermissionLevel.Add)
                     {
                         <div class="col-12">
                             <a data-edit-item-type="kanbanboard" data-edit-item-item-id="@Model.KanbanBoard.KanbanBoardId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                            <a data-delete-item-type="kanbanboard" data-delete-item-item-id="@Model.KanbanBoard.KanbanBoardId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                            @if (Model.KanbanBoard.ItemPerMission.PermissionLevel > PermissionLevel.Edit)
+                            {
+                                <a data-delete-item-type="kanbanboard" data-delete-item-item-id="@Model.KanbanBoard.KanbanBoardId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                            }
                         </div>
                     }
                 </div>

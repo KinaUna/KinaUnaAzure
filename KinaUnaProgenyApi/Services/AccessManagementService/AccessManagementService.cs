@@ -45,8 +45,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 return await HasPrivatePermission(itemType, itemId, userInfo);
             }
-            
-            TimelineItemPermission itemPermission = await GetItemPermissionForUser(itemType, itemId, userInfo);
+
+            // We don't check for add permission here, as it is not relevant for existing items.
+            TimelineItemPermission itemPermission = await GetItemPermissionForUser(itemType, itemId, 0, 0, userInfo);
 
             return itemPermission.PermissionLevel >= requiredLevel;
         }
@@ -59,12 +60,14 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// member of the respective group.</remarks>
         /// <param name="itemType">The type of the timeline item, represented as a <see cref="KinaUnaTypes.TimeLineType"/>.</param>
         /// <param name="itemId">The unique identifier of the timeline item.</param>
+        /// <param name="progenyId">The unique identifier of the progeny associated with the timeline item.</param>
+        /// <param name="familyId">The unique identifier of the family associated with the timeline item.</param>
         /// <param name="userInfo">The user information, represented as a <see cref="UserInfo"/> object, for whom the permission is being
         /// retrieved.</param>
         /// <returns>A <see cref="TimelineItemPermission"/> object representing the highest permission level the specified user
         /// has for the given timeline item. If no permissions are found, the returned object will have a <see
         /// cref="PermissionLevel"/> of <see cref="PermissionLevel.None"/>.</returns>
-        public async Task<TimelineItemPermission> GetItemPermissionForUser(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo userInfo)
+        public async Task<TimelineItemPermission> GetItemPermissionForUser(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, UserInfo userInfo)
         {
             TimelineItemPermission resultPermission = new()
             {
@@ -142,6 +145,20 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
                 highestPermission = permission.PermissionLevel;
                 resultPermission = permission;
+            }
+
+            if (highestPermission == PermissionLevel.View)
+            {
+                // Check if the user has permission to add for the progeny or family, as it affects the availability of some actions, like adding subtasks for a TodoItem.
+                if (progenyId > 0 && await HasProgenyPermission(progenyId, userInfo, PermissionLevel.Add))
+                {
+                    resultPermission.PermissionLevel = PermissionLevel.Add;
+                }
+
+                if (familyId > 0 && await HasFamilyPermission(familyId, userInfo, PermissionLevel.Add))
+                {
+                    resultPermission.PermissionLevel = PermissionLevel.Add;
+                }
             }
 
             return resultPermission;
@@ -469,6 +486,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         public async Task AddItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId,
             List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo)
         {
+            if(itemPermissionsDtoList == null || itemPermissionsDtoList.Count == 0)
+            {
+                // No permissions to add.
+                return;
+            }
+
             foreach (ItemPermissionDto permissionDto in itemPermissionsDtoList)
             {
                 string userId = string.Empty;
@@ -536,6 +559,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         public async Task<List<TimelineItemPermission>> UpdateItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId,
             List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo)
         {
+            if (itemPermissionsDtoList == null || itemPermissionsDtoList.Count == 0 || itemId == 0)
+            {
+                // No permissions to update.
+                return [];
+            }
             List<TimelineItemPermission> changedItemPermissions = [];
             bool wasPreviouslyCreatorOnly = false;
             bool wasPreviouslyPrivate = false;

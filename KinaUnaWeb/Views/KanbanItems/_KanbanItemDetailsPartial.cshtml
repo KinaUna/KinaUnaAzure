@@ -1,14 +1,25 @@
 ﻿@using System.Web
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.KanbanItemViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.KanbanItem.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    string nameString = "";
+    if (Model.KanbanItem.TodoItem.ProgenyId > 0)
+    {
+        nameString = Model.KanbanItem.TodoItem.Progeny.NickName;
+    }
+
+    if (Model.KanbanItem.TodoItem.FamilyId > 0)
+    {
+        nameString = Model.KanbanItem.TodoItem.Family.Name;
+    }
+    string title = nameString + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
     if (Model.ParentTodoItem != null && Model.ParentTodoItem.TodoItemId != 0)
     {
-        title = Model.KanbanItem.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Subtask", PageNames.Todos, Model.LanguageId);
+        title = nameString + " : " + await LocaleManager.GetTranslation("Subtask", PageNames.Todos, Model.LanguageId);
     }
     string setAsNotStartedString = await LocaleManager.GetTranslation("Set as not started", PageNames.Todos, Model.LanguageId);
     string setAsInProgressString = await LocaleManager.GetTranslation("Set as in progress", PageNames.Todos, Model.LanguageId);
@@ -19,7 +30,14 @@
     <div class="timeline-card-body item-details-content modal-settings-panel bg-todos">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-todos-header">
-                <img src="@Model.KanbanItem.TodoItem.Progeny.PictureLink" class="item-details-title-picture"/>
+                @if (Model.KanbanItem.TodoItem.ProgenyId > 0)
+                {
+                    <img src="@Model.KanbanItem.TodoItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                @if (Model.KanbanItem.TodoItem.FamilyId > 0)
+                {
+                    <img src="@Model.KanbanItem.TodoItem.Family.GetProfilePictureUrl()" class="item-details-title-picture"/>
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link kanban-item-details-close-button"><span>×</span></button>
             </div>
@@ -121,7 +139,7 @@
                     </div>
                 </div>
             </div>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.KanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add)
             {
                 <div class="col-12">
                     <div class="space-20"></div>
@@ -205,10 +223,13 @@
             }
             <div class="space-10"></div>
             <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.KanbanItem.TodoItem.CreatedBy</div>
-            @if(Model.IsCurrentUserProgenyAdmin){
+            @if(Model.KanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add){
                 <div class="col-12">
                     <a data-edit-item-type="kanbanitem" data-edit-item-item-id="@Model.KanbanItem.KanbanItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a data-delete-item-type="kanbanitem" data-delete-item-item-id="@Model.KanbanItem.KanbanItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    @if (Model.KanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Edit)
+                    {
+                        <a data-delete-item-type="kanbanitem" data-delete-item-item-id="@Model.KanbanItem.KanbanItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
                 </div>
             }
         </div>

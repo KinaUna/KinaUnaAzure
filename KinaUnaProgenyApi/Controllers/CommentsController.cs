@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id, currentUserInfo);
 
-            if (progeny != null && value.CommentThreadNumber != 0)
+            if (progeny != null && progeny.Id != 0 && value.CommentThreadNumber != 0)
             {
                 if (currentUserInfo.UserId != value.Author)
                 {
@@ -139,7 +139,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id, currentUserInfo);
 
-            if (progeny != null)
+            if (progeny != null && progeny.Id != 0)
             {
 
                 if (currentUserInfo.UserId != comment.Author)

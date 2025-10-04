@@ -111,13 +111,18 @@ namespace KinaUna.Data.Models
         [NotMapped]
         public Family.Family Family { get; set; }
 
+        /// <summary>
+        /// The current user's permissions for this item.
+        /// </summary>
         [NotMapped]
         public TimelineItemPermission ItemPerMission { get; set; }
 
-        [NotMapped]
-        public List<TimelineItemPermission> ItemPermissionsList { get; set; } = new List<TimelineItemPermission>();
+        /// <summary>
+        /// Gets or sets the list of item permissions associated with the current entity. For adding or updating item permissions.
+        /// </summary>
         [NotMapped]
         public List<ItemPermissionDto> ItemPermissionsDtoList { get; set; } = new List<ItemPermissionDto>();
+        
         /// <summary>
         /// Gets or sets the list of columns associated with the Kanban board.
         /// </summary>

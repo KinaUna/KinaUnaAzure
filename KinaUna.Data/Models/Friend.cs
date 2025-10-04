@@ -1,5 +1,8 @@
-﻿using KinaUna.Data.Models.ItemInterfaces;
+﻿using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.ItemInterfaces;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -61,5 +64,17 @@ namespace KinaUna.Data.Models
         /// Gets or sets the date and time when the object was last modified.
         /// </summary>
         public DateTime ModifiedTime { get; set; }
+
+        /// <summary>
+        /// The current user's permissions for this item.
+        /// </summary>
+        [NotMapped]
+        public TimelineItemPermission ItemPerMission { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of item permissions associated with the current entity. For adding or updating item permissions.
+        /// </summary>
+        [NotMapped]
+        public List<ItemPermissionDto> ItemPermissionsDtoList { get; set; } = [];
     }
 }

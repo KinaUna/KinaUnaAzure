@@ -192,6 +192,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, skill.SkillId, currentUserInfo, PermissionLevel.View))
                 {
+                    skill.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, skill.SkillId, skill.ProgenyId, 0, currentUserInfo);
                     filteredList.Add(skill);
                 }
             }

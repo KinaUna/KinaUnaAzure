@@ -22,7 +22,6 @@ namespace KinaUna.Data.Extensions
             currentFriend.Context = otherFriend.Context;
             currentFriend.Name = otherFriend.Name;
             currentFriend.Type = otherFriend.Type;
-            currentFriend.ProgenyId = otherFriend.ProgenyId;
             currentFriend.Description = otherFriend.Description;
             currentFriend.FriendSince = otherFriend.FriendSince ?? DateTime.UtcNow;
             currentFriend.Notes = otherFriend.Notes;
@@ -32,6 +31,7 @@ namespace KinaUna.Data.Extensions
             }
 
             currentFriend.Tags = otherFriend.Tags;
+            currentFriend.ItemPermissionsDtoList = otherFriend.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -57,6 +57,7 @@ namespace KinaUna.Data.Extensions
             currentFriend.Notes = otherFriend.Notes;
             currentFriend.PictureLink = otherFriend.PictureLink;
             currentFriend.Tags = otherFriend.Tags;
+            currentFriend.ItemPermissionsDtoList = otherFriend.ItemPermissionsDtoList;
         }
 
         /// <summary>

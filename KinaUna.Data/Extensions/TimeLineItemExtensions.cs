@@ -29,6 +29,7 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForAdd(this TimeLineItem currentTimeLineItem, TimeLineItem otherTimeLineItem)
         {
             currentTimeLineItem.ProgenyId = otherTimeLineItem.ProgenyId;
+            currentTimeLineItem.FamilyId = otherTimeLineItem.FamilyId;
             currentTimeLineItem.AccessLevel = otherTimeLineItem.AccessLevel;
             currentTimeLineItem.CreatedBy = otherTimeLineItem.CreatedBy;
             currentTimeLineItem.CreatedTime = DateTime.UtcNow;
@@ -68,6 +69,7 @@ namespace KinaUna.Data.Extensions
             if (currentTimeLineItem == null || !calendarItem.StartTime.HasValue || !calendarItem.EndTime.HasValue) return false;
 
             currentTimeLineItem.ProgenyId = calendarItem.ProgenyId;
+            currentTimeLineItem.FamilyId = calendarItem.FamilyId;
             currentTimeLineItem.ProgenyTime = calendarItem.StartTime.Value;
             currentTimeLineItem.AccessLevel = calendarItem.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Calendar;
@@ -135,6 +137,7 @@ namespace KinaUna.Data.Extensions
         public static void CopyContactPropertiesForAdd(this TimeLineItem currentTimeLineItem, Contact contactItem)
         {
             currentTimeLineItem.ProgenyId = contactItem.ProgenyId;
+            currentTimeLineItem.FamilyId = contactItem.FamilyId;
             currentTimeLineItem.AccessLevel = contactItem.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Contact;
             currentTimeLineItem.ItemId = contactItem.ContactId.ToString();
@@ -222,6 +225,7 @@ namespace KinaUna.Data.Extensions
         public static void CopyLocationPropertiesForAdd(this TimeLineItem currentTimeLineItem, Location location)
         {
             currentTimeLineItem.ProgenyId = location.ProgenyId;
+            currentTimeLineItem.FamilyId = location.FamilyId;
             currentTimeLineItem.AccessLevel = location.AccessLevel;
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Location;
             currentTimeLineItem.ItemId = location.LocationId.ToString();
@@ -544,7 +548,8 @@ namespace KinaUna.Data.Extensions
         public static bool CopyTodoItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, TodoItem todoItem)
         {
             if (currentTimeLineItem == null) return false;
-
+            currentTimeLineItem.ProgenyId = todoItem.ProgenyId;
+            currentTimeLineItem.FamilyId = todoItem.FamilyId;
             DateTime progenyTime = todoItem.CreatedTime;
             if (todoItem.StartDate.HasValue)
             {

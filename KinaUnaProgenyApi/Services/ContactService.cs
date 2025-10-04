@@ -52,6 +52,8 @@ namespace KinaUnaProgenyApi.Services
                 contact = await SetContactInCache(id);
             }
 
+            contact.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, id, contact.ProgenyId, contact.FamilyId, currentUserInfo);
+
             return contact;
         }
 
@@ -92,6 +94,7 @@ namespace KinaUnaProgenyApi.Services
             _ = await _context.SaveChangesAsync();
             _ = await SetContactInCache(contactToAdd.ContactId);
 
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Contact, contactToAdd.ContactId, contactToAdd.ProgenyId, contactToAdd.FamilyId, contactToAdd.ItemPermissionsDtoList, currentUserInfo);
             return contactToAdd;
         }
 
@@ -138,47 +141,17 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The updated Contact object.</returns>
         public async Task<Contact> UpdateContact(Contact contact, UserInfo currentUserInfo)
         {
-            if (contact.ProgenyId > 0 && contact.FamilyId > 0)
-            {
-                return null;
-            }
-            if (contact.ProgenyId == 0 && contact.FamilyId == 0)
-            {
-                return null;
-            }
-
             if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, contact.ContactId, currentUserInfo, PermissionLevel.Edit))
             {
                 return null;
             }
 
             Contact contactToUpdate = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
-            if (contactToUpdate == null) return null;
+            if (contactToUpdate == null || contactToUpdate.ProgenyId != contact.ProgenyId || contactToUpdate.FamilyId != contact.FamilyId) return null;
             
             string oldPictureLink = contactToUpdate.PictureLink;
 
-            contactToUpdate.AccessLevel = contact.AccessLevel;
-            contactToUpdate.Active = contact.Active;
-            contactToUpdate.AddressIdNumber = contact.AddressIdNumber;
-            contactToUpdate.Address = contact.Address;
-            contactToUpdate.ProgenyId = contact.ProgenyId;
-            contactToUpdate.AddressString = contact.AddressString;
-            contactToUpdate.Author = contact.Author;
-            contactToUpdate.Context = contact.Context;
-            contactToUpdate.DateAdded = contact.DateAdded;
-            contactToUpdate.DisplayName = contact.DisplayName;
-            contactToUpdate.FirstName = contact.FirstName;
-            contactToUpdate.MiddleName = contact.MiddleName;
-            contactToUpdate.LastName = contact.LastName;
-            contactToUpdate.PictureLink = contact.PictureLink;
-            contactToUpdate.Email1 = contact.Email1;
-            contactToUpdate.Email2 = contact.Email2;
-            contactToUpdate.PhoneNumber = contact.PhoneNumber;
-            contactToUpdate.MobileNumber = contact.MobileNumber;
-            contactToUpdate.Notes = contact.Notes;
-            contactToUpdate.Progeny = contact.Progeny;
-            contactToUpdate.Tags = contact.Tags;
-            contactToUpdate.Website = contact.Website;
+            contactToUpdate.CopyPropertiesForUpdate(contact);
 
             _context.ContactsDb.Update(contactToUpdate);
             _ = await _context.SaveChangesAsync();
@@ -193,7 +166,9 @@ namespace KinaUnaProgenyApi.Services
             }
 
             _ = await SetContactInCache(contactToUpdate.ContactId);
-            
+
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Contact, contactToUpdate.ContactId, contactToUpdate.ProgenyId, contactToUpdate.FamilyId, contactToUpdate.ItemPermissionsDtoList,
+                currentUserInfo);
             return contact;
         }
 
@@ -222,6 +197,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 await _imageStore.DeleteImage(contactToDelete.PictureLink, BlobContainers.Contacts);
             }
+
+            // Todo: Remove permissions.
             return contact;
         }
 
@@ -260,6 +237,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, contact.ContactId, currentUserInfo, PermissionLevel.View))
                 {
+                    contact.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, contact.ContactId, contact.ProgenyId, contact.FamilyId, currentUserInfo);
                     accessibleContacts.Add(contact);
                 }
             }

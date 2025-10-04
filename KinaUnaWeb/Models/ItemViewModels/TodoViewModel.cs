@@ -8,6 +8,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         public TodoItem TodoItem { get; set; } = new();
         public List<SelectListItem> ProgenyList { get; set; }
+        public List<SelectListItem> FamilyList { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> StatusList { get; set; }
         public int CopyFromTodoId { get; set; } = 0;
@@ -82,20 +83,29 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 }
             }
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListEn[TodoItem.AccessLevel].Selected = true;
-        }
-
+        
         public void SetProgenyList()
         {
             TodoItem.ProgenyId = CurrentProgenyId;
             foreach (SelectListItem item in ProgenyList)
             {
                 if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+
+        public void SetFamilyList()
+        {
+            TodoItem.FamilyId = CurrentFamilyId;
+            foreach (SelectListItem item in FamilyList)
+            {
+                if (item.Value == CurrentFamilyId.ToString())
                 {
                     item.Selected = true;
                 }

@@ -64,19 +64,20 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         Task<KanbanBoard> DeleteKanbanBoard(KanbanBoard existingKanbanBoard, UserInfo currentUserInfo, bool hardDelete = false);
 
         /// <summary>
-        /// Retrieves a list of Kanban boards associated with a specific progeny, filtered by the user's access level.
+        /// Retrieves a list of Kanban boards associated with a specific progeny or family, filtered by the user's access level.
         /// </summary>
         /// <remarks>This method performs a database query to retrieve Kanban boards that belong to the
-        /// specified progeny and meet the access level requirements. The results are returned as a read-only list and
+        /// specified progeny or family and meet the permission level requirements. The results are returned as a read-only list and
         /// are not tracked by the database context.</remarks>
         /// <param name="progenyId">The unique identifier of the progeny for which Kanban boards are requested.</param>
+        /// <param name="familyId">The unique identifier of the family for which Kanban boards are requested.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <param name="request">An object containing additional parameters for the request. This may include filtering or pagination
         /// options.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
         /// cref="KanbanBoard"/> objects that meet the specified criteria. The list will be empty if no matching boards
         /// are found.</returns>
-        Task<List<KanbanBoard>> GetKanbanBoardsForProgeny(int progenyId, UserInfo currentUserInfo, KanbanBoardsRequest request);
+        Task<List<KanbanBoard>> GetKanbanBoardsForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo, KanbanBoardsRequest request);
 
         /// <summary>
         /// Creates a response object containing a paginated list of Kanban boards and associated metadata.
@@ -91,15 +92,17 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// <returns>A <see cref="KanbanBoardsResponse"/> object containing the paginated list of Kanban boards, the total number
         /// of items, the total number of pages, and the current page number.</returns>
         KanbanBoardsResponse CreateKanbanBoardsResponse(List<KanbanBoard> kanbanBoards, KanbanBoardsRequest request);
+
         /// <summary>
-        /// Retrieves a list of Kanban boards for a specified progeny, filtered by the given access level.
+        /// Retrieves a list of Kanban boards for a specified progeny or family.
         /// </summary>
         /// <param name="progenyId">The unique identifier of the progeny whose Kanban boards are to be retrieved.</param>
+        /// <param name="familyId"></param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>
         /// A task that represents the asynchronous operation. The task result contains a list of <see cref="KanbanBoard"/>
-        /// objects that match the specified progeny and access level. The list will be empty if no matching boards are found.
+        /// objects that match the specified progeny or family. The list will be empty if no matching boards are found.
         /// </returns>
-        Task<List<KanbanBoard>> GetKanbanBoardsListForProgeny(int progenyId, UserInfo currentUserInfo);
+        Task<List<KanbanBoard>> GetKanbanBoardsListForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo);
     }
 }

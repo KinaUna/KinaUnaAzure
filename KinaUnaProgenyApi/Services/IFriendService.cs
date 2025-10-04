@@ -20,22 +20,25 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new Friend to the database and the cache.
         /// </summary>
         /// <param name="friend">The Friend object to add.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to set CreatedBy and ModifiedBy fields.</param>
         /// <returns>The added Friend object.</returns>
-        Task<Friend> AddFriend(Friend friend);
-        
+        Task<Friend> AddFriend(Friend friend, UserInfo currentUserInfo);
+
         /// <summary>
         /// Updates a Friend in the database and the cache.
         /// </summary>
         /// <param name="friend">The Friend object with the updated properties.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to set the ModifiedBy field.</param>
         /// <returns>The updated Friend object.</returns>
-        Task<Friend> UpdateFriend(Friend friend);
+        Task<Friend> UpdateFriend(Friend friend, UserInfo currentUserInfo);
 
         /// <summary>
         /// Deletes a Friend from the database and the cache.
         /// </summary>
         /// <param name="friend">The Friend object to delete.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The deleted Friend object.</returns>
-        Task<Friend> DeleteFriend(Friend friend);
+        Task<Friend> DeleteFriend(Friend friend, UserInfo currentUserInfo);
 
         /// <summary>
         /// Gets a list of all Friends for a Progeny from the cache.

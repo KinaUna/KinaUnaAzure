@@ -54,15 +54,13 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.IsReadonly = otherCalendarItem.IsReadonly;
             currentCalendarItem.Location = otherCalendarItem.Location;
             currentCalendarItem.Notes = otherCalendarItem.Notes;
-            currentCalendarItem.ProgenyId = otherCalendarItem.ProgenyId;
-            currentCalendarItem.FamilyId = otherCalendarItem.FamilyId;
             currentCalendarItem.StartString = otherCalendarItem.StartString;
             currentCalendarItem.Title = otherCalendarItem.Title;
-            currentCalendarItem.Progeny = otherCalendarItem.Progeny;
             currentCalendarItem.RecurrenceRuleId = otherCalendarItem.RecurrenceRuleId;
             currentCalendarItem.RecurrenceRule = otherCalendarItem.RecurrenceRule;
             currentCalendarItem.ModifiedBy = otherCalendarItem.ModifiedBy;
             currentCalendarItem.ModifiedTime = DateTime.UtcNow;
+            currentCalendarItem.ItemPermissionsDtoList = otherCalendarItem.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -78,6 +76,7 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.Author = otherCalendarItem.Author;
             currentCalendarItem.Notes = otherCalendarItem.Notes;
             currentCalendarItem.ProgenyId = otherCalendarItem.ProgenyId;
+            currentCalendarItem.FamilyId = otherCalendarItem.FamilyId;
             currentCalendarItem.AllDay = otherCalendarItem.AllDay;
             currentCalendarItem.Context = otherCalendarItem.Context;
             currentCalendarItem.Location = otherCalendarItem.Location;
@@ -87,6 +86,7 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.CreatedTime = DateTime.UtcNow;
             currentCalendarItem.ModifiedBy = otherCalendarItem.ModifiedBy;
             currentCalendarItem.ModifiedTime = DateTime.UtcNow;
+            currentCalendarItem.ItemPermissionsDtoList = otherCalendarItem.ItemPermissionsDtoList;
         }
 
         /// <summary>

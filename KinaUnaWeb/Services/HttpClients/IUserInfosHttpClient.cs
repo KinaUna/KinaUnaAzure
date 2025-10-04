@@ -81,8 +81,10 @@ namespace KinaUnaWeb.Services.HttpClients
         /// method.</remarks>
         /// <param name="type">The type of the item, represented as a <see cref="KinaUnaTypes.TimeLineType"/>.</param>
         /// <param name="itemId">The unique identifier of the item for which the permission level is being retrieved.</param>
+        /// <param name="progenyId">The ProgenyId associated with the item.</param>
+        /// <param name="familyId">The FamilyId associated with the item.</param>
         /// <returns>The <see cref="PermissionLevel"/> indicating the user's access rights to the specified item.  Returns <see
         /// cref="PermissionLevel.None"/> if the user does not have any permissions or if the request fails.</returns>
-        Task<PermissionLevel> GetItemPermissionForUser(KinaUnaTypes.TimeLineType type, int itemId);
+        Task<PermissionLevel> GetItemPermissionForUser(KinaUnaTypes.TimeLineType type, int itemId, int progenyId, int familyId);
     }
 }

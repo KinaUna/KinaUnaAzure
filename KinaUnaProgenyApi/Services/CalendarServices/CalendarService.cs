@@ -54,6 +54,8 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 calendarItem = await SetCalendarItemInCache(id);
             }
 
+            calendarItem.ItemPerMission =
+                await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, calendarItem.ProgenyId, calendarItem.FamilyId, currentUserInfo);
             return calendarItem;
         }
 
@@ -117,7 +119,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             _ = _context.CalendarDb.Add(calendarItemToAdd);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Calendar, calendarItemToAdd.EventId, calendarItemToAdd.ProgenyId, calendarItemToAdd.FamilyId, calendarItemToAdd.ItemPermissionsDtoList,
+                currentUserInfo);
             _ = await SetCalendarItemInCache(calendarItemToAdd.EventId);
+
 
             return calendarItemToAdd;
         }
@@ -185,18 +190,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// <returns>The updated CalendarItem.</returns>
         public async Task<CalendarItem> UpdateCalendarItem(CalendarItem item, UserInfo currentUserInfo)
         {
-            // A CalendarItem must belong to either a Progeny or a Family, not both.
-            if (item.ProgenyId > 0 && item.FamilyId > 0)
-            {
-                return null;
-            }
             if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, item.EventId, currentUserInfo, PermissionLevel.Edit))
             {
                 return new CalendarItem();
             }
 
             CalendarItem calendarItemToUpdate = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
-            if (calendarItemToUpdate == null) return null;
+            if (calendarItemToUpdate == null || calendarItemToUpdate.ProgenyId != item.ProgenyId || calendarItemToUpdate.FamilyId != item.FamilyId) return null;
 
             // If the item has a RecurrenceRule, add it to the database if it doesn't exist.
             if (calendarItemToUpdate.RecurrenceRuleId == 0 && item.RecurrenceRule.Frequency != 0)
@@ -273,6 +273,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             _ = _context.CalendarDb.Update(calendarItemToUpdate);
             _ = await _context.SaveChangesAsync();
             
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Calendar, calendarItemToUpdate.EventId, calendarItemToUpdate.ProgenyId, calendarItemToUpdate.FamilyId, calendarItemToUpdate.ItemPermissionsDtoList,
+                currentUserInfo);
+
             _ = await SetCalendarItemInCache(calendarItemToUpdate.EventId);
 
             return calendarItemToUpdate;
@@ -312,6 +315,8 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
             _ = _context.CalendarDb.Remove(calendarItemToDelete);
             _ = await _context.SaveChangesAsync();
+
+            // Todo: Remove permissions.
 
             await RemoveCalendarItemFromCache(item.EventId, item.ProgenyId, item.FamilyId);
 
@@ -354,6 +359,8 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
                 {
+                    calendarItem.ItemPerMission =
+                        await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, calendarItem.ProgenyId, calendarItem.FamilyId, currentUserInfo);
                     accessibleCalendarItems.Add(calendarItem);
                 }
             }
@@ -457,6 +464,20 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             return recurringEvents;
         }
 
+        /// <summary>
+        /// Retrieves a list of calendar items for the specified progeny or family, filtered by context.
+        /// </summary>
+        /// <remarks>This method retrieves all calendar items associated with the specified progeny and
+        /// family, and applies an optional  filter based on the provided context. The context filter is
+        /// case-insensitive and matches substrings within the  <c>Context</c> property of each calendar item.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny for whom the calendar items are retrieved.</param>
+        /// <param name="familyId">The unique identifier of the family associated with the progeny.</param>
+        /// <param name="context">A string used to filter the calendar items by their context. Only items whose context contains the specified
+        /// string  (case-insensitive) will be included. If <see langword="null"/> or empty, no filtering is applied.</param>
+        /// <param name="currentUserInfo">The user information of the currently authenticated user, used for authorization.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="CalendarItem"/>  objects matching the specified criteria. If no items match, an empty list is
+        /// returned.</returns>
         public async Task<List<CalendarItem>> GetCalendarItemsWithContext(int progenyId, int familyId, string context, UserInfo currentUserInfo)
         {
             List<CalendarItem> allItems = await GetCalendarList(progenyId, familyId, currentUserInfo);

@@ -162,10 +162,14 @@ namespace KinaUnaWeb.Controllers
             else
             {
                 todoItemResponse.TodoItem = await todoItemsHttpClient.GetTodoItem(parameters.TodoItemId);
+                if (todoItemResponse.TodoItem == null)
+                {
+                    return PartialView("_NotFoundPartial");
+                }
                 todoItemResponse.TodoItem.Progeny = await progenyHttpClient.GetProgeny(todoItemResponse.TodoItem.ProgenyId);
                 todoItemResponse.TodoItemId = todoItemResponse.TodoItem.TodoItemId;
 
-                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), todoItemResponse.TodoItem.ProgenyId);
+                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), todoItemResponse.TodoItem.ProgenyId, todoItemResponse.TodoItem.FamilyId, false);
                 todoItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
                 UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(todoItemResponse.TodoItem.CreatedBy);
                 todoItemResponse.TodoItem.CreatedBy = todoUserInfo.FullName();
@@ -186,7 +190,11 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ViewTodo(int todoId, bool partialView = false)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            if (todoItem == null || todoItem.TodoItemId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
             TodoViewModel model = new(baseModel)
             {
                 TodoItem = todoItem

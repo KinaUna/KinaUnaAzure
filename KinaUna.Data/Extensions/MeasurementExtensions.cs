@@ -25,6 +25,7 @@ namespace KinaUna.Data.Extensions
             currentMeasurement.Weight = otherMeasurement.Weight;
             currentMeasurement.ModifiedBy = otherMeasurement.ModifiedBy;
             currentMeasurement.ModifiedTime = DateTime.UtcNow;
+            currentMeasurement.ItemPermissionsDtoList = otherMeasurement.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -48,6 +49,7 @@ namespace KinaUna.Data.Extensions
             currentMeasurement.EyeColor = otherMeasurement.EyeColor;
             currentMeasurement.AccessLevel = otherMeasurement.AccessLevel;
             currentMeasurement.Author = otherMeasurement.Author;
+            currentMeasurement.ItemPermissionsDtoList = otherMeasurement.ItemPermissionsDtoList;
         }
     }
 }

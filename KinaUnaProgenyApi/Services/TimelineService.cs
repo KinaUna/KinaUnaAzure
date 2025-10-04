@@ -156,32 +156,48 @@ namespace KinaUnaProgenyApi.Services
             
             TimeLineItem timeLineItemToUpdate = await _context.TimeLineDb.SingleOrDefaultAsync(ti => ti.TimeLineId == item.TimeLineId);
 
+            // Only update the TimeLineItem if it exists, and if it is linked to either a Progeny or a Family.
             if (timeLineItemToUpdate == null || (item.ProgenyId > 0 && item.FamilyId > 0))
             {
                 return null;
             }
 
+            // ProgenyId or FamilyId must be set.
             if (item.ProgenyId == 0 && item.FamilyId == 0)
             {
                 return null;
             }
-            
+
+            bool assignedToDifferentEntity = false;
             if (timeLineItemToUpdate.ProgenyId != item.ProgenyId || timeLineItemToUpdate.FamilyId != item.FamilyId)
             {
-                // ProgenyId or FamilyId change is not allowed.
-                return null;
+                assignedToDifferentEntity = true;
+                // For now, only TodoItems are allowed to change ProgenyId or FamilyId.
+                // Todo: Consider other items, such as Calendar.
+                if (timeLineItemToUpdate.ItemType != (int)KinaUnaTypes.TimeLineType.TodoItem)
+                {
+                    // ProgenyId or FamilyId change is not allowed.
+                    return null;
+                } 
             }
+
             KinaUnaTypes.TimeLineType itemTypeAsTimelineType = (KinaUnaTypes.TimeLineType)item.ItemType;
             _ = int.TryParse(item.ItemId, out int itemIdAsInt);
             if (!await _accessManagementService.HasItemPermission(itemTypeAsTimelineType, itemIdAsInt, currentUserInfo, PermissionLevel.Edit))
             {
                 return null;
             }
-
+            
             timeLineItemToUpdate.CopyPropertiesForUpdate(item);
+            if (assignedToDifferentEntity)
+            {
+                timeLineItemToUpdate.ProgenyId = item.ProgenyId;
+                timeLineItemToUpdate.FamilyId = item.FamilyId;
+            }
 
             _ = _context.TimeLineDb.Update(timeLineItemToUpdate);
             _ = await _context.SaveChangesAsync();
+            // No need to update permissions, as they are linked to the ItemType and ItemId, not the TimeLineItem itself.
 
             _ = await SetTimeLineItemInCache(item.TimeLineId);
 

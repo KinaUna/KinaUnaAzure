@@ -50,7 +50,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Post([FromBody] Progeny value)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-
+            // Todo: check if user can add Progeny. Needs a property for that in signup form and in UserInfo.
             Progeny progeny = new()
             {
                 Name = value.Name,

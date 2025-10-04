@@ -38,7 +38,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 return new KanbanBoard();
             }
             KanbanBoard kanbanBoard = await progenyDbContext.KanbanBoardsDb.AsNoTracking().SingleOrDefaultAsync(k => k.KanbanBoardId == kanbanBoardId);
-            kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo);
+            kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, currentUserInfo);
 
             return kanbanBoard;
         }
@@ -84,6 +84,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             _ = await progenyDbContext.SaveChangesAsync();
 
             await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, kanbanBoard.ItemPermissionsDtoList, currentUserInfo);
+            
             return kanbanBoard;
         }
 
@@ -107,7 +108,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             }
 
             KanbanBoard existingKanbanBoard = await progenyDbContext.KanbanBoardsDb.SingleOrDefaultAsync(k => k.KanbanBoardId == kanbanBoard.KanbanBoardId);
-            if (existingKanbanBoard == null)
+            if (existingKanbanBoard == null || existingKanbanBoard.ProgenyId != kanbanBoard.ProgenyId || existingKanbanBoard.FamilyId != kanbanBoard.FamilyId)
             {
                 return null;
             }
@@ -125,13 +126,14 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             existingKanbanBoard.AccessLevel = kanbanBoard.AccessLevel;
             existingKanbanBoard.Tags = kanbanBoard.Tags;
             existingKanbanBoard.Context = kanbanBoard.Context;
-
+            existingKanbanBoard.ItemPermissionsDtoList = kanbanBoard.ItemPermissionsDtoList;
             existingKanbanBoard.EnsureColumnsAreValid();
             
             progenyDbContext.KanbanBoardsDb.Update(existingKanbanBoard);
             _ = await progenyDbContext.SaveChangesAsync();
             
-            _ = await accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, existingKanbanBoard.KanbanBoardId, existingKanbanBoard.ProgenyId, existingKanbanBoard.FamilyId, kanbanBoard.ItemPermissionsDtoList, currentUserInfo);
+            _ = await accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, existingKanbanBoard.KanbanBoardId, existingKanbanBoard.ProgenyId, existingKanbanBoard.FamilyId,
+                existingKanbanBoard.ItemPermissionsDtoList, currentUserInfo);
 
             return existingKanbanBoard;
         }
@@ -202,34 +204,55 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// specified progeny and meet the access level requirements. The results are returned as a read-only list and
         /// are not tracked by the database context.</remarks>
         /// <param name="progenyId">The unique identifier of the progeny for which Kanban boards are requested.</param>
+        /// <param name="familyId">The unique identifier of the family for which Kanban boards are requested.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <param name="request">An object containing additional parameters for the request. This may include filtering or pagination
         /// options.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
         /// cref="KanbanBoard"/> objects that meet the specified criteria. The list will be empty if no matching boards
         /// are found.</returns>
-        public async Task<List<KanbanBoard>> GetKanbanBoardsForProgeny(int progenyId, UserInfo currentUserInfo, KanbanBoardsRequest request)
+        public async Task<List<KanbanBoard>> GetKanbanBoardsForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo, KanbanBoardsRequest request)
         {
-            List<KanbanBoard> allKanbanBoardsForProgeny;
+            List<KanbanBoard> allKanbanBoardsForProgenyOrFamily = [];
             if (request.IncludeDeleted)
             {
-                allKanbanBoardsForProgeny = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
-                    .Where(k => k.ProgenyId == progenyId).ToListAsync();
+                if (progenyId > 0)
+                {
+                    allKanbanBoardsForProgenyOrFamily = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
+                        .Where(k => k.ProgenyId == progenyId).ToListAsync();
+                }
+
+                if (familyId > 0)
+                {
+                    allKanbanBoardsForProgenyOrFamily = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
+                        .Where(k => k.FamilyId == familyId).ToListAsync();
+                }
             }
             else
             {
-                allKanbanBoardsForProgeny = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
-                    .Where(k => k.ProgenyId == progenyId && !k.IsDeleted).ToListAsync();
+                if (progenyId > 0)
+                {
+                    allKanbanBoardsForProgenyOrFamily = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
+                        .Where(k => k.ProgenyId == progenyId && !k.IsDeleted).ToListAsync();
+                }
+
+                if (familyId > 0)
+                {
+                    allKanbanBoardsForProgenyOrFamily = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
+                        .Where(k => k.FamilyId == familyId && !k.IsDeleted).ToListAsync();
+                }
+            }
+            if (allKanbanBoardsForProgenyOrFamily.Count == 0)
+            {
+                return allKanbanBoardsForProgenyOrFamily;
             }
 
             List<KanbanBoard> accessibleKanbanBoards = [];
-            foreach (KanbanBoard kanbanBoard in allKanbanBoardsForProgeny)
+            foreach (KanbanBoard kanbanBoard in allKanbanBoardsForProgenyOrFamily)
             {
-                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo, PermissionLevel.View))
-                {
-                    kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo);
-                    accessibleKanbanBoards.Add(kanbanBoard);
-                }
+                if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo, PermissionLevel.View)) continue;
+                kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, currentUserInfo);
+                accessibleKanbanBoards.Add(kanbanBoard);
             }
 
             // Filter by tags if provided
@@ -307,45 +330,30 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// <remarks>Only Kanban boards that are not marked as deleted (<c>IsDeleted</c> is <see
         /// langword="false"/>)  and meet the specified access level are included in the results.</remarks>
         /// <param name="progenyId">The unique identifier of the progeny for which to retrieve Kanban boards.</param>
+        /// <param name="familyId">The unique identifier of the family for which to retrieve Kanban boards.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>A list of <see cref="KanbanBoard"/> objects that match the specified criteria. The list will be
         /// empty if no boards are found.</returns>
-        public async Task<List<KanbanBoard>> GetKanbanBoardsListForProgeny(int progenyId, UserInfo currentUserInfo)
+        public async Task<List<KanbanBoard>> GetKanbanBoardsListForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo)
         {
-            List<KanbanBoard> kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
-                .Where(k => k.ProgenyId == progenyId && !k.IsDeleted).ToListAsync();
-            
-            List<KanbanBoard> accessibleKanbanBoards = [];
-            foreach (KanbanBoard kanbanBoard in kanbanBoards)
+            List<KanbanBoard> kanbanBoards = [];
+            if (progenyId > 0)
             {
-                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo, PermissionLevel.View))
-                {
-                    kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo);
-                    accessibleKanbanBoards.Add(kanbanBoard);
-                }
+                kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
+                    .Where(k => k.ProgenyId == progenyId && !k.IsDeleted).ToListAsync();
             }
-
-            return accessibleKanbanBoards;
-        }
-
-        /// <summary>
-        /// Retrieves a list of Kanban boards for the specified family, that the current user has permission to view.
-        /// </summary>
-        /// <param name="familyId">The unique identifier of the family for which to retrieve Kanban boards.</param>
-        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
-        /// <returns>List of <see cref="KanbanBoard"/> objects that match the specified criteria. The list will be empty if no boards are
-        /// found.</returns>
-        public async Task<List<KanbanBoard>> GetKanbanBoardsListForFamily(int familyId, UserInfo currentUserInfo)
-        {
-            List<KanbanBoard> kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
-                .Where(k => k.FamilyId == familyId && !k.IsDeleted).ToListAsync();
+            if (familyId > 0)
+            {
+                kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
+                    .Where(k => k.FamilyId == familyId && !k.IsDeleted).ToListAsync();
+            }
             
             List<KanbanBoard> accessibleKanbanBoards = [];
             foreach (KanbanBoard kanbanBoard in kanbanBoards)
             {
                 if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo, PermissionLevel.View))
                 {
-                    kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo);
+                    kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, currentUserInfo);
                     accessibleKanbanBoards.Add(kanbanBoard);
                 }
             }

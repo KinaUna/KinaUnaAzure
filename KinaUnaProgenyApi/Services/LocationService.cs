@@ -52,6 +52,7 @@ namespace KinaUnaProgenyApi.Services
                 location = await SetLocationInCache(id);
             }
 
+            location.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, location.LocationId, location.ProgenyId, location.FamilyId, currentUserInfo);
             return location;
         }
 
@@ -130,7 +131,11 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.LocationsDb.Add(locationToAdd);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Location, locationToAdd.LocationId, locationToAdd.ProgenyId, locationToAdd.FamilyId, locationToAdd.ItemPermissionsDtoList,
+                currentUserInfo);
+
             _ = await SetLocationInCache(locationToAdd.LocationId);
+
 
             return locationToAdd;
         }
@@ -167,6 +172,8 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.LocationsDb.Update(locationToUpdate);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Location, locationToUpdate.LocationId, locationToUpdate.ProgenyId, locationToUpdate.FamilyId, location.ItemPermissionsDtoList,
+                currentUserInfo);
             _ = await SetLocationInCache(locationToUpdate.LocationId);
 
             return locationToUpdate;
@@ -192,6 +199,7 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.LocationsDb.Remove(locationToDelete);
             _ = await _context.SaveChangesAsync();
 
+            // Todo: Remove permissions for item.
             await RemoveLocationFromCache(location.LocationId, location.ProgenyId, location.FamilyId);
 
             return location;
@@ -232,6 +240,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Location, location.LocationId, currentUserInfo, PermissionLevel.View))
                 {
+                    location.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, location.LocationId, progenyId, familyId, currentUserInfo);
                     accessibleLocations.Add(location);
                 }
             }

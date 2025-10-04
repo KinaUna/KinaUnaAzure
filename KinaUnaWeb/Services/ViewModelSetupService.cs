@@ -4,7 +4,6 @@ using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using System;

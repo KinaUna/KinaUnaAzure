@@ -35,6 +35,7 @@ namespace KinaUna.Data.Extensions
             currentLocation.State = otherLocation.State;
             currentLocation.StreetName = otherLocation.StreetName;
             currentLocation.Tags = otherLocation.Tags;
+            currentLocation.ItemPermissionsDtoList = otherLocation.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -63,9 +64,11 @@ namespace KinaUna.Data.Extensions
             currentLocation.Notes = otherLocation.Notes;
             currentLocation.PostalCode = otherLocation.PostalCode;
             currentLocation.ProgenyId = otherLocation.ProgenyId;
+            currentLocation.FamilyId = otherLocation.FamilyId;
             currentLocation.State = otherLocation.State;
             currentLocation.StreetName = otherLocation.StreetName;
             currentLocation.Tags = otherLocation.Tags;
+            currentLocation.ItemPermissionsDtoList = otherLocation.ItemPermissionsDtoList;
         }
 
         /// <summary>

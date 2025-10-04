@@ -87,11 +87,11 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{itemType:int}/{itemId:int}")]
-        public async Task<IActionResult> GetItemPermissionForUser(int itemType, int itemId)
+        [Route("[action]/{itemType:int}/{itemId:int}/{progenyId:int}/{familyId:int}")]
+        public async Task<IActionResult> GetItemPermissionForUser(int itemType, int itemId, int progenyId, int familyId)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            TimelineItemPermission permission = await accessManagementService.GetItemPermissionForUser((KinaUnaTypes.TimeLineType)itemType, itemId, currentUserInfo);
+            TimelineItemPermission permission = await accessManagementService.GetItemPermissionForUser((KinaUnaTypes.TimeLineType)itemType, itemId, progenyId, familyId, currentUserInfo);
             return Ok(permission.PermissionLevel);
         }
 

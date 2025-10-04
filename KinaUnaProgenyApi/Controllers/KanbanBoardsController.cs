@@ -9,7 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -27,7 +29,8 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class KanbanBoardsController(IKanbanBoardsService kanbanBoardsService, IProgenyService progenyService, IUserInfoService userInfoService, IAccessManagementService accessManagementService) : ControllerBase
+    public class KanbanBoardsController(IKanbanBoardsService kanbanBoardsService, IProgenyService progenyService, IFamiliesService familiesService,
+        IUserInfoService userInfoService, IAccessManagementService accessManagementService) : ControllerBase
     {
         /// <summary>
         /// Retrieves a Kanban board by its unique identifier.
@@ -58,6 +61,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             List<Progeny> progenyList = [];
+            List<Family> familyList = [];
             foreach (int progenyId in request.ProgenyIds)
             {
                 Progeny progeny = await progenyService.GetProgeny(progenyId, currentUserInfo);
@@ -67,14 +71,28 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
+            foreach (int familyId in request.FamilyIds)
+            {
+                Family family = await familiesService.GetFamilyById(familyId, currentUserInfo);
+                if (family != null)
+                {
+                    familyList.Add(family);
+                }
+            }
+
             if (request.Skip < 0) request.Skip = 0;
 
             List<KanbanBoard> kanbanBoards = [];
             if (progenyList.Count == 0) return NotFound();
             foreach (Progeny progeny in progenyList)
             {
-                List<KanbanBoard> progenyKanbanBoards = await kanbanBoardsService.GetKanbanBoardsForProgeny(progeny.Id, currentUserInfo, request);
+                List<KanbanBoard> progenyKanbanBoards = await kanbanBoardsService.GetKanbanBoardsForProgenyOrFamily(progeny.Id, 0, currentUserInfo, request);
                 kanbanBoards.AddRange(progenyKanbanBoards);
+            }
+            foreach (Family family in familyList)
+            {
+                List<KanbanBoard> familyKanbanBoards = await kanbanBoardsService.GetKanbanBoardsForProgenyOrFamily(0, family.FamilyId, currentUserInfo, request);
+                kanbanBoards.AddRange(familyKanbanBoards);
             }
 
             KanbanBoardsResponse kanbanBoardsResponse = kanbanBoardsService.CreateKanbanBoardsResponse(kanbanBoards, request);

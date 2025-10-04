@@ -61,6 +61,8 @@ namespace KinaUnaProgenyApi.Services
 
             if (picture == null) return null;
             
+            picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);
+            
             if (picture.PictureRotation != null)
             {
                 return picture;
@@ -107,6 +109,8 @@ namespace KinaUnaProgenyApi.Services
             pictureToAdd.CopyPropertiesForAdd(picture);
             _ = _mediaContext.PicturesDb.Add(pictureToAdd);
             _ = await _mediaContext.SaveChangesAsync();
+
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Photo, pictureToAdd.PictureId, pictureToAdd.ProgenyId, 0, pictureToAdd.ItemPermissionsDtoList, currentUserInfo);
 
             _ = await SetPictureInCache(pictureToAdd.PictureId);
 
@@ -483,7 +487,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 return null;
             }
-
+            picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);
             return picture;
         }
 
@@ -543,6 +547,9 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _mediaContext.PicturesDb.Update(pictureToUpdate);
             _ = await _mediaContext.SaveChangesAsync();
+
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Photo, pictureToUpdate.PictureId, pictureToUpdate.ProgenyId, 0, pictureToUpdate.ItemPermissionsDtoList, currentUserInfo);
+
             _ = await SetPictureInCache(pictureToUpdate.PictureId);
 
             return pictureToUpdate;
@@ -612,6 +619,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _imageStore.DeleteImage(picture.PictureLink1200);
             }
 
+            // Todo: Remove permission entries for this picture.
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
             return pictureToDelete;
         }
@@ -650,6 +658,8 @@ namespace KinaUnaProgenyApi.Services
             }
 
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
+
+            // Todo: Remove permission entries for this picture?
             return pictureToDelete;
         }
 
@@ -685,6 +695,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
                 {
+                    picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);
                     filteredList.Add(picture);
                 }
             }

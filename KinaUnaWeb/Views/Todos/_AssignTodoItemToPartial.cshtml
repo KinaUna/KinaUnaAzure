@@ -1,5 +1,6 @@
 ﻿@model KinaUnaWeb.Models.ItemViewModels.TodoViewModel;
 @using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @inject ILocaleManager LocaleManager
 @{
@@ -34,12 +35,17 @@
                     </div>
                 </div>
                 <div class="space-20"></div>
-                @if (Model.IsCurrentUserProgenyAdmin)
+                @if (Model.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add)
                 {
                     <form id="assign-todo-item-to-form" asp-action="AssignTodoItemTo" asp-controller="Todos" role="form" method="post">
                         <div class="form-group">
                             <div class="col-auto">
                                 <select id="assign-todo-item-to-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="TodoItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-auto">
+                                <select id="assign-todo-item-to-family-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="TodoItem.FamilyId" asp-items="@Model.FamilyList"></select>
                             </div>
                         </div>
                         <div class="form-group">

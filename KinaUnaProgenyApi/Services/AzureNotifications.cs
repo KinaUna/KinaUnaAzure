@@ -42,6 +42,7 @@ namespace KinaUnaProgenyApi.Services
 
             string alert = "{\"aps\":{\"alert\":\"" + message + "\"},\"message\":\"" + message + "\",\"notData\":\"" + timeLineItem.TimeLineId + "\", \"content-available\":1}";
 
+            // Todo: Implement subscribers and topics for notifications.
             CustomResult<List<UserAccess>> userAccessListResult = await userAccessService.GetProgenyUserAccessList(timeLineItem.ProgenyId, Constants.SystemAccountEmail );
             foreach (UserAccess userAcces in userAccessListResult.Value)
             {

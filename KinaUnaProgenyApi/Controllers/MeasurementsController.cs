@@ -63,7 +63,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             Measurement measurement = await measurementService.GetMeasurement(id, currentUserInfo);
-            if (measurement == null)
+            if (measurement == null || measurement.MeasurementId == 0)
             {
                 return NotFound();
             }
@@ -90,7 +90,7 @@ namespace KinaUnaProgenyApi.Controllers
             value.ModifiedBy = User.GetUserId();
 
             Measurement measurementItem = await measurementService.AddMeasurement(value, currentUserInfo);
-            if (measurementItem == null)
+            if (measurementItem == null || measurementItem.MeasurementId == 0)
             {
                 return Unauthorized();
             }
@@ -100,7 +100,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
-            string notificationTitle = "Measurement added for " + progeny.NickName;
+            string notificationTitle = "Measurement added for " + progeny.NickName; // Todo: Localize.
             string notificationMessage = currentUserInfo.FullName() + " added a new measurement for " + progeny.NickName;
             await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendMeasurementNotification(measurementItem, currentUserInfo, notificationTitle);
@@ -130,7 +130,7 @@ namespace KinaUnaProgenyApi.Controllers
             value.ModifiedBy = User.GetUserId();
 
             measurementItem = await measurementService.UpdateMeasurement(value, currentUserInfo);
-            if (measurementItem == null)
+            if (measurementItem == null || measurementItem.MeasurementId == 0)
             {
                 return Unauthorized();
             }
@@ -158,15 +158,8 @@ namespace KinaUnaProgenyApi.Controllers
             Measurement measurementItem = await measurementService.GetMeasurement(id, currentUserInfo);
             if (measurementItem != null)
             {
-                Progeny progeny = await progenyService.GetProgeny(measurementItem.ProgenyId, currentUserInfo);
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 
-                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(measurementItem.MeasurementId.ToString(), (int)KinaUnaTypes.TimeLineType.Measurement, currentUserInfo);
-                if (timeLineItem != null)
-                {
-                    _ = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
-                }
-
                 measurementItem.ModifiedBy = User.GetUserId();
 
                 Measurement deletedMeasurement = await measurementService.DeleteMeasurement(measurementItem, currentUserInfo);
@@ -174,12 +167,18 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     return Unauthorized();
                 }
-
+                
+                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(measurementItem.MeasurementId.ToString(), (int)KinaUnaTypes.TimeLineType.Measurement, currentUserInfo);
+                if (timeLineItem != null)
+                {
+                    _ = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
+                }
+                
                 if (timeLineItem == null) return NoContent();
 
                 UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-                string notificationTitle = "Measurement deleted for " + progeny.NickName;
+                Progeny progeny = await progenyService.GetProgeny(measurementItem.ProgenyId, currentUserInfo);
+                string notificationTitle = "Measurement deleted for " + progeny.NickName; // Todo: Localize.
                 string notificationMessage = userInfo.FullName() + " deleted a measurement for " + progeny.NickName + ". Measurement date: " + measurementItem.Date.Date.ToString("dd-MMM-yyyy");
 
                 measurementItem.AccessLevel = timeLineItem.AccessLevel = 0;

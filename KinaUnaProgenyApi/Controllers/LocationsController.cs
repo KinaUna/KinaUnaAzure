@@ -10,7 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -33,6 +35,7 @@ namespace KinaUnaProgenyApi.Controllers
         ILocationService locationService,
         ITimelineService timelineService,
         IProgenyService progenyService,
+        IFamiliesService familiesService,
         IWebNotificationsService webNotificationsService,
         IAccessManagementService accessManagementService)
         : ControllerBase
@@ -50,6 +53,22 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             List<Location> locationsList = await locationService.GetLocationsList(id, 0, currentUserInfo);
             
+            return Ok(locationsList);
+        }
+
+        /// <summary>
+        /// Retrieves all locations for a given family that a user with a given access level has access to.
+        /// </summary>
+        /// <param name="id">The FamilyId of the Family to get Location items for.</param>
+        /// <returns>List of Locations, or NotFound if no Locations are found.</returns>
+        // GET api/locations/family/[id]
+        [HttpGet]
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> Family(int id)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<Location> locationsList = await locationService.GetLocationsList(0, id, currentUserInfo);
+
             return Ok(locationsList);
         }
 
@@ -127,10 +146,27 @@ namespace KinaUnaProgenyApi.Controllers
             tItem.CopyLocationPropertiesForAdd(location);
             _ = await timelineService.AddTimeLineItem(tItem, currentUserInfo);
 
-            Progeny progeny = await progenyService.GetProgeny(location.ProgenyId, currentUserInfo);
+            string nameString = "";
+            if (location.ProgenyId > 0)
+            {
+                Progeny progeny = await progenyService.GetProgeny(location.ProgenyId, currentUserInfo);
+                if (progeny != null)
+                {
+                    nameString = progeny.NickName;
+                }
+            }
+            if (location.FamilyId > 0)
+            {
+                Family family = await familiesService.GetFamilyById(location.FamilyId, currentUserInfo);
+                if (family != null)
+                {
+                    nameString = family.Name;
+                }
+            }
 
-            string notificationTitle = "Location added for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FullName() + " added a new location for " + progeny.NickName;
+
+            string notificationTitle = "Location added for " + nameString; // Todo: Localize.
+            string notificationMessage = currentUserInfo.FullName() + " added a new location for " + nameString;
             await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendLocationNotification(location, currentUserInfo, notificationTitle);
 
@@ -165,7 +201,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             
             Location location = await locationService.GetLocation(id, currentUserInfo);
-            if (location == null)
+            if (location == null || location.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return NotFound();
             }
@@ -203,14 +239,8 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             Location location = await locationService.GetLocation(id, currentUserInfo);
-            if (location == null) return NotFound();
-
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location, currentUserInfo);
-            if (timeLineItem != null)
-            {
-                _ = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
-            }
-
+            if (location == null || location.ItemPerMission.PermissionLevel < PermissionLevel.Admin) return NotFound();
+            
             location.ModifiedBy = User.GetUserId();
 
             Location deletedLocation = await locationService.DeleteLocation(location, currentUserInfo);
@@ -218,15 +248,36 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-
+            
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location, currentUserInfo);
+            if (timeLineItem != null)
+            {
+                _ = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
+            }
             if (timeLineItem == null) return NoContent();
 
             location.Author = User.GetUserId();
-            Progeny progeny = await progenyService.GetProgeny(location.ProgenyId, currentUserInfo);
-            string notificationTitle = "Location deleted for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FullName() + " deleted a location for " + progeny.NickName + ". Location: " + location.Name;
-            location.AccessLevel = timeLineItem.AccessLevel = 0;
+            string nameString = "";
+            if (location.ProgenyId > 0)
+            {
+                Progeny progeny = await progenyService.GetProgeny(location.ProgenyId, currentUserInfo);
+                if (progeny != null)
+                {
+                    nameString = progeny.NickName;
+                }
+            }
 
+            if (location.FamilyId > 0)
+            {
+                Family family = await familiesService.GetFamilyById(location.FamilyId, currentUserInfo);
+                if (family != null)
+                {
+                    nameString = family.Name;
+                }
+            }
+            string notificationTitle = "Location deleted for " + nameString;
+            string notificationMessage = currentUserInfo.FullName() + " deleted a location for " + nameString + ". Location: " + location.Name;
+            
             await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendLocationNotification(location, currentUserInfo, notificationTitle);
 

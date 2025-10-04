@@ -13,9 +13,14 @@ namespace KinaUna.Data.Models.DTOs
         /// </summary>
         public int ParentTodoItemId { get; set; } = 0;
         /// <summary>
-        /// Gets or sets the list of Ids for the progenies to get Todos for.
+        /// Gets or sets the list of Id for the progeny to get Todos for.
         /// </summary>
         public int ProgenyId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of Id for the family to get Todos for.
+        /// </summary>
+        public int FamilyId { get; set; }
         /// <summary>
         /// Gets or sets the starting date of the items to include.
         /// </summary>

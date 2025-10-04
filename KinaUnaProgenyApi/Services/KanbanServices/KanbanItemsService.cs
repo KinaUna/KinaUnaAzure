@@ -77,7 +77,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
 
             if (!hasAccess)
             {
-                return new KanbanItem();
+                return null;
             }
 
             KanbanBoard kanbanBoard = await progenyDbContext.KanbanBoardsDb.SingleOrDefaultAsync(k => k.KanbanBoardId == kanbanItem.KanbanBoardId);
@@ -85,6 +85,12 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             {
                 return new KanbanItem();
             }
+
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo, PermissionLevel.Add))
+            {
+                return null;
+            }
+
             kanbanBoard.SetColumnsListFromColumns();
             if (!kanbanBoard.ColumnsList.Exists(k => k.Id == kanbanItem.ColumnId))
             {
@@ -99,6 +105,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             await progenyDbContext.KanbanItemsDb.AddAsync(kanbanItem);
             await progenyDbContext.SaveChangesAsync();
 
+            // No permissions are set for Kanban items, as they are protected through the linked TodoItem.
             return kanbanItem;
         }
 
@@ -127,6 +134,11 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 return null;
             }
 
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, existingKanbanItem.KanbanBoardId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
             if (string.IsNullOrEmpty(existingKanbanItem.UId))
             {
                 existingKanbanItem.UId = Guid.NewGuid().ToString();
@@ -150,7 +162,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
 
             progenyDbContext.Update(existingKanbanItem);
             await progenyDbContext.SaveChangesAsync();
-
+            // No permissions are set for Kanban items, as they are protected through the linked TodoItem.
             return existingKanbanItem;
         }
 
@@ -189,7 +201,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             }
 
             await progenyDbContext.SaveChangesAsync();
-
+            // No permissions are set for Kanban items, as they are protected through the linked TodoItem.
             return existingKanbanItem;
         }
 

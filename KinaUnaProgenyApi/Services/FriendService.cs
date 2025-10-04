@@ -52,6 +52,8 @@ namespace KinaUnaProgenyApi.Services
 
             Friend friend = await GetFriendFromCache(id);
             friend ??= await SetFriendInCache(id);
+            friend.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, friend.ProgenyId, 0, currentUserInfo);
+            
             return friend;
         }
 
@@ -93,10 +95,10 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new Friend to the database and the cache.
         /// </summary>
         /// <param name="friend">The Friend object to add.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The added Friend object.</returns>
-        public async Task<Friend> AddFriend(Friend friend)
+        public async Task<Friend> AddFriend(Friend friend, UserInfo currentUserInfo)
         {
-            UserInfo currentUserInfo = await _userInfoService.GetUserInfoByUserId(friend.CreatedBy);
             if (!await _accessManagementService.HasProgenyPermission(friend.ProgenyId, currentUserInfo, PermissionLevel.Add))
             {
                 return null;
@@ -108,6 +110,8 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.FriendsDb.Add(friendToAdd);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, friend.ProgenyId, 0, friend.ItemPermissionsDtoList, currentUserInfo);
+            
             _ = await SetFriendInCache(friendToAdd.FriendId);
 
             return friendToAdd;
@@ -118,10 +122,10 @@ namespace KinaUnaProgenyApi.Services
         /// Updates a Friend in the database and the cache.
         /// </summary>
         /// <param name="friend">The Friend object with the updated properties.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The updated Friend object.</returns>
-        public async Task<Friend> UpdateFriend(Friend friend)
+        public async Task<Friend> UpdateFriend(Friend friend, UserInfo currentUserInfo)
         {
-            UserInfo currentUserInfo = await _userInfoService.GetUserInfoByUserId(friend.ModifiedBy);
             if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, currentUserInfo, PermissionLevel.Edit))
             {
                 return null;
@@ -131,19 +135,7 @@ namespace KinaUnaProgenyApi.Services
             if (friendToUpdate == null) return null;
             string oldPictureLink = friendToUpdate.PictureLink;
 
-            friendToUpdate.ProgenyId = friend.ProgenyId;
-            friendToUpdate.PictureLink = friend.PictureLink;
-            friendToUpdate.Author = friend.Author;
-            friendToUpdate.Name = friend.Name;
-            friendToUpdate.Description = friend.Description;
-            friendToUpdate.Context = friend.Context;
-            friendToUpdate.FriendAddedDate = friend.FriendAddedDate;
-            friendToUpdate.FriendSince = friend.FriendSince;
-            friendToUpdate.Notes = friend.Notes;
-            friendToUpdate.AccessLevel = friend.AccessLevel;
-            friendToUpdate.Tags = friend.Tags;
-            friendToUpdate.Type = friend.Type;
-            friendToUpdate.Progeny = friend.Progeny;
+            friendToUpdate.CopyPropertiesForUpdate(friend);
 
             _ = _context.FriendsDb.Update(friendToUpdate);
             _ = await _context.SaveChangesAsync();
@@ -157,6 +149,8 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, friend.ProgenyId, 0, friend.ItemPermissionsDtoList, currentUserInfo);
+
             _ = await SetFriendInCache(friend.FriendId);
 
             return friend;
@@ -166,10 +160,10 @@ namespace KinaUnaProgenyApi.Services
         /// Deletes a Friend from the database and the cache.
         /// </summary>
         /// <param name="friend">The Friend object to delete.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>The deleted Friend object.</returns>
-        public async Task<Friend> DeleteFriend(Friend friend)
+        public async Task<Friend> DeleteFriend(Friend friend, UserInfo currentUserInfo)
         {
-            UserInfo currentUserInfo = await _userInfoService.GetUserInfoByUserId(friend.ModifiedBy);
             if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, currentUserInfo, PermissionLevel.Admin))
             {
                 return null;
@@ -187,6 +181,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 _ = _imageStore.DeleteImage(friend.PictureLink, BlobContainers.Friends);
             }
+
+            // Todo: Remove all associated permissions.
             return friend;
         }
 
@@ -225,6 +221,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, currentUserInfo, PermissionLevel.View))
                 {
+                    friend.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, friend.ProgenyId, 0, currentUserInfo);
                     accessibleFriends.Add(friend);
                 }
             }

@@ -497,7 +497,13 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
+            // Check if user should be allowed access.
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return Unauthorized();
+            }
+
             value.ModifiedBy = User.GetUserId();
 
             picture = await picturesService.UpdatePicture(value, currentUserInfo);
@@ -536,7 +542,13 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             Picture picture = await picturesService.GetPicture(id, currentUserInfo);
             if (picture == null) return NotFound();
-            
+
+            // Check if user should be allowed access.
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return Unauthorized();
+            }
+
             picture.ModifiedBy = User.GetUserId();
 
             Picture deletedPicture = await picturesService.DeletePicture(picture, currentUserInfo);
@@ -574,7 +586,6 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "Photo deleted for " + progeny.NickName;
             string notificationMessage = currentUserInfo.FirstName + " " + currentUserInfo.MiddleName + " " + currentUserInfo.LastName + " deleted a photo for " + progeny.NickName;
 
-            picture.AccessLevel = timeLineItem.AccessLevel = 0;
             await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendPictureNotification(picture, currentUserInfo, notificationTitle);
 

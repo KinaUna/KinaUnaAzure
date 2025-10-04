@@ -1,7 +1,10 @@
 ﻿using KinaUna.Data.Models.ItemInterfaces;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUna.Data.Models
 {
@@ -117,15 +120,26 @@ namespace KinaUna.Data.Models
         /// Gets or sets the associated progeny data for the current entity.
         /// </summary>
         [NotMapped]
-        public Progeny Progeny { get; set; } = new Progeny();
+        public Progeny Progeny { get; set; } = new();
 
         [NotMapped]
-        public Family.Family Family { get; set; } = new Family.Family();
+        public Family.Family Family { get; set; } = new();
         [NotMapped]
         public int SubtaskCount { get; set; } = 0;
         [NotMapped]
         public int CompletedSubtaskCount { get; set; } = 0;
 
+        /// <summary>
+        /// The current user's permissions for this item.
+        /// </summary>
+        [NotMapped]
+        public TimelineItemPermission ItemPerMission { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of item permissions associated with the current entity. For adding or updating item permissions.
+        /// </summary>
+        [NotMapped]
+        public List<ItemPermissionDto> ItemPermissionsDtoList { get; set; } = [];
         public string GetLocationString()
         {
             return Location;
