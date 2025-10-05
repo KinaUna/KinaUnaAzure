@@ -23,6 +23,7 @@ namespace KinaUna.Data.Extensions
             currentVaccinationItem.VaccinationName = otherVaccinationItem.VaccinationName;
             currentVaccinationItem.ModifiedBy = otherVaccinationItem.ModifiedBy;
             currentVaccinationItem.ModifiedTime = DateTime.UtcNow;
+            currentVaccinationItem.ItemPermissionsDtoList = otherVaccinationItem.ItemPermissionsDtoList;
 
         }
 
@@ -44,6 +45,7 @@ namespace KinaUna.Data.Extensions
             currentVaccinationItem.ProgenyId = otherVaccinationItem.ProgenyId;
             currentVaccinationItem.VaccinationDescription = otherVaccinationItem.VaccinationDescription;
             currentVaccinationItem.VaccinationName = otherVaccinationItem.VaccinationName;
+            currentVaccinationItem.ItemPermissionsDtoList = otherVaccinationItem.ItemPermissionsDtoList;
         }
     }
 }

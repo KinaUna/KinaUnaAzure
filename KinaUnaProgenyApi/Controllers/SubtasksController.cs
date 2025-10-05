@@ -59,7 +59,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             request.ProgenyId = existingTodoItem.ProgenyId;
-            
+            request.FamilyId = existingTodoItem.FamilyId;
             List<TodoItem> subtasks = await subtasksService.GetSubtasksForTodoItem(request.ParentTodoItemId, currentUserInfo);
 
             foreach (TodoItem subtask in subtasks)
@@ -97,7 +97,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             TodoItem result = await subtasksService.GetSubtask(id, currentUserInfo);
-            if (result == null) return NotFound();
+            if (result == null || result.TodoItemId == 0) return NotFound();
 
             return Ok(result);
         }

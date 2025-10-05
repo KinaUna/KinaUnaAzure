@@ -23,6 +23,7 @@ namespace KinaUna.Data.Extensions
             currentVocabularyItem.Word = otherVocabularyItem.Word;
             currentVocabularyItem.ModifiedBy = otherVocabularyItem.ModifiedBy;
             currentVocabularyItem.ModifiedTime = DateTime.UtcNow;
+            currentVocabularyItem.ItemPermissionsDtoList = otherVocabularyItem.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -45,6 +46,7 @@ namespace KinaUna.Data.Extensions
             currentVocabularyItem.Language = otherVocabularyItem.Language;
             currentVocabularyItem.SoundsLike = otherVocabularyItem.SoundsLike;
             currentVocabularyItem.Word = otherVocabularyItem.Word;
+            currentVocabularyItem.ItemPermissionsDtoList = otherVocabularyItem.ItemPermissionsDtoList;
         }
     }
 }

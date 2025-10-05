@@ -151,6 +151,7 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.ModifiedTime = DateTime.UtcNow;
             currentTodoItem.ModifiedBy = otherTodoItem.CreatedBy; // Set to null or assign current user if available
             currentTodoItem.IsDeleted = otherTodoItem.IsDeleted;
+            currentTodoItem.ItemPermissionsDtoList = otherTodoItem.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -182,6 +183,7 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.ModifiedTime = DateTime.UtcNow; // Update modified time to now
             currentTodoItem.ModifiedBy = otherTodoItem.ModifiedBy; // Keep the same modifier
             currentTodoItem.IsDeleted = otherTodoItem.IsDeleted; // Keep the same deleted status
+            currentTodoItem.ItemPermissionsDtoList = otherTodoItem.ItemPermissionsDtoList;
         }
 
         /// <summary>

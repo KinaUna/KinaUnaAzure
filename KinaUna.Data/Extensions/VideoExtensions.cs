@@ -63,7 +63,7 @@ namespace KinaUna.Data.Extensions
             currentVideo.VideoType = otherVideo.VideoType;
             currentVideo.Progeny = otherVideo.Progeny;
             currentVideo.Comments = otherVideo.Comments;
-
+            currentVideo.ItemPermissionsDtoList = otherVideo.ItemPermissionsDtoList;
             if (parseDuration)
             {
                 bool durationHoursParsed = int.TryParse(otherVideo.DurationHours, out int durHours);
@@ -124,7 +124,8 @@ namespace KinaUna.Data.Extensions
             currentVideo.VideoNumber = otherVideo.VideoNumber;
             currentVideo.VideoTime = otherVideo.VideoTime;
             currentVideo.Progeny = progeny;
-            
+            currentVideo.ItemPermissionsDtoList = otherVideo.ItemPermissionsDtoList;
+
             if (parseDuration)
             {
                 bool durationHoursParsed = int.TryParse(otherVideo.DurationHours, out int durHours);

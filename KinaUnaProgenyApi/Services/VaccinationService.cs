@@ -49,6 +49,10 @@ namespace KinaUnaProgenyApi.Services
             {
                 vaccination = await SetVaccinationInCache(id);
             }
+            if (vaccination != null && vaccination.VaccinationId != 0)
+            {
+                vaccination.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, vaccination.ProgenyId, 0, currentUserInfo);
+            }
 
             return vaccination;
         }
@@ -72,6 +76,8 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.VaccinationsDb.Add(vaccinationToAdd);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Vaccination, vaccinationToAdd.VaccinationId, vaccinationToAdd.ProgenyId, 0, vaccinationToAdd.ItemPermissionsDtoList,
+                currentUserInfo);
             _ = await SetVaccinationInCache(vaccinationToAdd.VaccinationId);
 
             return vaccinationToAdd;
@@ -131,6 +137,10 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.VaccinationsDb.Update(vaccinationToUpdate);
             _ = await _context.SaveChangesAsync();
+
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Vaccination, vaccinationToUpdate.VaccinationId, vaccinationToUpdate.ProgenyId, 0, vaccinationToUpdate.ItemPermissionsDtoList,
+                currentUserInfo);
+
             _ = await SetVaccinationInCache(vaccination.VaccinationId);
 
             return vaccinationToUpdate;
@@ -155,7 +165,9 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.VaccinationsDb.Remove(vaccinationToDelete);
             _ = await _context.SaveChangesAsync();
             await RemoveVaccinationFromCache(vaccination.VaccinationId, vaccination.ProgenyId);
-
+            
+            // Todo: Remove permissions.
+            
             return vaccinationToDelete;
         }
 
@@ -193,6 +205,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, currentUserInfo, PermissionLevel.View))
                 {
+                    vaccination.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, vaccination.ProgenyId, 0, currentUserInfo);
                     accessibleVaccinationsList.Add(vaccination);
                 }
             }

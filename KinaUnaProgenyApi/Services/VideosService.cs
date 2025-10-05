@@ -51,6 +51,11 @@ namespace KinaUnaProgenyApi.Services
                 video = await SetVideoInCache(id);
             }
 
+            if (video != null && video.VideoId != 0)
+            {
+                video.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, currentUserInfo);
+            }
+
             return video;
         }
 
@@ -68,6 +73,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, result.VideoId, currentUserInfo, PermissionLevel.View))
                 {
+                    result.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, result.VideoId, result.ProgenyId, 0, currentUserInfo);
                     return result;
                 }
             }
@@ -132,6 +138,8 @@ namespace KinaUnaProgenyApi.Services
             _ = _mediaContext.VideoDb.Add(video);
             _ = await _mediaContext.SaveChangesAsync();
 
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, video.ItemPermissionsDtoList, currentUserInfo);
+
             _ = await SetVideoInCache(video.VideoId);
             return video;
         }
@@ -158,6 +166,8 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _mediaContext.VideoDb.Update(videoToUpdate);
             _ = await _mediaContext.SaveChangesAsync();
+
+            _ = await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, video.ItemPermissionsDtoList, currentUserInfo);
 
             _ = await SetVideoInCache(videoToUpdate.VideoId);
 
@@ -209,7 +219,7 @@ namespace KinaUnaProgenyApi.Services
             _mediaContext.VideoDb.Remove(videoToDelete);
             _ = await _mediaContext.SaveChangesAsync();
             await RemoveVideoFromCache(videoToDelete.VideoId, videoToDelete.ProgenyId);
-
+            // Todo: Remove permissions.
             return video;
         }
 
@@ -245,6 +255,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, video.VideoId, currentUserInfo, PermissionLevel.View))
                 {
+                    video.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, currentUserInfo);
                     filteredList.Add(video);
                 }
             }

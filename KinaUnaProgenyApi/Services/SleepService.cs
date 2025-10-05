@@ -49,6 +49,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 sleep = await SetSleepInCache(id);
             }
+            sleep.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Sleep, sleep.SleepId, sleep.ProgenyId, 0, currentUserInfo);
 
             return sleep;
         }
@@ -71,6 +72,8 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.SleepDb.Add(sleepToAdd);
             _ = await _context.SaveChangesAsync();
+
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Sleep, sleepToAdd.SleepId, sleepToAdd.ProgenyId, 0, sleepToAdd.ItemPermissionsDtoList, currentUserInfo);
 
             _ = await SetSleepInCache(sleepToAdd.SleepId);
 
@@ -133,6 +136,8 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.SleepDb.Update(sleepToUpdate);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Sleep, sleepToUpdate.SleepId, sleepToUpdate.ProgenyId, 0, sleepToUpdate.ItemPermissionsDtoList, currentUserInfo);
+
             _ = await SetSleepInCache(sleepToUpdate.SleepId);
 
             return sleepToUpdate;
@@ -158,6 +163,8 @@ namespace KinaUnaProgenyApi.Services
             _ = await _context.SaveChangesAsync();
 
             await RemoveSleep(sleepToDelete.SleepId, sleepToDelete.ProgenyId);
+
+            // Todo: Remove permissions.
 
             return sleep;
         }
@@ -195,6 +202,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Sleep, sleep.SleepId, currentUserInfo, PermissionLevel.View))
                 {
+                    sleep.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Sleep, sleep.SleepId, sleep.ProgenyId, 0, currentUserInfo);
                     filteredList.Add(sleep);
                 }
             }

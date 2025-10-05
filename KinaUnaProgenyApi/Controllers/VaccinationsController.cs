@@ -64,7 +64,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             Vaccination vaccination = await vaccinationService.GetVaccination(id, currentUserInfo);
-            if (vaccination == null)
+            if (vaccination == null || vaccination.VaccinationId == 0)
             {
                 return NotFound();
             }

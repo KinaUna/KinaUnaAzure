@@ -81,14 +81,14 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Post([FromBody] Skill value)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
+            
             
             value.Author = User.GetUserId();
             value.CreatedBy = User.GetUserId();
             value.ModifiedBy = User.GetUserId();
 
             Skill skillItem = await skillService.AddSkill(value, currentUserInfo);
-            if (skillItem == null)
+            if (skillItem == null || skillItem.SkillId == 0)
             {
                 return Unauthorized();
             }
@@ -97,7 +97,7 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopySkillPropertiesForAdd(skillItem);
             _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
-            
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
             string notificationTitle = "Skill added for " + progeny.NickName;
             string notificationMessage = currentUserInfo.FullName() + " added a new skill for " + progeny.NickName;
 
@@ -128,7 +128,7 @@ namespace KinaUnaProgenyApi.Controllers
             value.ModifiedBy = User.GetUserId();
 
             skillItem = await skillService.UpdateSkill(value, currentUserInfo);
-            if (skillItem == null)
+            if (skillItem == null || skillItem.SkillId == 0)
             {
                 return Unauthorized();
             }
@@ -155,24 +155,20 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             Skill skillItem = await skillService.GetSkill(id, currentUserInfo);
             if (skillItem == null) return NotFound();
-
-            Progeny progeny = await progenyService.GetProgeny(skillItem.ProgenyId, currentUserInfo);
             
-            
-
             skillItem.ModifiedBy = User.GetUserId();
 
             Skill deletedSkill = await skillService.DeleteSkill(skillItem, currentUserInfo);
             if (deletedSkill == null) return Unauthorized();
             
-
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(skillItem.SkillId.ToString(), (int)KinaUnaTypes.TimeLineType.Skill, currentUserInfo);
             if (timeLineItem != null)
             {
                 _ = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
             }
             if (timeLineItem == null) return NoContent();
-            
+
+            Progeny progeny = await progenyService.GetProgeny(skillItem.ProgenyId, currentUserInfo);
             string notificationTitle = "Skill deleted for " + progeny.NickName;
             string notificationMessage = currentUserInfo.FirstName + " " + currentUserInfo.MiddleName + " " + currentUserInfo.LastName + " deleted a skill for " + progeny.NickName + ". Measurement date: " + skillItem.Name;
 

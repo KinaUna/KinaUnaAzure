@@ -25,6 +25,7 @@ namespace KinaUna.Data.Extensions
             currentSkillItem.Progeny = otherSkillItem.Progeny;
             currentSkillItem.SkillFirstObservation = otherSkillItem.SkillFirstObservation;
             currentSkillItem.SkillNumber = otherSkillItem.SkillNumber;
+            currentSkillItem.ItemPermissionsDtoList = otherSkillItem.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -46,6 +47,7 @@ namespace KinaUna.Data.Extensions
             currentSkillItem.Description = otherSkillItem.Description;
             currentSkillItem.SkillAddedDate = DateTime.UtcNow;
             currentSkillItem.SkillFirstObservation = otherSkillItem.SkillFirstObservation;
+            currentSkillItem.ItemPermissionsDtoList = otherSkillItem.ItemPermissionsDtoList;
         }
     }
 }

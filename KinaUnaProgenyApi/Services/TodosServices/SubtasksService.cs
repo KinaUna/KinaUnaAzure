@@ -150,7 +150,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 subtasks =
                 [
                     .. subtasks
-                        .OrderBy(t => t.ProgenyId)
+                        .OrderBy(t => t.ProgenyId) // Family?
                         .ThenBy(t => t.StartDate)
                         .ThenBy(t => t.CreatedTime)
                 ];
@@ -264,7 +264,11 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             }
 
             TodoItem subtask = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == id);
-
+            if (subtask == null)
+            {
+                return null;
+            }
+            subtask.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, subtask.TodoItemId, subtask.ProgenyId, subtask.FamilyId, currentUserInfo);
             return subtask;
         }
 
@@ -290,6 +294,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             {
                 if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, subtask.TodoItemId, currentUserInfo, PermissionLevel.View))
                 {
+                    subtask.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, subtask.TodoItemId, subtask.ProgenyId, subtask.FamilyId, currentUserInfo);
                     subtasksWithAccess.Add(subtask);
                 }
             }
@@ -363,6 +368,9 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             currentSubtask.CopyPropertiesForUpdate(value);
             progenyDbContext.TodoItemsDb.Update(currentSubtask);
             _ = await progenyDbContext.SaveChangesAsync();
+
+            await accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, currentSubtask.TodoItemId, currentSubtask.ProgenyId, currentSubtask.FamilyId, currentSubtask.ItemPermissionsDtoList,
+                currentUserInfo);
             return currentSubtask;
         }
     }

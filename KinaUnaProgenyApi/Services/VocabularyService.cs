@@ -52,6 +52,11 @@ namespace KinaUnaProgenyApi.Services
                 vocabularyItem = await SetVocabularyItemInCache(id);
             }
 
+            if(vocabularyItem != null && vocabularyItem.WordId != 0)
+            {
+                vocabularyItem.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, vocabularyItem.ProgenyId, 0, currentUserInfo);
+            }
+
             return vocabularyItem;
         }
 
@@ -73,6 +78,10 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.VocabularyDb.Add(vocabularyItemToAdd);
             _ = await _context.SaveChangesAsync();
+
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItemToAdd.WordId, vocabularyItemToAdd.ProgenyId, 0, vocabularyItemToAdd.ItemPermissionsDtoList,
+                currentUserInfo);
+
             _ = await SetVocabularyItemInCache(vocabularyItemToAdd.WordId);
 
             return vocabularyItemToAdd;
@@ -133,6 +142,9 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.VocabularyDb.Update(vocabularyItemToUpdate);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItemToUpdate.WordId, vocabularyItemToUpdate.ProgenyId, 0, vocabularyItemToUpdate.ItemPermissionsDtoList,
+                currentUserInfo);
+
             _ = await SetVocabularyItemInCache(vocabularyItemToUpdate.WordId);
 
 
@@ -158,7 +170,7 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.VocabularyDb.Remove(vocabularyItemToDelete);
             _ = await _context.SaveChangesAsync();
             await RemoveVocabularyItemFromCache(vocabularyItem.WordId, vocabularyItem.ProgenyId);
-
+            // Todo: Remove permissions.
             return vocabularyItem;
         }
 
@@ -196,6 +208,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, currentUserInfo, PermissionLevel.View))
                 {
+                    vocabularyItem.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, vocabularyItem.ProgenyId, 0, currentUserInfo);
                     allowedVocabularyList.Add(vocabularyItem);
                 }
             }

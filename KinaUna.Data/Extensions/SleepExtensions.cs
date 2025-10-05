@@ -26,6 +26,7 @@ namespace KinaUna.Data.Extensions
             currentSleepItem.EndString = otherSleepItem.EndString;
             currentSleepItem.ModifiedBy = otherSleepItem.ModifiedBy;
             currentSleepItem.ModifiedTime = DateTime.UtcNow;
+            currentSleepItem.ItemPermissionsDtoList = otherSleepItem.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -47,6 +48,7 @@ namespace KinaUna.Data.Extensions
             currentSleepItem.SleepStart = otherSleepItem.SleepStart;
             currentSleepItem.SleepEnd = otherSleepItem.SleepEnd;
             currentSleepItem.CreatedDate = DateTime.UtcNow;
+            currentSleepItem.ItemPermissionsDtoList = otherSleepItem.ItemPermissionsDtoList;
         }
 
         /// <summary>

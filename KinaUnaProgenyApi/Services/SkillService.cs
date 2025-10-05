@@ -50,6 +50,9 @@ namespace KinaUnaProgenyApi.Services
             {
                 skill = await SetSkillInCache(id);
             }
+
+            skill.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, skill.SkillId, skill.ProgenyId, 0, currentUserInfo);
+
             return skill;
         }
 
@@ -70,8 +73,10 @@ namespace KinaUnaProgenyApi.Services
             skillToAdd.CopyPropertiesForAdd(skill);
             _ = _context.SkillsDb.Add(skillToAdd);
             _ = await _context.SaveChangesAsync();
-            _ = await SetSkillInCache(skillToAdd.SkillId);
 
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Skill, skillToAdd.SkillId, skillToAdd.ProgenyId, 0, skillToAdd.ItemPermissionsDtoList, currentUserInfo);
+            _ = await SetSkillInCache(skillToAdd.SkillId);
+            
             return skillToAdd;
         }
 
@@ -131,6 +136,7 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.SkillsDb.Update(skillToUpdate);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Skill, skillToUpdate.SkillId, skillToUpdate.ProgenyId, 0, skill.ItemPermissionsDtoList, currentUserInfo);
             _ = await SetSkillInCache(skill.SkillId);
 
             return skillToUpdate;
@@ -154,6 +160,9 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.SkillsDb.Remove(skillToDelete);
             _ = await _context.SaveChangesAsync();
+
+            // Todo: Remove associated permissions.\
+
             await RemoveSkillFromCache(skill.SkillId, skill.ProgenyId);
 
             return skillToDelete;

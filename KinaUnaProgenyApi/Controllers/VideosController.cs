@@ -470,6 +470,7 @@ namespace KinaUnaProgenyApi.Controllers
             video.Altitude = value.Altitude;
             video.ModifiedBy = User.GetUserId();
             video.ModifiedTime = DateTime.UtcNow;
+            video.ItemPermissionsDtoList = value.ItemPermissionsDtoList;
             video = await videosService.UpdateVideo(video, currentUserInfo);
             if (video == null)
             {
