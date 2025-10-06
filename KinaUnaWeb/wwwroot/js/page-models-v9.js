@@ -365,7 +365,6 @@ export class TimelineRequest {
         this.familyId = 0;
         this.progenies = [];
         this.families = [];
-        this.accessLevel = 5;
         this.skip = 0;
         this.numberOfItems = 5;
         this.year = 0;
@@ -410,7 +409,6 @@ export class OnThisDayRequest {
         this.familyId = 0;
         this.progenies = [];
         this.families = [];
-        this.accessLevel = 5;
         this.skip = 0;
         this.numberOfItems = 5;
         this.year = 0;
@@ -524,7 +522,6 @@ export class CalendarItem {
         this.location = '';
         this.context = '';
         this.allDay = false;
-        this.accessLevel = 5;
         this.startString = '';
         this.endString = '';
         this.author = '';
@@ -640,7 +637,6 @@ export class TodoItem {
         this.dueDate = new Date();
         this.completedDate = new Date();
         this.notes = '';
-        this.accessLevel = 5;
         this.tags = [];
         this.context = '';
         this.createdBy = '';
@@ -690,7 +686,6 @@ export class KanbanBoard {
         this.title = '';
         this.description = '';
         this.columns = '';
-        this.accessLevel = 5;
         this.tags = [];
         this.context = '';
         this.createdBy = '';

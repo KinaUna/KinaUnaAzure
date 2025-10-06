@@ -356,7 +356,6 @@ export class TimelineRequest {
     familyId: number = 0;
     progenies: number[] = [];
     families: number[] = [];
-    accessLevel: number = 5;
     skip: number = 0;
     numberOfItems: number = 5;
     year: number = 0;
@@ -397,7 +396,6 @@ export class OnThisDayRequest {
     familyId: number = 0;
     progenies: number[] = [];
     families: number[] = [];
-    accessLevel: number = 5;
     skip: number = 0;
     numberOfItems: number = 5;
     year: number = 0;
@@ -476,7 +474,6 @@ export class CalendarItem {
     location: string = '';
     context: string = '';
     allDay: boolean = false;
-    accessLevel: number = 5;
     startString: string = '';
     endString: string = '';
     author: string = '';
@@ -585,7 +582,6 @@ export class TodoItem {
     dueDate: Date = new Date();
     completedDate: Date = new Date();
     notes: string = '';
-    accessLevel: number = 5;
     tags: string[] = [];
     context: string = '';
     createdBy: string = '';
@@ -632,7 +628,6 @@ export class KanbanBoard {
     title: string = '';
     description: string = '';
     columns: string = '';
-    accessLevel: number = 5;
     tags: string[] = [];
     context: string = '';
     createdBy: string = '';
