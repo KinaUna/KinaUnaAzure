@@ -48,7 +48,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             VaccinationItem.VaccinationId = vaccination.VaccinationId;
             VaccinationItem.ProgenyId = vaccination.ProgenyId;
-            VaccinationItem.AccessLevel = vaccination.AccessLevel;
             VaccinationItem.Author = vaccination.Author;
             VaccinationItem.VaccinationName = vaccination.VaccinationName;
             VaccinationItem.VaccinationDate = vaccination.VaccinationDate;

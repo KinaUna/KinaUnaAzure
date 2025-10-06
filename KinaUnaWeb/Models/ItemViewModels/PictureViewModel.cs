@@ -19,7 +19,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public Progeny Progeny { get; set; }
         public string Owners { get; init; } // Comma separated list of emails.
         public string Author { get; init; }
-        public bool IsAdmin { get; init; }
         public int CommentThreadNumber { get; init; }
         public List<Comment> CommentsList { get; init; }
         public int CommentsCount { get; set; }

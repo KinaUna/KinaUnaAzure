@@ -51,7 +51,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Circumference = MeasurementItem.Circumference,
                 HairColor = MeasurementItem.HairColor,
                 EyeColor = MeasurementItem.EyeColor,
-                AccessLevel = MeasurementItem.AccessLevel,
                 Author = MeasurementItem.Author,
                 ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };
@@ -63,7 +62,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             MeasurementItem.ProgenyId = measurement.ProgenyId;
             MeasurementItem.MeasurementId = measurement.MeasurementId;
-            MeasurementItem.AccessLevel = measurement.AccessLevel;
             MeasurementItem.Author = measurement.Author;
             MeasurementItem.CreatedDate = measurement.CreatedDate;
             MeasurementItem.Date = measurement.Date;

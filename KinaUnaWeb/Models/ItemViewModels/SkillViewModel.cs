@@ -58,7 +58,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 skillItem.SkillFirstObservation = DateTime.UtcNow;
             }
             
-            skillItem.AccessLevel = SkillItem.AccessLevel;
             skillItem.Author = CurrentUser.UserId;
 
             return skillItem;
@@ -67,7 +66,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public void SetPropertiesFromSkillItem(Skill skill)
         {
             SkillItem.ProgenyId = skill.ProgenyId;
-            SkillItem.AccessLevel = skill.AccessLevel;
             SkillItem.Description = skill.Description;
             SkillItem.Category = skill.Category;
             SkillItem.Name = skill.Name;

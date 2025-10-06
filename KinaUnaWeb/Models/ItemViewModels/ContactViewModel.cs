@@ -72,7 +72,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             ContactItem.ProgenyId = contact.ProgenyId;
             ContactItem.FamilyId = contact.FamilyId;
-            ContactItem.AccessLevel = contact.AccessLevel;
             ContactItem.FirstName = contact.FirstName;
             ContactItem.MiddleName = contact.MiddleName;
             ContactItem.LastName = contact.LastName;
@@ -123,7 +122,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Website = ContactItem.Website,
                 Active = true,
                 Context = ContactItem.Context,
-                AccessLevel = ContactItem.AccessLevel,
                 Author = ContactItem.Author ?? CurrentUser.UserId,
                 ProgenyId = ContactItem.ProgenyId,
                 FamilyId = ContactItem.FamilyId,

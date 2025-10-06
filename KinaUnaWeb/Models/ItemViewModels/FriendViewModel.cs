@@ -46,7 +46,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public void SetPropertiesFromFriendItem(Friend friend)
         {
             FriendItem.ProgenyId = friend.ProgenyId;
-            FriendItem.AccessLevel = friend.AccessLevel;
             FriendItem.FriendAddedDate = friend.FriendAddedDate;
             FriendItem.FriendSince = friend.FriendSince;
             FriendItem.Name = friend.Name;
@@ -70,7 +69,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Description = FriendItem.Description,
                 PictureLink = FriendItem.PictureLink,
                 Name = FriendItem.Name,
-                AccessLevel = FriendItem.AccessLevel,
                 Type = FriendItem.Type,
                 Context = FriendItem.Context,
                 Notes = FriendItem.Notes,

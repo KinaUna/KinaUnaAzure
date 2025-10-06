@@ -52,7 +52,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Video video = new()
             {
                 ProgenyId = Video.ProgenyId,
-                AccessLevel = Video.AccessLevel,
                 Author = CurrentUser.UserId,
                 Owners = CurrentUser.UserEmail,
                 ThumbLink = Constants.WebAppUrl + "/videodb/moviethumb.png",

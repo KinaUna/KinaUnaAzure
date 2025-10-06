@@ -121,7 +121,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             TodoItem.ProgenyId = todoItem.ProgenyId;
             TodoItem.FamilyId = todoItem.FamilyId;
             TodoItem.Description = todoItem.Description;
-            TodoItem.AccessLevel = todoItem.AccessLevel;
             TodoItem.Context = todoItem.Context;
             TodoItem.Location = todoItem.Location;
             TodoItem.Title = todoItem.Title;
@@ -155,7 +154,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 ProgenyId = CurrentProgenyId,
                 FamilyId = CurrentFamilyId,
                 Description = TodoItem.Description,
-                AccessLevel = TodoItem.AccessLevel,
                 Context = TodoItem.Context,
                 Title = TodoItem.Title,
                 CreatedTime = TimeZoneInfo.ConvertTimeToUtc(TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),

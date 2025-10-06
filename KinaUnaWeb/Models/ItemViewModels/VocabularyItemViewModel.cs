@@ -38,7 +38,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         /// <param name="vocabularyItem">The VocabularyItem to copy properties from.</param>
         public void SetPropertiesFromVocabularyItem(VocabularyItem vocabularyItem)
         {
-            VocabularyItem.AccessLevel = vocabularyItem.AccessLevel;
             VocabularyItem.Author = vocabularyItem.Author;
             VocabularyItem.Date = vocabularyItem.Date ?? TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
             VocabularyItem.ProgenyId = vocabularyItem.ProgenyId;

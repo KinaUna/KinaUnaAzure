@@ -131,7 +131,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 ProgenyId = KanbanItem.TodoItem.ProgenyId,
                 FamilyId = KanbanItem.TodoItem.FamilyId,
                 Description = KanbanItem.TodoItem.Description,
-                AccessLevel = KanbanItem.TodoItem.AccessLevel,
                 Context = KanbanItem.TodoItem.Context,
                 Title = KanbanItem.TodoItem.Title,
                 CreatedTime = TimeZoneInfo.ConvertTimeToUtc(KanbanItem.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),

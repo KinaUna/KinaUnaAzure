@@ -104,7 +104,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
 
             sleep.SleepNotes = SleepItem.SleepNotes;
-            sleep.AccessLevel = SleepItem.AccessLevel;
             sleep.Author = SleepItem.Author;
 
             return sleep;

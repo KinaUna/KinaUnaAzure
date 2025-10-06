@@ -15,12 +15,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int ProgenyId { get; init; }
         public Progeny Progeny { get; set; }
         public string Owners { get; init; } // Comma separated list of emails.
-        public int AccessLevel { get; init; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
         public string Author { get; init; }
-        public List<SelectListItem> AccessLevelListEn { get; init; }
-        public List<SelectListItem> AccessLevelListDa { get; init; }
-        public List<SelectListItem> AccessLevelListDe { get; init; }
-        public bool IsAdmin { get; init; }
         public int CommentThreadNumber { get; init; }
         public List<Comment> CommentsList { get; init; }
         public int CommentsCount { get; set; }
@@ -53,13 +48,5 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string VidDays { get; init; }
         public string VidHours { get; init; }
         public string VidMinutes { get; init; }
-
-        public VideoViewModel()
-        {
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
-        }
     }
 }

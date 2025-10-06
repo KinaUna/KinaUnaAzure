@@ -43,7 +43,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             NoteItem.NoteId = note.NoteId;
             NoteItem.ProgenyId = note.ProgenyId;
             NoteItem.Content = note.Content;
-            NoteItem.AccessLevel = note.AccessLevel;
             NoteItem.Category = note.Category;
             NoteItem.Title = note.Title;
             NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(note.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
@@ -65,7 +64,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 CreatedDate = TimeZoneInfo.ConvertTimeToUtc(NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
                 Content = NoteItem.Content,
                 Category = NoteItem.Category,
-                AccessLevel = NoteItem.AccessLevel,
                 Owner = NoteItem.Owner,
                 ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };

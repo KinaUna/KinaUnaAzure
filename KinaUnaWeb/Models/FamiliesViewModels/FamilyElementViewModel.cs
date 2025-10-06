@@ -8,6 +8,6 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
         {
             SetBaseProperties(baseItemsViewModel);
         }
-        public Family Family { get; set; } = new Family();
+        public Family Family { get; set; } = new();
     }
 }

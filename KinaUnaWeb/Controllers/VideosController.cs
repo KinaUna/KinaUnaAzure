@@ -148,8 +148,6 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            model.SetAccessLevelList();
-
             if (partialView)
             {
                 return PartialView("_VideoDetailsPartial", model);
@@ -210,8 +208,6 @@ namespace KinaUnaWeb.Controllers
                     }
                 }
             }
-
-            model.SetAccessLevelList();
             
             return PartialView("_VideoDetailsPartial", model);
         }

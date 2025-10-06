@@ -10,7 +10,7 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
             SetBaseProperties(baseItemsViewModel);
         }
 
-        public List<Family> Families { get; set; } = new List<Family>();
+        public List<Family> Families { get; set; } = [];
 
     }
 }

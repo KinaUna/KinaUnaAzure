@@ -7,9 +7,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
     public class VideoItemViewModel : BaseItemsViewModel
     {
         public Video Video { get; set; } = new();
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public int CommentThreadNumber { get; set; }
         public List<Comment> CommentsList { get; set; }
         public int CommentsCount { get; set; }
@@ -33,15 +30,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public bool PartialView { get; set; }
         public string HereMapsApiKey { get; init; } = "";
         public int VideoNumber { get; internal set; }
-
-        public VideoItemViewModel()
-        {
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
-        }
-
+        
         public VideoItemViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
@@ -57,7 +46,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Video.Owners = videoViewModel.Owners;
             Video.VideoLink = videoViewModel.VideoLink;
             Video.ThumbLink = videoViewModel.ThumbLink;
-            Video.AccessLevel = videoViewModel.AccessLevel;
             Video.Author = videoViewModel.Author;
             CommentThreadNumber = Video.CommentThreadNumber = videoViewModel.CommentThreadNumber;
             CommentsList = Video.Comments = videoViewModel.CommentsList ?? [];
@@ -102,29 +90,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 VidTime = "";
             }
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[Video.AccessLevel].Selected = true;
-            AccessLevelListDa[Video.AccessLevel].Selected = true;
-            AccessLevelListDe[Video.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-        }
-
+        
         public void SetPropertiesFromVideoItem(Video video)
         {
             Video.ProgenyId = video.ProgenyId;

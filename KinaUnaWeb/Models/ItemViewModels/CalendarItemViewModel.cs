@@ -91,7 +91,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             CalendarItem.Notes = eventItem.Notes;
             CalendarItem.Location = eventItem.Location;
             CalendarItem.Context = eventItem.Context;
-            CalendarItem.AccessLevel = eventItem.AccessLevel;
             CalendarItem.Author = eventItem.Author;
             CalendarItem.UId = eventItem.UId;
             CalendarItem.RecurrenceRuleId = eventItem.RecurrenceRuleId;
@@ -196,7 +195,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             eventItem.Location = CalendarItem.Location;
             eventItem.Context = CalendarItem.Context;
             eventItem.AllDay = CalendarItem.AllDay;
-            eventItem.AccessLevel = CalendarItem.AccessLevel;
             eventItem.Author = CalendarItem.Author;
             eventItem.UId = CalendarItem.UId;
             eventItem.RecurrenceRuleId = CalendarItem.RecurrenceRuleId;
