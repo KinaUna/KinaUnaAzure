@@ -141,8 +141,6 @@ namespace KinaUnaWeb.Controllers
             {
                 friendItemResponse.FriendItem = await friendsHttpClient.GetFriend(parameters.FriendId);
                 friendItemResponse.FriendItem.PictureLink = friendItemResponse.FriendItem.GetProfilePictureUrl();
-                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), friendItemResponse.FriendItem.ProgenyId, 0, false);
-                friendItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
                 friendItemResponse.FriendItem.Progeny = await progenyHttpClient.GetProgeny(friendItemResponse.FriendItem.ProgenyId);
             }
 

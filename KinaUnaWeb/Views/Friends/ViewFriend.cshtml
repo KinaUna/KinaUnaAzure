@@ -1,5 +1,6 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -65,15 +66,18 @@
                             }
                         }
                     </div>
-                    @if (Model.IsCurrentUserProgenyAdmin)
+                    @if (Model.FriendItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
                     {
                         <div class="float-right mt-4">
                             <a asp-controller="Friends" asp-action="EditFriend" asp-route-itemId="@Model.FriendItem.FriendId" class="btn btn-info leave-page">
                                 <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                             </a>
-                            <a asp-controller="Friends" asp-action="DeleteFriend" asp-route-itemId="@Model.FriendItem.FriendId" class="btn btn-danger leave-page">
-                                <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
-                            </a>
+                            @if (Model.FriendItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                            {
+                                <a asp-controller="Friends" asp-action="DeleteFriend" asp-route-itemId="@Model.FriendItem.FriendId" class="btn btn-danger leave-page">
+                                    <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
+                                </a>
+                            }
                         </div>
                     }
                 </div>

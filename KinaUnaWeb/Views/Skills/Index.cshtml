@@ -1,6 +1,7 @@
 ﻿@using KinaUnaWeb.Models.ItemViewModels
 @using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @model KinaUnaWeb.Models.ItemViewModels.SkillsListViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -36,7 +37,7 @@
                             <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Skills, Model.LanguageId)</th>
                             <th style="font-weight: bold">@await LocaleManager.GetTranslation("Category", PageNames.Skills, Model.LanguageId)</th>
                             <th style="font-weight: bold">@await LocaleManager.GetTranslation("First observation", PageNames.Skills, Model.LanguageId)</th>
-                            @if (Model.IsCurrentUserProgenyAdmin)
+                            @if (Model.SkillsList.Exists(s => s.SkillItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit))
                             {
                                 <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Skills, Model.LanguageId)</th>
                             }
@@ -57,16 +58,19 @@
                                 {
                                     <td>N/A</td>
                                 }
-                                @if (Model.IsCurrentUserProgenyAdmin)
+                                @if (skillViewModel.SkillItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
                                 {
                                     <td style="min-width: 135px;">
                                         <div>
                                             <a data-edit-item-type="skill" data-edit-item-item-id="@skillViewModel.SkillItem.SkillId" class="btn btn-info btn-round btn-sm item-details-edit-button edit-item-button">
                                                 <i class="fas fa-pencil-alt"></i>
                                             </a>
-                                            <a asp-controller="Skills" asp-action="DeleteSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-danger btn-round btn-sm leave-page">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </a>
+                                            @if (skillViewModel.SkillItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                                            {
+                                                <a asp-controller="Skills" asp-action="DeleteSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-danger btn-round btn-sm leave-page">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </a>
+                                            }
                                         </div>
                                     </td>
                                 }

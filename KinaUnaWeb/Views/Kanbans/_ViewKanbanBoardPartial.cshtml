@@ -19,6 +19,7 @@
         }
     }
     string title = assignedToName + " : " + await LocaleManager.GetTranslation("Kanban boards", PageNames.Todos, Model.LanguageId);
+    bool userCanEdit = Model.KanbanBoard.ItemPerMission.PermissionLevel >= PermissionLevel.Edit;
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper-wide full-screen">
     <div class="timeline-card-body bg-todos item-details-content">
@@ -60,7 +61,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div id="kanban-board-main-div" class="kanban-board" data-view-kanban-board-id="@Model.KanbanBoard.KanbanBoardId" data-user-can-edit="@Model.IsCurrentUserProgenyAdmin">
+                    <div id="kanban-board-main-div" class="kanban-board" data-view-kanban-board-id="@Model.KanbanBoard.KanbanBoardId" data-user-can-edit="@userCanEdit">
 
                     </div>
                     <div id="kanban-item-details-div" class="settings-modal d-none" tabindex="-1" role="dialog"></div>

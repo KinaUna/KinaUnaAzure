@@ -576,12 +576,7 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
 
             Picture pictureToCopy = await mediaHttpClient.GetPicture(model.Picture.PictureId, model.CurrentUser.Timezone);
-
-            if (!model.IsCurrentUserProgenyAdmin)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
+            
             bool canUserAdd = false;
             if (model.Picture.ProgenyId > 0)
             {

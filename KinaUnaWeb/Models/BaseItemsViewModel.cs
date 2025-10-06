@@ -16,7 +16,6 @@ public class BaseItemsViewModel : BaseViewModel
     public Family CurrentFamily { get; set; }
     public List<SelectListItem> ProgenyList { get; set; }
     public List<SelectListItem> FamilyList { get; set; }
-    public bool IsCurrentUserProgenyAdmin { get; set; }
     public string Tags { get; set; } = string.Empty;
     public string TagsList { get; set; } = "[]";
     public string ItemPermissionsListAsString { get; set; } = "";
@@ -33,7 +32,6 @@ public class BaseItemsViewModel : BaseViewModel
         CurrentFamilyId = baseItemsViewModel.CurrentFamilyId;
         CurrentProgeny = baseItemsViewModel.CurrentProgeny;
         CurrentFamily = baseItemsViewModel.CurrentFamily;
-        IsCurrentUserProgenyAdmin = baseItemsViewModel.IsCurrentUserProgenyAdmin;
     }
 
     public void UseCurrentViewChildOrDefault()

@@ -1,6 +1,7 @@
 ﻿@using System.Globalization
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.PictureItemViewModel
 @inject ILocaleManager LocaleManager
@@ -254,7 +255,7 @@
             </form>
         }
         <div class="space-20"></div>
-        @if (Model.IsCurrentUserProgenyAdmin)
+        @if (Model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
         {
             <div class="col-sm-3" style="margin-top: 35px;"></div>
             <div class="col-md-8">
@@ -339,15 +340,18 @@
                         </div>
                     </div>
                 </form>
-                <form asp-controller="Pictures" asp-action="DeletePicture" role="form" method="get">
-                    <div class="form-group">
-                        <label class="col-auto control-label">@await LocaleManager.GetTranslation("Remove this picture:", PageNames.Pictures, Model.LanguageId)</label>
-                        <div class="col-auto">
-                            <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete picture", PageNames.Pictures, Model.LanguageId)</button>
+                @if (Model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                {
+                    <form asp-controller="Pictures" asp-action="DeletePicture" role="form" method="get">
+                        <div class="form-group">
+                            <label class="col-auto control-label">@await LocaleManager.GetTranslation("Remove this picture:", PageNames.Pictures, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete picture", PageNames.Pictures, Model.LanguageId)</button>
+                            </div>
                         </div>
-                    </div>
-                    <input name="pictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
-                </form>
+                        <input name="pictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden"/>
+                    </form>
+                }
             </div>
             <script src="/js/pictures/add-edit-picture.js" type="module" asp-append-version="true"></script>
         }

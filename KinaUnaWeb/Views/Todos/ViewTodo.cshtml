@@ -2,6 +2,7 @@
 @using System.Web
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @inject ILocaleManager LocaleManager
 @{
@@ -99,7 +100,7 @@
                     </div>
                 </div>
             </div>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
                 <div class="col-12">
                     <div class="space-10"></div>

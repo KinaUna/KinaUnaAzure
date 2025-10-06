@@ -1,6 +1,7 @@
 ﻿@using System.Globalization
 @using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @model KinaUnaWeb.Models.ItemViewModels.VaccinationViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -29,7 +30,7 @@
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Name", PageNames.Vaccinations, Model.LanguageId)</th>
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Vaccinations, Model.LanguageId)</th>
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Notes", PageNames.Vaccinations, Model.LanguageId)</th>
-                    @if (Model.IsCurrentUserProgenyAdmin)
+                    @if (Model.VaccinationList.Exists(v => v.ItemPerMission.PermissionLevel >= PermissionLevel.Edit))
                     {
                         <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Vaccinations, Model.LanguageId)</th>
                     }
@@ -43,16 +44,19 @@
                         <td style="min-width: 225px;">@vaccinationViewModel.VaccinationName</td>
                         <td style="min-width: 180px;">@vaccinationViewModel.VaccinationDescription</td>
                         <td>@vaccinationViewModel.Notes</td>
-                        @if (Model.IsCurrentUserProgenyAdmin)
+                        @if (vaccinationViewModel.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
                         {
                             <td style="min-width: 135px;">
                                 <div>
                                     <a data-edit-item-type="vaccination" data-edit-item-item-id="@vaccinationViewModel.VaccinationId" class="btn btn-info btn-round btn-sm item-details-edit-button edit-item-button">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
-                                    <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-danger btn-round btn-sm leave-page">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </a>
+                                        @if (vaccinationViewModel.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                                    {
+                                        <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-danger btn-round btn-sm leave-page">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    }
                                 </div>
                             </td>
                         }

@@ -53,8 +53,7 @@ namespace KinaUnaWeb.Controllers
                         Category = "",
                         Name = "No items",
                         SkillFirstObservation = DateTime.UtcNow
-                    },
-                    IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin
+                    }
                 };
 
                 model.SkillsList.Add(skillViewModel);

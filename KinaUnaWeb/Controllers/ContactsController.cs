@@ -155,8 +155,6 @@ namespace KinaUnaWeb.Controllers
             {
                 contactItemResponse.ContactItem = await contactsHttpClient.GetContact(parameters.ContactId);
                 contactItemResponse.ContactItem.PictureLink = contactItemResponse.ContactItem.GetProfilePictureUrl();
-                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), contactItemResponse.ContactItem.ProgenyId, contactItemResponse.ContactItem.FamilyId);
-                contactItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
                 if (contactItemResponse.ContactItem.ProgenyId > 0)
                 {
                     contactItemResponse.ContactItem.Progeny = await progenyHttpClient.GetProgeny(contactItemResponse.ContactItem.ProgenyId);

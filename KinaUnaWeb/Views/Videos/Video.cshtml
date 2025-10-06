@@ -1,6 +1,7 @@
 ﻿@using System.Globalization
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.VideoItemViewModel
 @inject ILocaleManager LocaleManager
@@ -19,6 +20,7 @@
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+    const int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Video;
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
@@ -263,7 +265,7 @@
         </form>
     }
 <div class="space-20"></div>
-@if (Model.IsCurrentUserProgenyAdmin)
+    @if (Model.Video.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
     {
         <div class="col-sm-3" style="margin-top: 35px;"></div>
         <div class="col-md-8">
@@ -306,12 +308,6 @@
                                 <input type="number" id="DurationSeconds" asp-for="Video.DurationSeconds" min="0" max="59" value="@seconds" class="form-control" />
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Video.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                    <div class="col-lg-4">
-                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="Video.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
                     </div>
                 </div>
                 <div class="form-group">
@@ -364,6 +360,8 @@
                         </div>
                     </div>
                 }
+                <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.Video.VideoId"></div>
+                <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
                 <div class="space-20"></div>
                 <input asp-for="Video.VideoId" class="form-control" value="@Model.Video.VideoId" type="hidden" />
                 <input asp-for="Video.ProgenyId" class="form-control" value="@Model.CurrentProgenyId" type="hidden" />
@@ -379,15 +377,18 @@
                     </div>
                 </div>
             </form>
-            <form asp-controller="Videos" asp-action="DeleteVideo" role="form" method="get">
-                <div class="form-group">
-                    <div class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Remove this video:", PageNames.Videos, Model.LanguageId)</div>
-                    <div class="col-lg-9">
-                        <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete video", PageNames.Videos, Model.LanguageId)</button>
+            @if (Model.Video.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+            {
+                <form asp-controller="Videos" asp-action="DeleteVideo" role="form" method="get">
+                    <div class="form-group">
+                        <div class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Remove this video:", PageNames.Videos, Model.LanguageId)</div>
+                        <div class="col-lg-9">
+                            <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete video", PageNames.Videos, Model.LanguageId)</button>
+                        </div>
                     </div>
-                </div>
-                <input name="videoId" class="form-control" value="@Model.Video.VideoId" type="hidden" />
-            </form>
+                    <input name="videoId" class="form-control" value="@Model.Video.VideoId" type="hidden"/>
+                </form>
+            }
         </div>
         <script type="text/javascript">
             var copyLocationList = [];        

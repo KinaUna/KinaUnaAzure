@@ -1,5 +1,6 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -42,15 +43,18 @@
             {
                 await Html.RenderPartialAsync("_CalendarRemindersPartial", Model);
             }
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.CalendarItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
                 <div>
                     <a data-edit-item-type="calendar" data-edit-item-item-id="@Model.CalendarItem.EventId" class="btn btn-info item-details-edit-button edit-item-button">
                         <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                     </a>
-                    <a asp-controller="Calendar" asp-action="DeleteEvent" asp-route-itemId="@Model.CalendarItem.EventId" class="btn btn-danger leave-page">
-                        <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
-                    </a>
+                    @if (Model.CalendarItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a asp-controller="Calendar" asp-action="DeleteEvent" asp-route-itemId="@Model.CalendarItem.EventId" class="btn btn-danger leave-page">
+                            <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
+                        </a>
+                    }
                 </div>
             }
         </div>

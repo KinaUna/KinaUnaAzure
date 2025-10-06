@@ -1,5 +1,6 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @model KinaUnaWeb.Models.ItemViewModels.MeasurementViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -34,11 +35,14 @@
                             <div>@await LocaleManager.GetTranslation("Hair color:", PageNames.Measurements, Model.LanguageId) @Model.MeasurementItem.HairColor</div>
                         }
                     </div>
-                    @if (Model.IsCurrentUserProgenyAdmin)
+                    @if (Model.MeasurementItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
                     {
                         <div class="col-12">
                             <a asp-controller="Measurements" asp-action="EditMeasurement" asp-route-itemId="@Model.MeasurementItem.MeasurementId" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
-                            <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@Model.MeasurementItem.MeasurementId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                            @if (Model.MeasurementItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                            {
+                                <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@Model.MeasurementItem.MeasurementId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                            }
                         </div>
 
                     }

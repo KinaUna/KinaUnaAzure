@@ -1,5 +1,6 @@
 ﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.VideoItemViewModel
 @inject ILocaleManager LocaleManager
@@ -63,12 +64,15 @@
                 </div>
 
             </div>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.Video.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
                 <div class="space-20"></div>
                 <div class="col-12">
                     <a data-edit-item-type="video" data-edit-item-item-id="@Model.Video.VideoId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a asp-controller="Videos" asp-action="DeleteVideo" asp-route-videoId="@Model.Video.VideoId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    @if (Model.Video.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a asp-controller="Videos" asp-action="DeleteVideo" asp-route-videoId="@Model.Video.VideoId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
                 </div>
 
             }

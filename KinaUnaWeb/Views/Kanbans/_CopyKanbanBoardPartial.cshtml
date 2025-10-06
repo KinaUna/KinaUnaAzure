@@ -10,6 +10,8 @@
     {
         copyOption.Text = await LocaleManager.GetTranslation(copyOption.Text, PageNames.Todos, Model.LanguageId);
     }
+
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.KanbanBoard;
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
@@ -88,10 +90,10 @@
                     <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.CopyTodoItemsOptions.Count" asp-for="CopyTodoItemsOption" asp-items="@Model.CopyTodoItemsOptions"></select>
                 </div>
             </div>
-            <div id="item-permissions-editor-div" class="d-none"></div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.KanbanBoard.KanbanBoardId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden" />
             <input asp-for="KanbanBoard.UId" value="@Model.KanbanBoard.UId" type="hidden" />
             <input asp-for="KanbanBoard.KanbanBoardId" value="@Model.KanbanBoard.KanbanBoardId" type="hidden" />
-            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
             <div class="space-20"></div>
             <div class="form-group">
                 <div class="col-auto control-label"></div>

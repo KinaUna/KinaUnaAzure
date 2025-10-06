@@ -1,6 +1,7 @@
 ﻿@using System.Web
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
 @inject ILocaleManager LocaleManager
@@ -125,7 +126,7 @@
                 </div>
             </div>
         </div>
-        @if (Model.IsCurrentUserProgenyAdmin)
+        @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
         {
             <div class="row m-0">
                 <div class="col-auto d-none d-md-block">
@@ -194,7 +195,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @if (Model.IsCurrentUserProgenyAdmin)
+                            @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
                             {
                                 <div class="row text-white">
                                     <div class="col-12">
@@ -244,7 +245,7 @@
                                         </div>
                                     </div>
                                 }
-                                @if (Model.IsCurrentUserProgenyAdmin)
+                                @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
                                 {
                                     <div class="space-10"></div>
                                     <div class="row">
@@ -265,12 +266,15 @@
             </div>
             <div class="space-20"></div>
             <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.TodoItem.CreatedBy</div>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
                 <div class="space-50"></div>
                 <div class="col-12">
                     <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
                 </div>
             }
         </div>

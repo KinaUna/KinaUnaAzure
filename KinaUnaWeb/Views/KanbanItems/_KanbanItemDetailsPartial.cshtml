@@ -190,7 +190,7 @@
                         </div>
                     </div>
                     <div class="space-10"></div>
-                    @if (Model.IsCurrentUserProgenyAdmin)
+                    @if (Model.KanbanItem.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
                     {
                         <div class="row text-white">
                             <div class="col-12">
