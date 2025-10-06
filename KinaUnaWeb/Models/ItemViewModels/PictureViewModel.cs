@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using KinaUna.Data.Models.AccessManagement;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -17,11 +18,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int ProgenyId { get; init; }
         public Progeny Progeny { get; set; }
         public string Owners { get; init; } // Comma separated list of emails.
-        public int AccessLevel { get; init; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
         public string Author { get; init; }
-        public List<SelectListItem> AccessLevelListEn { get; init; }
-        public List<SelectListItem> AccessLevelListDa { get; init; }
-        public List<SelectListItem> AccessLevelListDe { get; init; }
         public bool IsAdmin { get; init; }
         public int CommentThreadNumber { get; init; }
         public List<Comment> CommentsList { get; init; }
@@ -49,13 +46,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string PicMinutes { get; init; }
         public int SortBy { get; init; }
         public string UserId { get; init; }
-        public PictureViewModel()
-        {
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
-
-        }
+        public TimelineItemPermission ItemPerMission { get; set; }
     }
 }

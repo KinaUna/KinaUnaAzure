@@ -190,5 +190,4 @@ namespace KinaUnaWeb.Services.HttpClients
             return timelineItemPermissions;
         }
     }
-    }
 }

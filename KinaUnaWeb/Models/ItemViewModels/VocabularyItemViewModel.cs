@@ -1,25 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class VocabularyItemViewModel: BaseItemsViewModel
     {
-        public List<SelectListItem> ProgenyList { get; set; } = [];
         public VocabularyItem VocabularyItem { get; set; } = new();
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
-
-        public VocabularyItemViewModel()
-        {
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
-        }
-
+        
+        
         public VocabularyItemViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
@@ -43,32 +31,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 }
             }
         }
-
-        /// <summary>
-        /// Set the AccessLevelList with the current AccessLevel selected.
-        /// </summary>
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[VocabularyItem.AccessLevel].Selected = true;
-            AccessLevelListDa[VocabularyItem.AccessLevel].Selected = true;
-            AccessLevelListDe[VocabularyItem.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-        }
-
+        
         /// <summary>
         /// Set the VocabularyItem properties from a VocabularyItem object.
         /// </summary>
@@ -85,6 +48,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             VocabularyItem.SoundsLike = vocabularyItem.SoundsLike;
             VocabularyItem.Word = vocabularyItem.Word;
             VocabularyItem.WordId = vocabularyItem.WordId;
+            VocabularyItem.ItemPerMission = vocabularyItem.ItemPerMission;
         }
     }
 

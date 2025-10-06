@@ -1,11 +1,8 @@
-﻿using KinaUna.Data;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.KanbanServices;
 using KinaUnaProgenyApi.Services.TodosServices;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -19,7 +16,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="kanbanItemsService">The Kanban items service.</param>
     /// <param name="kanbanBoardsService">The Kanban boards service.</param>
     /// <param name="todosService">The Todos service.</param>
-    /// <param name="userAccessService">The user access service.</param>
     [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -27,7 +23,6 @@ namespace KinaUnaProgenyApi.Controllers
     public class KanbanItemsController(IKanbanItemsService kanbanItemsService,
         IKanbanBoardsService kanbanBoardsService,
         ITodosService todosService,
-        IUserAccessService userAccessService,
         IUserInfoService userInfoService) : Controller
     {
         /// <summary>

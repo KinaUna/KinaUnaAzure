@@ -1,15 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using KinaUna.Data.Models.DTOs;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class TodoViewModel: BaseItemsViewModel
     {
         public TodoItem TodoItem { get; set; } = new();
-        public List<SelectListItem> ProgenyList { get; set; }
-        public List<SelectListItem> FamilyList { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> StatusList { get; set; }
         public int CopyFromTodoId { get; set; } = 0;
         public bool CopySubtasks { get; set; } = false;
@@ -25,7 +24,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public TodoViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
-            SetAccessLevelList();
             SetStatusList(0);
             ProgenyList = [];
         }
@@ -121,6 +119,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             TodoItem.TodoItemId = todoItem.TodoItemId;
             TodoItem.ParentTodoItemId = todoItem.ParentTodoItemId;
             TodoItem.ProgenyId = todoItem.ProgenyId;
+            TodoItem.FamilyId = todoItem.FamilyId;
             TodoItem.Description = todoItem.Description;
             TodoItem.AccessLevel = todoItem.AccessLevel;
             TodoItem.Context = todoItem.Context;
@@ -136,6 +135,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
             TodoItem.Tags = todoItem.Tags;
             TodoItem.UId = todoItem.UId;
             TodoItem.Progeny = todoItem.Progeny;
+            TodoItem.Family = todoItem.Family;
+            TodoItem.ItemPerMission = todoItem.ItemPerMission;
         }
 
         /// <summary>
@@ -152,6 +153,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 TodoItemId = TodoItem.TodoItemId,
                 ParentTodoItemId = TodoItem.ParentTodoItemId,
                 ProgenyId = CurrentProgenyId,
+                FamilyId = CurrentFamilyId,
                 Description = TodoItem.Description,
                 AccessLevel = TodoItem.AccessLevel,
                 Context = TodoItem.Context,
@@ -166,7 +168,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Tags = TodoItem.Tags,
                 Location = TodoItem.Location,
                 UId = TodoItem.UId,
-                Progeny = TodoItem.Progeny
+                Progeny = TodoItem.Progeny,
+                Family = TodoItem.Family,
+                ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };
 
             return todoItem;

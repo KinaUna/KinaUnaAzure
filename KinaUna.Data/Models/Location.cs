@@ -85,6 +85,8 @@ namespace KinaUna.Data.Models
 
         [NotMapped]
         public Progeny Progeny { get; set; }
+        [NotMapped]
+        public Family.Family Family { get; set; }
 
         /// <summary>
         /// The current user's permissions for this item.

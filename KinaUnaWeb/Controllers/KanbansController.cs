@@ -199,7 +199,7 @@ namespace KinaUnaWeb.Controllers
 
             if (!canUserAdd)
             {
-                // Todo: Show that no children are available to add kanban for.
+                // Todo: Show that no entities are available to add kanban for.
                 return RedirectToAction("Index");
             }
 
@@ -227,14 +227,12 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), kanbanBoard.ProgenyId, kanbanBoard.FamilyId, false);
             KanbanBoardViewModel model = new(baseModel)
             {
-                KanbanBoard = kanbanBoard
+                ProgenyList = await viewModelSetupService.GetProgenySelectList(kanbanBoard.ProgenyId),
+                FamilyList = await viewModelSetupService.GetFamilySelectList(kanbanBoard.FamilyId)
             };
-            
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(kanbanBoard.ProgenyId);
-            model.SetProgenyList();
-            model.FamilyList = await viewModelSetupService.GetFamilySelectList(kanbanBoard.FamilyId);
-            model.SetFamilyList();
 
+            model.SetProgenyList();
+            model.SetFamilyList();
             model.SetPropertiesFromKanbanBoard(kanbanBoard);
 
             return PartialView("_EditKanbanBoardPartial", model);

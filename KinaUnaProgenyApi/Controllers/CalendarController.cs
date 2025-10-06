@@ -172,7 +172,6 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <remarks>This method sends both Azure and web notifications to inform relevant parties about
         /// the addition of a new calendar item.</remarks>
-        /// <param name="progeny">The progeny for whom the calendar item was added. Cannot be null.</param>
         /// <param name="userInfo">The user who added the calendar item. Cannot be null.</param>
         /// <param name="timeLineItem">The timeline item associated with the calendar event. Cannot be null.</param>
         /// <param name="calendarItem">The calendar item that was added. Cannot be null.</param>

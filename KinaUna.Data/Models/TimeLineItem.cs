@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUna.Data.Models
 {
@@ -51,5 +52,11 @@ namespace KinaUna.Data.Models
 
         [NotMapped]
         public int ItemDay { get; set; } // For recurring events.
+
+        /// <summary>
+        /// The current user's permissions for this item.
+        /// </summary>
+        [NotMapped]
+        public TimelineItemPermission ItemPerMission { get; set; } = new();
     }
 }

@@ -81,12 +81,6 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="email">The user's email address.</param>
         /// <returns>List of Progeny objects.</returns>
         Task<List<Progeny>> GetProgenyAdminList(string email);
-
-        /// <summary>
-        /// Gets the list of TimeLineItems that happened on this data for the given Progenies.
-        /// </summary>
-        /// <param name="progeniesList">List of Ids for the progenies to get timeline items for.</param>
-        /// <returns>List of TimeLineItem objects.</returns>
-        Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList);
+        
     }
 }

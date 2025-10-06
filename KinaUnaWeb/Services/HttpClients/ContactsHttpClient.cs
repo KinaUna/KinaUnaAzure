@@ -126,16 +126,21 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of Contact objects for a progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny.</param>
+        /// <param name="familyId">The Id of the Family.</param>
         /// <param name="tagFilter">String to filter the result list by, only items with the tagFilter string in the Tags property are included. If empty string all items are included.</param>
         /// <returns>List of Contact objects.</returns>
-        public async Task<List<Contact>> GetContactsList(int progenyId, string tagFilter = "")
+        public async Task<List<Contact>> GetContactsList(int progenyId, int familyId, string tagFilter = "")
         {
             List<Contact> progenyContactsList = [];
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-
             string contactsApiPath = "/api/Contacts/Progeny/" + progenyId;
+            if (familyId > 0)
+            {
+                contactsApiPath = "/api/Contacts/Family/" + familyId;
+            }
+            
             HttpResponseMessage contactsResponse = await _httpClient.GetAsync(contactsApiPath).ConfigureAwait(false);
             if (!contactsResponse.IsSuccessStatusCode) return progenyContactsList;
 

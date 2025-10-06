@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUna.Data.Models
 {
@@ -82,6 +84,9 @@ namespace KinaUna.Data.Models
         /// Gets or sets the date and time when the object was last modified.
         /// </summary>
         public DateTime ModifiedTime { get; set; }
+
+        [NotMapped] 
+        public ProgenyPermission ProgenyPerMission { get; set; } = new();
 
     }
 }

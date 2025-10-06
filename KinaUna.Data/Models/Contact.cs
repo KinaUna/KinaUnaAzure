@@ -68,6 +68,8 @@ namespace KinaUna.Data.Models
         [NotMapped]
         public Progeny Progeny { get; set; }
 
+        [NotMapped] public Family.Family Family { get; set; }
+
         [NotMapped]
         public Address Address { get; set; }
 

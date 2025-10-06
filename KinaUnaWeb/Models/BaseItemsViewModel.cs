@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Models.Family;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
 
 namespace KinaUnaWeb.Models;
 
@@ -10,9 +11,11 @@ namespace KinaUnaWeb.Models;
 public class BaseItemsViewModel : BaseViewModel
 {
     public int CurrentProgenyId { get; set; }
-    public int CurrentFamilyId { get; set; } = 0;
+    public int CurrentFamilyId { get; set; }
     public Progeny CurrentProgeny { get; set; }
     public Family CurrentFamily { get; set; }
+    public List<SelectListItem> ProgenyList { get; set; }
+    public List<SelectListItem> FamilyList { get; set; }
     public bool IsCurrentUserProgenyAdmin { get; set; }
     public string Tags { get; set; } = string.Empty;
     public string TagsList { get; set; } = "[]";

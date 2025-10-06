@@ -37,11 +37,12 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<bool> DeleteContact(int contactId);
 
         /// <summary>
-        /// Gets the list of Contact objects for a progeny that a user has access to.
+        /// Gets the list of Contact objects for a progeny or family that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny.</param>
+        /// <param name="familyId">The Id of the Family.</param>
         /// <param name="tagFilter">String to filter the result list by, only items with the tagFilter string in the Tags property are included. If empty string all items are included.</param>
         /// <returns>List of Contact objects.</returns>
-        Task<List<Contact>> GetContactsList(int progenyId, string tagFilter = "");
+        Task<List<Contact>> GetContactsList(int progenyId, int familyId, string tagFilter = "");
     }
 }

@@ -13,12 +13,16 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public ContactListViewModel()
         {
             ContactsList = [];
+            ProgenyList = [];
+            FamilyList = [];
         }
 
         public ContactListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
             ContactsList = [];
+            ProgenyList = [];
+            FamilyList = [];
         }
     }
 }

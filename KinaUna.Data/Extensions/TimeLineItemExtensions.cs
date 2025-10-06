@@ -77,6 +77,7 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.ItemYear = calendarItem.StartTime.Value.Year;
             currentTimeLineItem.ItemMonth = calendarItem.StartTime.Value.Month;
             currentTimeLineItem.ItemDay = calendarItem.StartTime.Value.Day;
+            currentTimeLineItem.ItemPerMission = calendarItem.ItemPerMission;
             return true;
 
         }

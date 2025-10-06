@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUna.Data.Models.Family
 {
@@ -69,5 +70,7 @@ namespace KinaUna.Data.Models.Family
 
         [NotMapped]
         public List<FamilyMember> FamilyMembers { get; set; } = [];
+        [NotMapped]
+        public FamilyPermission FamilyPermission { get; set; } = new FamilyPermission();
     }
 }

@@ -1,18 +1,19 @@
-﻿using System;
+﻿using KinaUna.Data;
+using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
+using KinaUnaWeb.Models.TypeScriptModels.Friends;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data;
-using KinaUna.Data.Extensions;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.IO;
-using KinaUnaWeb.Models;
-using KinaUnaWeb.Models.TypeScriptModels.Friends;
-using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -34,8 +35,9 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0, int friendId = 0)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, 0, true);
             FriendsListViewModel model = new(baseModel);
+            // Todo: Use progeny list to show friends from multiple progenies.
             List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, tagFilter);
 
             model.TagFilter = tagFilter;
@@ -73,10 +75,10 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId, 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId, 0, false);
             FriendViewModel model = new(baseModel);
             
-            model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
+            model.SetPropertiesFromFriendItem(friend);
             
             
             model.FriendItem.PictureLink = model.FriendItem.GetProfilePictureUrl();
@@ -139,7 +141,7 @@ namespace KinaUnaWeb.Controllers
             {
                 friendItemResponse.FriendItem = await friendsHttpClient.GetFriend(parameters.FriendId);
                 friendItemResponse.FriendItem.PictureLink = friendItemResponse.FriendItem.GetProfilePictureUrl();
-                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), friendItemResponse.FriendItem.ProgenyId, 0);
+                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), friendItemResponse.FriendItem.ProgenyId, 0, false);
                 friendItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
                 friendItemResponse.FriendItem.Progeny = await progenyHttpClient.GetProgeny(friendItemResponse.FriendItem.ProgenyId);
             }
@@ -253,17 +255,12 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddFriend()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
             FriendViewModel model = new(baseModel);
             
-            if (model.CurrentUser == null)
-            {
-                return RedirectToAction("Index");
-            }
-
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
-
+            
             List<string> tagsList = [];
             foreach (SelectListItem item in model.ProgenyList)
             {
@@ -286,7 +283,6 @@ namespace KinaUnaWeb.Controllers
             }
             
             model.SetTagList(tagsList);
-            model.SetAccessLevelList();
             model.SetFriendTypeList();
             
             return PartialView("_AddFriendPartial", model);
@@ -302,12 +298,23 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> AddFriend(FriendViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId, 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId, 0, false);
             model.SetBaseProperties(baseModel);
 
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.FriendItem.ProgenyId > 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.FriendItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add kanban for.
+                return RedirectToAction("Index");
             }
 
             Friend friendItem = model.CreateFriend();
@@ -343,21 +350,21 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditFriend(int itemId)
         {
             Friend friend = await friendsHttpClient.GetFriend(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId, 0);
-            FriendViewModel model = new(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (friend == null || friend.FriendId == 0 || friend.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId, 0, false);
+            FriendViewModel model = new(baseModel);
+            
             friend.PictureLink = friend.GetProfilePictureUrl();
 
-            model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
+            model.SetPropertiesFromFriendItem(friend);
             
             List<string> tagsList = [];
-            List<Friend> friendsList1 = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId);
-            foreach (Friend friendItem in friendsList1)
+            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId);
+            foreach (Friend friendItem in friendsList)
             {
                 if (string.IsNullOrEmpty(friendItem.Tags)) continue;
 
@@ -372,7 +379,6 @@ namespace KinaUnaWeb.Controllers
             }
             
             model.SetTagList(tagsList);
-            model.SetAccessLevelList();
             model.SetFriendTypeList();
 
             return PartialView("_EditFriendPartial", model);
@@ -388,17 +394,23 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> EditFriend(FriendViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId, 0);
-            model.SetBaseProperties(baseModel);
+            Friend originalFriend = await friendsHttpClient.GetFriend(model.FriendItem.FriendId);
             
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (originalFriend == null || originalFriend.FriendId == 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                return PartialView("_NotFoundPartial");
             }
 
-            Friend editedFriend = model.CreateFriend();
-            Friend originalFriend = await friendsHttpClient.GetFriend(model.FriendItem.FriendId);
+            if (originalFriend.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return Unauthorized();
+            }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+
+            Friend editedFriend = model.CreateFriend();
+            
             if (model.File != null && model.File.Name != string.Empty)
             {
                 
@@ -431,15 +443,18 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteFriend(int itemId)
         {
             Friend friend = await friendsHttpClient.GetFriend(itemId);
+            if (friend == null || friend.FriendId == 0)
+            {
+                return View("Index");
+            }
+            if (friend.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId, 0);
             FriendViewModel model = new(baseModel);
             
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
-            {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
-            }
-
             friend.PictureLink = friend.GetProfilePictureUrl();
             model.FriendItem = friend;
 
@@ -456,14 +471,17 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteFriend(FriendViewModel model)
         {
             Friend friend = await friendsHttpClient.GetFriend(model.FriendItem.FriendId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId, 0);
-            model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (friend == null || friend.FriendId == 0)
             {
-                // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
+            if (friend.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return Unauthorized();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
 
             _ = await friendsHttpClient.DeleteFriend(friend.FriendId);
 
@@ -484,17 +502,15 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId, 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId, 0, false);
             FriendViewModel model = new(baseModel);
-
             
-
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             friend.PictureLink = friend.GetProfilePictureUrl();
 
-            model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
+            model.SetPropertiesFromFriendItem(friend);
 
             List<string> tagsList = [];
             List<Friend> friendsList1 = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId);
@@ -513,7 +529,6 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.SetTagList(tagsList);
-            model.SetAccessLevelList();
             model.SetFriendTypeList();
 
             return PartialView("_CopyFriendPartial", model);
@@ -529,20 +544,30 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> CopyFriend(FriendViewModel model)
         {
+            Friend originalFriend = await friendsHttpClient.GetFriend(model.FriendItem.FriendId);
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId, 0);
             model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            
+            bool canUserAdd = false;
+            if (model.FriendItem.ProgenyId > 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.FriendItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add kanban for.
+                return RedirectToAction("Index");
             }
 
             Friend editedFriend = model.CreateFriend();
-            Friend originalFriend = await friendsHttpClient.GetFriend(model.FriendItem.FriendId);
-
+            
             if (model.File != null && model.File.Name != string.Empty)
             {
-
                 model.FileName = model.File.FileName;
                 await using Stream stream = model.File.OpenReadStream();
                 string fileFormat = Path.GetExtension(model.File.FileName);

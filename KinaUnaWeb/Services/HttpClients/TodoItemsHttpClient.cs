@@ -64,7 +64,8 @@ namespace KinaUnaWeb.Services.HttpClients
             {
                 TodoItems = [],
                 TodoItemsRequest = request,
-                ProgenyList = []
+                ProgenyList = [],
+                FamilyList = []
             };
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);

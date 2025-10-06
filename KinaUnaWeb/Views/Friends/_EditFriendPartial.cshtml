@@ -7,6 +7,7 @@
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     const int changedItemTypeFriend = (int)KinaUnaTypes.TimeLineType.Friend;
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Friend;
 }
 <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeFriend" data-changed-item-item-id="@Model.FriendItem.FriendId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
@@ -95,12 +96,9 @@
                     <input id="tag-list" type="text" asp-for="FriendItem.Tags" value="@Model.FriendItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FriendItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="FriendItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.FriendItem.FriendId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
             <input asp-for="FriendItem.ProgenyId" value="@Model.FriendItem.ProgenyId" type="hidden" />
             <input asp-for="FriendItem.FriendAddedDate" value="@Model.FriendItem.FriendAddedDate" type="hidden" />

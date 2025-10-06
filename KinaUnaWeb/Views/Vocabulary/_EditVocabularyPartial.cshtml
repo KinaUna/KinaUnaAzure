@@ -7,6 +7,7 @@
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     const int changedItemTypeVocabularyItem = (int)KinaUnaTypes.TimeLineType.Vocabulary;
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Vocabulary;
 }
 <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeVocabularyItem" data-changed-item-item-id="@Model.VocabularyItem.WordId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
@@ -60,12 +61,9 @@
                     </div>
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="VocabularyItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="VocabularyItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.VocabularyItem.WordId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
             <input asp-for="VocabularyItem.ProgenyId" value="@Model.VocabularyItem.ProgenyId" type="hidden" />
             <input asp-for="VocabularyItem.DateAdded" value="@Model.VocabularyItem.DateAdded" type="hidden" />

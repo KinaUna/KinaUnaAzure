@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUna.Data.Models
 {
@@ -36,6 +37,7 @@ namespace KinaUna.Data.Models
         public DateTime ModifiedTime { get; set; }
 
         [NotMapped] public Address Address { get; set; } = new();
+        [NotMapped] public ProgenyPermission ProgenyPerMission { get; set; } = new();
 
     }
 }

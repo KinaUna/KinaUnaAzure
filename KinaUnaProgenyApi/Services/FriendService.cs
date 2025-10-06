@@ -17,17 +17,15 @@ namespace KinaUnaProgenyApi.Services
     public class FriendService : IFriendService
     {
         private readonly ProgenyDbContext _context;
-        private readonly IUserInfoService _userInfoService;
         private readonly IAccessManagementService _accessManagementService;
         private readonly IImageStore _imageStore;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         
-        public FriendService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, IUserInfoService userInfoService, IAccessManagementService accessManagementService)
+        public FriendService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService)
         {
             _context = context;
-            _userInfoService = userInfoService;
             _accessManagementService = accessManagementService;
             _imageStore = imageStore;
             _cache = cache;

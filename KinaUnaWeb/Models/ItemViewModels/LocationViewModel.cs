@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models.TypeScriptModels.Locations;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class LocationViewModel: BaseItemsViewModel
     {
         public List<Location> LocationsList { get; set; }
-        public List<SelectListItem> ProgenyList { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
-
+        
         public string TagFilter { get; set; }
         public int? SortBy { get; set; }
 
@@ -27,47 +25,38 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             LocationsList = [];
             ProgenyList = [];
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
+            FamilyList = [];
         }
 
         public LocationViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
-            SetAccessLevelList();
             ProgenyList = [];
+            FamilyList = [];
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accList = new();
-            AccessLevelListEn = accList.AccessLevelListEn;
-            AccessLevelListDa = accList.AccessLevelListDa;
-            AccessLevelListDe = accList.AccessLevelListDe;
-
-            AccessLevelListEn[LocationItem.AccessLevel].Selected = true;
-            AccessLevelListDa[LocationItem.AccessLevel].Selected = true;
-            AccessLevelListDe[LocationItem.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-        }
-
+        
         public void SetProgenyList()
         {
             LocationItem.ProgenyId = CurrentProgenyId;
             foreach (SelectListItem item in ProgenyList)
             {
                 if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+
+        public void SetFamilyList()
+        {
+            LocationItem.FamilyId = CurrentFamilyId;
+            foreach (SelectListItem item in FamilyList)
+            {
+                if (item.Value == CurrentFamilyId.ToString())
                 {
                     item.Selected = true;
                 }
@@ -100,8 +89,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             LocationItem.Tags = location.Tags;
             LocationItem.ProgenyId = location.ProgenyId;
+            LocationItem.FamilyId = location.FamilyId;
             LocationItem.DateAdded = location.DateAdded;
             LocationItem.Author = location.Author;
+            LocationItem.ItemPerMission = location.ItemPerMission;
         }
 
         public Location CreateLocation()
@@ -120,7 +111,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 County = LocationItem.County,
                 State = LocationItem.State,
                 Country = LocationItem.Country,
-                Notes = LocationItem.Notes
+                Notes = LocationItem.Notes,
+                ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };
             if (LocationItem.Date.HasValue)
             {
@@ -133,10 +125,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
 
             location.ProgenyId = LocationItem.ProgenyId;
+            location.FamilyId = LocationItem.FamilyId;
             location.DateAdded = LocationItem.DateAdded;
             location.Author = location.Author;
-            location.AccessLevel = LocationItem.AccessLevel;
-
+            
             return location;
         }
     }

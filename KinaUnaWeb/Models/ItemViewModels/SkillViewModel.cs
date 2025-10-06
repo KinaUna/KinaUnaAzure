@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class SkillViewModel: BaseItemsViewModel
     {
-        public List<SelectListItem> ProgenyList { get; set; }
         public Skill SkillItem { get; set; } = new Skill();
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         
         public SkillViewModel()
         {
             ProgenyList = [];
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
         }
 
         public SkillViewModel(BaseItemsViewModel baseItemsViewModel)
@@ -41,29 +35,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 }
             }
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[SkillItem.AccessLevel].Selected = true;
-            AccessLevelListDa[SkillItem.AccessLevel].Selected = true;
-            AccessLevelListDe[SkillItem.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-        }
-
+        
         public Skill CreateSkill()
         {
             Skill skillItem = new()
@@ -73,7 +45,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Category = SkillItem.Category,
                 Description = SkillItem.Description,
                 Name = SkillItem.Name,
-                SkillAddedDate = SkillItem.SkillAddedDate
+                SkillAddedDate = SkillItem.SkillAddedDate,
+                ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };
             
             if (SkillItem.SkillFirstObservation.HasValue)
@@ -91,7 +64,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             return skillItem;
         }
 
-        public void SetPropertiesFromSkillItem(Skill skill, bool isAdmin)
+        public void SetPropertiesFromSkillItem(Skill skill)
         {
             SkillItem.ProgenyId = skill.ProgenyId;
             SkillItem.AccessLevel = skill.AccessLevel;
@@ -100,7 +73,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SkillItem.Name = skill.Name;
             SkillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(skill.SkillFirstObservation?? DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
             SkillItem.SkillId = skill.SkillId;
-            IsCurrentUserProgenyAdmin = isAdmin;
+            SkillItem.ItemPerMission = skill.ItemPerMission;
         }
     }
 }

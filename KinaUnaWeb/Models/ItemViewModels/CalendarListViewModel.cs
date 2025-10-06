@@ -50,8 +50,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             foreach (CalendarItem ev in eventsList)
             {
-                if (ev.AccessLevel != (int)AccessLevel.Public && ev.AccessLevel < CurrentAccessLevel) continue;
-
                 if (!ev.StartTime.HasValue || !ev.EndTime.HasValue) continue;
 
                 ev.StartTime = TimeZoneInfo.ConvertTimeFromUtc(ev.StartTime.Value,

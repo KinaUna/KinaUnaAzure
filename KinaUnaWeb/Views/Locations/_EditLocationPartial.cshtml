@@ -9,6 +9,7 @@
     const string zebraDateTimeFormat = "d-F-Y";
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
     const int changedItemTypeLocation = (int)KinaUnaTypes.TimeLineType.Location;
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Location;
 }
 <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeLocation" data-changed-item-item-id="@Model.LocationItem.LocationId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
@@ -116,12 +117,9 @@
                     <input id="tag-list" type="text" asp-for="LocationItem.Tags" value="@Model.LocationItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Locations, Model.LanguageId)" class="form-control"/>
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="LocationItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="LocationItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.LocationItem.LocationId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
             <div>
                 <div class="form-group">

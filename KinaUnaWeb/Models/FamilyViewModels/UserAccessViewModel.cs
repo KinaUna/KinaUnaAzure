@@ -17,8 +17,7 @@ namespace KinaUnaWeb.Models.FamilyViewModels
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
-        public List<SelectListItem> ProgenyList { get; set; }
-
+        
         public UserAccessViewModel()
         {
             ProgenyList = [];

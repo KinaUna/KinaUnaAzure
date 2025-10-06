@@ -73,10 +73,18 @@ namespace KinaUnaWeb.Services
             if (viewModel.CurrentProgenyId > 0)
             {
                 viewModel.CurrentProgeny = await _progenyHttpClient.GetProgeny(viewModel.CurrentProgenyId);
+                if (viewModel.CurrentProgeny == null || viewModel.CurrentProgeny.Id == 0)
+                {
+                    viewModel.CurrentProgenyId = 0;
+                }
             }
             if (viewModel.CurrentFamilyId > 0)
             {
                 viewModel.CurrentFamily = await _familiesHttpClient.GetFamily(viewModel.CurrentFamilyId);
+                if (viewModel.CurrentFamily == null || viewModel.CurrentFamily.FamilyId == 0)
+                {
+                    viewModel.CurrentFamilyId = 0;
+                }
             }
             
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(viewModel), _cacheOptions);

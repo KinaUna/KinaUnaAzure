@@ -8,16 +8,13 @@
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     const string longDateTimeFormatMoment = "DD-MMMM-YYYY";
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.TodoItem;
 
     foreach (SelectListItem statusItem in Model.StatusList)
     {
         statusItem.Text = await LocaleManager.GetTranslation(statusItem.Text, PageNames.Todos, Model.LanguageId);
     }
-    foreach (SelectListItem accessLevelItem in Model.AccessLevelListEn)
-    {
-        accessLevelItem.Text = await LocaleManager.GetTranslation(accessLevelItem.Text, PageNames.AccessManagement, Model.LanguageId);
-    }
-
+    
     Model.KanbanBoardsList[0].Text = await LocaleManager.GetTranslation("Do not add to a Kanban board", PageNames.Todos, Model.LanguageId);
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
@@ -131,12 +128,6 @@
                     <textarea rows="4" asp-for="TodoItem.Notes" class="form-control"></textarea>
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="TodoItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="TodoItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
             <div class="space-10"></div>
             <div class="form-group">
                 <label asp-for="AddToKanbanBoardId" class="col-auto control-label">@await LocaleManager.GetTranslation("Add to Kanban Board", PageNames.Todos, Model.LanguageId)</label>
@@ -144,6 +135,9 @@
                     <select id="add-todo-item-to-kanban-board-select" class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-size="@Model.KanbanBoardsList.Count" asp-for="AddToKanbanBoardId" asp-items="@Model.KanbanBoardsList"></select>
                 </div>
             </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.TodoItem.TodoItemId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
             <div class="form-group">
                 <div class="col-auto control-label"></div>

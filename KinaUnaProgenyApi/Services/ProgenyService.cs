@@ -58,6 +58,10 @@ namespace KinaUnaProgenyApi.Services
                 progeny = await SetProgenyInCache(id);
             }
 
+            if (progeny != null)
+            {
+                progeny.ProgenyPerMission = await _accessManagementService.GetProgenyPermissionForUser(id, currentUserInfo);
+            }
             return progeny;
         }
 
@@ -380,7 +384,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<ProgenyInfo> GetProgenyInfo(int progenyId, UserInfo currentUserInfo)
         {
             Progeny progeny = await GetProgeny(progenyId, currentUserInfo);
-            if (progeny == null) return null;
+            if (progeny == null || progeny.Id == 0) return null;
             
             ProgenyInfo progenyInfo = await _context.ProgenyInfoDb.AsNoTracking().SingleOrDefaultAsync(p => p.ProgenyId == progenyId);
 
@@ -398,15 +402,17 @@ namespace KinaUnaProgenyApi.Services
                 progenyInfo.Address = await _locationService.GetAddressItem(progenyInfo.AddressIdNumber);
             }
 
-            if (progenyInfo.Address != null) return progenyInfo;
+            if (progenyInfo.Address == null)
+            {
+                Address address = new(); 
+                address = await _locationService.AddAddressItem(address); 
+                progenyInfo.AddressIdNumber = address.AddressId; 
+                progenyInfo.Address = address;
+                progenyInfo = await UpdateProgenyInfo(progenyInfo, currentUserInfo);
+            }
 
-            Address address = new();
-            address = await _locationService.AddAddressItem(address);
-            progenyInfo.AddressIdNumber = address.AddressId;
-            progenyInfo.Address = address;
-
-            progenyInfo = await UpdateProgenyInfo(progenyInfo, currentUserInfo);
-
+            progenyInfo.ProgenyPerMission = progeny.ProgenyPerMission;
+            
             return progenyInfo;
         }
 

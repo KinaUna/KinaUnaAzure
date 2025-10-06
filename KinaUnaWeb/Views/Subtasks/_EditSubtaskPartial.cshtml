@@ -13,14 +13,11 @@
     {
         statusItem.Text = await LocaleManager.GetTranslation(statusItem.Text, PageNames.Todos, Model.LanguageId);
     }
-    foreach (SelectListItem accessLevelItem in Model.AccessLevelListEn)
-    {
-        accessLevelItem.Text = await LocaleManager.GetTranslation(accessLevelItem.Text, PageNames.AccessManagement, Model.LanguageId);
-    }
-
+    
     const int changedItemTypeTodoItem = (int)KinaUnaTypes.TimeLineType.TodoItem;
     const int changedItemTypeKanbanBoard = (int)KinaUnaTypes.TimeLineType.KanbanBoard;
     const int changedItemTypeKanbanItem = (int)KinaUnaTypes.TimeLineType.KanbanItem;
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.TodoItem;
 }
 <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeTodoItem" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
 <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeTodoItem" data-changed-item-item-id="@Model.TodoItem.ParentTodoItemId"></div>
@@ -152,11 +149,13 @@
                     <textarea rows="4" asp-for="TodoItem.Notes" class="form-control">@Model.TodoItem.Notes</textarea>
                 </div>
             </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.TodoItem.TodoItemId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
             <input asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId" type="hidden" />
             <input id="subtask-parent-todo-item-id-input" asp-for="TodoItem.ParentTodoItemId" value="@Model.TodoItem.ParentTodoItemId" type="hidden" />
             <input asp-for="TodoItem.CreatedBy" value="@Model.TodoItem.CreatedBy" type="hidden" />
-            <input asp-for="TodoItem.AccessLevel" value="@Model.TodoItem.AccessLevel" type="hidden" />
             <div class="form-group">
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">

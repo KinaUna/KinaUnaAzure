@@ -10,8 +10,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
     public class KanbanBoardViewModel: BaseItemsViewModel
     {
         public KanbanBoard KanbanBoard { get; set; } = new();
-        public List<SelectListItem> ProgenyList { get; set; }
-        public List<SelectListItem> FamilyList { get; set; }
+        
         public List<SelectListItem> CopyTodoItemsOptions { get; set; } =
         [
             new() { Value = "0", Text = "Copy to new item", Selected = true },
@@ -25,11 +24,13 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public KanbanBoardViewModel()
         {
             ProgenyList = [];
+            FamilyList = [];
         }
         public KanbanBoardViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
             ProgenyList = [];
+            FamilyList = [];
         }
         
         public void SetProgenyList()
@@ -93,7 +94,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         internal void SetPropertiesFromKanbanBoard(KanbanBoard kanbanBoard)
         {
-            KanbanBoard.AccessLevel = kanbanBoard.AccessLevel;
             KanbanBoard.Columns = kanbanBoard.Columns;
             KanbanBoard.CreatedBy = kanbanBoard.CreatedBy;
             KanbanBoard.CreatedTime = kanbanBoard.CreatedTime;
@@ -108,6 +108,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             KanbanBoard.Context = kanbanBoard.Context;
             KanbanBoard.IsDeleted = kanbanBoard.IsDeleted;
             KanbanBoard.ColumnsList = kanbanBoard.GetColumnsListFromColumns();
+            KanbanBoard.ItemPerMission = kanbanBoard.ItemPerMission;
         }
     }
 }

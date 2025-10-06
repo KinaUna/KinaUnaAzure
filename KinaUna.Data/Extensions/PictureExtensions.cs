@@ -42,6 +42,8 @@ namespace KinaUna.Data.Extensions
 
             currentPicture.AccessLevel = otherPicture.AccessLevel;
             currentPicture.PictureTime = otherPicture.PictureTime;
+            currentPicture.ItemPerMission = otherPicture.ItemPerMission;
+            currentPicture.ItemPermissionsDtoList = otherPicture.ItemPermissionsDtoList;
             currentPicture.Tags = otherPicture.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
             currentPicture.Location = otherPicture.Location.TrimEnd(',', ' ');
             if (!string.IsNullOrEmpty(otherPicture.Longtitude))
@@ -69,7 +71,8 @@ namespace KinaUna.Data.Extensions
         {
             otherPicture.RemoveNullStrings();
 
-            currentPicture.AccessLevel = otherPicture.AccessLevel;
+            currentPicture.ItemPerMission = otherPicture.ItemPerMission;
+            currentPicture.ItemPermissionsDtoList = otherPicture.ItemPermissionsDtoList;
             currentPicture.CommentThreadNumber = otherPicture.CommentThreadNumber;
             currentPicture.TimeZone = otherPicture.TimeZone;
             currentPicture.Owners = otherPicture.Owners;
@@ -95,7 +98,8 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherPicture"></param>
         public static void CopyPropertiesForAdd(this Picture currentPicture, Picture otherPicture)
         {
-            currentPicture.AccessLevel = otherPicture.AccessLevel;
+            currentPicture.ItemPerMission = otherPicture.ItemPerMission;
+            currentPicture.ItemPermissionsDtoList = otherPicture.ItemPermissionsDtoList;
             currentPicture.CommentThreadNumber = otherPicture.CommentThreadNumber;
             currentPicture.ProgenyId = otherPicture.ProgenyId;
             currentPicture.PictureLink = otherPicture.PictureLink;
@@ -172,7 +176,8 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForCopy(this Picture currentPicture, Picture otherPicture, string ownerEmail, Progeny progeny)
         {
             otherPicture.RemoveNullStrings();
-
+            currentPicture.ItemPerMission = otherPicture.ItemPerMission;
+            currentPicture.ItemPermissionsDtoList = otherPicture.ItemPermissionsDtoList;
             currentPicture.PictureId = 0;
             currentPicture.ProgenyId = otherPicture.ProgenyId;
             currentPicture.Progeny = progeny;

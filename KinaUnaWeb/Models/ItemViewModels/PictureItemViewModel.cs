@@ -8,9 +8,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         public Picture Picture { get; init; } = new();
         
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public int CommentThreadNumber { get; set; }
         public List<Comment> CommentsList { get; set; }
         public int CommentsCount { get; set; }
@@ -35,16 +32,13 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public PictureItemViewModel()
         {
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
-
+            ProgenyList = [];
         }
 
         public PictureItemViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
+            ProgenyList = [];
         }
 
         public void SetPropertiesFromPictureViewModel(PictureViewModel pictureViewModel)
@@ -52,7 +46,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Picture.PictureId = pictureViewModel.PictureId;
             Picture.ProgenyId = pictureViewModel.ProgenyId;
             Picture.Progeny = CurrentProgeny;
-            Picture.AccessLevel = pictureViewModel.AccessLevel;
             Picture.Author = pictureViewModel.Author;
             CommentThreadNumber = Picture.CommentThreadNumber = pictureViewModel.CommentThreadNumber;
             CommentsList = Picture.Comments = pictureViewModel.CommentsList ?? [];
@@ -68,7 +61,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             PictureNumber = Picture.PictureNumber = pictureViewModel.PictureNumber;
             Picture.PictureTime = pictureViewModel.PictureTime;
             Tags = Picture.Tags = pictureViewModel.Tags;
-            
+            Picture.ItemPerMission = pictureViewModel.ItemPerMission;
             CommentsCount = CommentsList?.Count ?? 0;
             TagFilter = pictureViewModel.TagFilter;
             TagsList = pictureViewModel.TagsList;
@@ -103,30 +96,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Picture.PictureId = picture.PictureId;
             Picture.PictureLink = picture.PictureLink600;
             Picture.PictureTime = picture.PictureTime;
+            Picture.ItemPerMission = picture.ItemPerMission;
             if (Picture.PictureTime.HasValue)
             {
                 Picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-            }
-        }
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[Picture.AccessLevel].Selected = true;
-            AccessLevelListDa[Picture.AccessLevel].Selected = true;
-            AccessLevelListDe[Picture.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
             }
         }
     }

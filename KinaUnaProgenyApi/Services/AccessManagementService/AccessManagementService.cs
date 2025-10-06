@@ -119,7 +119,6 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
                 if (timelineItemPermission.PermissionLevel == PermissionLevel.Private)
                 {
-                    Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == timelineItemPermission.ProgenyId);
                     if (await HasPrivatePermission(itemType, itemId, userInfo))
                     {
                         // User is the owner of the progeny, return Private permission.
@@ -1784,7 +1783,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="progenyId">The unique identifier of the progeny.</param>
         /// <param name="userInfo">The information of the user whose permissions are being checked.</param>
         /// <returns></returns>
-        private async Task<ProgenyPermission> GetProgenyPermissionForUser(int progenyId, UserInfo userInfo)
+        public async Task<ProgenyPermission> GetProgenyPermissionForUser(int progenyId, UserInfo userInfo)
         {
             PermissionLevel highestPermission = PermissionLevel.None;
             ProgenyPermission resultPermission = new()
@@ -1832,7 +1831,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <returns>A <see cref="FamilyPermission"/> object representing the highest permission level the user has within the
         /// specified family. If the user has no permissions, the returned object will have a <see
         /// cref="PermissionLevel"/> of <see cref="PermissionLevel.None"/>.</returns>
-        private async Task<FamilyPermission> GetFamilyPermissionForUser(int familyId, UserInfo userInfo)
+        public async Task<FamilyPermission> GetFamilyPermissionForUser(int familyId, UserInfo userInfo)
         {
             PermissionLevel highestPermission = PermissionLevel.None;
             FamilyPermission resultPermission = new()

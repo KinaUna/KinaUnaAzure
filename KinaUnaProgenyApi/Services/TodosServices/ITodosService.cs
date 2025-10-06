@@ -39,22 +39,23 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         Task<TodoItem> GetTodoItem(int id, UserInfo currentUserInfo);
 
         /// <summary>
-        /// Retrieves a filtered and paginated list of to-do items for a specific progeny.
+        /// Retrieves a filtered and paginated list of to-do items for a specific progeny or family.
         /// </summary>
         /// <remarks>The method applies the following filters and operations in sequence: <list
-        /// type="bullet"> <item><description>Filters by the progeny ID and access level.</description></item>
+        /// type="bullet"> <item><description>Filters by the progeny ID and permissions.</description></item>
         /// <item><description>Filters by the specified date range, if provided.</description></item>
         /// <item><description>Filters by tags, context, and status, if specified in the request.</description></item>
         /// <item><description>Sorts the results by due date (newest first) and then by creation
         /// time.</description></item> <item><description>Applies pagination based on the skip and take values in the
         /// request.</description></item> </list></remarks>
-        /// <param name="id">The unique identifier of the progeny for which to retrieve to-do items.</param>
+        /// <param name="progenyId">The unique identifier of the progeny for which to retrieve to-do items.</param>
+        /// <param name="familyId">The unique identifier of the family for which to retrieve to-do items.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <param name="request">An object containing filtering, sorting, and pagination options for the to-do items.  This includes date
         /// ranges, tags, context, status, and pagination parameters.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="TodoItem"/>
         /// objects  that match the specified filters and pagination settings.</returns>
-        Task<List<TodoItem>> GetTodosForProgeny(int id, UserInfo currentUserInfo, TodoItemsRequest request);
+        Task<List<TodoItem>> GetTodosForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo, TodoItemsRequest request);
 
         /// <summary>
         /// Updates an existing to-do item with new information.

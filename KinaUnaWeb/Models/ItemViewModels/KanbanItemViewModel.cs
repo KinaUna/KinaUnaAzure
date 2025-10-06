@@ -10,8 +10,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         public KanbanItem KanbanItem { get; set; } = new();
         public KanbanBoard KanbanBoard { get; set; } = new();
-        public List<SelectListItem> ProgenyList { get; set; }
-        public List<SelectListItem> FamilyList { get; set; }
         public List<SelectListItem> StatusList { get; set; }
         public List<KanbanBoard> KanbanBoards { get; set; } = [];
         public List<SelectListItem> KanbanBoardsList { get; set; } = [];

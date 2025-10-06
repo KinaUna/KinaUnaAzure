@@ -124,7 +124,7 @@ namespace KinaUnaWeb.Services.HttpClients
         }
 
         /// <summary>
-        /// Gets a list of all TimeLineItems for a Progeny that a user has access to.
+        /// Gets a list of all TimeLineItems for  progenies that a user has access to.
         /// </summary>
         /// <param name="progeniesList">The list of Ids of the progenies to get TimeLineItems for.</param>
         /// <param name="order">Sort order: 0 for ascending, 1 for descending</param>
@@ -155,6 +155,38 @@ namespace KinaUnaWeb.Services.HttpClients
             return progenyTimeline;
         }
 
+        /// <summary>
+        /// Gets a list of all TimeLineItems for families that a user has access to.
+        /// </summary>
+        /// <param name="familiesList">The list of Ids of the progenies to get TimeLineItems for.</param>
+        /// <param name="order">Sort order: 0 for ascending, 1 for descending</param>
+        /// <returns>List of TimeLineItem objects.</returns>
+        public async Task<List<TimeLineItem>> GetFamiliesTimeline(List<int> familiesList, int order)
+        {
+            List<TimeLineItem> familyTimeline = [];
+
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            const string timelineApiPath = "/api/Timeline/Families/";
+            HttpResponseMessage timelineResponse = await _httpClient.PostAsync(timelineApiPath, new StringContent(JsonConvert.SerializeObject(familiesList), System.Text.Encoding.UTF8, "application/json"));
+            if (!timelineResponse.IsSuccessStatusCode) return familyTimeline;
+
+            string timelineAsString = await timelineResponse.Content.ReadAsStringAsync();
+            familyTimeline = JsonConvert.DeserializeObject<List<TimeLineItem>>(timelineAsString);
+            if (order == 1)
+            {
+                familyTimeline = [.. familyTimeline.OrderByDescending(t => t.ProgenyTime)];
+            }
+            else
+            {
+                familyTimeline = [.. familyTimeline.OrderBy(t => t.ProgenyTime)];
+            }
+
+            return familyTimeline;
+        }
+
         public async Task<OnThisDayResponse> GetOnThisDayTimeLineItems(OnThisDayRequest onThisDayRequest)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
@@ -183,6 +215,52 @@ namespace KinaUnaWeb.Services.HttpClients
             string timelineResponseAsString = await timelineResponseMessage.Content.ReadAsStringAsync();
             TimelineResponse timelineResponse = JsonConvert.DeserializeObject<TimelineResponse>(timelineResponseAsString);
             return timelineResponse ?? new TimelineResponse();
+        }
+
+        /// <summary>
+        /// Gets the list of TimeLineItems that happened on this data for the given Progenies.
+        /// </summary>
+        /// <param name="progeniesList">List of Ids for the progenies to get timeline items for.</param>
+        /// <returns>List of TimeLineItem objects.</returns>
+        public async Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList)
+        {
+            List<TimeLineItem> yearAgoPosts = [];
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string yearAgoApiPath = "/api/Timeline/ProgeniesYearAgo/";
+            HttpResponseMessage yearAgoResponse = await _httpClient.PostAsync(yearAgoApiPath, new StringContent(JsonConvert.SerializeObject(progeniesList), System.Text.Encoding.UTF8, "application/json"));
+            if (!yearAgoResponse.IsSuccessStatusCode) return yearAgoPosts;
+
+            string yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync();
+
+            yearAgoPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(yearAgoAsString);
+
+            return yearAgoPosts;
+        }
+
+        /// <summary>
+        /// Gets the list of TimeLineItems that happened on this data for the given families.
+        /// </summary>
+        /// <param name="familiesList">List of Ids for the families to get timeline items for.</param>
+        /// <returns>List of TimeLineItem objects.</returns>
+        public async Task<List<TimeLineItem>> GetFamiliesYearAgo(List<int> familiesList)
+        {
+            List<TimeLineItem> yearAgoPosts = [];
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string yearAgoApiPath = "/api/Timeline/FamiliesYearAgo/";
+            HttpResponseMessage yearAgoResponse = await _httpClient.PostAsync(yearAgoApiPath, new StringContent(JsonConvert.SerializeObject(familiesList), System.Text.Encoding.UTF8, "application/json"));
+            if (!yearAgoResponse.IsSuccessStatusCode) return yearAgoPosts;
+
+            string yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync();
+
+            yearAgoPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(yearAgoAsString);
+
+            return yearAgoPosts;
         }
     }
 }

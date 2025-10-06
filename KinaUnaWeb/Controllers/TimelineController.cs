@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
@@ -13,13 +14,14 @@ using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class TimelineController(ITimelineHttpClient timelineHttpClient, ITimeLineItemsService timeLineItemsService, IViewModelSetupService viewModelSetupService, IProgenyHttpClient progenyHttpClient)
+    public class TimelineController(ITimelineHttpClient timelineHttpClient, ITimeLineItemsService timeLineItemsService, IViewModelSetupService viewModelSetupService)
         : Controller
     {
         /// <summary>
         /// Page for showing the Timeline.
         /// </summary>
         /// <param name="childId">The Id of the Progeny to show the timeline for.</param>
+        /// <param name="familyId">The Id of the Family to show the timeline for.</param>
         /// <param name="sortOrder">Sort order. 0 = oldest first, 1 = newest first.</param>
         /// <param name="items">Number of TimeLineItems to get.</param>
         /// <param name="skip">Number of TimeLineItems to skip.</param>
@@ -31,9 +33,9 @@ namespace KinaUnaWeb.Controllers
         /// <param name="contextFilter">Filter by context.</param>
         /// <returns>View with TimeLineViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, int sortOrder = 1, int items = 10, int skip = 0, int year=0, int month=0, int day=0, string tagFilter = "", string categoryFilter = "", string contextFilter = "")
+        public async Task<IActionResult> Index(int childId = 0, int familyId = 0, int sortOrder = 1, int items = 10, int skip = 0, int year=0, int month=0, int day=0, string tagFilter = "", string categoryFilter = "", string contextFilter = "")
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId, false);
 
             TimelineRequestViewModel model = new(baseModel);
             model.SetRequestParameters(skip, items, year, month, day, tagFilter, categoryFilter, contextFilter, sortOrder);
@@ -50,14 +52,12 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetTimelineData([FromBody] TimelineRequest parameters)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parameters.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parameters.ProgenyId, parameters.FamilyId, false);
             TimelineRequestViewModel model = new(baseModel)
             {
                 TimelineRequest = parameters
             };
-
-            model.TimelineRequest.AccessLevel = baseModel.CurrentAccessLevel;
-
+            
             return Json(await timelineHttpClient.GetTimeLineData(model.TimelineRequest));
         }
 
@@ -70,10 +70,14 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetTimelineList([FromBody] TimelineParameters parameters)
         {
+            // Todo: Refactor to get combined progeny and family lists, and the filtered list directly from the API, instead of getting all items and filtering here.
             TimelineList timelineList = new()
             {
                 TimelineItems = await timelineHttpClient.GetProgeniesTimeline(parameters.Progenies, parameters.SortBy)
             };
+
+            List<TimeLineItem> familyItems = await timelineHttpClient.GetFamiliesTimeline(parameters.Families, parameters.SortBy);
+            timelineList.TimelineItems.AddRange(familyItems);
 
             if (timelineList.TimelineItems.Count > 0)
             {
@@ -117,10 +121,15 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetYearAgoList([FromBody] TimelineParameters parameters)
         {
+            // Todo: Refactor to get combined progeny and family lists, and the filtered list directly from the API, instead of getting all items and filtering here.
             TimelineList timelineList = new()
             {
-                TimelineItems = await progenyHttpClient.GetProgeniesYearAgo(parameters.Progenies)
+                TimelineItems = await timelineHttpClient.GetProgeniesYearAgo(parameters.Progenies)
             };
+
+            List<TimeLineItem> familyItems = await timelineHttpClient.GetFamiliesYearAgo(parameters.Families);
+            timelineList.TimelineItems.AddRange(familyItems);
+
             timelineList.AllItemsCount = timelineList.TimelineItems.Count;
             timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count;
             timelineList.TimelineItems = [.. timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count)];
@@ -301,7 +310,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> GetTimeLineItem(TimeLineItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
             model.SetBaseProperties(baseModel);
             
             TimeLineItemPartialViewModel timeLineItemPartialViewModel = await timeLineItemsService.GetTimeLineItemPartialViewModel(model);
@@ -317,7 +326,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<ActionResult> GetTimelineItemElement([FromBody] TimeLineItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
             model.SetBaseProperties(baseModel);
 
             TimeLineItemPartialViewModel timeLineItemPartialViewModel = await timeLineItemsService.GetTimeLineItemPartialViewModel(model);

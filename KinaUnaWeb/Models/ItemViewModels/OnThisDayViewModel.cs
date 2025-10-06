@@ -28,6 +28,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             OnThisDayRequest = new OnThisDayRequest
             {
                 ProgenyId = CurrentProgeny.Id,
+                FamilyId = CurrentFamilyId,
                 Skip = skip,
                 NumberOfItems = numberOfItems,
                 OnThisDayPeriod = onThisDayPeriod,
@@ -35,7 +36,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 TagFilter = tagFilter,
                 CategoryFilter = categoryFilter,
                 ContextFilter = contextFilter,
-                AccessLevel = CurrentAccessLevel,
                 TimeLineTypeFilter = [],
                 SortOrder = sortOrder
             };

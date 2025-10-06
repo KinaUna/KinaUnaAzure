@@ -7,6 +7,7 @@
     string addContactForString = await LocaleManager.GetTranslation("Add contact for:", PageNames.Contacts, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Contact;
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="longDateTimeFormatDiv" class="d-none" data-long-date-time-format="@longDateTimeFormat"></div>
@@ -188,17 +189,14 @@
                 </div>
             </div>
             <div class="form-group">
-                <label asp-for="ContactItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="ContactItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
-            <div class="form-group">
                 <label asp-for="ContactItem.Active" class="col-auto control-label">@await LocaleManager.GetTranslation("Active", PageNames.Contacts, Model.LanguageId)</label>
                 <div class="col" style="max-width: 5em;">
                     <input type="checkbox" asp-for="ContactItem.Active" class="form-control" style="width: 2em; height: 2em;" checked="checked" value="True" onchange="this.value=this.checked"/>
                 </div>
             </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.ContactItem.ContactId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div>
                 <div class="form-group">
                     <div class="col-auto control-label"></div>

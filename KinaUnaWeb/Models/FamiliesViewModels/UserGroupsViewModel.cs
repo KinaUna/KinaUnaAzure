@@ -11,8 +11,8 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
             SetBaseProperties(baseItemsViewModel);
         }
 
-        public List<Progeny> ProgenyList { get; set; } = new List<Progeny>();
-        public List<Family> FamiliesList { get; set; } = new List<Family>();
+        public List<Progeny> Progenies { get; set; }
+        public List<Family> Families { get; set; }
         public List<UserGroup> UserGroups { get; set; } = new List<UserGroup>();
 
     }

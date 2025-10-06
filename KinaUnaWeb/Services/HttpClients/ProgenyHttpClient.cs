@@ -263,28 +263,5 @@ namespace KinaUnaWeb.Services.HttpClients
 
             return accessList;
         }
-
-        /// <summary>
-        /// Gets the list of TimeLineItems that happened on this data for the given Progenies.
-        /// </summary>
-        /// <param name="progeniesList">List of Ids for the progenies to get timeline items for.</param>
-        /// <returns>List of TimeLineItem objects.</returns>
-        public async Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList)
-        {
-            List<TimeLineItem> yearAgoPosts = [];
-            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
-            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
-            _httpClient.SetBearerToken(tokenInfo.AccessToken);
-
-            string yearAgoApiPath = "/api/Timeline/ProgeniesYearAgo/";
-            HttpResponseMessage yearAgoResponse = await _httpClient.PostAsync(yearAgoApiPath, new StringContent(JsonConvert.SerializeObject(progeniesList), System.Text.Encoding.UTF8, "application/json"));
-            if (!yearAgoResponse.IsSuccessStatusCode) return yearAgoPosts;
-
-            string yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync();
-
-            yearAgoPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(yearAgoAsString);
-
-            return yearAgoPosts;
-        }
     }
 }

@@ -328,5 +328,28 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="currentUserInfo">The information of the current user requesting the permissions.</param>
         /// <returns>List of <see cref="TimelineItemPermission"/> objects representing the permissions for the specified timeline item that the current user has access to view.</returns>
         Task<List<TimelineItemPermission>> GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Gets the highest permission level for a specific progeny and user by checking both direct user permissions and group permissions.
+        /// </summary>
+        /// <param name="progenyId">The unique identifier of the progeny.</param>
+        /// <param name="currentUserInfo">The information of the user whose permissions are being checked.</param>
+        /// <returns></returns>
+        Task<ProgenyPermission> GetProgenyPermissionForUser(int progenyId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Retrieves the highest permission level for a user within a specified family, considering both direct user
+        /// permissions and group memberships.
+        /// </summary>
+        /// <remarks>This method first checks for direct permissions assigned to the user for the
+        /// specified family. If no direct permissions are found, it evaluates the user's group memberships and their
+        /// associated permissions. Group permissions with a <see cref="PermissionLevel"/> of <see
+        /// cref="PermissionLevel.CreatorOnly"/> or higher are excluded from consideration.</remarks>
+        /// <param name="familyId">The unique identifier of the family for which the permissions are being retrieved.</param>
+        /// <param name="userInfo">An object containing information about the user whose permissions are being evaluated.</param>
+        /// <returns>A <see cref="FamilyPermission"/> object representing the highest permission level the user has within the
+        /// specified family. If the user has no permissions, the returned object will have a <see
+        /// cref="PermissionLevel"/> of <see cref="PermissionLevel.None"/>.</returns>
+        Task<FamilyPermission> GetFamilyPermissionForUser(int familyId, UserInfo userInfo);
     }
 }

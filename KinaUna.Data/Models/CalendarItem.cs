@@ -123,7 +123,10 @@ namespace KinaUna.Data.Models
         /// Progeny data for the progeny the event belongs to.
         /// </summary>
         [NotMapped]
-        public Progeny Progeny { get; set; } = new Progeny();
+        public Progeny Progeny { get; set; } = new();
+
+        [NotMapped]
+        public Family.Family Family { get; set; } = new();
 
         /// <summary>
         /// Read only flag. Used to determine if the event can be edited or deleted in Calendar views.

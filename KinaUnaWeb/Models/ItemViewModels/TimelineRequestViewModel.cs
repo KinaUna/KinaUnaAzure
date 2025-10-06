@@ -28,13 +28,13 @@ namespace KinaUnaWeb.Models.ItemViewModels
             TimelineRequest = new TimelineRequest
             {
                 ProgenyId = CurrentProgeny.Id,
+                FamilyId = CurrentFamilyId,
                 Skip = skip,
                 NumberOfItems = numberOfItems,
                 TimelineStartDateTime = thisDayDateTime,
                 TagFilter = tagFilter,
                 CategoryFilter = categoryFilter,
                 ContextFilter = contextFilter,
-                AccessLevel = CurrentAccessLevel,
                 TimeLineTypeFilter = [],
                 SortOrder = sortOrder
             };

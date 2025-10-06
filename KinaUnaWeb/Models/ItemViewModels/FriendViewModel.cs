@@ -7,10 +7,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class FriendViewModel: BaseItemsViewModel
     {
-        public List<SelectListItem> ProgenyList { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public Friend FriendItem { get; set; } = new();
         public List<SelectListItem> FriendTypeListEn { get; set; }
         public List<SelectListItem> FriendTypeListDa { get; set; }
@@ -22,14 +18,12 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public FriendViewModel()
         {
             ProgenyList = [];
-            SetAccessLevelList();
             SetFriendTypeList();
         }
 
         public FriendViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
-            SetAccessLevelList();
             SetFriendTypeList();
         }
 
@@ -49,7 +43,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
         }
 
-        public void SetPropertiesFromFriendItem(Friend friend, bool isAdmin)
+        public void SetPropertiesFromFriendItem(Friend friend)
         {
             FriendItem.ProgenyId = friend.ProgenyId;
             FriendItem.AccessLevel = friend.AccessLevel;
@@ -64,8 +58,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             FriendItem.Notes = friend.Notes;
             FriendItem.Author = friend.Author;
             FriendItem.Tags = friend.Tags;
-            
-            IsCurrentUserProgenyAdmin = isAdmin;
+            FriendItem.ItemPerMission = friend.ItemPerMission;
         }
 
         public Friend CreateFriend()
@@ -82,7 +75,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Context = FriendItem.Context,
                 Notes = FriendItem.Notes,
                 Author = FriendItem.Author,
-                FriendAddedDate = FriendItem.FriendAddedDate
+                FriendAddedDate = FriendItem.FriendAddedDate,
+                ItemPermissionsDtoList = FriendItem.ItemPermissionsDtoList
             };
 
             FriendItem.FriendSince ??= DateTime.UtcNow;
@@ -94,28 +88,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
             
             return friendItem;
-        }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-
-            AccessLevelListEn[FriendItem.AccessLevel].Selected = true;
-            AccessLevelListDa[FriendItem.AccessLevel].Selected = true;
-            AccessLevelListDe[FriendItem.AccessLevel].Selected = true;
         }
 
         public void SetFriendTypeList()

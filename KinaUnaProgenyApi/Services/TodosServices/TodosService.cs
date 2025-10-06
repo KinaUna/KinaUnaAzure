@@ -152,48 +152,49 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         }
 
         /// <summary>
-        /// Retrieves a filtered and paginated list of to-do items for a specific progeny.
+        /// Retrieves a filtered and paginated list of to-do items for a specific progeny or family.
         /// </summary>
         /// <remarks>The method applies the following filters and operations in sequence: <list
-        /// type="bullet"> <item><description>Filters by the progeny ID and access level.</description></item>
+        /// type="bullet"> <item><description>Filters by the progeny ID or family ID and permissions.</description></item>
         /// <item><description>Filters by the specified date range, if provided.</description></item>
         /// <item><description>Filters by tags, context, and status, if specified in the request.</description></item>
         /// <item><description>Sorts the results by due date (newest first) and then by creation
         /// time.</description></item> <item><description>Applies pagination based on the skip and take values in the
         /// request.</description></item> </list></remarks>
-        /// <param name="id">The unique identifier of the progeny for which to retrieve to-do items.</param>
+        /// <param name="progenyId">The unique identifier of the progeny for which to retrieve to-do items.</param>
+        /// <param name="familyId">The unique identifier of the family for which to retrieve to-do items.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <param name="request">An object containing filtering, sorting, and pagination options for the to-do items.  This includes date
         /// ranges, tags, context, status, and pagination parameters.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="TodoItem"/>
         /// objects  that match the specified filters and pagination settings.</returns>
-        public async Task<List<TodoItem>> GetTodosForProgeny(int id, UserInfo currentUserInfo, TodoItemsRequest request)
+        public async Task<List<TodoItem>> GetTodosForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo, TodoItemsRequest request)
         {
-            List<TodoItem> todoItemsForProgeny = await progenyDbContext.TodoItemsDb
+            List<TodoItem> todoItemsForProgenyOrFamily = await progenyDbContext.TodoItemsDb
                 .AsNoTracking()
-                .Where(t => t.ProgenyId == id && t.ParentTodoItemId == 0 && !t.IsDeleted)
+                .Where(t => t.ProgenyId == progenyId && t.FamilyId == familyId && t.ParentTodoItemId == 0 && !t.IsDeleted)
                 .ToListAsync();
 
             if (request.StartDate.HasValue && request.EndDate.HasValue)
             {
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate == null || (t.DueDate >= request.StartDate.Value && t.DueDate <= request.EndDate.Value))];
+                todoItemsForProgenyOrFamily = [.. todoItemsForProgenyOrFamily.Where(t => t.DueDate == null || (t.DueDate >= request.StartDate.Value && t.DueDate <= request.EndDate.Value))];
             }
             else if (request.StartDate.HasValue)
             {
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate == null || t.DueDate >= request.StartDate.Value)];
+                todoItemsForProgenyOrFamily = [.. todoItemsForProgenyOrFamily.Where(t => t.DueDate == null || t.DueDate >= request.StartDate.Value)];
             }
             else if (request.EndDate.HasValue)
             {
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t => t.DueDate == null || t.DueDate <= request.EndDate.Value)];
+                todoItemsForProgenyOrFamily = [.. todoItemsForProgenyOrFamily.Where(t => t.DueDate == null || t.DueDate <= request.EndDate.Value)];
             }
 
             // Filter by locations if provided
             if (!string.IsNullOrWhiteSpace(request.LocationFilter))
             {
                 List<string> locations = [.. request.LocationFilter.Split(',').Select(location => location.Trim())];
-                todoItemsForProgeny =
+                todoItemsForProgenyOrFamily =
                 [
-                    .. todoItemsForProgeny.Where(t =>
+                    .. todoItemsForProgenyOrFamily.Where(t =>
                         t.Location != null &&
                         t.Location.Split(',', StringSplitOptions.RemoveEmptyEntries)
                             .Select(location => location.Trim())
@@ -206,7 +207,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             if (!string.IsNullOrWhiteSpace(request.TagFilter))
             {
                 List<string> tags = [.. request.TagFilter.Split(',').Select(tag => tag.Trim())];
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t =>
+                todoItemsForProgenyOrFamily = [.. todoItemsForProgenyOrFamily.Where(t =>
                     t.Tags != null &&
                     t.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries)
                         .Select(tag => tag.Trim())
@@ -218,7 +219,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             if (!string.IsNullOrWhiteSpace(request.ContextFilter))
             {
                 List<string> contexts = [.. request.ContextFilter.Split(',').Select(context => context.Trim())];
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where(t =>
+                todoItemsForProgenyOrFamily = [.. todoItemsForProgenyOrFamily.Where(t =>
                     t.Context != null &&
                     t.Context.Split(',')
                         .Select(c => c.Trim())
@@ -229,16 +230,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             // Filter by status if provided
             if (request.StatusFilter.Count > 0)
             {
-                todoItemsForProgeny = [.. todoItemsForProgeny.Where( t =>
+                todoItemsForProgenyOrFamily = [.. todoItemsForProgenyOrFamily.Where( t =>
                     request.StatusFilter.Contains((KinaUnaTypes.TodoStatusType)t.Status))];
             }
 
             // Filter by access level
             List<TodoItem> accessibleTodoItemsForProgeny = [];
-            foreach (TodoItem todoItem in todoItemsForProgeny)
+            foreach (TodoItem todoItem in todoItemsForProgenyOrFamily)
             {
                 if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUserInfo, PermissionLevel.View))
                 {
+                    todoItem.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, todoItem.ProgenyId, todoItem.FamilyId, currentUserInfo);
                     accessibleTodoItemsForProgeny.Add(todoItem);
                 }
             }
@@ -290,6 +292,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.FamilyId)
                                 .ThenBy(t => t.DueDate)
                                 .ThenBy(t => t.CreatedTime)
                         ];
@@ -333,6 +336,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.FamilyId)
                                 .ThenByDescending(t => t.DueDate)
                                 .ThenByDescending(t => t.CreatedTime)
                         ];
@@ -383,6 +387,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.FamilyId)
                                 .ThenBy(t => t.CreatedTime)
                                 .ThenBy(t => t.DueDate)
                         ];
@@ -428,6 +433,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.FamilyId)
                                 .ThenByDescending(t => t.CreatedTime)
                                 .ThenByDescending(t => t.DueDate)
                         ];
@@ -479,6 +485,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.FamilyId)
                                 .ThenBy(t => t.StartDate)
                                 .ThenBy(t => t.DueDate)
                         ];
@@ -524,6 +531,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.FamilyId)
                                 .ThenByDescending(t => t.StartDate)
                                 .ThenByDescending(t => t.DueDate)
                         ];
@@ -576,6 +584,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.FamilyId)
                                 .ThenBy(t => t.CompletedDate)
                                 .ThenBy(t => t.DueDate)
                         ];
@@ -621,6 +630,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         [
                             .. todoItemsForProgenies
                                 .OrderBy(t => t.ProgenyId)
+                                .ThenBy(t => t.FamilyId)
                                 .ThenByDescending(t => t.CompletedDate)
                                 .ThenByDescending(t => t.DueDate)
                         ];

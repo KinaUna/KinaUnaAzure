@@ -289,6 +289,47 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(timeLineList.Count != 0 ? timeLineList : []);
         }
 
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> FamiliesYearAgo([FromBody] List<int> families)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<TimeLineItem> timeLineList = [];
+            foreach (int familyId in families)
+            {
+                // Todo: Rewrite, this is inefficient. We should not get the full timeline for each progeny, just to filter it down to a few items.
+                List<TimeLineItem> familyTimeLineList = await timelineService.GetTimeLineList(0, familyId, currentUserInfo);
+                familyTimeLineList =
+                [
+                    .. familyTimeLineList
+                        .Where(t => t.ProgenyTime.Year < DateTime.UtcNow.Year
+                                    && t.ProgenyTime.Month == DateTime.UtcNow.Month
+                                    && t.ProgenyTime.Day == DateTime.UtcNow.Day)
+                ];
+                timeLineList.AddRange(familyTimeLineList);
+                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsOnThisDay(0, familyId, currentUserInfo);
+                foreach (CalendarItem calendarItem in calendarItems)
+                {
+                    if (calendarItem.StartTime.HasValue)
+                    {
+                        CalendarItem originalCalendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
+                        {
+                            continue;
+                        }
+
+                        TimeLineItem timeLineItem = new();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        timeLineList.Add(timeLineItem);
+                    }
+                }
+            }
+
+            timeLineList = [.. timeLineList.OrderByDescending(t => t.ProgenyTime)];
+
+            return Ok(timeLineList.Count != 0 ? timeLineList : []);
+        }
+
         /// <summary>
         /// Gets a TimeLineItem by the Type and ItemId.
         /// I.e. gets a TimeLineItem for a Picture with a given PictureId.

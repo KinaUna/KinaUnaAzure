@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class ContactViewModel: BaseItemsViewModel
     {
-        public List<SelectListItem> ProgenyList { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public string FileName { get; set; }
         public IFormFile File { get; init; }
         public string TagFilter { get; set; }
@@ -20,22 +18,22 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public ContactViewModel()
         {
             ProgenyList = [];
-            SetAccessLevelList();
+            FamilyList = [];
         }
 
         public ContactViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
-            SetAccessLevelList();
             ProgenyList = [];
+            FamilyList = [];
         }
 
-        public ContactViewModel(Contact contact, bool isAdmin, UserInfo userInfo)
+        public ContactViewModel(Contact contact, UserInfo userInfo)
         {
             CurrentUser = userInfo;
-            SetPropertiesFromContact(contact, isAdmin);
-            SetAccessLevelList();
+            SetPropertiesFromContact(contact);
             ProgenyList = [];
+            FamilyList = [];
         }
 
         public void SetProgenyList()
@@ -54,31 +52,26 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
         }
 
-        public void SetAccessLevelList()
+        public void SetFamilyList()
         {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[ContactItem.AccessLevel].Selected = true;
-            AccessLevelListDa[ContactItem.AccessLevel].Selected = true;
-            AccessLevelListDe[ContactItem.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
+            ContactItem.FamilyId = CurrentFamilyId;
+            foreach (SelectListItem item in FamilyList)
             {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
+                if (item.Value == CurrentFamilyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
             }
         }
-
-        public void SetPropertiesFromContact(Contact contact, bool isAdmin)
+        
+        public void SetPropertiesFromContact(Contact contact)
         {
             ContactItem.ProgenyId = contact.ProgenyId;
+            ContactItem.FamilyId = contact.FamilyId;
             ContactItem.AccessLevel = contact.AccessLevel;
             ContactItem.FirstName = contact.FirstName;
             ContactItem.MiddleName = contact.MiddleName;
@@ -97,7 +90,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             ContactItem.Website = contact.Website;
             ContactItem.Tags = Tags = contact.Tags;
             ContactItem.Author = contact.Author ?? CurrentUser.UserId;
-            IsCurrentUserProgenyAdmin = isAdmin;
+            ContactItem.ItemPerMission = contact.ItemPerMission;
 
             DateTime tempTime = contact.DateAdded ?? DateTime.UtcNow;
             ContactItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(tempTime, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
@@ -133,7 +126,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 AccessLevel = ContactItem.AccessLevel,
                 Author = ContactItem.Author ?? CurrentUser.UserId,
                 ProgenyId = ContactItem.ProgenyId,
-                PictureLink = ContactItem.PictureLink
+                FamilyId = ContactItem.FamilyId,
+                PictureLink = ContactItem.PictureLink,
+                ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };
 
             if (ContactItem.DateAdded == null)

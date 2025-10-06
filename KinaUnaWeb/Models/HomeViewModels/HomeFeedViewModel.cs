@@ -48,7 +48,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public void SetBirthTimeData()
         {
             BirthTime progBirthTime;
-            if (!string.IsNullOrEmpty(CurrentProgeny.NickName) && CurrentProgeny.BirthDay.HasValue && CurrentAccessLevel < (int)AccessLevel.Public)
+            if (!string.IsNullOrEmpty(CurrentProgeny.NickName) && CurrentProgeny.BirthDay.HasValue)
             {
                 progBirthTime = new BirthTime(CurrentProgeny.BirthDay.Value,
                     TimeZoneInfo.FindSystemTimeZoneById(CurrentProgeny.TimeZone));

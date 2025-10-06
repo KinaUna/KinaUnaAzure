@@ -152,9 +152,10 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of Locations for a progeny that a user has access to with a given tag.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny.</param>
+        /// <param name="familyId">The Id of the Family.</param>
         /// <param name="tagFilter">The string to filter the result list by. An empty string will include all locations.</param>
         /// <returns>List of Location objects.</returns>
-        public async Task<List<Location>> GetLocationsList(int progenyId, string tagFilter = "")
+        public async Task<List<Location>> GetLocationsList(int progenyId, int familyId, string tagFilter = "")
         {
             List<Location> progenyLocationsList = [];
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
@@ -162,6 +163,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string locationsApiPath = "/api/Locations/Progeny/" + progenyId;
+            if (familyId > 0)
+            {
+                locationsApiPath = "/api/Locations/Family/" + familyId;
+            }
+            
             HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath);
             if (!locationsResponse.IsSuccessStatusCode) return progenyLocationsList;
 

@@ -19,7 +19,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SetBaseProperties(baseItemsViewModel);
         }
 
-        public void SetVocabularyList(List<VocabularyItem> vocabularyList)
+        public void SetVocabularyList(List<VocabularyItem> vocabularyList, BaseItemsViewModel baseItemsViewModel)
         {
             VocabularyList = [];
 
@@ -28,9 +28,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             foreach (VocabularyItem vocabularyItem in vocabularyList)
             {
-                if (vocabularyItem.AccessLevel < CurrentAccessLevel) continue;
-
-                VocabularyItemViewModel vocabularyItemViewModel = new()
+                VocabularyItemViewModel vocabularyItemViewModel = new(baseItemsViewModel)
                 {
                     VocabularyItem =
                     {
@@ -41,9 +39,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
                         Language = vocabularyItem.Language,
                         SoundsLike = vocabularyItem.SoundsLike,
                         Word = vocabularyItem.Word,
-                        WordId = vocabularyItem.WordId
-                    },
-                    IsCurrentUserProgenyAdmin = IsCurrentUserProgenyAdmin
+                        WordId = vocabularyItem.WordId,
+                        ItemPerMission = vocabularyItem.ItemPerMission
+                    }
                 };
 
                 VocabularyList.Add(vocabularyItemViewModel);

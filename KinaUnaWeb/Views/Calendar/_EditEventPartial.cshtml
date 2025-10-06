@@ -10,7 +10,7 @@
     string longDateTimeFormatMoment = "DD-MMMM-YYYY HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
     string repeatUntilZebraDateTimeFormat = "d-F-Y";
-    
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Calendar;
     foreach (SelectListItem frequencySelectItem in Model.RecurrenceFrequencyList)
     {
         frequencySelectItem.Text = await LocaleManager.GetTranslation(frequencySelectItem.Text, PageNames.Calendar, Model.LanguageId);
@@ -327,12 +327,9 @@
             <input id="context-input" asp-for="CalendarItem.Context" class="form-control" value="@Model.CalendarItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Calendar, Model.LanguageId)"/>
         </div>
     </div>
-    <div class="form-group">
-        <label asp-for="CalendarItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-        <div class="col-auto">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="CalendarItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-        </div>
-    </div>
+    <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.CalendarItem.EventId"></div>
+    <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+    <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
     <div>
         @await Html.PartialAsync("_CalendarRemindersPartial", Model)
     </div>

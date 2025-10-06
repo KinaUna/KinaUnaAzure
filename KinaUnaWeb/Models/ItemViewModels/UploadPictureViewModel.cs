@@ -9,13 +9,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         [Required]
         public List<IFormFile> Files { get; init; }
-        public List<SelectListItem> ProgenyList { get; set; }
         public List<string> FileNames { get; init; }
         public List<string> FileLinks { get; init; }
         [Required]
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public double Longtitude1 { get; init; } // Todo: Fix typo in property name
         public double Latitude1 { get; init; }
         public string Altitude { get; init; }
@@ -24,10 +20,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public UploadPictureViewModel()
         {
             ProgenyList = [];
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
         }
 
         public UploadPictureViewModel(BaseItemsViewModel baseItemsViewModel)
@@ -35,29 +27,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SetBaseProperties(baseItemsViewModel);
             
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[Picture.AccessLevel].Selected = true;
-            AccessLevelListDa[Picture.AccessLevel].Selected = true;
-            AccessLevelListDe[Picture.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-        }
-
+        
         public void SetProgenyList()
         {
             Picture.ProgenyId = CurrentProgenyId;

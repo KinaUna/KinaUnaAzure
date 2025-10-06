@@ -40,10 +40,10 @@ namespace KinaUnaProgenyApi.Controllers
         IAccessManagementService accessManagementService) : ControllerBase
     {
         /// <summary>
-        /// Returns a list of to-do items for the specified progenies.
+        /// Returns a list of to-do items for the specified progenies and families.
         /// </summary>
         /// <param name="request">TodoItemsRequest with the parameters and filters for retrieving TodoItems.</param>
-        /// <returns>TodoItemsResponse containing the list of TodoItems and associated Progeny.</returns>
+        /// <returns>TodoItemsResponse containing the list of TodoItems and associated Progeny or Family.</returns>
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> GetProgeniesTodoItemsList([FromBody] TodoItemsRequest request)
@@ -56,8 +56,14 @@ namespace KinaUnaProgenyApi.Controllers
 
             foreach (int progenyId in request.ProgenyIds)
             {
-                List<TodoItem> progenyTodos = await todosService.GetTodosForProgeny(progenyId, currentUserInfo, request);
+                List<TodoItem> progenyTodos = await todosService.GetTodosForProgenyOrFamily(progenyId, 0, currentUserInfo, request);
                 todoItems.AddRange(progenyTodos);
+            }
+
+            foreach (int familyId in request.FamilyIds)
+            {
+                List<TodoItem> familyTodos = await todosService.GetTodosForProgenyOrFamily(0, familyId, currentUserInfo, request);
+                todoItems.AddRange(familyTodos);
             }
 
             TodoItemsResponse todoItemsResponse = todosService.CreateTodoItemsResponseForTodoPage(todoItems, request);

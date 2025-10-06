@@ -32,7 +32,7 @@
     <div class="col-12">
         Family Access
     </div>
-    @foreach (Family family in Model.FamiliesList)
+    @foreach (Family family in Model.Families)
     {
         <div class="col-12 mt-3 mb-1 h5">
             <i class="material-icons kinauna-icon-medium" style="font-size: 32px">family_restroom</i> @family.Name
@@ -64,7 +64,7 @@
     <div class="col-12">
         Individual Access
     </div>
-    @foreach (Progeny progeny in Model.ProgenyList)
+    @foreach (Progeny progeny in Model.Progenies)
     {
         <div class="col-12 mt-3 mb-1 h5">
             <i class="material-icons kinauna-icon-medium" style="font-size: 32px">family_restroom</i> @progeny.NickName
