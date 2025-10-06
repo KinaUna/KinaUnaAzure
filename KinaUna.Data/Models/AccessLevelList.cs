@@ -27,7 +27,7 @@ namespace KinaUna.Data.Models
         {
             SelectListItem selItem1 = new()
             {
-                Text = "Hidden/Private",
+                Text = "Administrators/Parents",
                 Value = "0"
             }; // 0 = Hidden/Parents only, 1=Family, 2=Caretakers/Special, 3= Friends, 4=DefaultUSers, 5= public.
             SelectListItem selItem2 = new()

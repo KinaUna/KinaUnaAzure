@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -23,8 +26,8 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         {
             _context = context;
             _cache = cache;
-            _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
-            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
+            _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
+            _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
         /// <summary>
@@ -476,13 +479,99 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
 
             foreach (UserAccess ua in accessList)
             {
-                if (ua.UserId.Equals(userEmail, System.StringComparison.CurrentCultureIgnoreCase))
+                if (ua.UserId.Equals(userEmail, StringComparison.CurrentCultureIgnoreCase))
                 {
                     allowedAccess = true;
                 }
             }
 
             return allowedAccess;
+        }
+
+        public async Task ConvertUserAccessesToUserGroups()
+        {
+            // Get the list of progenies.
+            List<Progeny> progenyList = await _context.ProgenyDb.AsNoTracking().ToListAsync();
+
+            AccessLevelList accessLevels = new();
+            // For each progeny, create a group for each access level, if it doesn't already exist.
+            foreach (Progeny progeny in progenyList)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    // Only allow admins, family, caretakes, and friends.
+                    if (accessLevelValue > 3)
+                    {
+                        continue;
+                    }
+
+                    UserGroup userGroup = await _context.UserGroupsDb.SingleOrDefaultAsync(ug => ug.ProgenyId == progeny.Id && ug.Name == accessLevel.Text);
+                    if (userGroup == null)
+                    {
+                        userGroup = new()
+                        {
+                            ProgenyId = progeny.Id,
+                            Name = accessLevel.Text,
+                            Description = $"Auto-generated group for access level {accessLevel.Text} for {progeny.NickName}",
+                        };
+                        _ = _context.UserGroupsDb.Add(userGroup);
+                        _ = await _context.SaveChangesAsync();
+                    }
+
+                    // Ensure there is a ProgenyPermission entry for the group.
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
+                        _ => PermissionLevel.View,
+                    };
+
+                    ProgenyPermission progenyPermission = await _context.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progeny.Id && pp.GroupId == userGroup.UserGroupId);
+                    if (progenyPermission == null)
+                    {
+                        progenyPermission = new()
+                        {
+                            ProgenyId = progeny.Id,
+                            GroupId = userGroup.UserGroupId,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow,
+                            PermissionLevel = permissionLevel,
+                        };
+                        _ = _context.ProgenyPermissionsDb.Add(progenyPermission);
+                        _ = await _context.SaveChangesAsync();
+                    }
+
+                    // Get the list of UserAccess entries for the progeny with the current access level.
+                    List<UserAccess> userAccessList = await _context.UserAccessDb.Where(ua => ua.ProgenyId == progeny.Id && ua.AccessLevel == accessLevelValue).ToListAsync();
+                    foreach (UserAccess userAccess in userAccessList)
+                    {
+                        UserInfo userInfo = await _context.UserInfoDb.SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == userAccess.UserId.ToUpper());
+                        UserGroupMember existingGroupMember = await _context.UserGroupMembersDb.SingleOrDefaultAsync(ugm => ugm.UserGroupId == userGroup.UserGroupId && ugm.Email.ToUpper() == userAccess.UserId.ToUpper());
+                        if (existingGroupMember == null)
+                        {
+                            UserGroupMember userGroupMember = new()
+                            {
+                                UserGroupId = userGroup.UserGroupId,
+                                Email = userAccess.UserId,
+                                UserId = userInfo?.UserId ?? string.Empty,
+                                CreatedBy = "system",
+                                CreatedTime = DateTime.UtcNow,
+                                ModifiedBy = "system",
+                                ModifiedTime = DateTime.UtcNow
+                            };
+                            _ = _context.UserGroupMembersDb.Add(userGroupMember);
+                            _ = await _context.SaveChangesAsync();
+                        }
+                    }
+                }
+            }
         }
     }
 }
