@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
+import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
@@ -67,7 +67,7 @@ function setupEditButton() {
 }
 export async function initializeAddEditVideo(itemId) {
     languageId = getCurrentLanguageId();
-    currentProgenyId = getCurrentProgenyId();
+    currentProgenyId = getCurrentItemProgenyId();
     await setupDateTimePicker();
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId], []);

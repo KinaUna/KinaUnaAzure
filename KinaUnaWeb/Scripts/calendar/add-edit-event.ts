@@ -1,5 +1,5 @@
 ﻿import * as LocaleHelper from '../localization-v9.js';
-import { setContextAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkStartBeforeEndTime, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getCurrentItemFamilyId } from '../data-tools-v9.js';
+import { setContextAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkStartBeforeEndTime, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getCurrentItemFamilyId, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { setupRemindersSection } from '../reminders/reminders.js';
 import { setupRecurrenceSection } from './add-edit-recurrence.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
@@ -180,7 +180,7 @@ async function onFamilySelectListChanged(): Promise<void> {
 }
 
 export async function initializeAddEditEvent(itemId: string): Promise<void> {
-    currentProgenyId = getCurrentProgenyId();
+    currentProgenyId = getCurrentItemProgenyId();
     currentFamilyId = getCurrentItemFamilyId();
     languageId = getCurrentLanguageId();
 

@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList, getCurrentItemFamilyId } from '../data-tools-v9.js';
+import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList, getCurrentItemFamilyId, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { renderItemPermissionsEditor } from '../item-permissions.js';
 let zebraDatePickerTranslations;
@@ -264,7 +264,7 @@ function validateInputs() {
  * */
 export async function initializeAddEditKanbanItem(containerElementId, itemId) {
     languageId = getCurrentLanguageId();
-    currentProgenyId = getCurrentProgenyId();
+    currentProgenyId = getCurrentItemProgenyId();
     currentFamilyId = getCurrentItemFamilyId();
     await setupDateTimePicker();
     setupProgenySelectList();

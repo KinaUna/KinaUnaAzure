@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setCategoriesAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
+import { setTagsAutoSuggestList, setCategoriesAutoSuggestList, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { renderItemPermissionsEditor } from '../item-permissions.js';
 let zebraDatePickerTranslations;
@@ -103,7 +103,7 @@ function onRichTextEditorFocus() {
  */
 export async function initializeAddEditNote(itemId) {
     languageId = getCurrentLanguageId();
-    currentProgenyId = getCurrentProgenyId();
+    currentProgenyId = getCurrentItemProgenyId();
     await setupDateTimePicker();
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId], []);

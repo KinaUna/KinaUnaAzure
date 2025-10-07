@@ -1,5 +1,5 @@
 ﻿import * as LocaleHelper from '../localization-v9.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, setVocabularyLanguagesAutoSuggestList } from '../data-tools-v9.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, setVocabularyLanguagesAutoSuggestList, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { renderItemPermissionsEditor } from '../item-permissions.js';
 
@@ -55,7 +55,7 @@ async function onProgenySelectListChanged(): Promise<void> {
 }
 
 export async function initializeAddEditVocabulary(itemId: string): Promise<void> {
-    currentProgenyId = getCurrentProgenyId();
+    currentProgenyId = getCurrentItemProgenyId();
     languageId = getCurrentLanguageId();
 
     await setupDateTimePicker();

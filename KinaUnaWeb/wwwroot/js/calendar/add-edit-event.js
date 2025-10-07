@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setContextAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkStartBeforeEndTime, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getCurrentItemFamilyId } from '../data-tools-v9.js';
+import { setContextAutoSuggestList, setLocationAutoSuggestList, getCurrentLanguageId, setMomentLocale, checkStartBeforeEndTime, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getCurrentItemFamilyId, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { setupRemindersSection } from '../reminders/reminders.js';
 import { setupRecurrenceSection } from './add-edit-recurrence.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
@@ -164,7 +164,7 @@ async function onFamilySelectListChanged() {
     });
 }
 export async function initializeAddEditEvent(itemId) {
-    currentProgenyId = getCurrentProgenyId();
+    currentProgenyId = getCurrentItemProgenyId();
     currentFamilyId = getCurrentItemFamilyId();
     languageId = getCurrentLanguageId();
     await setContextAutoSuggestList([currentProgenyId], []);

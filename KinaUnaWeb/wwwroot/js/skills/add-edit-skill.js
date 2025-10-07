@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setCategoriesAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools-v9.js';
+import { setCategoriesAutoSuggestList, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { renderItemPermissionsEditor } from '../item-permissions.js';
 let zebraDatePickerTranslations;
@@ -50,7 +50,7 @@ async function onProgenySelectListChanged() {
     });
 }
 export async function initializeAddEditSkill(itemId) {
-    currentProgenyId = getCurrentProgenyId();
+    currentProgenyId = getCurrentItemProgenyId();
     languageId = getCurrentLanguageId();
     await setCategoriesAutoSuggestList([currentProgenyId], []);
     await setupDateTimePicker();

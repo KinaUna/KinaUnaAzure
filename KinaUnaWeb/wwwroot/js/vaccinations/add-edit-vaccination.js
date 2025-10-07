@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
+import { getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { renderItemPermissionsEditor } from '../item-permissions.js';
 let zebraDatePickerTranslations;
@@ -45,7 +45,7 @@ function onProgenySelectListChanged() {
 }
 export async function initializeAddEditVaccination(itemId) {
     languageId = getCurrentLanguageId();
-    currentProgenyId = getCurrentProgenyId();
+    currentProgenyId = getCurrentItemProgenyId();
     await setupDateTimePicker();
     setupProgenySelectList();
     permissionsEditorTimelineItem.itemId = itemId;
