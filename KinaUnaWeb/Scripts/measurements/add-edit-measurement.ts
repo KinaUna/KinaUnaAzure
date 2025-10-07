@@ -1,11 +1,13 @@
 ﻿import * as LocaleHelper from '../localization-v9.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
+import { TimelineItem, TimeLineType } from '../page-models-v9.js';
+import { renderItemPermissionsEditor } from '../item-permissions.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat: string;
 let currentProgenyId: number;
-
+let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Configures the date time picker for the vaccination date input field.
  */
@@ -47,12 +49,19 @@ function onProgenySelectListChanged(): void {
     }
 }
 
-export async function initializeAddEditMeasurement(): Promise<void> {
+export async function initializeAddEditMeasurement(itemId: string): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
 
     await setupDateTimePicker();
     setupProgenySelectList();
+
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.Measurement;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = 0;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+
     ($(".selectpicker") as any).selectpicker('refresh');
 
     return new Promise<void>(function (resolve, reject) {

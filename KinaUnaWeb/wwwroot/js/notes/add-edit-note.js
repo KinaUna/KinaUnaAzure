@@ -1,9 +1,12 @@
 import * as LocaleHelper from '../localization-v9.js';
 import { setTagsAutoSuggestList, setCategoriesAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
+import { TimelineItem, TimeLineType } from '../page-models-v9.js';
+import { renderItemPermissionsEditor } from '../item-permissions.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat;
 let currentProgenyId;
+let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Configures the date time picker for the note date input field.
  */
@@ -98,13 +101,18 @@ function onRichTextEditorFocus() {
  * Initializes the Add/Edit Note page by setting up the date time picker, progeny select list, tags and categories auto suggest lists, and the Rich Text Editor.
  * @returns A promise that resolves when the initialization is complete.
  */
-export async function initializeAddEditNote() {
+export async function initializeAddEditNote(itemId) {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
     await setupDateTimePicker();
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId], []);
     await setCategoriesAutoSuggestList([currentProgenyId], []);
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.Note;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = 0;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
     $(".selectpicker").selectpicker('refresh');
     setupRichTextEditor();
     return new Promise(function (resolve, reject) {

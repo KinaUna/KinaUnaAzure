@@ -2,6 +2,8 @@
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
 import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
+import { TimelineItem, TimeLineType } from '../page-models-v9.js';
+import { renderItemPermissionsEditor } from '../item-permissions.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
@@ -10,6 +12,7 @@ let currentProgenyId: number;
 let toggleEditButton;
 let copyLocationButton;
 declare var copyLocationList: any;
+let permissionsEditorTimelineItem = new TimelineItem();
 
 /**
  * Configures the date time picker for the video date input field.
@@ -73,7 +76,7 @@ function setupEditButton(): void {
     }
 }
 
-export async function initializeAddEditVideo(): Promise<void> {
+export async function initializeAddEditVideo(itemId: string): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
 
@@ -84,6 +87,13 @@ export async function initializeAddEditVideo(): Promise<void> {
     addCopyLocationButtonEventListener();
     setupEditButton();
     setAddItemButtonEventListeners();
+
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.Video;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = 0;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+
     ($(".selectpicker") as any).selectpicker('refresh');
 
     return new Promise<void>(function (resolve, reject) {

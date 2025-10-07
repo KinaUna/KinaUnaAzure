@@ -1,9 +1,10 @@
 ﻿import * as LocaleHelper from '../localization-v9.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
-import { Picture, PictureViewModel } from '../page-models-v9.js';
+import { Picture, PictureViewModel, TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
 import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
+import { renderItemPermissionsEditor } from '../item-permissions.js';
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat: string;
@@ -14,6 +15,7 @@ let fileList: File[] = [];
 let notSupportedFiles: File[] = [];
 declare var copyLocationList: any;
 let imagesLoaded = 0;
+let permissionsEditorTimelineItem = new TimelineItem();
 
 /**
  * Configures the date time picker for the picture date input field.
@@ -637,7 +639,7 @@ async function displayNotSupportedFile(file: File): Promise<void> {
 /**
  * Setup of elements and event listeners.
  */
-export async function initializeAddEditPicture(): Promise<void> {
+export async function initializeAddEditPicture(itemId: string): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
     fileList = [];
@@ -656,6 +658,13 @@ export async function initializeAddEditPicture(): Promise<void> {
     addDropEventListener();
     addOverrideSubmitEvent();
     setAddItemButtonEventListeners();
+
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.Photo;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = 0;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+
     ($(".selectpicker") as any).selectpicker('refresh');
 
     return new Promise<void>(function (resolve, reject) {

@@ -93,43 +93,43 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
             await InitializeAddEditProgeny();
         }
         if (addItemType === 'note') {
-            await initializeAddEditNote();
+            await initializeAddEditNote('0');
         }
         if (addItemType === 'calendar') {
-            await initializeAddEditEvent();
+            await initializeAddEditEvent('0');
         }
         if (addItemType === 'sleep') {
-            await initializeAddEditSleep();
+            await initializeAddEditSleep('0');
         }
         if (addItemType === 'picture') {
-            await initializeAddEditPicture();
+            await initializeAddEditPicture('0');
         }
         if (addItemType === 'video') {
-            await initializeAddEditVideo();
+            await initializeAddEditVideo('0');
         }
         if (addItemType === 'vocabulary') {
-            await initializeAddEditVocabulary();
+            await initializeAddEditVocabulary('0');
         }
         if (addItemType === 'friend') {
-            await initializeAddEditFriend();
+            await initializeAddEditFriend('0');
         }
         if (addItemType === 'measurement') {
-            await initializeAddEditMeasurement();
+            await initializeAddEditMeasurement('0');
         }
         if (addItemType === 'contact') {
-            await initializeAddEditContact();
+            await initializeAddEditContact('0');
         }
         if (addItemType === 'skill') {
-            await initializeAddEditSkill();
+            await initializeAddEditSkill('0');
         }
         if (addItemType === 'vaccination') {
-            await initializeAddEditVaccination();
+            await initializeAddEditVaccination('0');
         }
         if (addItemType === 'location') {
-            await initializeAddEditLocation();
+            await initializeAddEditLocation('0');
         }
         if (addItemType === 'todo') {
-            await initializeAddEditTodo();
+            await initializeAddEditTodo('0');
         }
         if (addItemType === 'kanbanboard') {
             await initializeAddEditKanbanBoard('0');
@@ -255,40 +255,40 @@ async function popupEditItemModal(editItemType, editItemItemId) {
             await InitializeAddEditProgeny();
         }
         if (editItemType === 'note') {
-            await initializeAddEditNote();
+            await initializeAddEditNote(editItemItemId);
         }
         if (editItemType === 'calendar') {
-            await initializeAddEditEvent();
+            await initializeAddEditEvent(editItemItemId);
         }
         if (editItemType === 'sleep') {
-            await initializeAddEditSleep();
+            await initializeAddEditSleep(editItemItemId);
         }
         if (editItemType === 'vocabulary') {
-            await initializeAddEditVocabulary();
+            await initializeAddEditVocabulary(editItemItemId);
         }
         if (editItemType === 'friend') {
-            await initializeAddEditFriend();
+            await initializeAddEditFriend(editItemItemId);
         }
         if (editItemType === 'measurement') {
-            await initializeAddEditMeasurement();
+            await initializeAddEditMeasurement(editItemItemId);
         }
         if (editItemType === 'contact') {
-            await initializeAddEditContact();
+            await initializeAddEditContact(editItemItemId);
         }
         if (editItemType === 'skill') {
-            await initializeAddEditSkill();
+            await initializeAddEditSkill(editItemItemId);
         }
         if (editItemType === 'vaccination') {
-            await initializeAddEditVaccination();
+            await initializeAddEditVaccination(editItemItemId);
         }
         if (editItemType === 'location') {
-            await initializeAddEditLocation();
+            await initializeAddEditLocation(editItemItemId);
         }
         if (editItemType === 'todo') {
-            await initializeAddEditTodo();
+            await initializeAddEditTodo(editItemItemId);
         }
         if (editItemType === 'subtask') {
-            await initializeAddEditTodo();
+            await initializeAddEditTodo(editItemItemId);
         }
         if (editItemType === 'kanbanboard') {
             await initializeAddEditKanbanBoard(editItemItemId);
@@ -333,43 +333,43 @@ async function popupCopyItemModal(copyItemType, copyItemItemId) {
         // show item-details-div
         popup.classList.remove('d-none');
         if (copyItemType === 'note') {
-            await initializeAddEditNote();
+            await initializeAddEditNote('0');
         }
         if (copyItemType === 'calendar') {
-            await initializeAddEditEvent();
+            await initializeAddEditEvent('0');
         }
         if (copyItemType === 'sleep') {
-            await initializeAddEditSleep();
+            await initializeAddEditSleep('0');
         }
         if (copyItemType === 'vocabulary') {
-            await initializeAddEditVocabulary();
+            await initializeAddEditVocabulary('0');
         }
         if (copyItemType === 'friend') {
-            await initializeAddEditFriend();
+            await initializeAddEditFriend('0');
         }
         if (copyItemType === 'measurement') {
-            await initializeAddEditMeasurement();
+            await initializeAddEditMeasurement('0');
         }
         if (copyItemType === 'contact') {
-            await initializeAddEditContact();
+            await initializeAddEditContact('0');
         }
         if (copyItemType === 'skill') {
-            await initializeAddEditSkill();
+            await initializeAddEditSkill('0');
         }
         if (copyItemType === 'vaccination') {
-            await initializeAddEditVaccination();
+            await initializeAddEditVaccination('0');
         }
         if (copyItemType === 'location') {
-            await initializeAddEditLocation();
+            await initializeAddEditLocation('0');
         }
         if (copyItemType === 'picture') {
-            await initializeAddEditPicture();
+            await initializeAddEditPicture('0');
         }
         if (copyItemType === 'video') {
-            await initializeAddEditVideo();
+            await initializeAddEditVideo('0');
         }
         if (copyItemType === 'todo') {
-            await initializeAddEditTodo();
+            await initializeAddEditTodo('0');
         }
         if (copyItemType === 'kanbanboard') {
             await initializeAddEditKanbanBoard('0');

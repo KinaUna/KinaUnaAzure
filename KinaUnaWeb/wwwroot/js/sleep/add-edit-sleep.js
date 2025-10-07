@@ -1,5 +1,7 @@
 import * as LocaleHelper from '../localization-v9.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkStartBeforeEndTime, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools-v9.js';
+import { TimelineItem, TimeLineType } from '../page-models-v9.js';
+import { renderItemPermissionsEditor } from '../item-permissions.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let longDateTimeFormatMoment;
@@ -8,6 +10,7 @@ let warningStartIsAfterEndString = 'Warning: Start time is after End time.';
 let currentProgenyId;
 let startDateTimePickerId = '#sleep-start-date-time-picker';
 let endDateTimePickerId = '#sleep-end-date-time-picker';
+let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Validates that the start date is before the end date.
  * If the start date is after the end date, the submit button is disabled and a warning is shown.
@@ -97,11 +100,16 @@ function onProgenySelectListChanged() {
         currentProgenyId = parseInt(progenyIdSelect.value);
     }
 }
-export async function initializeAddEditSleep() {
+export async function initializeAddEditSleep(itemId) {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
     await setupDateTimePickers();
     setupProgenySelectList();
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.Sleep;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = 0;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
     $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve) {
         resolve();

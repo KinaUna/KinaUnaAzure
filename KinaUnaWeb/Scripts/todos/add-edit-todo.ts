@@ -1,11 +1,14 @@
 ﻿import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList } from '../data-tools-v9.js';
+import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList, getCurrentItemFamilyId } from '../data-tools-v9.js';
+import { TimelineItem, TimeLineType } from '../page-models-v9.js';
+import { renderItemPermissionsEditor } from '../item-permissions.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat: string;
 let currentProgenyId: number;
-
+let currentFamilyId: number;
+let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Configures the date time picker for the todo due date and start date input fields.
  */
@@ -75,14 +78,63 @@ async function setupDateTimePicker(): Promise<void> {
 function setupProgenySelectList(): void {
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId], []);
-            await setContextAutoSuggestList([currentProgenyId], []);
-            await setLocationAutoSuggestList([currentProgenyId], []);
-            ($(".selectpicker") as any).selectpicker('refresh');
+        progenyIdSelect.removeEventListener('change', onProgenySelectListChanged);
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
+    }
+}
+
+async function onProgenySelectListChanged(): Promise<void> {
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+    if (progenyIdSelect === null) {
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
         });
     }
+    currentProgenyId = parseInt(progenyIdSelect.value);
+    await setTagsAutoSuggestList([currentProgenyId], []);
+    await setContextAutoSuggestList([currentProgenyId], []);
+    await setLocationAutoSuggestList([currentProgenyId], []);
+    const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
+    if (familyIdSelect !== null) {
+        currentFamilyId = 0;
+        familyIdSelect.value = '0';
+        // Deselect all items in the selectpicker.
+        familyIdSelect.selectedIndex = -1;
+    }
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+function setupFamilySelectList(): void {
+    const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
+    if (familyIdSelect !== null) {
+        familyIdSelect.removeEventListener('change', onFamilySelectListChanged);
+        familyIdSelect.addEventListener('change', onFamilySelectListChanged);
+    }
+}
+
+async function onFamilySelectListChanged(): Promise<void> {
+    const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
+    if (familyIdSelect === null) {
+        return new Promise<void>(function (resolve, reject) {
+            resolve();
+        });
+    }
+    currentFamilyId = parseInt(familyIdSelect.value);
+    await setTagsAutoSuggestList([], [currentFamilyId]);
+    await setContextAutoSuggestList([], [currentFamilyId]);
+    await setLocationAutoSuggestList([], [currentFamilyId]);
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = 0;
+        progenyIdSelect.value = '0';
+        // Deselect all items in the selectpicker.
+        progenyIdSelect.selectedIndex = -1;
+    }
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 /**
@@ -235,15 +287,23 @@ function validateInputs(): void {
  * Initializes the Add/Edit Todo page by setting up the date time picker, progeny select list, tags and context auto suggest lists, and the Rich Text Editor.
  * @returns {Promise<void>} A promise that resolves when the initialization is complete.
  * */
-export async function initializeAddEditTodo(): Promise<void> {
+export async function initializeAddEditTodo(itemId: string): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
+    currentFamilyId = getCurrentItemFamilyId();
 
     await setupDateTimePicker();
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId], []);
     await setContextAutoSuggestList([currentProgenyId], []);
     await setLocationAutoSuggestList([currentProgenyId], []);
+
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = currentFamilyId;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+
     ($(".selectpicker") as any).selectpicker('refresh');
 
     setupRichTextEditor();

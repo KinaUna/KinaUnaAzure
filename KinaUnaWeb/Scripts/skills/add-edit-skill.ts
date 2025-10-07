@@ -1,12 +1,14 @@
 ﻿import * as LocaleHelper from '../localization-v9.js';
 import { setCategoriesAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools-v9.js';
+import { TimelineItem, TimeLineType } from '../page-models-v9.js';
+import { renderItemPermissionsEditor } from '../item-permissions.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let longDateTimeFormatMoment: string;
 let zebraDateTimeFormat: string;
 let currentProgenyId: number;
-
+let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Configures the date time picker for the skill date input field.
  */
@@ -54,13 +56,20 @@ async function onProgenySelectListChanged(): Promise<void> {
     });
 }
 
-export async function initializeAddEditSkill(): Promise<void> {
+export async function initializeAddEditSkill(itemId: string): Promise<void> {
     currentProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
 
     await setCategoriesAutoSuggestList([currentProgenyId], []);
     await setupDateTimePicker();
     setupProgenySelectList();
+
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.Skill;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = 0;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+
     ($(".selectpicker") as any).selectpicker('refresh');
 
     return new Promise<void>(function (resolve, reject) {

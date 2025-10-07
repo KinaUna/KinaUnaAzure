@@ -1,9 +1,13 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList } from '../data-tools-v9.js';
+import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList, getCurrentItemFamilyId } from '../data-tools-v9.js';
+import { TimelineItem, TimeLineType } from '../page-models-v9.js';
+import { renderItemPermissionsEditor } from '../item-permissions.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat;
 let currentProgenyId;
+let currentFamilyId;
+let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Configures the date time picker for the todo due date and start date input fields.
  */
@@ -67,14 +71,60 @@ async function setupDateTimePicker() {
 function setupProgenySelectList() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId], []);
-            await setContextAutoSuggestList([currentProgenyId], []);
-            await setLocationAutoSuggestList([currentProgenyId], []);
-            $(".selectpicker").selectpicker('refresh');
+        progenyIdSelect.removeEventListener('change', onProgenySelectListChanged);
+        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
+    }
+}
+async function onProgenySelectListChanged() {
+    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
+    if (progenyIdSelect === null) {
+        return new Promise(function (resolve, reject) {
+            resolve();
         });
     }
+    currentProgenyId = parseInt(progenyIdSelect.value);
+    await setTagsAutoSuggestList([currentProgenyId], []);
+    await setContextAutoSuggestList([currentProgenyId], []);
+    await setLocationAutoSuggestList([currentProgenyId], []);
+    const familyIdSelect = document.querySelector('#item-family-id-select');
+    if (familyIdSelect !== null) {
+        currentFamilyId = 0;
+        familyIdSelect.value = '0';
+        // Deselect all items in the selectpicker.
+        familyIdSelect.selectedIndex = -1;
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
+function setupFamilySelectList() {
+    const familyIdSelect = document.querySelector('#item-family-id-select');
+    if (familyIdSelect !== null) {
+        familyIdSelect.removeEventListener('change', onFamilySelectListChanged);
+        familyIdSelect.addEventListener('change', onFamilySelectListChanged);
+    }
+}
+async function onFamilySelectListChanged() {
+    const familyIdSelect = document.querySelector('#item-family-id-select');
+    if (familyIdSelect === null) {
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
+    }
+    currentFamilyId = parseInt(familyIdSelect.value);
+    await setTagsAutoSuggestList([], [currentFamilyId]);
+    await setContextAutoSuggestList([], [currentFamilyId]);
+    await setLocationAutoSuggestList([], [currentFamilyId]);
+    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
+    if (progenyIdSelect !== null) {
+        currentProgenyId = 0;
+        progenyIdSelect.value = '0';
+        // Deselect all items in the selectpicker.
+        progenyIdSelect.selectedIndex = -1;
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 /**
  * Sets up the Rich Text Editor for the todo description field and adds event listeners for image upload success and editor creation.
@@ -212,9 +262,10 @@ function validateInputs() {
  * Initializes the Add/Edit Todo page by setting up the date time picker, progeny select list, tags and context auto suggest lists, and the Rich Text Editor.
  * @returns {Promise<void>} A promise that resolves when the initialization is complete.
  * */
-export async function initializeAddEditKanbanItem(containerElementId) {
+export async function initializeAddEditKanbanItem(containerElementId, itemId) {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
+    currentFamilyId = getCurrentItemFamilyId();
     await setupDateTimePicker();
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId], []);
@@ -226,6 +277,11 @@ export async function initializeAddEditKanbanItem(containerElementId) {
     if (titleInput) {
         titleInput.addEventListener('input', validateInputs);
     }
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = currentFamilyId;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
     validateInputs();
     return new Promise(function (resolve, reject) {
         resolve();

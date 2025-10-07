@@ -1,11 +1,14 @@
 ﻿import * as LocaleHelper from '../localization-v9.js';
 import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
+import { TimelineItem, TimeLineType } from '../page-models-v9.js';
+import { renderItemPermissionsEditor } from '../item-permissions.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat: string;
 let currentProgenyId: number;
-
+let currentFamilyId: number;
+let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Configures the date time picker for the contact date input field.
  */
@@ -53,7 +56,7 @@ async function onProgenySelectListChanged(): Promise<void> {
     });
 }
 
-export async function initializeAddEditFriend(): Promise<void> {
+export async function initializeAddEditFriend(itemId: string): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
 
@@ -62,6 +65,12 @@ export async function initializeAddEditFriend(): Promise<void> {
     await setContextAutoSuggestList([currentProgenyId], []);
 
     setupProgenySelectList();
+
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.Friend;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = 0;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
 
     ($(".selectpicker") as any).selectpicker('refresh');
 
