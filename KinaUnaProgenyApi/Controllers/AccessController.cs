@@ -332,5 +332,29 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> ConvertUserAccessesToUserGroups()
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            if (currentUserInfo == null || !currentUserInfo.IsKinaUnaAdmin) return Unauthorized();
+
+            await userAccessService.ConvertUserAccessesToUserGroups();
+            return Ok();
+        }
+
+        [HttpGet("[action]/itemType:int")]
+        public async Task<IActionResult> ConvertItemAccessLevelToItemPermissions(int itemType)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            if (currentUserInfo == null || !currentUserInfo.IsKinaUnaAdmin) return Unauthorized();
+            bool moreItem = true;
+            while (moreItem)
+            {
+                moreItem = await userAccessService.ConvertItemAccessLevelToItemPermissionsForGroups((KinaUnaTypes.TimeLineType)itemType, 100);
+            }
+            
+            return Ok();
+        }
     }
 }

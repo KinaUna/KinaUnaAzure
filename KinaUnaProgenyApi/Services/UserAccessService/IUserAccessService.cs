@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using KinaUna.Data.Models;
+﻿using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
 
 namespace KinaUnaProgenyApi.Services.UserAccessService
 {
@@ -104,5 +105,9 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         /// <param name="userEmail">The user's email address.</param>
         /// <returns>Boolean, true if the user has any kind of access.</returns>
         bool IsUserInUserAccessList(List<UserAccess> accessList, string userEmail);
+
+        Task ConvertUserAccessesToUserGroups();
+
+        Task<bool> ConvertItemAccessLevelToItemPermissionsForGroups(KinaUnaTypes.TimeLineType timeLineType, int count);
     }
 }

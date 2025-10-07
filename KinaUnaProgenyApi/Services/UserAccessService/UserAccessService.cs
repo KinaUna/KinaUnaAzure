@@ -18,14 +18,16 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
     public class UserAccessService : IUserAccessService
     {
         private readonly ProgenyDbContext _context;
+        private readonly MediaDbContext _mediaContext;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public UserAccessService(ProgenyDbContext context, IDistributedCache cache)
+        public UserAccessService(ProgenyDbContext context, MediaDbContext mediaContext, IDistributedCache cache)
         {
             _context = context;
             _cache = cache;
+            _mediaContext = mediaContext;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
@@ -572,6 +574,1048 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     }
                 }
             }
+        }
+
+        public async Task<bool> ConvertItemAccessLevelToItemPermissionsForGroups(KinaUnaTypes.TimeLineType timeLineType, int count)
+        {
+            bool moreItemRemaining = false;
+            // For each TimelineItem type, get all items, convert the AccessLevel to ItemPermissions, and save the changes.
+            // If the item is AccessLevel 0 (Private), add ItemPermission for Admin group.
+            // If the item is AccessLevel 1 (Family), add ItemPermission for Admin and Family groups.
+            // If the item is AccessLevel 2 (Caretakers), add ItemPermission for Admin, Family, and Caretakers groups.
+            // If the item is AccessLevel 3 (Friends), add ItemPermission for Admin, Family, Caretakers, and Friends groups.
+            if (timeLineType == KinaUnaTypes.TimeLineType.Photo)
+            {
+                moreItemRemaining = await ConvertPicturesAccessLevels(count);
+            }
+
+            if (timeLineType == KinaUnaTypes.TimeLineType.Video)
+            {
+                moreItemRemaining = await ConvertVideosAccessLevels(count);
+            }
+
+            if (timeLineType == KinaUnaTypes.TimeLineType.Calendar)
+            {
+                moreItemRemaining = await ConvertCalendarItemsAccessLevels(count);
+            }
+
+            if (timeLineType == KinaUnaTypes.TimeLineType.Vocabulary)
+            {
+                moreItemRemaining = await ConvertVocabularyItemsAccessLevels(count);
+            }
+            if (timeLineType == KinaUnaTypes.TimeLineType.Skill)
+            {
+                moreItemRemaining = await ConvertSkillsAccessLevels(count);
+            }
+            if (timeLineType == KinaUnaTypes.TimeLineType.Friend)
+            {
+                moreItemRemaining = await ConvertFriendsAccessLevels(count);
+            }
+            if (timeLineType == KinaUnaTypes.TimeLineType.Measurement)
+            {
+                moreItemRemaining = await ConvertMeasurementsAccessLevels(count);
+            }
+            if (timeLineType == KinaUnaTypes.TimeLineType.Sleep)
+            {
+                moreItemRemaining = await ConvertSleepAccessLevels(count);
+            }
+            if (timeLineType == KinaUnaTypes.TimeLineType.Note)
+            {
+                moreItemRemaining = await ConvertNotesAccessLevels(count);
+            }
+            if (timeLineType == KinaUnaTypes.TimeLineType.Contact)
+            {
+                moreItemRemaining = await ConvertContactsAccessLevels(count);
+            }
+            if (timeLineType == KinaUnaTypes.TimeLineType.Vaccination)
+            {
+                moreItemRemaining = await ConvertVaccinationsAccessLevels(count);
+            }
+            if (timeLineType == KinaUnaTypes.TimeLineType.Location)
+            {
+                moreItemRemaining = await ConvertLocationsAccessLevels(count);
+            }
+            if (timeLineType == KinaUnaTypes.TimeLineType.TodoItem)
+            {
+                moreItemRemaining = await ConvertTodoItemsAccessLevels(count);
+            }
+            if (timeLineType == KinaUnaTypes.TimeLineType.KanbanBoard)
+            {
+                moreItemRemaining = await ConvertKanbanBoardsAccessLevels(count);
+            }
+
+            return moreItemRemaining;
+        }
+
+        private async Task<bool> ConvertPicturesAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<Picture> items = await _mediaContext.PicturesDb.AsNoTracking().OrderBy(p => p.PictureId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (Picture picture in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (picture.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == picture.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == picture.PictureId && tip.ProgenyId == picture.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = picture.PictureId,
+                            ProgenyId = picture.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                picture.AccessLevel = 99;
+                _ = _mediaContext.PicturesDb.Update(picture);
+                _ = await _context.SaveChangesAsync();
+                _ = await _mediaContext.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+
+        private async Task<bool> ConvertVideosAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<Video> items = await _mediaContext.VideoDb.AsNoTracking().OrderBy(p => p.VideoId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (Video video in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (video.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == video.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == video.VideoId && tip.ProgenyId == video.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = video.VideoId,
+                            ProgenyId = video.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                video.AccessLevel = 99;
+                _ = _mediaContext.VideoDb.Update(video);
+                _ = await _context.SaveChangesAsync();
+                _ = await _mediaContext.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+
+        private async Task<bool> ConvertCalendarItemsAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<CalendarItem> items = await _context.CalendarDb.AsNoTracking().OrderBy(p => p.EventId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (CalendarItem calendarItem in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (calendarItem.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == calendarItem.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == calendarItem.EventId && tip.ProgenyId == calendarItem.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = calendarItem.EventId,
+                            ProgenyId = calendarItem.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                calendarItem.AccessLevel = 99;
+                _ = _context.CalendarDb.Update(calendarItem);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+
+        private async Task<bool> ConvertVocabularyItemsAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<VocabularyItem> items = await _context.VocabularyDb.AsNoTracking().OrderBy(p => p.WordId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (VocabularyItem vocabularyItem in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (vocabularyItem.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == vocabularyItem.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == vocabularyItem.WordId && tip.ProgenyId == vocabularyItem.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = vocabularyItem.WordId,
+                            ProgenyId = vocabularyItem.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                vocabularyItem.AccessLevel = 99;
+                _ = _context.VocabularyDb.Update(vocabularyItem);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+
+        private async Task<bool> ConvertSkillsAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<Skill> items = await _context.SkillsDb.AsNoTracking().OrderBy(p => p.SkillId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (Skill skill in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (skill.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == skill.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == skill.SkillId && tip.ProgenyId == skill.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = skill.SkillId,
+                            ProgenyId = skill.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                skill.AccessLevel = 99;
+                _ = _context.SkillsDb.Update(skill);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+
+        private async Task<bool> ConvertFriendsAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<Friend> items = await _context.FriendsDb.AsNoTracking().OrderBy(p => p.FriendId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (Friend friend in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (friend.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == friend.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == friend.FriendId && tip.ProgenyId == friend.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = friend.FriendId,
+                            ProgenyId = friend.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                friend.AccessLevel = 99;
+                _ = _context.FriendsDb.Update(friend);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+
+        private async Task<bool> ConvertMeasurementsAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<Measurement> items = await _context.MeasurementsDb.AsNoTracking().OrderBy(p => p.MeasurementId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (Measurement measurement in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (measurement.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == measurement.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == measurement.MeasurementId && tip.ProgenyId == measurement.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = measurement.MeasurementId,
+                            ProgenyId = measurement.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                measurement.AccessLevel = 99;
+                _ = _context.MeasurementsDb.Update(measurement);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+        
+
+        private async Task<bool> ConvertSleepAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<Sleep> items = await _context.SleepDb.AsNoTracking().OrderBy(p => p.SleepId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (Sleep sleep in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (sleep.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == sleep.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == sleep.SleepId && tip.ProgenyId == sleep.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = sleep.SleepId,
+                            ProgenyId = sleep.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                sleep.AccessLevel = 99;
+                _ = _context.SleepDb.Update(sleep);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+
+        
+
+        private async Task<bool> ConvertNotesAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<Note> items = await _context.NotesDb.AsNoTracking().OrderBy(p => p.NoteId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (Note note in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (note.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == note.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == note.NoteId && tip.ProgenyId == note.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = note.NoteId,
+                            ProgenyId = note.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                note.AccessLevel = 99;
+                _ = _context.NotesDb.Update(note);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+        
+        private async Task<bool> ConvertContactsAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<Contact> items = await _context.ContactsDb.AsNoTracking().OrderBy(p => p.ContactId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (Contact contact in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (contact.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == contact.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == contact.ContactId && tip.ProgenyId == contact.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = contact.ContactId,
+                            ProgenyId = contact.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                contact.AccessLevel = 99;
+                _ = _context.ContactsDb.Update(contact);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+
+        private async Task<bool> ConvertVaccinationsAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<Vaccination> items = await _context.VaccinationsDb.AsNoTracking().OrderBy(p => p.VaccinationId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (Vaccination vaccination in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (vaccination.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == vaccination.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == vaccination.VaccinationId && tip.ProgenyId == vaccination.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = vaccination.VaccinationId,
+                            ProgenyId = vaccination.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                vaccination.AccessLevel = 99;
+                _ = _context.VaccinationsDb.Update(vaccination);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+
+        private async Task<bool> ConvertLocationsAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<Location> items = await _context.LocationsDb.AsNoTracking().OrderBy(p => p.LocationId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (Location location in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (location.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == location.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == location.LocationId && tip.ProgenyId == location.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = location.LocationId,
+                            ProgenyId = location.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                location.AccessLevel = 99;
+                _ = _context.LocationsDb.Update(location);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+
+        private async Task<bool> ConvertTodoItemsAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<TodoItem> items = await _context.TodoItemsDb.AsNoTracking().OrderBy(p => p.TodoItemId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (TodoItem todoItem in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (todoItem.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == todoItem.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == todoItem.TodoItemId && tip.ProgenyId == todoItem.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = todoItem.TodoItemId,
+                            ProgenyId = todoItem.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                todoItem.AccessLevel = 99;
+                _ = _context.TodoItemsDb.Update(todoItem);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
+        }
+
+        private async Task<bool> ConvertKanbanBoardsAccessLevels(int count)
+        {
+            AccessLevelList accessLevels = new();
+            List<KanbanBoard> items = await _context.KanbanBoardsDb.AsNoTracking().OrderBy(p => p.KanbanBoardId).Where(p => p.AccessLevel < 10).Take(count).ToListAsync();
+            if (items.Count == 0)
+            {
+                return false;
+            }
+            // For each item, create ItemPermissions for each access level up to and including the item's AccessLevel.
+            foreach (KanbanBoard kanbanBoard in items)
+            {
+                foreach (SelectListItem accessLevel in accessLevels.AccessLevelListEn)
+                {
+                    if (!int.TryParse(accessLevel.Value, out int accessLevelValue))
+                    {
+                        continue;
+                    }
+
+                    if (kanbanBoard.AccessLevel > accessLevelValue)
+                    {
+                        continue;
+                    }
+
+                    string groupName = accessLevel.Text;
+                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == kanbanBoard.ProgenyId && ug.Name == groupName);
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == kanbanBoard.KanbanBoardId && tip.ProgenyId == kanbanBoard.ProgenyId && tip.GroupId == userGroup.UserGroupId);
+
+                    if (existingPermission != null)
+                    {
+                        continue;
+                    }
+
+                    PermissionLevel permissionLevel = accessLevelValue switch
+                    {
+                        0 => PermissionLevel.Admin,
+                        _ => PermissionLevel.View,
+                    };
+
+                    if (userGroup != null)
+                    {
+                        TimelineItemPermission timelineItemPermission = new()
+                        {
+                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                            ItemId = kanbanBoard.KanbanBoardId,
+                            ProgenyId = kanbanBoard.ProgenyId,
+                            GroupId = userGroup.UserGroupId,
+                            InheritPermissions = false,
+                            PermissionLevel = permissionLevel,
+                            CreatedBy = "system",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "system",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    }
+                }
+
+                // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
+                kanbanBoard.AccessLevel = 99;
+                _ = _context.KanbanBoardsDb.Update(kanbanBoard);
+                _ = await _context.SaveChangesAsync();
+
+            }
+            // Are there more items remaining to process?
+            return items.Count >= count;
         }
     }
 }

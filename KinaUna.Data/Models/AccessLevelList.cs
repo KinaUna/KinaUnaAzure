@@ -27,7 +27,7 @@ namespace KinaUna.Data.Models
         {
             SelectListItem selItem1 = new()
             {
-                Text = "Administrators/Parents",
+                Text = "Administrators",
                 Value = "0"
             }; // 0 = Hidden/Parents only, 1=Family, 2=Caretakers/Special, 3= Friends, 4=DefaultUSers, 5= public.
             SelectListItem selItem2 = new()
@@ -37,7 +37,7 @@ namespace KinaUna.Data.Models
             };
             SelectListItem selItem3 = new()
             {
-                Text = "Caretakers/Special Access",
+                Text = "Caretakers",
                 Value = "2"
             };
             SelectListItem selItem4 = new()
@@ -52,7 +52,7 @@ namespace KinaUna.Data.Models
             };
             SelectListItem selItem6 = new()
             {
-                Text = "Public/Anyone",
+                Text = "Public",
                 Value = "5"
             };
             AccessLevelListEn =
