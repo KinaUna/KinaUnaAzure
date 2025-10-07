@@ -1,0 +1,33 @@
+﻿@{
+    ViewData["Title"] = "Convert User Access to Permissions";
+    List<int> itemTypes = [];
+    
+    foreach (object type in Enum.GetValues(typeof(KinaUnaTypes.TimeLineType)))
+    {
+        itemTypes.Add((int)type);
+    }
+}
+
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="space-20"></div>
+    <div class="add-item-container-wide">
+        <div class="space-20"></div>
+        <h2>@ViewData["Title"]</h2>
+        <div class="space-20"></div>
+        <a asp-action="ConvertUserAccessesToUserGroups">Convert UserAccess Entities to UserGroups</a>
+        <div class="space-50"></div>
+        @foreach (int itemType in itemTypes)
+        {
+            if (itemType == (int)KinaUnaTypes.TimeLineType.User || itemType == (int)KinaUnaTypes.TimeLineType.UserAccess || itemType == (int)KinaUnaTypes.TimeLineType.Progeny)
+            {
+                continue;
+            }
+
+            <div class="mb-2">
+                <a asp-action="ConvertItemAccessLevelToItemPermissions" asp-route-itemType="@itemType">Convert ItemType @(((KinaUnaTypes.TimeLineType)itemType).ToString()) AccessLevels to Item Permissions</a>
+            </div>
+            <div class="space-20"></div>
+        }
+    </div>
+
+</div>

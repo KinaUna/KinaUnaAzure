@@ -1,0 +1,16 @@
+﻿@model int
+@{
+    string itemType = ((KinaUnaTypes.TimeLineType)Model).ToString();
+    ViewData["Title"] = "Converted ItemType " + itemType + " access levels to timeline item permissions.";
+}
+
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="space-20"></div>
+    <div class="add-item-container-wide">
+        <div class="space-20"></div>
+        <h2>@ViewData["Title"]</h2>
+        <div class="space-20"></div>
+        <a asp-action="ConvertAccesses">Return to Convert Accesses</a>
+        <div class="space-50"></div>
+    </div>
+</div>

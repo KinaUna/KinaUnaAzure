@@ -1,5 +1,6 @@
 ﻿using Duende.IdentityModel.Client;
 using KinaUna.Data;
+using KinaUna.Data.Models.AccessManagement;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -9,7 +10,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -188,6 +188,42 @@ namespace KinaUnaWeb.Services.HttpClients
             string permissionListAsString = await accessManagementResponse.Content.ReadAsStringAsync();
             List<TimelineItemPermission> timelineItemPermissions = JsonConvert.DeserializeObject<List<TimelineItemPermission>>(permissionListAsString);
             return timelineItemPermissions;
+        }
+
+        public async Task<bool> ConvertUserAccessesToUserGroups()
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            
+            _httpClient.Timeout = TimeSpan.FromMinutes(20);
+            
+            string accessApiPath = "/api/Access/ConvertUserAccessesToUserGroups/";
+            HttpResponseMessage accessManagementResponse = await _httpClient.GetAsync(accessApiPath);
+
+            _httpClient.Timeout = TimeSpan.FromSeconds(100);
+            
+            if (!accessManagementResponse.IsSuccessStatusCode) return false;
+            
+            return true;
+        }
+
+        public async Task<bool> ConvertItemAccessLevelToItemPermissions(int itemType)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            _httpClient.Timeout = TimeSpan.FromMinutes(60);
+
+            string accessApiPath = "/api/Access/ConvertItemAccessLevelToItemPermissions/" + itemType;
+            HttpResponseMessage accessManagementResponse = await _httpClient.GetAsync(accessApiPath);
+
+            _httpClient.Timeout = TimeSpan.FromSeconds(100);
+
+            if (!accessManagementResponse.IsSuccessStatusCode) return false;
+
+            return true;
         }
     }
 }
