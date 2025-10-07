@@ -1,5 +1,5 @@
 ﻿import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setCategoriesAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemProgenyId, getCurrentItemProgenyId } from '../data-tools-v9.js';
+import { setTagsAutoSuggestList, setCategoriesAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { renderItemPermissionsEditor } from '../item-permissions.js';
 

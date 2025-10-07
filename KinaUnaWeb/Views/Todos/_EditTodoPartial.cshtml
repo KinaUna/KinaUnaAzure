@@ -23,6 +23,8 @@
     const int changedItemTypeKanbanItem = (int)KinaUnaTypes.TimeLineType.KanbanItem;
     int permissionsDataType = (int)KinaUnaTypes.TimeLineType.TodoItem;
 }
+<div class="d-none" id="item-progeny-id-div" data-progeny-id="@Model.TodoItem.ProgenyId"></div>
+<div class="d-none" id="item-family-id-div" data-family-id="@Model.TodoItem.FamilyId"></div>
 <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeTodoItem" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
 @if (Model.KanbanItems.Count > 0)
 {

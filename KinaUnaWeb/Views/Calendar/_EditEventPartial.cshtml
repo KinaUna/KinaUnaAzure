@@ -37,6 +37,8 @@
     char sundayAbreviation = (await LocaleManager.GetTranslation("Sunday", PageNames.CalendarTools, Model.LanguageId))[0];
 }
 <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeCalendarEvent" data-changed-item-item-id="@Model.CalendarItem.EventId"></div>
+<div class="d-none" id="item-progeny-id-div" data-progeny-id="@Model.CalendarItem.ProgenyId"></div>
+<div class="d-none" id="item-family-id-div" data-family-id="@Model.CalendarItem.FamilyId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="longDateTimeFormatDiv" class="d-none" data-long-date-time-format="@longDateTimeFormat"></div>
 <div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
