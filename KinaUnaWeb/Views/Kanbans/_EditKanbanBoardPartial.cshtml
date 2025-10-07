@@ -33,7 +33,7 @@
             @if (Model.FamilyList.Count > 0)
             {
                 <div class="form-group">
-                    <label asp-for="KanbanBoard.FamilyId" class="col-auto control-label">@assignedToString </label>
+                    <label asp-for="KanbanBoard.FamilyId" class="col-auto control-label" for="item-family-id-select">@assignedToString </label>
                     <div class="col-auto">
                         <select id="item-family-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="KanbanBoard.FamilyId" asp-items="@Model.FamilyList"></select>
                     </div>

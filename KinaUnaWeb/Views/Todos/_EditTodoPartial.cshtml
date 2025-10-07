@@ -47,7 +47,7 @@
         </div>
         <form id="save-item-form" asp-action="EditTodo" asp-controller="Todos" role="form" method="post">
             <div class="space-20"></div>
-            @if (Model.ProgenyList.Count > 1)
+            @if (Model.ProgenyList.Count > 0)
             {
                 <div class="form-group">
                     <label asp-for="TodoItem.ProgenyId" class="col-auto control-label" for="item-progeny-id-select">@assignedToString </label>
@@ -56,14 +56,13 @@
                     </div>
                 </div>
             }
-            else
+            @if (Model.FamilyList.Count > 0)
             {
                 <div class="form-group">
-                    <label asp-for="TodoItem.ProgenyId" class="col-auto control-label">@assignedToString</label>
+                    <label asp-for="TodoItem.FamilyId" class="col-auto control-label" for="item-family-id-select">@assignedToString </label>
                     <div class="col-auto">
-                        <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text"/>
+                        <select id="item-family-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="TodoItem.FamilyId" asp-items="@Model.FamilyList"></select>
                     </div>
-                    <input asp-for="TodoItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden"/>
                 </div>
             }
             <div class="form-group">
