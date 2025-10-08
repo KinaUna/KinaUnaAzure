@@ -34,7 +34,7 @@ function setFamilyMemberDetailsEventListeners(familyMemberId: number): void {
     let closeButtonsList = document.querySelectorAll('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
-            const closeButtonActions = function () {
+            const closeButtonActions = function (): void {
                 const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (!modalDiv) return;
 

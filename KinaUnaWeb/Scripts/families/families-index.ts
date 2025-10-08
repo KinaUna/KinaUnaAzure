@@ -56,7 +56,7 @@ async function renderFamilyElement(familyId: number): Promise<void> {
 function addFamilyElementEventListeners(familyId: number): void {
     const familyElementDiv = document.querySelector<HTMLDivElement>('#family-element-' + familyId);
     if (familyElementDiv) {
-        const familyElementClickedAction = async function (event: MouseEvent) {
+        const familyElementClickedAction = async function (event: MouseEvent): Promise<void> {
             event.preventDefault();
             event.stopPropagation();
             await displayFamilyDetails(familyId);
@@ -68,7 +68,7 @@ function addFamilyElementEventListeners(familyId: number): void {
 
     const familyEditButton = document.querySelector<HTMLButtonElement>('#edit-family-button-' + familyId);
     if (familyEditButton) {
-        const familyEditButtonClickedAction = async function (event: MouseEvent) {
+        const familyEditButtonClickedAction = async function (event: MouseEvent): Promise<void> {
             event.preventDefault();
             event.stopPropagation();
             await displayEditFamilyModal(familyId);
@@ -81,7 +81,7 @@ function addFamilyElementEventListeners(familyId: number): void {
 function addNewFamilyButtonEventListener(): void {
     const addNewFamilyButton = document.querySelector<HTMLButtonElement>('#add-new-family-button');
     if (addNewFamilyButton) {
-        const addNewFamilyButtonClickedAction = async function (event: MouseEvent) {
+        const addNewFamilyButtonClickedAction = async function (event: MouseEvent): Promise<void> {
             event.preventDefault();
             event.stopPropagation();
             await displayAddFamilyModal();

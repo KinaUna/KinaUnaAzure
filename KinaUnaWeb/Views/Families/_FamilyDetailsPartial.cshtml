@@ -1,6 +1,7 @@
 ﻿@using System.Web
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUna.Data.Models.Family
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.FamiliesViewModels.FamilyDetailsViewModel
@@ -91,12 +92,15 @@
                         </div>
                     }
                 </div>
-                @if (Model.IsCurrentUserFamilyAdmin)
+                @if (Model.Family.FamilyPermission.PermissionLevel >= PermissionLevel.Edit)
                 {
                     <div class="space-50"></div>
                     <div class="col-12">
                         <a data-edit-item-type="family" data-edit-item-item-id="@Model.Family.FamilyId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                        <a data-delete-item-type="family" data-delete-item-item-id="@Model.Family.FamilyId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                        @if (Model.Family.FamilyPermission.PermissionLevel >= PermissionLevel.Admin)
+                        {
+                            <a data-delete-item-type="family" data-delete-item-item-id="@Model.Family.FamilyId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                        }
                     </div>
                 }
             </div>

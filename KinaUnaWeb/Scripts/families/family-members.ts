@@ -28,7 +28,7 @@ export async function GetFamiliesList(): Promise<void> {
     }
 }
 
-async function RenderFamilyMembers(family: Family) {
+async function RenderFamilyMembers(family: Family): Promise<void> {
     const familyMembersDiv = document.querySelector<HTMLDivElement>('#family-members-div');
     if (familyMembersDiv) {
         // Create div element with id 'family-members-{familyId}' to contain family name and its members.
@@ -73,7 +73,7 @@ async function getFamilyMemberElement(familyMember: FamilyMember): Promise<HTMLD
 function addFamilyMemberElementEventListeners(familyMemberId: number): void {
     const familyMemberElementDiv = document.querySelector<HTMLDivElement>('#family-member-element-' + familyMemberId);
     if (familyMemberElementDiv) {
-        const familyMemberElementClickedAction = async function (event: MouseEvent) {
+        const familyMemberElementClickedAction = async function (event: MouseEvent): Promise<void> {
             event.preventDefault();
             // Show family member details modal
             await displayFamilyMemberDetails(familyMemberId);

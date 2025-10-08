@@ -23,7 +23,7 @@ export async function displayAddFamilyModal() {
             hideBodyScrollbars();
             familyDetailsDiv.classList.remove('d-none');
             addAddFamilyModalEventListeners();
-            await initializeAddEditFamily();
+            await initializeAddEditFamily(0);
         }
         else {
             return Promise.reject('Family details div not found in the document.');
@@ -104,7 +104,7 @@ export async function displayEditFamilyModal(familyId) {
             hideBodyScrollbars();
             familyDetailsDiv.classList.remove('d-none');
             addEditFamilyModalEventListeners();
-            await initializeAddEditFamily();
+            await initializeAddEditFamily(familyId);
         }
         else {
             return Promise.reject('Family details div not found in the document.');
@@ -167,7 +167,6 @@ function addEditFamilyModalEventListeners() {
 }
 /**
 * Sets up the Rich Text Editor for the todo description field and adds event listeners for image upload success and editor creation.
-* @returns {Promise<void>} A promise that resolves when the setup is complete.
 */
 function setupRichTextEditor() {
     const fullScreenOverlay = document.getElementById('full-screen-overlay-div');
@@ -252,7 +251,7 @@ function validateInputs() {
         }
     }
 }
-export async function initializeAddEditFamily() {
+export async function initializeAddEditFamily(familyId) {
     languageId = getCurrentLanguageId();
     setupRichTextEditor();
     const nameInput = document.getElementById('family-name-input');
