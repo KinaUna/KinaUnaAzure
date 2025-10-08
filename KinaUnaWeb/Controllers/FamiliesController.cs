@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace KinaUnaWeb.Controllers
 {
     public class FamiliesController(IFamiliesHttpClient familiesHttpClient, IViewModelSetupService viewModelSetupService,
-        IProgenyHttpClient progenyHttpClient, IUserGroupsHttpClient userGroupsHttpClient, IUserInfosHttpClient userInfosHttpClient, ImageStore imageStore) : Controller
+        IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ImageStore imageStore) : Controller
     {
         public async Task<IActionResult> Index()
         {
@@ -150,105 +150,7 @@ namespace KinaUnaWeb.Controllers
 
             return Json(updatedFamily);
         }
-
-        public async Task<IActionResult> Members()
-        {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0,0, false);
-            FamiliesViewModel model = new(baseModel)
-            {
-                Families = await familiesHttpClient.GetMyFamilies()
-            };
-
-            if (model.Families.Count == 0)
-            {
-                Family family = new();
-                model.Families.Add(family);
-            }
-            
-            return View(model);
-        }
-
-        public async Task<IActionResult> FamilyMemberElement(int familyMemberId)
-        {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
-            FamilyMemberDetailsViewModel model = new(baseModel)
-            {
-                FamilyMember = await familiesHttpClient.GetFamilyMember(familyMemberId)
-            };
-
-            model.Family = await familiesHttpClient.GetFamily(model.FamilyMember.FamilyId);
-            if (model.Family == null || model.Family.FamilyId == 0 || model.FamilyMember == null || model.FamilyMember.FamilyMemberId == 0)
-            {
-                return PartialView("_NotFoundPartial");
-            }
-            
-            return PartialView("_FamilyMemberElementPartial", model);
-        }
-
-        public async Task<IActionResult> FamilyMemberDetails(int familyMemberId)
-        {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
-            FamilyMemberDetailsViewModel model = new(baseModel)
-            {
-                FamilyMember = await familiesHttpClient.GetFamilyMember(familyMemberId)
-            };
-
-            model.Family = await familiesHttpClient.GetFamily(model.FamilyMember.FamilyId);
-            if (model.Family == null || model.Family.FamilyId == 0 || model.FamilyMember == null || model.FamilyMember.FamilyMemberId == 0)
-            {
-                return PartialView("_NotFoundPartial");
-            }
-
-            return PartialView("_FamilyMemberDetailsPartial", model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<FamilyMember> AddFamilyMember([FromForm] FamilyMember familyMember)
-        {
-            FamilyMember addedFamilyMember = await familiesHttpClient.AddFamilyMember(familyMember);
-            return addedFamilyMember;
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<FamilyMember> UpdateFamilyMember([FromForm] FamilyMember familyMember)
-        {
-            FamilyMember updatedFamilyMember = await familiesHttpClient.UpdateFamilyMember(familyMember);
-            return updatedFamilyMember;
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteFamilyMember(int familyMemberId)
-        {
-            bool result = await familiesHttpClient.DeleteFamilyMember(familyMemberId);
-            return Json(result);
-        }
         
-        public async Task<IActionResult> UserAccess()
-        {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
-            UserGroupsViewModel model = new(baseModel)
-            {
-                Families = await familiesHttpClient.GetMyFamilies()
-            };
-            model.Progenies = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-
-            foreach (Family family in model.Families)
-            {
-                List<UserGroup> userGroupsList = await userGroupsHttpClient.GetUserGroupsForFamily(family.FamilyId);
-                model.UserGroups.AddRange(userGroupsList);
-            }
-            foreach (Progeny progeny in model.Progenies)
-            {
-                List<UserGroup> userGroupsList = await userGroupsHttpClient.GetUserGroupsForProgeny(progeny.Id);
-                model.UserGroups.AddRange(userGroupsList);
-            }
-
-            return View(model);
-        }
-
         /// <summary>
         /// Profile picture for a family. If the family has no picture or the user has no access to the picture, a default image is returned.
         /// Images are stored in Azure Blob Storage, this provides a static URL for profile pictures.
