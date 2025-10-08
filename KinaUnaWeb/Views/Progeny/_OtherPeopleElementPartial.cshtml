@@ -16,7 +16,7 @@
                     <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="profile-picture-small"/>
                     <span>@Model.CurrentProgeny.NickName</span>
                     <span>@Model.CurrentProgeny.Email</span>
-                    <button>Add to family</button>
+                    <button id="add-to-family-button-@Model.CurrentProgeny.Id" data-other-people-id="@Model.CurrentProgeny.Id">Add to family</button>
                 </div>
             </div>
         }

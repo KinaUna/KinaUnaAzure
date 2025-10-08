@@ -48,6 +48,82 @@ async function renderOtherPeopleElement(progenyId) {
     }
 }
 function addOtherPeopleElementEventListeners(progenyId) {
+    const addToFamilyButton = document.querySelector('#add-to-family-button-' + progenyId);
+    if (addToFamilyButton) {
+        const addToFamilyButtonClickedAction = async function (event) {
+            event.preventDefault();
+            const response = await fetch('/Progeny/AddOtherPersonToFamily?progenyId=' + progenyId, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.ok) {
+                const addToFamilyDiv = document.querySelector('#add-to-family-div');
+                if (addToFamilyDiv) {
+                    addToFamilyDiv.innerHTML = '';
+                    const addToFamilyContent = await response.text();
+                    addToFamilyDiv.innerHTML = addToFamilyContent;
+                    addToFamilyDiv.classList.remove('d-none');
+                    addAddToFamilyDivEventListeners();
+                }
+                return Promise.resolve();
+            }
+            else {
+                console.error('Failed to add other person to family:', response.statusText);
+                return Promise.reject('Failed to add other person to family: ' + response.statusText);
+            }
+        };
+        // Clear existing event listeners.
+        addToFamilyButton.removeEventListener('click', addToFamilyButtonClickedAction);
+        addToFamilyButton.addEventListener('click', addToFamilyButtonClickedAction);
+    }
+}
+function addAddToFamilyDivEventListeners() {
+    const closeButtonsList = document.querySelectorAll('.add-to-family-close-button');
+    if (closeButtonsList) {
+        closeButtonsList.forEach((button) => {
+            const closeButtonActions = function () {
+                const addToFamilyDiv = document.querySelector('#add-to-family-div');
+                if (!addToFamilyDiv)
+                    return;
+                addToFamilyDiv.innerHTML = '';
+                addToFamilyDiv.classList.add('d-none');
+            };
+            // Clear existing event listeners.
+            button.removeEventListener('click', closeButtonActions);
+            button.addEventListener('click', closeButtonActions);
+        });
+    }
+    // Add event listener to the form submit button.
+    const addToFamilyForm = document.querySelector('#add-to-family-form');
+    if (addToFamilyForm) {
+        const addToFamilyFormSubmitAction = async function (event) {
+            event.preventDefault();
+            const formData = new FormData(addToFamilyForm);
+            const response = await fetch('/Progeny/AddOtherPersonToFamily', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                // Successfully added to family, refresh the other people and pets list.
+                await getOtherPeopleList();
+                const addToFamilyDiv = document.querySelector('#add-to-family-div');
+                if (addToFamilyDiv) {
+                    addToFamilyDiv.innerHTML = '';
+                    addToFamilyDiv.classList.add('d-none');
+                }
+                return Promise.resolve();
+            }
+            else {
+                console.error('Failed to submit add to family form:', response.statusText);
+                return Promise.reject('Failed to submit add to family form: ' + response.statusText);
+            }
+        };
+        // Clear existing event listeners.
+        addToFamilyForm.removeEventListener('submit', addToFamilyFormSubmitAction);
+        addToFamilyForm.addEventListener('submit', addToFamilyFormSubmitAction);
+    }
 }
 document.addEventListener('DOMContentLoaded', async function () {
     languageId = getCurrentLanguageId();

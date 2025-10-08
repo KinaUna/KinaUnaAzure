@@ -2,8 +2,10 @@
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.FamilyViewModels;
+using KinaUnaWeb.Models.ProgeniesViewModels;
 using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
@@ -13,7 +15,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Models.Family;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -642,6 +643,52 @@ namespace KinaUnaWeb.Controllers
             }
 
             return PartialView("_OtherPeopleElementPartial", baseModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AddOtherPersonToFamily(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, 0, false);
+            if (baseModel.CurrentProgeny == null || baseModel.CurrentProgeny.Id == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            AddProgenyToFamilyViewModel model = new AddProgenyToFamilyViewModel(baseModel);
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
+            model.SetMemberTypeList();
+            return PartialView("_AddOtherPersonToFamilyPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddOtherPersonToFamily([FromForm] AddProgenyToFamilyViewModel model)
+        {
+            Progeny progenyToAddToFamily = await progenyHttpClient.GetProgeny(model.CurrentProgenyId);
+            if (progenyToAddToFamily == null || progenyToAddToFamily.Id == 0)
+            {
+                return NotFound();
+            }
+            Family familyToAddProgenyTo = await familiesHttpClient.GetFamily(model.CurrentFamilyId);
+            if (familyToAddProgenyTo == null || familyToAddProgenyTo.FamilyId == 0)
+            {
+                return NotFound();
+            }
+            if(familyToAddProgenyTo.FamilyPermission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return Unauthorized();
+            }
+            FamilyMember newFamilyMember = new FamilyMember
+            {
+                ProgenyId = progenyToAddToFamily.Id,
+                FamilyId = familyToAddProgenyTo.FamilyId,
+                MemberType = model.MemberType,
+                Email = progenyToAddToFamily.Email,
+                PermissionLevel = PermissionLevel.View,  // Todo: Let user select permission level?
+            };
+            FamilyMember addedFamilyMember = await familiesHttpClient.AddFamilyMember(newFamilyMember);
+
+            return Json(addedFamilyMember);
         }
     }
 }
