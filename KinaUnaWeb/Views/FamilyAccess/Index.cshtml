@@ -25,6 +25,11 @@
                     <i class="material-icons sidebar-icon">lock_person</i> @await LocaleManager.GetTranslation("User Access", PageNames.Family, Model.LanguageId)
                 </a>
             </div>
+            <div class="page-tab">
+                <a class="btn-page-tab leave-page" asp-controller="Progeny" asp-action="OtherPeopleAndPets">
+                    <i class="material-icons sidebar-icon">contacts</i> @await LocaleManager.GetTranslation("Other people/pets", PageNames.Family, Model.LanguageId)
+                </a>
+            </div>
         </div>
     </div>
 </div>

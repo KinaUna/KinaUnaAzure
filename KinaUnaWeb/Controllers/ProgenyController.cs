@@ -13,11 +13,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.Family;
 
 namespace KinaUnaWeb.Controllers
 {
     public class ProgenyController(
         IProgenyHttpClient progenyHttpClient,
+        IFamiliesHttpClient familiesHttpClient,
         IMediaHttpClient mediaHttpClient,
         ImageStore imageStore,
         IUserInfosHttpClient userInfosHttpClient,
@@ -591,6 +593,55 @@ namespace KinaUnaWeb.Controllers
 
 
             return Json(suggestionsList);
+        }
+
+        [HttpGet]
+        public IActionResult OtherPeopleAndPets()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> OtherPeopleAndPetsList()
+        {
+            List<Progeny> allMyProgenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.View);
+            List<Family> myFamilies = await familiesHttpClient.GetMyFamilies();
+
+
+            // Get a list of progenies user has access to, but are not a member of any of the user's families.
+            List<Progeny> otherProgenies = [];
+            foreach (Progeny progeny in allMyProgenies)
+            {
+                bool isMemberOfMyFamily = false;
+                foreach (Family family in myFamilies)
+                {
+                    if (family.FamilyMembers.Any(fm => fm.ProgenyId == progeny.Id))
+                    {
+                        isMemberOfMyFamily = true;
+                        break;
+                    }
+                }
+
+                if (!isMemberOfMyFamily)
+                {
+                    otherProgenies.Add(progeny);
+                }
+            }
+
+            return Json(otherProgenies);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> OtherPeopleElement(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, 0, false);
+            baseModel.CurrentProgeny = await progenyHttpClient.GetProgeny(progenyId);
+            if (baseModel.CurrentProgeny == null || baseModel.CurrentProgeny.Id == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            return PartialView("_OtherPeopleElementPartial", baseModel);
         }
     }
 }
