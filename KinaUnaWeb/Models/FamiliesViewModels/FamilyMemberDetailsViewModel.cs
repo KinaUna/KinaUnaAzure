@@ -10,6 +10,7 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
         }
 
         public FamilyMember FamilyMember { get; set; } = new();
+        public Family Family { get; set; }
         public bool IsCurrentUserFamilyAdmin { get; set; }
     }
 }

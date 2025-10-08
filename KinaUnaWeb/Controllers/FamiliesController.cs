@@ -112,6 +112,16 @@ namespace KinaUnaWeb.Controllers
                 Family = await familiesHttpClient.GetFamily(familyId)
             };
 
+            if (model.Family == null || model.Family.FamilyId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            if (model.Family.FamilyPermission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
             return PartialView("_EditFamilyPartial", model);
         }
 
@@ -119,6 +129,23 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditFamily([FromForm] Family family)
         {
+            Family existingFamily = await familiesHttpClient.GetFamily(family.FamilyId);
+            if (existingFamily == null || existingFamily.FamilyId == 0)
+            {
+                return NotFound();
+            }
+
+            if (existingFamily.FamilyPermission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return Unauthorized();
+            }
+
+            if (existingFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+            {
+                // Only Admins can change the Admin list.
+                family.Admins = existingFamily.Admins;
+            }
+
             Family updatedFamily = await familiesHttpClient.UpdateFamily(family);
 
             return Json(updatedFamily);
@@ -149,12 +176,12 @@ namespace KinaUnaWeb.Controllers
                 FamilyMember = await familiesHttpClient.GetFamilyMember(familyMemberId)
             };
 
-            Family family = await familiesHttpClient.GetFamily(model.FamilyMember.FamilyId);
-            if (family.IsInAdminList(model.CurrentUser.UserEmail))
+            model.Family = await familiesHttpClient.GetFamily(model.FamilyMember.FamilyId);
+            if (model.Family == null || model.Family.FamilyId == 0 || model.FamilyMember == null || model.FamilyMember.FamilyMemberId == 0)
             {
-                model.IsCurrentUserFamilyAdmin = true;
+                return PartialView("_NotFoundPartial");
             }
-
+            
             return PartialView("_FamilyMemberElementPartial", model);
         }
 
@@ -166,10 +193,10 @@ namespace KinaUnaWeb.Controllers
                 FamilyMember = await familiesHttpClient.GetFamilyMember(familyMemberId)
             };
 
-            Family family = await familiesHttpClient.GetFamily(model.FamilyMember.FamilyId);
-            if (family.IsInAdminList(model.CurrentUser.UserEmail))
+            model.Family = await familiesHttpClient.GetFamily(model.FamilyMember.FamilyId);
+            if (model.Family == null || model.Family.FamilyId == 0 || model.FamilyMember == null || model.FamilyMember.FamilyMemberId == 0)
             {
-                model.IsCurrentUserFamilyAdmin = true;
+                return PartialView("_NotFoundPartial");
             }
 
             return PartialView("_FamilyMemberDetailsPartial", model);

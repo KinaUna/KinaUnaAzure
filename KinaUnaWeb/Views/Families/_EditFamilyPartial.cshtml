@@ -1,9 +1,10 @@
 ﻿@using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.FamiliesViewModels.FamilyDetailsViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string pageTitle = await LocaleManager.GetTranslation("Add Family", PageNames.Family, Model.LanguageId);
+    string pageTitle = await LocaleManager.GetTranslation("Edit Family", PageNames.Family, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body modal-content item-details-content">
@@ -46,12 +47,15 @@
 
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Family.Admins" class="col-auto control-label">@await LocaleManager.GetTranslation("Administrators", PageNames.Contacts, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <input id="admins-input" asp-for="Family.Admins" class="form-control" value="@Model.Family.Admins" placeholder="@await LocaleManager.GetTranslation("email addresses of administrators (comma separated)...", PageNames.Family, Model.LanguageId)" />
+            @if (Model.Family.FamilyPermission.PermissionLevel >= PermissionLevel.Admin)
+            {
+                <div class="form-group">
+                    <label asp-for="Family.Admins" class="col-auto control-label">@await LocaleManager.GetTranslation("Administrators", PageNames.Contacts, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <input id="admins-input" asp-for="Family.Admins" class="form-control" value="@Model.Family.Admins" placeholder="@await LocaleManager.GetTranslation("email addresses of administrators (comma separated)...", PageNames.Family, Model.LanguageId)"/>
+                    </div>
                 </div>
-            </div>
+            }
             <div class="space-20"></div>
             <div class="form-group">
                 <input asp-for="Family.FamilyId" value="@Model.Family.FamilyId" type="hidden" />
