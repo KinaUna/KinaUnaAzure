@@ -333,7 +333,7 @@ function addCardButtonsEventListners(): void {
                         }
                         addKanbanItemForm.removeEventListener('submit', addKanbanItemFormFunction);
                         addKanbanItemForm.addEventListener('submit', addKanbanItemFormFunction);
-                        initializeAddEditKanbanItem('kanban-item-details-div');
+                        initializeAddEditKanbanItem('kanban-item-details-div', '0');
                     }
                 }
             }

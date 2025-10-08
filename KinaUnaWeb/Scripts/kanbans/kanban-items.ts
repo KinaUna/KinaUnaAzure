@@ -516,9 +516,15 @@ export async function removeKanbanItemFunction(kanbanItemId: string): Promise<vo
 
         const removeKanbanItemForm = removeKanbanItemModalDiv.querySelector<HTMLFormElement>('#remove-kanban-card-form');
         if (removeKanbanItemForm) {
+            const kanbanItem = getKanbanItems().find(k => k.kanbanItemId.toString() === kanbanItemId);
+            let kanbanItemTodoItemId = 0;
+            if (kanbanItem) {
+                kanbanItemTodoItemId = kanbanItem.todoItemId;
+            }
             const removeKanbanItemFormFunction = async function (event: Event) {
                 event.preventDefault();
                 startFullPageSpinner();
+                
                 const formData = new FormData(removeKanbanItemForm);
                 const url = '/KanbanItems/RemoveKanbanItem';
                 await fetch(url, {
@@ -549,7 +555,7 @@ export async function removeKanbanItemFunction(kanbanItemId: string): Promise<vo
             }
             removeKanbanItemForm.removeEventListener('submit', removeKanbanItemFormFunction);
             removeKanbanItemForm.addEventListener('submit', removeKanbanItemFormFunction);
-            initializeAddEditKanbanItem('kanban-item-details-div');
+            initializeAddEditKanbanItem('kanban-item-details-div', kanbanItemTodoItemId.toString());
         }
     }
 
@@ -585,6 +591,11 @@ export async function editKanbanItemFunction(kanbanItemId: string): Promise<void
 
         const editKanbanItemForm = editKanbanItemModalDiv.querySelector<HTMLFormElement>('#save-kanban-card-form');
         if (editKanbanItemForm) {
+            const kanbanItem = getKanbanItems().find(k => k.kanbanItemId.toString() === kanbanItemId);
+            let kanbanItemTodoItemId = 0;
+            if (kanbanItem) {
+                kanbanItemTodoItemId = kanbanItem.todoItemId;
+            }
             const editKanbanItemFormFunction = async function (event: Event) {
                 event.preventDefault();
                 startFullPageSpinner();
@@ -620,7 +631,7 @@ export async function editKanbanItemFunction(kanbanItemId: string): Promise<void
             }
             editKanbanItemForm.removeEventListener('submit', editKanbanItemFormFunction);
             editKanbanItemForm.addEventListener('submit', editKanbanItemFormFunction);
-            initializeAddEditKanbanItem('kanban-item-details-div');
+            initializeAddEditKanbanItem('kanban-item-details-div', kanbanItemTodoItemId.toString());
         }
     }
 

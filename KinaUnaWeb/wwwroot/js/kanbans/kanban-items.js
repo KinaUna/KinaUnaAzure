@@ -483,6 +483,11 @@ export async function removeKanbanItemFunction(kanbanItemId) {
         }
         const removeKanbanItemForm = removeKanbanItemModalDiv.querySelector('#remove-kanban-card-form');
         if (removeKanbanItemForm) {
+            const kanbanItem = getKanbanItems().find(k => k.kanbanItemId.toString() === kanbanItemId);
+            let kanbanItemTodoItemId = 0;
+            if (kanbanItem) {
+                kanbanItemTodoItemId = kanbanItem.todoItemId;
+            }
             const removeKanbanItemFormFunction = async function (event) {
                 event.preventDefault();
                 startFullPageSpinner();
@@ -515,7 +520,7 @@ export async function removeKanbanItemFunction(kanbanItemId) {
             };
             removeKanbanItemForm.removeEventListener('submit', removeKanbanItemFormFunction);
             removeKanbanItemForm.addEventListener('submit', removeKanbanItemFormFunction);
-            initializeAddEditKanbanItem('kanban-item-details-div');
+            initializeAddEditKanbanItem('kanban-item-details-div', kanbanItemTodoItemId.toString());
         }
     }
     return new Promise(function (resolve, reject) {
@@ -545,6 +550,11 @@ export async function editKanbanItemFunction(kanbanItemId) {
         }
         const editKanbanItemForm = editKanbanItemModalDiv.querySelector('#save-kanban-card-form');
         if (editKanbanItemForm) {
+            const kanbanItem = getKanbanItems().find(k => k.kanbanItemId.toString() === kanbanItemId);
+            let kanbanItemTodoItemId = 0;
+            if (kanbanItem) {
+                kanbanItemTodoItemId = kanbanItem.todoItemId;
+            }
             const editKanbanItemFormFunction = async function (event) {
                 event.preventDefault();
                 startFullPageSpinner();
@@ -580,7 +590,7 @@ export async function editKanbanItemFunction(kanbanItemId) {
             };
             editKanbanItemForm.removeEventListener('submit', editKanbanItemFormFunction);
             editKanbanItemForm.addEventListener('submit', editKanbanItemFormFunction);
-            initializeAddEditKanbanItem('kanban-item-details-div');
+            initializeAddEditKanbanItem('kanban-item-details-div', kanbanItemTodoItemId.toString());
         }
     }
     return new Promise(function (resolve, reject) {
