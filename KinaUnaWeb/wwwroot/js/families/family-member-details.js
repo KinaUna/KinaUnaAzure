@@ -1,5 +1,5 @@
-import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9.js";
+import { displayEditFamilyMemberModal } from "./add-edit-family-member.js";
 export async function displayFamilyMemberDetails(familyMemberId) {
     const response = await fetch('/Families/FamilyMemberDetails?familyMemberId=' + familyMemberId, {
         method: 'GET',
@@ -15,8 +15,8 @@ export async function displayFamilyMemberDetails(familyMemberId) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             setFamilyMemberDetailsEventListeners(familyMemberId);
-            setEditItemButtonEventListeners();
-            setDeleteItemButtonEventListeners();
+            setFamilyMemberEditItemButtonEventListeners(familyMemberId);
+            setFamilyMemberDeleteItemButtonEventListeners(familyMemberId);
             return Promise.resolve();
         }
         else {
@@ -26,6 +26,30 @@ export async function displayFamilyMemberDetails(familyMemberId) {
     else {
         console.error('Failed to fetch family member details:', response.statusText);
         return Promise.reject('Failed to fetch family member details: ' + response.statusText);
+    }
+}
+function setFamilyMemberEditItemButtonEventListeners(familyMemberId) {
+    const editButton = document.querySelector('#edit-family-member-button-' + familyMemberId);
+    if (editButton) {
+        const editButtonAction = async function (event) {
+            event.preventDefault();
+            await displayEditFamilyMemberModal(familyMemberId.toString());
+        };
+        // Clear existing event listeners.
+        editButton.removeEventListener('click', editButtonAction);
+        editButton.addEventListener('click', editButtonAction);
+    }
+}
+function setFamilyMemberDeleteItemButtonEventListeners(familyMemberId) {
+    const deleteButton = document.querySelector('#delete-family-member-button-' + familyMemberId);
+    if (deleteButton) {
+        const deleteButtonAction = async function (event) {
+            event.preventDefault();
+            // await displayDeleteFamilyMemberModal(familyMemberId.toString());
+        };
+        // Clear existing event listeners.
+        deleteButton.removeEventListener('click', deleteButtonAction);
+        deleteButton.addEventListener('click', deleteButtonAction);
     }
 }
 function setFamilyMemberDetailsEventListeners(familyMemberId) {

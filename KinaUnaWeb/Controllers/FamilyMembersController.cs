@@ -1,16 +1,20 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.FamiliesViewModels;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Controllers
 {
     public class FamilyMembersController(
         IFamiliesHttpClient familiesHttpClient,
+        IProgenyHttpClient progenyHttpClient,
         IViewModelSetupService viewModelSetupService) : Controller
     {
         public async Task<IActionResult> Index()
@@ -63,21 +67,169 @@ namespace KinaUnaWeb.Controllers
             return PartialView("_FamilyMemberDetailsPartial", model);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> AddFamilyMember(int familyId)
+        {
+            Family family = await familiesHttpClient.GetFamily(familyId);
+            if (family == null || family.FamilyId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, familyId, false);
+            FamilyMemberDetailsViewModel model = new(baseModel)
+            {
+                FamilyMember = new FamilyMember { FamilyId = familyId },
+                Family = family
+            };
 
+            List<Progeny> progeniesNotInFamily = [];
+            List<FamilyMember> familyMembers = family.FamilyMembers;
+            List<int> progenyIdsInFamily = [];
+            foreach (FamilyMember familyMember in familyMembers)
+            {
+                if (familyMember.ProgenyId > 0 && !progenyIdsInFamily.Contains(familyMember.ProgenyId))
+                {
+                    progenyIdsInFamily.Add(familyMember.ProgenyId);
+                }
+            }
+
+            List<Progeny> allProgenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.View);
+            foreach (Progeny progeny in allProgenies)
+            {
+                if (!progenyIdsInFamily.Contains(progeny.Id))
+                {
+                    progeniesNotInFamily.Add(progeny);
+                }
+            }
+
+            model.ProgenyList = [];
+            model.ProgenyList.Add(new SelectListItem()
+            {
+                Text = "New family member",
+                Value = "0"
+            });
+            foreach (Progeny progeny in progeniesNotInFamily)
+            {
+                SelectListItem item = new()
+                {
+                    Text = progeny.NickName,
+                    Value = progeny.Id.ToString()
+                };
+                model.ProgenyList.Add(item);
+            }
+
+
+            return PartialView("_AddFamilyMemberPartial", model);
+        }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<FamilyMember> AddFamilyMember([FromForm] FamilyMember familyMember)
+        public async Task<FamilyMember> AddFamilyMember([FromForm] FamilyMemberDetailsViewModel model)
         {
+            Progeny progeny;
+            if (model.CurrentProgenyId == 0)
+            {
+                progeny = await progenyHttpClient.AddProgeny(model.CurrentProgeny);
+                model.CurrentProgenyId = progeny.Id;
+            }
+            else
+            {
+                progeny = await progenyHttpClient.GetProgeny(model.CurrentProgenyId);
+            } 
+
+            FamilyMember familyMember = new FamilyMember()
+            {
+                FamilyId = model.CurrentFamilyId,
+                ProgenyId = model.CurrentProgenyId,
+                MemberType = model.MemberType,
+                Email = progeny.Email,
+                PermissionLevel = model.PermissionLevel
+            };
             FamilyMember addedFamilyMember = await familiesHttpClient.AddFamilyMember(familyMember);
             return addedFamilyMember;
         }
 
+        [HttpGet("[action]/{familyMemberId:int}")]
+        public async Task<IActionResult> UpdateFamilyMember(int familyMemberId)
+        {
+            FamilyMember familyMember = await familiesHttpClient.GetFamilyMember(familyMemberId);
+            if (familyMember == null || familyMember.FamilyMemberId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            Family family = await familiesHttpClient.GetFamily(familyMember.FamilyId);
+            if (family == null || family.FamilyId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            if (family.FamilyPermission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), familyMember.ProgenyId, family.FamilyId, false);
+
+            FamilyMemberDetailsViewModel model = new(baseModel)
+            {
+                FamilyMember = familyMember,
+                Family = family
+            };
+
+            model.SetMemberTypeList();
+            model.SetPermissionsLevelsList();
+            
+            return PartialView("_UpdateFamilyMemberPartial", model);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<FamilyMember> UpdateFamilyMember([FromForm] FamilyMember familyMember)
+        public async Task<IActionResult> UpdateFamilyMember([FromForm] FamilyMemberDetailsViewModel model)
         {
+            FamilyMember familyMember = await familiesHttpClient.GetFamilyMember(model.FamilyMember.FamilyMemberId);
+            if (familyMember == null || familyMember.FamilyMemberId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            Family family = await familiesHttpClient.GetFamily(familyMember.FamilyId);
+            if (family == null || family.FamilyId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (family.FamilyPermission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+            Progeny progeny = await progenyHttpClient.GetProgeny(model.CurrentProgenyId);
+            if (progeny == null || progeny.Id == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            if (progeny.NickName != model.CurrentProgeny.NickName
+                || progeny.Name != model.CurrentProgeny.Name
+                || progeny.Email != model.CurrentProgeny.Email
+                || progeny.BirthDay != model.CurrentProgeny.BirthDay
+                || progeny.Admins != model.CurrentProgeny.Admins 
+                || progeny.TimeZone != model.CurrentProgeny.TimeZone)
+            {
+                progeny.NickName = model.CurrentProgeny.NickName;
+                progeny.Name = model.CurrentProgeny.Name;
+                progeny.Email = model.CurrentProgeny.Email;
+                progeny.BirthDay = model.CurrentProgeny.BirthDay;
+                progeny.Admins = model.CurrentProgeny.Admins;
+                progeny.TimeZone = model.CurrentProgeny.TimeZone;
+                // Todo: Profile picture.
+                await progenyHttpClient.UpdateProgeny(progeny);
+                
+            }
+
+            familyMember.MemberType = model.MemberType;
+            familyMember.PermissionLevel = model.PermissionLevel;
+            
             FamilyMember updatedFamilyMember = await familiesHttpClient.UpdateFamilyMember(familyMember);
-            return updatedFamilyMember;
+            
+            return Json(updatedFamilyMember);
         }
 
         [HttpPost]

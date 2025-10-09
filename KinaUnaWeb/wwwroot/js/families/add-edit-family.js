@@ -12,7 +12,7 @@ export async function displayAddFamilyModal() {
         }
     });
     if (response.ok) {
-        const familyDetailsDiv = document.querySelector('#item-details-div');
+        const familyDetailsDiv = document.querySelector('#family-details-div');
         if (familyDetailsDiv) {
             const familyDetailsHTML = await response.text();
             familyDetailsDiv.innerHTML = '';
@@ -42,7 +42,7 @@ function addAddFamilyModalEventListeners() {
         const closeButtonClickedAction = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            const familyDetailsDiv = document.querySelector('#item-details-div');
+            const familyDetailsDiv = document.querySelector('#family-details-div');
             if (familyDetailsDiv) {
                 familyDetailsDiv.innerHTML = '';
                 familyDetailsDiv.classList.add('d-none');
@@ -64,7 +64,7 @@ function addAddFamilyModalEventListeners() {
                 body: formData
             });
             if (response.ok) {
-                const familyDetailsDiv = document.querySelector('#item-details-div');
+                const familyDetailsDiv = document.querySelector('#family-details-div');
                 if (familyDetailsDiv) {
                     familyDetailsDiv.innerHTML = '';
                     familyDetailsDiv.classList.add('d-none');
@@ -93,7 +93,7 @@ export async function displayEditFamilyModal(familyId) {
         }
     });
     if (response.ok) {
-        const familyDetailsDiv = document.querySelector('#item-details-div');
+        const familyDetailsDiv = document.querySelector('#family-details-div');
         if (familyDetailsDiv) {
             const familyDetailsHTML = await response.text();
             familyDetailsDiv.innerHTML = '';
@@ -123,7 +123,7 @@ function addEditFamilyModalEventListeners() {
         const closeButtonClickedAction = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            const familyDetailsDiv = document.querySelector('#item-details-div');
+            const familyDetailsDiv = document.querySelector('#family-details-div');
             if (familyDetailsDiv) {
                 familyDetailsDiv.innerHTML = '';
                 familyDetailsDiv.classList.add('d-none');
@@ -145,7 +145,7 @@ function addEditFamilyModalEventListeners() {
                 body: formData
             });
             if (response.ok) {
-                const familyDetailsDiv = document.querySelector('#item-details-div');
+                const familyDetailsDiv = document.querySelector('#family-details-div');
                 if (familyDetailsDiv) {
                     familyDetailsDiv.innerHTML = '';
                     familyDetailsDiv.classList.add('d-none');

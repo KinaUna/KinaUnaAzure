@@ -1,5 +1,6 @@
 ﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.FamiliesViewModels.FamilyMemberDetailsViewModel
 @inject ILocaleManager LocaleManager
@@ -24,7 +25,6 @@
                         <span>@Model.FamilyMember.Email</span>
                     }
                 }
-                
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
         </div>
@@ -34,8 +34,6 @@
         </div>
     </div>
 </div>
-
-
 <div class="col-12 col-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
     <div class="card-compact bg-todos todo-item m-1" data-family-member-id="@Model.FamilyMember.FamilyMemberId" align="left">
         @if (Model.FamilyMember.FamilyMemberId == 0)
@@ -46,8 +44,14 @@
         {
             <div class="row m-0">
                 <div class="col-12">
-                    
-
+                    @if (Model.FamilyMember.PermissionLevel >= PermissionLevel.Edit)
+                    {
+                        <button id="edit-family-member-button-@Model.FamilyMember.FamilyMemberId">Edit</button>
+                        @if (Model.FamilyMember.PermissionLevel >= PermissionLevel.Admin)
+                        {
+                            <button id="delete-family-member-button-@Model.FamilyMember.FamilyMemberId">Delete</button>
+                        }
+                    }
                 </div>
             </div>
         }

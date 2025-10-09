@@ -1,6 +1,7 @@
 ﻿import { getCurrentLanguageId } from '../data-tools-v9.js';
 import { getTranslation } from '../localization-v9.js';
 import { Family, FamilyMember } from '../page-models-v9.js';
+import { displayAddFamilyMemberModal } from './add-edit-family-member.js';
 import { displayFamilyMemberDetails } from './family-member-details.js';
 
 
@@ -85,7 +86,21 @@ function addFamilyMemberElementEventListeners(familyMemberId: number): void {
     }
 }
 
-async function RenderAllFamilies(): Promise<void> {
+function addAddFamilyMemberButtonEventListeners() {
+    const addFamilyMemberButton = document.querySelector<HTMLButtonElement>('#add-new-family-member-button');
+    if (addFamilyMemberButton) {
+        const addFamilyMemberButtonClickedAction = async function (event: MouseEvent): Promise<void> {
+            event.preventDefault();
+            // Show add family member modal
+            await displayAddFamilyMemberModal();
+            return Promise.resolve();
+        };
+        addFamilyMemberButton.removeEventListener('click', addFamilyMemberButtonClickedAction);
+        addFamilyMemberButton.addEventListener('click', addFamilyMemberButtonClickedAction);
+    }
+}
+
+export async function RenderAllFamilies(): Promise<void> {
     for (const family of familiesList) {
         await RenderFamilyMembers(family);
     }
@@ -94,6 +109,8 @@ async function RenderAllFamilies(): Promise<void> {
 
 document.addEventListener('DOMContentLoaded', async function () {
     languageId = getCurrentLanguageId();
+
+    addAddFamilyMemberButtonEventListeners();
 
     await GetFamiliesList();
     await RenderAllFamilies();

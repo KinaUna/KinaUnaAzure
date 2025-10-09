@@ -16,7 +16,7 @@ export async function displayAddFamilyModal(): Promise<void> {
 
     });
     if (response.ok) {
-        const familyDetailsDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+        const familyDetailsDiv = document.querySelector<HTMLDivElement>('#family-details-div');
         if (familyDetailsDiv) {
             const familyDetailsHTML = await response.text();
             familyDetailsDiv.innerHTML = '';
@@ -49,7 +49,7 @@ function addAddFamilyModalEventListeners(): void {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
-            const familyDetailsDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+            const familyDetailsDiv = document.querySelector<HTMLDivElement>('#family-details-div');
             if (familyDetailsDiv) {
                 familyDetailsDiv.innerHTML = '';
                 familyDetailsDiv.classList.add('d-none');
@@ -72,7 +72,7 @@ function addAddFamilyModalEventListeners(): void {
                 body: formData
             });
             if (response.ok) {
-                const familyDetailsDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+                const familyDetailsDiv = document.querySelector<HTMLDivElement>('#family-details-div');
                 if (familyDetailsDiv) {
                     familyDetailsDiv.innerHTML = '';
                     familyDetailsDiv.classList.add('d-none');
@@ -104,7 +104,7 @@ export async function displayEditFamilyModal(familyId: number): Promise<void> {
 
     });
     if (response.ok) {
-        const familyDetailsDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+        const familyDetailsDiv = document.querySelector<HTMLDivElement>('#family-details-div');
         if (familyDetailsDiv) {
             const familyDetailsHTML = await response.text();
             familyDetailsDiv.innerHTML = '';
@@ -137,7 +137,7 @@ function addEditFamilyModalEventListeners(): void {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
-            const familyDetailsDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+            const familyDetailsDiv = document.querySelector<HTMLDivElement>('#family-details-div');
             if (familyDetailsDiv) {
                 familyDetailsDiv.innerHTML = '';
                 familyDetailsDiv.classList.add('d-none');
@@ -160,7 +160,7 @@ function addEditFamilyModalEventListeners(): void {
                 body: formData
             });
             if (response.ok) {
-                const familyDetailsDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+                const familyDetailsDiv = document.querySelector<HTMLDivElement>('#family-details-div');
                 if (familyDetailsDiv) {
                     familyDetailsDiv.innerHTML = '';
                     familyDetailsDiv.classList.add('d-none');

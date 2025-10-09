@@ -107,7 +107,7 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             }
             else
             {
-                if (await accessManagementService.HasFamilyPermission(familyMember.FamilyId, currentUserInfo, PermissionLevel.Edit))
+                if (await accessManagementService.HasFamilyPermission(familyMember.FamilyId, currentUserInfo, PermissionLevel.Add))
                 {
                     allowAdd = true;
                 }
@@ -228,15 +228,46 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                 return null;
             }
 
+            bool emailChanged = false;
+            familyMember.Email = familyMember.Email.Trim();
+            if (familyMember.Email.ToUpper() != existingFamilyMember.Email.ToUpper())
+            {
+                emailChanged = true;
+
+                if (!string.IsNullOrWhiteSpace(familyMember.Email))
+                {
+                    UserInfo familyMemberUserInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == familyMember.Email.ToUpper());
+                    if (familyMemberUserInfo != null)
+                    {
+                        familyMember.UserId = familyMemberUserInfo.UserId;
+                    }
+                }
+            }
+
+            // Update permission if permission level or email changed.
+            if (existingFamilyMember.PermissionLevel != familyMember.PermissionLevel || emailChanged)
+            {
+                List<FamilyPermission> familyPermissions = await accessManagementService.GetFamilyPermissionsList(existingFamilyMember.FamilyId, currentUserInfo);
+                FamilyPermission existingFamilyPermission = familyPermissions.SingleOrDefault(fp => fp.Email == existingFamilyMember.Email);
+                if (existingFamilyPermission != null)
+                {
+                    existingFamilyPermission.PermissionLevel = familyMember.PermissionLevel;
+                    if (emailChanged)
+                    {
+                        existingFamilyPermission.Email = familyMember.Email;
+                    }
+                    await accessManagementService.UpdateFamilyPermission(existingFamilyPermission, currentUserInfo);
+                }
+            }
+
             FamilyAuditLog logEntry = await familyAuditLogService.AddFamilyMemberUpdatedAuditLogEntry(existingFamilyMember, currentUserInfo);
 
-            existingFamilyMember.UserId = familyMember.UserId;
             existingFamilyMember.MemberType = familyMember.MemberType;
             existingFamilyMember.Email = familyMember.Email;
+            existingFamilyMember.UserId = familyMember.UserId;
             existingFamilyMember.ModifiedBy = currentUserInfo.UserId;
             existingFamilyMember.ModifiedTime = DateTime.UtcNow;
-            existingFamilyMember.ProgenyId = familyMember.ProgenyId;
-            existingFamilyMember.FamilyId = familyMember.FamilyId;
+            existingFamilyMember.PermissionLevel = familyMember.PermissionLevel;
 
             progenyDbContext.FamilyMembersDb.Update(existingFamilyMember);
             await progenyDbContext.SaveChangesAsync();
