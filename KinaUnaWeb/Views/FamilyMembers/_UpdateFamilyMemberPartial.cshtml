@@ -110,7 +110,7 @@
                         <input type="hidden" asp-for="FamilyMember.FamilyMemberId" value="@Model.FamilyMember.FamilyMemberId"/>
                         <div class="col">
                             <button id="save-family-member-submit-button" type="submit" class="btn btn-success">@addToFamilyString</button>
-                            <button type="button" class="btn btn-danger">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
+                            <button type="button" class="btn btn-danger add-family-member-close-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
                         </div>
                         <div id="validation-errors-div" class="col-auto">
                             <div id="name-required-div" class="d-none text-warning">

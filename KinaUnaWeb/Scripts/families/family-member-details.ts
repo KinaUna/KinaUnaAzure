@@ -49,7 +49,7 @@ function setFamilyMemberDeleteItemButtonEventListeners(familyMemberId: number) {
     if (deleteButton) {
         const deleteButtonAction = async function (event: MouseEvent): Promise<void> {
             event.preventDefault();
-            // await displayDeleteFamilyMemberModal(familyMemberId.toString());
+            await displayDeleteFamilyMemberModal(familyMemberId.toString());
         }
         // Clear existing event listeners.
         deleteButton.removeEventListener('click', deleteButtonAction);

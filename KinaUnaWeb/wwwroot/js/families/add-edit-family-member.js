@@ -107,7 +107,7 @@ export async function displayEditFamilyMemberModal(familyMemberId) {
             familyDetailsDiv.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
             familyDetailsDiv.classList.remove('d-none');
-            addAddFamilyMemberModalEventListeners();
+            addEditFamilyMemberModalEventListeners();
             await initializeAddEditFamilyMember(familyMemberId);
         }
         else {
@@ -168,6 +168,88 @@ function addEditFamilyMemberModalEventListeners() {
         };
         editFamilyMemberForm.removeEventListener('submit', editFamilyMemberFormSubmitAction);
         editFamilyMemberForm.addEventListener('submit', editFamilyMemberFormSubmitAction);
+    }
+}
+export async function displayDeleteFamilyMemberModal(familyMemberId) {
+    startFullPageSpinner();
+    const response = await fetch('/FamilyMembers/DeleteFamilyMember/' + familyMemberId, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    if (response.ok) {
+        const familyDetailsDiv = document.querySelector('#family-details-div');
+        if (familyDetailsDiv) {
+            const familyDetailsHTML = await response.text();
+            familyDetailsDiv.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = familyDetailsHTML;
+            familyDetailsDiv.appendChild(fullScreenOverlay);
+            hideBodyScrollbars();
+            familyDetailsDiv.classList.remove('d-none');
+            addDeleteFamilyMemberModalEventListeners();
+            await initializeAddEditFamilyMember(familyMemberId);
+        }
+        else {
+            return Promise.reject('Family details div not found in the document.');
+        }
+    }
+    else {
+        console.error('Failed to fetch edit family element:', response.statusText);
+        return Promise.reject('Failed to fetch edit family element: ' + response.statusText);
+    }
+    stopFullPageSpinner();
+    return Promise.resolve();
+}
+function addDeleteFamilyMemberModalEventListeners() {
+    const closeButtonsList = document.querySelectorAll('.add-family-member-close-button');
+    if (closeButtonsList) {
+        closeButtonsList.forEach((button) => {
+            const closeButtonActions = function () {
+                const familyDetailsDiv = document.querySelector('#family-details-div');
+                if (!familyDetailsDiv)
+                    return;
+                familyDetailsDiv.innerHTML = '';
+                familyDetailsDiv.classList.add('d-none');
+                hideBodyScrollbars();
+            };
+            // Clear existing event listeners.
+            button.removeEventListener('click', closeButtonActions);
+            button.addEventListener('click', closeButtonActions);
+        });
+    }
+    const deleteFamilyMemberForm = document.querySelector('#delete-family-member-form');
+    if (deleteFamilyMemberForm) {
+        const deleteFamilyMemberFormSubmitAction = async function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            startFullPageSpinner();
+            const formData = new FormData(deleteFamilyMemberForm);
+            const response = await fetch('/FamilyMembers/DeleteFamilyMember', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                const familyDetailsDiv = document.querySelector('#family-details-div');
+                if (familyDetailsDiv) {
+                    familyDetailsDiv.innerHTML = '';
+                    familyDetailsDiv.classList.add('d-none');
+                    document.body.style.overflow = 'auto';
+                    // Refresh the families list on the main page.
+                    await RenderAllFamilies();
+                }
+            }
+            else {
+                console.error('Failed to delete family member:', response.statusText);
+                return Promise.reject('Failed to delete family member: ' + response.statusText);
+            }
+            stopFullPageSpinner();
+            return Promise.resolve();
+        };
+        deleteFamilyMemberForm.removeEventListener('submit', deleteFamilyMemberFormSubmitAction);
+        deleteFamilyMemberForm.addEventListener('submit', deleteFamilyMemberFormSubmitAction);
     }
 }
 /**
