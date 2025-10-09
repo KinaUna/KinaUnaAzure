@@ -44,13 +44,16 @@
             <i class="material-icons kinauna-icon-medium" style="font-size: 32px">family_restroom</i> @family.Name
         </div>
         <div class="col-12 h5">Group permissions</div>
+        <div class="col-12">
+            <button class="add-group-button" data-progeny-id="0" data-family-id="@family.FamilyId">Add new group</button>
+        </div>
         @foreach (UserGroup userGroup in Model.UserGroups)
         {
             if (userGroup.FamilyId == family.FamilyId)
             {
                 <div class="col-12">
                     <span>Group name: @userGroup.Name</span><span>Permission: @userGroup.PermissionLevel.ToString()</span>
-                    <button data-add-member-to-group-id="@userGroup.UserGroupId">Add member</button>
+                    <button class="add-group-member-button" data-group-id="@userGroup.UserGroupId">Add member</button>
                 </div>
                 <div class="col-12">
                     Members:
@@ -65,7 +68,8 @@
                                 }
                             </div>
                             <div class="col-12">
-                                <button data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">Edit</button><button data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">Delete</button>
+                                <button class="edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">Edit</button>
+                                <button class="delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">Delete</button>
                             </div>
                         }
                     </div>
@@ -86,7 +90,8 @@
                     }
                 </div>
                 <div class="col-12">
-                    <button data-edit-user-family-permission-id="@familyPermission.FamilyPermissionId">Edit</button><button data-delete-user-family-permission-id="@familyPermission.FamilyPermissionId">Delete</button>
+                    <button class="edit-user-family-permission-button" data-edit-user-family-permission-id="@familyPermission.FamilyPermissionId">Edit</button>
+                    <button class="delete-user-family-permission-button" data-delete-user-family-permission-id="@familyPermission.FamilyPermissionId">Delete</button>
                 </div>
             }
         }
@@ -102,13 +107,16 @@
             <i class="material-icons kinauna-icon-medium" style="font-size: 32px">family_restroom</i> @progeny.NickName
         </div>
         <div class="col-12 h5">Group permissions</div>
+        <div class="col-12">
+            <button class="add-group-button" data-progeny-id="@progeny.Id" data-family-id="0">Add new group</button>
+        </div>
         @foreach (UserGroup userGroup in Model.UserGroups)
         {
             if (userGroup.ProgenyId == progeny.Id)
             {
                 <div class="col-12">
                     <span>Group name: @userGroup.Name</span><span>Permission: @userGroup.PermissionLevel.ToString()</span>
-                    <button data-add-member-to-group-id="@userGroup.UserGroupId">Add member</button>
+                    <button class="add-group-member-button" data-group-id="@userGroup.UserGroupId">Add member</button>
                 </div>
                 <div class="col-12">
                     Members:
@@ -123,7 +131,8 @@
                                 }
                             </div>
                             <div class="col-12">
-                                <button data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">Edit</button><button data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">Delete</button>
+                                <button class="edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">Edit</button>
+                                <button class="delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">Delete</button>
                             </div>
                         }
                     </div>
@@ -144,7 +153,8 @@
                     }
                 </div>
                 <div class="col-12">
-                    <button data-edit-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId">Edit</button><button data-delete-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId">Delete</button>
+                    <button class="edit-user-progeny-permission-button" data-edit-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId">Edit</button>
+                    <button class="delete-user-progeny-permission-button" data-delete-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId">Delete</button>
                 </div>
             }
         }
