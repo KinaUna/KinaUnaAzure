@@ -232,11 +232,52 @@ namespace KinaUnaWeb.Controllers
             return Json(updatedFamilyMember);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpGet("[action]/{familyMemberId:int}")]
         public async Task<IActionResult> DeleteFamilyMember(int familyMemberId)
         {
-            bool result = await familiesHttpClient.DeleteFamilyMember(familyMemberId);
+            FamilyMember familyMember = await familiesHttpClient.GetFamilyMember(familyMemberId);
+            if (familyMember == null || familyMember.FamilyMemberId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            Family family = await familiesHttpClient.GetFamily(familyMember.FamilyId);
+            if (family == null || family.FamilyId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (family.FamilyPermission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), familyMember.ProgenyId, family.FamilyId, false);
+            FamilyMemberDetailsViewModel model = new(baseModel)
+            {
+                FamilyMember = familyMember,
+                Family = family
+            };
+            return PartialView("_DeleteFamilyMemberPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteFamilyMember([FromForm] FamilyMemberDetailsViewModel model)
+        {
+            FamilyMember familyMember = await familiesHttpClient.GetFamilyMember(model.FamilyMember.FamilyMemberId);
+            if (familyMember == null || familyMember.FamilyMemberId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            Family family = await familiesHttpClient.GetFamily(familyMember.FamilyId);
+            if (family == null || family.FamilyId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (family.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+            
+            bool result = await familiesHttpClient.DeleteFamilyMember(model.FamilyMember.FamilyMemberId);
             return Json(result);
         }
     }
