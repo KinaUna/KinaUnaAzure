@@ -30,14 +30,18 @@ namespace KinaUnaWeb.Controllers
             {
                 List<UserGroup> userGroupsList = await userGroupsHttpClient.GetUserGroupsForFamily(family.FamilyId);
                 model.UserGroups.AddRange(userGroupsList);
+                List<FamilyPermission> familyPermissions = await familiesHttpClient.GetFamilyPermissionsList(family.FamilyId);
+                model.FamilyPermissions.AddRange(familyPermissions);
             }
 
             foreach (Progeny progeny in model.Progenies)
             {
                 List<UserGroup> userGroupsList = await userGroupsHttpClient.GetUserGroupsForProgeny(progeny.Id);
                 model.UserGroups.AddRange(userGroupsList);
+                List<ProgenyPermission> progenyPermissions = await progenyHttpClient.GetProgenyPermissionsList(progeny.Id);
+                model.ProgenyPermissions.AddRange(progenyPermissions);
             }
-
+            
             return View(model);
         }
     }

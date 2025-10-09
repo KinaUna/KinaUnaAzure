@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models.AccessManagement
 {
@@ -65,5 +66,8 @@ namespace KinaUna.Data.Models.AccessManagement
         /// </summary>
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
+
+        [NotMapped]
+        public UserInfo UserInfo { get; set; } = new();
     }
 }

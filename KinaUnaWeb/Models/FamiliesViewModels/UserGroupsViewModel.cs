@@ -14,6 +14,8 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
         public List<Progeny> Progenies { get; set; } = [];
         public List<Family> Families { get; set; } = [];
         public List<UserGroup> UserGroups { get; set; } = [];
+        public List<FamilyPermission> FamilyPermissions { get; set; } = [];
+        public List<ProgenyPermission> ProgenyPermissions { get; set; } = [];
 
     }
 }

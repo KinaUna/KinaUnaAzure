@@ -111,6 +111,14 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             List<ProgenyPermission> permissions = await accessManagementService.GetProgenyPermissionsList(progenyId, currentUserInfo);
+            foreach (ProgenyPermission progenyPermission in permissions)
+            {
+                if (!string.IsNullOrWhiteSpace(progenyPermission.UserId))
+                {
+                    UserInfo userInfo = await userInfoService.GetUserInfoByUserId(progenyPermission.UserId);
+                    progenyPermission.UserInfo = userInfo;
+                }
+            }
             return permissions;
         }
 
@@ -120,6 +128,14 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             List<FamilyPermission> permissions = await accessManagementService.GetFamilyPermissionsList(familyId, currentUserInfo);
+            foreach (FamilyPermission familyPermission in permissions)
+            {
+                if (!string.IsNullOrWhiteSpace(familyPermission.UserId))
+                {
+                    UserInfo userInfo = await userInfoService.GetUserInfoByUserId(familyPermission.UserId);
+                    familyPermission.UserInfo = userInfo;
+                }
+            }
             return permissions;
         }
     }

@@ -335,7 +335,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 userinfo = await SetUserInfoByUserId(id);
             }
-
+            // Todo: Check if current user should be allowed access.
             return userinfo;
         }
 
