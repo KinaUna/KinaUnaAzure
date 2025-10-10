@@ -114,6 +114,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            model.UserGroup.PermissionLevel = model.PermissionLevel;
             UserGroup newGroup = await userGroupsHttpClient.AddUserGroup(model.UserGroup);
 
             return Json(newGroup);
@@ -151,6 +152,8 @@ namespace KinaUnaWeb.Controllers
                     return Forbid();
                 }
             }
+            model.PermissionLevel = model.UserGroup.PermissionLevel;
+            model.SetPermissionsLevelsList();
 
             return PartialView("_EditGroupPartial", model);
         }
@@ -159,7 +162,18 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditGroup(UserGroupViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.UserGroup.ProgenyId, model.UserGroup.FamilyId, false);
+            UserGroup userGroup = await userGroupsHttpClient.GetUserGroup(model.UserGroup.UserGroupId);
+            if (userGroup == null || userGroup.UserGroupId == 0)
+            {
+                return NotFound();
+            }
+
+            if (userGroup.PermissionLevel < PermissionLevel.Admin)
+            {
+                return Unauthorized();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userGroup.ProgenyId, userGroup.FamilyId, false);
             model.SetBaseProperties(baseModel);
             if (model.CurrentProgenyId > 0)
             {
@@ -177,6 +191,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            model.UserGroup.PermissionLevel = model.PermissionLevel;
             UserGroup updatedGroup = await userGroupsHttpClient.UpdateUserGroup(model.UserGroup);
             return Json(updatedGroup);
         }
@@ -210,6 +225,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            model.PermissionLevel = model.UserGroup.PermissionLevel;
             return PartialView("_DeleteGroupPartial", model);
         }
 
@@ -351,7 +367,15 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            UserGroupMember updatedMember = await userGroupsHttpClient.UpdateUserGroupMember(model.UserGroupMember);
+            UserGroupMember groupMember = await userGroupsHttpClient.GetUserGroupMember(model.UserGroupMember.UserGroupMemberId);
+            if (groupMember == null || groupMember.UserGroupMemberId == 0)
+            {
+                return NotFound();
+            }
+            groupMember.Email = model.UserGroupMember.Email;
+
+            UserGroupMember updatedMember = await userGroupsHttpClient.UpdateUserGroupMember(groupMember);
+
             return Json(updatedMember);
         }
 

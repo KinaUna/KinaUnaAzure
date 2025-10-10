@@ -224,6 +224,41 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             await userGroupAuditLogService.AddUserGroupCreatedAuditLogEntry(userGroup, currentUserInfo);
 
+            // Add permission for the group. 
+            if (userGroup.FamilyId > 0)
+            {
+                FamilyPermission permission = new()
+                {
+                    PermissionLevel = userGroup.PermissionLevel,
+                    CreatedBy = currentUserInfo.UserEmail,
+                    CreatedTime = DateTime.UtcNow,
+                    Email = string.Empty,
+                    FamilyId = userGroup.FamilyId,
+                    GroupId = userGroup.UserGroupId,
+                    ModifiedBy = currentUserInfo.UserEmail,
+                    ModifiedTime = DateTime.UtcNow,
+                    UserId = string.Empty
+                };
+                await accessManagementService.GrantFamilyPermission(permission, currentUserInfo);
+            }
+
+            if (userGroup.ProgenyId > 0)
+            {
+                ProgenyPermission permission = new()
+                {
+                    PermissionLevel = userGroup.PermissionLevel,
+                    CreatedBy = currentUserInfo.UserEmail,
+                    CreatedTime = DateTime.UtcNow,
+                    Email = string.Empty,
+                    ProgenyId = userGroup.ProgenyId,
+                    GroupId = userGroup.UserGroupId,
+                    ModifiedBy = currentUserInfo.UserId,
+                    ModifiedTime = DateTime.UtcNow,
+                    UserId = string.Empty
+                };
+                await accessManagementService.GrantProgenyPermission(permission, currentUserInfo);
+            }
+
             return userGroup;
         }
 
@@ -274,6 +309,31 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             logEntry.EntityAfter = System.Text.Json.JsonSerializer.Serialize(group);
             await userGroupAuditLogService.UpdateUserGroupAuditLogEntry(logEntry);
+            
+            // Update permission level if needed.
+            if (userGroup.FamilyId > 0)
+            {
+                FamilyPermission permission = await accessManagementService.GetFamilyPermissionForGroup(userGroup.FamilyId, userGroup.UserGroupId, currentUserInfo);
+                if (permission.PermissionLevel != userGroup.PermissionLevel)
+                {
+                    permission.PermissionLevel = userGroup.PermissionLevel;
+                    permission.ModifiedBy = currentUserInfo.UserEmail;
+                    permission.ModifiedTime = DateTime.UtcNow;
+                    await accessManagementService.UpdateFamilyPermission(permission, currentUserInfo);
+                }
+            }
+            if (userGroup.ProgenyId > 0)
+            {
+                ProgenyPermission permission = await accessManagementService.GetProgenyPermissionForGroup(userGroup.ProgenyId, userGroup.UserGroupId, currentUserInfo);
+                if (permission.PermissionLevel != userGroup.PermissionLevel)
+                {
+                    permission.PermissionLevel = userGroup.PermissionLevel;
+                    permission.ModifiedBy = currentUserInfo.UserEmail;
+                    permission.ModifiedTime = DateTime.UtcNow;
+                    await accessManagementService.UpdateProgenyPermission(permission, currentUserInfo);
+                }
+            }
+
             return group;
         }
 
@@ -324,6 +384,23 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             await userGroupAuditLogService.AddUserGroupDeletedAuditLogEntry(group, currentUserInfo);
 
+            // Remove permissions for the group.
+            if (group.FamilyId > 0)
+            {
+                FamilyPermission permission = await accessManagementService.GetFamilyPermissionForGroup(group.FamilyId, group.UserGroupId, currentUserInfo);
+                if (permission.GroupId != 0)
+                {
+                    await accessManagementService.RevokeFamilyPermission(permission, currentUserInfo);
+                }
+            }
+            if (group.ProgenyId > 0)
+            {
+                ProgenyPermission permission = await accessManagementService.GetProgenyPermissionForGroup(group.ProgenyId, group.UserGroupId, currentUserInfo);
+                if (permission.GroupId != 0)
+                {
+                    await accessManagementService.RevokeProgenyPermission(permission, currentUserInfo);
+                }
+            }
             return true;
         }
 

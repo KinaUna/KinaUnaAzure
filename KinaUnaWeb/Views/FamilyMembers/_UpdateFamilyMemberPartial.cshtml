@@ -9,6 +9,10 @@
     {
         selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text, PageNames.Family, Model.LanguageId);
     }
+    foreach (SelectListItem selectListItem in Model.PermissionLevelsList)
+    {
+        selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text, PageNames.AccessManagement, Model.LanguageId);
+    }
     Model.ProgenyList.First().Text = await LocaleManager.GetTranslation("New family member", PageNames.Family, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";

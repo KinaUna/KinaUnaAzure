@@ -16,6 +16,7 @@ export async function displayAddGroupMemberModal(groupId) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addAddGroupMemberModalEventListeners();
+            validateInputs();
             return Promise.resolve();
         }
         else {
@@ -42,6 +43,10 @@ function addAddGroupMemberModalEventListeners() {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+    const emailInput = document.getElementById('group-member-email-input');
+    if (emailInput) {
+        emailInput.addEventListener('input', validateInputs);
     }
     const addGroupMemberForm = document.querySelector('#add-group-member-form');
     if (addGroupMemberForm) {
@@ -90,6 +95,7 @@ export async function displayEditGroupMemberModal(groupMemberId) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addEditGroupMemberModalEventListeners();
+            validateInputs();
             return Promise.resolve();
         }
         else {
@@ -116,6 +122,10 @@ function addEditGroupMemberModalEventListeners() {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+    const emailInput = document.getElementById('group-member-email-input');
+    if (emailInput) {
+        emailInput.addEventListener('input', validateInputs);
     }
     const editGroupMemberForm = document.querySelector('#edit-group-member-form');
     if (editGroupMemberForm) {
@@ -221,6 +231,31 @@ function addDeleteGroupMemberModalEventListeners() {
         };
         deleteGroupMemberForm.removeEventListener('submit', deleteGroupMemberFormSubmitAction);
         deleteGroupMemberForm.addEventListener('submit', deleteGroupMemberFormSubmitAction);
+    }
+}
+function validateInputs() {
+    let isValid = true;
+    const saveButton = document.getElementById('save-group-member-button');
+    if (saveButton !== null) {
+        const emailInput = document.getElementById('group-member-email-input');
+        const emailRequiredDiv = document.querySelector('#email-required-div');
+        if (emailInput && emailInput.value.trim() === '') {
+            isValid = false;
+            if (emailRequiredDiv) {
+                emailRequiredDiv.classList.remove('d-none');
+            }
+        }
+        else {
+            if (emailRequiredDiv) {
+                emailRequiredDiv.classList.add('d-none');
+            }
+        }
+        if (isValid) {
+            saveButton.removeAttribute('disabled');
+        }
+        else {
+            saveButton.setAttribute('disabled', 'disabled');
+        }
     }
 }
 //# sourceMappingURL=add-edit-group-member.js.map

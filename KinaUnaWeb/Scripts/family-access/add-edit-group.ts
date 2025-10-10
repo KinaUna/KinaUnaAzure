@@ -19,7 +19,7 @@ export async function displayAddGroupModal(progenyId: string, familyId: string) 
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addAddGroupModalEventListeners();
-
+            validateInputs();
             return Promise.resolve();
         } else {
             return Promise.reject('Modal div not found in the document.');
@@ -45,6 +45,11 @@ function addAddGroupModalEventListeners(): void {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+
+    const nameInput = document.getElementById('group-name-input') as HTMLInputElement;
+    if (nameInput) {
+        nameInput.addEventListener('input', validateInputs);
     }
 
     const addGroupForm = document.querySelector<HTMLFormElement>('#add-group-form');
@@ -95,6 +100,7 @@ export async function displayEditGroupModal(groupId: string) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addEditGroupModalEventListeners();
+            validateInputs();
 
             return Promise.resolve();
         } else {
@@ -121,6 +127,11 @@ function addEditGroupModalEventListeners(): void {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+
+    const nameInput = document.getElementById('group-name-input') as HTMLInputElement;
+    if (nameInput) {
+        nameInput.addEventListener('input', validateInputs);
     }
 
     const editGroupForm = document.querySelector<HTMLFormElement>('#edit-group-form');
@@ -227,5 +238,32 @@ function addDeleteGroupModalEventListeners(): void {
         };
         deleteGroupForm.removeEventListener('submit', deleteGroupFormSubmitAction);
         deleteGroupForm.addEventListener('submit', deleteGroupFormSubmitAction);
+    }
+}
+
+function validateInputs() {
+    let isValid = true;
+    const saveButton = document.getElementById('save-group-button');
+    if (saveButton !== null) {
+        const nameInput = document.getElementById('group-name-input') as HTMLInputElement;
+        const nameRequiredDiv = document.querySelector<HTMLDivElement>('#name-required-div');
+        if (nameInput && nameInput.value.trim() === '') {
+            isValid = false;
+            if (nameRequiredDiv) {
+                nameRequiredDiv.classList.remove('d-none');
+            }
+        }
+        else {
+            if (nameRequiredDiv) {
+                nameRequiredDiv.classList.add('d-none');
+            }
+        }
+
+        if (isValid) {
+            saveButton.removeAttribute('disabled');
+        }
+        else {
+            saveButton.setAttribute('disabled', 'disabled');
+        }
     }
 }

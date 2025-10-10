@@ -3,7 +3,7 @@
 @model KinaUnaWeb.Models.FamiliesViewModels.FamilyMemberDetailsViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string addToFamilyString = await LocaleManager.GetTranslation("Remove family member", PageNames.Family, Model.LanguageId);
+    string removeFromFamilyString = await LocaleManager.GetTranslation("Remove family member", PageNames.Family, Model.LanguageId);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-dark modal-content item-details-content" style="width: fit-content;">
@@ -17,7 +17,7 @@
             </div>
             <div class="col">
                 <div class="h4 mr-3 align-bottom">
-                    @addToFamilyString
+                    @removeFromFamilyString
                 </div>
             </div>
             <button type="button" class="btn btn-link modal-close-button add-family-member-close-button"><span>×</span></button>
@@ -65,7 +65,7 @@
                         <input type="hidden" asp-for="CurrentProgenyId" value="@Model.CurrentProgenyId" />
                         <input type="hidden" asp-for="FamilyMember.FamilyMemberId" value="@Model.FamilyMember.FamilyMemberId" />
                         <div class="col">
-                            <button id="save-family-member-submit-button" type="submit" class="btn btn-success">@addToFamilyString</button>
+                            <button id="save-family-member-submit-button" type="submit" class="btn btn-success">@removeFromFamilyString</button>
                             <button type="button" class="btn btn-danger add-family-member-close-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
                         </div>
                         <div id="validation-errors-div" class="col-auto">

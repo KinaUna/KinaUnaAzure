@@ -17,6 +17,7 @@ export async function displayAddGroupMemberModal(groupId: string) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addAddGroupMemberModalEventListeners();
+            validateInputs();
 
             return Promise.resolve();
         } else {
@@ -43,6 +44,11 @@ function addAddGroupMemberModalEventListeners(): void {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+
+    const emailInput = document.getElementById('group-member-email-input') as HTMLInputElement;
+    if (emailInput) {
+        emailInput.addEventListener('input', validateInputs);
     }
 
     const addGroupMemberForm = document.querySelector<HTMLFormElement>('#add-group-member-form');
@@ -93,6 +99,7 @@ export async function displayEditGroupMemberModal(groupMemberId: string) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addEditGroupMemberModalEventListeners();
+            validateInputs();
 
             return Promise.resolve();
         } else {
@@ -119,6 +126,11 @@ function addEditGroupMemberModalEventListeners(): void {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+
+    const emailInput = document.getElementById('group-member-email-input') as HTMLInputElement;
+    if (emailInput) {
+        emailInput.addEventListener('input', validateInputs);
     }
 
     const editGroupMemberForm = document.querySelector<HTMLFormElement>('#edit-group-member-form');
@@ -226,5 +238,32 @@ function addDeleteGroupMemberModalEventListeners(): void {
         };
         deleteGroupMemberForm.removeEventListener('submit', deleteGroupMemberFormSubmitAction);
         deleteGroupMemberForm.addEventListener('submit', deleteGroupMemberFormSubmitAction);
+    }
+}
+
+function validateInputs() {
+    let isValid = true;
+    const saveButton = document.getElementById('save-group-member-button');
+    if (saveButton !== null) {
+        const emailInput = document.getElementById('group-member-email-input') as HTMLInputElement;
+        const emailRequiredDiv = document.querySelector<HTMLDivElement>('#email-required-div');
+        if (emailInput && emailInput.value.trim() === '') {
+            isValid = false;
+            if (emailRequiredDiv) {
+                emailRequiredDiv.classList.remove('d-none');
+            }
+        }
+        else {
+            if (emailRequiredDiv) {
+                emailRequiredDiv.classList.add('d-none');
+            }
+        }
+
+        if (isValid) {
+            saveButton.removeAttribute('disabled');
+        }
+        else {
+            saveButton.setAttribute('disabled', 'disabled');
+        }
     }
 }

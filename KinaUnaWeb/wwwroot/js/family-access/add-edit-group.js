@@ -17,6 +17,7 @@ export async function displayAddGroupModal(progenyId, familyId) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addAddGroupModalEventListeners();
+            validateInputs();
             return Promise.resolve();
         }
         else {
@@ -43,6 +44,10 @@ function addAddGroupModalEventListeners() {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+    const nameInput = document.getElementById('group-name-input');
+    if (nameInput) {
+        nameInput.addEventListener('input', validateInputs);
     }
     const addGroupForm = document.querySelector('#add-group-form');
     if (addGroupForm) {
@@ -91,6 +96,7 @@ export async function displayEditGroupModal(groupId) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addEditGroupModalEventListeners();
+            validateInputs();
             return Promise.resolve();
         }
         else {
@@ -117,6 +123,10 @@ function addEditGroupModalEventListeners() {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+    const nameInput = document.getElementById('group-name-input');
+    if (nameInput) {
+        nameInput.addEventListener('input', validateInputs);
     }
     const editGroupForm = document.querySelector('#edit-group-form');
     if (editGroupForm) {
@@ -222,6 +232,31 @@ function addDeleteGroupModalEventListeners() {
         };
         deleteGroupForm.removeEventListener('submit', deleteGroupFormSubmitAction);
         deleteGroupForm.addEventListener('submit', deleteGroupFormSubmitAction);
+    }
+}
+function validateInputs() {
+    let isValid = true;
+    const saveButton = document.getElementById('save-group-button');
+    if (saveButton !== null) {
+        const nameInput = document.getElementById('group-name-input');
+        const nameRequiredDiv = document.querySelector('#name-required-div');
+        if (nameInput && nameInput.value.trim() === '') {
+            isValid = false;
+            if (nameRequiredDiv) {
+                nameRequiredDiv.classList.remove('d-none');
+            }
+        }
+        else {
+            if (nameRequiredDiv) {
+                nameRequiredDiv.classList.add('d-none');
+            }
+        }
+        if (isValid) {
+            saveButton.removeAttribute('disabled');
+        }
+        else {
+            saveButton.setAttribute('disabled', 'disabled');
+        }
     }
 }
 //# sourceMappingURL=add-edit-group.js.map
