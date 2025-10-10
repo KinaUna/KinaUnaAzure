@@ -263,5 +263,93 @@ namespace KinaUnaWeb.Services.HttpClients
 
             return accessList;
         }
+
+        /// <summary>
+        /// Retrieves the permission details for a specific progeny permission based on the provided permission ID.
+        /// </summary>
+        /// <remarks>This method retrieves the permission details by making an HTTP request to the access
+        /// management API. Ensure that the signed-in user has a valid token, as the request requires
+        /// authentication.</remarks>
+        /// <param name="permissionId">The unique identifier of the permission to retrieve.</param>
+        /// <returns>A <see cref="ProgenyPermission"/> object containing the details of the specified permission.  If the
+        /// permission is not found or the request fails, an empty <see cref="ProgenyPermission"/> object is returned.</returns>
+        public async Task<ProgenyPermission> GetProgenyPermission(int permissionId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string accessManagementPath = "/api/AccessManagement/GetProgenyPermission/" + permissionId;
+            HttpResponseMessage permissionResponse = await _httpClient.GetAsync(accessManagementPath);
+            if (!permissionResponse.IsSuccessStatusCode) return new ProgenyPermission();
+
+            ProgenyPermission permission = await permissionResponse.Content.ReadAsAsync<ProgenyPermission>();
+            return permission;
+        }
+
+        /// <summary>
+        /// Adds a new progeny permission by sending the specified <see cref="ProgenyPermission"/> object to the access
+        /// management API.
+        /// </summary>
+        /// <remarks>This method requires the user to be authenticated, as it retrieves the signed-in
+        /// user's token to authorize the request. Ensure that the <paramref name="progenyPermission"/> parameter is
+        /// properly populated before calling this method.</remarks>
+        /// <param name="progenyPermission">The <see cref="ProgenyPermission"/> object containing the details of the progeny permission to be added.</param>
+        /// <returns>A <see cref="ProgenyPermission"/> object representing the added progeny permission, as returned by the API. If
+        /// the operation fails, an empty <see cref="ProgenyPermission"/> object is returned.</returns>
+        public async Task<ProgenyPermission> AddProgenyPermission(ProgenyPermission progenyPermission)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            const string accessApiPath = "/api/AccessManagement/AddProgenyPermission/";
+            HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(progenyPermission), System.Text.Encoding.UTF8, "application/json"));
+            if (!accessResponse.IsSuccessStatusCode) return new ProgenyPermission();
+            
+            string accessResponseString = await accessResponse.Content.ReadAsStringAsync();
+            
+            return JsonConvert.DeserializeObject<ProgenyPermission>(accessResponseString);
+        }
+
+        /// <summary>
+        /// Updates the specified progeny permission in the system.
+        /// </summary>
+        /// <remarks>This method sends an HTTP PUT request to the access management API to update the
+        /// specified progeny permission.  Ensure that the <paramref name="progenyPermission"/> parameter contains valid
+        /// data, including a valid <see cref="ProgenyPermission.ProgenyPermissionId"/>.</remarks>
+        /// <param name="progenyPermission">The <see cref="ProgenyPermission"/> object containing the updated permission details. The <see
+        /// cref="ProgenyPermission.ProgenyPermissionId"/> property must be set to identify the permission to update.</param>
+        /// <returns>A <see cref="ProgenyPermission"/> object representing the updated permission if the operation is successful;
+        /// otherwise, a new <see cref="ProgenyPermission"/> object with default values.</returns>
+        public async Task<ProgenyPermission> UpdateProgenyPermission(ProgenyPermission progenyPermission)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            string updateProgenyPermissionApiPath = "/api/AccessManagement/UpdateProgenyPermission/" + progenyPermission.ProgenyPermissionId;
+            HttpResponseMessage accessResponse = await _httpClient.PutAsync(updateProgenyPermissionApiPath, new StringContent(JsonConvert.SerializeObject(progenyPermission), System.Text.Encoding.UTF8, "application/json"));
+            if (!accessResponse.IsSuccessStatusCode) return new ProgenyPermission();
+            string updateProgenyPermissionResponseString = await accessResponse.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ProgenyPermission>(updateProgenyPermissionResponseString);
+        }
+
+        /// <summary>
+        /// Deletes a progeny permission with the specified permission ID.
+        /// </summary>
+        /// <remarks>This method sends an HTTP DELETE request to the access management API to remove the
+        /// specified progeny permission. The caller must ensure that the <paramref name="permissionId"/> corresponds to
+        /// a valid permission.</remarks>
+        /// <param name="permissionId">The unique identifier of the permission to delete.</param>
+        /// <returns><see langword="true"/> if the permission was successfully deleted; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> DeleteProgenyPermission(int permissionId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            string accessManagementPath = "/api/AccessManagement/DeleteProgenyPermission/" + permissionId;
+            HttpResponseMessage permissionResponse = await _httpClient.DeleteAsync(accessManagementPath);
+            return permissionResponse.IsSuccessStatusCode;
+        }
     }
 }

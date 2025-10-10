@@ -141,5 +141,48 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of <see cref="FamilyMember"/> objects representing the members of the specified family. If no members are found or the request fails, an empty list is returned.</returns>
         Task<List<FamilyMember>> GetFamilyMembersForFamily(int familyId);
 
+        /// <summary>
+        /// Retrieves the family permission associated with the specified permission ID.
+        /// </summary>
+        /// <remarks>This method requires the caller to be authenticated. The method retrieves a valid
+        /// access token for the signed-in user and uses it to make an HTTP request to the access management
+        /// API.</remarks>
+        /// <param name="permissionId">The unique identifier of the family permission to retrieve.</param>
+        /// <returns>A <see cref="FamilyPermission"/> object representing the family permission associated with the specified ID.
+        /// If the permission cannot be retrieved, an empty <see cref="FamilyPermission"/> object is returned.</returns>
+        Task<FamilyPermission> GetFamilyPermission(int permissionId);
+
+        /// <summary>
+        /// Adds a new family permission by sending the specified <see cref="FamilyPermission"/> object to the access
+        /// management API.
+        /// </summary>
+        /// <remarks>This method requires the user to be authenticated, as it retrieves the signed-in
+        /// user's token to authorize the request. Ensure that the <paramref name="familyPermission"/> parameter is
+        /// properly populated before calling this method.</remarks>
+        /// <param name="familyPermission">The <see cref="FamilyPermission"/> object containing the details of the family permission to be added.</param>
+        /// <returns>A <see cref="FamilyPermission"/> object representing the added family permission, as returned by the API. If
+        /// the operation fails, an empty <see cref="FamilyPermission"/> object is returned.</returns>
+        Task<FamilyPermission> AddFamilyPermission(FamilyPermission familyPermission);
+
+        /// <summary>
+        /// Updates the specified family permission by sending a request to the access management API.
+        /// </summary>
+        /// <remarks>This method requires the signed-in user's token to authenticate the request. Ensure
+        /// that the user is signed in and has the necessary permissions to perform this operation. The method
+        /// communicates with the access management API using an HTTP PUT request.</remarks>
+        /// <param name="familyPermission">The <see cref="FamilyPermission"/> object containing the updated permission details.</param>
+        /// <returns>A <see cref="FamilyPermission"/> object representing the updated permission as returned by the access
+        /// management API. If the update operation fails, an empty <see cref="FamilyPermission"/> object is returned.</returns>
+        Task<FamilyPermission> UpdateFamilyPermission(FamilyPermission familyPermission);
+
+        /// <summary>
+        /// Deletes a family permission with the specified identifier.
+        /// </summary>
+        /// <remarks>This method sends an HTTP DELETE request to the Access Management API to remove the
+        /// specified family permission. The caller must ensure that the <paramref name="permissionId"/> corresponds to
+        /// a valid permission.</remarks>
+        /// <param name="permissionId">The unique identifier of the family permission to delete.</param>
+        /// <returns><see langword="true"/> if the deletion was successful; otherwise, <see langword="false"/>.</returns>
+        Task<bool> DeleteFamilyPermission(int permissionId);
     }
 }

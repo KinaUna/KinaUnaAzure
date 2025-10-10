@@ -1105,6 +1105,29 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         }
 
         /// <summary>
+        /// Retrieves a progeny permission record by its identifier, if the current user has the necessary permissions.
+        /// </summary>
+        /// <remarks>This method ensures that only users with administrative permissions for the progeny or
+        /// the subject of the  progeny permission can access the requested record. If the user lacks the required
+        /// permissions, the method  returns <see langword="null"/>.</remarks>
+        /// <param name="progenyPermissionId">The unique identifier of the progeny permission to retrieve.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to validate access permissions.</param>
+        /// <returns>The <see cref="ProgenyPermission"/> object if the current user has administrative access to the progeny  or is
+        /// the subject of the permission; otherwise, <see langword="null"/>.</returns>
+        public async Task<ProgenyPermission> GetProgenyPermission(int progenyPermissionId, UserInfo currentUserInfo)
+        {
+            ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
+                .SingleOrDefaultAsync(pp => pp.ProgenyPermissionId == progenyPermissionId);
+
+            if (await HasProgenyPermission(progenyPermission.ProgenyId, currentUserInfo, PermissionLevel.Admin) || progenyPermission.UserId == currentUserInfo.UserId)
+            {
+                return progenyPermission;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Grants a specified permission to a user or group for a progeny, if the current user has the necessary
         /// access rights.
         /// </summary>
@@ -1474,7 +1497,30 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             return highestGroupPermission >= requiredLevel;
         }
-        
+
+        /// <summary>
+        /// Retrieves a family permission record by its identifier, if the current user has the necessary permissions.
+        /// </summary>
+        /// <remarks>This method ensures that only users with administrative permissions for the family or
+        /// the owner of the  family permission can access the requested record. If the user lacks the required
+        /// permissions, the method  returns <see langword="null"/>.</remarks>
+        /// <param name="familyPermissionId">The unique identifier of the family permission to retrieve.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to validate access permissions.</param>
+        /// <returns>The <see cref="FamilyPermission"/> object if the current user has administrative access to the family  or is
+        /// the owner of the permission; otherwise, <see langword="null"/>.</returns>
+        public async Task<FamilyPermission> GetFamilyPermission(int familyPermissionId, UserInfo currentUserInfo)
+        {
+            FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
+                .SingleOrDefaultAsync(fp => fp.FamilyPermissionId == familyPermissionId);
+
+            if (await HasFamilyPermission(familyPermission.FamilyId, currentUserInfo, PermissionLevel.Admin) || familyPermission.UserId == currentUserInfo.UserId)
+            {
+                return familyPermission;
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Grants a specified permission to a user or group for a family, if the current user has the necessary
         /// access rights.

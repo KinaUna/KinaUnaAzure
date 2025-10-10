@@ -1,15 +1,16 @@
 ﻿using Duende.IdentityModel.Client;
 using KinaUna.Data;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -20,7 +21,7 @@ namespace KinaUnaWeb.Services.HttpClients
     /// <remarks>This class is designed to be used in applications that require interaction with the Families
     /// API. It supports operations such as retrieving, adding, updating, and deleting families and family members. The
     /// client automatically manages authentication tokens and sets the appropriate headers for API requests.</remarks>
-    public class FamiliesHttpClient: IFamiliesHttpClient
+    public class FamiliesHttpClient : IFamiliesHttpClient
     {
         private readonly HttpClient _httpClient;
         private readonly ITokenService _tokenService;
@@ -67,7 +68,7 @@ namespace KinaUnaWeb.Services.HttpClients
             HttpResponseMessage familiesResponse = await _httpClient.GetAsync(familiesApiPath);
 
             if (!familiesResponse.IsSuccessStatusCode) return new List<Family>();
-            
+
             List<Family> families = await familiesResponse.Content.ReadAsAsync<List<Family>>();
             return families;
 
@@ -140,7 +141,7 @@ namespace KinaUnaWeb.Services.HttpClients
             HttpResponseMessage familiesResponse = await _httpClient.GetAsync(familiesApiPath);
 
             if (!familiesResponse.IsSuccessStatusCode) return new Family();
-            
+
             Family family = await familiesResponse.Content.ReadAsAsync<Family>();
             return family;
         }
@@ -159,11 +160,11 @@ namespace KinaUnaWeb.Services.HttpClients
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            
+
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/Families", family);
 
             if (!response.IsSuccessStatusCode) return new Family();
-            
+
             Family newFamily = await response.Content.ReadAsAsync<Family>();
             return newFamily;
         }
@@ -182,11 +183,11 @@ namespace KinaUnaWeb.Services.HttpClients
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            
+
             HttpResponseMessage response = await _httpClient.PutAsJsonAsync("/api/Families", family);
-            
+
             if (!response.IsSuccessStatusCode) return new Family();
-            
+
             Family updatedFamily = await response.Content.ReadAsAsync<Family>();
             return updatedFamily;
         }
@@ -203,9 +204,9 @@ namespace KinaUnaWeb.Services.HttpClients
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            
+
             HttpResponseMessage response = await _httpClient.DeleteAsync("/api/Families/" + familyId);
-            
+
             return response.IsSuccessStatusCode;
         }
 
@@ -223,10 +224,10 @@ namespace KinaUnaWeb.Services.HttpClients
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            
+
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/Families/AddFamilyMember", familyMember);
             if (!response.IsSuccessStatusCode) return new FamilyMember();
-            
+
             FamilyMember newFamilyMember = await response.Content.ReadAsAsync<FamilyMember>();
             return newFamilyMember;
         }
@@ -245,10 +246,10 @@ namespace KinaUnaWeb.Services.HttpClients
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            
+
             HttpResponseMessage response = await _httpClient.PutAsJsonAsync("/api/Families/UpdateFamilyMember", familyMember);
             if (!response.IsSuccessStatusCode) return new FamilyMember();
-            
+
             FamilyMember updatedFamilyMember = await response.Content.ReadAsAsync<FamilyMember>();
             return updatedFamilyMember;
         }
@@ -266,9 +267,9 @@ namespace KinaUnaWeb.Services.HttpClients
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            
+
             HttpResponseMessage response = await _httpClient.DeleteAsync("/api/Families/DeleteFamilyMember/" + familyMemberId);
-            
+
             return response.IsSuccessStatusCode;
         }
 
@@ -314,6 +315,93 @@ namespace KinaUnaWeb.Services.HttpClients
 
             List<FamilyMember> familyMembersList = await familiesResponse.Content.ReadAsAsync<List<FamilyMember>>();
             return familyMembersList;
+        }
+
+        /// <summary>
+        /// Retrieves the family permission associated with the specified permission ID.
+        /// </summary>
+        /// <remarks>This method requires the caller to be authenticated. The method retrieves a valid
+        /// access token for the signed-in user and uses it to make an HTTP request to the access management
+        /// API.</remarks>
+        /// <param name="permissionId">The unique identifier of the family permission to retrieve.</param>
+        /// <returns>A <see cref="FamilyPermission"/> object representing the family permission associated with the specified ID.
+        /// If the permission cannot be retrieved, an empty <see cref="FamilyPermission"/> object is returned.</returns>
+        public async Task<FamilyPermission> GetFamilyPermission(int permissionId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string accessManagementPath = "/api/AccessManagement/GetFamilyPermission/" + permissionId;
+            HttpResponseMessage permissionResponse = await _httpClient.GetAsync(accessManagementPath);
+            if (!permissionResponse.IsSuccessStatusCode) return new FamilyPermission();
+
+            FamilyPermission permission = await permissionResponse.Content.ReadAsAsync<FamilyPermission>();
+            return permission;
+        }
+
+        /// <summary>
+        /// Adds a new family permission by sending the specified <see cref="FamilyPermission"/> object to the access
+        /// management API.
+        /// </summary>
+        /// <remarks>This method requires the user to be authenticated, as it retrieves the signed-in
+        /// user's token to authorize the request. Ensure that the <paramref name="familyPermission"/> parameter is
+        /// properly populated before calling this method.</remarks>
+        /// <param name="familyPermission">The <see cref="FamilyPermission"/> object containing the details of the family permission to be added.</param>
+        /// <returns>A <see cref="FamilyPermission"/> object representing the added family permission, as returned by the API. If
+        /// the operation fails, an empty <see cref="FamilyPermission"/> object is returned.</returns>
+        public async Task<FamilyPermission> AddFamilyPermission(FamilyPermission familyPermission)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            const string accessApiPath = "/api/AccessManagement/AddFamilyPermission/";
+            HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(familyPermission), System.Text.Encoding.UTF8, "application/json"));
+            if (!accessResponse.IsSuccessStatusCode) return new FamilyPermission();
+
+            string accessResponseString = await accessResponse.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<FamilyPermission>(accessResponseString);
+        }
+
+        /// <summary>
+        /// Updates the specified family permission by sending a request to the access management API.
+        /// </summary>
+        /// <remarks>This method requires the signed-in user's token to authenticate the request. Ensure
+        /// that the user is signed in and has the necessary permissions to perform this operation. The method
+        /// communicates with the access management API using an HTTP PUT request.</remarks>
+        /// <param name="familyPermission">The <see cref="FamilyPermission"/> object containing the updated permission details.</param>
+        /// <returns>A <see cref="FamilyPermission"/> object representing the updated permission as returned by the access
+        /// management API. If the update operation fails, an empty <see cref="FamilyPermission"/> object is returned.</returns>
+        public async Task<FamilyPermission> UpdateFamilyPermission(FamilyPermission familyPermission)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            const string accessApiPath = "/api/AccessManagement/UpdateFamilyPermission/";
+            HttpResponseMessage accessResponse = await _httpClient.PutAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(familyPermission), System.Text.Encoding.UTF8, "application/json"));
+            if (!accessResponse.IsSuccessStatusCode) return new FamilyPermission();
+            string accessResponseString = await accessResponse.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<FamilyPermission>(accessResponseString) ?? new FamilyPermission();
+        }
+
+        /// <summary>
+        /// Deletes a family permission with the specified identifier.
+        /// </summary>
+        /// <remarks>This method sends an HTTP DELETE request to the Access Management API to remove the
+        /// specified family permission. The caller must ensure that the <paramref name="permissionId"/> corresponds to
+        /// a valid permission.</remarks>
+        /// <param name="permissionId">The unique identifier of the family permission to delete.</param>
+        /// <returns><see langword="true"/> if the deletion was successful; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> DeleteFamilyPermission(int permissionId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            string accessApiPath = "/api/AccessManagement/DeleteFamilyPermission/" + permissionId;
+            HttpResponseMessage accessResponse = await _httpClient.DeleteAsync(accessApiPath);
+            return accessResponse.IsSuccessStatusCode;
         }
     }
 }

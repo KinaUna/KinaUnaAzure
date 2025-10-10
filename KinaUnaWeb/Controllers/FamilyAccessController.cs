@@ -417,5 +417,209 @@ namespace KinaUnaWeb.Controllers
             bool result = await userGroupsHttpClient.RemoveUserGroupMember(model.UserGroupMember.UserGroupMemberId);
             return Json(result);
         }
+
+        [HttpGet("[action]/{progenyId:int}/{familyId:int}")]
+        public async Task<IActionResult> AddPermission(int progenyId, int familyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, familyId, false);
+            PermissionViewModel model = new(baseModel);
+            if (progenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+                model.ProgenyPermission = new ProgenyPermission
+                {
+                    ProgenyId = progenyId,
+                    PermissionLevel = PermissionLevel.View
+                };
+            }
+            if (familyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+                model.FamilyPermission = new FamilyPermission
+                {
+                    FamilyId = familyId,
+                    PermissionLevel = PermissionLevel.View
+                };
+            }
+
+            return PartialView("_AddPermissionPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddPermission(PermissionViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.ProgenyPermission?.ProgenyId ?? 0, model.FamilyPermission?.FamilyId ?? 0, false);
+            model.SetBaseProperties(baseModel);
+            if (model.ProgenyPermission != null && model.ProgenyPermission.ProgenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+                ProgenyPermission newProgenyPermission = await progenyHttpClient.AddProgenyPermission(model.ProgenyPermission);
+                return Json(newProgenyPermission);
+            }
+            if (model.FamilyPermission != null && model.FamilyPermission.FamilyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+                FamilyPermission newFamilyPermission = await familiesHttpClient.AddFamilyPermission(model.FamilyPermission);
+                return Json(newFamilyPermission);
+            }
+            return Json(null);
+        }
+
+        [HttpGet("[action]/{permissionId:int}")]
+        public async Task<IActionResult> EditFamilyPermission(int permissionId)
+        {
+            FamilyPermission familyPermission = await familiesHttpClient.GetFamilyPermission(permissionId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, familyPermission.FamilyId, false);
+            PermissionViewModel model = new(baseModel);
+            model.FamilyPermission = familyPermission;
+            if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return Forbid();
+            }
+            return PartialView("_EditFamilyPermissionPartial", model);
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditFamilyPermission(PermissionViewModel model)
+        {
+            FamilyPermission familyPermission = await familiesHttpClient.GetFamilyPermission(model.FamilyPermission.FamilyPermissionId);
+            if (familyPermission == null || familyPermission.FamilyPermissionId == 0)
+            {
+                return NotFound();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, model.FamilyPermission.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+            if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return Forbid();
+            }
+            FamilyPermission updatedFamilyPermission = await familiesHttpClient.UpdateFamilyPermission(model.FamilyPermission);
+            return Json(updatedFamilyPermission);
+        }
+
+
+        [HttpGet("[action]/{permissionId:int}")]
+        public async Task<IActionResult> EditProgenyPermission(int permissionId)
+        {
+            ProgenyPermission progenyPermission = await progenyHttpClient.GetProgenyPermission(permissionId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyPermission.ProgenyId, 0, false);
+            PermissionViewModel model = new(baseModel);
+            model.ProgenyPermission = progenyPermission;
+            if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return Forbid();
+            }
+            return PartialView("_EditProgenyPermissionPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProgenyPermission(PermissionViewModel model)
+        {
+            ProgenyPermission progenyPermission = await progenyHttpClient.GetProgenyPermission(model.ProgenyPermission.ProgenyPermissionId);
+            if (progenyPermission == null || progenyPermission.ProgenyPermissionId == 0)
+            {
+                return NotFound();
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.ProgenyPermission.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+            if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return Forbid();
+            }
+            ProgenyPermission updatedProgenyPermission = await progenyHttpClient.UpdateProgenyPermission(model.ProgenyPermission);
+            return Json(updatedProgenyPermission);
+        }
+
+        [HttpGet]
+        [Route("[action]/{permissionId:int}")]
+        public async Task<IActionResult> DeleteFamilyPermission(int permissionId)
+        {
+            FamilyPermission familyPermission = await familiesHttpClient.GetFamilyPermission(permissionId);
+            if (familyPermission == null || familyPermission.FamilyPermissionId == 0)
+            {
+                return NotFound();
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, familyPermission.FamilyId, false);
+            PermissionViewModel model = new(baseModel);
+            model.FamilyPermission = familyPermission;
+            if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return Forbid();
+            }
+            return PartialView("_DeleteFamilyPermissionPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteFamilyPermission(PermissionViewModel model)
+        {
+            FamilyPermission familyPermission = await familiesHttpClient.GetFamilyPermission(model.FamilyPermission.FamilyPermissionId);
+            if (familyPermission == null || familyPermission.FamilyPermissionId == 0)
+            {
+                return NotFound();
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, model.FamilyPermission.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+            if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return Forbid();
+            }
+            bool result = await familiesHttpClient.DeleteFamilyPermission(model.FamilyPermission.FamilyPermissionId);
+            return Json(result);
+        }
+
+        [HttpGet]
+        [Route("[action]/{permissionId:int}")]
+        public async Task<IActionResult> DeleteProgenyPermission(int permissionId)
+        {
+            ProgenyPermission progenyPermission = await progenyHttpClient.GetProgenyPermission(permissionId);
+            if (progenyPermission == null || progenyPermission.ProgenyPermissionId == 0)
+            {
+                return NotFound();
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyPermission.ProgenyId, 0, false);
+            PermissionViewModel model = new(baseModel);
+            model.ProgenyPermission = progenyPermission;
+            if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return Forbid();
+            }
+            return PartialView("_DeleteProgenyPermissionPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteProgenyPermission(PermissionViewModel model)
+        {
+            ProgenyPermission progenyPermission = await progenyHttpClient.GetProgenyPermission(model.ProgenyPermission.ProgenyPermissionId);
+            if (progenyPermission == null || progenyPermission.ProgenyPermissionId == 0)
+            {
+                return NotFound();
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.ProgenyPermission.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+            if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return Forbid();
+            }
+            bool result = await progenyHttpClient.DeleteProgenyPermission(model.ProgenyPermission.ProgenyPermissionId);
+            return Json(result);
+        }
     }
 }

@@ -138,5 +138,53 @@ namespace KinaUnaProgenyApi.Controllers
             }
             return permissions;
         }
+
+        [HttpGet]
+        [Route("[action]/{permissionId:int}")]
+        public async Task<IActionResult> GetFamilyPermission(int permissionId)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            FamilyPermission permission = await accessManagementService.GetFamilyPermission(permissionId, currentUserInfo);
+
+            if (permission != null && !string.IsNullOrWhiteSpace(permission.UserId))
+            {
+                UserInfo userInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
+                permission.UserInfo = userInfo;
+            }
+            return Ok(permission);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> AddFamilyPermission([FromBody] FamilyPermission familyPermission)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            FamilyPermission addedPermission = await accessManagementService.GrantFamilyPermission(familyPermission, currentUserInfo);
+            return Ok(addedPermission);
+
+        }
+
+        [HttpGet]
+        [Route("[action]/{permissionId:int}")]
+        public async Task<IActionResult> GetProgenyPermission(int permissionId)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            ProgenyPermission permission = await accessManagementService.GetProgenyPermission(permissionId, currentUserInfo);
+            if (permission != null && !string.IsNullOrWhiteSpace(permission.UserId))
+            {
+                UserInfo userInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
+                permission.UserInfo = userInfo;
+            }
+            return Ok(permission);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> AddProgenyPermission([FromBody] ProgenyPermission progenyPermission)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            ProgenyPermission addedPermission = await accessManagementService.GrantProgenyPermission(progenyPermission, currentUserInfo);
+            return Ok(addedPermission);
+        }
     }
 }
