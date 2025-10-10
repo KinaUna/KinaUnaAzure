@@ -1,6 +1,6 @@
-﻿import { hideBodyScrollbars } from "../item-details/items-display-v9";
-import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9";
-import { loadPermissionsList } from "./family-access-index";
+﻿import { hideBodyScrollbars } from "../item-details/items-display-v9.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
+import { loadPermissionsList } from "./family-access-index.js";
 
 let languageId = 1;
 
@@ -94,7 +94,7 @@ export async function displayEditGroupModal(groupId: string) {
             modalDiv.innerHTML = editGroupContent;
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
-            adEditGroupModalEventListeners();
+            addEditGroupModalEventListeners();
 
             return Promise.resolve();
         } else {
@@ -106,7 +106,7 @@ export async function displayEditGroupModal(groupId: string) {
     }
 }
 
-function adEditGroupModalEventListeners(): void {
+function addEditGroupModalEventListeners(): void {
     const closeButton = document.querySelector<HTMLButtonElement>('#close-edit-group-modal-button');
     if (closeButton) {
         const closeButtonClickedAction = function (event: MouseEvent): void {
@@ -180,7 +180,6 @@ export async function displayDeleteGroupModal(groupId: string) {
         console.error('Failed to fetch delete group details:', response.statusText);
         return Promise.reject('Failed to fetch delete group details: ' + response.statusText);
     }
-
 }
 
 function addDeleteGroupModalEventListeners(): void {

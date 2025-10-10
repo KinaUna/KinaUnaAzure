@@ -192,6 +192,29 @@ namespace KinaUnaWeb.Services.HttpClients
         }
 
         /// <summary>
+        /// Gets a user group member by their unique identifier.
+        /// </summary>
+        /// <param name="userGroupMemberId">The unique identifier of the user group member to retrieve.</param>
+        /// <returns>The <see cref="UserGroupMember"/> object containing the details of the specified user group member. If the user group member is not found or the request fails, an empty <see cref="UserGroupMember"/> object is returned.</returns>
+        public async Task<UserGroupMember> GetUserGroupMember(int userGroupMemberId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string userGroupsApiPath = "api/UserGroups/GetUserGroupMember/" + userGroupMemberId;
+            HttpResponseMessage response = await _httpClient.GetAsync(userGroupsApiPath);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new UserGroupMember();
+            }
+
+            UserGroupMember userGroupMember = await response.Content.ReadAsAsync<UserGroupMember>();
+            return userGroupMember;
+        }
+
+        /// <summary>
         /// Adds a new user to a user group.
         /// </summary>
         /// <param name="userGroupMember">The user group member to add</param>

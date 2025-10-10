@@ -25,7 +25,7 @@ namespace KinaUnaWeb.Controllers
                 Families = await familiesHttpClient.GetMyFamilies()
             };
             model.Progenies = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-            
+
             return View(model);
         }
 
@@ -69,17 +69,20 @@ namespace KinaUnaWeb.Controllers
                 {
                     return Forbid();
                 }
+
                 model.UserGroup = new UserGroup
                 {
                     ProgenyId = progenyId
                 };
             }
+
             if (familyId > 0)
             {
                 if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
                 {
                     return Forbid();
                 }
+
                 model.UserGroup = new UserGroup
                 {
                     FamilyId = familyId
@@ -102,6 +105,7 @@ namespace KinaUnaWeb.Controllers
                     return Forbid();
                 }
             }
+
             if (model.UserGroup.FamilyId > 0)
             {
                 if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
@@ -111,7 +115,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             UserGroup newGroup = await userGroupsHttpClient.AddUserGroup(model.UserGroup);
-            
+
             return Json(newGroup);
         }
 
@@ -131,6 +135,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return NotFound();
             }
+
             if (model.CurrentProgenyId > 0)
             {
                 if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
@@ -138,6 +143,7 @@ namespace KinaUnaWeb.Controllers
                     return Forbid();
                 }
             }
+
             if (model.CurrentFamilyId > 0)
             {
                 if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
@@ -145,6 +151,7 @@ namespace KinaUnaWeb.Controllers
                     return Forbid();
                 }
             }
+
             return PartialView("_EditGroupPartial", model);
         }
 
@@ -161,6 +168,7 @@ namespace KinaUnaWeb.Controllers
                     return Forbid();
                 }
             }
+
             if (model.CurrentFamilyId > 0)
             {
                 if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
@@ -185,7 +193,184 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userGroup.ProgenyId, userGroup.FamilyId, false);
             UserGroupViewModel model = new(baseModel);
             model.UserGroup = userGroup;
-            
+
+            if (model.CurrentProgenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            if (model.CurrentFamilyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            return PartialView("_DeleteGroupPartial", model);
+        }
+
+        [HttpGet("[action]/{groupId:int}")]
+        public async Task<IActionResult> AddGroupMember(int groupId)
+        {
+            UserGroup userGroup = await userGroupsHttpClient.GetUserGroup(groupId);
+            if (userGroup == null || userGroup.UserGroupId == 0)
+            {
+                return NotFound();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userGroup.ProgenyId, userGroup.FamilyId, false);
+            UserGroupViewModel model = new(baseModel);
+            model.UserGroup = userGroup;
+            if (model.CurrentProgenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            if (model.CurrentFamilyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            model.UserGroupMember = new UserGroupMember
+            {
+                UserGroupId = groupId
+            };
+
+            return PartialView("_AddGroupMemberPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddGroupMember(UserGroupViewModel model)
+        {
+            UserGroup userGroup = await userGroupsHttpClient.GetUserGroup(model.UserGroup.UserGroupId);
+            if (userGroup == null || userGroup.UserGroupId == 0)
+            {
+                return NotFound();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userGroup.ProgenyId, userGroup.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+
+            if (model.CurrentProgenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            if (model.CurrentFamilyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            UserGroupMember newMember = await userGroupsHttpClient.AddUserGroupMember(model.UserGroupMember);
+            return Json(newMember);
+        }
+
+        [HttpGet("[action]/{groupMemberId:int}")]
+        public async Task<IActionResult> EditGroupMember(int groupMemberId)
+        {
+            UserGroupMember userGroupMember = await userGroupsHttpClient.GetUserGroupMember(groupMemberId);
+            if (userGroupMember == null || userGroupMember.UserGroupMemberId == 0)
+            {
+                return NotFound();
+            }
+
+            UserGroup userGroup = await userGroupsHttpClient.GetUserGroup(userGroupMember.UserGroupId);
+            if (userGroup == null || userGroup.UserGroupId == 0)
+            {
+                return NotFound();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userGroup.ProgenyId, userGroup.FamilyId, false);
+            UserGroupViewModel model = new(baseModel);
+            model.UserGroup = userGroup;
+
+            if (model.CurrentProgenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            if (model.CurrentFamilyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            model.UserGroupMember = userGroupMember;
+
+            return PartialView("_EditGroupMemberPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditGroupMember(UserGroupViewModel model)
+        {
+            UserGroup userGroup = await userGroupsHttpClient.GetUserGroup(model.UserGroupMember.UserGroupId);
+            if (userGroup == null || userGroup.UserGroupId == 0)
+            {
+                return NotFound();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userGroup.ProgenyId, userGroup.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+
+            if (model.CurrentProgenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            if (model.CurrentFamilyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            UserGroupMember updatedMember = await userGroupsHttpClient.UpdateUserGroupMember(model.UserGroupMember);
+            return Json(updatedMember);
+        }
+
+        [HttpGet("[action]/{groupMemberId:int}")]
+        public async Task<IActionResult> DeleteGroupMember(int groupMemberId)
+        {
+            UserGroupMember userGroupMember = await userGroupsHttpClient.GetUserGroupMember(groupMemberId);
+            if (userGroupMember == null || userGroupMember.UserGroupMemberId == 0)
+            {
+                return NotFound();
+            }
+            UserGroup userGroup = await userGroupsHttpClient.GetUserGroup(userGroupMember.UserGroupId);
+            if (userGroup == null || userGroup.UserGroupId == 0)
+            {
+                return NotFound();
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userGroup.ProgenyId, userGroup.FamilyId, false);
+            UserGroupViewModel model = new(baseModel);
+            model.UserGroup = userGroup;
             if (model.CurrentProgenyId > 0)
             {
                 if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
@@ -200,7 +385,37 @@ namespace KinaUnaWeb.Controllers
                     return Forbid();
                 }
             }
-            return PartialView("_DeleteGroupPartial", model);
+            model.UserGroupMember = userGroupMember;
+            return PartialView("_DeleteGroupMemberPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteGroupMember(UserGroupViewModel model)
+        {
+            UserGroup userGroup = await userGroupsHttpClient.GetUserGroup(model.UserGroupMember.UserGroupId);
+            if (userGroup == null || userGroup.UserGroupId == 0)
+            {
+                return NotFound();
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userGroup.ProgenyId, userGroup.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+            if (model.CurrentProgenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+            if (model.CurrentFamilyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+            bool result = await userGroupsHttpClient.RemoveUserGroupMember(model.UserGroupMember.UserGroupMemberId);
+            return Json(result);
         }
     }
 }

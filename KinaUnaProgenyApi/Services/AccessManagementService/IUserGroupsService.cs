@@ -67,6 +67,14 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         Task<bool> RemoveUserGroup(int groupId, UserInfo currentUserInfo);
 
         /// <summary>
+        /// Gets a user group member by its unique identifier, if the current user has access to the associated user group.
+        /// </summary>
+        /// <param name="userGroupMemberId">The unique identifier of the user group member to retrieve.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>The <see cref="UserGroupMember"/> object representing the requested user group member, if the user has access; otherwise, an empty <see cref="UserGroupMember"/> object.</returns>
+        Task<UserGroupMember> GetUserGroupMember(int userGroupMemberId, UserInfo currentUserInfo);
+
+        /// <summary>
         /// Adds a new member to a user group.
         /// </summary>
         /// <param name="userGroupMember">The <see cref="UserGroupMember"/> object representing the member to add. The <see cref="UserGroupMember.UserGroupId"/> property must be set to the ID of the target user group.</param>

@@ -55,6 +55,13 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<bool> DeleteUserGroup(int userGroupId);
 
         /// <summary>
+        /// Gets a user group member by their unique identifier.
+        /// </summary>
+        /// <param name="userGroupMemberId">The unique identifier of the user group member to retrieve.</param>
+        /// <returns>The <see cref="UserGroupMember"/> object containing the details of the specified user group member. If the user group member is not found or the request fails, an empty <see cref="UserGroupMember"/> object is returned.</returns>
+        Task<UserGroupMember> GetUserGroupMember(int userGroupMemberId);
+
+        /// <summary>
         /// Adds a new user to a user group.
         /// </summary>
         /// <param name="userGroupMember">The user group member to add</param>

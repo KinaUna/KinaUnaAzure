@@ -11,7 +11,8 @@ namespace KinaUnaWeb.Models.FamilyAccessViewModels
         }
 
         public UserGroup UserGroup { get; set; }
-        
+        public UserGroupMember UserGroupMember {get; set;}
+
         public List<FamilyPermission> FamilyPermissions { get; set; } = [];
         public List<ProgenyPermission> ProgenyPermissions { get; set; } = [];
     }

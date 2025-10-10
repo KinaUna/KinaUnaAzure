@@ -1,6 +1,6 @@
-import { hideBodyScrollbars } from "../item-details/items-display-v9";
-import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9";
-import { loadPermissionsList } from "./family-access-index";
+import { hideBodyScrollbars } from "../item-details/items-display-v9.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
+import { loadPermissionsList } from "./family-access-index.js";
 let languageId = 1;
 export async function displayAddGroupModal(progenyId, familyId) {
     const response = await fetch('/FamilyAccess/AddGroup/' + progenyId + "/" + familyId, {
@@ -90,7 +90,7 @@ export async function displayEditGroupModal(groupId) {
             modalDiv.innerHTML = editGroupContent;
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
-            adEditGroupModalEventListeners();
+            addEditGroupModalEventListeners();
             return Promise.resolve();
         }
         else {
@@ -102,7 +102,7 @@ export async function displayEditGroupModal(groupId) {
         return Promise.reject('Failed to fetch edit group details: ' + response.statusText);
     }
 }
-function adEditGroupModalEventListeners() {
+function addEditGroupModalEventListeners() {
     const closeButton = document.querySelector('#close-edit-group-modal-button');
     if (closeButton) {
         const closeButtonClickedAction = function (event) {

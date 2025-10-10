@@ -340,6 +340,33 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         }
 
         /// <summary>
+        /// Gets a user group member by its unique identifier, if the current user has access to the associated user group.
+        /// </summary>
+        /// <param name="userGroupMemberId">The unique identifier of the user group member to retrieve.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>The <see cref="UserGroupMember"/> object representing the requested user group member, if the user has access; otherwise, an empty <see cref="UserGroupMember"/> object.</returns>
+        public async Task<UserGroupMember> GetUserGroupMember(int userGroupMemberId, UserInfo currentUserInfo)
+        {
+            UserGroupMember member = await progenyDbContext.UserGroupMembersDb.AsNoTracking().FirstOrDefaultAsync(ugm => ugm.UserGroupMemberId == userGroupMemberId);
+            
+            if (member == null)
+            {
+                return new UserGroupMember();
+            }
+
+            if (member.UserGroupId > 0)
+            {
+                UserGroup userGroup = await GetUserGroup(member.UserGroupId, currentUserInfo);
+                if(userGroup == null || userGroup.UserGroupId ==0)
+                {
+                    return new UserGroupMember();
+                }
+            }
+
+            return member;
+        }
+
+        /// <summary>
         /// Adds a new member to a user group.
         /// </summary>
         /// <param name="userGroupMember">The <see cref="UserGroupMember"/> object representing the member to add. The <see cref="UserGroupMember.UserGroupId"/> property must be set to the ID of the target user group.</param>

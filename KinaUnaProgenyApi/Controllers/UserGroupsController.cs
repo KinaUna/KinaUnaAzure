@@ -106,6 +106,22 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(true);
         }
 
+        [HttpGet]
+        [Route("[action]/{userGroupMemberId:int}")]
+        public async Task<IActionResult> GetUserGroupMember(int userGroupMemberId)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            
+            UserGroupMember userGroupMember = await userGroupsService.GetUserGroupMember(userGroupMemberId, currentUserInfo);
+            if (userGroupMember.UserGroupMemberId == 0)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(userGroupMember);
+        }
+
         [HttpPost]
         [Route("AddUserGroupMember")]
         public async Task<IActionResult> AddUserGroupMember([FromBody] UserGroupMember userGroupMember)
