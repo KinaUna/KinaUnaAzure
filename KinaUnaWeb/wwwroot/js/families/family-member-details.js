@@ -1,5 +1,5 @@
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9.js";
-import { displayEditFamilyMemberModal } from "./add-edit-family-member.js";
+import { displayDeleteFamilyMemberModal, displayEditFamilyMemberModal } from "./add-edit-family-member.js";
 export async function displayFamilyMemberDetails(familyMemberId) {
     const response = await fetch('/Families/FamilyMemberDetails?familyMemberId=' + familyMemberId, {
         method: 'GET',
@@ -45,7 +45,7 @@ function setFamilyMemberDeleteItemButtonEventListeners(familyMemberId) {
     if (deleteButton) {
         const deleteButtonAction = async function (event) {
             event.preventDefault();
-            // await displayDeleteFamilyMemberModal(familyMemberId.toString());
+            await displayDeleteFamilyMemberModal(familyMemberId.toString());
         };
         // Clear existing event listeners.
         deleteButton.removeEventListener('click', deleteButtonAction);

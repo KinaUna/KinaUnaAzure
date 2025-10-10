@@ -1,8 +1,8 @@
-﻿@model UserGroupsViewModel
-@usin@using KinaUna.Data
+﻿@model PermissionsListViewModel
+@using KinaUna.Data
 @using KinaUnaWeb.Models.FamilyAccessViewModels
 @using KinaUnaWeb.Services
-ct ILocaleManager LocaleManager
+@inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Manage User Access", PageNames.Family, Model.LanguageId);
 }

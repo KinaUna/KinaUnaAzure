@@ -1,35 +1,51 @@
-﻿@using KinaUna.Data.Extensions
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUna.Data.Models.AccessManagement
 @using KinaUna.Data.Models.Family
 @using KinaUnaWeb.Models.FamilyAccessViewModels
 @using KinaUnaWeb.Services
-@model UserGroupsViewModel
+@model PermissionsListViewModel
 @inject ILocaleManager LocaleManager
+@{
+    // Todo: Translations for PermissionLevel enum values.
+    string groupPermissionsString = await LocaleManager.GetTranslation("Group permissions", PageNames.AccessManagement, Model.LanguageId);
+    string addgroupString = await LocaleManager.GetTranslation("Add new group", PageNames.AccessManagement, Model.LanguageId);
+    string familyAccessString = await LocaleManager.GetTranslation("Family access", PageNames.AccessManagement, Model.LanguageId);
+    string groupNameString = await LocaleManager.GetTranslation("Group name", PageNames.AccessManagement, Model.LanguageId);
+    string permissionString = await LocaleManager.GetTranslation("Permission", PageNames.AccessManagement, Model.LanguageId);
+    string addMemberString = await LocaleManager.GetTranslation("Add member", PageNames.AccessManagement, Model.LanguageId);
+    string addUserString = await LocaleManager.GetTranslation("Add new user", PageNames.AccessManagement, Model.LanguageId);
+    string editString = await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId);
+    string deleteString = await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId);
+    string membersString = await LocaleManager.GetTranslation("Members", PageNames.AccessManagement, Model.LanguageId);
+    string userPermissionsString = await LocaleManager.GetTranslation("User permissions", PageNames.AccessManagement, Model.LanguageId);
+    string individualAccessString = await LocaleManager.GetTranslation("Individual access", PageNames.AccessManagement, Model.LanguageId);
+}
 <div class="row m-0">
     <div class="col-12 h-4">
-        Family Access
+        @familyAccessString
     </div>
     @foreach (Family family in Model.Families)
     {
         <div class="col-12 mt-3 mb-1 h4">
             <i class="material-icons kinauna-icon-medium" style="font-size: 32px">family_restroom</i> @family.Name
         </div>
-        <div class="col-12 h5">Group permissions</div>
+        <div class="col-12 h5">@groupPermissionsString</div>
         <div class="col-12">
-            <button class="add-group-button" data-progeny-id="0" data-family-id="@family.FamilyId">Add new group</button>
+            <button class="add-group-button" data-progeny-id="0" data-family-id="@family.FamilyId">@addgroupString</button>
         </div>
         @foreach (UserGroup userGroup in Model.UserGroups)
         {
             if (userGroup.FamilyId == family.FamilyId)
             {
                 <div class="col-12">
-                    <span>Group name: @userGroup.Name</span><span>Permission: @userGroup.PermissionLevel.ToString()</span>
-                    <button class="add-group-member-button" data-group-id="@userGroup.UserGroupId">Add member</button>
-                    <button class="edit-group-button" data-edit-group-id="@userGroup.UserGroupId">Edit</button>
-                    <button class="delete-group-button" data-delete-group-id="@userGroup.UserGroupId">Delete</button>
+                    <span>@groupNameString: @userGroup.Name</span><span>@permissionString: @userGroup.PermissionLevel.ToString()</span>
+                    <button class="add-group-member-button" data-group-id="@userGroup.UserGroupId">@addMemberString</button>
+                    <button class="edit-group-button" data-edit-group-id="@userGroup.UserGroupId">@editString</button>
+                    <button class="delete-group-button" data-delete-group-id="@userGroup.UserGroupId">@deleteString</button>
                 </div>
                 <div class="col-12">
-                    Members:
+                    @membersString:
                     <div class="row">
                         @foreach (UserGroupMember userGroupMember in userGroup.Members)
                         {
@@ -41,8 +57,8 @@
                                 }
                             </div>
                             <div class="col-12">
-                                <button class="edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">Edit</button>
-                                <button class="delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">Delete</button>
+                                <button class="edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">@editString</button>
+                                <button class="delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">@deleteString</button>
                             </div>
                         }
                     </div>
@@ -50,9 +66,9 @@
             }
         }
 
-        <div class="col-12 h5">User permissions</div>
+        <div class="col-12 h5">@userPermissionsString:</div>
         <div class="col-12">
-            <button class="add-user-button" data-progeny-id="0" data-family-id="@family.FamilyId">Add new user</button>
+            <button class="add-user-button" data-progeny-id="0" data-family-id="@family.FamilyId">@addUserString</button>
         </div>
         @foreach (FamilyPermission familyPermission in Model.FamilyPermissions)
         {
@@ -64,10 +80,11 @@
                     {
                         <span> @familyPermission.UserInfo.FullName()</span>
                     }
+                    <span>@permissionString: @familyPermission.PermissionLevel.ToString()</span>
                 </div>
                 <div class="col-12">
-                    <button class="edit-user-family-permission-button" data-edit-user-family-permission-id="@familyPermission.FamilyPermissionId" data-family-id="@family.FamilyId">Edit</button>
-                    <button class="delete-user-family-permission-button" data-delete-user-family-permission-id="@familyPermission.FamilyPermissionId" data-family-id="@family.FamilyId">Delete</button>
+                    <button class="edit-user-family-permission-button" data-edit-user-family-permission-id="@familyPermission.FamilyPermissionId" data-family-id="@family.FamilyId">@editString</button>
+                    <button class="delete-user-family-permission-button" data-delete-user-family-permission-id="@familyPermission.FamilyPermissionId" data-family-id="@family.FamilyId">@deleteString</button>
                 </div>
             }
         }
@@ -75,29 +92,29 @@
 </div>
 <div class="row m-0">
     <div class="col-12 h4">
-        Individual Access
+        @individualAccessString
     </div>
     @foreach (Progeny progeny in Model.Progenies)
     {
         <div class="col-12 mt-3 mb-1 h4">
             <i class="material-icons kinauna-icon-medium" style="font-size: 32px">family_restroom</i> @progeny.NickName
         </div>
-        <div class="col-12 h5">Group permissions</div>
+        <div class="col-12 h5">@groupPermissionsString</div>
         <div class="col-12">
-            <button class="add-group-button" data-progeny-id="@progeny.Id" data-family-id="0">Add new group</button>
+            <button class="add-group-button" data-progeny-id="@progeny.Id" data-family-id="0">@addgroupString</button>
         </div>
         @foreach (UserGroup userGroup in Model.UserGroups)
         {
             if (userGroup.ProgenyId == progeny.Id)
             {
                 <div class="col-12">
-                    <span>Group name: @userGroup.Name</span><span>Permission: @userGroup.PermissionLevel.ToString()</span>
-                    <button class="add-group-member-button" data-group-id="@userGroup.UserGroupId">Add member</button>
-                    <button class="edit-group-button" data-edit-group-id="@userGroup.UserGroupId">Edit</button>
-                    <button class="delete-group-button" data-delete-group-id="@userGroup.UserGroupId">Delete</button>
+                    <span>@groupNameString: @userGroup.Name</span><span>@permissionString: @userGroup.PermissionLevel.ToString()</span>
+                    <button class="add-group-member-button" data-group-id="@userGroup.UserGroupId">@addMemberString</button>
+                    <button class="edit-group-button" data-edit-group-id="@userGroup.UserGroupId">@editString</button>
+                    <button class="delete-group-button" data-delete-group-id="@userGroup.UserGroupId">@deleteString</button>
                 </div>
                 <div class="col-12">
-                    Members:
+                    @membersString:
                     <div class="row">
                         @foreach (UserGroupMember userGroupMember in userGroup.Members)
                         {
@@ -109,8 +126,8 @@
                                 }
                             </div>
                             <div class="col-12">
-                                <button class="edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">Edit</button>
-                                <button class="delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">Delete</button>
+                                <button class="edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">@editString</button>
+                                <button class="delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">@deleteString</button>
                             </div>
                         }
                     </div>
@@ -118,9 +135,9 @@
             }
         }
 
-        <div class="col-12 h5">User permissions</div>
+        <div class="col-12 h5">@userPermissionsString</div>
         <div class="col-12">
-            <button class="add-user-button" data-progeny-id="@progeny.Id" data-family-id="0">Add new user</button>
+            <button class="add-user-button" data-progeny-id="@progeny.Id" data-family-id="0">@addUserString</button>
         </div>
         @foreach (ProgenyPermission progenyPermission in Model.ProgenyPermissions)
         {
@@ -132,10 +149,11 @@
                     {
                         <span> @progenyPermission.UserInfo.FullName()</span>
                     }
+                    <span>@permissionString: @progenyPermission.PermissionLevel.ToString()</span>
                 </div>
                 <div class="col-12">
-                    <button class="edit-user-progeny-permission-button" data-edit-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId" data-progeny-id="@progeny.Id">Edit</button>
-                    <button class="delete-user-progeny-permission-button" data-delete-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId" data-progeny-id="@progeny.Id">Delete</button>
+                    <button class="edit-user-progeny-permission-button" data-edit-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId" data-progeny-id="@progeny.Id">@editString</button>
+                    <button class="delete-user-progeny-permission-button" data-delete-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId" data-progeny-id="@progeny.Id">@deleteString</button>
                 </div>
             }
         }

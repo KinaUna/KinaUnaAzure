@@ -21,6 +21,16 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<List<UserGroup>> GetUserGroupsForProgeny(int progenyId);
 
         /// <summary>
+        /// Retrieves the details of a user group by its unique identifier.
+        /// </summary>
+        /// <remarks>This method requires the caller to be authenticated. The method retrieves a valid
+        /// access token  for the signed-in user and includes it in the request to the user groups API.</remarks>
+        /// <param name="userGroupId">The unique identifier of the user group to retrieve.</param>
+        /// <returns>A <see cref="UserGroup"/> object containing the details of the specified user group.  If the user group is
+        /// not found or the request fails, an empty <see cref="UserGroup"/> object is returned.</returns>
+        Task<UserGroup> GetUserGroup(int userGroupId);
+
+        /// <summary>
         /// Adds a new user group.
         /// </summary>
         /// <param name="userGroup">The user group to add</param>

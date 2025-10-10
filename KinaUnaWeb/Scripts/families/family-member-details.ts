@@ -1,6 +1,6 @@
 ﻿import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9.js";
-import { displayEditFamilyMemberModal } from "./add-edit-family-member.js";
+import { displayDeleteFamilyMemberModal, displayEditFamilyMemberModal } from "./add-edit-family-member.js";
 
 export async function displayFamilyMemberDetails(familyMemberId: number): Promise<void> {
     const response = await fetch('/Families/FamilyMemberDetails?familyMemberId=' + familyMemberId, {
