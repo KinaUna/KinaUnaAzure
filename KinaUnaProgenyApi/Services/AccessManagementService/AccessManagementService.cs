@@ -86,6 +86,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     if (progenyPermission.PermissionLevel > highestPermission)
                     {
                         highestPermission = progenyPermission.PermissionLevel;
+                        inheritedPermission.PermissionLevel = progenyPermission.PermissionLevel;
                         resultPermission = inheritedPermission;
 
                     }
@@ -97,6 +98,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     if (familyPermission.PermissionLevel > highestPermission)
                     {
                         highestPermission = familyPermission.PermissionLevel;
+                        inheritedPermission.PermissionLevel = familyPermission.PermissionLevel;
                         resultPermission = inheritedPermission;
                     }
                 }
@@ -126,8 +128,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     }
                 }
 
-                resultPermission = timelineItemPermission;
-                highestPermission = timelineItemPermission.PermissionLevel;
+                if (timelineItemPermission.PermissionLevel > highestPermission)
+                {
+                    resultPermission = timelineItemPermission;
+                    highestPermission = timelineItemPermission.PermissionLevel;
+                }
             }
 
             // Check group permissions.
@@ -750,6 +755,10 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                         }
                     }
                 }
+                else
+                {
+                    canGrantAccess = true;
+                }
             }
             else
             {
@@ -776,7 +785,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                         }
                     }
                 }
+                else
+                {
+                    canGrantAccess = true;
+                }
             }
+
             if (!canGrantAccess)
             {
                 return null; // Todo: Use result object instead.
@@ -928,31 +942,30 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         public async Task<TimelineItemPermission> UpdateItemPermission(TimelineItemPermission timelineItemPermission, UserInfo currentUserInfo)
         {
             // Check if the permission exists.
-            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
-                .SingleOrDefaultAsync(tp => tp.TimelineItemPermissionId == timelineItemPermission.TimelineItemPermissionId);
+            TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp => tp.TimelineItemPermissionId == timelineItemPermission.TimelineItemPermissionId);
 
             if (existingPermission == null && !string.IsNullOrWhiteSpace(timelineItemPermission.Email))
             {
-                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp =>
                     tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.Email.Length > 4 && tp.Email == timelineItemPermission.Email);
                 
             }
 
             if (existingPermission == null && !string.IsNullOrWhiteSpace(timelineItemPermission.UserId))
             {
-                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb
                     .SingleOrDefaultAsync(tp =>
                         tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.UserId == timelineItemPermission.UserId);
 
             }
             if (existingPermission == null && timelineItemPermission.GroupId > 0)
             {
-                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp =>
                     tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.GroupId == timelineItemPermission.GroupId);
             }
             if (existingPermission == null && timelineItemPermission.InheritPermissions)
             {
-                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
+                existingPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp =>
                     tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.InheritPermissions == timelineItemPermission.InheritPermissions);
             }
 
