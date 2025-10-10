@@ -3,6 +3,29 @@ import { displayAddGroupMemberModal, displayEditGroupMemberModal, displayDeleteG
 import { displayAddGroupModal, displayEditGroupModal, displayDeleteGroupModal } from "./add-edit-group.js";
 import { displayAddUserPermissionModal, displayEditFamilyPermissionModal, displayDeleteFamilyPermissionModal, displayEditProgenyPermissionModal, displayDeleteProgenyPermissionModal } from "./add-edit-user-permission.js";
 let languageId = 1; // Default to English
+export async function loadPermissionsList() {
+    const permissionsListDiv = document.querySelector('#permissions-list-div');
+    if (permissionsListDiv) {
+        permissionsListDiv.innerHTML = '';
+        const response = await fetch('/FamilyAccess/PermissionsList', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (response.ok) {
+            const permissionsList = await response.text();
+            permissionsListDiv.innerHTML = permissionsList;
+            addPermissionsListEventListeners();
+            return Promise.resolve();
+        }
+        else {
+            console.error('Failed to fetch permissions list:', response.statusText);
+            return Promise.reject('Failed to fetch permissions list: ' + response.statusText);
+        }
+    }
+    return Promise.reject('Permissions list div not found in the document.');
+}
 function addAddGroupButtonsEventListeners() {
     const addButtonsList = document.querySelectorAll('.add-group-button');
     addButtonsList.forEach((button) => {
@@ -170,8 +193,7 @@ function addDeleteUserProgenyPermissionButtonsEventListeners() {
         button.addEventListener('click', buttonAction);
     });
 }
-document.addEventListener('DOMContentLoaded', async function () {
-    languageId = getCurrentLanguageId();
+function addPermissionsListEventListeners() {
     addAddGroupButtonsEventListeners();
     addEditGroupButtonsEventListeners();
     addDeleteGroupButtonsEventListeners();
@@ -183,6 +205,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     addDeleteUserFamilyPermissionButtonsEventListeners();
     addEditUserProgenyPermissionButtonsEventListeners();
     addDeleteUserProgenyPermissionButtonsEventListeners();
+}
+document.addEventListener('DOMContentLoaded', async function () {
+    languageId = getCurrentLanguageId();
+    await loadPermissionsList();
     return Promise.resolve();
 });
 //# sourceMappingURL=family-access-index.js.map

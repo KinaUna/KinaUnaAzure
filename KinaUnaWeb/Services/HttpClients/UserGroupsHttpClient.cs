@@ -1,5 +1,6 @@
 ﻿using Duende.IdentityModel.Client;
 using KinaUna.Data;
+using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -20,7 +21,7 @@ namespace KinaUnaWeb.Services.HttpClients
     /// an external API. It manages HTTP requests, including setting authentication tokens and handling API responses.
     /// The base address for the API is configured based on the application's environment (e.g., Development,
     /// Staging).</remarks>
-    public class UserGroupsHttpClient: IUserGroupsHttpClient
+    public class UserGroupsHttpClient : IUserGroupsHttpClient
     {
         private readonly HttpClient _httpClient;
         private readonly ITokenService _tokenService;
@@ -65,9 +66,9 @@ namespace KinaUnaWeb.Services.HttpClients
             {
                 return new List<UserGroup>();
             }
-            
+
             List<UserGroup> userGroups = await response.Content.ReadAsAsync<List<UserGroup>>();
-            
+
             return userGroups;
         }
 
@@ -81,18 +82,162 @@ namespace KinaUnaWeb.Services.HttpClients
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            
+
             string userGroupsApiPath = "api/UserGroups/GetUserGroupsForProgeny/" + progenyId;
-            
+
             HttpResponseMessage response = await _httpClient.GetAsync(userGroupsApiPath);
             if (!response.IsSuccessStatusCode)
             {
                 return new List<UserGroup>();
             }
-            
+
             List<UserGroup> userGroups = await response.Content.ReadAsAsync<List<UserGroup>>();
-            
+
             return userGroups;
+        }
+
+        /// <summary>
+        /// Adds a new user group.
+        /// </summary>
+        /// <param name="userGroup">The user group to add</param>
+        /// <returns>The added user group</returns>
+        public async Task<UserGroup> AddUserGroup(UserGroup userGroup)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string userGroupsApiPath = "api/UserGroups/";
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(userGroupsApiPath, userGroup);
+            if (!response.IsSuccessStatusCode)
+            {
+                return new UserGroup();
+            }
+
+            UserGroup addedUserGroup = await response.Content.ReadAsAsync<UserGroup>();
+
+            return addedUserGroup;
+        }
+
+        /// <summary>
+        /// Updates an existing user group.
+        /// </summary>
+        /// <param name="userGroup">The user group to update</param>
+        /// <returns>The updated user group</returns>
+        public async Task<UserGroup> UpdateUserGroup(UserGroup userGroup)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string userGroupsApiPath = "api/UserGroups/";
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(userGroupsApiPath, userGroup);
+            if (!response.IsSuccessStatusCode)
+            {
+                return new UserGroup();
+            }
+
+            UserGroup updatedUserGroup = await response.Content.ReadAsAsync<UserGroup>();
+
+            return updatedUserGroup;
+        }
+
+        /// <summary>
+        /// Deletes a user group with the specified identifier.
+        /// </summary>
+        /// <remarks>This method sends an HTTP DELETE request to the user groups API to remove the
+        /// specified user group. The caller must ensure that the <paramref name="userGroupId"/> corresponds to a valid
+        /// user group.</remarks>
+        /// <param name="userGroupId">The unique identifier of the user group to delete.</param>
+        /// <returns><see langword="true"/> if the user group was successfully deleted; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> DeleteUserGroup(int userGroupId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string userGroupsApiPath = "api/UserGroups/" + userGroupId;
+            HttpResponseMessage response = await _httpClient.DeleteAsync(userGroupsApiPath);
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Adds a new user to a user group.
+        /// </summary>
+        /// <param name="userGroupMember">The user group member to add</param>
+        /// <returns>The added user group member</returns>
+        public async Task<UserGroupMember> AddUserGroupMember(UserGroupMember userGroupMember)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            string userGroupsApiPath = "api/UserGroups/AddUserGroupMember";
+
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(userGroupsApiPath, userGroupMember);
+            if (!response.IsSuccessStatusCode)
+            {
+                return new UserGroupMember();
+            }
+
+            UserGroupMember addedUserGroupMember = await response.Content.ReadAsAsync<UserGroupMember>();
+
+            return addedUserGroupMember;
+        }
+
+        /// <summary>
+        /// Updates the details of an existing user group member.
+        /// </summary>
+        /// <remarks>This method sends an HTTP PUT request to the User Groups API to update the specified
+        /// user group member. The caller must ensure that the <paramref name="userGroupMember"/> parameter contains
+        /// valid data.</remarks>
+        /// <param name="userGroupMember">The <see cref="UserGroupMember"/> object containing the updated details of the user group member.</param>
+        /// <returns>A <see cref="UserGroupMember"/> object representing the updated user group member.  If the update operation
+        /// fails, an empty <see cref="UserGroupMember"/> object is returned.</returns>
+        public async Task<UserGroupMember> UpdateUserGroupMember(UserGroupMember userGroupMember)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string userGroupsApiPath = "api/UserGroups/UpdateUserGroupMember";
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(userGroupsApiPath, userGroupMember);
+            if (!response.IsSuccessStatusCode)
+            {
+                return new UserGroupMember();
+            }
+
+            UserGroupMember updatedUserGroupMember = await response.Content.ReadAsAsync<UserGroupMember>();
+
+            return updatedUserGroupMember;
+        }
+
+        /// <summary>
+        /// Removes a user group member with the specified identifier.
+        /// </summary>
+        /// <remarks>This method sends a DELETE request to the User Groups API to remove the specified
+        /// user group member. The operation requires a valid access token, which is retrieved for the currently
+        /// signed-in user.</remarks>
+        /// <param name="userGroupMemberId">The unique identifier of the user group member to be removed.</param>
+        /// <returns><see langword="true"/> if the user group member was successfully removed; otherwise, <see
+        /// langword="false"/>.</returns>
+        public async Task<bool> RemoveUserGroupMember(int userGroupMemberId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            string userGroupsApiPath = "api/UserGroups/RemoveUserGroupMember/" + userGroupMemberId;
+            HttpResponseMessage response = await _httpClient.DeleteAsync(userGroupsApiPath);
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

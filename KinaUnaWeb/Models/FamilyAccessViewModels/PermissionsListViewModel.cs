@@ -2,11 +2,11 @@
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
 
-namespace KinaUnaWeb.Models.FamiliesViewModels
+namespace KinaUnaWeb.Models.FamilyAccessViewModels
 {
-    public class UserGroupsViewModel: BaseItemsViewModel
+    public class PermissionsListViewModel: BaseItemsViewModel
     {
-        public UserGroupsViewModel(BaseItemsViewModel baseItemsViewModel)
+        public PermissionsListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
         }

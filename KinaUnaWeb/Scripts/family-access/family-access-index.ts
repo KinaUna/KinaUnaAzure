@@ -5,6 +5,30 @@ import { displayAddUserPermissionModal, displayEditFamilyPermissionModal, displa
 
 let languageId = 1; // Default to English
 
+export async function loadPermissionsList() {
+    const permissionsListDiv = document.querySelector<HTMLDivElement>('#permissions-list-div');
+    if (permissionsListDiv) {
+        permissionsListDiv.innerHTML = '';
+        const response = await fetch('/FamilyAccess/PermissionsList', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (response.ok) {
+            const permissionsList = await response.text();
+            permissionsListDiv.innerHTML = permissionsList;
+            addPermissionsListEventListeners();
+
+            return Promise.resolve();
+        } else {
+            console.error('Failed to fetch permissions list:', response.statusText);
+            return Promise.reject('Failed to fetch permissions list: ' + response.statusText);
+        }
+    }
+    return Promise.reject('Permissions list div not found in the document.');
+}
+
 function addAddGroupButtonsEventListeners() {
     const addButtonsList = document.querySelectorAll<HTMLButtonElement>('.add-group-button');
     addButtonsList.forEach((button) => {
@@ -185,9 +209,7 @@ function addDeleteUserProgenyPermissionButtonsEventListeners() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', async function () {
-    languageId = getCurrentLanguageId();
-
+function addPermissionsListEventListeners() {
     addAddGroupButtonsEventListeners();
     addEditGroupButtonsEventListeners();
     addDeleteGroupButtonsEventListeners();
@@ -200,9 +222,15 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     addEditUserFamilyPermissionButtonsEventListeners();
     addDeleteUserFamilyPermissionButtonsEventListeners();
-       
+
     addEditUserProgenyPermissionButtonsEventListeners();
     addDeleteUserProgenyPermissionButtonsEventListeners();
+}
+
+document.addEventListener('DOMContentLoaded', async function () {
+    languageId = getCurrentLanguageId();
+
+    await loadPermissionsList();
 
     return Promise.resolve();
 });

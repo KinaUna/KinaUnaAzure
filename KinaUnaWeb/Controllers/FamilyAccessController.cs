@@ -2,7 +2,7 @@
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
-using KinaUnaWeb.Models.FamiliesViewModels;
+using KinaUnaWeb.Models.FamilyAccessViewModels;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +20,19 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index()
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
-            UserGroupsViewModel model = new(baseModel)
+            PermissionsListViewModel model = new(baseModel)
+            {
+                Families = await familiesHttpClient.GetMyFamilies()
+            };
+            model.Progenies = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            
+            return View(model);
+        }
+
+        public async Task<IActionResult> PermissionsList()
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
+            PermissionsListViewModel model = new(baseModel)
             {
                 Families = await familiesHttpClient.GetMyFamilies()
             };
@@ -41,8 +53,66 @@ namespace KinaUnaWeb.Controllers
                 List<ProgenyPermission> progenyPermissions = await progenyHttpClient.GetProgenyPermissionsList(progeny.Id);
                 model.ProgenyPermissions.AddRange(progenyPermissions);
             }
+
+            return PartialView("_PermissionsListPartial", model);
+        }
+
+        [HttpGet("[action]/{progenyId:int}/{familyId:int}")]
+        public async Task<IActionResult> AddGroup(int progenyId, int familyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, familyId, false);
+            UserGroupViewModel model = new(baseModel);
+
+            if (progenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+                model.UserGroup = new UserGroup
+                {
+                    ProgenyId = progenyId
+                };
+            }
+            if (familyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+                model.UserGroup = new UserGroup
+                {
+                    FamilyId = familyId
+                };
+            }
+
+            return PartialView("_AddGroupPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddGroup(UserGroupViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.UserGroup.ProgenyId, model.UserGroup.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+            if (model.UserGroup.ProgenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+            if (model.UserGroup.FamilyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            UserGroup newGroup = await userGroupsHttpClient.AddUserGroup(model.UserGroup);
             
-            return View(model);
+            return Json(newGroup);
         }
     }
 }
