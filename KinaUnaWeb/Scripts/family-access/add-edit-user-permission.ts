@@ -17,6 +17,7 @@ export async function displayAddUserPermissionModal(progenyId: string, familyId:
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addAddUserPermissionModalEventListeners();
+            validateInputs();
 
             return Promise.resolve();
         } else {
@@ -43,6 +44,11 @@ function addAddUserPermissionModalEventListeners(): void {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+
+    const emailInput = document.getElementById('user-permission-email-input') as HTMLInputElement;
+    if (emailInput) {
+        emailInput.addEventListener('input', validateInputs);
     }
 
     const addPermissionForm = document.querySelector<HTMLFormElement>('#add-permission-form');
@@ -93,6 +99,7 @@ export async function displayEditFamilyPermissionModal(permissionId: string) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addEditFamilyPermissionModalEventListeners();
+            validateInputs();
 
             return Promise.resolve();
         } else {
@@ -120,6 +127,12 @@ function addEditFamilyPermissionModalEventListeners(): void {
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
     }
+
+    const emailInput = document.getElementById('user-permission-email-input') as HTMLInputElement;
+    if (emailInput) {
+        emailInput.addEventListener('input', validateInputs);
+    }
+
     const editPermissionForm = document.querySelector<HTMLFormElement>('#edit-permission-form');
     if (editPermissionForm) {
         const editPermissionFormSubmitAction = async function (event: Event): Promise<void> {
@@ -241,6 +254,7 @@ export async function displayEditProgenyPermissionModal(permissionId: string) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addEditProgenyPermissionModalEventListeners();
+            validateInputs();
 
             return Promise.resolve();
         } else {
@@ -268,6 +282,12 @@ function addEditProgenyPermissionModalEventListeners(): void {
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
     }
+
+    const emailInput = document.getElementById('user-permission-email-input') as HTMLInputElement;
+    if (emailInput) {
+        emailInput.addEventListener('input', validateInputs);
+    }
+
     const editPermissionForm = document.querySelector<HTMLFormElement>('#edit-permission-form');
     if (editPermissionForm) {
         const editPermissionFormSubmitAction = async function (event: Event): Promise<void> {
@@ -371,5 +391,32 @@ function addDeleteProgenyPermissionModalEventListeners(): void {
         };
         deletePermissionForm.removeEventListener('submit', deletePermissionFormSubmitAction);
         deletePermissionForm.addEventListener('submit', deletePermissionFormSubmitAction);
+    }
+}
+
+function validateInputs() {
+    let isValid = true;
+    const saveButton = document.getElementById('save-permission-button');
+    if (saveButton !== null) {
+        const emailInput = document.getElementById('user-permission-email-input') as HTMLInputElement;
+        const emailRequiredDiv = document.querySelector<HTMLDivElement>('#email-required-div');
+        if (emailInput && emailInput.value.trim() === '') {
+            isValid = false;
+            if (emailRequiredDiv) {
+                emailRequiredDiv.classList.remove('d-none');
+            }
+        }
+        else {
+            if (emailRequiredDiv) {
+                emailRequiredDiv.classList.add('d-none');
+            }
+        }
+
+        if (isValid) {
+            saveButton.removeAttribute('disabled');
+        }
+        else {
+            saveButton.setAttribute('disabled', 'disabled');
+        }
     }
 }

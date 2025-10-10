@@ -487,6 +487,9 @@ namespace KinaUnaWeb.Controllers
                 {
                     return Forbid();
                 }
+                model.ProgenyPermission.PermissionLevel = model.PermissionLevel;
+                model.ProgenyPermission.ProgenyId = model.CurrentProgenyId;
+                model.ProgenyPermission.Email = model.Email;
                 ProgenyPermission newProgenyPermission = await progenyHttpClient.AddProgenyPermission(model.ProgenyPermission);
                 return Json(newProgenyPermission);
             }
@@ -496,6 +499,10 @@ namespace KinaUnaWeb.Controllers
                 {
                     return Forbid();
                 }
+
+                model.FamilyPermission.PermissionLevel = model.PermissionLevel;
+                model.FamilyPermission.FamilyId = model.CurrentFamilyId;
+                model.FamilyPermission.Email = model.Email;
                 FamilyPermission newFamilyPermission = await familiesHttpClient.AddFamilyPermission(model.FamilyPermission);
                 return Json(newFamilyPermission);
             }
@@ -506,6 +513,11 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditFamilyPermission(int permissionId)
         {
             FamilyPermission familyPermission = await familiesHttpClient.GetFamilyPermission(permissionId);
+            if (familyPermission == null || familyPermission.FamilyPermissionId == 0)
+            {
+                return NotFound();
+            }
+
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, familyPermission.FamilyId, false);
             PermissionViewModel model = new(baseModel);
             model.FamilyPermission = familyPermission;
@@ -513,6 +525,9 @@ namespace KinaUnaWeb.Controllers
             {
                 return Forbid();
             }
+            model.Email = model.FamilyPermission.Email;
+            model.SetPermissionsLevelsList();
+
             return PartialView("_EditFamilyPermissionPartial", model);
         }
         
@@ -532,6 +547,8 @@ namespace KinaUnaWeb.Controllers
             {
                 return Forbid();
             }
+            model.FamilyPermission.Email = model.Email;
+            model.FamilyPermission.PermissionLevel = model.PermissionLevel;
             FamilyPermission updatedFamilyPermission = await familiesHttpClient.UpdateFamilyPermission(model.FamilyPermission);
             return Json(updatedFamilyPermission);
         }
@@ -541,6 +558,10 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditProgenyPermission(int permissionId)
         {
             ProgenyPermission progenyPermission = await progenyHttpClient.GetProgenyPermission(permissionId);
+            if (progenyPermission == null || progenyPermission.ProgenyPermissionId == 0)
+            {
+                return NotFound();
+            }
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyPermission.ProgenyId, 0, false);
             PermissionViewModel model = new(baseModel);
             model.ProgenyPermission = progenyPermission;
@@ -548,6 +569,9 @@ namespace KinaUnaWeb.Controllers
             {
                 return Forbid();
             }
+            model.Email = model.ProgenyPermission.Email;
+            model.SetPermissionsLevelsList();
+
             return PartialView("_EditProgenyPermissionPartial", model);
         }
 
@@ -566,6 +590,9 @@ namespace KinaUnaWeb.Controllers
             {
                 return Forbid();
             }
+            model.ProgenyPermission.Email = model.Email;
+            model.ProgenyPermission.PermissionLevel = model.PermissionLevel;
+
             ProgenyPermission updatedProgenyPermission = await progenyHttpClient.UpdateProgenyPermission(model.ProgenyPermission);
             return Json(updatedProgenyPermission);
         }
@@ -586,6 +613,10 @@ namespace KinaUnaWeb.Controllers
             {
                 return Forbid();
             }
+            model.Email = model.FamilyPermission.Email;
+            model.PermissionLevel = model.FamilyPermission.PermissionLevel;
+            model.SetPermissionsLevelsList();
+
             return PartialView("_DeleteFamilyPermissionPartial", model);
         }
 
@@ -624,6 +655,10 @@ namespace KinaUnaWeb.Controllers
             {
                 return Forbid();
             }
+            model.Email = model.ProgenyPermission.Email;
+            model.PermissionLevel = model.ProgenyPermission.PermissionLevel;
+            model.SetPermissionsLevelsList();
+
             return PartialView("_DeleteProgenyPermissionPartial", model);
         }
 

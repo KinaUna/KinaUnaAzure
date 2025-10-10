@@ -16,6 +16,7 @@ export async function displayAddUserPermissionModal(progenyId, familyId) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addAddUserPermissionModalEventListeners();
+            validateInputs();
             return Promise.resolve();
         }
         else {
@@ -42,6 +43,10 @@ function addAddUserPermissionModalEventListeners() {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+    const emailInput = document.getElementById('user-permission-email-input');
+    if (emailInput) {
+        emailInput.addEventListener('input', validateInputs);
     }
     const addPermissionForm = document.querySelector('#add-permission-form');
     if (addPermissionForm) {
@@ -90,6 +95,7 @@ export async function displayEditFamilyPermissionModal(permissionId) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addEditFamilyPermissionModalEventListeners();
+            validateInputs();
             return Promise.resolve();
         }
         else {
@@ -116,6 +122,10 @@ function addEditFamilyPermissionModalEventListeners() {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+    const emailInput = document.getElementById('user-permission-email-input');
+    if (emailInput) {
+        emailInput.addEventListener('input', validateInputs);
     }
     const editPermissionForm = document.querySelector('#edit-permission-form');
     if (editPermissionForm) {
@@ -238,6 +248,7 @@ export async function displayEditProgenyPermissionModal(permissionId) {
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
             addEditProgenyPermissionModalEventListeners();
+            validateInputs();
             return Promise.resolve();
         }
         else {
@@ -264,6 +275,10 @@ function addEditProgenyPermissionModalEventListeners() {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
+    }
+    const emailInput = document.getElementById('user-permission-email-input');
+    if (emailInput) {
+        emailInput.addEventListener('input', validateInputs);
     }
     const editPermissionForm = document.querySelector('#edit-permission-form');
     if (editPermissionForm) {
@@ -369,6 +384,31 @@ function addDeleteProgenyPermissionModalEventListeners() {
         };
         deletePermissionForm.removeEventListener('submit', deletePermissionFormSubmitAction);
         deletePermissionForm.addEventListener('submit', deletePermissionFormSubmitAction);
+    }
+}
+function validateInputs() {
+    let isValid = true;
+    const saveButton = document.getElementById('save-permission-button');
+    if (saveButton !== null) {
+        const emailInput = document.getElementById('user-permission-email-input');
+        const emailRequiredDiv = document.querySelector('#email-required-div');
+        if (emailInput && emailInput.value.trim() === '') {
+            isValid = false;
+            if (emailRequiredDiv) {
+                emailRequiredDiv.classList.remove('d-none');
+            }
+        }
+        else {
+            if (emailRequiredDiv) {
+                emailRequiredDiv.classList.add('d-none');
+            }
+        }
+        if (isValid) {
+            saveButton.removeAttribute('disabled');
+        }
+        else {
+            saveButton.setAttribute('disabled', 'disabled');
+        }
     }
 }
 //# sourceMappingURL=add-edit-user-permission.js.map
