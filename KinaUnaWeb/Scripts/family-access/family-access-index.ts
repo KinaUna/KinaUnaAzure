@@ -1,4 +1,7 @@
 ﻿import { getCurrentLanguageId } from "../data-tools-v9.js";
+import { displayAddGroupMemberModal, displayEditGroupMemberModal, displayDeleteGroupMemberModal } from "./add-edit-group-member.js";
+import { displayAddGroupModal, displayEditGroupModal, displayDeleteGroupModal } from "./add-edit-group.js";
+import { displayAddUserPermissionModal, displayEditFamilyPermissionModal, displayDeleteFamilyPermissionModal, displayEditProgenyPermissionModal, displayDeleteProgenyPermissionModal } from "./add-edit-user-permission.js";
 
 let languageId = 1; // Default to English
 
@@ -10,7 +13,39 @@ function addAddGroupButtonsEventListeners() {
             const progenyId = (event.currentTarget as HTMLButtonElement).getAttribute('data-progeny-id');
             const familyId = (event.currentTarget as HTMLButtonElement).getAttribute('data-family-id');
             if (progenyId && familyId) {
-                // await displayAddGroupMemberModal(progenyId, familyId);
+                 await displayAddGroupModal(progenyId, familyId);
+            }
+        }
+        // Clear existing event listeners.
+        button.removeEventListener('click', buttonAction);
+        button.addEventListener('click', buttonAction);
+    });
+}
+
+function addEditGroupButtonsEventListeners() {
+    const addButtonsList = document.querySelectorAll<HTMLButtonElement>('.edit-group-button');
+    addButtonsList.forEach((button) => {
+        const buttonAction = async function (event: MouseEvent): Promise<void> {
+            event.preventDefault();
+            const groupId = (event.currentTarget as HTMLButtonElement).getAttribute('data-edit-group-id');
+            if (groupId) {
+                await displayEditGroupModal(groupId);
+            }
+        }
+        // Clear existing event listeners.
+        button.removeEventListener('click', buttonAction);
+        button.addEventListener('click', buttonAction);
+    });
+}
+
+function addDeleteGroupButtonsEventListeners() {
+    const addButtonsList = document.querySelectorAll<HTMLButtonElement>('.delete-group-button');
+    addButtonsList.forEach((button) => {
+        const buttonAction = async function (event: MouseEvent): Promise<void> {
+            event.preventDefault();
+            const groupId = (event.currentTarget as HTMLButtonElement).getAttribute('data-delete-group-id');
+            if (groupId) {
+                await displayDeleteGroupModal(groupId);
             }
         }
         // Clear existing event listeners.
@@ -27,7 +62,7 @@ function addAddGroupMemberButtonsEventListeners() {
             event.preventDefault();
             const groupId = (event.currentTarget as HTMLButtonElement).getAttribute('data-group-id');
             if (groupId) {
-                // await displayAddGroupMemberModal(groupId);
+                await displayAddGroupMemberModal(groupId);
             }
         }
         // Clear existing event listeners.
@@ -43,7 +78,7 @@ function addEditUserGroupMemberButtonsEventListeners() {
             event.preventDefault();
             const groupMemberId = (event.currentTarget as HTMLButtonElement).getAttribute('data-edit-user-group-member-id');
             if (groupMemberId) {
-                // await displayEditGroupMemberModal(groupMemberId);
+                await displayEditGroupMemberModal(groupMemberId);
             }
         }
         // Clear existing event listeners.
@@ -60,7 +95,24 @@ function addDeleteUserGroupMemberButtonsEventListeners() {
             event.preventDefault();
             const groupMemberId = (event.currentTarget as HTMLButtonElement).getAttribute('data-delete-user-group-member-id');
             if (groupMemberId) {
-                // await displayDeleteGroupMemberModal(groupMemberId);
+                await displayDeleteGroupMemberModal(groupMemberId);
+            }
+        }
+        // Clear existing event listeners.
+        button.removeEventListener('click', buttonAction);
+        button.addEventListener('click', buttonAction);
+    });
+}
+
+function addAddUserButtonsEventListeners() {
+    const addButtonsList = document.querySelectorAll<HTMLButtonElement>('.add-user-button');
+    addButtonsList.forEach((button) => {
+        const buttonAction = async function (event: MouseEvent): Promise<void> {
+            event.preventDefault();
+            const progenyId = (event.currentTarget as HTMLButtonElement).getAttribute('data-progeny-id');
+            const familyId = (event.currentTarget as HTMLButtonElement).getAttribute('data-family-id');
+            if (progenyId && familyId) {
+                await displayAddUserPermissionModal(progenyId, familyId);
             }
         }
         // Clear existing event listeners.
@@ -76,7 +128,7 @@ function addEditUserFamilyPermissionButtonsEventListeners() {
             event.preventDefault();
             const permissionId = (event.currentTarget as HTMLButtonElement).getAttribute('data-edit-user-family-permission-id');
             if (permissionId) {
-                // await displayEditFamilyPermissionsModal(permissionId);
+                await displayEditFamilyPermissionModal(permissionId);
             }
         }
         // Clear existing event listeners.
@@ -92,7 +144,7 @@ function addDeleteUserFamilyPermissionButtonsEventListeners() {
             event.preventDefault();
             const permissionId = (event.currentTarget as HTMLButtonElement).getAttribute('data-delete-user-family-permission-id');
             if (permissionId) {
-                // await displayDeleteFamilyPermissionsModal(permissionId);
+                await displayDeleteFamilyPermissionModal(permissionId);
             }
         }
         // Clear existing event listeners.
@@ -108,7 +160,7 @@ function addEditUserProgenyPermissionButtonsEventListeners() {
             event.preventDefault();
             const permissionId = (event.currentTarget as HTMLButtonElement).getAttribute('data-edit-user-progeny-permission-id');
             if (permissionId) {
-                // await displayEditProgenyPermissionsModal(permissionId);
+                await displayEditProgenyPermissionModal(permissionId);
             }
         }
         // Clear existing event listeners.
@@ -124,7 +176,7 @@ function addDeleteUserProgenyPermissionButtonsEventListeners() {
             event.preventDefault();
             const permissionId = (event.currentTarget as HTMLButtonElement).getAttribute('data-delete-user-progeny-permission-id');
             if (permissionId) {
-                // await displayDeleteProgenyPermissionsModal(permissionId);
+                await displayDeleteProgenyPermissionModal(permissionId);
             }
         }
         // Clear existing event listeners.
@@ -137,11 +189,18 @@ document.addEventListener('DOMContentLoaded', async function () {
     languageId = getCurrentLanguageId();
 
     addAddGroupButtonsEventListeners();
+    addEditGroupButtonsEventListeners();
+    addDeleteGroupButtonsEventListeners();
+
     addAddGroupMemberButtonsEventListeners();
     addEditUserGroupMemberButtonsEventListeners();
     addDeleteUserGroupMemberButtonsEventListeners();
+
+    addAddUserButtonsEventListeners();
+
     addEditUserFamilyPermissionButtonsEventListeners();
     addDeleteUserFamilyPermissionButtonsEventListeners();
+       
     addEditUserProgenyPermissionButtonsEventListeners();
     addDeleteUserProgenyPermissionButtonsEventListeners();
 
