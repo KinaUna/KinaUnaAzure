@@ -49,6 +49,10 @@ namespace KinaUnaProgenyApi.Services
             {
                 note = await SetNoteInCache(id);
             }
+            if (note == null || note.NoteId == 0)
+            {
+                return null;
+            }
             note.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Note, note.NoteId, note.ProgenyId, 0, currentUserInfo);
             return note;
         }
