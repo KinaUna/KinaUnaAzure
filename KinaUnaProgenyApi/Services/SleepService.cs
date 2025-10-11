@@ -49,6 +49,10 @@ namespace KinaUnaProgenyApi.Services
             {
                 sleep = await SetSleepInCache(id);
             }
+            if (sleep == null || sleep.SleepId == 0)
+            {
+                return null;
+            }
             sleep.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Sleep, sleep.SleepId, sleep.ProgenyId, 0, currentUserInfo);
 
             return sleep;
