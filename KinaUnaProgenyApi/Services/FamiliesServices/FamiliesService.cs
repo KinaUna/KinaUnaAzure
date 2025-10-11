@@ -45,6 +45,11 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             }
 
             Family family = await progenyDbContext.FamiliesDb.AsNoTracking().SingleOrDefaultAsync(f => f.FamilyId == familyId);
+            if (family == null)
+            {
+                return new Family();
+            }
+
             family.FamilyPermission = await accessManagementService.GetFamilyPermissionForUser(familyId, currentUserInfo);
             family.FamilyMembers = await familyMembersService.GetFamilyMembersForFamily(familyId, currentUserInfo);
             return family;
