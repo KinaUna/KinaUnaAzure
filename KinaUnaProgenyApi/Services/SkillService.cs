@@ -50,6 +50,10 @@ namespace KinaUnaProgenyApi.Services
             {
                 skill = await SetSkillInCache(id);
             }
+            if (skill == null || skill.SkillId == 0)
+            {
+                return null;
+            }
 
             skill.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, skill.SkillId, skill.ProgenyId, 0, currentUserInfo);
 

@@ -1,391 +1,856 @@
-﻿//using KinaUna.Data.Contexts;
-//using KinaUna.Data.Models;
-//using KinaUnaProgenyApi.Services;
-//using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.Caching.Distributed;
-//using Microsoft.Extensions.Caching.Memory;
-//using Microsoft.Extensions.Options;
+﻿using KinaUna.Data;
+using KinaUna.Data.Contexts;
+using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Moq;
 
-//namespace KinaUnaProgenyApi.Tests.Services
-//{
-//    public class SkillServiceTests
-//    {
-//        [Fact]
-//        public async Task GetSkill_Should_Return_Skill_Object_When_Id_Is_Valid()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSkill_Should_Return_Skill_Object_When_Id_Is_Valid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+namespace KinaUnaProgenyApi.Tests.Services
+{
+    public class SkillServiceTests
+    {
+        private readonly Mock<IAccessManagementService> _mockAccessManagementService = new();
 
-//            Skill skill1 = new()
-//            {
-//                ProgenyId = 1, Author = "User1", AccessLevel = 0, Name = "Skill1", SkillAddedDate = DateTime.UtcNow, Description = "Skill1", Category = "Category1", SkillFirstObservation = DateTime.UtcNow, SkillNumber = 1
-//            };
+        private static ProgenyDbContext GetInMemoryDbContext(string dbName)
+        {
+            DbContextOptions<ProgenyDbContext> options = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase(databaseName: dbName)
+                .Options;
+            return new ProgenyDbContext(options);
+        }
 
+        private static IDistributedCache GetMemoryCache()
+        {
+            IOptions<MemoryDistributedCacheOptions> options = Options.Create(new MemoryDistributedCacheOptions());
+            return new MemoryDistributedCache(options);
+        }
 
-//            Skill skill2 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill2",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill2",
-//                Category = "Category2",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
+        private static UserInfo CreateTestUserInfo(string userId = "testuser@test.com")
+        {
+            return new UserInfo
+            {
+                UserId = userId,
+                UserEmail = userId
+            };
+        }
 
-//            context.Add(skill1);
-//            context.Add(skill2);
-//            await context.SaveChangesAsync();
+        private static Skill CreateTestSkill(int skillId = 1, int progenyId = 1)
+        {
+            return new Skill
+            {
+                SkillId = skillId,
+                ProgenyId = progenyId,
+                Name = "Test Skill",
+                Description = "Test Description",
+                Category = "Test Category",
+                SkillFirstObservation = DateTime.UtcNow.AddDays(-10),
+                SkillAddedDate = DateTime.UtcNow,
+                Author = "testuser@test.com",
+                CreatedBy = "testuser@test.com",
+                CreatedTime = DateTime.UtcNow
+            };
+        }
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            SkillService skillService = new(context, memoryCache);
+        #region GetSkill Tests
 
-//            Skill resultSkill1 = await skillService.GetSkill(1);
-//            Skill resultSkill2 = await skillService.GetSkill(1); // Uses cache
+        [Fact]
+        public async Task GetSkill_Should_Return_Skill_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkill_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skill = CreateTestSkill();
 
-//            Assert.NotNull(resultSkill1);
-//            Assert.IsType<Skill>(resultSkill1);
-//            Assert.Equal(skill1.Author, resultSkill1.Author);
-//            Assert.Equal(skill1.Name, resultSkill1.Name);
-//            Assert.Equal(skill1.AccessLevel, resultSkill1.AccessLevel);
-//            Assert.Equal(skill1.ProgenyId, resultSkill1.ProgenyId);
+            context.SkillsDb.Add(skill);
+            await context.SaveChangesAsync();
 
-//            Assert.NotNull(resultSkill2);
-//            Assert.IsType<Skill>(resultSkill2);
-//            Assert.Equal(skill1.Author, resultSkill2.Author);
-//            Assert.Equal(skill1.Name, resultSkill2.Name);
-//            Assert.Equal(skill1.AccessLevel, resultSkill2.AccessLevel);
-//            Assert.Equal(skill1.ProgenyId, resultSkill2.ProgenyId);
-//        }
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
 
-//        [Fact]
-//        public async Task GetSkill_Should_Return_Null_When_Id_Is_Invalid()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSkill_Should_Return_Null_When_Id_Is_Invalid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-//            Skill skill1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill1",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill1",
-//                Category = "Category1",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
-            
-//            context.Add(skill1);
-//            await context.SaveChangesAsync();
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            SkillService skillService = new(context, memoryCache);
+            // Act
+            Skill? result = await service.GetSkill(1, userInfo);
 
-//            Skill resultSkill1 = await skillService.GetSkill(2);
-//            Skill resultSkill2 = await skillService.GetSkill(2); // Using cache
-            
-//            Assert.Null(resultSkill1);
-//            Assert.Null(resultSkill2);
-//        }
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.SkillId);
+            Assert.Equal("Test Skill", result.Name);
+            Assert.Equal("Test Description", result.Description);
+            Assert.Equal("Test Category", result.Category);
+            Assert.NotNull(result.ItemPerMission);
+            Assert.Equal(PermissionLevel.View, result.ItemPerMission.PermissionLevel);
+        }
 
-//        [Fact]
-//        public async Task AddSkill_Should_Save_Skill()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddSkill_Should_Save_Skill").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+        [Fact]
+        public async Task GetSkill_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkill_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skill = CreateTestSkill();
 
-//            Skill skill1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill1",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill1",
-//                Category = "Category1",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
+            context.SkillsDb.Add(skill);
+            await context.SaveChangesAsync();
 
-//            context.Add(skill1);
-//            await context.SaveChangesAsync();
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(false);
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            SkillService skillService = new(context, memoryCache);
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
 
-//            Skill skillToAdd = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill2",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill2",
-//                Category = "Category2",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
+            // Act
+            Skill? result = await service.GetSkill(1, userInfo);
 
-//            Skill addedSkill = await skillService.AddSkill(skillToAdd);
-//            Skill? dbSkill = await context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(f => f.SkillId == addedSkill.SkillId);
-//            Skill savedSkill = await skillService.GetSkill(addedSkill.SkillId);
+            // Assert
+            Assert.Null(result);
+        }
 
-//            Assert.NotNull(addedSkill);
-//            Assert.IsType<Skill>(addedSkill);
-//            Assert.Equal(skillToAdd.Author, addedSkill.Author);
-//            Assert.Equal(skillToAdd.Name, addedSkill.Name);
-//            Assert.Equal(skillToAdd.AccessLevel, addedSkill.AccessLevel);
-//            Assert.Equal(skillToAdd.ProgenyId, addedSkill.ProgenyId);
+        [Fact]
+        public async Task GetSkill_Should_Return_Null_When_Skill_Does_Not_Exist()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkill_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
 
-//            if (dbSkill != null)
-//            {
-//                Assert.IsType<Skill>(dbSkill);
-//                Assert.Equal(skillToAdd.Author, dbSkill.Author);
-//                Assert.Equal(skillToAdd.Name, dbSkill.Name);
-//                Assert.Equal(skillToAdd.AccessLevel, dbSkill.AccessLevel);
-//                Assert.Equal(skillToAdd.ProgenyId, dbSkill.ProgenyId);
-//            }
-//            Assert.NotNull(savedSkill);
-//            Assert.IsType<Skill>(savedSkill);
-//            Assert.Equal(skillToAdd.Author, savedSkill.Author);
-//            Assert.Equal(skillToAdd.Name, savedSkill.Name);
-//            Assert.Equal(skillToAdd.AccessLevel, savedSkill.AccessLevel);
-//            Assert.Equal(skillToAdd.ProgenyId, savedSkill.ProgenyId);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 999, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
 
-//        }
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
 
-//        [Fact]
-//        public async Task UpdateSkill_Should_Save_Skill()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateSkill_Should_Save_Skill").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            // Act
+            Skill? result = await service.GetSkill(999, userInfo);
 
-//            Skill skill1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill1",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill1",
-//                Category = "Category1",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
+            // Assert
+            Assert.Null(result);
+        }
 
-//            Skill skill2 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill2",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill2",
-//                Category = "Category2",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
-//            context.Add(skill1);
-//            context.Add(skill2);
-//            await context.SaveChangesAsync();
+        [Fact]
+        public async Task GetSkill_Should_Use_Cache_On_Second_Call()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkill_Cache");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skill = CreateTestSkill();
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            SkillService skillService = new(context, memoryCache);
+            context.SkillsDb.Add(skill);
+            await context.SaveChangesAsync();
 
-//            Skill skillToUpdate = await skillService.GetSkill(1);
-//            skillToUpdate.AccessLevel = 5;
-//            Skill updatedSkill = await skillService.UpdateSkill(skillToUpdate);
-//            Skill? dbSkill = await context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(f => f.SkillId == 1);
-//            Skill savedSkill = await skillService.GetSkill(1);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
 
-//            Assert.NotNull(updatedSkill);
-//            Assert.IsType<Skill>(updatedSkill);
-//            Assert.NotEqual(0, updatedSkill.SkillId);
-//            Assert.Equal("User1", updatedSkill.Author);
-//            Assert.Equal(5, updatedSkill.AccessLevel);
-//            Assert.Equal(1, updatedSkill.ProgenyId);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-//            if (dbSkill != null)
-//            {
-//                Assert.IsType<Skill>(dbSkill);
-//                Assert.NotEqual(0, dbSkill.SkillId);
-//                Assert.Equal("User1", dbSkill.Author);
-//                Assert.Equal(5, dbSkill.AccessLevel);
-//                Assert.Equal(1, dbSkill.ProgenyId);
-//            }
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
 
-//            Assert.NotNull(savedSkill);
-//            Assert.IsType<Skill>(savedSkill);
-//            Assert.NotEqual(0, savedSkill.SkillId);
-//            Assert.Equal("User1", savedSkill.Author);
-//            Assert.Equal(5, savedSkill.AccessLevel);
-//            Assert.Equal(1, savedSkill.ProgenyId);
-//        }
+            // Act
+            Skill? result1 = await service.GetSkill(1, userInfo);
+            Skill? result2 = await service.GetSkill(1, userInfo);
 
-//        [Fact]
-//        public async Task DeleteSkill_Should_Remove_Skill()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteSkill_Should_Remove_Skill").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            // Assert
+            Assert.NotNull(result1);
+            Assert.NotNull(result2);
+            Assert.Equal(result1.SkillId, result2.SkillId);
+            Assert.Equal(result1.Name, result2.Name);
+        }
 
-//            Skill skill1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill1",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill1",
-//                Category = "Category1",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
+        #endregion
 
-//            Skill skill2 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill2",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill2",
-//                Category = "Category2",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
+        #region AddSkill Tests
 
-//            context.Add(skill1);
-//            context.Add(skill2);
-//            await context.SaveChangesAsync();
+        [Fact]
+        public async Task AddSkill_Should_Add_Skill_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("AddSkill_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skillToAdd = CreateTestSkill(0, 1);
+            skillToAdd.ItemPermissionsDtoList = new List<ItemPermissionDto>();
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            SkillService skillService = new(context, memoryCache);
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
+                .ReturnsAsync(true);
 
-//            int skillItemsCountBeforeDelete = context.SkillsDb.Count();
-//            Skill skillToDelete = await skillService.GetSkill(1);
+            _mockAccessManagementService
+                .Setup(x => x.AddItemPermissions(
+                    KinaUnaTypes.TimeLineType.Skill,
+                    It.IsAny<int>(),
+                    1,
+                    0,
+                    It.IsAny<List<ItemPermissionDto>>(),
+                    userInfo))
+                .Returns(Task.CompletedTask);
 
-//            await skillService.DeleteSkill(skillToDelete);
-//            Skill? deletedSkill = await context.SkillsDb.SingleOrDefaultAsync(f => f.SkillId == 1);
-//            int skillItemsCountAfterDelete = context.SkillsDb.Count();
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
 
-//            Assert.Null(deletedSkill);
-//            Assert.Equal(2, skillItemsCountBeforeDelete);
-//            Assert.Equal(1, skillItemsCountAfterDelete);
-//        }
+            // Act
+            Skill? result = await service.AddSkill(skillToAdd, userInfo);
 
-//        [Fact]
-//        public async Task GetSkillsList_Should_Return_List_Of_Skill_When_Progeny_Has_Saved_Skills()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSkillsList_Should_Return_List_Of_Skill_When_Progeny_Has_Saved_Skills").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotEqual(0, result.SkillId);
+            Assert.Equal("Test Skill", result.Name);
+            Assert.Equal("Test Description", result.Description);
+            Assert.Equal("Test Category", result.Category);
+            Assert.Equal(1, result.ProgenyId);
 
-//            Skill skill1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill1",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill1",
-//                Category = "Category1",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
-            
-//            Skill skill2 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill2",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill2",
-//                Category = "Category2",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
+            Skill? dbSkill = await context.SkillsDb.FindAsync(result.SkillId);
+            Assert.NotNull(dbSkill);
+            Assert.Equal(result.SkillId, dbSkill.SkillId);
+        }
 
-//            context.Add(skill1);
-//            context.Add(skill2);
-//            await context.SaveChangesAsync();
+        [Fact]
+        public async Task AddSkill_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("AddSkill_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skillToAdd = CreateTestSkill(0, 1);
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            SkillService skillService = new(context, memoryCache);
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
+                .ReturnsAsync(false);
 
-//            List<Skill> skillsList = await skillService.GetSkillsList(1, 0);
-//            List<Skill> skillsList2 = await skillService.GetSkillsList(1, 0); // Test cached result.
-//            Skill firstSkill = skillsList.First();
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
 
-//            Assert.NotNull(skillsList);
-//            Assert.IsType<List<Skill>>(skillsList);
-//            Assert.Equal(2, skillsList.Count);
-//            Assert.NotNull(skillsList2);
-//            Assert.IsType<List<Skill>>(skillsList2);
-//            Assert.Equal(2, skillsList2.Count);
-//            Assert.NotNull(firstSkill);
-//            Assert.IsType<Skill>(firstSkill);
-//        }
+            // Act
+            Skill? result = await service.AddSkill(skillToAdd, userInfo);
 
-//        [Fact]
-//        public async Task GetSkillsList_Should_Return_Empty_List_Of_Skill_When_Progeny_Has_No_Saved_Skills()
-//        {
-            
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSkillsList_Should_Return_Empty_List_Of_Skill_When_Progeny_Has_No_Saved_Skills").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            // Assert
+            Assert.Null(result);
+            Assert.Empty(context.SkillsDb);
+        }
 
-//            Skill skill1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill1",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill1",
-//                Category = "Category1",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
-            
-//            Skill skill2 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Name = "Skill2",
-//                SkillAddedDate = DateTime.UtcNow,
-//                Description = "Skill2",
-//                Category = "Category2",
-//                SkillFirstObservation = DateTime.UtcNow,
-//                SkillNumber = 1
-//            };
+        [Fact]
+        public async Task AddSkill_Should_Set_Created_And_Modified_Times()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("AddSkill_Timestamps");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skillToAdd = CreateTestSkill(0, 1);
+            skillToAdd.ItemPermissionsDtoList = new List<ItemPermissionDto>();
+            DateTime beforeAdd = DateTime.UtcNow;
 
-//            context.Add(skill1);
-//            context.Add(skill2);
-//            await context.SaveChangesAsync();
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
+                .ReturnsAsync(true);
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            SkillService skillService = new(context, memoryCache);
+            _mockAccessManagementService
+                .Setup(x => x.AddItemPermissions(
+                    KinaUnaTypes.TimeLineType.Skill,
+                    It.IsAny<int>(),
+                    1,
+                    0,
+                    It.IsAny<List<ItemPermissionDto>>(),
+                    userInfo))
+                .Returns(Task.CompletedTask);
 
-//            List<Skill> skillsList = await skillService.GetSkillsList(2, 0);
-//            List<Skill> skillsList2 = await skillService.GetSkillsList(2, 0); // Test cached result.
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
 
-//            Assert.NotNull(skillsList);
-//            Assert.IsType<List<Skill>>(skillsList);
-//            Assert.Empty(skillsList);
-//            Assert.NotNull(skillsList2);
-//            Assert.IsType<List<Skill>>(skillsList2);
-//            Assert.Empty(skillsList2);
-//        }
-//    }
-//}
+            // Act
+            Skill? result = await service.AddSkill(skillToAdd, userInfo);
+            DateTime afterAdd = DateTime.UtcNow;
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.CreatedTime >= beforeAdd && result.CreatedTime <= afterAdd);
+            Assert.True(result.ModifiedTime >= beforeAdd && result.ModifiedTime <= afterAdd);
+        }
+
+        #endregion
+
+        #region UpdateSkill Tests
+
+        [Fact]
+        public async Task UpdateSkill_Should_Update_Skill_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateSkill_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skill = CreateTestSkill();
+
+            context.SkillsDb.Add(skill);
+            await context.SaveChangesAsync();
+            context.Entry(skill).State = EntityState.Detached;
+
+            Skill updatedSkill = CreateTestSkill();
+            updatedSkill.Name = "Updated Name";
+            updatedSkill.Description = "Updated Description";
+            updatedSkill.Category = "Updated Category";
+            updatedSkill.ItemPermissionsDtoList = new List<ItemPermissionDto>();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.UpdateItemPermissions(
+                    KinaUnaTypes.TimeLineType.Skill,
+                    1,
+                    1,
+                    0,
+                    It.IsAny<List<ItemPermissionDto>>(),
+                    userInfo))
+                .ReturnsAsync(new List<TimelineItemPermission>());
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            Skill? result = await service.UpdateSkill(updatedSkill, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Updated Name", result.Name);
+            Assert.Equal("Updated Description", result.Description);
+            Assert.Equal("Updated Category", result.Category);
+
+            Skill? dbSkill = await context.SkillsDb.FindAsync(1);
+            Assert.NotNull(dbSkill);
+            Assert.Equal("Updated Name", dbSkill.Name);
+        }
+
+        [Fact]
+        public async Task UpdateSkill_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateSkill_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skill = CreateTestSkill();
+
+            context.SkillsDb.Add(skill);
+            await context.SaveChangesAsync();
+
+            Skill updatedSkill = CreateTestSkill();
+            updatedSkill.Name = "Updated Name";
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(false);
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            Skill? result = await service.UpdateSkill(updatedSkill, userInfo);
+
+            // Assert
+            Assert.Null(result);
+
+            Skill? dbSkill = await context.SkillsDb.FindAsync(1);
+            Assert.Equal("Test Skill", dbSkill!.Name); // Name should not be updated
+        }
+
+        [Fact]
+        public async Task UpdateSkill_Should_Return_Null_When_Skill_Does_Not_Exist()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateSkill_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill updatedSkill = CreateTestSkill(999, 1);
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 999, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            Skill? result = await service.UpdateSkill(updatedSkill, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateSkill_Should_Update_ModifiedTime()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateSkill_ModifiedTime");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skill = CreateTestSkill();
+            DateTime originalModifiedTime = skill.ModifiedTime;
+
+            context.SkillsDb.Add(skill);
+            await context.SaveChangesAsync();
+            context.Entry(skill).State = EntityState.Detached;
+
+            await Task.Delay(10); // Ensure time difference
+
+            Skill updatedSkill = CreateTestSkill();
+            updatedSkill.Name = "Updated Name";
+            updatedSkill.ItemPermissionsDtoList = new List<ItemPermissionDto>();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.UpdateItemPermissions(
+                    KinaUnaTypes.TimeLineType.Skill,
+                    1,
+                    1,
+                    0,
+                    It.IsAny<List<ItemPermissionDto>>(),
+                    userInfo))
+                .ReturnsAsync(new List<TimelineItemPermission>());
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            Skill? result = await service.UpdateSkill(updatedSkill, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.ModifiedTime > originalModifiedTime);
+        }
+
+        #endregion
+
+        #region DeleteSkill Tests
+
+        [Fact]
+        public async Task DeleteSkill_Should_Delete_Skill_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("DeleteSkill_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skill = CreateTestSkill();
+
+            context.SkillsDb.Add(skill);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            Skill? result = await service.DeleteSkill(skill, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.SkillId);
+
+            Skill? dbSkill = await context.SkillsDb.FindAsync(1);
+            Assert.Null(dbSkill);
+        }
+
+        [Fact]
+        public async Task DeleteSkill_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("DeleteSkill_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skill = CreateTestSkill();
+
+            context.SkillsDb.Add(skill);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(false);
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            Skill? result = await service.DeleteSkill(skill, userInfo);
+
+            // Assert
+            Assert.Null(result);
+
+            Skill? dbSkill = await context.SkillsDb.FindAsync(1);
+            Assert.NotNull(dbSkill); // Skill should still exist
+        }
+
+        [Fact]
+        public async Task DeleteSkill_Should_Return_Null_When_Skill_Does_Not_Exist()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("DeleteSkill_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skill = CreateTestSkill(999, 1);
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 999, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            Skill? result = await service.DeleteSkill(skill, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task DeleteSkill_Should_Remove_From_Cache()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("DeleteSkill_Cache");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            Skill skill = CreateTestSkill();
+
+            context.SkillsDb.Add(skill);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Pre-load cache
+            await service.GetSkill(1, userInfo);
+
+            // Act
+            await service.DeleteSkill(skill, userInfo);
+
+            // Assert
+            string? cachedValue = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + 1);
+            Assert.Null(cachedValue);
+        }
+
+        #endregion
+
+        #region GetSkillsList Tests
+
+        [Fact]
+        public async Task GetSkillsList_Should_Return_List_Of_Skills_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkillsList_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Skill skill1 = CreateTestSkill(1, 1);
+            Skill skill2 = CreateTestSkill(2, 1);
+            skill2.Name = "Second Skill";
+
+            context.SkillsDb.AddRange(skill1, skill2);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, It.IsAny<int>(), userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, It.IsAny<int>(), 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            List<Skill>? result = await service.GetSkillsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, s => s.Name == "Test Skill");
+            Assert.Contains(result, s => s.Name == "Second Skill");
+        }
+
+        [Fact]
+        public async Task GetSkillsList_Should_Return_Empty_List_When_Progeny_Has_No_Skills()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkillsList_Empty");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            List<Skill>? result = await service.GetSkillsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetSkillsList_Should_Filter_By_Progeny()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkillsList_FilterProgeny");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Skill skill1 = CreateTestSkill(1, 1);
+            Skill skill2 = CreateTestSkill(2, 2);
+
+            context.SkillsDb.AddRange(skill1, skill2);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            List<Skill>? result = await service.GetSkillsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal(1, result[0].ProgenyId);
+        }
+
+        [Fact]
+        public async Task GetSkillsList_Should_Filter_By_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkillsList_FilterPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Skill skill1 = CreateTestSkill(1, 1);
+            Skill skill2 = CreateTestSkill(2, 1);
+
+            context.SkillsDb.AddRange(skill1, skill2);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 2, userInfo, PermissionLevel.View))
+                .ReturnsAsync(false);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            List<Skill>? result = await service.GetSkillsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal(1, result[0].SkillId);
+        }
+
+        [Fact]
+        public async Task GetSkillsList_Should_Use_Cache_On_Second_Call()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkillsList_Cache");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Skill skill1 = CreateTestSkill(1, 1);
+            context.SkillsDb.Add(skill1);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            List<Skill>? result1 = await service.GetSkillsList(1, userInfo);
+
+            // Add another skill after first call
+            Skill skill2 = CreateTestSkill(2, 1);
+            context.SkillsDb.Add(skill2);
+            await context.SaveChangesAsync();
+
+            List<Skill>? result2 = await service.GetSkillsList(1, userInfo);
+
+            // Assert - Should still return 1 item from cache
+            Assert.Single(result1);
+            Assert.Single(result2);
+        }
+
+        #endregion
+
+        #region GetSkillsWithCategory Tests
+
+        [Fact]
+        public async Task GetSkillsWithCategory_Should_Return_Skills_Matching_Category()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkillsWithCategory_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Skill skill1 = CreateTestSkill(1, 1);
+            skill1.Category = "Physical";
+            Skill skill2 = CreateTestSkill(2, 1);
+            skill2.Category = "Cognitive";
+            Skill skill3 = CreateTestSkill(3, 1);
+            skill3.Category = "Physical Development";
+
+            context.SkillsDb.AddRange(skill1, skill2, skill3);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, It.IsAny<int>(), userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, It.IsAny<int>(), 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            List<Skill>? result = await service.GetSkillsWithCategory(1, "Physical", userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.All(result, s => Assert.Contains("Physical", s.Category, StringComparison.OrdinalIgnoreCase));
+        }
+
+        [Fact]
+        public async Task GetSkillsWithCategory_Should_Return_Empty_List_When_No_Match()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkillsWithCategory_NoMatch");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Skill skill1 = CreateTestSkill(1, 1);
+            skill1.Category = "Physical";
+
+            context.SkillsDb.Add(skill1);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            List<Skill>? result = await service.GetSkillsWithCategory(1, "Cognitive", userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetSkillsWithCategory_Should_Be_Case_Insensitive()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkillsWithCategory_CaseInsensitive");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Skill skill1 = CreateTestSkill(1, 1);
+            skill1.Category = "Physical";
+
+            context.SkillsDb.Add(skill1);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            List<Skill>? result = await service.GetSkillsWithCategory(1, "PHYSICAL", userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal("Physical", result[0].Category);
+        }
+
+        [Fact]
+        public async Task GetSkillsWithCategory_Should_Handle_Null_Category()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetSkillsWithCategory_NullCategory");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Skill skill1 = CreateTestSkill(1, 1);
+            skill1.Category = null;
+
+            context.SkillsDb.Add(skill1);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            SkillService service = new(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            List<Skill>? result = await service.GetSkillsWithCategory(1, "Physical", userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        #endregion
+    }
+}
