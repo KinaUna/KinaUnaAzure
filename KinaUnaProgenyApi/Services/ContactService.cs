@@ -52,6 +52,11 @@ namespace KinaUnaProgenyApi.Services
                 contact = await SetContactInCache(id);
             }
 
+            if (contact == null)
+            {
+                return null;
+            }
+
             contact.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, id, contact.ProgenyId, contact.FamilyId, currentUserInfo);
 
             return contact;

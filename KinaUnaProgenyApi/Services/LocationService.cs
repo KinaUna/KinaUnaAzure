@@ -51,6 +51,10 @@ namespace KinaUnaProgenyApi.Services
             {
                 location = await SetLocationInCache(id);
             }
+            if (location == null || location.LocationId == 0)
+            {
+                return null;
+            }
 
             location.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, location.LocationId, location.ProgenyId, location.FamilyId, currentUserInfo);
             return location;

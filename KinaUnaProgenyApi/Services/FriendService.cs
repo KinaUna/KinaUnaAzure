@@ -50,6 +50,8 @@ namespace KinaUnaProgenyApi.Services
 
             Friend friend = await GetFriendFromCache(id);
             friend ??= await SetFriendInCache(id);
+            if (friend == null) return null;
+
             friend.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, friend.ProgenyId, 0, currentUserInfo);
             
             return friend;

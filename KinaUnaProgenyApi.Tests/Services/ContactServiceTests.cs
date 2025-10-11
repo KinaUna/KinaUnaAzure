@@ -1,480 +1,1090 @@
-﻿//using KinaUna.Data;
-//using KinaUna.Data.Contexts;
-//using KinaUna.Data.Models;
-//using KinaUnaProgenyApi.Services;
-//using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.Caching.Distributed;
-//using Microsoft.Extensions.Caching.Memory;
-//using Microsoft.Extensions.Options;
-//using Moq;
+﻿using KinaUna.Data.Contexts;
+using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Moq;
 
-//namespace KinaUnaProgenyApi.Tests.Services
-//{
-//    public class ContactServiceTests
-//    {
-//        [Fact]
-//        public async Task GetContact_Should_Return_Contact_Object_When_Id_Is_Valid()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContact_Should_Return_Contact_Object_When_Id_Is_Valid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+namespace KinaUnaProgenyApi.Tests.Services
+{
+    public class ContactServiceTests
+    {
+        private readonly ProgenyDbContext _progenyDbContext;
+        private readonly Mock<IAccessManagementService> _mockAccessManagementService;
+        private readonly Mock<IImageStore> _mockImageStore;
+        private readonly ContactService _service;
+        private readonly UserInfo _testUser;
+        private readonly UserInfo _adminUser;
+        private readonly UserInfo _otherUser;
 
-//            Contact contact1 = new()
-//            {
-//                ProgenyId = 1, Author = "User1", AccessLevel = 0, Active = true, Context = "Testing", DisplayName = "Contact1", DateAdded = DateTime.UtcNow, Email1 = "testcontact1@test.com",
-//                FirstName = "First1", MiddleName = "Middle1", LastName = "Last1", PictureLink = Constants.ProfilePictureUrl, Tags = "Tag1, Tag2", MobileNumber = "111222333444", Notes = "Note1",
-//                Website = "https://test1.com"
-//            };
-//            Contact contact2 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User2",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact2",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact2@test.com",
-//                FirstName = "First2",
-//                MiddleName = "Middle2",
-//                LastName = "Last2",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "222333444555",
-//                Notes = "Note2",
-//                Website = "https://test2.com"
-//            };
+        public ContactServiceTests()
+        {
+            // Setup test users
+            _testUser = new UserInfo { UserId = "user1", UserEmail = "user1@example.com" };
+            _adminUser = new UserInfo { UserId = "admin1", UserEmail = "admin@example.com" };
+            _otherUser = new UserInfo { UserId = "user2", UserEmail = "user2@example.com" };
 
-//            context.Add(contact1);
-//            context.Add(contact2);
-//            await context.SaveChangesAsync();
+            // Setup in-memory DbContext (unique DB per test instance)
+            DbContextOptions<ProgenyDbContext> progenyOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+            _progenyDbContext = new ProgenyDbContext(progenyOptions);
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            ContactService contactService = new(context, memoryCache, imageStore.Object);
+            // Setup in-memory cache
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-//            Contact resultContact1 = await contactService.GetContact(1);
-//            Contact resultContact2 = await contactService.GetContact(1); // Uses cache
+            // Setup mocks
+            _mockAccessManagementService = new Mock<IAccessManagementService>();
+            _mockImageStore = new Mock<IImageStore>();
 
-//            Assert.NotNull(resultContact1);
-//            Assert.IsType<Contact>(resultContact1);
-//            Assert.Equal(contact1.Author, resultContact1.Author);
-//            Assert.Equal(contact1.DisplayName, contact1.DisplayName);
-//            Assert.Equal(contact1.AccessLevel, resultContact1.AccessLevel);
-//            Assert.Equal(contact1.ProgenyId, resultContact1.ProgenyId);
+            // Initialize service
+            _service = new ContactService(_progenyDbContext, memoryCache, _mockImageStore.Object, _mockAccessManagementService.Object);
 
-//            Assert.NotNull(resultContact2);
-//            Assert.IsType<Contact>(resultContact2);
-//            Assert.Equal(contact1.Author, resultContact2.Author);
-//            Assert.Equal(contact1.DisplayName, resultContact2.DisplayName);
-//            Assert.Equal(contact1.AccessLevel, resultContact2.AccessLevel);
-//            Assert.Equal(contact1.ProgenyId, resultContact2.ProgenyId);
-//        }
+            // Seed test data
+            SeedTestData();
+        }
 
-//        [Fact]
-//        public async Task GetContact_Should_Return_Null_When_Id_Is_Invalid()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContact_Should_Return_Null_When_Id_Is_Invalid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+        private void SeedTestData()
+        {
+            // Add test UserInfo records
+            _progenyDbContext.UserInfoDb.Add(_testUser);
+            _progenyDbContext.UserInfoDb.Add(_adminUser);
+            _progenyDbContext.UserInfoDb.Add(_otherUser);
 
-//            Contact contact1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact1",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact1@test.com",
-//                FirstName = "First1",
-//                MiddleName = "Middle1",
-//                LastName = "Last1",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "111222333444",
-//                Notes = "Note1",
-//                Website = "https://test1.com"
-//            };
-//            context.Add(contact1);
-//            await context.SaveChangesAsync();
+            // Add test Contact records
+            Contact contact1 = new()
+            {
+                ContactId = 1,
+                ProgenyId = 1,
+                FamilyId = 0,
+                Author = "user1",
+                CreatedBy = "user1",
+                CreatedTime = DateTime.UtcNow.AddDays(-10),
+                ModifiedBy = "user1",
+                ModifiedTime = DateTime.UtcNow.AddDays(-10),
+                AccessLevel = 0,
+                Active = true,
+                Context = "Family",
+                DisplayName = "John Doe",
+                DateAdded = DateTime.UtcNow.AddDays(-10),
+                Email1 = "john.doe@example.com",
+                Email2 = "j.doe@work.com",
+                FirstName = "John",
+                MiddleName = "Michael",
+                LastName = "Doe",
+                PictureLink = "contact1.jpg",
+                Tags = "family,friend",
+                MobileNumber = "555-1234",
+                PhoneNumber = "555-5678",
+                Notes = "Test contact 1",
+                Website = "https://johndoe.com"
+            };
+            _progenyDbContext.ContactsDb.Add(contact1);
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            ContactService contactService = new(context, memoryCache, imageStore.Object);
+            Contact contact2 = new()
+            {
+                ContactId = 2,
+                ProgenyId = 1,
+                FamilyId = 0,
+                Author = "user1",
+                CreatedBy = "user1",
+                CreatedTime = DateTime.UtcNow.AddDays(-8),
+                ModifiedBy = "user1",
+                ModifiedTime = DateTime.UtcNow.AddDays(-8),
+                AccessLevel = 5,
+                Active = true,
+                Context = "Work",
+                DisplayName = "Jane Smith",
+                DateAdded = DateTime.UtcNow.AddDays(-8),
+                Email1 = "jane.smith@example.com",
+                FirstName = "Jane",
+                LastName = "Smith",
+                PictureLink = "contact2.jpg",
+                Tags = "work,colleague",
+                MobileNumber = "555-9999",
+                Notes = "Test contact 2"
+            };
+            _progenyDbContext.ContactsDb.Add(contact2);
 
-//            Contact resultContact1 = await contactService.GetContact(2);
-//            Contact resultContact2 = await contactService.GetContact(2);
+            Contact contact3 = new()
+            {
+                ContactId = 3,
+                ProgenyId = 2,
+                FamilyId = 0,
+                Author = "user2",
+                CreatedBy = "user2",
+                CreatedTime = DateTime.UtcNow.AddDays(-5),
+                ModifiedBy = "user2",
+                ModifiedTime = DateTime.UtcNow.AddDays(-5),
+                AccessLevel = 0,
+                Active = false,
+                Context = "Other",
+                DisplayName = "Bob Johnson",
+                DateAdded = DateTime.UtcNow.AddDays(-5),
+                Email1 = "bob@example.com",
+                FirstName = "Bob",
+                LastName = "Johnson",
+                PictureLink = "contact3.jpg",
+                Tags = "acquaintance"
+            };
+            _progenyDbContext.ContactsDb.Add(contact3);
             
-//            Assert.Null(resultContact1);
-//            Assert.Null(resultContact2);
-//        }
+            Contact familyContact = new()
+            {
+                ContactId = 4,
+                ProgenyId = 0,
+                FamilyId = 1,
+                Author = "admin1",
+                CreatedBy = "admin1",
+                CreatedTime = DateTime.UtcNow.AddDays(-3),
+                ModifiedBy = "admin1",
+                ModifiedTime = DateTime.UtcNow.AddDays(-3),
+                AccessLevel = 0,
+                Active = true,
+                Context = "Family",
+                DisplayName = "Family Contact",
+                DateAdded = DateTime.UtcNow.AddDays(-3),
+                Email1 = "family@example.com",
+                FirstName = "Family",
+                LastName = "Contact",
+                PictureLink = "family.jpg",
+                Tags = "family"
+            };
+            _progenyDbContext.ContactsDb.Add(familyContact);
 
-//        [Fact]
-//        public async Task AddContact_Should_Save_Contact()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddContact_Should_Save_Contact").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            _progenyDbContext.SaveChanges();
+        }
 
-//            Contact contact1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact1",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact1@test.com",
-//                FirstName = "First1",
-//                MiddleName = "Middle1",
-//                LastName = "Last1",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "111222333444",
-//                Notes = "Note1",
-//                Website = "https://test1.com"
-//            };
-//            context.Add(contact1);
-//            await context.SaveChangesAsync();
+        #region GetContact Tests
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            ContactService contactService = new(context, memoryCache, imageStore.Object);
+        [Fact]
+        public async Task GetContact_WhenUserHasAccess_ReturnsContact()
+        {
+            // Arrange
+            int contactId = 1;
+            TimelineItemPermission permission = new()
+            {
+                PermissionLevel = PermissionLevel.View
+            };
 
-//            Contact contactToAdd = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User2",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact2",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact2@test.com",
-//                FirstName = "First2",
-//                MiddleName = "Middle2",
-//                LastName = "Last2",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "222333444555",
-//                Notes = "Note2",
-//                Website = "https://test2.com"
-//            };
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, contactId, _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, contactId, 1, 0, _testUser))
+                .ReturnsAsync(permission);
 
-//            Contact addedContact = await contactService.AddContact(contactToAdd);
-//            Contact? dbContact = await context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == addedContact.ContactId);
-//            Contact savedContact = await contactService.GetContact(addedContact.ContactId);
+            // Act
+            Contact result = await _service.GetContact(contactId, _testUser);
 
-//            Assert.NotNull(addedContact);
-//            Assert.IsType<Contact>(addedContact);
-//            Assert.Equal(contactToAdd.Author, addedContact.Author);
-//            Assert.Equal(contactToAdd.DisplayName, addedContact.DisplayName);
-//            Assert.Equal(contactToAdd.AccessLevel, addedContact.AccessLevel);
-//            Assert.Equal(contactToAdd.ProgenyId, addedContact.ProgenyId);
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(contactId, result.ContactId);
+            Assert.Equal("John Doe", result.DisplayName);
+            Assert.Equal("john.doe@example.com", result.Email1);
+            Assert.NotNull(result.ItemPerMission);
+            Assert.Equal(PermissionLevel.View, result.ItemPerMission.PermissionLevel);
+        }
 
-//            if (dbContact != null)
-//            {
-//                Assert.IsType<Contact>(dbContact);
-//                Assert.Equal(contactToAdd.Author, dbContact.Author);
-//                Assert.Equal(contactToAdd.DisplayName, dbContact.DisplayName);
-//                Assert.Equal(contactToAdd.AccessLevel, dbContact.AccessLevel);
-//                Assert.Equal(contactToAdd.ProgenyId, dbContact.ProgenyId);
-//            }
-//            Assert.NotNull(savedContact);
-//            Assert.IsType<Contact>(savedContact);
-//            Assert.Equal(contactToAdd.Author, savedContact.Author);
-//            Assert.Equal(contactToAdd.DisplayName, savedContact.DisplayName);
-//            Assert.Equal(contactToAdd.AccessLevel, savedContact.AccessLevel);
-//            Assert.Equal(contactToAdd.ProgenyId, savedContact.ProgenyId);
+        [Fact]
+        public async Task GetContact_WhenUserHasNoAccess_ReturnsNull()
+        {
+            // Arrange
+            int contactId = 1;
 
-//        }
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, contactId, _otherUser, PermissionLevel.View))
+                .ReturnsAsync(false);
 
-//        [Fact]
-//        public async Task UpdateContact_Should_Save_Contact()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateContact_Should_Save_Contact").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            // Act
+            Contact result = await _service.GetContact(contactId, _otherUser);
 
-//            Contact contact1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact1",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact1@test.com",
-//                FirstName = "First1",
-//                MiddleName = "Middle1",
-//                LastName = "Last1",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "111222333444",
-//                Notes = "Note1",
-//                Website = "https://test1.com"
-//            };
-//            Contact contact2 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User2",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact2",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact2@test.com",
-//                FirstName = "First2",
-//                MiddleName = "Middle2",
-//                LastName = "Last2",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "222333444555",
-//                Notes = "Note2",
-//                Website = "https://test2.com"
-//            };
+            // Assert
+            Assert.Null(result);
+        }
 
-//            context.Add(contact1);
-//            context.Add(contact2);
-//            await context.SaveChangesAsync();
+        [Fact]
+        public async Task GetContact_WhenContactDoesNotExist_ReturnsNull()
+        {
+            // Arrange
+            int contactId = 999;
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            ContactService contactService = new(context, memoryCache, imageStore.Object);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, contactId, _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
 
-//            Contact contactToUpdate = await contactService.GetContact(1);
-//            contactToUpdate.AccessLevel = 5;
-//            Contact updatedContact = await contactService.UpdateContact(contactToUpdate);
-//            Contact? dbContact = await context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == 1);
-//            Contact savedContact = await contactService.GetContact(1);
+            // Act
+            Contact result = await _service.GetContact(contactId, _testUser);
 
-//            Assert.NotNull(updatedContact);
-//            Assert.IsType<Contact>(updatedContact);
-//            Assert.NotEqual(0, updatedContact.ContactId);
-//            Assert.Equal("User1", updatedContact.Author);
-//            Assert.Equal(5, updatedContact.AccessLevel);
-//            Assert.Equal(1, updatedContact.ProgenyId);
+            // Assert
+            Assert.Null(result);
+        }
 
-//            if (dbContact != null)
-//            {
-//                Assert.IsType<Contact>(dbContact);
-//                Assert.NotEqual(0, dbContact.ContactId);
-//                Assert.Equal("User1", dbContact.Author);
-//                Assert.Equal(5, dbContact.AccessLevel);
-//                Assert.Equal(1, dbContact.ProgenyId);
-//            }
+        [Fact]
+        public async Task GetContact_SecondCall_UsesCache()
+        {
+            // Arrange
+            int contactId = 1;
+            TimelineItemPermission permission = new()
+            {
+                PermissionLevel = PermissionLevel.View
+            };
 
-//            Assert.NotNull(savedContact);
-//            Assert.IsType<Contact>(savedContact);
-//            Assert.NotEqual(0, savedContact.ContactId);
-//            Assert.Equal("User1", savedContact.Author);
-//            Assert.Equal(5, savedContact.AccessLevel);
-//            Assert.Equal(1, savedContact.ProgenyId);
-//        }
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, contactId, _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, contactId, 1, 0, _testUser))
+                .ReturnsAsync(permission);
 
-//        [Fact]
-//        public async Task DeleteContact_Should_Remove_Contact()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteContact_Should_Remove_Contact").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            // Act
+            Contact result1 = await _service.GetContact(contactId, _testUser);
+            Contact result2 = await _service.GetContact(contactId, _testUser);
 
-//            Contact contact1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact1",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact1@test.com",
-//                FirstName = "First1",
-//                MiddleName = "Middle1",
-//                LastName = "Last1",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "111222333444",
-//                Notes = "Note1",
-//                Website = "https://test1.com"
-//            };
-//            Contact contact2 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User2",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact2",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact2@test.com",
-//                FirstName = "First2",
-//                MiddleName = "Middle2",
-//                LastName = "Last2",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "222333444555",
-//                Notes = "Note2",
-//                Website = "https://test2.com"
-//            };
+            // Assert
+            Assert.NotNull(result1);
+            Assert.NotNull(result2);
+            Assert.Equal(result1.ContactId, result2.ContactId);
+            Assert.Equal(result1.DisplayName, result2.DisplayName);
+        }
 
-//            context.Add(contact1);
-//            context.Add(contact2);
-//            await context.SaveChangesAsync();
+        #endregion
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            ContactService contactService = new(context, memoryCache, imageStore.Object);
+        #region AddContact Tests
 
-//            int contactItemsCountBeforeDelete = context.ContactsDb.Count();
-//            Contact contactToDelete = await contactService.GetContact(1);
+        [Fact]
+        public async Task AddContact_WhenUserHasProgenyAccess_AddsContact()
+        {
+            // Arrange
+            Contact newContact = new()
+            {
+                ProgenyId = 1,
+                FamilyId = 0,
+                DisplayName = "New Contact",
+                FirstName = "New",
+                LastName = "Contact",
+                Email1 = "new@example.com",
+                CreatedBy = "user1",
+                AccessLevel = 0,
+                Active = true,
+                Context = "Test",
+                Tags = "test"
+            };
 
-//            await contactService.DeleteContact(contactToDelete);
-//            Contact? deletedContact = await context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == 1);
-//            int contactItemsCountAfterDelete = context.ContactsDb.Count();
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
 
-//            Assert.Null(deletedContact);
-//            Assert.Equal(2, contactItemsCountBeforeDelete);
-//            Assert.Equal(1, contactItemsCountAfterDelete);
-//        }
+            // Act
+            Contact result = await _service.AddContact(newContact, _testUser);
 
-//        [Fact]
-//        public async Task GetContactsList_Should_Return_List_Of_Contact_When_Progeny_Has_Saved_Contacts()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContactsList_Should_Return_List_Of_Contact_When_Progeny_Has_Saved_Contacts").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.ContactId > 0);
+            Assert.Equal("New Contact", result.DisplayName);
+            Assert.Equal("new@example.com", result.Email1);
+            Assert.Equal("user1", result.CreatedBy);
+            Assert.Equal("user1", result.ModifiedBy);
+            Assert.True(result.CreatedTime <= DateTime.UtcNow);
+            Assert.True(result.ModifiedTime <= DateTime.UtcNow);
+        }
 
-//            Contact contact1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact1",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact1@test.com",
-//                FirstName = "First1",
-//                MiddleName = "Middle1",
-//                LastName = "Last1",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "111222333444",
-//                Notes = "Note1",
-//                Website = "https://test1.com"
-//            };
-//            Contact contact2 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User2",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact2",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact2@test.com",
-//                FirstName = "First2",
-//                MiddleName = "Middle2",
-//                LastName = "Last2",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "222333444555",
-//                Notes = "Note2",
-//                Website = "https://test2.com"
-//            };
+        [Fact]
+        public async Task AddContact_WhenUserHasFamilyAccess_AddsContact()
+        {
+            // Arrange
+            Contact newContact = new()
+            {
+                ProgenyId = 0,
+                FamilyId = 1,
+                DisplayName = "New Family Contact",
+                FirstName = "New",
+                LastName = "Family",
+                Email1 = "newfamily@example.com",
+                CreatedBy = "admin1",
+                AccessLevel = 0,
+                Active = true
+            };
 
-//            context.Add(contact1);
-//            context.Add(contact2);
-//            await context.SaveChangesAsync();
+            _mockAccessManagementService
+                .Setup(x => x.HasFamilyPermission(1, _adminUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            ContactService contactService = new(context, memoryCache, imageStore.Object);
+            // Act
+            Contact result = await _service.AddContact(newContact, _adminUser);
 
-//            List<Contact> contactsList = await contactService.GetContactsList(1, 0);
-//            List<Contact> contactsList2 = await contactService.GetContactsList(1, 0); // Test cached result.
-//            Contact firstContact = contactsList.First();
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.ContactId > 0);
+            Assert.Equal("New Family Contact", result.DisplayName);
+            Assert.Equal(0, result.ProgenyId);
+            Assert.Equal(1, result.FamilyId);
+        }
 
-//            Assert.NotNull(contactsList);
-//            Assert.IsType<List<Contact>>(contactsList);
-//            Assert.Equal(2, contactsList.Count);
-//            Assert.NotNull(contactsList2);
-//            Assert.IsType<List<Contact>>(contactsList2);
-//            Assert.Equal(2, contactsList2.Count);
-//            Assert.NotNull(firstContact);
-//            Assert.IsType<Contact>(firstContact);
+        [Fact]
+        public async Task AddContact_WhenUserHasNoProgenyAccess_ReturnsNull()
+        {
+            // Arrange
+            Contact newContact = new()
+            {
+                ProgenyId = 1,
+                FamilyId = 0,
+                DisplayName = "Unauthorized Contact",
+                CreatedBy = "user2"
+            };
 
-//        }
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, _otherUser, PermissionLevel.Add))
+                .ReturnsAsync(false);
+            _mockAccessManagementService
+                .Setup(x => x.HasFamilyPermission(0, _otherUser, PermissionLevel.Add))
+                .ReturnsAsync(false);
 
-//        [Fact]
-//        public async Task GetContactsList_Should_Return_Empty_List_Of_Contact_When_Progeny_Has_No_Saved_Contacts()
-//        {
-            
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContactsList_Should_Return_Empty_List_Of_Contact_When_Progeny_Has_No_Saved_Contacts").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            // Act
+            Contact result = await _service.AddContact(newContact, _otherUser);
 
-//            Contact contact1 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact1",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact1@test.com",
-//                FirstName = "First1",
-//                MiddleName = "Middle1",
-//                LastName = "Last1",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "111222333444",
-//                Notes = "Note1",
-//                Website = "https://test1.com"
-//            };
-//            Contact contact2 = new()
-//            {
-//                ProgenyId = 1,
-//                Author = "User2",
-//                AccessLevel = 0,
-//                Active = true,
-//                Context = "Testing",
-//                DisplayName = "Contact2",
-//                DateAdded = DateTime.UtcNow,
-//                Email1 = "testcontact2@test.com",
-//                FirstName = "First2",
-//                MiddleName = "Middle2",
-//                LastName = "Last2",
-//                PictureLink = Constants.ProfilePictureUrl,
-//                Tags = "Tag1, Tag2",
-//                MobileNumber = "222333444555",
-//                Notes = "Note2",
-//                Website = "https://test2.com"
-//            };
+            // Assert
+            Assert.Null(result);
+        }
 
-//            context.Add(contact1);
-//            context.Add(contact2);
-//            await context.SaveChangesAsync();
+        [Fact]
+        public async Task AddContact_WhenUserHasNoFamilyAccess_ReturnsNull()
+        {
+            // Arrange
+            Contact newContact = new()
+            {
+                ProgenyId = 0,
+                FamilyId = 1,
+                DisplayName = "Unauthorized Family Contact",
+                CreatedBy = "user2"
+            };
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            ContactService contactService = new(context, memoryCache, imageStore.Object);
+            _mockAccessManagementService
+                .Setup(x => x.HasFamilyPermission(1, _otherUser, PermissionLevel.Add))
+                .ReturnsAsync(false);
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(0, _otherUser, PermissionLevel.Add))
+                .ReturnsAsync(false);
 
-//            List<Contact> contactsList = await contactService.GetContactsList(2, 0);
-//            List<Contact> contactsList2 = await contactService.GetContactsList(2, 0); // Test cached result.
+            // Act
+            Contact result = await _service.AddContact(newContact, _otherUser);
 
-//            Assert.NotNull(contactsList);
-//            Assert.IsType<List<Contact>>(contactsList);
-//            Assert.Empty(contactsList);
-//            Assert.NotNull(contactsList2);
-//            Assert.IsType<List<Contact>>(contactsList2);
-//            Assert.Empty(contactsList2);
-//        }
-//    }
-//}
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task AddContact_CallsAddItemPermissions()
+        {
+            // Arrange
+            Contact newContact = new()
+            {
+                ProgenyId = 1,
+                FamilyId = 0,
+                DisplayName = "Test Contact",
+                CreatedBy = "user1",
+                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
+
+            // Act
+            Contact result = await _service.AddContact(newContact, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            _mockAccessManagementService.Verify(x => x.AddItemPermissions(
+                KinaUnaTypes.TimeLineType.Contact,
+                result.ContactId,
+                1,
+                0,
+                It.IsAny<List<ItemPermissionDto>>(),
+                _testUser), Times.Once);
+        }
+
+        #endregion
+
+        #region UpdateContact Tests
+
+        [Fact]
+        public async Task UpdateContact_WhenUserHasAccess_UpdatesContact()
+        {
+            // Arrange
+            Contact updateValues = new()
+            {
+                ContactId = 1,
+                ProgenyId = 1,
+                FamilyId = 0,
+                DisplayName = "Updated John Doe",
+                Email1 = "updated@example.com",
+                AccessLevel = 5,
+                ModifiedBy = "user1",
+                FirstName = "John",
+                LastName = "Doe"
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 1, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            // Act
+            Contact result = await _service.UpdateContact(updateValues, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Updated John Doe", result.DisplayName);
+            Assert.Equal("updated@example.com", result.Email1);
+            Assert.Equal(5, result.AccessLevel);
+        }
+
+        [Fact]
+        public async Task UpdateContact_WhenUserHasNoAccess_ReturnsNull()
+        {
+            // Arrange
+            Contact updateValues = new()
+            {
+                ContactId = 1,
+                ProgenyId = 1,
+                FamilyId = 0,
+                DisplayName = "Unauthorized Update",
+                ModifiedBy = "user2"
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 1, _otherUser, PermissionLevel.Edit))
+                .ReturnsAsync(false);
+
+            // Act
+            Contact result = await _service.UpdateContact(updateValues, _otherUser);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateContact_WhenContactDoesNotExist_ReturnsNull()
+        {
+            // Arrange
+            Contact updateValues = new()
+            {
+                ContactId = 999,
+                ProgenyId = 1,
+                FamilyId = 0,
+                DisplayName = "Non-existent Contact"
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 999, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            // Act
+            Contact result = await _service.UpdateContact(updateValues, _testUser);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateContact_WhenProgenyIdMismatch_ReturnsNull()
+        {
+            // Arrange
+            Contact updateValues = new()
+            {
+                ContactId = 1,
+                ProgenyId = 2, // Different from original
+                FamilyId = 0,
+                DisplayName = "Updated Contact"
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 1, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            // Act
+            Contact result = await _service.UpdateContact(updateValues, _testUser);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateContact_WhenFamilyIdMismatch_ReturnsNull()
+        {
+            // Arrange
+            Contact updateValues = new()
+            {
+                ContactId = 4,
+                ProgenyId = 0,
+                FamilyId = 2, // Different from original
+                DisplayName = "Updated Family Contact"
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 4, _adminUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            // Act
+            Contact result = await _service.UpdateContact(updateValues, _adminUser);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateContact_WhenPictureLinkChanges_DeletesOldPictureIfNotUsed()
+        {
+            // Arrange
+            Contact updateValues = new()
+            {
+                ContactId = 1,
+                ProgenyId = 1,
+                FamilyId = 0,
+                PictureLink = "newpicture.jpg",
+                DisplayName = "John Doe",
+                FirstName = "John",
+                LastName = "Doe"
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 1, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            _mockImageStore
+                .Setup(x => x.DeleteImage("contact1.jpg", BlobContainers.Contacts))
+                .ReturnsAsync("contact1.jpg");
+
+            // Act
+            Contact result = await _service.UpdateContact(updateValues, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            _mockImageStore.Verify(x => x.DeleteImage("contact1.jpg", BlobContainers.Contacts), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateContact_WhenPictureLinkChangesButStillUsed_DoesNotDeletePicture()
+        {
+            Contact contactWithSamePicture = new()
+            {
+                ContactId = 5,
+                ProgenyId = 1,
+                FamilyId = 0,
+                Author = "user1",
+                CreatedBy = "user1",
+                CreatedTime = DateTime.UtcNow.AddDays(-8),
+                ModifiedBy = "user1",
+                ModifiedTime = DateTime.UtcNow.AddDays(-8),
+                AccessLevel = 5,
+                Active = true,
+                Context = "Work",
+                DisplayName = "Jane Smith Copy",
+                DateAdded = DateTime.UtcNow.AddDays(-8),
+                Email1 = "jane.smith.copy@example.com",
+                FirstName = "Jane",
+                LastName = "Smith",
+                PictureLink = "contact2.jpg",
+                Tags = "work,colleague",
+                MobileNumber = "555-9999",
+                Notes = "Test contact 2"
+            };
+
+            _progenyDbContext.ContactsDb.Add(contactWithSamePicture);
+
+            // Arrange
+            Contact updateValues = new()
+            {
+                ContactId = 2,
+                ProgenyId = 1,
+                FamilyId = 0,
+                PictureLink = "contact1.jpg", // Same as contact1's picture
+                DisplayName = "Jane Smith",
+                FirstName = "Jane",
+                LastName = "Smith"
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 2, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            // Act
+            Contact result = await _service.UpdateContact(updateValues, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            _mockImageStore.Verify(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateContact_CallsUpdateItemPermissions()
+        {
+            // Arrange
+            Contact updateValues = new()
+            {
+                ContactId = 1,
+                ProgenyId = 1,
+                FamilyId = 0,
+                DisplayName = "Updated Contact",
+                FirstName = "John",
+                LastName = "Doe",
+                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 1, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            // Act
+            Contact result = await _service.UpdateContact(updateValues, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            _mockAccessManagementService.Verify(x => x.UpdateItemPermissions(
+                KinaUnaTypes.TimeLineType.Contact,
+                1,
+                1,
+                0,
+                It.IsAny<List<ItemPermissionDto>>(),
+                _testUser), Times.Once);
+        }
+
+        #endregion
+
+        #region DeleteContact Tests
+
+        [Fact]
+        public async Task DeleteContact_WhenUserHasAccess_DeletesContact()
+        {
+            // Arrange
+            Contact contactToDelete = new()
+            {
+                ContactId = 1,
+                ProgenyId = 1,
+                FamilyId = 0
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 1, _adminUser, PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            _mockImageStore
+                .Setup(x => x.DeleteImage("contact1.jpg", BlobContainers.Contacts))
+                .ReturnsAsync("contact1.jpg");
+
+            // Act
+            Contact result = await _service.DeleteContact(contactToDelete, _adminUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Contact? deletedContact = await _progenyDbContext.ContactsDb.FindAsync(1);
+            Assert.Null(deletedContact);
+            _mockImageStore.Verify(x => x.DeleteImage("contact1.jpg", BlobContainers.Contacts), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteContact_WhenUserHasNoAccess_ReturnsNull()
+        {
+            // Arrange
+            Contact contactToDelete = new()
+            {
+                ContactId = 1,
+                ProgenyId = 1,
+                FamilyId = 0
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 1, _otherUser, PermissionLevel.Admin))
+                .ReturnsAsync(false);
+
+            // Act
+            Contact result = await _service.DeleteContact(contactToDelete, _otherUser);
+
+            // Assert
+            Assert.Null(result);
+            Contact? contact = await _progenyDbContext.ContactsDb.FindAsync(1);
+            Assert.NotNull(contact); // Contact still exists
+        }
+
+        [Fact]
+        public async Task DeleteContact_WhenContactDoesNotExist_ReturnsNull()
+        {
+            // Arrange
+            Contact contactToDelete = new()
+            {
+                ContactId = 999,
+                ProgenyId = 1,
+                FamilyId = 0
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 999, _adminUser, PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            // Act
+            Contact result = await _service.DeleteContact(contactToDelete, _adminUser);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task DeleteContact_WhenPictureStillUsed_DoesNotDeletePicture()
+        {
+            // Arrange
+            // First, update contact2 to use the same picture as contact1
+            Contact contact2 = (await _progenyDbContext.ContactsDb.FindAsync(2))!;
+            contact2.PictureLink = "contact1.jpg";
+            await _progenyDbContext.SaveChangesAsync();
+
+            Contact contactToDelete = new()
+            {
+                ContactId = 1,
+                ProgenyId = 1,
+                FamilyId = 0
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 1, _adminUser, PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            // Act
+            Contact result = await _service.DeleteContact(contactToDelete, _adminUser);
+
+            // Assert
+            Assert.NotNull(result);
+            _mockImageStore.Verify(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        #endregion
+
+        #region GetContactsList Tests
+
+        [Fact]
+        public async Task GetContactsList_ReturnsContactsWithAccess()
+        {
+            // Arrange
+            int progenyId = 1;
+            int familyId = 0;
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result = await _service.GetContactsList(progenyId, familyId, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.All(result, c => Assert.Equal(progenyId, c.ProgenyId));
+            Assert.All(result, c => Assert.Equal(familyId, c.FamilyId));
+            Assert.All(result, c => Assert.NotNull(c.ItemPerMission));
+        }
+
+        [Fact]
+        public async Task GetContactsList_FiltersOutContactsWithoutAccess()
+        {
+            // Arrange
+            int progenyId = 1;
+            int familyId = 0;
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 1, _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, 2, _testUser, PermissionLevel.View))
+                .ReturnsAsync(false);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, 1, 1, 0, _testUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result = await _service.GetContactsList(progenyId, familyId, _testUser);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal(1, result[0].ContactId);
+        }
+
+        [Fact]
+        public async Task GetContactsList_WhenNoContactsExist_ReturnsEmptyList()
+        {
+            // Arrange
+            int progenyId = 999;
+            int familyId = 0;
+
+            // Act
+            List<Contact> result = await _service.GetContactsList(progenyId, familyId, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetContactsList_SecondCall_UsesCache()
+        {
+            // Arrange
+            int progenyId = 1;
+            int familyId = 0;
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result1 = await _service.GetContactsList(progenyId, familyId, _testUser);
+            List<Contact> result2 = await _service.GetContactsList(progenyId, familyId, _testUser);
+
+            // Assert
+            Assert.NotNull(result1);
+            Assert.NotNull(result2);
+            Assert.Equal(result1.Count, result2.Count);
+        }
+
+        [Fact]
+        public async Task GetContactsList_ForFamily_ReturnsOnlyFamilyContacts()
+        {
+            // Arrange
+            int progenyId = 0;
+            int familyId = 1;
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), _adminUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _adminUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result = await _service.GetContactsList(progenyId, familyId, _adminUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.All(result, c => Assert.Equal(familyId, c.FamilyId));
+            Assert.All(result, c => Assert.Equal(progenyId, c.ProgenyId));
+        }
+
+        #endregion
+
+        #region GetContactsWithTag Tests
+
+        [Fact]
+        public async Task GetContactsWithTag_ReturnsContactsWithMatchingTag()
+        {
+            // Arrange
+            int progenyId = 1;
+            int familyId = 0;
+            string tag = "family";
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result = await _service.GetContactsWithTag(progenyId, familyId, tag, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.All(result, c => Assert.Contains(tag, c.Tags, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        [Fact]
+        public async Task GetContactsWithTag_WithEmptyTag_ReturnsAllContacts()
+        {
+            // Arrange
+            int progenyId = 1;
+            int familyId = 0;
+            string tag = "";
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result = await _service.GetContactsWithTag(progenyId, familyId, tag, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
+        public async Task GetContactsWithTag_WithNonMatchingTag_ReturnsEmptyList()
+        {
+            // Arrange
+            int progenyId = 1;
+            int familyId = 0;
+            string tag = "nonexistent";
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result = await _service.GetContactsWithTag(progenyId, familyId, tag, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetContactsWithTag_IsCaseInsensitive()
+        {
+            // Arrange
+            int progenyId = 1;
+            int familyId = 0;
+            string tag = "FAMILY";
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result = await _service.GetContactsWithTag(progenyId, familyId, tag, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+        }
+
+        #endregion
+
+        #region GetContactsWithContext Tests
+
+        [Fact]
+        public async Task GetContactsWithContext_ReturnsContactsWithMatchingContext()
+        {
+            // Arrange
+            int progenyId = 1;
+            int familyId = 0;
+            string context = "Family";
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result = await _service.GetContactsWithContext(progenyId, familyId, context, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.All(result, c => Assert.Contains(context, c.Context, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        [Fact]
+        public async Task GetContactsWithContext_WithEmptyContext_ReturnsAllContacts()
+        {
+            // Arrange
+            int progenyId = 1;
+            int familyId = 0;
+            string context = "";
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result = await _service.GetContactsWithContext(progenyId, familyId, context, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
+        public async Task GetContactsWithContext_WithNonMatchingContext_ReturnsEmptyList()
+        {
+            // Arrange
+            int progenyId = 1;
+            int familyId = 0;
+            string context = "nonexistent";
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result = await _service.GetContactsWithContext(progenyId, familyId, context, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetContactsWithContext_IsCaseInsensitive()
+        {
+            // Arrange
+            int progenyId = 1;
+            int familyId = 0;
+            string context = "WORK";
+            TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), _testUser, PermissionLevel.View))
+                .ReturnsAsync(true);
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(permission);
+
+            // Act
+            List<Contact> result = await _service.GetContactsWithContext(progenyId, familyId, context, _testUser);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+        }
+
+        #endregion
+    }
+}
