@@ -18,37 +18,35 @@ namespace KinaUna.Data.Models
         public int PictureId { get; set; }
         [Required]
         [MaxLength(400)]
-        public string PictureLink { get; set; }
+        public string PictureLink { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string PictureLink600 { get; set; }
+        public string PictureLink600 { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string PictureLink1200 { get; set; }
+        public string PictureLink1200 { get; set; } = string.Empty;
         public DateTime? PictureTime { get; set; }
         public int? PictureRotation { get; set; }
         public int PictureWidth { get; set; }
         public int PictureHeight { get; set; }
 
         [MaxLength(256)]
-        public string Tags { get; set; }
+        public string Tags { get; set; } = string.Empty; // Comma separated list of tags.
 
         [MaxLength(256)]
-        public string Location { get; set; }
+        public string Location { get; set; } = string.Empty;
+
+        [MaxLength(128)] public string Longtitude { get; set; } = string.Empty; // Todo: Spell check - should be Longitude.
 
         [MaxLength(128)]
-        public string Longtitude { get; set; } // Todo: Spell check - should be Longitude.
+        public string Latitude { get; set; } = string.Empty;
 
         [MaxLength(128)]
-        public string Latitude { get; set; }
-
-        [MaxLength(128)]
-        public string Altitude { get; set; }
+        public string Altitude { get; set; } = string.Empty;
 
         public int ProgenyId { get; set; }
 
-        [MaxLength(1024)]
-        public string Owners { get; set; } // Comma separated list of emails.
+        [MaxLength(1024)] public string Owners { get; set; } = string.Empty; // Comma separated list of emails.
 
         [MaxLength(256)]
         public string Author { get; set; } = string.Empty; // Todo: Replace with CreatedBy?
