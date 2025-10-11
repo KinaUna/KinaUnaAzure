@@ -49,6 +49,10 @@ namespace KinaUnaProgenyApi.Services
             {
                 measurement = await SetMeasurementInCache(id);
             }
+            if (measurement == null || measurement.MeasurementId == 0)
+            {
+                return null;
+            }
             measurement.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Measurement, measurement.MeasurementId, measurement.ProgenyId, 0, currentUserInfo);
             return measurement;
         }

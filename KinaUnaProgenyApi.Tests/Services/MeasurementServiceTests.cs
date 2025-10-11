@@ -1,407 +1,764 @@
-﻿//using KinaUna.Data.Contexts;
-//using KinaUna.Data.Models;
-//using KinaUnaProgenyApi.Services;
-//using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.Caching.Distributed;
-//using Microsoft.Extensions.Caching.Memory;
-//using Microsoft.Extensions.Options;
+﻿using KinaUna.Data.Contexts;
+using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Moq;
 
-//namespace KinaUnaProgenyApi.Tests.Services
-//{
-//    public class MeasurementServiceTests
-//    {
-//        [Fact]
-//        public async Task GetMeasurement_Should_Return_Measurement_Object_When_Id_Is_Valid()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMeasurement_Should_Return_Measurement_Object_When_Id_Is_Valid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+namespace KinaUnaProgenyApi.Tests.Services
+{
+    public class MeasurementServiceTests
+    {
+        private readonly Mock<IAccessManagementService> _mockAccessManagementService;
 
-//            Measurement measurement1 = new()
-//            {
-//                Height = 100.0, Weight = 10, ProgenyId = 1, Author = "User1", AccessLevel = 0, Circumference = 0, CreatedDate = DateTime.UtcNow, Date = DateTime.UtcNow, EyeColor = "", HairColor = "", MeasurementNumber = 1
-//            };
+        public MeasurementServiceTests()
+        {
+            _mockAccessManagementService = new Mock<IAccessManagementService>();
+        }
 
+        private static ProgenyDbContext GetInMemoryDbContext(string dbName)
+        {
+            var options = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase(databaseName: dbName)
+                .Options;
+            return new ProgenyDbContext(options);
+        }
 
-//            Measurement measurement2 = new()
-//            {
-//                Height = 120.0,
-//                Weight = 20,
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Circumference = 0,
-//                CreatedDate = DateTime.UtcNow,
-//                Date = DateTime.UtcNow,
-//                EyeColor = "",
-//                HairColor = "",
-//                MeasurementNumber = 2
-//            };
+        private static IDistributedCache GetMemoryCache()
+        {
+            var options = Options.Create(new MemoryDistributedCacheOptions());
+            return new MemoryDistributedCache(options);
+        }
 
-//            context.Add(measurement1);
-//            context.Add(measurement2);
-//            await context.SaveChangesAsync();
+        private static UserInfo CreateTestUserInfo(string userId = "testuser@test.com")
+        {
+            return new UserInfo
+            {
+                UserId = userId,
+                UserEmail = userId
+            };
+        }
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            MeasurementService measurementService = new(context, memoryCache);
+        private static Measurement CreateTestMeasurement(int measurementId = 1, int progenyId = 1)
+        {
+            return new Measurement
+            {
+                MeasurementId = measurementId,
+                ProgenyId = progenyId,
+                Height = 100.5,
+                Weight = 15.5,
+                Circumference = 50.0,
+                EyeColor = "Blue",
+                HairColor = "Blonde",
+                Date = DateTime.UtcNow.AddDays(-30),
+                CreatedDate = DateTime.UtcNow,
+                Author = "testuser@test.com",
+                AccessLevel = 0,
+                CreatedBy = "testuser@test.com",
+                CreatedTime = DateTime.UtcNow
+            };
+        }
 
-//            Measurement resultMeasurement1 = await measurementService.GetMeasurement(1);
-//            Measurement resultMeasurement2 = await measurementService.GetMeasurement(1); // Uses cache
+        #region GetMeasurement Tests
 
-//            Assert.NotNull(resultMeasurement1);
-//            Assert.IsType<Measurement>(resultMeasurement1);
-//            Assert.Equal(measurement1.Author, resultMeasurement1.Author);
-//            Assert.Equal(measurement1.Height, resultMeasurement1.Height);
-//            Assert.Equal(measurement1.AccessLevel, resultMeasurement1.AccessLevel);
-//            Assert.Equal(measurement1.ProgenyId, resultMeasurement1.ProgenyId);
+        [Fact]
+        public async Task GetMeasurement_Should_Return_Measurement_When_User_Has_Permission()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetMeasurement_Valid");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+            var measurement = CreateTestMeasurement();
 
-//            Assert.NotNull(resultMeasurement2);
-//            Assert.IsType<Measurement>(resultMeasurement2);
-//            Assert.Equal(measurement1.Author, resultMeasurement2.Author);
-//            Assert.Equal(measurement1.Height, resultMeasurement2.Height);
-//            Assert.Equal(measurement1.AccessLevel, resultMeasurement2.AccessLevel);
-//            Assert.Equal(measurement1.ProgenyId, resultMeasurement2.ProgenyId);
-//        }
+            context.MeasurementsDb.Add(measurement);
+            await context.SaveChangesAsync();
 
-//        [Fact]
-//        public async Task GetMeasurement_Should_Return_Null_When_Id_Is_Invalid()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMeasurement_Should_Return_Null_When_Id_Is_Invalid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
 
-//            Measurement measurement1 = new()
-//            {
-//                Height = 100.0,
-//                Weight = 10,
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Circumference = 0,
-//                CreatedDate = DateTime.UtcNow,
-//                Date = DateTime.UtcNow,
-//                EyeColor = "",
-//                HairColor = "",
-//                MeasurementNumber = 1
-//            };
-            
-//            context.Add(measurement1);
-//            await context.SaveChangesAsync();
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Measurement, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            MeasurementService measurementService = new(context, memoryCache);
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
 
-//            Measurement resultMeasurement1 = await measurementService.GetMeasurement(2);
-//            Measurement resultMeasurement2 = await measurementService.GetMeasurement(2); // Using cache
-            
-//            Assert.Null(resultMeasurement1);
-//            Assert.Null(resultMeasurement2);
-//        }
+            // Act
+            var result = await service.GetMeasurement(1, userInfo);
 
-//        [Fact]
-//        public async Task AddMeasurement_Should_Save_Measurement()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddMeasurement_Should_Save_Measurement").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.MeasurementId);
+            Assert.Equal(100.5, result.Height);
+            Assert.Equal(15.5, result.Weight);
+            Assert.NotNull(result.ItemPerMission);
+        }
 
-//            Measurement measurement1 = new()
-//            {
-//                Height = 100.0, Weight = 10, ProgenyId = 1, Author = "User1", AccessLevel = 0, Circumference = 0, CreatedDate = DateTime.UtcNow, Date = DateTime.UtcNow, EyeColor = "", HairColor = "", MeasurementNumber = 1
-//            };
-//            context.Add(measurement1);
-//            await context.SaveChangesAsync();
+        [Fact]
+        public async Task GetMeasurement_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetMeasurement_NoPermission");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+            var measurement = CreateTestMeasurement();
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            MeasurementService measurementService = new(context, memoryCache);
+            context.MeasurementsDb.Add(measurement);
+            await context.SaveChangesAsync();
 
-//            Measurement measurementToAdd = new()
-//            {
-//                Height = 120.0,
-//                Weight = 20,
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Circumference = 0,
-//                CreatedDate = DateTime.UtcNow,
-//                Date = DateTime.UtcNow,
-//                EyeColor = "",
-//                HairColor = "",
-//                MeasurementNumber = 2
-//            };
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(false);
 
-//            Measurement addedMeasurement = await measurementService.AddMeasurement(measurementToAdd);
-//            Measurement? dbMeasurement = await context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(f => f.MeasurementId == addedMeasurement.MeasurementId);
-//            Measurement savedMeasurement = await measurementService.GetMeasurement(addedMeasurement.MeasurementId);
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
 
-//            Assert.NotNull(addedMeasurement);
-//            Assert.IsType<Measurement>(addedMeasurement);
-//            Assert.Equal(measurementToAdd.Author, addedMeasurement.Author);
-//            Assert.Equal(measurementToAdd.Height, addedMeasurement.Height);
-//            Assert.Equal(measurementToAdd.AccessLevel, addedMeasurement.AccessLevel);
-//            Assert.Equal(measurementToAdd.ProgenyId, addedMeasurement.ProgenyId);
+            // Act
+            var result = await service.GetMeasurement(1, userInfo);
 
-//            if (dbMeasurement != null)
-//            {
-//                Assert.IsType<Measurement>(dbMeasurement);
-//                Assert.Equal(measurementToAdd.Author, dbMeasurement.Author);
-//                Assert.Equal(measurementToAdd.Height, dbMeasurement.Height);
-//                Assert.Equal(measurementToAdd.AccessLevel, dbMeasurement.AccessLevel);
-//                Assert.Equal(measurementToAdd.ProgenyId, dbMeasurement.ProgenyId);
-//            }
-//            Assert.NotNull(savedMeasurement);
-//            Assert.IsType<Measurement>(savedMeasurement);
-//            Assert.Equal(measurementToAdd.Author, savedMeasurement.Author);
-//            Assert.Equal(measurementToAdd.Height, savedMeasurement.Height);
-//            Assert.Equal(measurementToAdd.AccessLevel, savedMeasurement.AccessLevel);
-//            Assert.Equal(measurementToAdd.ProgenyId, savedMeasurement.ProgenyId);
+            // Assert
+            Assert.Null(result);
+        }
 
-//        }
+        [Fact]
+        public async Task GetMeasurement_Should_Return_Null_When_Measurement_Does_Not_Exist()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetMeasurement_NotFound");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
 
-//        [Fact]
-//        public async Task UpdateMeasurement_Should_Save_Measurement()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateMeasurement_Should_Save_Measurement").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 999, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
 
-//            Measurement measurement1 = new()
-//            {
-//                Height = 100.0,
-//                Weight = 10,
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Circumference = 0,
-//                CreatedDate = DateTime.UtcNow,
-//                Date = DateTime.UtcNow,
-//                EyeColor = "",
-//                HairColor = "",
-//                MeasurementNumber = 1
-//            };
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
 
+            // Act
+            var result = await service.GetMeasurement(999, userInfo);
 
-//            Measurement measurement2 = new()
-//            {
-//                Height = 120.0,
-//                Weight = 20,
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Circumference = 0,
-//                CreatedDate = DateTime.UtcNow,
-//                Date = DateTime.UtcNow,
-//                EyeColor = "",
-//                HairColor = "",
-//                MeasurementNumber = 2
-//            };
-//            context.Add(measurement1);
-//            context.Add(measurement2);
-//            await context.SaveChangesAsync();
+            // Assert
+            Assert.Null(result);
+        }
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            MeasurementService measurementService = new(context, memoryCache);
+        [Fact]
+        public async Task GetMeasurement_Should_Use_Cache_On_Second_Call()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetMeasurement_Cache");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+            var measurement = CreateTestMeasurement();
 
-//            Measurement measurementToUpdate = await measurementService.GetMeasurement(1);
-//            measurementToUpdate.AccessLevel = 5;
-//            Measurement updatedMeasurement = await measurementService.UpdateMeasurement(measurementToUpdate);
-//            Measurement? dbMeasurement = await context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(f => f.MeasurementId == 1);
-//            Measurement savedMeasurement = await measurementService.GetMeasurement(1);
+            context.MeasurementsDb.Add(measurement);
+            await context.SaveChangesAsync();
 
-//            Assert.NotNull(updatedMeasurement);
-//            Assert.IsType<Measurement>(updatedMeasurement);
-//            Assert.NotEqual(0, updatedMeasurement.MeasurementId);
-//            Assert.Equal("User1", updatedMeasurement.Author);
-//            Assert.Equal(5, updatedMeasurement.AccessLevel);
-//            Assert.Equal(1, updatedMeasurement.ProgenyId);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
 
-//            if (dbMeasurement != null)
-//            {
-//                Assert.IsType<Measurement>(dbMeasurement);
-//                Assert.NotEqual(0, dbMeasurement.MeasurementId);
-//                Assert.Equal("User1", dbMeasurement.Author);
-//                Assert.Equal(5, dbMeasurement.AccessLevel);
-//                Assert.Equal(1, dbMeasurement.ProgenyId);
-//            }
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Measurement, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-//            Assert.NotNull(savedMeasurement);
-//            Assert.IsType<Measurement>(savedMeasurement);
-//            Assert.NotEqual(0, savedMeasurement.MeasurementId);
-//            Assert.Equal("User1", savedMeasurement.Author);
-//            Assert.Equal(5, savedMeasurement.AccessLevel);
-//            Assert.Equal(1, savedMeasurement.ProgenyId);
-//        }
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
 
-//        [Fact]
-//        public async Task DeleteMeasurement_Should_Remove_Measurement()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteMeasurement_Should_Remove_Measurement").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            // Act
+            var result1 = await service.GetMeasurement(1, userInfo);
+            var result2 = await service.GetMeasurement(1, userInfo);
 
-//            Measurement measurement1 = new()
-//            {
-//                Height = 100.0,
-//                Weight = 10,
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Circumference = 0,
-//                CreatedDate = DateTime.UtcNow,
-//                Date = DateTime.UtcNow,
-//                EyeColor = "",
-//                HairColor = "",
-//                MeasurementNumber = 1
-//            };
+            // Assert
+            Assert.NotNull(result1);
+            Assert.NotNull(result2);
+            Assert.Equal(result1.Height, result2.Height);
+            Assert.Equal(result1.Weight, result2.Weight);
+        }
 
+        #endregion
 
-//            Measurement measurement2 = new()
-//            {
-//                Height = 120.0,
-//                Weight = 20,
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Circumference = 0,
-//                CreatedDate = DateTime.UtcNow,
-//                Date = DateTime.UtcNow,
-//                EyeColor = "",
-//                HairColor = "",
-//                MeasurementNumber = 2
-//            };
-//            context.Add(measurement1);
-//            context.Add(measurement2);
-//            await context.SaveChangesAsync();
+        #region AddMeasurement Tests
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            MeasurementService measurementService = new(context, memoryCache);
+        [Fact]
+        public async Task AddMeasurement_Should_Add_Measurement_When_User_Has_Permission()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("AddMeasurement_Valid");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
 
-//            int measurementItemsCountBeforeDelete = context.MeasurementsDb.Count();
-//            Measurement measurementToDelete = await measurementService.GetMeasurement(1);
+            var measurement = new Measurement
+            {
+                ProgenyId = 1,
+                Height = 105.0,
+                Weight = 16.0,
+                Circumference = 51.0,
+                EyeColor = "Brown",
+                HairColor = "Black",
+                Date = DateTime.UtcNow,
+                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+            };
 
-//            await measurementService.DeleteMeasurement(measurementToDelete);
-//            Measurement? deletedMeasurement = await context.MeasurementsDb.SingleOrDefaultAsync(f => f.MeasurementId == 1);
-//            int measurementItemsCountAfterDelete = context.MeasurementsDb.Count();
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
+                .ReturnsAsync(true);
 
-//            Assert.Null(deletedMeasurement);
-//            Assert.Equal(2, measurementItemsCountBeforeDelete);
-//            Assert.Equal(1, measurementItemsCountAfterDelete);
-//        }
+            _mockAccessManagementService
+                .Setup(x => x.AddItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
+                .Returns(Task.CompletedTask);
 
-//        [Fact]
-//        public async Task GetMeasurementsList_Should_Return_List_Of_Measurement_When_Progeny_Has_Saved_Measurements()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMeasurementsList_Should_Return_List_Of_Measurement_When_Progeny_Has_Saved_Measurements").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
 
-//            Measurement measurement1 = new()
-//            {
-//                Height = 100.0,
-//                Weight = 10,
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Circumference = 0,
-//                CreatedDate = DateTime.UtcNow,
-//                Date = DateTime.UtcNow,
-//                EyeColor = "",
-//                HairColor = "",
-//                MeasurementNumber = 1
-//            };
+            // Act
+            var result = await service.AddMeasurement(measurement, userInfo);
 
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotEqual(0, result.MeasurementId);
+            Assert.Equal(105.0, result.Height);
+            Assert.Equal(16.0, result.Weight);
 
-//            Measurement measurement2 = new()
-//            {
-//                Height = 120.0,
-//                Weight = 20,
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Circumference = 0,
-//                CreatedDate = DateTime.UtcNow,
-//                Date = DateTime.UtcNow,
-//                EyeColor = "",
-//                HairColor = "",
-//                MeasurementNumber = 2
-//            };
+            var dbMeasurement = await context.MeasurementsDb.FindAsync(result.MeasurementId);
+            Assert.NotNull(dbMeasurement);
+            Assert.Equal(105.0, dbMeasurement.Height);
+        }
 
-//            context.Add(measurement1);
-//            context.Add(measurement2);
-//            await context.SaveChangesAsync();
+        [Fact]
+        public async Task AddMeasurement_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("AddMeasurement_NoPermission");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            MeasurementService measurementService = new(context, memoryCache);
+            var measurement = new Measurement
+            {
+                ProgenyId = 1,
+                Height = 105.0,
+                Weight = 16.0
+            };
 
-//            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(1, 0);
-//            List<Measurement> measurementsList2 = await measurementService.GetMeasurementsList(1, 0); // Test cached result.
-//            Measurement firstMeasurement = measurementsList.First();
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
+                .ReturnsAsync(false);
 
-//            Assert.NotNull(measurementsList);
-//            Assert.IsType<List<Measurement>>(measurementsList);
-//            Assert.Equal(2, measurementsList.Count);
-//            Assert.NotNull(measurementsList2);
-//            Assert.IsType<List<Measurement>>(measurementsList2);
-//            Assert.Equal(2, measurementsList2.Count);
-//            Assert.NotNull(firstMeasurement);
-//            Assert.IsType<Measurement>(firstMeasurement);
-//        }
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
 
-//        [Fact]
-//        public async Task GetMeasurementsList_Should_Return_Empty_List_Of_Measurement_When_Progeny_Has_No_Saved_Measurements()
-//        {
-            
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMeasurementsList_Should_Return_Empty_List_Of_Measurement_When_Progeny_Has_No_Saved_Measurements").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+            // Act
+            var result = await service.AddMeasurement(measurement, userInfo);
 
-//            Measurement measurement1 = new()
-//            {
-//                Height = 100.0,
-//                Weight = 10,
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Circumference = 0,
-//                CreatedDate = DateTime.UtcNow,
-//                Date = DateTime.UtcNow,
-//                EyeColor = "",
-//                HairColor = "",
-//                MeasurementNumber = 1
-//            };
+            // Assert
+            Assert.Null(result);
+            Assert.Empty(context.MeasurementsDb);
+        }
 
+        [Fact]
+        public async Task AddMeasurement_Should_Copy_Properties_Correctly()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("AddMeasurement_CopyProperties");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
 
-//            Measurement measurement2 = new()
-//            {
-//                Height = 120.0,
-//                Weight = 20,
-//                ProgenyId = 1,
-//                Author = "User1",
-//                AccessLevel = 0,
-//                Circumference = 0,
-//                CreatedDate = DateTime.UtcNow,
-//                Date = DateTime.UtcNow,
-//                EyeColor = "",
-//                HairColor = "",
-//                MeasurementNumber = 2
-//            };
+            var measurement = new Measurement
+            {
+                ProgenyId = 1,
+                Height = 110.5,
+                Weight = 18.5,
+                Circumference = 52.5,
+                EyeColor = "Green",
+                HairColor = "Red",
+                Date = DateTime.UtcNow.AddDays(-10),
+                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+            };
 
-//            context.Add(measurement1);
-//            context.Add(measurement2);
-//            await context.SaveChangesAsync();
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
+                .ReturnsAsync(true);
 
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            MeasurementService measurementService = new(context, memoryCache);
+            _mockAccessManagementService
+                .Setup(x => x.AddItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
+                .Returns(Task.CompletedTask);
 
-//            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(2, 0);
-//            List<Measurement> measurementsList2 = await measurementService.GetMeasurementsList(2, 0); // Test cached result.
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
 
-//            Assert.NotNull(measurementsList);
-//            Assert.IsType<List<Measurement>>(measurementsList);
-//            Assert.Empty(measurementsList);
-//            Assert.NotNull(measurementsList2);
-//            Assert.IsType<List<Measurement>>(measurementsList2);
-//            Assert.Empty(measurementsList2);
-//        }
-//    }
-//}
+            // Act
+            var result = await service.AddMeasurement(measurement, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(measurement.ProgenyId, result.ProgenyId);
+            Assert.Equal(measurement.Height, result.Height);
+            Assert.Equal(measurement.Weight, result.Weight);
+            Assert.Equal(measurement.Circumference, result.Circumference);
+            Assert.Equal(measurement.EyeColor, result.EyeColor);
+            Assert.Equal(measurement.HairColor, result.HairColor);
+        }
+
+        #endregion
+
+        #region UpdateMeasurement Tests
+
+        [Fact]
+        public async Task UpdateMeasurement_Should_Update_Measurement_When_User_Has_Permission()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateMeasurement_Valid");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurement = CreateTestMeasurement();
+            context.MeasurementsDb.Add(measurement);
+            await context.SaveChangesAsync();
+            context.Entry(measurement).State = EntityState.Detached;
+
+            var updatedMeasurement = new Measurement
+            {
+                MeasurementId = 1,
+                ProgenyId = 1,
+                Height = 120.0,
+                Weight = 20.0,
+                Circumference = 55.0,
+                EyeColor = "Green",
+                HairColor = "Brown",
+                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
+                .ReturnsAsync(new List<TimelineItemPermission>());
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.UpdateMeasurement(updatedMeasurement, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(120.0, result.Height);
+            Assert.Equal(20.0, result.Weight);
+
+            var dbMeasurement = await context.MeasurementsDb.FindAsync(1);
+            Assert.NotNull(dbMeasurement);
+            Assert.Equal(120.0, dbMeasurement.Height);
+        }
+
+        [Fact]
+        public async Task UpdateMeasurement_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateMeasurement_NoPermission");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurement = CreateTestMeasurement();
+            context.MeasurementsDb.Add(measurement);
+            await context.SaveChangesAsync();
+
+            var updatedMeasurement = new Measurement
+            {
+                MeasurementId = 1,
+                ProgenyId = 1,
+                Height = 120.0
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(false);
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.UpdateMeasurement(updatedMeasurement, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateMeasurement_Should_Return_Null_When_Measurement_Does_Not_Exist()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateMeasurement_NotFound");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var updatedMeasurement = new Measurement
+            {
+                MeasurementId = 999,
+                ProgenyId = 1,
+                Height = 120.0
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 999, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.UpdateMeasurement(updatedMeasurement, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateMeasurement_Should_Update_Cache()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("UpdateMeasurement_Cache");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurement = CreateTestMeasurement();
+            context.MeasurementsDb.Add(measurement);
+            await context.SaveChangesAsync();
+            context.Entry(measurement).State = EntityState.Detached;
+
+            var updatedMeasurement = new Measurement
+            {
+                MeasurementId = 1,
+                ProgenyId = 1,
+                Height = 125.0,
+                Weight = 22.0,
+                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
+                .ReturnsAsync(new List<TimelineItemPermission>());
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.UpdateMeasurement(updatedMeasurement, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(125.0, result.Height);
+        }
+
+        #endregion
+
+        #region DeleteMeasurement Tests
+
+        [Fact]
+        public async Task DeleteMeasurement_Should_Delete_Measurement_When_User_Has_Permission()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("DeleteMeasurement_Valid");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurement = CreateTestMeasurement();
+            context.MeasurementsDb.Add(measurement);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.DeleteMeasurement(measurement, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.MeasurementId);
+
+            var dbMeasurement = await context.MeasurementsDb.FindAsync(1);
+            Assert.Null(dbMeasurement);
+        }
+
+        [Fact]
+        public async Task DeleteMeasurement_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("DeleteMeasurement_NoPermission");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurement = CreateTestMeasurement();
+            context.MeasurementsDb.Add(measurement);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(false);
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.DeleteMeasurement(measurement, userInfo);
+
+            // Assert
+            Assert.Null(result);
+            var dbMeasurement = await context.MeasurementsDb.FindAsync(1);
+            Assert.NotNull(dbMeasurement);
+        }
+
+        [Fact]
+        public async Task DeleteMeasurement_Should_Return_Null_When_Measurement_Does_Not_Exist()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("DeleteMeasurement_NotFound");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurement = new Measurement
+            {
+                MeasurementId = 999,
+                ProgenyId = 1
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 999, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.DeleteMeasurement(measurement, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task DeleteMeasurement_Should_Remove_From_Cache()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("DeleteMeasurement_Cache");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurement = CreateTestMeasurement();
+            context.MeasurementsDb.Add(measurement);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.DeleteMeasurement(measurement, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(context.MeasurementsDb);
+        }
+
+        #endregion
+
+        #region GetMeasurementsList Tests
+
+        [Fact]
+        public async Task GetMeasurementsList_Should_Return_List_Of_Accessible_Measurements()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetMeasurementsList_Valid");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurements = new List<Measurement>
+            {
+                CreateTestMeasurement(1, 1),
+                CreateTestMeasurement(2, 1),
+                CreateTestMeasurement(3, 1)
+            };
+
+            context.MeasurementsDb.AddRange(measurements);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, It.IsAny<int>(), userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Measurement, It.IsAny<int>(), 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.GetMeasurementsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(3, result.Count);
+        }
+
+        [Fact]
+        public async Task GetMeasurementsList_Should_Return_Only_Accessible_Measurements()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetMeasurementsList_PartialAccess");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurements = new List<Measurement>
+            {
+                CreateTestMeasurement(1, 1),
+                CreateTestMeasurement(2, 1),
+                CreateTestMeasurement(3, 1)
+            };
+
+            context.MeasurementsDb.AddRange(measurements);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 2, userInfo, PermissionLevel.View))
+                .ReturnsAsync(false);
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 3, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Measurement, It.IsAny<int>(), 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.GetMeasurementsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, m => m.MeasurementId == 1);
+            Assert.Contains(result, m => m.MeasurementId == 3);
+        }
+
+        [Fact]
+        public async Task GetMeasurementsList_Should_Return_Empty_List_When_No_Measurements_Exist()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetMeasurementsList_Empty");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.GetMeasurementsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetMeasurementsList_Should_Return_Empty_List_For_Different_Progeny()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetMeasurementsList_DifferentProgeny");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurements = new List<Measurement>
+            {
+                CreateTestMeasurement(1, 1),
+                CreateTestMeasurement(2, 1)
+            };
+
+            context.MeasurementsDb.AddRange(measurements);
+            await context.SaveChangesAsync();
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.GetMeasurementsList(2, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetMeasurementsList_Should_Use_Cache_On_Second_Call()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetMeasurementsList_Cache");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurement = CreateTestMeasurement(1, 1);
+            context.MeasurementsDb.Add(measurement);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Measurement, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result1 = await service.GetMeasurementsList(1, userInfo);
+            var result2 = await service.GetMeasurementsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result1);
+            Assert.NotNull(result2);
+            Assert.Single(result1);
+            Assert.Single(result2);
+        }
+
+        [Fact]
+        public async Task GetMeasurementsList_Should_Set_ItemPermission_For_Each_Measurement()
+        {
+            // Arrange
+            await using var context = GetInMemoryDbContext("GetMeasurementsList_ItemPermissions");
+            var cache = GetMemoryCache();
+            var userInfo = CreateTestUserInfo();
+
+            var measurement = CreateTestMeasurement(1, 1);
+            context.MeasurementsDb.Add(measurement);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Measurement, 1, 1, 0, userInfo))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.Edit });
+
+            var service = new MeasurementService(context, cache, _mockAccessManagementService.Object);
+
+            // Act
+            var result = await service.GetMeasurementsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.NotNull(result[0].ItemPerMission);
+            Assert.Equal(PermissionLevel.Edit, result[0].ItemPerMission.PermissionLevel);
+        }
+
+        #endregion
+    }
+}
