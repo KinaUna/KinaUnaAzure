@@ -38,6 +38,10 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 return new KanbanBoard();
             }
             KanbanBoard kanbanBoard = await progenyDbContext.KanbanBoardsDb.AsNoTracking().SingleOrDefaultAsync(k => k.KanbanBoardId == kanbanBoardId);
+            if (kanbanBoard == null)
+            {
+                return new KanbanBoard();
+            }
             kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, currentUserInfo);
 
             return kanbanBoard;

@@ -132,7 +132,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// <returns>List of CalendarReminder objects.</returns>
         public async Task SendExpiredCalendarReminders()
         {
-            List<CalendarReminder> expiredReminders = await context.CalendarRemindersDb.AsNoTracking().Where(c => c.NotifyTime < DateTime.UtcNow && !c.Notified && c.RecurrenceRuleId > 0).ToListAsync();
+            List<CalendarReminder> expiredReminders = await context.CalendarRemindersDb.AsNoTracking().Where(c => c.NotifyTime < DateTime.UtcNow && !c.Notified && c.RecurrenceRuleId == 0).ToListAsync();
 
             foreach (CalendarReminder calendarReminder in expiredReminders)
             {

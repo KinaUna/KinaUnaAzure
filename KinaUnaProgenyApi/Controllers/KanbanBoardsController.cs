@@ -47,7 +47,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             KanbanBoard kanbanBoard = await kanbanBoardsService.GetKanbanBoardById(kanbanBoardId, currentUserInfo);
-            if (kanbanBoard == null)
+            if (kanbanBoard == null || kanbanBoard.KanbanBoardId == 0)
             {
                 return NotFound();
             }
@@ -207,7 +207,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             KanbanBoard existingKanbanBoard = await kanbanBoardsService.GetKanbanBoardById(id, currentUserInfo);
-            if (existingKanbanBoard == null)
+            if (existingKanbanBoard == null || existingKanbanBoard.KanbanBoardId == 0)
             {
                 return NotFound();
             }

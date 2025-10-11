@@ -398,7 +398,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 Admins = "user1@example.com"
             };
 
-            UserInfo userFromDb = await _progenyDbContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == "user1@example.com".ToUpper());
+            await _progenyDbContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == "user1@example.com".ToUpper());
 
             _mockFamilyAuditLogService
                 .Setup(x => x.AddFamilyCreatedAuditLogEntry(It.IsAny<Family>(), _testUser))
@@ -470,7 +470,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .ReturnsAsync(new FamilyPermission());
 
             // Act
-            Family result = await _service.AddFamily(newFamily, _testUser);
+            await _service.AddFamily(newFamily, _testUser);
 
             // Assert
             _mockAccessManagementService.Verify(
@@ -603,7 +603,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
 
             _mockAccessManagementService
                 .Setup(x => x.UpdateFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser))
-                .ReturnsAsync((FamilyPermission)null);
+                .ReturnsAsync((FamilyPermission)null!);
 
             _mockAccessManagementService
                 .Setup(x => x.GrantFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser))
@@ -632,7 +632,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             };
 
             // Add second admin to existing family
-            Family existingFamily = await _progenyDbContext.FamiliesDb.FindAsync(1);
+            Family existingFamily = (await _progenyDbContext.FamiliesDb.FindAsync(1))!;
             existingFamily.Admins = "admin@example.com,user1@example.com";
             _progenyDbContext.FamiliesDb.Update(existingFamily);
             await _progenyDbContext.SaveChangesAsync();
@@ -692,7 +692,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
 
             // Assert
             Assert.True(result);
-            Family deletedFamily = await _progenyDbContext.FamiliesDb.FindAsync(familyId);
+            Family deletedFamily = (await _progenyDbContext.FamiliesDb.FindAsync(familyId))!;
             Assert.Null(deletedFamily);
 
             _mockFamilyAuditLogService.Verify(x => x.AddFamilyDeletedAuditLogEntry(It.IsAny<Family>(), _adminUser), Times.Once);
@@ -709,7 +709,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
 
             // Assert
             Assert.False(result);
-            Family family = await _progenyDbContext.FamiliesDb.FindAsync(familyId);
+            Family family = (await _progenyDbContext.FamiliesDb.FindAsync(familyId))!;
             Assert.NotNull(family);
         }
 
@@ -810,7 +810,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             await _service.ChangeUsersEmailForFamilies(_adminUser, newEmail);
 
             // Assert
-            Family updatedFamily = await _progenyDbContext.FamiliesDb.FindAsync(1);
+            Family updatedFamily = (await _progenyDbContext.FamiliesDb.FindAsync(1))!;
             Assert.NotNull(updatedFamily);
             Assert.Contains(newEmail, updatedFamily.Admins);
             Assert.DoesNotContain(_adminUser.UserEmail, updatedFamily.Admins);
@@ -826,7 +826,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             await _service.ChangeUsersEmailForFamilies(_otherUser, newEmail);
 
             // Assert
-            Family family = await _progenyDbContext.FamiliesDb.FindAsync(1);
+            Family family = (await _progenyDbContext.FamiliesDb.FindAsync(1))!;
             Assert.NotNull(family);
             Assert.DoesNotContain(newEmail, family.Admins);
         }
@@ -838,7 +838,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             string newEmail = "newemail@example.com";
 
             // Add user as admin to second family
-            Family anotherFamily = await _progenyDbContext.FamiliesDb.FindAsync(2);
+            Family anotherFamily = (await _progenyDbContext.FamiliesDb.FindAsync(2))!;
             anotherFamily.Admins = "admin@example.com";
             _progenyDbContext.FamiliesDb.Update(anotherFamily);
             await _progenyDbContext.SaveChangesAsync();
@@ -847,8 +847,8 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             await _service.ChangeUsersEmailForFamilies(_adminUser, newEmail);
 
             // Assert
-            Family family1 = await _progenyDbContext.FamiliesDb.FindAsync(1);
-            Family family2 = await _progenyDbContext.FamiliesDb.FindAsync(2);
+            Family family1 = (await _progenyDbContext.FamiliesDb.FindAsync(1))!;
+            Family family2 = (await _progenyDbContext.FamiliesDb.FindAsync(2))!;
             Assert.Contains(newEmail, family1.Admins);
             Assert.Contains(newEmail, family2.Admins);
         }
