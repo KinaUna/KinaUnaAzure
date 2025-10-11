@@ -147,7 +147,9 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             List<TodoItem> subtasks = [.. progenyDbContext.TodoItemsDb.AsNoTracking().Where(t => t.ParentTodoItemId == id && !t.IsDeleted)];
             todoItem.SubtaskCount = subtasks.Count;
             todoItem.CompletedSubtaskCount = subtasks.FindAll(s => s.Status >= (int)KinaUnaTypes.TodoStatusType.Completed).Count;
-            
+
+            todoItem.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, todoItem.ProgenyId, todoItem.FamilyId, currentUserInfo);
+
             return todoItem;
         }
 

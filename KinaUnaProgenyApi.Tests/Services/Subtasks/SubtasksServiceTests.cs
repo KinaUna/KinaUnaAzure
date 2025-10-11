@@ -675,8 +675,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
         public async Task UpdateSubtask_WhenStatusUnchanged_PreservesCompletedDate()
         {
             // Arrange
-            TodoItem? currentSubtask = await _progenyDbContext.TodoItemsDb.FindAsync(4);
-            DateTime? originalCompletedDate = currentSubtask.CompletedDate;
+            await _progenyDbContext.TodoItemsDb.FindAsync(4);
 
             TodoItem updateValues = new()
             {
