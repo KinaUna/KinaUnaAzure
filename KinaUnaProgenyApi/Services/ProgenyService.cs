@@ -171,6 +171,7 @@ namespace KinaUnaProgenyApi.Services
             progenyToUpdate.Name = progeny.Name;
             progenyToUpdate.NickName = progeny.NickName;
             progenyToUpdate.TimeZone = progeny.TimeZone;
+            progenyToUpdate.UserId = progeny.UserId;
             if (progeny.Email != progenyToUpdate.Email)
             {
                 UserInfo progenyUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToLower() == progeny.Email.ToLower());
