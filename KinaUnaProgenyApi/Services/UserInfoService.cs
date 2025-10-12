@@ -230,7 +230,11 @@ namespace KinaUnaProgenyApi.Services
             if (userInfoToUpdate == null) return null;
 
             string oldPictureLink = userInfoToUpdate.ProfilePicture;
-                
+            if (string.IsNullOrEmpty(userInfo.ProfilePicture))
+            {
+                userInfo.ProfilePicture = Constants.ProfilePictureUrl;
+            }
+
             userInfoToUpdate.UserEmail = userInfo.UserEmail;
             userInfoToUpdate.UserId = userInfo.UserId;
             userInfoToUpdate.UserName = userInfo.UserName;
@@ -249,12 +253,7 @@ namespace KinaUnaProgenyApi.Services
             userInfoToUpdate.ProgenyList = userInfo.ProgenyList;
             userInfoToUpdate.AccessList = userInfo.AccessList;
             userInfoToUpdate.UpdatedTime = DateTime.UtcNow;
-
-            if (string.IsNullOrEmpty(userInfo.ProfilePicture))
-            {
-                userInfo.ProfilePicture = Constants.ProfilePictureUrl;
-            }
-                
+            
             _ = _context.UserInfoDb.Update(userInfoToUpdate);
             _ = await _context.SaveChangesAsync();
 
@@ -262,6 +261,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Profiles);
             }
+
+            
 
             _ = await SetUserInfoByEmail(userInfo.UserEmail);
 

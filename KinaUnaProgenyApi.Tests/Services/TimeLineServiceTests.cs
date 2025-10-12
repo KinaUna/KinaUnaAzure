@@ -73,7 +73,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             TimeLineItem? result = await service.GetTimeLineItem(tlItem.TimeLineId, user);
 
             Assert.NotNull(result);
-            Assert.Equal("1", result!.ItemId);
+            Assert.Equal("1", result.ItemId);
         }
 
         [Fact]
@@ -138,11 +138,11 @@ namespace KinaUnaProgenyApi.Tests.Services
             TimeLineItem? added = await service.AddTimeLineItem(newItem, user);
 
             Assert.NotNull(added);
-            Assert.True(added!.TimeLineId > 0);
+            Assert.True(added.TimeLineId > 0);
             // verify cached copy exists via direct cache read
             string? cached = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + added.TimeLineId);
             Assert.False(string.IsNullOrEmpty(cached));
-            TimeLineItem? deserialized = JsonConvert.DeserializeObject<TimeLineItem>(cached!);
+            TimeLineItem? deserialized = JsonConvert.DeserializeObject<TimeLineItem>(cached);
             Assert.Equal("10", deserialized!.ItemId);
         }
 
@@ -227,7 +227,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             TimeLineItem? result = await service.UpdateTimeLineItem(updated, user);
 
             Assert.NotNull(result);
-            Assert.Equal(newProgenyTime, result!.ProgenyTime);
+            Assert.Equal(newProgenyTime, result.ProgenyTime);
             // confirm DB was updated
             TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(original.TimeLineId);
             Assert.Equal(newProgenyTime, dbItem!.ProgenyTime);
@@ -393,7 +393,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             TimeLineItem? result = await service.GetTimeLineItemByItemId("70", (int)KinaUnaTypes.TimeLineType.Photo, user);
             Assert.NotNull(result);
-            Assert.Equal("70", result!.ItemId);
+            Assert.Equal("70", result.ItemId);
         }
 
         [Fact]
