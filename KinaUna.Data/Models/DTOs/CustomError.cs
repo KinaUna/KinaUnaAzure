@@ -13,7 +13,7 @@ public class CustomError
     public static readonly string ExceptionErrorCode = "ExceptionError";
     public static readonly string UnauthorizedErrorCode = "UnauthorizedError"; 
 
-    private CustomError(string code, string message, ILogger? logger = null)
+    public CustomError(string code, string message, ILogger? logger = null)
     {
         Code = code;
         Message = message;

@@ -23,7 +23,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            if (!currentUserInfo.IsKinaUnaAdmin) return Unauthorized();
+            if (currentUserInfo == null || !currentUserInfo.IsKinaUnaAdmin) return Unauthorized();
             return Ok(await calendarRemindersService.GetAllCalendarReminders());
         }
 
