@@ -3,7 +3,6 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
-using KinaUna.Data.Models.Family;
 using KinaUnaProgenyApi.Controllers;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.AccessManagementService;
@@ -35,8 +34,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
         private const string TestUserEmail = Constants.DefaultUserEmail;
         private const string TestUserId = Constants.DefaultUserId;
-        private const string OtherUserEmail = "other@example.com";
-        private const string OtherUserId = "other-user-id";
         private const int TestProgenyId = 1;
         private const int TestFamilyId = 1;
         private const int TestTodoItemId = 100;
@@ -61,17 +58,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 LastName = "User",
                 ProfilePicture = "profile.jpg"
             };
-
-            new UserInfo
-            {
-                UserId = OtherUserId,
-                UserEmail = OtherUserEmail,
-                ViewChild = TestProgenyId,
-                IsKinaUnaAdmin = false,
-                FirstName = "Other",
-                LastName = "User"
-            };
-
+            
             _testProgeny = new Progeny
             {
                 Id = TestProgenyId,
@@ -79,13 +66,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 NickName = "TestNick",
                 BirthDay = DateTime.UtcNow.AddYears(-2)
             };
-
-            new Family
-            {
-                FamilyId = TestFamilyId,
-                Name = "Test Family"
-            };
-
+            
             _testTodoItem = new TodoItem
             {
                 TodoItemId = TestTodoItemId,
