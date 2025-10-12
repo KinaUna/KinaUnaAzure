@@ -1,599 +1,452 @@
-﻿//using KinaUna.Data;
-//using KinaUna.Data.Contexts;
-//using KinaUna.Data.Models;
-//using KinaUnaProgenyApi.Services;
-//using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.Caching.Distributed;
-//using Microsoft.Extensions.Caching.Memory;
-//using Microsoft.Extensions.Options;
-//using Moq;
+﻿using KinaUna.Data.Contexts;
+using KinaUna.Data.Models;
+using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Moq;
+using KinaUna.Data;
 
-//namespace KinaUnaProgenyApi.Tests.Services
-//{
-//    public class UserInfoServiceTests
-//    {
-//        [Fact]
-//        public async Task GetAllUserInfos_Should_Return_List_Of_UserInfo()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAllUserInfos_Should_Return_List_Of_UserInfo").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
+namespace KinaUnaProgenyApi.Tests.Services
+{
+    public class UserInfoServiceTests
+    {
+        private static ProgenyDbContext CreateContext(string dbName)
+        {
+            DbContextOptions<ProgenyDbContext> options = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase(dbName)
+                .Options;
+            return new ProgenyDbContext(options);
+        }
 
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
-//            UserInfo userInfo2 = new()
-//            {
-//                UserEmail = "test2@test.com",
-//                UserId = "UserId2",
-//                UserName = "Test2",
-//                FirstName = "FirstName2",
-//                MiddleName = "MiddleName2",
-//                LastName = "LastName2",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
-//            UserInfo userInfo3 = new()
-//            {
-//                UserEmail = "test3@test.com",
-//                UserId = "UserId3",
-//                UserName = "Test3",
-//                FirstName = "FirstName3",
-//                MiddleName = "MiddleName3",
-//                LastName = "LastName3",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
+        private static IDistributedCache CreateMemoryCache()
+        {
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            return new MemoryDistributedCache(memoryCacheOptions);
+        }
 
-//            context.Add(userInfo1);
-//            context.Add(userInfo2);
-//            context.Add(userInfo3);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+        private static UserInfoService CreateService(
+            ProgenyDbContext context,
+            IDistributedCache cache,
+            Mock<IImageStore> imageStoreMock,
+            out Mock<IProgenyService> progenyServiceMock,
+            out Mock<IAccessManagementService> accessManagementServiceMock,
+            out Mock<IUserGroupsService> userGroupsServiceMock,
+            out Mock<IFamilyMembersService> familyMembersServiceMock)
+        {
+            progenyServiceMock = new Mock<IProgenyService>();
+            accessManagementServiceMock = new Mock<IAccessManagementService>();
+            userGroupsServiceMock = new Mock<IUserGroupsService>();
+            familyMembersServiceMock = new Mock<IFamilyMembersService>();
 
-//            List<UserInfo>? resultUserInfos = await userInfoService.GetAllUserInfos();
-//            List<UserInfo> dbUserInfos = await context.UserInfoDb.ToListAsync();
+            // Default setups for methods the service calls during add/update.
+            progenyServiceMock.Setup(p => p.UpdateProgeniesForNewUser(It.IsAny<UserInfo>())).Returns(Task.CompletedTask);
+            accessManagementServiceMock.Setup(a => a.UpdatePermissionsForNewUser(It.IsAny<UserInfo>())).Returns(Task.CompletedTask);
+            userGroupsServiceMock.Setup(u => u.UpdateUserGroupMembersForNewUser(It.IsAny<UserInfo>())).Returns(Task.CompletedTask);
+            familyMembersServiceMock.Setup(f => f.UpdateFamilyMembersForNewUser(It.IsAny<UserInfo>())).Returns(Task.CompletedTask);
 
-//            Assert.NotNull(resultUserInfos);
-//            Assert.IsType<List<UserInfo>>(resultUserInfos);
-//            Assert.Equal(resultUserInfos.Count, dbUserInfos.Count);
-//        }
+            return new UserInfoService(context, cache, imageStoreMock.Object,
+                progenyServiceMock.Object, accessManagementServiceMock.Object,
+                userGroupsServiceMock.Object, familyMembersServiceMock.Object);
+        }
 
-//        [Fact]
-//        public async Task GetUserInfoByEmail_Should_Return_UserInfo_Object_When_Email_Is_Valid()
-//        {
-//            UserInfo userInfo1 = new()
-//            { 
-//                UserEmail = "test1@test.com", UserId = "UserId1", UserName = "Test1", FirstName = "FirstName1", MiddleName = "MiddleName1", LastName = "LastName1",
-//                ViewChild = 1, ProfilePicture = Constants.ProfilePictureUrl, Timezone = Constants.DefaultTimezone
-//            };
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoByEmail_Should_Return_UserInfo_Object_When_Email_Is_Valid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+        [Fact]
+        public async Task GetAllUserInfos_Returns_All_Records()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
+            context.UserInfoDb.AddRange(new[]
+            {
+                new UserInfo { UserEmail = "a@a.com", UserId = "u1", UserName = "A" },
+                new UserInfo { UserEmail = "b@b.com", UserId = "u2", UserName = "B" },
+                new UserInfo { UserEmail = "c@c.com", UserId = "u3", UserName = "C" }
+            });
+            await context.SaveChangesAsync();
 
-//            UserInfo resultUserInfo = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
-//            UserInfo resultUserInfoCached = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
-            
-//            Assert.NotNull(resultUserInfo);
-//            Assert.IsType<UserInfo>(resultUserInfo);
-//            Assert.Equal(userInfo1.UserEmail, resultUserInfo.UserEmail);
-//            Assert.Equal(userInfo1.UserId, resultUserInfo.UserId);
-//            Assert.Equal(userInfo1.UserName, resultUserInfo.UserName);
-//            Assert.Equal(userInfo1.FirstName, resultUserInfo.FirstName);
-//            Assert.Equal(userInfo1.MiddleName, resultUserInfo.MiddleName);
-//            Assert.Equal(userInfo1.LastName, resultUserInfo.LastName);
-//            Assert.Equal(userInfo1.ViewChild, resultUserInfo.ViewChild);
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
 
-//            Assert.NotNull(resultUserInfoCached);
-//            Assert.IsType<UserInfo>(resultUserInfoCached);
-//        }
+            List<UserInfo>? result = await service.GetAllUserInfos();
 
-//        [Fact]
-//        public async Task GetUserInfoByEmail_Should_Return_Null_When_Email_Is_Invalid()
-//        {
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoByEmail_Should_Return_Null_When_Email_Is_Invalid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+            Assert.NotNull(result);
+            Assert.Equal(3, result.Count);
+            Assert.Contains(result, u => u.UserEmail == "a@a.com");
+        }
 
-//            UserInfo resultUserInfo = await userInfoService.GetUserInfoByEmail("abc@abc.com");
+        [Fact]
+        public async Task GetUserInfoByEmail_Returns_Object_And_Caches()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
+            UserInfo user = new() { UserEmail = "test@test.com", UserId = "uid1", UserName = "Tester" };
+            context.UserInfoDb.Add(user);
+            await context.SaveChangesAsync();
 
-//            Assert.Null(resultUserInfo);
-//        }
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
 
-//        [Fact]
-//        public async Task AddUserInfo_Should_Save_UserInfo()
-//        {
-            
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddUserInfo_Should_Save_UserInfo").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+            UserInfo? first = await service.GetUserInfoByEmail("test@test.com");
+            UserInfo? second = await service.GetUserInfoByEmail("test@test.com"); // should hit cache path internally
 
-//            UserInfo userInfoToAdd = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
+            Assert.NotNull(first);
+            Assert.Equal("test@test.com", first.UserEmail);
+            Assert.NotNull(second);
+            Assert.Equal(first.UserEmail, second.UserEmail);
+        }
 
-//            UserInfo addedUserInfo = await userInfoService.AddUserInfo(userInfoToAdd);
-//            UserInfo? dbUserInfo = await context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.Id == addedUserInfo.Id);
-//            UserInfo savedUserInfo = await userInfoService.GetUserInfoByEmail(userInfoToAdd.UserEmail);
+        [Fact]
+        public async Task GetUserInfoByEmail_Returns_Null_When_NotFound()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
 
-//            Assert.NotNull(savedUserInfo);
-//            Assert.IsType<UserInfo>(savedUserInfo);
-//            Assert.NotEqual(0, addedUserInfo.Id);
-//            Assert.Equal(savedUserInfo.UserEmail, userInfoToAdd.UserEmail);
-//            Assert.Equal(savedUserInfo.UserId, userInfoToAdd.UserId);
-//            Assert.Equal(savedUserInfo.UserName, userInfoToAdd.UserName);
-//            Assert.Equal(savedUserInfo.FirstName, userInfoToAdd.FirstName);
-//            Assert.Equal(savedUserInfo.MiddleName, userInfoToAdd.MiddleName);
-//            Assert.Equal(savedUserInfo.LastName, userInfoToAdd.LastName);
-//            Assert.Equal(savedUserInfo.ViewChild, userInfoToAdd.ViewChild);
-//            Assert.Equal(savedUserInfo.ProfilePicture, userInfoToAdd.ProfilePicture);
-//            Assert.Equal(savedUserInfo.Timezone, userInfoToAdd.Timezone);
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
 
-//            if (dbUserInfo != null)
-//            {
-//                Assert.Equal(dbUserInfo.UserEmail, userInfoToAdd.UserEmail);
-//                Assert.Equal(dbUserInfo.UserId, userInfoToAdd.UserId);
-//                Assert.Equal(dbUserInfo.UserName, userInfoToAdd.UserName);
-//                Assert.Equal(dbUserInfo.FirstName, userInfoToAdd.FirstName);
-//                Assert.Equal(dbUserInfo.MiddleName, userInfoToAdd.MiddleName);
-//                Assert.Equal(dbUserInfo.LastName, userInfoToAdd.LastName);
-//                Assert.Equal(dbUserInfo.ViewChild, userInfoToAdd.ViewChild);
-//                Assert.Equal(dbUserInfo.ProfilePicture, userInfoToAdd.ProfilePicture);
-//                Assert.Equal(dbUserInfo.Timezone, userInfoToAdd.Timezone);
-//            }
-//        }
+            UserInfo? result = await service.GetUserInfoByEmail("no@no.com");
+            Assert.Null(result);
+        }
 
-//        [Fact]
-//        public async Task UpdateUserInfo_Should_Save_UserInfo()
-//        {
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateUserInfo_Should_Save_UserInfo").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+        [Fact]
+        public async Task AddUserInfo_Saves_And_Calls_Dependent_Services()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
 
-//            UserInfo userInfoToUpdate = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
-//            userInfoToUpdate.UserName = userInfo1.UserName + "_Changed";
-//            userInfoToUpdate.FirstName = userInfo1.FirstName + "_Changed";
-//            userInfoToUpdate.MiddleName = userInfo1.MiddleName + "_Changed";
-//            userInfoToUpdate.LastName = userInfo1.LastName + "_Changed";
-//            userInfoToUpdate.ViewChild = 2;
-//            userInfoToUpdate.ProfilePicture = Constants.WebAppUrl;
-//            userInfoToUpdate.Timezone = Constants.ProfilePictureUrl;
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out Mock<IProgenyService> progenyMock, out Mock<IAccessManagementService> accessMock, out Mock<IUserGroupsService> groupsMock, out Mock<IFamilyMembersService> familyMock);
 
-//            UserInfo resultUserInfo = await userInfoService.UpdateUserInfo(userInfoToUpdate);
-//            UserInfo? dbUserInfo = await context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.Id == userInfoToUpdate.Id);
-//            UserInfo savedUserInfo = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
+            UserInfo newUser = new()
+            {
+                UserEmail = "new@user.com",
+                UserId = "newid",
+                UserName = "NewUser",
+                FirstName = null, // null to exercise defaulting
+                MiddleName = null,
+                LastName = null,
+                ProfilePicture = null,
+                Timezone = null
+            };
 
-//            Assert.NotNull(resultUserInfo);
-//            Assert.NotNull(savedUserInfo);
-//            Assert.IsType<UserInfo>(resultUserInfo);
-//            Assert.IsType<UserInfo>(savedUserInfo);
+            UserInfo? added = await service.AddUserInfo(newUser);
 
-//            Assert.Equal(resultUserInfo.Id, userInfoToUpdate.Id);
-//            Assert.Equal(resultUserInfo.UserId, userInfoToUpdate.UserId);
-//            Assert.Equal(resultUserInfo.UserName, userInfoToUpdate.UserName);
-//            Assert.Equal(resultUserInfo.FirstName, userInfoToUpdate.FirstName);
-//            Assert.Equal(resultUserInfo.MiddleName, userInfoToUpdate.MiddleName);
-//            Assert.Equal(resultUserInfo.LastName, userInfoToUpdate.LastName);
-//            Assert.Equal(resultUserInfo.ViewChild, userInfoToUpdate.ViewChild);
-//            Assert.Equal(resultUserInfo.ProfilePicture, userInfoToUpdate.ProfilePicture);
-//            Assert.Equal(resultUserInfo.Timezone, userInfoToUpdate.Timezone);
+            Assert.NotNull(added);
+            Assert.NotEqual(0, added.Id);
+            UserInfo? dbUser = await context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail == "new@user.com");
+            Assert.NotNull(dbUser);
 
+            progenyMock.Verify(p => p.UpdateProgeniesForNewUser(It.Is<UserInfo>(u => u.UserEmail == "new@user.com")), Times.Once);
+            accessMock.Verify(a => a.UpdatePermissionsForNewUser(It.Is<UserInfo>(u => u.UserEmail == "new@user.com")), Times.Once);
+            groupsMock.Verify(g => g.UpdateUserGroupMembersForNewUser(It.Is<UserInfo>(u => u.UserEmail == "new@user.com")), Times.Once);
+            familyMock.Verify(f => f.UpdateFamilyMembersForNewUser(It.Is<UserInfo>(u => u.UserEmail == "new@user.com")), Times.Once);
+        }
 
-//            Assert.Equal(savedUserInfo.Id, userInfoToUpdate.Id);
-//            Assert.Equal(savedUserInfo.UserId, userInfoToUpdate.UserId);
-//            Assert.Equal(savedUserInfo.UserName, userInfoToUpdate.UserName);
-//            Assert.Equal(savedUserInfo.FirstName, userInfoToUpdate.FirstName);
-//            Assert.Equal(savedUserInfo.MiddleName, userInfoToUpdate.MiddleName);
-//            Assert.Equal(savedUserInfo.LastName, userInfoToUpdate.LastName);
-//            Assert.Equal(savedUserInfo.ViewChild, userInfoToUpdate.ViewChild);
-//            Assert.Equal(savedUserInfo.ProfilePicture, userInfoToUpdate.ProfilePicture);
-//            Assert.Equal(savedUserInfo.Timezone, userInfoToUpdate.Timezone);
+        [Fact]
+        public async Task UpdateUserInfo_Updates_Record_And_Deletes_Old_Image()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
 
-//            if (dbUserInfo != null)
-//            {
-//                Assert.Equal(dbUserInfo.Id, userInfoToUpdate.Id);
-//                Assert.Equal(dbUserInfo.UserId, userInfoToUpdate.UserId);
-//                Assert.Equal(dbUserInfo.UserName, userInfoToUpdate.UserName);
-//                Assert.Equal(dbUserInfo.FirstName, userInfoToUpdate.FirstName);
-//                Assert.Equal(dbUserInfo.MiddleName, userInfoToUpdate.MiddleName);
-//                Assert.Equal(dbUserInfo.LastName, userInfoToUpdate.LastName);
-//                Assert.Equal(dbUserInfo.ViewChild, userInfoToUpdate.ViewChild);
-//                Assert.Equal(dbUserInfo.ProfilePicture, userInfoToUpdate.ProfilePicture);
-//                Assert.Equal(dbUserInfo.Timezone, userInfoToUpdate.Timezone);
-//            }
-//        }
+            UserInfo original = new()
+            {
+                UserEmail = "up@date.com",
+                UserId = "upid",
+                UserName = "Old",
+                ProfilePicture = "oldlink"
+            };
+            context.UserInfoDb.Add(original);
+            await context.SaveChangesAsync();
 
-//        [Fact]
-//        public async Task DeleteUserInfoShouldRemoveUserInfo()
-//        {
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteUserInfoShouldRemoveUserInfo").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            imgMock.Setup(i => i.DeleteImage(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync("oldlink");
 
-//            UserInfo userInfoToDelete = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
 
-//            _ = await userInfoService.DeleteUserInfo(userInfoToDelete);
-//            UserInfo? dbUSerInfo = await context.UserInfoDb.AsNoTracking().FirstOrDefaultAsync(ui => ui.Id == 1);
-//            UserInfo savedUserInfo = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
+            // retrieve, modify and update
+            UserInfo? toUpdate = await service.GetUserInfoByEmail("up@date.com");
+            toUpdate.UserName = "New";
+            toUpdate.ProfilePicture = "newlink";
 
-//            Assert.Null(dbUSerInfo);
-//            Assert.Null(savedUserInfo);
-//        }
+            UserInfo? result = await service.UpdateUserInfo(toUpdate);
 
-//        [Fact]
-//        public async Task GetUserInfoById_Should_Return_UserInfo_Object_When_Id_Is_Valid()
-//        {
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoById_Should_Return_UserInfo_Object_When_Id_Is_Valid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+            Assert.NotNull(result);
+            Assert.Equal("New", result.UserName);
+            Assert.Equal("newlink", result.ProfilePicture);
 
-//            UserInfo resultUserInfo = await userInfoService.GetUserInfoById(1);
-//            UserInfo resultUserInfoCached = await userInfoService.GetUserInfoById(1);
-            
-//            Assert.NotNull(resultUserInfo);
-//            Assert.IsType<UserInfo>(resultUserInfo);
-//            Assert.Equal(userInfo1.UserEmail, resultUserInfo.UserEmail);
-//            Assert.Equal(userInfo1.UserId, resultUserInfo.UserId);
-//            Assert.Equal(userInfo1.UserName, resultUserInfo.UserName);
-//            Assert.Equal(userInfo1.FirstName, resultUserInfo.FirstName);
-//            Assert.Equal(userInfo1.MiddleName, resultUserInfo.MiddleName);
-//            Assert.Equal(userInfo1.LastName, resultUserInfo.LastName);
-//            Assert.Equal(userInfo1.ViewChild, resultUserInfo.ViewChild);
+            imgMock.Verify(i => i.DeleteImage("oldlink", BlobContainers.Profiles), Times.Once);
+        }
 
-//            Assert.NotNull(resultUserInfoCached);
-//            Assert.IsType<UserInfo>(resultUserInfoCached);
-//        }
+        [Fact]
+        public async Task DeleteUserInfo_Removes_From_Db_And_Deletes_Image_And_Removes_Cache()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
 
-//        [Fact]
-//        public async Task GetUserInfoById_Should_Return_Null_When_Id_Is_Invalid()
-//        {
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoById_Should_Return_Null_When_Id_Is_Invalid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+            UserInfo u = new()
+            {
+                UserEmail = "del@me.com",
+                UserId = "delid",
+                UserName = "DeleteMe",
+                ProfilePicture = "todrop"
+            };
+            context.UserInfoDb.Add(u);
+            await context.SaveChangesAsync();
 
-//            UserInfo resultUserInfo = await userInfoService.GetUserInfoById(0);
-//            UserInfo resultUserInfo2 = await userInfoService.GetUserInfoById(2);
-//            Assert.Null(resultUserInfo);
-//            Assert.Null(resultUserInfo2);
-//        }
+            string userInfoSerialized = System.Text.Json.JsonSerializer.Serialize(u);
+            IDistributedCache cache = CreateMemoryCache();
+            // Seed cache entries matching keys used by service so RemoveUserInfoByEmail will clear them
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + u.UserEmail.ToUpper(), userInfoSerialized);
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + u.UserId, userInfoSerialized);
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + u.Id, userInfoSerialized);
 
-//        [Fact]
-//        public async Task GetUserInfoByUserId_Should_Return_UserInfo_Object_When_UserId_Is_Valid()
-//        {
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoByUserId_Should_Return_UserInfo_Object_When_UserId_Is_Valid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+            Mock<IImageStore> imgMock = new();
+            imgMock.Setup(i => i.DeleteImage(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync("todrop");
 
-//            UserInfo resultUserInfo = await userInfoService.GetUserInfoByUserId(userInfo1.UserId);
-//            UserInfo resultUserInfoCached = await userInfoService.GetUserInfoByUserId(userInfo1.UserId);
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
 
-//            Assert.NotNull(resultUserInfo);
-//            Assert.IsType<UserInfo>(resultUserInfo);
-//            Assert.Equal(userInfo1.UserEmail, resultUserInfo.UserEmail);
-//            Assert.Equal(userInfo1.UserId, resultUserInfo.UserId);
-//            Assert.Equal(userInfo1.UserName, resultUserInfo.UserName);
-//            Assert.Equal(userInfo1.FirstName, resultUserInfo.FirstName);
-//            Assert.Equal(userInfo1.MiddleName, resultUserInfo.MiddleName);
-//            Assert.Equal(userInfo1.LastName, resultUserInfo.LastName);
-//            Assert.Equal(userInfo1.ViewChild, resultUserInfo.ViewChild);
+            UserInfo? fetched = await service.GetUserInfoByEmail("del@me.com");
+            Assert.NotNull(fetched);
 
-//            Assert.NotNull(resultUserInfoCached);
-//            Assert.IsType<UserInfo>(resultUserInfoCached);
-//        }
+            UserInfo? deleted = await service.DeleteUserInfo(fetched);
 
-//        [Fact]
-//        public async Task GetUserInfoByUserId_Should_Return_Null_When_UserId_Is_Invalid()
-//        {
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoByUserId_Should_Return_Null_When_UserId_Is_Invalid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+            Assert.NotNull(deleted);
+            UserInfo? dbEntry = await context.UserInfoDb.AsNoTracking().FirstOrDefaultAsync(x => x.Id == fetched.Id);
+            Assert.Null(dbEntry);
 
-//            UserInfo resultUserInfo = await userInfoService.GetUserInfoByUserId("");
-//            UserInfo resultUserInfo2 = await userInfoService.GetUserInfoByUserId("UserId2");
-//            Assert.Null(resultUserInfo);
-//            Assert.Null(resultUserInfo2);
-//        }
+            // cache entries removed
+            string? cachedByEmail = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + u.UserEmail.ToUpper());
+            string? cachedByUserId = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + u.UserId);
+            string? cachedById = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + u.Id);
+            Assert.Null(cachedByEmail);
+            Assert.Null(cachedByUserId);
+            Assert.Null(cachedById);
 
-//        [Fact]
-//        public async Task GetDeletedUserInfos_Should_Return_List_Of_UserInfo()
-//        {
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone
-//            };
-//            UserInfo userInfo2 = new()
-//            {
-//                UserEmail = "test2@test.com",
-//                UserId = "UserId2",
-//                UserName = "Test2",
-//                FirstName = "FirstName2",
-//                MiddleName = "MiddleName2",
-//                LastName = "LastName2",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone,
-//                Deleted = true,
-//                DeletedTime = DateTime.UtcNow
-//            };
-//            UserInfo userInfo3 = new()
-//            {
-//                UserEmail = "test3@test.com",
-//                UserId = "UserId3",
-//                UserName = "Test3",
-//                FirstName = "FirstName3",
-//                MiddleName = "MiddleName3",
-//                LastName = "LastName3",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone,
-//                Deleted = true,
-//                DeletedTime = DateTime.UtcNow
-//            };
+            imgMock.Verify(i => i.DeleteImage("todrop", BlobContainers.Profiles), Times.Once);
+        }
 
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetDeletedUserInfos_Should_Return_List_Of_UserInfo").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            context.Add(userInfo2);
-//            context.Add(userInfo3);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+        [Fact]
+        public async Task RemoveUserInfoByEmail_Removes_Cache_Keys()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
 
-//            List<UserInfo>? resultUserInfos = await userInfoService.GetDeletedUserInfos();
-//            List<UserInfo> dbUserInfos = await context.UserInfoDb.AsNoTracking().Where(ui => ui.Deleted).ToListAsync();
+            IDistributedCache cache = CreateMemoryCache();
+            string email = "cache@me.com";
+            string userId = "cacheid";
+            int id = 42;
 
-//            Assert.NotNull(resultUserInfos);
-//            Assert.IsType<List<UserInfo>>(resultUserInfos);
-//            Assert.Equal(resultUserInfos.Count, dbUserInfos.Count);
-//        }
+            string keyMail = Constants.AppName + Constants.ApiVersion + "userinfobymail" + email.ToUpper();
+            string keyUserId = Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userId;
+            string keyId = Constants.AppName + Constants.ApiVersion + "userinfobyid" + id;
 
-//        [Fact]
-//        public async Task IsAdminUser_Returns_True_For_Admin_User()
-//        {
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone,
-//                IsKinaUnaAdmin = true
-//            };
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("IsAdminUser_Returns_True_For_Admin_User").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+            await cache.SetStringAsync(keyMail, "x");
+            await cache.SetStringAsync(keyUserId, "x");
+            await cache.SetStringAsync(keyId, "x");
 
-//            bool result = await userInfoService.IsAdminUserId(userInfo1.UserId);
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
 
-//            Assert.True(result);
-//        }
+            await service.RemoveUserInfoByEmail(email, userId, id);
 
-//        [Fact]
-//        public async Task IsAdminUserId_Returns_False_For_Non_Admin_User()
-//        {
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone,
-//                IsKinaUnaAdmin = false
-//            };
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("IsAdminUserId_Returns_False_For_Non_Admin_User").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+            Assert.Null(await cache.GetStringAsync(keyMail));
+            Assert.Null(await cache.GetStringAsync(keyUserId));
+            Assert.Null(await cache.GetStringAsync(keyId));
+        }
 
-//            bool result = await userInfoService.IsAdminUserId(userInfo1.UserId);
+        [Fact]
+        public async Task GetUserInfoById_Returns_When_Exists_And_Null_When_Not()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
 
-//            Assert.False(result);
-//        }
+            UserInfo u = new() { UserEmail = "id@me.com", UserId = "id1", UserName = "I" };
+            context.UserInfoDb.Add(u);
+            await context.SaveChangesAsync();
 
-//        [Fact]
-//        public async Task IsAdminUserId_Returns_False_For_Non_Existing_User()
-//        {
-//            UserInfo userInfo1 = new()
-//            {
-//                UserEmail = "test1@test.com",
-//                UserId = "UserId1",
-//                UserName = "Test1",
-//                FirstName = "FirstName1",
-//                MiddleName = "MiddleName1",
-//                LastName = "LastName1",
-//                ViewChild = 1,
-//                ProfilePicture = Constants.ProfilePictureUrl,
-//                Timezone = Constants.DefaultTimezone,
-//                IsKinaUnaAdmin = false
-//            };
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("IsAdminUserId_Returns_False_For_Non_Existing_User").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-//            context.Add(userInfo1);
-//            await context.SaveChangesAsync();
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            Mock<IImageStore> imageStore = new();
-//            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
 
-//            bool result = await userInfoService.IsAdminUserId("NoUser");
+            UserInfo? ok = await service.GetUserInfoById(u.Id);
+            Assert.NotNull(ok);
+            Assert.Equal(u.UserEmail, ok.UserEmail);
 
-//            Assert.False(result);
-//        }
-//    }
-//}
+            UserInfo? no = await service.GetUserInfoById(9999);
+            Assert.Null(no);
+        }
+
+        [Fact]
+        public async Task GetUserInfoByUserId_Returns_When_Exists_And_Null_When_Not()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
+
+            UserInfo u = new() { UserEmail = "uid@me.com", UserId = "myuser", UserName = "U" };
+            context.UserInfoDb.Add(u);
+            await context.SaveChangesAsync();
+
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
+
+            UserInfo? ok = await service.GetUserInfoByUserId("myuser");
+            Assert.NotNull(ok);
+            Assert.Equal("myuser", ok.UserId);
+
+            UserInfo? none = await service.GetUserInfoByUserId("no-such");
+            Assert.Null(none);
+        }
+
+        [Fact]
+        public async Task GetDeletedUserInfos_Returns_Only_Deleted()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
+
+            context.UserInfoDb.AddRange(new[]
+            {
+                new UserInfo { UserEmail = "a@a.com", UserId = "u1", Deleted = false },
+                new UserInfo { UserEmail = "b@b.com", UserId = "u2", Deleted = true },
+                new UserInfo { UserEmail = "c@c.com", UserId = "u3", Deleted = true }
+            });
+            await context.SaveChangesAsync();
+
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
+
+            List<UserInfo>? deleted = await service.GetDeletedUserInfos();
+
+            Assert.NotNull(deleted);
+            Assert.Equal(2, deleted.Count);
+            Assert.All(deleted, d => Assert.True(d.Deleted));
+        }
+
+        [Fact]
+        public async Task AddUserInfoToDeletedUserInfos_Adds_New_When_Not_Existing()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
+
+            UserInfo user = new() { UserEmail = "du@du.com", UserId = "duid", UserName = "DeletedUser" };
+            // No DeletedUsers entry present initially.
+
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
+
+            UserInfo? added = await service.AddUserInfoToDeletedUserInfos(user);
+
+            Assert.NotNull(added);
+            // The service stores serialized ProfilePicture (string) and populates fields; check that entry exists in DeletedUsers
+            UserInfo? dbDeleted = await context.DeletedUsers.AsNoTracking().SingleOrDefaultAsync(d => d.UserId == "duid");
+            Assert.NotNull(dbDeleted);
+            Assert.Equal("du@du.com", dbDeleted.UserEmail);
+        }
+
+        [Fact]
+        public async Task AddUserInfoToDeletedUserInfos_Updates_Existing()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
+
+            UserInfo existing = new()
+            {
+                UserEmail = "ex@ex.com",
+                UserId = "exist",
+                UserName = "Existing",
+                Deleted = true
+            };
+            context.DeletedUsers.Add(existing);
+            await context.SaveChangesAsync();
+
+            UserInfo user = new() { UserEmail = "ex@ex.com", UserId = "exist", UserName = "ExistingChanged" };
+
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
+
+            UserInfo? updated = await service.AddUserInfoToDeletedUserInfos(user);
+
+            Assert.NotNull(updated);
+            Assert.Equal("ExistingChanged", updated.UserName);
+            UserInfo? db = await context.DeletedUsers.AsNoTracking().SingleOrDefaultAsync(d => d.UserId == "exist");
+            Assert.NotNull(db);
+            Assert.False(db.Deleted); // service sets Deleted = false in Update path
+        }
+
+        [Fact]
+        public async Task RemoveUserInfoFromDeletedUserInfos_Removes_And_Returns_Object()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
+
+            UserInfo toRemove = new() { UserEmail = "r@r.com", UserId = "rid", UserName = "R" };
+            context.DeletedUsers.Add(toRemove);
+            await context.SaveChangesAsync();
+
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
+
+            UserInfo? removed = await service.RemoveUserInfoFromDeletedUserInfos(toRemove);
+
+            Assert.NotNull(removed);
+            UserInfo? dbCheck = await context.DeletedUsers.AsNoTracking().SingleOrDefaultAsync(d => d.UserId == "rid");
+            Assert.Null(dbCheck);
+        }
+
+        [Fact]
+        public async Task UpdateDeletedUserInfo_Updates_Record_When_Exists()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
+
+            UserInfo entry = new() { UserEmail = "u@u.com", UserId = "uid", Deleted = true, DeletedTime = DateTime.UtcNow.AddDays(-1), UpdatedTime = DateTime.UtcNow.AddDays(-1) };
+            context.DeletedUsers.Add(entry);
+            await context.SaveChangesAsync();
+
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
+
+            entry.Deleted = false;
+            entry.DeletedTime = DateTime.UtcNow;
+            entry.UpdatedTime = DateTime.UtcNow;
+
+            UserInfo? updated = await service.UpdateDeletedUserInfo(entry);
+
+            Assert.NotNull(updated);
+            Assert.Equal(entry.Id, updated.Id);
+            Assert.Equal(entry.Deleted, updated.Deleted);
+        }
+
+        [Fact]
+        public async Task IsAdminUserId_Returns_Correct_Value()
+        {
+            string dbName = Guid.NewGuid().ToString();
+            await using ProgenyDbContext context = CreateContext(dbName);
+
+            UserInfo admin = new() { UserEmail = "a@a.com", UserId = "admin", IsKinaUnaAdmin = true };
+            UserInfo non = new() { UserEmail = "b@b.com", UserId = "non", IsKinaUnaAdmin = false };
+            context.UserInfoDb.AddRange(admin, non);
+            await context.SaveChangesAsync();
+
+            IDistributedCache cache = CreateMemoryCache();
+            Mock<IImageStore> imgMock = new();
+            UserInfoService service = CreateService(context, cache, imgMock, out _, out _, out _, out _);
+
+            Assert.True(await service.IsAdminUserId("admin"));
+            Assert.False(await service.IsAdminUserId("non"));
+            Assert.False(await service.IsAdminUserId("no-such"));
+        }
+    }
+}
