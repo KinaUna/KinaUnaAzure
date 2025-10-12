@@ -151,6 +151,7 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo userInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
                 permission.UserInfo = userInfo;
             }
+            
             return Ok(permission);
         }
 
