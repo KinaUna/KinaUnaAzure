@@ -65,7 +65,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Content = NoteItem.Content,
                 Category = NoteItem.Category,
                 Owner = NoteItem.Owner,
-                ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };
 
             return note;

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
@@ -485,7 +486,7 @@ namespace KinaUnaWeb.Controllers
                 videoToCopy.VideoTime = TimeZoneInfo.ConvertTimeToUtc(model.Video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
 
-            model.Video.ItemPermissionsDtoList = System.Text.Json.JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString);
+            model.Video.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString);
             model.Video = await mediaHttpClient.AddVideo(videoToCopy);
 
             if (model.Video.VideoTime != null)

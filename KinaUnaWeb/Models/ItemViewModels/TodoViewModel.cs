@@ -168,7 +168,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 UId = TodoItem.UId,
                 Progeny = TodoItem.Progeny,
                 Family = TodoItem.Family,
-                ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString)? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };
 
             return todoItem;

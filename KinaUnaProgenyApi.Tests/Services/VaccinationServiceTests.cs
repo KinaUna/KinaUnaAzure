@@ -734,6 +734,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             // Assert
             Assert.NotEmpty(result);
+            // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
             Assert.All(result, vaccination =>
             {
                 Assert.NotNull(vaccination.ItemPerMission);

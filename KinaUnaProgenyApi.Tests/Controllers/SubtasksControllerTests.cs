@@ -219,6 +219,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             SubtasksResponse response = Assert.IsType<SubtasksResponse>(okResult.Value);
             Assert.Equal(TestParentTodoItemId, response.ParentTodoItemId);
             Assert.Equal(2, response.Subtasks.Count);
+            // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
             Assert.All(response.Subtasks, subtask =>
             {
                 Assert.Equal(_testProgeny, subtask.Progeny);

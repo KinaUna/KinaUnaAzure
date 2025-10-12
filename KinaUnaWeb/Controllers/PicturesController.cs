@@ -339,7 +339,7 @@ namespace KinaUnaWeb.Controllers
                         TimeZone = model.CurrentUser.Timezone,
                         Location = model.Picture.Location,
                         Tags = model.Picture.Tags,
-                        ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString)
+                        ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString)
                     };
 
                     await using (Stream stream = formFile.OpenReadStream())
@@ -410,7 +410,7 @@ namespace KinaUnaWeb.Controllers
                         TimeZone = model.CurrentUser.Timezone,
                         Location = model.Picture.Location,
                         Tags = model.Picture.Tags,
-                        ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString)
+                        ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString)
                     };
 
                     await using (Stream stream = formFile.OpenReadStream())
@@ -461,7 +461,7 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
             
             pictureToUpdate.CopyPropertiesForUserUpdate(model.Picture);
-            pictureToUpdate.ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString);
+            pictureToUpdate.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString);
 
             if (model.Picture.PictureTime != null)
             {

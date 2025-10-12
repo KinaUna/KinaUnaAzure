@@ -84,7 +84,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Tags = KanbanBoard.Tags,
                 Context = KanbanBoard.Context,
                 IsDeleted = false,
-                ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };
 
             kanbanBoard.SetColumnsListFromColumns();

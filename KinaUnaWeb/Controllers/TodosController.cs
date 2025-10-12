@@ -235,6 +235,8 @@ namespace KinaUnaWeb.Controllers
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
+            model.SetFamilyList();
 
             List<int> progenyIds = [];
             progenyIds.AddRange(model.ProgenyList.ConvertAll(p => int.Parse(p.Value)));
@@ -537,7 +539,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_AccessDeniedPartial");
             }
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
             TodoViewModel model = new(baseModel);
             
             model.TodoItem = todoItem;
@@ -598,7 +600,7 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_NotFoundPartial");
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
             TodoViewModel model = new(baseModel);
             
             model.SetPropertiesFromTodoItem(todoItem);
@@ -621,7 +623,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CopyTodo([FromForm] TodoViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId, model.TodoItem.FamilyId, false);
             model.SetBaseProperties(baseModel);
 
             bool canUserAdd = false;

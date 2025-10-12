@@ -126,7 +126,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 ProgenyId = ContactItem.ProgenyId,
                 FamilyId = ContactItem.FamilyId,
                 PictureLink = ContactItem.PictureLink,
-                ItemPermissionsDtoList = JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
             };
 
             if (ContactItem.DateAdded == null)
