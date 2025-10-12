@@ -1,1051 +1,1578 @@
-//using KinaUna.Data.Models;
-//using KinaUna.Data.Models.DTOs;
-//using KinaUnaWeb.Models;
-//using KinaUnaWeb.Models.ItemViewModels;
-//using KinaUnaWeb.Models.TypeScriptModels.TodoItems;
-//using KinaUnaWeb.Services;
-//using KinaUnaWeb.Services.HttpClients;
-//using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.AspNetCore.Mvc.Rendering;
-//using Microsoft.AspNetCore.Mvc.ViewFeatures;
-//using Moq;
-//using OpenIddict.Abstractions;
-//using System.Security.Claims;
-
-//namespace KinaUnaWeb.Tests.Controllers.SubtasksController
-//{
-//    public class SubtasksControllerTests
-//    {
-//        private readonly Mock<ISubtasksHttpClient> _mockSubtasksHttpClient;
-//        private readonly Mock<ITodoItemsHttpClient> _mockTodoItemsHttpClient;
-//        private readonly Mock<IViewModelSetupService> _mockViewModelSetupService;
-//        private readonly Mock<IUserInfosHttpClient> _mockUserInfosHttpClient;
-//        private readonly Mock<IProgenyHttpClient> _mockProgenyHttpClient;
-//        private readonly KinaUnaWeb.Controllers.SubtasksController _controller;
-        
-//        private const string TestUserEmail = "test@kinauna.com";
-//        private const string TestUserId = "test-user-id";
-//        private const string TestUserTimezone = "Central Standard Time";
-//        private const int TestProgenyId = 1;
-//        private const int TestSubtaskId = 123;
-//        private const int TestParentTodoItemId = 456;
-
-//        public SubtasksControllerTests()
-//        {
-//            _mockSubtasksHttpClient = new Mock<ISubtasksHttpClient>();
-//            _mockTodoItemsHttpClient = new Mock<ITodoItemsHttpClient>();
-//            _mockViewModelSetupService = new Mock<IViewModelSetupService>();
-//            _mockUserInfosHttpClient = new Mock<IUserInfosHttpClient>();
-//            _mockProgenyHttpClient = new Mock<IProgenyHttpClient>();
-//            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new Mock<IKanbanItemsHttpClient>();
-//            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new Mock<IKanbanBoardsHttpClient>();
-
-//            _controller = new KinaUnaWeb.Controllers.SubtasksController(
-//                _mockSubtasksHttpClient.Object,
-//                _mockTodoItemsHttpClient.Object,
-//                _mockViewModelSetupService.Object,
-//                _mockUserInfosHttpClient.Object,
-//                _mockProgenyHttpClient.Object,
-//                mockKanbanItemsHttpClient.Object,
-//                mockKanbanBoardsHttpClient.Object);
-
-//            SetupControllerContext();
-//        }
-
-//        private void SetupControllerContext()
-//        {
-//            List<Claim> claims =
-//            [
-//                new Claim(OpenIddictConstants.Claims.Email, TestUserEmail),
-//                new Claim(OpenIddictConstants.Claims.Subject, TestUserId)
-//            ];
-//            ClaimsIdentity identity = new(claims, "TestAuthType");
-//            ClaimsPrincipal claimsPrincipal = new(identity);
-
-//            DefaultHttpContext httpContext = new()
-//            {
-//                User = claimsPrincipal
-//            };
-
-//            // Mock cookies for language
-//            Mock<IRequestCookieCollection> mockRequestCookies = new();
-//            mockRequestCookies.Setup(x => x["KinaUnaLanguage"]).Returns("1");
-//            httpContext.Request.Cookies = mockRequestCookies.Object;
-
-//            _controller.ControllerContext = new ControllerContext
-//            {
-//                HttpContext = httpContext
-//            };
-
-//            _controller.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
-//        }
-
-//        #region GetSubtasksList Tests
-
-//        [Fact]
-//        public async Task GetSubtasksList_Should_Set_Default_LanguageId_When_Zero()
-//        {
-//            // Arrange
-//            SubtasksPageParameters parameters = new()
-//            {
-//                LanguageId = 0,
-//                ParentTodoItemId = TestParentTodoItemId,
-//                ProgenyId = TestProgenyId,
-//                CurrentPageNumber = 1,
-//                ItemsPerPage = 10
-//            };
-
-//            UserInfo userInfo = CreateMockUserInfo();
-//            SubtasksResponse response = CreateMockSubtasksResponse();
-
-//            _mockUserInfosHttpClient.Setup(x => x.GetUserInfo(TestUserEmail))
-//                .ReturnsAsync(userInfo);
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtasksList(It.IsAny<SubtasksRequest>()))
-//                .ReturnsAsync(response);
-
-//            // Act
-//            IActionResult result = await _controller.GetSubtasksList(parameters);
-
-//            // Assert
-//            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
-//            SubtasksPageResponse pageResponse = Assert.IsType<SubtasksPageResponse>(jsonResult.Value);
-//            Assert.Equal(TestParentTodoItemId, pageResponse.ParentTodoItemId);
-            
-//            _mockUserInfosHttpClient.Verify(x => x.GetUserInfo(TestUserEmail), Times.Once);
-//        }
-
-//        [Fact]
-//        public async Task GetSubtasksList_Should_Set_Default_CurrentPageNumber_When_Less_Than_One()
-//        {
-//            // Arrange
-//            SubtasksPageParameters parameters = new()
-//            {
-//                LanguageId = 1,
-//                ParentTodoItemId = TestParentTodoItemId,
-//                ProgenyId = TestProgenyId,
-//                CurrentPageNumber = 0,
-//                ItemsPerPage = 10
-//            };
-
-//            UserInfo userInfo = CreateMockUserInfo();
-//            SubtasksResponse response = CreateMockSubtasksResponse();
-
-//            _mockUserInfosHttpClient.Setup(x => x.GetUserInfo(TestUserEmail))
-//                .ReturnsAsync(userInfo);
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtasksList(It.IsAny<SubtasksRequest>()))
-//                .ReturnsAsync(response);
-
-//            // Act
-//            IActionResult result = await _controller.GetSubtasksList(parameters);
-
-//            // Assert
-//            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
-//            Assert.IsType<SubtasksPageResponse>(jsonResult.Value);
-
-//            _mockSubtasksHttpClient.Verify(x => x.GetSubtasksList(It.Is<SubtasksRequest>(r => 
-//                r.Skip == 0)), Times.Once);
-//        }
-
-//        [Fact]
-//        public async Task GetSubtasksList_Should_Set_Default_ItemsPerPage_When_Less_Than_One()
-//        {
-//            // Arrange
-//            SubtasksPageParameters parameters = new()
-//            {
-//                LanguageId = 1,
-//                ParentTodoItemId = TestParentTodoItemId,
-//                ProgenyId = TestProgenyId,
-//                CurrentPageNumber = 1,
-//                ItemsPerPage = 0
-//            };
-
-//            UserInfo userInfo = CreateMockUserInfo();
-//            SubtasksResponse response = CreateMockSubtasksResponse();
-
-//            _mockUserInfosHttpClient.Setup(x => x.GetUserInfo(TestUserEmail))
-//                .ReturnsAsync(userInfo);
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtasksList(It.IsAny<SubtasksRequest>()))
-//                .ReturnsAsync(response);
-
-//            // Act
-//            IActionResult result = await _controller.GetSubtasksList(parameters);
-
-//            // Assert
-//            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
-//            Assert.IsType<SubtasksPageResponse>(jsonResult.Value);
-
-//            _mockSubtasksHttpClient.Verify(x => x.GetSubtasksList(It.Is<SubtasksRequest>(r => 
-//                r.NumberOfItems == 10)), Times.Once);
-//        }
-
-//        [Fact]
-//        public async Task GetSubtasksList_Should_Convert_Subtask_Dates_To_User_Timezone()
-//        {
-//            // Arrange
-//            SubtasksPageParameters parameters = new()
-//            {
-//                LanguageId = 1,
-//                ParentTodoItemId = TestParentTodoItemId,
-//                ProgenyId = TestProgenyId,
-//                CurrentPageNumber = 1,
-//                ItemsPerPage = 10
-//            };
-
-//            UserInfo userInfo = CreateMockUserInfo();
-//            TodoItem subtask = new()
-//            {
-//                TodoItemId = TestSubtaskId,
-//                DueDate = DateTime.UtcNow,
-//                StartDate = DateTime.UtcNow.AddDays(-1),
-//                CompletedDate = DateTime.UtcNow.AddHours(-1),
-//                CreatedTime = DateTime.UtcNow.AddDays(-2)
-//            };
-//            SubtasksResponse response = new()
-//            {
-//                ParentTodoItemId = TestParentTodoItemId,
-//                Subtasks = [subtask]
-//            };
-
-//            _mockUserInfosHttpClient.Setup(x => x.GetUserInfo(TestUserEmail))
-//                .ReturnsAsync(userInfo);
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtasksList(It.IsAny<SubtasksRequest>()))
-//                .ReturnsAsync(response);
-
-//            // Act
-//            IActionResult result = await _controller.GetSubtasksList(parameters);
-
-//            // Assert
-//            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
-//            SubtasksPageResponse pageResponse = Assert.IsType<SubtasksPageResponse>(jsonResult.Value);
-//            TodoItem resultSubtask = pageResponse.SubtasksList.First();
-            
-//            // Verify dates were converted (they should be different from UTC)
-//            Assert.NotNull(resultSubtask.DueDate);
-//            Assert.NotNull(resultSubtask.StartDate);
-//            Assert.NotNull(resultSubtask.CompletedDate);
-//        }
-
-//        #endregion
-
-//        #region SubtaskElement Tests
-
-//        [Fact]
-//        public async Task SubtaskElement_Should_Set_Default_LanguageId_When_Zero()
-//        {
-//            // Arrange
-//            TodoItemParameters parameters = new()
-//            {
-//                TodoItemId = TestSubtaskId,
-//                LanguageId = 0
-//            };
-
-//            TodoItem subtask = CreateMockSubtask();
-//            Progeny progeny = CreateMockProgeny();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            UserInfo userInfo = CreateMockUserInfo();
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockProgenyHttpClient.Setup(x => x.GetProgeny(TestProgenyId))
-//                .ReturnsAsync(progeny);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
-//                .ReturnsAsync(userInfo);
-
-//            // Act
-//            IActionResult result = await _controller.SubtaskElement(parameters);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_SubtaskElementPartial", partialViewResult.ViewName);
-//            TodoItemResponse response = Assert.IsType<TodoItemResponse>(partialViewResult.Model);
-//            Assert.Equal(TestSubtaskId, response.TodoItemId);
-//        }
-
-//        [Fact]
-//        public async Task SubtaskElement_Should_Return_New_TodoItem_When_TodoItemId_Is_Zero()
-//        {
-//            // Arrange
-//            TodoItemParameters parameters = new()
-//            {
-//                TodoItemId = 0,
-//                LanguageId = 1
-//            };
-
-//            // Act
-//            IActionResult result = await _controller.SubtaskElement(parameters);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_SubtaskElementPartial", partialViewResult.ViewName);
-//            TodoItemResponse response = Assert.IsType<TodoItemResponse>(partialViewResult.Model);
-//            Assert.Equal(0, response.TodoItem.TodoItemId);
-//            Assert.Equal(1, response.LanguageId);
-//        }
-
-//        [Fact]
-//        public async Task SubtaskElement_Should_Load_Full_Subtask_Data_When_TodoItemId_Not_Zero()
-//        {
-//            // Arrange
-//            TodoItemParameters parameters = new()
-//            {
-//                TodoItemId = TestSubtaskId,
-//                LanguageId = 1
-//            };
-
-//            TodoItem subtask = CreateMockSubtask();
-//            Progeny progeny = CreateMockProgeny();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            UserInfo userInfo = CreateMockUserInfo();
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockProgenyHttpClient.Setup(x => x.GetProgeny(TestProgenyId))
-//                .ReturnsAsync(progeny);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
-//                .ReturnsAsync(userInfo);
-
-//            // Act
-//            IActionResult result = await _controller.SubtaskElement(parameters);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            TodoItemResponse response = Assert.IsType<TodoItemResponse>(partialViewResult.Model);
-//            Assert.Equal(TestSubtaskId, response.TodoItem.TodoItemId);
-//            Assert.Equal(TestSubtaskId, response.TodoItemId);
-//            Assert.True(response.IsCurrentUserProgenyAdmin);
-//            Assert.Equal("John Doe", response.TodoItem.CreatedBy);
-            
-//            _mockSubtasksHttpClient.Verify(x => x.GetSubtask(TestSubtaskId), Times.Once);
-//            _mockProgenyHttpClient.Verify(x => x.GetProgeny(TestProgenyId), Times.Once);
-//        }
-
-//        #endregion
-
-//        #region ViewSubtask Tests
-
-//        [Fact]
-//        public async Task ViewSubtask_Should_Return_View_When_PartialView_False()
-//        {
-//            // Arrange
-//            TodoItem subtask = CreateMockSubtask();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            UserInfo userInfo = CreateMockUserInfo();
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
-//                .ReturnsAsync(userInfo);
-
-//            // Act
-//            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
-
-//            // Assert
-//            ViewResult viewResult = Assert.IsType<ViewResult>(result);
-//            TodoViewModel model = Assert.IsType<TodoViewModel>(viewResult.Model);
-//            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
-//            Assert.Equal("John Doe", model.TodoItem.CreatedBy);
-//            Assert.NotNull(model.TodoItem.Progeny);
-//        }
-
-//        [Fact]
-//        public async Task ViewSubtask_Should_Return_PartialView_When_PartialView_True()
-//        {
-//            // Arrange
-//            TodoItem subtask = CreateMockSubtask();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            UserInfo userInfo = CreateMockUserInfo();
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
-//                .ReturnsAsync(userInfo);
-
-//            // Act
-//            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, true);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_SubtaskDetailsPartial", partialViewResult.ViewName);
-//            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
-//            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
-//        }
-
-//        #endregion
-
-//        #region AddSubtask Tests
-
-//        [Fact]
-//        public async Task AddSubtask_Get_Should_Return_PartialView_When_User_Is_Authenticated()
-//        {
-//            // Arrange
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            List<SelectListItem> progenySelectList = [new SelectListItem { Text = "Test Child", Value = "1" }];
-
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, 0))
-//                .ReturnsAsync(baseModel);
-//            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(baseModel.CurrentUser, 0))
-//                .ReturnsAsync(progenySelectList);
-
-//            // Act
-//            IActionResult result = await _controller.AddSubtask();
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_AddSubtaskPartial", partialViewResult.ViewName);
-//            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
-//            Assert.NotNull(model.CurrentUser);
-//            Assert.Equal(progenySelectList, model.ProgenyList);
-//        }
-
-//        [Fact]
-//        public async Task AddSubtask_Get_Should_Return_NotFound_When_User_Is_Null()
-//        {
-//            // Arrange
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.CurrentUser = null;
-//            baseModel.SetCurrentUsersAccessLevel();
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, 0))
-//                .ReturnsAsync(baseModel);
-
-//            // Act
-//            IActionResult result = await _controller.AddSubtask();
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_NotFoundPartial", partialViewResult.ViewName);
-//        }
-
-//        [Fact]
-//        public async Task AddSubtask_Post_Should_Add_Subtask_And_Return_PartialView()
-//        {
-//            // Arrange
-//            TodoViewModel model = CreateMockTodoViewModelUserIsAdmin();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            List<Progeny> progAdminList = [CreateMockProgeny()];
-//            TodoItem addedSubtask = CreateMockSubtask();
-
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockProgenyHttpClient.Setup(x => x.GetProgenyAdminList(TestUserEmail))
-//                .ReturnsAsync(progAdminList);
-//            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
-//                .ReturnsAsync(addedSubtask);
-
-//            // Act
-//            IActionResult result = await _controller.AddSubtask(model);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_SubtaskAddedPartial", partialViewResult.ViewName);
-//            TodoViewModel resultModel = Assert.IsType<TodoViewModel>(partialViewResult.Model);
-//            Assert.Equal(TestSubtaskId, resultModel.TodoItem.TodoItemId);
-            
-//            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.IsAny<TodoItem>()), Times.Once);
-//        }
-
-//        [Fact]
-//        public async Task AddSubtask_Post_Should_Redirect_When_User_Has_No_Admin_Access()
-//        {
-//            // Arrange
-//            TodoViewModel model = CreateMockTodoViewModelUserIsNotAdmin();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsNotAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            List<Progeny> progAdminList = [];
-
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockProgenyHttpClient.Setup(x => x.GetProgenyAdminList(TestUserEmail))
-//                .ReturnsAsync(progAdminList);
-
-//            // Act
-//            IActionResult result = await _controller.AddSubtask(model);
-
-//            // Assert
-//            RedirectToActionResult redirectResult = Assert.IsType<RedirectToActionResult>(result);
-//            Assert.Equal("Index", redirectResult.ActionName);
-//            Assert.Equal("Todos", redirectResult.ControllerName);
-//        }
-
-//        #endregion
-
-//        #region AddSubtaskInline Tests
-
-//        [Fact]
-//        public async Task AddSubtaskInline_Should_Add_Subtask_And_Return_Json()
-//        {
-//            // Arrange
-//            TodoItem todoItem = new()
-//            {
-//                ParentTodoItemId = TestParentTodoItemId,
-//                Title = "Test Inline Subtask"
-//            };
-//            TodoItem parentTodoItem = CreateMockTodoItem(TestParentTodoItemId);
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            List<Progeny> progAdminList = [CreateMockProgeny()];
-//            TodoItem addedSubtask = CreateMockSubtask();
-
-//            _mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
-//                .ReturnsAsync(parentTodoItem);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockProgenyHttpClient.Setup(x => x.GetProgenyAdminList(TestUserEmail))
-//                .ReturnsAsync(progAdminList);
-//            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
-//                .ReturnsAsync(addedSubtask);
-
-//            // Act
-//            IActionResult result = await _controller.AddSubtaskInline(todoItem);
-
-//            // Assert
-//            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
-//            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
-//            Assert.Equal(TestSubtaskId, resultTodoItem.TodoItemId);
-            
-//            _mockTodoItemsHttpClient.Verify(x => x.GetTodoItem(TestParentTodoItemId), Times.Once);
-//            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.IsAny<TodoItem>()), Times.Once);
-//        }
-
-//        #endregion
-
-//        #region EditSubtask Tests
-
-//        [Fact]
-//        public async Task EditSubtask_Get_Should_Return_PartialView_When_User_Is_Admin()
-//        {
-//            // Arrange
-//            TodoItem subtask = CreateMockSubtask();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            List<SelectListItem> progenySelectList = [new SelectListItem { Text = "Test Child", Value = "1" }];
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(baseModel.CurrentUser, 0))
-//                .ReturnsAsync(progenySelectList);
-
-//            // Act
-//            IActionResult result = await _controller.EditSubtask(TestSubtaskId);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_EditSubtaskPartial", partialViewResult.ViewName);
-//            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
-//            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
-//        }
-
-//        [Fact]
-//        public async Task EditSubtask_Get_Should_Return_AccessDenied_When_User_Is_Not_Admin()
-//        {
-//            // Arrange
-//            TodoItem subtask = CreateMockSubtask();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsNotAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-
-//            // Act
-//            IActionResult result = await _controller.EditSubtask(TestSubtaskId);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_AccessDeniedPartial", partialViewResult.ViewName);
-//        }
-
-//        [Fact]
-//        public async Task EditSubtask_Post_Should_Update_Subtask_And_Return_PartialView()
-//        {
-//            // Arrange
-//            TodoViewModel model = CreateMockTodoViewModelUserIsAdmin();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            TodoItem updatedSubtask = CreateMockSubtask();
-//            TodoItem parentTodoItem = CreateMockTodoItem(TestParentTodoItemId);
-
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
-//                .ReturnsAsync(updatedSubtask);
-//            _mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
-//                .ReturnsAsync(parentTodoItem);
-
-//            // Act
-//            IActionResult result = await _controller.EditSubtask(model);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("../Todos/_TodoDetailsPartial", partialViewResult.ViewName);
-            
-//            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.IsAny<TodoItem>()), Times.Once);
-//        }
-
-//        [Fact]
-//        public async Task EditSubtask_Post_Should_Return_AccessDenied_When_User_Is_Not_Admin()
-//        {
-//            // Arrange
-//            TodoViewModel model = CreateMockTodoViewModelUserIsNotAdmin();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsNotAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-
-//            // Act
-//            IActionResult result = await _controller.EditSubtask(model);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_AccessDeniedPartial", partialViewResult.ViewName);
-//        }
-
-//        #endregion
-
-//        #region DeleteSubtask Tests
-
-//        [Fact]
-//        public async Task DeleteSubtask_Get_Should_Return_PartialView_When_User_Is_Admin()
-//        {
-//            // Arrange
-//            TodoItem subtask = CreateMockSubtask();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-
-//            // Act
-//            IActionResult result = await _controller.DeleteSubtask(TestSubtaskId);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_DeleteSubtaskPartial", partialViewResult.ViewName);
-//            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
-//            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
-//        }
-
-//        [Fact]
-//        public async Task DeleteSubtask_Get_Should_Redirect_When_User_Is_Not_Admin()
-//        {
-//            // Arrange
-//            TodoItem subtask = CreateMockSubtask();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsNotAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-
-//            // Act
-//            IActionResult result = await _controller.DeleteSubtask(TestSubtaskId);
-
-//            // Assert
-//            RedirectToActionResult redirectResult = Assert.IsType<RedirectToActionResult>(result);
-//            Assert.Equal("Index", redirectResult.ActionName);
-//            Assert.Equal("Todos", redirectResult.ControllerName);
-//        }
-
-//        [Fact]
-//        public async Task DeleteSubtask_Post_Should_Delete_Subtask_And_Return_Json()
-//        {
-//            // Arrange
-//            TodoViewModel model = CreateMockTodoViewModelUserIsAdmin();
-//            TodoItem subtask = CreateMockSubtask();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            TodoItem parentTodoItem = CreateMockTodoItem(TestParentTodoItemId);
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockSubtasksHttpClient.Setup(x => x.DeleteSubtask(TestSubtaskId))
-//                .ReturnsAsync(true);
-//            _mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
-//                .ReturnsAsync(parentTodoItem);
-
-//            // Act
-//            IActionResult result = await _controller.DeleteSubtask(model);
-
-//            // Assert
-//            Assert.IsType<JsonResult>(result);
-            
-//            _mockSubtasksHttpClient.Verify(x => x.DeleteSubtask(TestSubtaskId), Times.Once);
-//        }
-
-//        #endregion
-
-//        #region CopySubtask Tests
-
-//        [Fact]
-//        public async Task CopySubtask_Get_Should_Return_PartialView_When_User_Has_Access()
-//        {
-//            // Arrange
-//            TodoItem subtask = CreateMockSubtask();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            List<SelectListItem> progenySelectList = [new SelectListItem { Text = "Test Child", Value = "1" }];
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(baseModel.CurrentUser, 0))
-//                .ReturnsAsync(progenySelectList);
-
-//            // Act
-//            IActionResult result = await _controller.CopySubtask(TestSubtaskId);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_CopySubtaskPartial", partialViewResult.ViewName);
-//            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
-//            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
-//        }
-
-//        [Fact]
-//        public async Task CopySubtask_Get_Should_Return_AccessDenied_When_User_Has_No_Access()
-//        {
-//            // Arrange
-//            TodoItem subtask = CreateMockSubtask();
-//            subtask.AccessLevel = 0; // Private access
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsNotAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-
-//            // Act
-//            IActionResult result = await _controller.CopySubtask(TestSubtaskId);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_AccessDeniedPartial", partialViewResult.ViewName);
-//        }
-
-//        [Fact]
-//        public async Task CopySubtask_Post_Should_Create_Copy_And_Return_PartialView()
-//        {
-//            // Arrange
-//            TodoViewModel model = CreateMockTodoViewModelUserIsAdmin();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            TodoItem copiedSubtask = CreateMockSubtask();
-
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
-//                .ReturnsAsync(copiedSubtask);
-
-//            // Act
-//            IActionResult result = await _controller.CopySubtask(model);
-
-//            // Assert
-//            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-//            Assert.Equal("_SubtaskCopiedPartial", partialViewResult.ViewName);
-//            TodoViewModel resultModel = Assert.IsType<TodoViewModel>(partialViewResult.Model);
-//            Assert.Equal(TestSubtaskId, resultModel.TodoItem.TodoItemId);
-            
-//            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.IsAny<TodoItem>()), Times.Once);
-//        }
-
-//        #endregion
-
-//        #region Status Change Tests
-
-//        [Theory]
-//        [InlineData(nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsNotStarted), KinaUnaTypes.TodoStatusType.NotStarted)]
-//        [InlineData(nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsInProgress), KinaUnaTypes.TodoStatusType.InProgress)]
-//        [InlineData(nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsCancelled), KinaUnaTypes.TodoStatusType.Cancelled)]
-//        public async Task SetSubtaskStatus_Should_Update_Status_And_Return_Json(string methodName, KinaUnaTypes.TodoStatusType expectedStatus)
-//        {
-//            // Arrange
-//            TodoItem subtask = CreateMockSubtask();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            TodoItem updatedSubtask = CreateMockSubtask();
-//            updatedSubtask.Status = (int)expectedStatus;
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
-//                .ReturnsAsync(updatedSubtask);
-
-//            // Act
-//            IActionResult result = methodName switch
-//            {
-//                nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsNotStarted) => await _controller.SetSubtaskAsNotStarted(TestSubtaskId),
-//                nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsInProgress) => await _controller.SetSubtaskAsInProgress(TestSubtaskId),
-//                nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsCancelled) => await _controller.SetSubtaskAsCancelled(TestSubtaskId),
-//                _ => throw new ArgumentException($"Unknown method: {methodName}")
-//            };
-
-//            // Assert
-//            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
-//            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
-//            Assert.Equal((int)expectedStatus, resultTodoItem.Status);
-            
-//            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(t => 
-//                t.Status == (int)expectedStatus)), Times.Once);
-//        }
-
-//        [Fact]
-//        public async Task SetSubtaskAsCompleted_Should_Set_CompletedDate_And_Return_Json()
-//        {
-//            // Arrange
-//            TodoItem subtask = CreateMockSubtask();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-//            TodoItem updatedSubtask = CreateMockSubtask();
-//            updatedSubtask.Status = (int)KinaUnaTypes.TodoStatusType.Completed;
-//            updatedSubtask.CompletedDate = DateTime.UtcNow;
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-//            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
-//                .ReturnsAsync(updatedSubtask);
-
-//            // Act
-//            IActionResult result = await _controller.SetSubtaskAsCompleted(TestSubtaskId);
-
-//            // Assert
-//            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
-//            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
-//            Assert.Equal((int)KinaUnaTypes.TodoStatusType.Completed, resultTodoItem.Status);
-//            Assert.NotNull(resultTodoItem.CompletedDate);
-            
-//            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(t => 
-//                t.Status == (int)KinaUnaTypes.TodoStatusType.Completed && 
-//                t.CompletedDate.HasValue)), Times.Once);
-//        }
-
-//        [Theory]
-//        [InlineData(nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsNotStarted))]
-//        [InlineData(nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsInProgress))]
-//        [InlineData(nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsCompleted))]
-//        [InlineData(nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsCancelled))]
-//        public async Task SetSubtaskStatus_Should_Return_Unauthorized_When_User_Is_Not_Admin(string methodName)
-//        {
-//            // Arrange
-//            TodoItem subtask = CreateMockSubtask();
-//            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelUserIsNotAdmin();
-//            baseModel.SetCurrentUsersAccessLevel();
-
-//            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
-//                .ReturnsAsync(subtask);
-//            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, TestProgenyId))
-//                .ReturnsAsync(baseModel);
-
-//            // Act
-//            IActionResult result = methodName switch
-//            {
-//                nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsNotStarted) => await _controller.SetSubtaskAsNotStarted(TestSubtaskId),
-//                nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsInProgress) => await _controller.SetSubtaskAsInProgress(TestSubtaskId),
-//                nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsCompleted) => await _controller.SetSubtaskAsCompleted(TestSubtaskId),
-//                nameof(KinaUnaWeb.Controllers.SubtasksController.SetSubtaskAsCancelled) => await _controller.SetSubtaskAsCancelled(TestSubtaskId),
-//                _ => throw new ArgumentException($"Unknown method: {methodName}")
-//            };
-
-//            // Assert
-//            UnauthorizedObjectResult unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-//            Assert.Equal("Access denied.", unauthorizedResult.Value);
-//        }
-
-//        #endregion
-
-//        #region Helper Methods
-
-//        private static BaseItemsViewModel CreateMockBaseItemsViewModelUserIsAdmin()
-//        {
-//            return new BaseItemsViewModel
-//            {
-//                CurrentUser = new UserInfo
-//                {
-//                    UserEmail = TestUserEmail,
-//                    UserId = TestUserId,
-//                    Timezone = TestUserTimezone
-//                },
-//                CurrentProgeny = new Progeny
-//                {
-//                    Id = TestProgenyId,
-//                    Name = "Test Child",
-//                    Admins = TestUserEmail
-//                },
-//                CurrentProgenyAccessList =
-//                [
-//                    new UserAccess { UserId = TestUserEmail, AccessLevel = (int)AccessLevel.Private }
-//                ],
-//                IsCurrentUserProgenyAdmin = true,
-//                LanguageId = 1
-//            };
-//        }
-
-//        private static BaseItemsViewModel CreateMockBaseItemsViewModelUserIsNotAdmin()
-//        {
-//            return new BaseItemsViewModel
-//            {
-//                CurrentUser = new UserInfo
-//                {
-//                    UserEmail = TestUserEmail,
-//                    UserId = TestUserId,
-//                    Timezone = TestUserTimezone
-//                },
-//                CurrentProgeny = new Progeny
-//                {
-//                    Id = TestProgenyId,
-//                    Name = "Test Child",
-//                    Admins = ""
-//                },
-//                CurrentProgenyAccessList =
-//                [
-//                    new UserAccess { UserId = TestUserEmail, AccessLevel = (int)AccessLevel.Family }
-//                ],
-//                IsCurrentUserProgenyAdmin = false,
-//                LanguageId = 1
-//            };
-//        }
-
-//        private static UserInfo CreateMockUserInfo()
-//        {
-//            return new UserInfo
-//            {
-//                UserEmail = TestUserEmail,
-//                UserId = TestUserId,
-//                FirstName = "John",
-//                LastName = "Doe",
-//                Timezone = TestUserTimezone
-//            };
-//        }
-
-//        private static TodoItem CreateMockSubtask()
-//        {
-//            return new TodoItem
-//            {
-//                TodoItemId = TestSubtaskId,
-//                ProgenyId = TestProgenyId,
-//                ParentTodoItemId = TestParentTodoItemId,
-//                Title = "Test Subtask",
-//                Description = "Test Description",
-//                CreatedBy = TestUserId,
-//                AccessLevel = 1,
-//                Status = 0,
-//                CreatedTime = DateTime.UtcNow
-//            };
-//        }
-
-//        private static TodoItem CreateMockTodoItem(int todoItemId)
-//        {
-//            return new TodoItem
-//            {
-//                TodoItemId = todoItemId,
-//                ProgenyId = TestProgenyId,
-//                Title = "Test Todo Item",
-//                Description = "Test Description",
-//                CreatedBy = TestUserId,
-//                AccessLevel = 1,
-//                Status = 0,
-//                CreatedTime = DateTime.UtcNow
-//            };
-//        }
-
-//        private static Progeny CreateMockProgeny()
-//        {
-//            return new Progeny
-//            {
-//                Id = TestProgenyId,
-//                Name = "Test Child",
-//                Admins = TestUserEmail
-//            };
-//        }
-
-//        private static SubtasksResponse CreateMockSubtasksResponse()
-//        {
-//            return new SubtasksResponse
-//            {
-//                ParentTodoItemId = TestParentTodoItemId,
-//                Subtasks = [CreateMockSubtask()],
-//                PageNumber = 1,
-//                TotalPages = 1,
-//                TotalItems = 1
-//            };
-//        }
-
-//        private static TodoViewModel CreateMockTodoViewModelUserIsAdmin()
-//        {
-//            TodoViewModel model = new(CreateMockBaseItemsViewModelUserIsAdmin())
-//            {
-//                TodoItem = CreateMockSubtask()
-//            };
-
-//            model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(TestUserTimezone));
-//            if (model.TodoItem.CompletedDate.HasValue)
-//            {
-//                model.TodoItem.CompletedDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(TestUserTimezone));
-//            }
-
-//            if (model.TodoItem.StartDate.HasValue)
-//            {
-//                model.TodoItem.StartDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(TestUserTimezone));
-//            }
-
-//            if (model.TodoItem.DueDate.HasValue)
-//            {
-//                model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(TestUserTimezone));
-//            }
-
-//            return model;
-//        }
-
-//        private static TodoViewModel CreateMockTodoViewModelUserIsNotAdmin()
-//        {
-//            TodoViewModel model = new(CreateMockBaseItemsViewModelUserIsNotAdmin())
-//            {
-//                TodoItem = CreateMockSubtask()
-//            };
-
-//            model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(TestUserTimezone));
-//            if (model.TodoItem.CompletedDate.HasValue)
-//            {
-//                model.TodoItem.CompletedDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(TestUserTimezone));
-//            }
-
-//            if (model.TodoItem.StartDate.HasValue)
-//            {
-//                model.TodoItem.StartDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(TestUserTimezone));
-//            }
-//            if (model.TodoItem.DueDate.HasValue)
-//            {
-//                model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(TestUserTimezone));
-//            }
-
-//            return model;
-//        }
-
-//        #endregion
-//    }
-//}
+using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.Family;
+using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.ItemViewModels;
+using KinaUnaWeb.Models.TypeScriptModels.TodoItems;
+using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Moq;
+using OpenIddict.Abstractions;
+using System.Security.Claims;
+
+namespace KinaUnaWeb.Tests.Controllers.SubtasksController
+{
+    public class SubtasksControllerTests
+    {
+        private readonly Mock<ISubtasksHttpClient> _mockSubtasksHttpClient;
+        private readonly Mock<IViewModelSetupService> _mockViewModelSetupService;
+        private readonly Mock<IUserInfosHttpClient> _mockUserInfosHttpClient;
+        private readonly Mock<IProgenyHttpClient> _mockProgenyHttpClient;
+        private readonly Mock<IFamiliesHttpClient> _mockFamiliesHttpClient;
+        private readonly KinaUnaWeb.Controllers.SubtasksController _controller;
+
+        private const string TestUserEmail = "test@kinauna.com";
+        private const string TestUserId = "test-user-id";
+        private const string TestUserTimezone = "Central Standard Time";
+        private const int TestProgenyId = 1;
+        private const int TestFamilyId = 1;
+        private const int TestSubtaskId = 123;
+        private const int TestParentTodoItemId = 999;
+
+        public SubtasksControllerTests()
+        {
+            _mockSubtasksHttpClient = new Mock<ISubtasksHttpClient>();
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            _mockViewModelSetupService = new Mock<IViewModelSetupService>();
+            _mockUserInfosHttpClient = new Mock<IUserInfosHttpClient>();
+            _mockProgenyHttpClient = new Mock<IProgenyHttpClient>();
+            _mockFamiliesHttpClient = new Mock<IFamiliesHttpClient>();
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            _controller = new KinaUnaWeb.Controllers.SubtasksController(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+
+            SetupControllerContext();
+        }
+
+        private void SetupControllerContext()
+        {
+            List<Claim> claims =
+            [
+                new(OpenIddictConstants.Claims.Email, TestUserEmail),
+                new(OpenIddictConstants.Claims.Subject, TestUserId)
+            ];
+            ClaimsIdentity identity = new(claims, "TestAuthType");
+            ClaimsPrincipal claimsPrincipal = new(identity);
+
+            DefaultHttpContext httpContext = new()
+            {
+                User = claimsPrincipal
+            };
+
+            Mock<IRequestCookieCollection> mockRequestCookies = new();
+            mockRequestCookies.Setup(x => x["KinaUnaLanguage"]).Returns("1");
+            httpContext.Request.Cookies = mockRequestCookies.Object;
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
+            _controller.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        }
+
+        #region GetSubtasksList Tests
+
+        [Fact]
+        public async Task GetSubtasksList_Should_Set_Default_LanguageId_When_Zero()
+        {
+            // Arrange
+            SubtasksPageParameters parameters = new()
+            {
+                LanguageId = 0,
+                ParentTodoItemId = TestParentTodoItemId,
+                CurrentPageNumber = 1,
+                ItemsPerPage = 10
+            };
+
+            UserInfo userInfo = CreateMockUserInfo();
+            SubtasksResponse response = CreateMockSubtasksResponse();
+
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfo(TestUserEmail))
+                .ReturnsAsync(userInfo);
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtasksList(It.IsAny<SubtasksRequest>()))
+                .ReturnsAsync(response);
+
+            // Act
+            IActionResult result = await _controller.GetSubtasksList(parameters);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            SubtasksPageResponse pageResponse = Assert.IsType<SubtasksPageResponse>(jsonResult.Value);
+            Assert.NotEmpty(pageResponse.SubtasksList);
+
+            _mockUserInfosHttpClient.Verify(x => x.GetUserInfo(TestUserEmail), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetSubtasksList_Should_Set_Default_CurrentPageNumber_When_Less_Than_One()
+        {
+            // Arrange
+            SubtasksPageParameters parameters = new()
+            {
+                LanguageId = 1,
+                ParentTodoItemId = TestParentTodoItemId,
+                CurrentPageNumber = 0,
+                ItemsPerPage = 10
+            };
+
+            UserInfo userInfo = CreateMockUserInfo();
+            SubtasksResponse response = CreateMockSubtasksResponse();
+
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfo(TestUserEmail))
+                .ReturnsAsync(userInfo);
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtasksList(It.IsAny<SubtasksRequest>()))
+                .ReturnsAsync(response);
+
+            // Act
+            IActionResult result = await _controller.GetSubtasksList(parameters);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            Assert.IsType<SubtasksPageResponse>(jsonResult.Value);
+
+            _mockSubtasksHttpClient.Verify(x => x.GetSubtasksList(It.Is<SubtasksRequest>(r =>
+                r.Skip == 0)), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetSubtasksList_Should_Set_Default_ItemsPerPage_When_Less_Than_One()
+        {
+            // Arrange
+            SubtasksPageParameters parameters = new()
+            {
+                LanguageId = 1,
+                ParentTodoItemId = TestParentTodoItemId,
+                CurrentPageNumber = 1,
+                ItemsPerPage = 0
+            };
+
+            UserInfo userInfo = CreateMockUserInfo();
+            SubtasksResponse response = CreateMockSubtasksResponse();
+
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfo(TestUserEmail))
+                .ReturnsAsync(userInfo);
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtasksList(It.IsAny<SubtasksRequest>()))
+                .ReturnsAsync(response);
+
+            // Act
+            IActionResult result = await _controller.GetSubtasksList(parameters);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            Assert.IsType<SubtasksPageResponse>(jsonResult.Value);
+
+            _mockSubtasksHttpClient.Verify(x => x.GetSubtasksList(It.Is<SubtasksRequest>(r =>
+                r.NumberOfItems == 10)), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetSubtasksList_Should_Convert_Subtask_Dates_To_User_Timezone()
+        {
+            // Arrange
+            SubtasksPageParameters parameters = new()
+            {
+                LanguageId = 1,
+                ParentTodoItemId = TestParentTodoItemId,
+                CurrentPageNumber = 1,
+                ItemsPerPage = 10
+            };
+
+            UserInfo userInfo = CreateMockUserInfo();
+            TodoItem subtask = new()
+            {
+                TodoItemId = TestSubtaskId,
+                ParentTodoItemId = TestParentTodoItemId,
+                DueDate = DateTime.UtcNow,
+                StartDate = DateTime.UtcNow.AddDays(-1),
+                CompletedDate = DateTime.UtcNow.AddHours(-1),
+                CreatedTime = DateTime.UtcNow.AddDays(-2)
+            };
+            SubtasksResponse response = new()
+            {
+                Subtasks = [subtask]
+            };
+
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfo(TestUserEmail))
+                .ReturnsAsync(userInfo);
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtasksList(It.IsAny<SubtasksRequest>()))
+                .ReturnsAsync(response);
+
+            // Act
+            IActionResult result = await _controller.GetSubtasksList(parameters);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            SubtasksPageResponse pageResponse = Assert.IsType<SubtasksPageResponse>(jsonResult.Value);
+            TodoItem resultSubtask = pageResponse.SubtasksList.First();
+
+            Assert.NotNull(resultSubtask.DueDate);
+            Assert.NotNull(resultSubtask.StartDate);
+            Assert.NotNull(resultSubtask.CompletedDate);
+        }
+
+        [Fact]
+        public async Task GetSubtasksList_Should_Map_Request_Parameters_Correctly()
+        {
+            // Arrange
+            SubtasksPageParameters parameters = new()
+            {
+                LanguageId = 1,
+                ParentTodoItemId = TestParentTodoItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = TestFamilyId,
+                CurrentPageNumber = 2,
+                ItemsPerPage = 20,
+                StartYear = 2024,
+                StartMonth = 1,
+                StartDay = 1,
+                EndYear = 2024,
+                EndMonth = 12,
+                EndDay = 31,
+                LocationFilter = "Home",
+                TagFilter = "urgent",
+                ContextFilter = "work",
+                StatusFilter = [KinaUnaTypes.TodoStatusType.InProgress],
+                Sort = 1,
+                SortBy = 1,
+                GroupBy = 1
+            };
+
+            UserInfo userInfo = CreateMockUserInfo();
+            SubtasksResponse response = CreateMockSubtasksResponse();
+
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfo(TestUserEmail))
+                .ReturnsAsync(userInfo);
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtasksList(It.IsAny<SubtasksRequest>()))
+                .ReturnsAsync(response);
+
+            // Act
+            IActionResult result = await _controller.GetSubtasksList(parameters);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            Assert.IsType<SubtasksPageResponse>(jsonResult.Value);
+
+            _mockSubtasksHttpClient.Verify(x => x.GetSubtasksList(It.Is<SubtasksRequest>(r =>
+                r.ParentTodoItemId == TestParentTodoItemId &&
+                r.ProgenyId == TestProgenyId &&
+                r.FamilyId == TestFamilyId &&
+                r.Skip == 20 && // (2-1) * 20
+                r.NumberOfItems == 20 &&
+                r.LocationFilter == "Home" &&
+                r.TagFilter == "urgent" &&
+                r.ContextFilter == "work" &&
+                r.StatusFilter == parameters.StatusFilter &&
+                r.Sort == 1 &&
+                r.SortBy == 1 &&
+                r.GroupBy == 1)), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetSubtasksList_Should_Return_Empty_List_When_No_Subtasks()
+        {
+            // Arrange
+            SubtasksPageParameters parameters = new()
+            {
+                LanguageId = 1,
+                ParentTodoItemId = TestParentTodoItemId,
+                CurrentPageNumber = 1,
+                ItemsPerPage = 10
+            };
+
+            UserInfo userInfo = CreateMockUserInfo();
+            SubtasksResponse response = new()
+            {
+                Subtasks = []
+            };
+
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfo(TestUserEmail))
+                .ReturnsAsync(userInfo);
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtasksList(It.IsAny<SubtasksRequest>()))
+                .ReturnsAsync(response);
+
+            // Act
+            IActionResult result = await _controller.GetSubtasksList(parameters);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            SubtasksPageResponse pageResponse = Assert.IsType<SubtasksPageResponse>(jsonResult.Value);
+            Assert.Empty(pageResponse.SubtasksList);
+        }
+
+        #endregion
+
+        #region SubtaskElement Tests
+
+        [Fact]
+        public async Task SubtaskElement_Should_Return_New_Subtask_When_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            TodoItemParameters parameters = new()
+            {
+                TodoItemId = 0,
+                LanguageId = 1
+            };
+
+            // Act
+            IActionResult result = await _controller.SubtaskElement(parameters);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_SubtaskElementPartial", partialViewResult.ViewName);
+            TodoItemResponse response = Assert.IsType<TodoItemResponse>(partialViewResult.Model);
+            Assert.Equal(0, response.TodoItem.TodoItemId);
+            Assert.Equal(1, response.LanguageId);
+        }
+
+        [Fact]
+        public async Task SubtaskElement_Should_Set_Default_LanguageId_When_Zero()
+        {
+            // Arrange
+            TodoItemParameters parameters = new()
+            {
+                TodoItemId = 0,
+                LanguageId = 0
+            };
+
+            // Act
+            IActionResult result = await _controller.SubtaskElement(parameters);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoItemResponse response = Assert.IsType<TodoItemResponse>(partialViewResult.Model);
+            Assert.Equal(1, response.LanguageId); // Should be set from cookie
+        }
+
+        [Fact]
+        public async Task SubtaskElement_Should_Load_Full_Subtask_Data()
+        {
+            // Arrange
+            TodoItemParameters parameters = new()
+            {
+                TodoItemId = TestSubtaskId,
+                LanguageId = 1
+            };
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            Progeny progeny = CreateMockProgeny();
+            Family family = CreateMockFamily();
+            UserInfo userInfo = CreateMockUserInfo();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeny(TestProgenyId))
+                .ReturnsAsync(progeny);
+            _mockFamiliesHttpClient.Setup(x => x.GetFamily(TestFamilyId))
+                .ReturnsAsync(family);
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+                .ReturnsAsync(userInfo);
+
+            // Act
+            IActionResult result = await _controller.SubtaskElement(parameters);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoItemResponse response = Assert.IsType<TodoItemResponse>(partialViewResult.Model);
+            Assert.Equal(TestSubtaskId, response.TodoItem.TodoItemId);
+            Assert.NotNull(response.TodoItem.Progeny);
+            Assert.Equal(progeny.Id, response.TodoItem.Progeny.Id);
+            Assert.NotNull(response.TodoItem.Family);
+            Assert.Equal(0, response.TodoItem.Family.FamilyId);
+            Assert.Equal("John Doe", response.TodoItem.CreatedBy);
+        }
+
+        [Fact]
+        public async Task SubtaskElement_Should_Only_Load_Progeny_When_ProgenyId_Greater_Than_Zero()
+        {
+            // Arrange
+            TodoItemParameters parameters = new()
+            {
+                TodoItemId = TestSubtaskId,
+                LanguageId = 1
+            };
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ProgenyId = TestProgenyId;
+            subtask.FamilyId = 0;
+            Progeny progeny = CreateMockProgeny();
+            UserInfo userInfo = CreateMockUserInfo();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeny(TestProgenyId))
+                .ReturnsAsync(progeny);
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+                .ReturnsAsync(userInfo);
+
+            // Act
+            IActionResult result = await _controller.SubtaskElement(parameters);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoItemResponse response = Assert.IsType<TodoItemResponse>(partialViewResult.Model);
+            Assert.NotNull(response.TodoItem.Progeny);
+            Assert.Equal(progeny.Id, response.TodoItem.Progeny.Id);
+            Assert.NotNull(response.TodoItem.Family);
+            Assert.Equal(0, response.TodoItem.Family.FamilyId);
+
+            _mockProgenyHttpClient.Verify(x => x.GetProgeny(TestProgenyId), Times.Once);
+            _mockFamiliesHttpClient.Verify(x => x.GetFamily(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task SubtaskElement_Should_Only_Load_Family_When_FamilyId_Greater_Than_Zero()
+        {
+            // Arrange
+            TodoItemParameters parameters = new()
+            {
+                TodoItemId = TestSubtaskId,
+                LanguageId = 1
+            };
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ProgenyId = 0;
+            subtask.FamilyId = TestFamilyId;
+            Family family = CreateMockFamily();
+            UserInfo userInfo = CreateMockUserInfo();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockFamiliesHttpClient.Setup(x => x.GetFamily(TestFamilyId))
+                .ReturnsAsync(family);
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+                .ReturnsAsync(userInfo);
+
+            // Act
+            IActionResult result = await _controller.SubtaskElement(parameters);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoItemResponse response = Assert.IsType<TodoItemResponse>(partialViewResult.Model);
+            Assert.NotNull(response.TodoItem.Progeny);
+            Assert.Equal(0, response.TodoItem.Progeny.Id);
+            Assert.NotNull(response.TodoItem.Family);
+            Assert.Equal(family.FamilyId, response.TodoItem.Family.FamilyId);
+
+            _mockFamiliesHttpClient.Verify(x => x.GetFamily(TestFamilyId), Times.Once);
+            _mockProgenyHttpClient.Verify(x => x.GetProgeny(It.IsAny<int>()), Times.Never);
+        }
+
+        #endregion
+
+        #region ViewSubtask Tests
+
+        [Fact]
+        public async Task ViewSubtask_Should_Return_NotFound_When_Subtask_Is_Null()
+        {
+            // Arrange
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync((TodoItem)null!);
+
+            // Act
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task ViewSubtask_Should_Return_NotFound_When_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.TodoItemId = 0;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task ViewSubtask_Should_Return_View_When_PartialView_False()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            UserInfo userInfo = CreateMockUserInfo();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+                .ReturnsAsync(userInfo);
+
+            // Act
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+
+            // Assert
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(viewResult.Model);
+            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
+        }
+
+        [Fact]
+        public async Task ViewSubtask_Should_Return_PartialView_When_PartialView_True()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            UserInfo userInfo = CreateMockUserInfo();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+                .ReturnsAsync(userInfo);
+
+            // Act
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, true);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_SubtaskDetailsPartial", partialViewResult.ViewName);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
+        }
+
+        [Fact]
+        public async Task ViewSubtask_Should_Set_Progeny_With_Picture_Link_When_ProgenyId_Greater_Than_Zero()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ProgenyId = TestProgenyId;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            UserInfo userInfo = CreateMockUserInfo();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+                .ReturnsAsync(userInfo);
+
+            // Act
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+
+            // Assert
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(viewResult.Model);
+            Assert.NotNull(model.TodoItem.Progeny);
+            Assert.NotNull(model.TodoItem.Progeny.PictureLink);
+        }
+
+        [Fact]
+        public async Task ViewSubtask_Should_Set_Family_With_Picture_Link_When_FamilyId_Greater_Than_Zero()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForFamily();
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForFamily();
+            UserInfo userInfo = CreateMockUserInfo();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, 0, 1, false))
+                .ReturnsAsync(baseModel);
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+                .ReturnsAsync(userInfo);
+            _mockFamiliesHttpClient.Setup(x => x.GetFamily(TestFamilyId))
+                .ReturnsAsync(CreateMockFamily());
+
+            // Act
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+
+            // Assert
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(viewResult.Model);
+            Assert.NotNull(model.TodoItem.Family);
+            Assert.NotNull(model.TodoItem.Family.PictureLink);
+        }
+
+        [Fact]
+        public async Task ViewSubtask_Should_Convert_Dates_To_User_Timezone()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.CompletedDate = DateTime.UtcNow;
+            subtask.StartDate = DateTime.UtcNow.AddDays(-1);
+            subtask.DueDate = DateTime.UtcNow.AddDays(1);
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            UserInfo userInfo = CreateMockUserInfo();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+                .ReturnsAsync(userInfo);
+
+            // Act
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+
+            // Assert
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(viewResult.Model);
+
+            // The dates should be converted (not equal to original UTC values)
+            Assert.NotNull(model.TodoItem.CompletedDate);
+            Assert.NotNull(model.TodoItem.StartDate);
+            Assert.NotNull(model.TodoItem.DueDate);
+        }
+
+        [Fact]
+        public async Task ViewSubtask_Should_Replace_CreatedBy_With_User_FullName()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.CreatedBy = TestUserId;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            UserInfo userInfo = CreateMockUserInfo();
+            userInfo.FirstName = "Jane";
+            userInfo.LastName = "Smith";
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(TestUserId))
+                .ReturnsAsync(userInfo);
+
+            // Act
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+
+            // Assert
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(viewResult.Model);
+            Assert.Equal("Jane Smith", model.TodoItem.CreatedBy);
+        }
+
+        [Fact]
+        public async Task ViewSubtask_Should_Not_Convert_Null_Dates()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.CompletedDate = null;
+            subtask.StartDate = null;
+            subtask.DueDate = null;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            UserInfo userInfo = CreateMockUserInfo();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+                .ReturnsAsync(userInfo);
+
+            // Act
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+
+            // Assert
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(viewResult.Model);
+            Assert.Null(model.TodoItem.CompletedDate);
+            Assert.Null(model.TodoItem.StartDate);
+            Assert.Null(model.TodoItem.DueDate);
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private static BaseItemsViewModel CreateMockBaseItemsViewModelForProgeny()
+        {
+            return new BaseItemsViewModel
+            {
+                CurrentUser = new UserInfo
+                {
+                    UserEmail = TestUserEmail,
+                    UserId = TestUserId,
+                    Timezone = TestUserTimezone
+                },
+                CurrentProgeny = new Progeny
+                {
+                    Id = TestProgenyId,
+                    Name = "Test Child",
+                    Admins = TestUserEmail,
+                    PictureLink = "/images/progeny.jpg",
+                    ProgenyPerMission = new ProgenyPermission { PermissionLevel = PermissionLevel.Admin }
+                },
+                LanguageId = 1
+            };
+        }
+
+        private static BaseItemsViewModel CreateMockBaseItemsViewModelForFamily()
+        {
+            return new BaseItemsViewModel
+            {
+                CurrentUser = new UserInfo
+                {
+                    UserEmail = TestUserEmail,
+                    UserId = TestUserId,
+                    Timezone = TestUserTimezone
+                },
+                CurrentFamily = new Family
+                {
+                    FamilyId = TestFamilyId,
+                    Name = "Test Family",
+                    PictureLink = "/images/family.jpg",
+                    FamilyPermission = new FamilyPermission { PermissionLevel = PermissionLevel.Admin }
+                },
+                LanguageId = 1
+            };
+        }
+
+        private static UserInfo CreateMockUserInfo()
+        {
+            return new UserInfo
+            {
+                UserEmail = TestUserEmail,
+                UserId = TestUserId,
+                FirstName = "John",
+                LastName = "Doe",
+                Timezone = TestUserTimezone
+            };
+        }
+
+        private static TodoItem CreateMockSubtaskForProgeny()
+        {
+            return new TodoItem
+            {
+                TodoItemId = TestSubtaskId,
+                ParentTodoItemId = TestParentTodoItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "Test Subtask",
+                Description = "Test Description",
+                CreatedBy = TestUserId,
+                Status = 0,
+                CreatedTime = DateTime.UtcNow,
+                ItemPerMission = new TimelineItemPermission { PermissionLevel = PermissionLevel.Admin }
+            };
+        }
+
+        private static TodoItem CreateMockSubtaskForFamily()
+        {
+            return new TodoItem
+            {
+                TodoItemId = TestSubtaskId,
+                ParentTodoItemId = TestParentTodoItemId,
+                ProgenyId = 0,
+                FamilyId = TestFamilyId,
+                Title = "Test Subtask",
+                Description = "Test Description",
+                CreatedBy = TestUserId,
+                Status = 0,
+                CreatedTime = DateTime.UtcNow,
+                ItemPerMission = new TimelineItemPermission { PermissionLevel = PermissionLevel.Admin }
+            };
+        }
+
+        private static Progeny CreateMockProgeny()
+        {
+            return new Progeny
+            {
+                Id = TestProgenyId,
+                Name = "Test Child",
+                NickName = "Testy",
+                Admins = TestUserEmail,
+                PictureLink = "/images/progeny.jpg"
+            };
+        }
+
+        private static Family CreateMockFamily()
+        {
+            return new Family
+            {
+                FamilyId = TestFamilyId,
+                Name = "Test Family",
+                PictureLink = "/images/family.jpg"
+            };
+        }
+
+        private static SubtasksResponse CreateMockSubtasksResponse()
+        {
+            return new SubtasksResponse
+            {
+                Subtasks = [CreateMockSubtaskForProgeny()],
+                SubtasksRequest = new SubtasksRequest
+                {
+                    ParentTodoItemId = TestParentTodoItemId
+                }
+            };
+        }
+
+        #endregion
+
+        #region AddSubtask (GET) Tests
+
+        [Fact]
+        public async Task AddSubtask_Get_Should_Return_PartialView_With_Model()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList = [];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList = [];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, 0, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            // Act
+            IActionResult result = await _controller.AddSubtask();
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_AddSubtaskPartial", partialViewResult.ViewName);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.NotNull(model.CurrentUser);
+            Assert.NotNull(model.ProgenyList);
+            Assert.NotNull(model.FamilyList);
+        }
+
+        [Fact]
+        public async Task AddSubtask_Get_Should_Return_NotFound_When_CurrentUser_Is_Null()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            baseModel.CurrentUser = null!;
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, 0, 0, false))
+                .ReturnsAsync(baseModel);
+
+            // Act
+            IActionResult result = await _controller.AddSubtask();
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_NotFoundPartial", partialViewResult.ViewName);
+        }
+
+        [Fact]
+        public async Task AddSubtask_Get_Should_Set_CreatedTime_To_User_Timezone()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList = [];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList = [];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, 0, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            // Act
+            IActionResult result = await _controller.AddSubtask();
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            // CreatedTime should be set (not default value)
+            Assert.NotEqual(default, model.TodoItem.CreatedTime);
+        }
+
+        [Fact]
+        public async Task AddSubtask_Get_Should_Populate_Progeny_And_Family_Lists()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList =
+            [
+                new() { Text = "Child 1", Value = "1" },
+                new() { Text = "Child 2", Value = "2" }
+            ];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList =
+            [
+                new() { Text = "Family 1", Value = "1" },
+                new() { Text = "Family 2", Value = "2" }
+            ];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, 0, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            // Act
+            IActionResult result = await _controller.AddSubtask();
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal(2, model.ProgenyList.Count);
+            Assert.Equal(2, model.FamilyList.Count);
+        }
+
+        #endregion
+
+        #region AddSubtask (POST) Tests
+
+        [Fact]
+        public async Task AddSubtask_Post_Should_Add_Subtask_And_Return_PartialView()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = TestFamilyId,
+                    Title = "New Subtask",
+                    Description = "New Description",
+                    Status = 0,
+                    CreatedTime = DateTime.Now
+                }
+            };
+
+            inputModel.TodoItem.CreatedTime = DateTime.SpecifyKind(inputModel.TodoItem.CreatedTime, DateTimeKind.Unspecified);
+
+            TodoItem addedSubtask = CreateMockSubtaskForProgeny();
+            addedSubtask.Title = "New Subtask";
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(addedSubtask);
+
+            // Act
+            IActionResult result = await _controller.AddSubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_SubtaskAddedPartial", partialViewResult.ViewName);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal("New Subtask", model.TodoItem.Title);
+            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
+
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.IsAny<TodoItem>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddSubtask_Post_Should_Convert_Dates_From_User_Timezone_To_UTC()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            DateTime userLocalTime = new(2024, 6, 15, 10, 0, 0);
+
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = TestFamilyId,
+                    Title = "New Subtask",
+                    StartDate = userLocalTime,
+                    DueDate = userLocalTime.AddDays(7),
+                    CreatedTime = userLocalTime
+                }
+            };
+
+            TodoItem addedSubtask = CreateMockSubtaskForProgeny();
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(addedSubtask);
+
+            // Act
+            IActionResult result = await _controller.AddSubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            // Verify that dates were converted back from UTC
+            Assert.NotNull(model.TodoItem.CreatedTime);
+
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.Is<TodoItem>(t =>
+                t.CreatedTime.Kind == DateTimeKind.Utc)), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddSubtask_Post_Should_Convert_Result_Dates_To_User_Timezone()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = TestFamilyId,
+                    Title = "New Subtask"
+                }
+            };
+
+            TodoItem addedSubtask = CreateMockSubtaskForProgeny();
+            addedSubtask.CreatedTime = DateTime.UtcNow;
+            addedSubtask.StartDate = DateTime.UtcNow.AddDays(-1);
+            addedSubtask.DueDate = DateTime.UtcNow.AddDays(7);
+            addedSubtask.CompletedDate = DateTime.UtcNow;
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(addedSubtask);
+
+            // Act
+            IActionResult result = await _controller.AddSubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            // Verify dates are converted (kind check would be useful but might not be preserved)
+            Assert.NotNull(model.TodoItem.CreatedTime);
+            Assert.NotNull(model.TodoItem.StartDate);
+            Assert.NotNull(model.TodoItem.DueDate);
+            Assert.NotNull(model.TodoItem.CompletedDate);
+        }
+
+        [Fact]
+        public async Task AddSubtask_Post_Should_Handle_Null_Optional_Dates()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = TestFamilyId,
+                    Title = "New Subtask",
+                    StartDate = null,
+                    DueDate = null,
+                    CompletedDate = null
+                }
+            };
+
+            TodoItem addedSubtask = CreateMockSubtaskForProgeny();
+            addedSubtask.StartDate = null;
+            addedSubtask.DueDate = null;
+            addedSubtask.CompletedDate = null;
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(addedSubtask);
+
+            // Act
+            IActionResult result = await _controller.AddSubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            Assert.Null(model.TodoItem.StartDate);
+            Assert.Null(model.TodoItem.DueDate);
+            Assert.Null(model.TodoItem.CompletedDate);
+        }
+
+        [Fact]
+        public async Task AddSubtask_Post_Should_Set_Base_Properties_From_ViewModel()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "New Subtask"
+                }
+            };
+
+            TodoItem addedSubtask = CreateMockSubtaskForProgeny();
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(addedSubtask);
+
+            // Act
+            IActionResult result = await _controller.AddSubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            Assert.Equal(TestUserEmail, model.CurrentUser.UserEmail);
+            Assert.Equal(TestProgenyId, model.CurrentProgeny.Id);
+        }
+
+        #endregion
+
+        #region AddSubtaskInline Tests
+
+        [Fact]
+        public async Task AddSubtaskInline_Should_Return_NotFound_When_Parent_TodoItem_Is_Null()
+        {
+            // Arrange
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+
+            SetupControllerContextForController(controller);
+
+            TodoItem inputTodoItem = new()
+            {
+                ParentTodoItemId = TestParentTodoItemId,
+                Title = "New Subtask"
+            };
+
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync((TodoItem)null!);
+
+            // Act
+            IActionResult result = await controller.AddSubtaskInline(inputTodoItem);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task AddSubtaskInline_Should_Return_NotFound_When_Parent_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+
+            SetupControllerContextForController(controller);
+
+            TodoItem inputTodoItem = new()
+            {
+                ParentTodoItemId = TestParentTodoItemId,
+                Title = "New Subtask"
+            };
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = 0
+            };
+
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+
+            // Act
+            IActionResult result = await controller.AddSubtaskInline(inputTodoItem);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task AddSubtaskInline_Should_Return_Unauthorized_When_Permission_Level_Too_Low()
+        {
+            // Arrange
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+
+            SetupControllerContextForController(controller);
+
+            TodoItem inputTodoItem = new()
+            {
+                ParentTodoItemId = TestParentTodoItemId,
+                Title = "New Subtask"
+            };
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = TestFamilyId,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.None
+                }
+            };
+
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+
+            // Act
+            IActionResult result = await controller.AddSubtaskInline(inputTodoItem);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task AddSubtaskInline_Should_Add_Subtask_And_Return_Json()
+        {
+            // Arrange
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+
+            SetupControllerContextForController(controller);
+
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoItem inputTodoItem = new()
+            {
+                ParentTodoItemId = TestParentTodoItemId,
+                Title = "New Inline Subtask",
+                Description = "Description"
+            };
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = TestFamilyId,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.Add
+                }
+            };
+
+            TodoItem addedSubtask = CreateMockSubtaskForProgeny();
+            addedSubtask.Title = "New Inline Subtask";
+
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(addedSubtask);
+
+            // Act
+            IActionResult result = await controller.AddSubtaskInline(inputTodoItem);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
+            Assert.Equal("New Inline Subtask", resultTodoItem.Title);
+            Assert.Equal(TestSubtaskId, resultTodoItem.TodoItemId);
+
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.IsAny<TodoItem>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddSubtaskInline_Should_Set_ProgenyId_And_FamilyId_From_Parent()
+        {
+            // Arrange
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+
+            SetupControllerContextForController(controller);
+
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoItem inputTodoItem = new()
+            {
+                ParentTodoItemId = TestParentTodoItemId,
+                Title = "New Inline Subtask",
+                ProgenyId = 999, // Should be overwritten
+                FamilyId = 0   // Should be overwritten
+            };
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.Add
+                }
+            };
+
+            TodoItem addedSubtask = CreateMockSubtaskForProgeny();
+
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(addedSubtask);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeny(TestProgenyId))
+                .ReturnsAsync(CreateMockProgeny());
+            // Act
+            IActionResult result = await controller.AddSubtaskInline(inputTodoItem);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            Assert.IsType<TodoItem>(jsonResult.Value);
+
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.Is<TodoItem>(t =>
+                t.ProgenyId == TestProgenyId &&
+                t.FamilyId == 0)), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddSubtaskInline_Should_Set_CreatedTime_To_UTC()
+        {
+            // Arrange
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+
+            SetupControllerContextForController(controller);
+
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoItem inputTodoItem = new()
+            {
+                ParentTodoItemId = TestParentTodoItemId,
+                Title = "New Inline Subtask"
+            };
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = TestFamilyId,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.Add
+                }
+            };
+
+            TodoItem addedSubtask = CreateMockSubtaskForProgeny();
+
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(addedSubtask);
+
+            // Act
+            await controller.AddSubtaskInline(inputTodoItem);
+
+            // Assert
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.Is<TodoItem>(t =>
+                t.CreatedTime.Kind == DateTimeKind.Utc)), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddSubtaskInline_Should_Convert_Result_Dates_To_User_Timezone()
+        {
+            // Arrange
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+
+            SetupControllerContextForController(controller);
+
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoItem inputTodoItem = new()
+            {
+                ParentTodoItemId = TestParentTodoItemId,
+                Title = "New Inline Subtask"
+            };
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = TestFamilyId,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.Add
+                }
+            };
+
+            TodoItem addedSubtask = CreateMockSubtaskForProgeny();
+            addedSubtask.CreatedTime = DateTime.UtcNow;
+            addedSubtask.StartDate = DateTime.UtcNow.AddDays(-1);
+            addedSubtask.DueDate = DateTime.UtcNow.AddDays(7);
+            addedSubtask.CompletedDate = DateTime.UtcNow;
+
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(addedSubtask);
+
+            // Act
+            IActionResult result = await controller.AddSubtaskInline(inputTodoItem);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
+
+            // All dates should be converted from UTC to user timezone
+            Assert.NotEqual(default, resultTodoItem.CreatedTime);
+            Assert.NotNull(resultTodoItem.StartDate);
+            Assert.NotNull(resultTodoItem.DueDate);
+            Assert.NotNull(resultTodoItem.CompletedDate);
+        }
+
+        [Fact]
+        public async Task AddSubtaskInline_Should_Handle_Null_Optional_Dates()
+        {
+            // Arrange
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+
+            SetupControllerContextForController(controller);
+
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoItem inputTodoItem = new()
+            {
+                ParentTodoItemId = TestParentTodoItemId,
+                Title = "New Inline Subtask",
+                StartDate = null,
+                DueDate = null,
+                CompletedDate = null
+            };
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = TestFamilyId,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.Add
+                }
+            };
+
+            TodoItem addedSubtask = CreateMockSubtaskForProgeny();
+            addedSubtask.StartDate = null;
+            addedSubtask.DueDate = null;
+            addedSubtask.CompletedDate = null;
+
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(addedSubtask);
+
+            // Act
+            IActionResult result = await controller.AddSubtaskInline(inputTodoItem);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
+
+            Assert.Null(resultTodoItem.StartDate);
+            Assert.Null(resultTodoItem.DueDate);
+            Assert.Null(resultTodoItem.CompletedDate);
+        }
+
+        private void SetupControllerContextForController(KinaUnaWeb.Controllers.SubtasksController controller)
+        {
+            List<Claim> claims =
+            [
+                new(OpenIddictConstants.Claims.Email, TestUserEmail),
+                new(OpenIddictConstants.Claims.Subject, TestUserId)
+            ];
+            ClaimsIdentity identity = new(claims, "TestAuthType");
+            ClaimsPrincipal claimsPrincipal = new(identity);
+
+            DefaultHttpContext httpContext = new()
+            {
+                User = claimsPrincipal
+            };
+
+            Mock<IRequestCookieCollection> mockRequestCookies = new();
+            mockRequestCookies.Setup(x => x["KinaUnaLanguage"]).Returns("1");
+            httpContext.Request.Cookies = mockRequestCookies.Object;
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
+            controller.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        }
+
+        #endregion
+    }
+}

@@ -28,8 +28,8 @@ public class BaseItemsViewModel : BaseViewModel
     {
         LanguageId = baseItemsViewModel.LanguageId;
         CurrentUser = baseItemsViewModel.CurrentUser;
-        CurrentProgenyId = baseItemsViewModel.CurrentProgenyId;
-        CurrentFamilyId = baseItemsViewModel.CurrentFamilyId;
+        CurrentProgenyId = baseItemsViewModel.CurrentProgeny?.Id ?? 0;
+        CurrentFamilyId = baseItemsViewModel.CurrentFamily?.FamilyId ?? 0;
         CurrentProgeny = baseItemsViewModel.CurrentProgeny;
         CurrentFamily = baseItemsViewModel.CurrentFamily;
     }
