@@ -1574,5 +1574,1134 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
         }
 
         #endregion
+
+        #region EditSubtask (GET) Tests
+
+        [Fact]
+        public async Task EditSubtask_Get_Should_Return_NotFoundPartial_When_Subtask_Is_Null()
+        {
+            // Arrange
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync((TodoItem)null!);
+
+            // Act
+            IActionResult result = await _controller.EditSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_NotFoundPartial", partialViewResult.ViewName);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Get_Should_Return_NotFoundPartial_When_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.TodoItemId = 0;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await _controller.EditSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_NotFoundPartial", partialViewResult.ViewName);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Get_Should_Return_AccessDeniedPartial_When_Permission_Level_Too_Low()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.View;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await _controller.EditSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_AccessDeniedPartial", partialViewResult.ViewName);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Get_Should_Return_PartialView_With_Model()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList = [];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList = [];
+            List<KanbanItem> kanbanItems = [];
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, true))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync(kanbanItems);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            IActionResult result = await controller.EditSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_EditSubtaskPartial", partialViewResult.ViewName);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
+            Assert.NotNull(model.ProgenyList);
+            Assert.NotNull(model.FamilyList);
+            Assert.NotNull(model.KanbanItems);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Get_Should_Populate_Progeny_And_Family_Lists()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList =
+            [
+                new() { Text = "Child 1", Value = "1" },
+                new() { Text = "Child 2", Value = "2" }
+            ];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList =
+            [
+                new() { Text = "Family 1", Value = "1" }
+            ];
+            List<KanbanItem> kanbanItems = [];
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, true))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync(kanbanItems);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            IActionResult result = await controller.EditSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal(2, model.ProgenyList.Count);
+            Assert.Single(model.FamilyList);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Get_Should_Load_KanbanItems_For_TodoItem()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList = [];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList = [];
+            List<KanbanItem> kanbanItems =
+            [
+                new() { KanbanItemId = 1, TodoItemId = TestSubtaskId },
+                new() { KanbanItemId = 2, TodoItemId = TestSubtaskId }
+            ];
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, true))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync(kanbanItems);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            IActionResult result = await controller.EditSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.NotNull(model.KanbanItems);
+            Assert.Equal(2, model.KanbanItems.Count);
+            mockKanbanItemsHttpClient.Verify(x => x.GetKanbanItemsForTodoItem(TestSubtaskId), Times.Once);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Get_Should_Set_Status_List()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            subtask.Status = (int)KinaUnaTypes.TodoStatusType.InProgress;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList = [];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList = [];
+            List<KanbanItem> kanbanItems = [];
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, true))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync(kanbanItems);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            IActionResult result = await controller.EditSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.NotNull(model.StatusList);
+            Assert.NotEmpty(model.StatusList);
+        }
+
+        #endregion
+
+        #region EditSubtask (POST) Tests
+
+        [Fact]
+        public async Task EditSubtask_Post_Should_Return_NotFoundPartial_When_Existing_Subtask_Is_Null()
+        {
+            // Arrange
+            TodoViewModel inputModel = new(CreateMockBaseItemsViewModelForProgeny())
+            {
+                TodoItem = new TodoItem { TodoItemId = TestSubtaskId }
+            };
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync((TodoItem)null!);
+
+            // Act
+            IActionResult result = await _controller.EditSubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_NotFoundPartial", partialViewResult.ViewName);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Post_Should_Return_NotFoundPartial_When_Existing_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            TodoViewModel inputModel = new(CreateMockBaseItemsViewModelForProgeny())
+            {
+                TodoItem = new TodoItem { TodoItemId = TestSubtaskId }
+            };
+
+            TodoItem existingSubtask = CreateMockSubtaskForProgeny();
+            existingSubtask.TodoItemId = 0;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(existingSubtask);
+
+            // Act
+            IActionResult result = await _controller.EditSubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_NotFoundPartial", partialViewResult.ViewName);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Post_Should_Return_AccessDeniedPartial_When_Permission_Level_Too_Low()
+        {
+            // Arrange
+            TodoViewModel inputModel = new(CreateMockBaseItemsViewModelForProgeny())
+            {
+                TodoItem = new TodoItem { TodoItemId = TestSubtaskId }
+            };
+
+            TodoItem existingSubtask = CreateMockSubtaskForProgeny();
+            existingSubtask.ItemPerMission.PermissionLevel = PermissionLevel.View;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(existingSubtask);
+
+            // Act
+            IActionResult result = await _controller.EditSubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_AccessDeniedPartial", partialViewResult.ViewName);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Post_Should_Update_Subtask_And_Return_Parent_TodoItem()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    TodoItemId = TestSubtaskId,
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Updated Subtask",
+                    Description = "Updated Description",
+                    Status = 1,
+                    CreatedTime = DateTime.Now
+                }
+            };
+
+            inputModel.TodoItem.CreatedTime = DateTime.SpecifyKind(inputModel.TodoItem.CreatedTime, DateTimeKind.Unspecified);
+            TodoItem existingSubtask = CreateMockSubtaskForProgeny();
+            existingSubtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.Title = "Updated Subtask";
+            updatedSubtask.ParentTodoItemId = TestParentTodoItemId;
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                Title = "Parent Todo",
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                CreatedTime = DateTime.UtcNow
+            };
+
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(existingSubtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            IActionResult result = await controller.EditSubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("../Todos/_TodoDetailsPartial", partialViewResult.ViewName);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal(TestParentTodoItemId, model.TodoItem.TodoItemId);
+
+            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.IsAny<TodoItem>()), Times.Once);
+            mockTodoItemsHttpClient.Verify(x => x.GetTodoItem(TestParentTodoItemId), Times.Once);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Post_Should_Convert_Parent_TodoItem_Dates_To_User_Timezone()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    TodoItemId = TestSubtaskId,
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = TestFamilyId,
+                    Title = "Updated Subtask"
+                }
+            };
+
+            TodoItem existingSubtask = CreateMockSubtaskForProgeny();
+            existingSubtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.ParentTodoItemId = TestParentTodoItemId;
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                Title = "Parent Todo",
+                ProgenyId = TestProgenyId,
+                FamilyId = TestFamilyId,
+                CreatedTime = DateTime.UtcNow,
+                StartDate = DateTime.UtcNow.AddDays(-1),
+                DueDate = DateTime.UtcNow.AddDays(7),
+                CompletedDate = DateTime.UtcNow
+            };
+
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(existingSubtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            IActionResult result = await controller.EditSubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            // All dates should be converted from UTC to user timezone
+            Assert.NotEqual(default, model.TodoItem.CreatedTime);
+            Assert.NotNull(model.TodoItem.StartDate);
+            Assert.NotNull(model.TodoItem.DueDate);
+            Assert.NotNull(model.TodoItem.CompletedDate);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Post_Should_Handle_Null_Optional_Dates_For_Parent_TodoItem()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    TodoItemId = TestSubtaskId,
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = TestFamilyId,
+                    Title = "Updated Subtask"
+                }
+            };
+
+            TodoItem existingSubtask = CreateMockSubtaskForProgeny();
+            existingSubtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.ParentTodoItemId = TestParentTodoItemId;
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                Title = "Parent Todo",
+                ProgenyId = TestProgenyId,
+                FamilyId = TestFamilyId,
+                CreatedTime = DateTime.UtcNow,
+                StartDate = null,
+                DueDate = null,
+                CompletedDate = null
+            };
+
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(existingSubtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            IActionResult result = await controller.EditSubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            Assert.Null(model.TodoItem.StartDate);
+            Assert.Null(model.TodoItem.DueDate);
+            Assert.Null(model.TodoItem.CompletedDate);
+        }
+
+        [Fact]
+        public async Task EditSubtask_Post_Should_Call_UpdateSubtask_With_Correct_Data()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    TodoItemId = TestSubtaskId,
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Updated Subtask Title",
+                    Description = "Updated Description",
+                    Status = (int)KinaUnaTypes.TodoStatusType.Completed,
+                    CreatedTime = DateTime.Now
+                }
+            };
+
+            inputModel.TodoItem.CreatedTime = DateTime.SpecifyKind(inputModel.TodoItem.CreatedTime, DateTimeKind.Unspecified);
+            TodoItem existingSubtask = CreateMockSubtaskForProgeny();
+            existingSubtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.ParentTodoItemId = TestParentTodoItemId;
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                CreatedTime = DateTime.UtcNow
+            };
+
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(existingSubtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            await controller.EditSubtask(inputModel);
+
+            // Assert
+            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(t =>
+                t.TodoItemId == TestSubtaskId &&
+                t.Title == "Updated Subtask Title" &&
+                t.Description == "Updated Description" &&
+                t.Status == (int)KinaUnaTypes.TodoStatusType.Completed)), Times.Once);
+        }
+
+        #endregion
+
+        #region DeleteSubtask (GET) Tests
+
+        [Fact]
+        public async Task DeleteSubtask_Get_Should_Return_NotFoundPartial_When_Subtask_Is_Null()
+        {
+            // Arrange
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync((TodoItem)null!);
+
+            // Act
+            IActionResult result = await _controller.DeleteSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_NotFoundPartial", partialViewResult.ViewName);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Get_Should_Return_NotFoundPartial_When_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.TodoItemId = 0;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await _controller.DeleteSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_NotFoundPartial", partialViewResult.ViewName);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Get_Should_Return_AccessDeniedPartial_When_Permission_Level_Too_Low()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await _controller.DeleteSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_AccessDeniedPartial", partialViewResult.ViewName);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Get_Should_Return_PartialView_With_Model()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Admin;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+
+            // Act
+            IActionResult result = await _controller.DeleteSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_DeleteSubtaskPartial", partialViewResult.ViewName);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
+            Assert.NotNull(model.TodoItem);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Get_Should_Set_Progeny_With_Picture_Link_When_ProgenyId_Greater_Than_Zero()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Admin;
+            subtask.ProgenyId = TestProgenyId;
+            subtask.FamilyId = 0;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+
+            // Act
+            IActionResult result = await _controller.DeleteSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.NotNull(model.TodoItem.Progeny);
+            Assert.Equal(TestProgenyId, model.TodoItem.Progeny.Id);
+            Assert.NotNull(model.TodoItem.Progeny.PictureLink);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Get_Should_Set_Family_With_Picture_Link_When_FamilyId_Greater_Than_Zero()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForFamily();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Admin;
+            subtask.ProgenyId = 0;
+            subtask.FamilyId = TestFamilyId;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForFamily();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, 0, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+
+            // Act
+            IActionResult result = await _controller.DeleteSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.NotNull(model.TodoItem.Family);
+            Assert.Equal(TestFamilyId, model.TodoItem.Family.FamilyId);
+            Assert.NotNull(model.TodoItem.Family.PictureLink);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Get_Should_Set_Status_List()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Admin;
+            subtask.Status = (int)KinaUnaTypes.TodoStatusType.Completed;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+
+            // Act
+            IActionResult result = await _controller.DeleteSubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.NotNull(model.StatusList);
+            Assert.NotEmpty(model.StatusList);
+        }
+
+        #endregion
+
+        #region DeleteSubtask (POST) Tests
+
+        [Fact]
+        public async Task DeleteSubtask_Post_Should_Return_NotFound_When_Subtask_Is_Null()
+        {
+            // Arrange
+            TodoViewModel inputModel = new(CreateMockBaseItemsViewModelForProgeny())
+            {
+                TodoItem = new TodoItem { TodoItemId = TestSubtaskId }
+            };
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync((TodoItem)null!);
+
+            // Act
+            IActionResult result = await _controller.DeleteSubtask(inputModel);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Post_Should_Return_NotFound_When_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            TodoViewModel inputModel = new(CreateMockBaseItemsViewModelForProgeny())
+            {
+                TodoItem = new TodoItem { TodoItemId = TestSubtaskId }
+            };
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.TodoItemId = 0;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await _controller.DeleteSubtask(inputModel);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Post_Should_Return_Unauthorized_When_Permission_Level_Too_Low()
+        {
+            // Arrange
+            TodoViewModel inputModel = new(CreateMockBaseItemsViewModelForProgeny())
+            {
+                TodoItem = new TodoItem { TodoItemId = TestSubtaskId }
+            };
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await _controller.DeleteSubtask(inputModel);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Post_Should_Delete_Subtask_And_Return_Parent_TodoItem()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    TodoItemId = TestSubtaskId,
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0
+                }
+            };
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Admin;
+            subtask.ParentTodoItemId = TestParentTodoItemId;
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                Title = "Parent Todo",
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                CreatedTime = DateTime.UtcNow
+            };
+
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.DeleteSubtask(TestSubtaskId))
+                .ReturnsAsync(true);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            IActionResult result = await controller.DeleteSubtask(inputModel);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
+            Assert.Equal(TestParentTodoItemId, resultTodoItem.TodoItemId);
+
+            _mockSubtasksHttpClient.Verify(x => x.DeleteSubtask(TestSubtaskId), Times.Once);
+            mockTodoItemsHttpClient.Verify(x => x.GetTodoItem(TestParentTodoItemId), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Post_Should_Convert_Parent_TodoItem_Dates_To_User_Timezone()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    TodoItemId = TestSubtaskId,
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0
+                }
+            };
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Admin;
+            subtask.ParentTodoItemId = TestParentTodoItemId;
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                Title = "Parent Todo",
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                CreatedTime = DateTime.UtcNow,
+                StartDate = DateTime.UtcNow.AddDays(-1),
+                DueDate = DateTime.UtcNow.AddDays(7),
+                CompletedDate = DateTime.UtcNow
+            };
+
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.DeleteSubtask(TestSubtaskId))
+                .ReturnsAsync(true);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            IActionResult result = await controller.DeleteSubtask(inputModel);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
+
+            // All dates should be converted from UTC to user timezone
+            Assert.NotEqual(default, resultTodoItem.CreatedTime);
+            Assert.NotNull(resultTodoItem.StartDate);
+            Assert.NotNull(resultTodoItem.DueDate);
+            Assert.NotNull(resultTodoItem.CompletedDate);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Post_Should_Handle_Null_Optional_Dates_For_Parent_TodoItem()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    TodoItemId = TestSubtaskId,
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0
+                }
+            };
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Admin;
+            subtask.ParentTodoItemId = TestParentTodoItemId;
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                Title = "Parent Todo",
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                CreatedTime = DateTime.UtcNow,
+                StartDate = null,
+                DueDate = null,
+                CompletedDate = null
+            };
+
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.DeleteSubtask(TestSubtaskId))
+                .ReturnsAsync(true);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            IActionResult result = await controller.DeleteSubtask(inputModel);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
+
+            Assert.Null(resultTodoItem.StartDate);
+            Assert.Null(resultTodoItem.DueDate);
+            Assert.Null(resultTodoItem.CompletedDate);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Post_Should_Use_Subtask_ProgenyId_And_FamilyId()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    TodoItemId = TestSubtaskId,
+                    ProgenyId = 999, // Should use subtask's values instead
+                    FamilyId = 888
+                }
+            };
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Admin;
+            subtask.ProgenyId = TestProgenyId;
+            subtask.FamilyId = TestFamilyId;
+            subtask.ParentTodoItemId = TestParentTodoItemId;
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                CreatedTime = DateTime.UtcNow
+            };
+
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.DeleteSubtask(TestSubtaskId))
+                .ReturnsAsync(true);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            await controller.DeleteSubtask(inputModel);
+
+            // Assert
+            _mockViewModelSetupService.Verify(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteSubtask_Post_Should_Call_DeleteSubtask_With_Correct_Id()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    TodoItemId = TestSubtaskId,
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0
+                }
+            };
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Admin;
+            subtask.ParentTodoItemId = TestParentTodoItemId;
+
+            TodoItem parentTodoItem = new()
+            {
+                TodoItemId = TestParentTodoItemId,
+                CreatedTime = DateTime.UtcNow
+            };
+
+            Mock<ITodoItemsHttpClient> mockTodoItemsHttpClient = new();
+            mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+                .ReturnsAsync(parentTodoItem);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.DeleteSubtask(TestSubtaskId))
+                .ReturnsAsync(true);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                mockTodoItemsHttpClient.Object,
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                Mock.Of<IKanbanItemsHttpClient>(),
+                Mock.Of<IKanbanBoardsHttpClient>());
+            SetupControllerContextForController(controller);
+
+            // Act
+            await controller.DeleteSubtask(inputModel);
+
+            // Assert
+            _mockSubtasksHttpClient.Verify(x => x.DeleteSubtask(TestSubtaskId), Times.Once);
+        }
+
+        #endregion
     }
 }
