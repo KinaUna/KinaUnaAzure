@@ -1,550 +1,555 @@
-﻿//using KinaUna.Data.Contexts;
-//using KinaUna.Data.Models;
-//using KinaUna.Data.Models.DTOs;
-//using KinaUnaProgenyApi.Services;
-//using KinaUnaProgenyApi.Services.CalendarServices;
-//using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.Caching.Distributed;
-//using Microsoft.Extensions.Caching.Memory;
-//using Microsoft.Extensions.Options;
-//using Moq;
-
-//namespace KinaUnaProgenyApi.Tests.Services
-//{
-//    public class TimeLineServiceTests
-//    {
-//        private readonly DateTime _sampleDateTime = new(2020, 1, 1, 10, 0, 0, DateTimeKind.Utc);
-//        private readonly Mock<ITimelineFilteringService> _timelineFilteringServiceMock = new();
-//        private readonly Mock<ICalendarService> _calendarServiceMock = new();
-//        [Fact]
-//        public async Task GetTimeLineItem_Should_Return_TimeLineItem_Object_When_Id_Is_Valid()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTimeLineItem_Should_Return_TimeLineItem_Object_When_Id_Is_Valid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-
-//            TimeLineItem timeLineItem1 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "1",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            TimeLineItem timeLineItem2 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "2",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            context.Add(timeLineItem1);
-//            context.Add(timeLineItem2);
-//            await context.SaveChangesAsync();
-
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            
-//            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
-
-//            TimeLineItem resultTimeLineItem1 = await timelineService.GetTimeLineItem(1);
-//            TimeLineItem resultTimeLineItem2 = await timelineService.GetTimeLineItem(1); // Uses cache
-
-//            Assert.NotNull(resultTimeLineItem1);
-//            Assert.IsType<TimeLineItem>(resultTimeLineItem1);
-//            Assert.Equal(timeLineItem1.CreatedBy, resultTimeLineItem1.CreatedBy);
-//            Assert.Equal(timeLineItem1.CreatedTime, resultTimeLineItem1.CreatedTime);
-//            Assert.Equal(timeLineItem1.AccessLevel, resultTimeLineItem1.AccessLevel);
-//            Assert.Equal(timeLineItem1.ProgenyId, resultTimeLineItem1.ProgenyId);
-
-//            Assert.NotNull(resultTimeLineItem2);
-//            Assert.IsType<TimeLineItem>(resultTimeLineItem2);
-//            Assert.Equal(timeLineItem1.CreatedBy, resultTimeLineItem2.CreatedBy);
-//            Assert.Equal(timeLineItem1.CreatedTime, resultTimeLineItem2.CreatedTime);
-//            Assert.Equal(timeLineItem1.AccessLevel, resultTimeLineItem2.AccessLevel);
-//            Assert.Equal(timeLineItem1.ProgenyId, resultTimeLineItem2.ProgenyId);
-//        }
-
-//        [Fact]
-//        public async Task GetTimeLineItem_Should_Return_Null_When_Id_Is_Invalid()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTimeLineItem_Should_Return_Null_When_Id_Is_Invalid").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-
-//            TimeLineItem timeLineItem1 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "1",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            context.Add(timeLineItem1);
-//            await context.SaveChangesAsync();
-
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
-
-//            TimeLineItem resultTimeLineItem1 = await timelineService.GetTimeLineItem(2);
-//            TimeLineItem resultTimeLineItem2 = await timelineService.GetTimeLineItem(2); // Using cache
-
-//            Assert.Null(resultTimeLineItem1);
-//            Assert.Null(resultTimeLineItem2);
-//        }
-
-//        [Fact]
-//        public async Task AddTimeLineItem_Should_Save_TimeLineItem()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddTimeLineItem_Should_Save_TimeLineItem").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-
-//            TimeLineItem timeLineItem1 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "1",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            context.Add(timeLineItem1);
-//            await context.SaveChangesAsync();
-
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            // Mock TimelineFilteringService
-            
-//            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
-
-//            TimeLineItem timeLineItemToAdd = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "2",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            TimeLineItem addedTimeLineItem = await timelineService.AddTimeLineItem(timeLineItemToAdd);
-//            TimeLineItem? dbTimeLineItem = await context.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(ti => ti.TimeLineId == addedTimeLineItem.TimeLineId);
-//            TimeLineItem savedTimeLineItem = await timelineService.GetTimeLineItem(addedTimeLineItem.TimeLineId);
-
-//            Assert.NotNull(addedTimeLineItem);
-//            Assert.IsType<TimeLineItem>(addedTimeLineItem);
-//            Assert.Equal(timeLineItemToAdd.CreatedBy, addedTimeLineItem.CreatedBy);
-//            Assert.Equal(timeLineItemToAdd.CreatedTime, addedTimeLineItem.CreatedTime);
-//            Assert.Equal(timeLineItemToAdd.AccessLevel, addedTimeLineItem.AccessLevel);
-//            Assert.Equal(timeLineItemToAdd.ProgenyId, addedTimeLineItem.ProgenyId);
-
-//            if (dbTimeLineItem != null)
-//            {
-//                Assert.IsType<TimeLineItem>(dbTimeLineItem);
-//                Assert.Equal(timeLineItemToAdd.CreatedBy, dbTimeLineItem.CreatedBy);
-//                Assert.Equal(timeLineItemToAdd.CreatedTime, dbTimeLineItem.CreatedTime);
-//                Assert.Equal(timeLineItemToAdd.AccessLevel, dbTimeLineItem.AccessLevel);
-//                Assert.Equal(timeLineItemToAdd.ProgenyId, dbTimeLineItem.ProgenyId);
-//            }
-//            Assert.NotNull(savedTimeLineItem);
-//            Assert.IsType<TimeLineItem>(savedTimeLineItem);
-//            Assert.Equal(timeLineItemToAdd.CreatedBy, savedTimeLineItem.CreatedBy);
-//            Assert.Equal(timeLineItemToAdd.CreatedTime, savedTimeLineItem.CreatedTime);
-//            Assert.Equal(timeLineItemToAdd.AccessLevel, savedTimeLineItem.AccessLevel);
-//            Assert.Equal(timeLineItemToAdd.ProgenyId, savedTimeLineItem.ProgenyId);
-//        }
-
-//        [Fact]
-//        public async Task UpdateTimeLineItem_Should_Save_TimeLineItem()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateTimeLineItem_Should_Save_TimeLineItem").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-
-//            TimeLineItem timeLineItem1 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "1",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            TimeLineItem timeLineItem2 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "2",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            context.Add(timeLineItem1);
-//            context.Add(timeLineItem2);
-//            await context.SaveChangesAsync();
-
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
-
-//            TimeLineItem timeLineItemToUpdate = await timelineService.GetTimeLineItem(1);
-//            timeLineItemToUpdate.AccessLevel = 5;
-//            TimeLineItem updatedTimeLineItem = await timelineService.UpdateTimeLineItem(timeLineItemToUpdate);
-//            TimeLineItem? dbTimeLineItem = await context.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(ti => ti.TimeLineId == 1);
-//            TimeLineItem savedTimeLineItem = await timelineService.GetTimeLineItem(1);
-
-//            Assert.NotNull(updatedTimeLineItem);
-//            Assert.IsType<TimeLineItem>(updatedTimeLineItem);
-//            Assert.NotEqual(0, updatedTimeLineItem.TimeLineId);
-//            Assert.Equal("User1", updatedTimeLineItem.CreatedBy);
-//            Assert.Equal(5, updatedTimeLineItem.AccessLevel);
-//            Assert.Equal(1, updatedTimeLineItem.ProgenyId);
-
-//            if (dbTimeLineItem != null)
-//            {
-//                Assert.IsType<TimeLineItem>(dbTimeLineItem);
-//                Assert.NotEqual(0, dbTimeLineItem.TimeLineId);
-//                Assert.Equal("User1", dbTimeLineItem.CreatedBy);
-//                Assert.Equal(5, dbTimeLineItem.AccessLevel);
-//                Assert.Equal(1, dbTimeLineItem.ProgenyId);
-//            }
-
-//            Assert.NotNull(savedTimeLineItem);
-//            Assert.IsType<TimeLineItem>(savedTimeLineItem);
-//            Assert.NotEqual(0, savedTimeLineItem.TimeLineId);
-//            Assert.Equal("User1", savedTimeLineItem.CreatedBy);
-//            Assert.Equal(5, savedTimeLineItem.AccessLevel);
-//            Assert.Equal(1, savedTimeLineItem.ProgenyId);
-//        }
-
-//        [Fact]
-//        public async Task DeleteTimeLineItem_Should_Remove_TimeLineItem()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteTimeLineItem_Should_Remove_TimeLineItem").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-
-//            TimeLineItem timeLineItem1 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "1",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            TimeLineItem timeLineItem2 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "2",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            context.Add(timeLineItem1);
-//            context.Add(timeLineItem2);
-//            await context.SaveChangesAsync();
-
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
-
-//            int timeLineItemItemsCountBeforeDelete = context.TimeLineDb.Count();
-//            TimeLineItem timeLineItemToDelete = await timelineService.GetTimeLineItem(1);
-
-//            await timelineService.DeleteTimeLineItem(timeLineItemToDelete);
-//            TimeLineItem? deletedTimeLineItem = await context.TimeLineDb.SingleOrDefaultAsync(ti => ti.TimeLineId == 1);
-//            int timeLineItemItemsCountAfterDelete = context.TimeLineDb.Count();
-
-//            Assert.Null(deletedTimeLineItem);
-//            Assert.Equal(2, timeLineItemItemsCountBeforeDelete);
-//            Assert.Equal(1, timeLineItemItemsCountAfterDelete);
-//        }
-
-//        [Fact]
-//        public async Task GetTimeLineItemsList_Should_Return_List_Of_TimeLineItem_When_Progeny_Has_Saved_TimeLineItems()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTimeLineItemsList_Should_Return_List_Of_TimeLineItem_When_Progeny_Has_Saved_TimeLineItems").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-
-//            TimeLineItem timeLineItem1 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "1",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            TimeLineItem timeLineItem2 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "2",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            context.Add(timeLineItem1);
-//            context.Add(timeLineItem2);
-//            await context.SaveChangesAsync();
-
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
-
-//            List<TimeLineItem> timeLineItemsList = await timelineService.GetTimeLineList(1);
-//            List<TimeLineItem> timeLineItemsList2 = await timelineService.GetTimeLineList(1); // Test cached result.
-//            TimeLineItem firstTimeLineItem = timeLineItemsList.First();
-
-//            Assert.NotNull(timeLineItemsList);
-//            Assert.IsType<List<TimeLineItem>>(timeLineItemsList);
-//            Assert.Equal(2, timeLineItemsList.Count);
-//            Assert.NotNull(timeLineItemsList2);
-//            Assert.IsType<List<TimeLineItem>>(timeLineItemsList2);
-//            Assert.Equal(2, timeLineItemsList2.Count);
-//            Assert.NotNull(firstTimeLineItem);
-//            Assert.IsType<TimeLineItem>(firstTimeLineItem);
-//        }
-
-//        [Fact]
-//        public async Task GetTimeLineItemsList_Should_Return_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems()
-//        {
-
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTimeLineItemsList_Should_Return_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-
-//            TimeLineItem timeLineItem1 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "1",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            TimeLineItem timeLineItem2 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "2",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            context.Add(timeLineItem1);
-//            context.Add(timeLineItem2);
-//            await context.SaveChangesAsync();
-
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
-
-//            List<TimeLineItem> timeLineItemsList = await timelineService.GetTimeLineList(2);
-//            List<TimeLineItem> timeLineItemsList2 = await timelineService.GetTimeLineList(2); // Test cached result.
-
-//            Assert.NotNull(timeLineItemsList);
-//            Assert.IsType<List<TimeLineItem>>(timeLineItemsList);
-//            Assert.Empty(timeLineItemsList);
-//            Assert.NotNull(timeLineItemsList2);
-//            Assert.IsType<List<TimeLineItem>>(timeLineItemsList2);
-//            Assert.Empty(timeLineItemsList2);
-//        }
-
-//        [Fact]
-//        public async Task GetOnThisDayData_Should_Return_OnThisDayResponse_With_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
-//                .UseInMemoryDatabase("GetOnThisDayData_Should_Return_OnThisDayResponse_With_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-
-//            TimeLineItem timeLineItem1 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "1",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            TimeLineItem timeLineItem2 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime,
-//                ItemId = "2",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime,
-//            };
-
-//            context.Add(timeLineItem1);
-//            context.Add(timeLineItem2);
-//            await context.SaveChangesAsync();
-
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
-
-//            OnThisDayRequest onThisDayRequest = new()
-//            {
-//                ProgenyId = 2,
-//                Progenies = [2],
-//                ThisDayDateTime = _sampleDateTime,
-//                AccessLevel = 0,
-//                Skip = 0,
-//                NumberOfItems = 10,
-//                TagFilter = string.Empty,
-//                OnThisDayPeriod = OnThisDayPeriod.Year,
-//                TimeLineTypeFilter = []
-//            };
-
-//            UserInfo userInfo = new()
-//            {
-//                UserId = "User1",
-//                UserEmail = "test@test.com"
-//            };
-
-//            UserAccess userAccess1 = new()
-//            {
-//                ProgenyId = 1,
-//                UserId = "User1",
-//                AccessLevel = 0
-//            };
-
-//            UserAccess userAccess2 = new()
-//            {
-//                ProgenyId = 2,
-//                UserId = "User1",
-//                AccessLevel = 0
-//            };
-
-//            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, userInfo, [userAccess1, userAccess2]);
-
-//            Assert.NotNull(onThisDayResponse);
-//            Assert.IsType<OnThisDayResponse>(onThisDayResponse);
-//            Assert.Empty(onThisDayResponse.TimeLineItems);
-//            Assert.NotNull(onThisDayResponse.Request);
-//        }
-
-//        [Fact]
-//        public async Task GetOnThisDayData_Should_Return_OnThisDayResponse_With_List_Of_TimeLineItem_When_Progeny_Has_Saved_TimeLineItems()
-//        {
-//            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
-//                .UseInMemoryDatabase("GetOnThisDayData_Should_Return_OnThisDayResponse_With_List_Of_TimeLineItem_When_Progeny_Has_Saved_TimeLineItems").Options;
-//            await using ProgenyDbContext context = new(dbOptions);
-
-//            TimeLineItem timeLineItem1 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime - TimeSpan.FromDays(14),
-//                ItemId = "1",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime - TimeSpan.FromDays(14),
-//            };
-
-//            TimeLineItem timeLineItem2 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime - TimeSpan.FromDays(7),
-//                ItemId = "2",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime - TimeSpan.FromDays(7),
-//            };
-
-//            TimeLineItem timeLineItem3 = new()
-//            {
-//                ProgenyId = 1,
-//                AccessLevel = 0,
-//                CreatedBy = "User1",
-//                CreatedTime = _sampleDateTime - TimeSpan.FromDays(2),
-//                ItemId = "3",
-//                ItemType = 1,
-//                ProgenyTime = _sampleDateTime - TimeSpan.FromDays(2),
-//            };
-
-//            context.Add(timeLineItem1);
-//            context.Add(timeLineItem2);
-//            context.Add(timeLineItem3);
-//            await context.SaveChangesAsync();
-            
-//            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-//            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-//            TimelineService timelineService = new(context, _timelineFilteringServiceMock.Object, memoryCache, _calendarServiceMock.Object);
-
-//            OnThisDayRequest onThisDayRequest = new()
-//            {
-//                ProgenyId = 1,
-//                Progenies = [1, 2],
-//                ThisDayDateTime = _sampleDateTime,
-//                AccessLevel = 0,
-//                Skip = 0,
-//                NumberOfItems = 10,
-//                TagFilter = string.Empty,
-//                OnThisDayPeriod = OnThisDayPeriod.Week,
-//                TimeLineTypeFilter = []
-//            };
-
-//            UserInfo userInfo = new()
-//            {
-//                UserId = "User1",
-//                UserEmail = "test@test.com"
-//            };
-
-//            UserAccess userAccess1 = new()
-//            {
-//                ProgenyId = 1,
-//                UserId = "User1",
-//                AccessLevel = 0
-//            };
-
-//            UserAccess userAccess2 = new()
-//            {
-//                ProgenyId = 2,
-//                UserId = "User1",
-//                AccessLevel = 0
-//            };
-
-//            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, userInfo, [userAccess1, userAccess2]);
-
-//            Assert.NotNull(onThisDayResponse);
-//            Assert.IsType<OnThisDayResponse>(onThisDayResponse);
-//            Assert.NotEmpty(onThisDayResponse.TimeLineItems);
-//            Assert.Equal(2, onThisDayResponse.TimeLineItems.Count);
-//            Assert.Equal(0, onThisDayResponse.RemainingItemsCount);
-//        }
-//    }
-//}
+﻿using KinaUna.Data.Contexts;
+using KinaUna.Data.Models;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CalendarServices;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Moq;
+using Newtonsoft.Json;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data;
+
+namespace KinaUnaProgenyApi.Tests.Services
+{
+    public class TimelineServiceTests
+    {
+        private static ProgenyDbContext GetInMemoryDbContext(string dbName)
+        {
+            DbContextOptions<ProgenyDbContext> options = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase(databaseName: dbName)
+                .Options;
+            return new ProgenyDbContext(options);
+        }
+
+        private static IDistributedCache GetMemoryCache()
+        {
+            IOptions<MemoryDistributedCacheOptions> options = Options.Create(new MemoryDistributedCacheOptions());
+            return new MemoryDistributedCache(options);
+        }
+
+        private UserInfo CreateTestUser(string id = "testuser@test.com")
+        {
+            return new UserInfo
+            {
+                UserId = id,
+                UserEmail = id,
+                Timezone = TimeZoneInfo.Utc.Id
+            };
+        }
+
+        [Fact]
+        public async Task GetTimeLineItem_Returns_Item_When_Permission_Granted()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(GetTimeLineItem_Returns_Item_When_Permission_Granted));
+            IDistributedCache cache = GetMemoryCache();
+
+            TimeLineItem tlItem = new()
+            {
+                ItemId = "1",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 1,
+                FamilyId = 0,
+                ProgenyTime = DateTime.UtcNow,
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow
+            };
+            context.TimeLineDb.Add(tlItem);
+            await context.SaveChangesAsync();
+
+            Mock<IAccessManagementService> accessMock = new();
+            accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 1, It.IsAny<UserInfo>(), PermissionLevel.View))
+                      .ReturnsAsync(true);
+
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+            Mock<ICalendarService> calendarMock = new();
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+
+            UserInfo user = CreateTestUser();
+            TimeLineItem? result = await service.GetTimeLineItem(tlItem.TimeLineId, user);
+
+            Assert.NotNull(result);
+            Assert.Equal("1", result!.ItemId);
+        }
+
+        [Fact]
+        public async Task GetTimeLineItem_Returns_Null_When_No_Permission()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(GetTimeLineItem_Returns_Null_When_No_Permission));
+            IDistributedCache cache = GetMemoryCache();
+
+            TimeLineItem tlItem = new()
+            {
+                ItemId = "2",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 1,
+                ProgenyTime = DateTime.UtcNow,
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow
+            };
+            context.TimeLineDb.Add(tlItem);
+            await context.SaveChangesAsync();
+
+            Mock<IAccessManagementService> accessMock = new();
+            accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 2, It.IsAny<UserInfo>(), PermissionLevel.View))
+                      .ReturnsAsync(false);
+
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+            Mock<ICalendarService> calendarMock = new();
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+
+            UserInfo user = CreateTestUser();
+            TimeLineItem? result = await service.GetTimeLineItem(tlItem.TimeLineId, user);
+
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task AddTimeLineItem_Adds_And_Caches_When_Permissions_OK()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(AddTimeLineItem_Adds_And_Caches_When_Permissions_OK));
+            IDistributedCache cache = GetMemoryCache();
+
+            Mock<IAccessManagementService> accessMock = new();
+            accessMock.Setup(x => x.HasProgenyPermission(1, It.IsAny<UserInfo>(), PermissionLevel.Add)).ReturnsAsync(true);
+
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+            Mock<ICalendarService> calendarMock = new();
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+
+            UserInfo user = CreateTestUser();
+            TimeLineItem newItem = new()
+            {
+                ItemId = "10",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 1,
+                FamilyId = 0,
+                ProgenyTime = DateTime.UtcNow,
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow
+            };
+
+            TimeLineItem? added = await service.AddTimeLineItem(newItem, user);
+
+            Assert.NotNull(added);
+            Assert.True(added!.TimeLineId > 0);
+            // verify cached copy exists via direct cache read
+            string? cached = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + added.TimeLineId);
+            Assert.False(string.IsNullOrEmpty(cached));
+            TimeLineItem? deserialized = JsonConvert.DeserializeObject<TimeLineItem>(cached!);
+            Assert.Equal("10", deserialized!.ItemId);
+        }
+
+        [Fact]
+        public async Task AddTimeLineItem_Returns_Null_When_Already_Exists()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(AddTimeLineItem_Returns_Null_When_Already_Exists));
+            IDistributedCache cache = GetMemoryCache();
+
+            TimeLineItem existing = new()
+            {
+                ItemId = "20",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 1,
+                ProgenyTime = DateTime.UtcNow,
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow
+            };
+            context.TimeLineDb.Add(existing);
+            await context.SaveChangesAsync();
+
+            Mock<IAccessManagementService> accessMock = new();
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+            Mock<ICalendarService> calendarMock = new();
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+            UserInfo user = CreateTestUser();
+
+            TimeLineItem attempt = new()
+            {
+                ItemId = "20",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 1,
+                ProgenyTime = DateTime.UtcNow,
+                CreatedBy = "u2",
+                CreatedTime = DateTime.UtcNow
+            };
+
+            TimeLineItem? result = await service.AddTimeLineItem(attempt, user);
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateTimeLineItem_Updates_When_Permission_Edit()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(UpdateTimeLineItem_Updates_When_Permission_Edit));
+            IDistributedCache cache = GetMemoryCache();
+
+            TimeLineItem original = new()
+            {
+                ItemId = "30",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Note,
+                ProgenyId = 1,
+                FamilyId = 0,
+                ProgenyTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow.AddDays(-1)
+            };
+            context.TimeLineDb.Add(original);
+            await context.SaveChangesAsync();
+
+            Mock<IAccessManagementService> accessMock = new();
+            accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 30, It.IsAny<UserInfo>(), PermissionLevel.Edit))
+                      .ReturnsAsync(true);
+            // note: HasItemPermission uses parsed ItemId; item.ItemId will be "30" -> int 30
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+            Mock<ICalendarService> calendarMock = new();
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+            UserInfo user = CreateTestUser();
+            DateTime newProgenyTime = DateTime.UtcNow;
+            TimeLineItem updated = new()
+            {
+                TimeLineId = original.TimeLineId,
+                ItemId = "30",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Note,
+                ProgenyId = 1,
+                FamilyId = 0,
+                ProgenyTime = newProgenyTime,
+            };
+
+            TimeLineItem? result = await service.UpdateTimeLineItem(updated, user);
+
+            Assert.NotNull(result);
+            Assert.Equal(newProgenyTime, result!.ProgenyTime);
+            // confirm DB was updated
+            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(original.TimeLineId);
+            Assert.Equal(newProgenyTime, dbItem!.ProgenyTime);
+        }
+
+        [Fact]
+        public async Task UpdateTimeLineItem_Returns_Null_When_No_Edit_Permission()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(UpdateTimeLineItem_Returns_Null_When_No_Edit_Permission));
+            IDistributedCache cache = GetMemoryCache();
+
+            TimeLineItem original = new()
+            {
+                ItemId = "40",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Note,
+                ProgenyId = 1,
+                FamilyId = 0,
+                ProgenyTime = DateTime.UtcNow,
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow
+            };
+            context.TimeLineDb.Add(original);
+            await context.SaveChangesAsync();
+
+            Mock<IAccessManagementService> accessMock = new();
+            accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 40, It.IsAny<UserInfo>(), PermissionLevel.Edit))
+                      .ReturnsAsync(false);
+
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+            Mock<ICalendarService> calendarMock = new();
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+            UserInfo user = CreateTestUser();
+
+            TimeLineItem updated = new()
+            {
+                TimeLineId = original.TimeLineId,
+                ItemId = "40",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Note,
+                ProgenyId = 1,
+                FamilyId = 0,
+                ProgenyTime = original.ProgenyTime,
+            };
+
+            TimeLineItem? result = await service.UpdateTimeLineItem(updated, user);
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task DeleteTimeLineItem_Removes_When_Admin_Permission()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(DeleteTimeLineItem_Removes_When_Admin_Permission));
+            IDistributedCache cache = GetMemoryCache();
+
+            TimeLineItem toDelete = new()
+            {
+                ItemId = "50",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 1,
+                ProgenyTime = DateTime.UtcNow,
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow
+            };
+            context.TimeLineDb.Add(toDelete);
+            await context.SaveChangesAsync();
+
+            Mock<IAccessManagementService> accessMock = new();
+            accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 50, It.IsAny<UserInfo>(), PermissionLevel.Admin))
+                      .ReturnsAsync(true);
+
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+            Mock<ICalendarService> calendarMock = new();
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+            UserInfo user = CreateTestUser();
+
+            TimeLineItem input = new()
+            {
+                TimeLineId = toDelete.TimeLineId,
+                ItemId = "50",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 1,
+                FamilyId = 0
+            };
+
+            TimeLineItem? result = await service.DeleteTimeLineItem(input, user);
+            Assert.NotNull(result);
+
+            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(toDelete.TimeLineId);
+            Assert.Null(dbItem);
+        }
+
+        [Fact]
+        public async Task DeleteTimeLineItem_Returns_Null_When_No_Admin_Permission()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(DeleteTimeLineItem_Returns_Null_When_No_Admin_Permission));
+            IDistributedCache cache = GetMemoryCache();
+
+            TimeLineItem toDelete = new()
+            {
+                ItemId = "60",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 1,
+                ProgenyTime = DateTime.UtcNow,
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow
+            };
+            context.TimeLineDb.Add(toDelete);
+            await context.SaveChangesAsync();
+
+            Mock<IAccessManagementService> accessMock = new();
+            accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 60, It.IsAny<UserInfo>(), PermissionLevel.Admin))
+                      .ReturnsAsync(false);
+
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+            Mock<ICalendarService> calendarMock = new();
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+            UserInfo user = CreateTestUser();
+
+            TimeLineItem input = new()
+            {
+                TimeLineId = toDelete.TimeLineId,
+                ItemId = "60",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 1,
+                FamilyId = 0
+            };
+
+            TimeLineItem? result = await service.DeleteTimeLineItem(input, user);
+            Assert.Null(result);
+            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(toDelete.TimeLineId);
+            Assert.NotNull(dbItem);
+        }
+
+        [Fact]
+        public async Task GetTimeLineItemByItemId_Returns_Item_When_Valid_And_Permission()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(GetTimeLineItemByItemId_Returns_Item_When_Valid_And_Permission));
+            IDistributedCache cache = GetMemoryCache();
+
+            TimeLineItem item = new()
+            {
+                ItemId = "70",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 1,
+                ProgenyTime = DateTime.UtcNow,
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow
+            };
+            context.TimeLineDb.Add(item);
+            await context.SaveChangesAsync();
+
+            Mock<IAccessManagementService> accessMock = new();
+            accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 70, It.IsAny<UserInfo>(), PermissionLevel.View))
+                      .ReturnsAsync(true);
+
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+            Mock<ICalendarService> calendarMock = new();
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+            UserInfo user = CreateTestUser();
+
+            TimeLineItem? result = await service.GetTimeLineItemByItemId("70", (int)KinaUnaTypes.TimeLineType.Photo, user);
+            Assert.NotNull(result);
+            Assert.Equal("70", result!.ItemId);
+        }
+
+        [Fact]
+        public async Task GetTimeLineList_Filters_By_Permission()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(GetTimeLineList_Filters_By_Permission));
+            IDistributedCache cache = GetMemoryCache();
+
+            TimeLineItem allowed = new()
+            {
+                ItemId = "80",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 2,
+                FamilyId = 0,
+                ProgenyTime = DateTime.UtcNow,
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow
+            };
+            TimeLineItem denied = new()
+            {
+                ItemId = "81",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 2,
+                FamilyId = 0,
+                ProgenyTime = DateTime.UtcNow,
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow
+            };
+            context.TimeLineDb.AddRange(allowed, denied);
+            await context.SaveChangesAsync();
+
+            Mock<IAccessManagementService> accessMock = new();
+            accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 80, It.IsAny<UserInfo>(), PermissionLevel.View))
+                      .ReturnsAsync(true);
+            accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 81, It.IsAny<UserInfo>(), PermissionLevel.View))
+                      .ReturnsAsync(false);
+
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+            Mock<ICalendarService> calendarMock = new();
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+            UserInfo user = CreateTestUser();
+
+            List<TimeLineItem>? list = await service.GetTimeLineList(2, 0, user);
+            Assert.Single(list);
+            Assert.Equal("80", list.First().ItemId);
+        }
+
+        [Fact]
+        public async Task GetOnThisDayData_Returns_Filtered_Response_With_Paging()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(GetOnThisDayData_Returns_Filtered_Response_With_Paging));
+            IDistributedCache cache = GetMemoryCache();
+
+            // Create 3 items for progeny 3
+            for (int i = 1; i <= 3; i++)
+            {
+                context.TimeLineDb.Add(new TimeLineItem
+                {
+                    ItemId = (300 + i).ToString(),
+                    ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                    ProgenyId = 3,
+                    ProgenyTime = DateTime.UtcNow.AddYears(-i),
+                    CreatedBy = "u",
+                    CreatedTime = DateTime.UtcNow.AddYears(-i)
+                });
+            }
+            await context.SaveChangesAsync();
+
+            Mock<IAccessManagementService> accessMock = new();
+            accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<UserInfo>(), PermissionLevel.View))
+                      .ReturnsAsync(true);
+
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+            // No tag/category/context filters are provided in this test, so mocks are not used.
+
+            Mock<ICalendarService> calendarMock = new();
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+            UserInfo user = CreateTestUser();
+
+            OnThisDayRequest req = new()
+            {
+                Progenies = new List<int> { 3 },
+                Families = new List<int>(),
+                NumberOfItems = 2,
+                Skip = 0,
+                SortOrder = 1 // descending
+            };
+
+            OnThisDayResponse? resp = await service.GetOnThisDayData(req, user);
+
+            Assert.NotNull(resp);
+            Assert.Equal(2, resp.TimeLineItems.Count);
+            Assert.True(resp.RemainingItemsCount >= 0);
+            Assert.Equal((DateTime.UtcNow.AddYears(-3).Year), resp.Request.FirstItemYear);
+        }
+
+        [Fact]
+        public async Task GetTimelineData_Includes_Recurring_Calendar_Items()
+        {
+            await using ProgenyDbContext context = GetInMemoryDbContext(nameof(GetTimelineData_Includes_Recurring_Calendar_Items));
+            IDistributedCache cache = GetMemoryCache();
+
+            // Create one timeline item for progeny 4
+            context.TimeLineDb.Add(new TimeLineItem
+            {
+                ItemId = "400",
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                ProgenyId = 4,
+                ProgenyTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "u",
+                CreatedTime = DateTime.UtcNow.AddDays(-1)
+            });
+            await context.SaveChangesAsync();
+
+            Mock<IAccessManagementService> accessMock = new();
+            accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<UserInfo>(), PermissionLevel.View))
+                      .ReturnsAsync(true);
+
+            Mock<ITimelineFilteringService> timelineFilteringMock = new();
+
+            Mock<ICalendarService> calendarMock = new();
+            // Return a calendar item with StartTime so it will be converted to a TimeLineItem
+            calendarMock.Setup(x => x.GetRecurringCalendarItemsLatestPosts(4, 0, It.IsAny<UserInfo>()))
+                        .ReturnsAsync(new List<CalendarItem>
+                        {
+                            new()
+                            {
+                                EventId = 999,
+                                ProgenyId = 4,
+                                StartTime = DateTime.UtcNow.AddMonths(-1),
+                                EndTime = DateTime.UtcNow.AddMonths(-1).AddHours(1),
+                                Context = "Recurring",
+                                Location = "Home"
+                            }
+                        });
+
+            TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
+            UserInfo user = CreateTestUser();
+
+            TimelineRequest req = new()
+            {
+                Progenies = new List<int> { 4 },
+                Families = new List<int>(),
+                NumberOfItems = 10,
+                Skip = 0,
+                SortOrder = 1
+            };
+
+            TimelineResponse? resp = await service.GetTimelineData(req, user);
+
+            Assert.NotNull(resp);
+            // original timeline item + calendar-based recurring item -> at least 2
+            Assert.True(resp.TimeLineItems.Count >= 2);
+            Assert.Equal((DateTime.UtcNow.AddDays(-1).Year), resp.Request.FirstItemYear);
+        }
+    }
+}
