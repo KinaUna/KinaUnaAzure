@@ -2703,5 +2703,846 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
         }
 
         #endregion
+
+        #region CopySubtask (GET) Tests
+
+        [Fact]
+        public async Task CopySubtask_Get_Should_Return_NotFound_When_Subtask_Is_Null()
+        {
+            // Arrange
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync((TodoItem)null!);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Get_Should_Return_NotFound_When_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.TodoItemId = 0;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Get_Should_Return_PartialView_With_Model()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList =
+            [
+                new() { Text = "Child 1", Value = "1" },
+        new() { Text = "Child 2", Value = "2" }
+            ];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList =
+            [
+                new() { Text = "Family 1", Value = "1" }
+            ];
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_CopySubtaskPartial", partialViewResult.ViewName);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
+            Assert.NotNull(model.ProgenyList);
+            Assert.NotNull(model.FamilyList);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Get_Should_Setup_ViewModel_With_Correct_ProgenyId_And_FamilyId()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ProgenyId = TestProgenyId;
+            subtask.FamilyId = TestFamilyId;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList = [];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList = [];
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            _mockViewModelSetupService.Verify(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, TestFamilyId, false), Times.Once);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Get_Should_Set_Properties_From_TodoItem()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.Title = "Original Subtask Title";
+            subtask.Description = "Original Description";
+            subtask.Status = (int)KinaUnaTypes.TodoStatusType.InProgress;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList = [];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList = [];
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal("Original Subtask Title", model.TodoItem.Title);
+            Assert.Equal("Original Description", model.TodoItem.Description);
+            Assert.Equal((int)KinaUnaTypes.TodoStatusType.InProgress, model.TodoItem.Status);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Get_Should_Populate_Progeny_And_Family_Lists()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList =
+            [
+                new() { Text = "Child 1", Value = "1" },
+        new() { Text = "Child 2", Value = "2" },
+        new() { Text = "Child 3", Value = "3" }
+            ];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList =
+            [
+                new() { Text = "Family 1", Value = "1" },
+        new() { Text = "Family 2", Value = "2" }
+            ];
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal(3, model.ProgenyList.Count);
+            Assert.Equal(2, model.FamilyList.Count);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Get_Should_Set_Status_List()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.Status = (int)KinaUnaTypes.TodoStatusType.Completed;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList = [];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList = [];
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.NotNull(model.StatusList);
+            Assert.NotEmpty(model.StatusList);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Get_Should_Handle_Subtask_With_Only_ProgenyId()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ProgenyId = TestProgenyId;
+            subtask.FamilyId = 0;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList = [];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList = [];
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal(TestProgenyId, model.TodoItem.ProgenyId);
+            Assert.Equal(0, model.TodoItem.FamilyId);
+
+            _mockViewModelSetupService.Verify(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false), Times.Once);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Get_Should_Handle_Subtask_With_Only_FamilyId()
+        {
+            // Arrange
+            TodoItem subtask = CreateMockSubtaskForFamily();
+            subtask.ProgenyId = 0;
+            subtask.FamilyId = TestFamilyId;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForFamily();
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList = [];
+            List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList = [];
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, 0, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockViewModelSetupService.Setup(x => x.GetProgenySelectList(0))
+                .ReturnsAsync(progenyList);
+            _mockViewModelSetupService.Setup(x => x.GetFamilySelectList(0))
+                .ReturnsAsync(familyList);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(TestSubtaskId);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal(0, model.TodoItem.ProgenyId);
+            Assert.Equal(TestFamilyId, model.TodoItem.FamilyId);
+
+            _mockViewModelSetupService.Verify(x => x.SetupViewModel(1, TestUserEmail, 0, TestFamilyId, false), Times.Once);
+        }
+
+        #endregion
+
+        #region CopySubtask (POST) Tests
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Add_Subtask_And_Return_PartialView()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Copied Subtask",
+                    Description = "Copied Description",
+                    Status = 0,
+                    CreatedTime = DateTime.Now
+                }
+            };
+
+            inputModel.TodoItem.CreatedTime = DateTime.SpecifyKind(inputModel.TodoItem.CreatedTime, DateTimeKind.Unspecified);
+
+            TodoItem copiedSubtask = CreateMockSubtaskForProgeny();
+            copiedSubtask.Title = "Copied Subtask";
+            List<Progeny> progenies = [CreateMockProgeny()];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(progenies);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_SubtaskCopiedPartial", partialViewResult.ViewName);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+            Assert.Equal("Copied Subtask", model.TodoItem.Title);
+            Assert.Equal(TestSubtaskId, model.TodoItem.TodoItemId);
+
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.IsAny<TodoItem>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Return_AccessDenied_When_User_Cannot_Add_To_Progeny()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Copied Subtask"
+                }
+            };
+
+            List<Progeny> progenies = []; // User has no access
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(progenies);
+            _mockFamiliesHttpClient.Setup(x => x.GetFamiliesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync([]);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_AccessDeniedPartial", partialViewResult.ViewName);
+
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.IsAny<TodoItem>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Return_AccessDenied_When_User_Cannot_Add_To_Family()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForFamily();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = 0,
+                    FamilyId = TestFamilyId,
+                    Title = "Copied Subtask"
+                }
+            };
+
+            List<Family> families = []; // User has no access
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, 0, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync([]);
+            _mockFamiliesHttpClient.Setup(x => x.GetFamiliesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(families);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_AccessDeniedPartial", partialViewResult.ViewName);
+
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.IsAny<TodoItem>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Allow_Copy_When_User_Has_Progeny_Access()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Copied Subtask"
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForProgeny();
+            List<Progeny> progenies = [CreateMockProgeny()];
+            progenies[0].Id = TestProgenyId;
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(progenies);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_SubtaskCopiedPartial", partialViewResult.ViewName);
+
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.IsAny<TodoItem>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Allow_Copy_When_User_Has_Family_Access()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForFamily();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = 0,
+                    FamilyId = TestFamilyId,
+                    Title = "Copied Subtask"
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForFamily();
+            List<Family> families = [CreateMockFamily()];
+            families[0].FamilyId = TestFamilyId;
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, 0, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync([]);
+            _mockFamiliesHttpClient.Setup(x => x.GetFamiliesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(families);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_SubtaskCopiedPartial", partialViewResult.ViewName);
+
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.IsAny<TodoItem>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Convert_CreatedTime_To_User_Timezone()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Copied Subtask"
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForProgeny();
+            copiedSubtask.CreatedTime = DateTime.UtcNow;
+            List<Progeny> progenies = [CreateMockProgeny()];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(progenies);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            // CreatedTime should be converted from UTC
+            Assert.NotEqual(default, model.TodoItem.CreatedTime);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Convert_Optional_Dates_To_User_Timezone()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Copied Subtask"
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForProgeny();
+            copiedSubtask.CreatedTime = DateTime.UtcNow;
+            copiedSubtask.StartDate = DateTime.UtcNow.AddDays(-1);
+            copiedSubtask.DueDate = DateTime.UtcNow.AddDays(7);
+            copiedSubtask.CompletedDate = DateTime.UtcNow;
+            List<Progeny> progenies = [CreateMockProgeny()];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(progenies);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            Assert.NotNull(model.TodoItem.StartDate);
+            Assert.NotNull(model.TodoItem.DueDate);
+            Assert.NotNull(model.TodoItem.CompletedDate);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Handle_Null_Optional_Dates()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Copied Subtask",
+                    StartDate = null,
+                    DueDate = null,
+                    CompletedDate = null
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForProgeny();
+            copiedSubtask.StartDate = null;
+            copiedSubtask.DueDate = null;
+            copiedSubtask.CompletedDate = null;
+            List<Progeny> progenies = [CreateMockProgeny()];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(progenies);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            Assert.Null(model.TodoItem.StartDate);
+            Assert.Null(model.TodoItem.DueDate);
+            Assert.Null(model.TodoItem.CompletedDate);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Set_Status_List()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Copied Subtask",
+                    Status = (int)KinaUnaTypes.TodoStatusType.InProgress
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForProgeny();
+            copiedSubtask.Status = (int)KinaUnaTypes.TodoStatusType.InProgress;
+            List<Progeny> progenies = [CreateMockProgeny()];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(progenies);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            TodoViewModel model = Assert.IsType<TodoViewModel>(partialViewResult.Model);
+
+            Assert.NotNull(model.StatusList);
+            Assert.NotEmpty(model.StatusList);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Check_Progeny_Permission_When_ProgenyId_Greater_Than_Zero()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Copied Subtask"
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForProgeny();
+            List<Progeny> progenies = [CreateMockProgeny()];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(progenies);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            await _controller.CopySubtask(inputModel);
+
+            // Assert
+            _mockProgenyHttpClient.Verify(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add), Times.Once);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Check_Family_Permission_When_FamilyId_Greater_Than_Zero()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForFamily();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = 0,
+                    FamilyId = TestFamilyId,
+                    Title = "Copied Subtask"
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForFamily();
+            List<Family> families = [CreateMockFamily()];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, 0, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync([]);
+            _mockFamiliesHttpClient.Setup(x => x.GetFamiliesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(families);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            await _controller.CopySubtask(inputModel);
+
+            // Assert
+            _mockFamiliesHttpClient.Verify(x => x.GetFamiliesUserCanAccess(PermissionLevel.Add), Times.Once);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Allow_Copy_When_User_Has_Access_To_Different_Progeny()
+        {
+            // Arrange
+            const int differentProgenyId = 99;
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = differentProgenyId,
+                    FamilyId = 0,
+                    Title = "Copied Subtask to Different Progeny"
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForProgeny();
+            copiedSubtask.ProgenyId = differentProgenyId;
+            List<Progeny> progenies =
+            [
+                CreateMockProgeny(),
+        new Progeny { Id = differentProgenyId, Name = "Different Child" }
+            ];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, differentProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(progenies);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            IActionResult result = await _controller.CopySubtask(inputModel);
+
+            // Assert
+            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
+            Assert.Equal("_SubtaskCopiedPartial", partialViewResult.ViewName);
+
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.IsAny<TodoItem>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Call_AddSubtask_With_Correct_Data()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Specific Copied Title",
+                    Description = "Specific Description",
+                    Status = (int)KinaUnaTypes.TodoStatusType.NotStarted
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForProgeny();
+            List<Progeny> progenies = [CreateMockProgeny()];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(progenies);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            await _controller.CopySubtask(inputModel);
+
+            // Assert
+            _mockSubtasksHttpClient.Verify(x => x.AddSubtask(It.Is<TodoItem>(t =>
+                t.Title == "Specific Copied Title" &&
+                t.Description == "Specific Description" &&
+                t.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted &&
+                t.ProgenyId == TestProgenyId &&
+                t.FamilyId == 0)), Times.Once);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Not_Check_Family_Permission_When_FamilyId_Is_Zero()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForProgeny();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = TestProgenyId,
+                    FamilyId = 0,
+                    Title = "Copied Subtask"
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForProgeny();
+            List<Progeny> progenies = [CreateMockProgeny()];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(progenies);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            await _controller.CopySubtask(inputModel);
+
+            // Assert
+            _mockFamiliesHttpClient.Verify(x => x.GetFamiliesUserCanAccess(PermissionLevel.Add), Times.Never);
+        }
+
+        [Fact]
+        public async Task CopySubtask_Post_Should_Not_Check_Progeny_Permission_When_ProgenyId_Is_Zero()
+        {
+            // Arrange
+            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModelForFamily();
+            TodoViewModel inputModel = new(baseModel)
+            {
+                TodoItem = new TodoItem
+                {
+                    ParentTodoItemId = TestParentTodoItemId,
+                    ProgenyId = 0,
+                    FamilyId = TestFamilyId,
+                    Title = "Copied Subtask"
+                }
+            };
+
+            TodoItem copiedSubtask = CreateMockSubtaskForFamily();
+            List<Family> families = [CreateMockFamily()];
+
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, 0, TestFamilyId, false))
+                .ReturnsAsync(baseModel);
+            _mockProgenyHttpClient.Setup(x => x.GetProgeniesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync([]);
+            _mockFamiliesHttpClient.Setup(x => x.GetFamiliesUserCanAccess(PermissionLevel.Add))
+                .ReturnsAsync(families);
+            _mockSubtasksHttpClient.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(copiedSubtask);
+
+            // Act
+            await _controller.CopySubtask(inputModel);
+
+            // Assert
+            // Progeny permission check is always called first, but family check should happen
+            _mockFamiliesHttpClient.Verify(x => x.GetFamiliesUserCanAccess(PermissionLevel.Add), Times.Once);
+        }
+
+        #endregion
     }
 }
