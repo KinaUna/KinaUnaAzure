@@ -16,7 +16,7 @@ namespace KinaUna.Data.Models
         [Key]
         public int SkillId { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [MaxLength(256)]
         public string Description { get; set; } = string.Empty;
