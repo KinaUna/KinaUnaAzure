@@ -115,13 +115,13 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
         private static void SetupControllerUser(ControllerBase controller, string userId, string userEmail)
         {
-            var claims = new List<Claim>
+            List<Claim> claims = new()
             {
-                new(ClaimTypes.NameIdentifier, userId),
-                new(ClaimTypes.Email, userEmail)
+                new Claim(ClaimTypes.NameIdentifier, userId),
+                new Claim(ClaimTypes.Email, userEmail)
             };
-            var identity = new ClaimsIdentity(claims, "TestAuthType");
-            var claimsPrincipal = new ClaimsPrincipal(identity);
+            ClaimsIdentity identity = new(claims, "TestAuthType");
+            ClaimsPrincipal claimsPrincipal = new(identity);
 
             controller.ControllerContext = new ControllerContext
             {
@@ -150,11 +150,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testProgeny);
 
             // Act
-            var result = await _controller.GetProgeny(TestProgenyId);
+            IActionResult? result = await _controller.GetProgeny(TestProgenyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedProgeny = Assert.IsType<Progeny>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            Progeny returnedProgeny = Assert.IsType<Progeny>(okResult.Value);
             Assert.Equal(TestProgenyId, returnedProgeny.Id);
             Assert.Equal("Test Progeny", returnedProgeny.Name);
         }
@@ -172,7 +172,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((Progeny)null!);
 
             // Act
-            var result = await _controller.GetProgeny(999);
+            IActionResult? result = await _controller.GetProgeny(999);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -206,7 +206,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ValidProgeny_ReturnsOkWithCreatedProgeny()
         {
             // Arrange
-            var newProgeny = new Progeny
+            Progeny newProgeny = new()
             {
                 Name = "New Progeny",
                 NickName = "NewNick",
@@ -216,7 +216,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 Admins = AdminUserEmail
             };
 
-            var createdProgeny = new Progeny
+            Progeny createdProgeny = new()
             {
                 Id = 3,
                 Name = newProgeny.Name,
@@ -237,11 +237,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(createdProgeny);
 
             // Act
-            var result = await _controller.Post(newProgeny);
+            IActionResult? result = await _controller.Post(newProgeny);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedProgeny = Assert.IsType<Progeny>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            Progeny returnedProgeny = Assert.IsType<Progeny>(okResult.Value);
             Assert.Equal(3, returnedProgeny.Id);
             Assert.Equal("New Progeny", returnedProgeny.Name);
             Assert.Equal(TestUserId, returnedProgeny.CreatedBy);
@@ -251,7 +251,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ProgenyWithoutPictureLink_SetsDefaultPictureLink()
         {
             // Arrange
-            var newProgeny = new Progeny
+            Progeny newProgeny = new()
             {
                 Name = "New Progeny",
                 NickName = "NewNick",
@@ -284,7 +284,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ProgenyWithRelativePictureLink_ResizesImage()
         {
             // Arrange
-            var newProgeny = new Progeny
+            Progeny newProgeny = new()
             {
                 Name = "New Progeny",
                 NickName = "NewNick",
@@ -294,7 +294,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 Admins = AdminUserEmail
             };
 
-            var resizedImagePath = "resized/path/image.jpg";
+            string resizedImagePath = "resized/path/image.jpg";
 
             _mockUserInfoService
                 .Setup(x => x.GetUserInfoByUserId(TestUserId))
@@ -319,7 +319,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ProgenyWithHttpPictureLink_DoesNotResizeImage()
         {
             // Arrange
-            var newProgeny = new Progeny
+            Progeny newProgeny = new()
             {
                 Name = "New Progeny",
                 NickName = "NewNick",
@@ -354,7 +354,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             SetupControllerUser(_controller, AdminUserId, AdminUserEmail);
 
-            var updateProgeny = new Progeny
+            Progeny updateProgeny = new()
             {
                 Id = TestProgenyId,
                 Name = "Updated Progeny",
@@ -364,7 +364,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 PictureLink = "https://example.com/updated.jpg"
             };
 
-            var updatedProgeny = new Progeny
+            Progeny updatedProgeny = new()
             {
                 Id = TestProgenyId,
                 Name = updateProgeny.Name,
@@ -389,11 +389,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(updatedProgeny);
 
             // Act
-            var result = await _controller.Put(TestProgenyId, updateProgeny);
+            IActionResult? result = await _controller.Put(TestProgenyId, updateProgeny);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedProgeny = Assert.IsType<Progeny>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            Progeny returnedProgeny = Assert.IsType<Progeny>(okResult.Value);
             Assert.Equal("Updated Progeny", returnedProgeny.Name);
             Assert.Equal(AdminUserId, returnedProgeny.ModifiedBy);
         }
@@ -402,7 +402,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Put_ProgenyNotFound_ReturnsNotFound()
         {
             // Arrange
-            var updateProgeny = new Progeny { Id = 999 };
+            Progeny updateProgeny = new() { Id = 999 };
 
             _mockUserInfoService
                 .Setup(x => x.GetUserInfoByUserId(TestUserId))
@@ -413,7 +413,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((Progeny)null!);
 
             // Act
-            var result = await _controller.Put(999, updateProgeny);
+            IActionResult? result = await _controller.Put(999, updateProgeny);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -425,7 +425,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             SetupControllerUser(_controller, OtherUserId, OtherUserEmail);
 
-            var updateProgeny = new Progeny
+            Progeny updateProgeny = new()
             {
                 Id = TestProgenyId,
                 Name = "Updated Progeny"
@@ -440,7 +440,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testProgeny);
 
             // Act
-            var result = await _controller.Put(TestProgenyId, updateProgeny);
+            IActionResult? result = await _controller.Put(TestProgenyId, updateProgeny);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -452,7 +452,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             SetupControllerUser(_controller, AdminUserId, AdminUserEmail);
 
-            var updateProgeny = new Progeny
+            Progeny updateProgeny = new()
             {
                 Id = TestProgenyId,
                 Name = "Updated Progeny"
@@ -471,7 +471,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((Progeny)null!);
 
             // Act
-            var result = await _controller.Put(TestProgenyId, updateProgeny);
+            IActionResult? result = await _controller.Put(TestProgenyId, updateProgeny);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -483,7 +483,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             SetupControllerUser(_controller, AdminUserId, AdminUserEmail);
 
-            var updateProgeny = new Progeny
+            Progeny updateProgeny = new()
             {
                 Id = TestProgenyId,
                 Name = "New Name",
@@ -552,7 +552,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testProgenyInfo);
 
             // Act
-            var result = await _controller.Delete(TestProgenyId);
+            IActionResult? result = await _controller.Delete(TestProgenyId);
 
             // Assert
             Assert.IsType<NoContentResult>(result);
@@ -571,7 +571,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((Progeny)null!);
 
             // Act
-            var result = await _controller.Delete(999);
+            IActionResult? result = await _controller.Delete(999);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -592,7 +592,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testProgeny);
 
             // Act
-            var result = await _controller.Delete(TestProgenyId);
+            IActionResult? result = await _controller.Delete(TestProgenyId);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -617,7 +617,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((Progeny)null!);
 
             // Act
-            var result = await _controller.Delete(TestProgenyId);
+            IActionResult? result = await _controller.Delete(TestProgenyId);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -712,11 +712,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testProgenyInfo);
 
             // Act
-            var result = await _controller.GetProgenyInfo(TestProgenyId);
+            IActionResult? result = await _controller.GetProgenyInfo(TestProgenyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedInfo = Assert.IsType<ProgenyInfo>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            ProgenyInfo returnedInfo = Assert.IsType<ProgenyInfo>(okResult.Value);
             Assert.Equal(TestProgenyId, returnedInfo.ProgenyId);
             Assert.Equal(TestUserEmail, returnedInfo.Email);
         }
@@ -734,7 +734,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((ProgenyInfo)null!);
 
             // Act
-            var result = await _controller.GetProgenyInfo(999);
+            IActionResult? result = await _controller.GetProgenyInfo(999);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -770,7 +770,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             SetupControllerUser(_controller, AdminUserId, AdminUserEmail);
 
-            var updateProgenyInfo = new ProgenyInfo
+            ProgenyInfo updateProgenyInfo = new()
             {
                 ProgenyInfoId = 1,
                 ProgenyId = TestProgenyId,
@@ -780,7 +780,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 Notes = "Updated notes"
             };
 
-            var updatedProgenyInfo = new ProgenyInfo
+            ProgenyInfo updatedProgenyInfo = new()
             {
                 ProgenyInfoId = 1,
                 ProgenyId = TestProgenyId,
@@ -804,11 +804,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(updatedProgenyInfo);
 
             // Act
-            var result = await _controller.UpdateProgenyInfo(TestProgenyId, updateProgenyInfo);
+            IActionResult? result = await _controller.UpdateProgenyInfo(TestProgenyId, updateProgenyInfo);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedInfo = Assert.IsType<ProgenyInfo>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            ProgenyInfo returnedInfo = Assert.IsType<ProgenyInfo>(okResult.Value);
             Assert.Equal("updated@example.com", returnedInfo.Email);
             Assert.Equal(AdminUserId, returnedInfo.ModifiedBy);
         }
@@ -817,7 +817,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task UpdateProgenyInfo_ProgenyNotFound_ReturnsNotFound()
         {
             // Arrange
-            var updateProgenyInfo = new ProgenyInfo
+            ProgenyInfo updateProgenyInfo = new()
             {
                 ProgenyId = 999
             };
@@ -831,7 +831,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((Progeny)null!);
 
             // Act
-            var result = await _controller.UpdateProgenyInfo(999, updateProgenyInfo);
+            IActionResult? result = await _controller.UpdateProgenyInfo(999, updateProgenyInfo);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -843,7 +843,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             SetupControllerUser(_controller, OtherUserId, OtherUserEmail);
 
-            var updateProgenyInfo = new ProgenyInfo
+            ProgenyInfo updateProgenyInfo = new()
             {
                 ProgenyId = TestProgenyId
             };
@@ -857,7 +857,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testProgeny);
 
             // Act
-            var result = await _controller.UpdateProgenyInfo(TestProgenyId, updateProgenyInfo);
+            IActionResult? result = await _controller.UpdateProgenyInfo(TestProgenyId, updateProgenyInfo);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -869,7 +869,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             SetupControllerUser(_controller, AdminUserId, AdminUserEmail);
 
-            var updateProgenyInfo = new ProgenyInfo
+            ProgenyInfo updateProgenyInfo = new()
             {
                 ProgenyId = OtherProgenyId
             };
@@ -883,7 +883,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testProgeny);
 
             // Act
-            var result = await _controller.UpdateProgenyInfo(TestProgenyId, updateProgenyInfo);
+            IActionResult? result = await _controller.UpdateProgenyInfo(TestProgenyId, updateProgenyInfo);
 
             // Assert
             Assert.IsType<BadRequestResult>(result);
@@ -895,7 +895,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             SetupControllerUser(_controller, AdminUserId, AdminUserEmail);
 
-            var updateProgenyInfo = new ProgenyInfo
+            ProgenyInfo updateProgenyInfo = new()
             {
                 ProgenyId = TestProgenyId
             };
@@ -913,7 +913,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((ProgenyInfo)null!);
 
             // Act
-            var result = await _controller.UpdateProgenyInfo(TestProgenyId, updateProgenyInfo);
+            IActionResult? result = await _controller.UpdateProgenyInfo(TestProgenyId, updateProgenyInfo);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -925,7 +925,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             SetupControllerUser(_controller, AdminUserId, AdminUserEmail);
 
-            var updateProgenyInfo = new ProgenyInfo
+            ProgenyInfo updateProgenyInfo = new()
             {
                 ProgenyId = TestProgenyId,
                 Email = "test@test.com"

@@ -413,7 +413,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            return Ok(timeLineItem);
+            return Ok(updatedTimelineItem);
         }
 
         /// <summary>
