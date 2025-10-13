@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
@@ -73,7 +74,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 PermissionLevel = PermissionLevel.None
             };
-            
+
+            if (progenyId == Constants.DefaultChildId)
+            {
+                // Default progeny, allow view access to everyone.
+                resultPermission.PermissionLevel = PermissionLevel.View;
+            }
+
             PermissionLevel highestPermission = PermissionLevel.None;
 
             // Check for inherited permissions.
@@ -1090,6 +1097,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             if (userInfo == null || progenyId == 0)
             {
                 return false;
+            }
+
+            if (progenyId == Constants.DefaultChildId && requiredLevel == PermissionLevel.View)
+            {
+                return true;
             }
 
             ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb
