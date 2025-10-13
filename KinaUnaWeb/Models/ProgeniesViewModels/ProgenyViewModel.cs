@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace KinaUnaWeb.Models.FamilyViewModels
+namespace KinaUnaWeb.Models.ProgeniesViewModels
 {
     /// <summary>
     /// Viewmodel for Progeny views.

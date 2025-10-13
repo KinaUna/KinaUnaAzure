@@ -4,7 +4,6 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
 using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
-using KinaUnaWeb.Models.FamilyViewModels;
 using KinaUnaWeb.Models.ProgeniesViewModels;
 using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services;
@@ -41,7 +40,7 @@ namespace KinaUnaWeb.Controllers
     {
         public IActionResult Index()
         {
-            return RedirectToAction("Index", "Family");
+            return RedirectToAction("Index", "Families");
         }
 
         [HttpGet]

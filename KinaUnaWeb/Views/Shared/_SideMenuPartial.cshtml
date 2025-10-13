@@ -146,7 +146,7 @@
                 @if (User.Identity?.IsAuthenticated ?? false)
                 {
                     <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="family">
-                        <a class="btn-sidebar leave-page" asp-controller="Family" asp-action="Index">
+                        <a class="btn-sidebar leave-page" asp-controller="Families" asp-action="Index">
                             <i class="material-icons sidebar-icon">people</i>
                             <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("My Family", PageNames.Layout, Model.LanguageId)

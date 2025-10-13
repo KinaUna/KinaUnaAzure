@@ -106,14 +106,6 @@
                     @await LocaleManager.GetTranslation("Location", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
-            <div class="col">
-                <a asp-controller="AccessManagement" asp-action="AddAccess" asp-route-progenyId="0" class="btn btn-add-user leave-page">
-                    <div class="space-10"></div>
-                    <i class="material-icons" style="font-size: 42px;">person</i>
-                    <div class="space-10"></div>
-                    @await LocaleManager.GetTranslation("User", PageNames.AddItem, Model.LanguageId)
-                </a>
-            </div>
         </div>
     </div>
     <div style="float: none; clear: both">

@@ -102,11 +102,6 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public IActionResult GetAddItemModalContent(string itemType, int progenyId)
         {
-            if (itemType == "user")
-            {
-                return RedirectToAction("AddAccess", "AccessManagement", new {progenyId});
-            }
-
             if (itemType == "progeny")
             {
                 return RedirectToAction("AddProgeny", "Progeny");
@@ -200,11 +195,6 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public IActionResult GetEditItemModalContent(string itemType, int itemId)
         {
-            if (itemType == "user")
-            {
-                return RedirectToAction("EditAccess", "AccessManagement", new { accessId = itemId });
-            }
-
             if (itemType == "progeny")
             {
                 return RedirectToAction("EditProgeny", "Progeny", new { progenyId = itemId });
@@ -301,11 +291,6 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public IActionResult GetDeleteItemModalContent(string itemType, int itemId)
         {
-            if (itemType == "user")
-            {
-                return RedirectToAction("DeleteAccess", "AccessManagement", new { accessId = itemId });
-            }
-
             if (itemType == "progeny")
             {
                 return RedirectToAction("DeleteProgeny", "Progeny", new { progenyId = itemId });

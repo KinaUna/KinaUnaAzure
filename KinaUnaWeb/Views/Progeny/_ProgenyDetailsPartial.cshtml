@@ -2,8 +2,9 @@
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
 @using KinaUna.Data.Models.AccessManagement
+@using KinaUnaWeb.Models.ProgeniesViewModels
 @using KinaUnaWeb.Services
-@model KinaUnaWeb.Models.FamilyViewModels.ProgenyDetailsViewModel
+@model ProgenyDetailsViewModel
 @inject ILocaleManager LocaleManager
 @{
     string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Details", PageNames.Progeny, Model.LanguageId);
@@ -180,8 +181,8 @@
             <div class="col-12">
                 <div class="space-20"></div>
                 <div class="row">
-                    <div class="col-12">
-                        <a data-delete-item-type="user" data-delete-item-item-id="@Model.UserAccess.AccessId" class="btn btn-warning delete-item-button float-right">
+                    <div class="col-12"> @* Todo: Implement remove my access *@
+                        <a data-delete-item-type="user" data-delete-item-item-id="@Model.CurrentProgeny.ProgenyPerMission.ProgenyPermissionId" class="btn btn-warning delete-item-button float-right">
                             <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Remove my access", PageNames.AddItem, Model.LanguageId)
                         </a>
                     </div>

@@ -1,4 +1,4 @@
-﻿namespace KinaUnaWeb.Models.FamilyViewModels
+﻿namespace KinaUnaWeb.Models.ProgeniesViewModels
 {
     /// <summary>
     /// ViewModel for the Progeny Details view.
@@ -11,6 +11,5 @@
         }
         
         public ProgenyInfo ProgenyInfo { get; set; }
-        public UserAccess UserAccess { get; set; }
     }
 }

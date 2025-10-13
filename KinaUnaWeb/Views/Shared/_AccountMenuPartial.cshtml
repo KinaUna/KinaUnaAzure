@@ -26,7 +26,7 @@
         @if (User.Identity != null && User.Identity.IsAuthenticated)
         {
             <div class="dropdown-item">
-                <form class="form-inline-fullwidth" asp-area="" asp-controller="Family" asp-action="Index" method="get">
+                <form class="form-inline-fullwidth" asp-area="" asp-controller="Families" asp-action="Index" method="get">
                     <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">people</i> @await LocaleManager.GetTranslation("My Family", PageNames.Layout, Model.LanguageId)</button>
                 </form>
             </div>
