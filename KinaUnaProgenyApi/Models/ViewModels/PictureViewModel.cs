@@ -20,10 +20,6 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         public string Owners { get; set; } // Comma separated list of emails.
         public int AccessLevel { get; set; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
         public string Author { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
-        public bool IsAdmin { get; set; }
         public int CommentThreadNumber { get; set; }
         public List<Comment> CommentsList { get; set; }
         public int CommentsCount { get; set; }
@@ -40,14 +36,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         public int PictureCount { get; set; }
         public int PrevPicture { get; set; }
         public int NextPicture { get; set; }
-        public PictureViewModel()
-        {
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
-        }
-
+        
         public void SetPicturePropertiesFromPictureItem(Picture picture)
         {
             PictureId = picture.PictureId;
@@ -57,9 +46,6 @@ namespace KinaUnaProgenyApi.Models.ViewModels
             PictureLink = picture.PictureLink1200;
             AccessLevel = picture.AccessLevel;
             Author = picture.Author;
-            AccessLevelListEn[picture.AccessLevel].Selected = true;
-            AccessLevelListDa[picture.AccessLevel].Selected = true;
-            AccessLevelListDe[picture.AccessLevel].Selected = true;
             Tags = picture.Tags;
             Location = picture.Location;
             Latitude = picture.Latitude;

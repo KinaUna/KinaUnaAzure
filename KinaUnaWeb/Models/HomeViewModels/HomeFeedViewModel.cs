@@ -79,7 +79,6 @@ namespace KinaUnaWeb.Models.HomeViewModels
             {
                 ProgenyId = 0,
                 Progeny = CurrentProgeny,
-                AccessLevel = (int)AccessLevel.Public,
                 PictureLink600 = hostUrl + "/photodb/0/default_temp.jpg"
             };
             tempPicture.ProgenyId = CurrentProgeny.Id;

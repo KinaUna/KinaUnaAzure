@@ -81,36 +81,7 @@ namespace KinaUna.Data.Extensions
             return true;
 
         }
-
-        /// <summary>
-        /// Copies the properties needed for updating the timeline item when user access has been added.
-        /// This should not be used to add a timeline item to the database, but for notifications only.
-        /// </summary>
-        /// <param name="currentTimeLineItem"></param>
-        /// <param name="userAccessItem"></param>
-        public static void CopyUserAccessItemPropertiesForAdd(this TimeLineItem currentTimeLineItem, UserAccess userAccessItem)
-        {
-            currentTimeLineItem.ProgenyId = userAccessItem.ProgenyId;
-            currentTimeLineItem.AccessLevel = userAccessItem.AccessLevel;
-            currentTimeLineItem.ItemId = userAccessItem.AccessId.ToString();
-            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
-        }
-
-        /// <summary>
-        /// Copies the properties needed for updating the timeline item when user access has been updated.
-        /// This should not be used to add a timeline item to the database, but for notifications only.
-        /// </summary>
-        /// <param name="currentTimeLineItem"></param>
-        /// <param name="userAccessItem"></param>
-        public static void CopyUserAccessItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, UserAccess userAccessItem)
-        {
-            currentTimeLineItem.ProgenyId = userAccessItem.ProgenyId;
-            currentTimeLineItem.AccessLevel = userAccessItem.AccessLevel;
-            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
-            currentTimeLineItem.ItemId = userAccessItem.AccessId.ToString();
-
-        }
-
+        
         /// <summary>
         /// Copies the properties needed for updating the timeline item when a contact item has been updated.
         /// </summary>

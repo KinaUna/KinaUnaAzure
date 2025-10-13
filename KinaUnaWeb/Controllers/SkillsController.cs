@@ -48,7 +48,6 @@ namespace KinaUnaWeb.Controllers
                     SkillItem =
                     {
                         ProgenyId = childId,
-                        AccessLevel = (int)AccessLevel.Public,
                         Description = "The skills list is empty.",
                         Category = "",
                         Name = "No items",

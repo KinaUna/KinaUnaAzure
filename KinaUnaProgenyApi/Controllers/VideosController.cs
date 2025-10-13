@@ -176,9 +176,6 @@ namespace KinaUnaProgenyApi.Controllers
                 AccessLevel = video.AccessLevel,
                 Author = video.Author
             };
-            model.AccessLevelListEn[video.AccessLevel].Selected = true;
-            model.AccessLevelListDa[video.AccessLevel].Selected = true;
-            model.AccessLevelListDe[video.AccessLevel].Selected = true;
             model.CommentThreadNumber = video.CommentThreadNumber;
             model.Tags = video.Tags;
             model.VideoNumber = 1;
