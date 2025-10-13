@@ -43,10 +43,8 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> UserInfoByEmail([FromBody] string id)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-            bool allowAccess = await CanCurrentUserAccessUserInfo(userEmail, id);
+            
+            bool allowAccess = await CanCurrentUserAccessUserInfo(currentUserInfo.UserEmail, id);
             
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(id);
             if (allowAccess && userInfo != null && userInfo.Id != 0)
@@ -84,11 +82,11 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                if (userEmail.Equals(id, StringComparison.CurrentCultureIgnoreCase))
+                if (currentUserInfo.UserEmail.Equals(id, StringComparison.CurrentCultureIgnoreCase))
                 {
                     UserInfo userInfoToAdd = new()
                     {
-                        UserEmail = userEmail,
+                        UserEmail = currentUserInfo.UserEmail,
                         ViewChild = 0,
                         UserId = User.GetUserId(),
                         Timezone = Constants.DefaultTimezone,
@@ -99,9 +97,8 @@ namespace KinaUnaProgenyApi.Controllers
                         userInfoToAdd.UserName = userInfoToAdd.UserEmail;
                     }
 
-                    _ = await userInfoService.AddUserInfo(userInfoToAdd);
+                    userInfo = await userInfoService.AddUserInfo(userInfoToAdd);
                     
-                    userInfo = await userInfoService.GetUserInfoByEmail(id);
                     userInfo.CanUserAddItems = false;
                     userInfo.ProgenyList = [];
                     userInfo.FamilyList = [];
@@ -388,50 +385,49 @@ namespace KinaUnaProgenyApi.Controllers
                 MiddleName = value.MiddleName,
                 LastName = value.LastName,
                 PhoneNumber = value.PhoneNumber,
-                ProfilePicture = value.ProfilePicture
+                ProfilePicture = value.ProfilePicture,
+                UserName = value.UserName,
+                IsKinaUnaAdmin = false,
+                Deleted = false,
+                DeletedTime = DateTime.UtcNow,
+                UpdatedTime = DateTime.UtcNow
             };
-
-            userInfo.UserName = value.UserName;
-            userInfo.IsKinaUnaAdmin = false;
-            userInfo.Deleted = false;
-            userInfo.DeletedTime = DateTime.UtcNow;
-            userInfo.UpdatedTime = DateTime.UtcNow;
             
-            userInfo = await userInfoService.AddUserInfo(userInfo);
+            UserInfo addedUserInfo = await userInfoService.AddUserInfo(userInfo);
             _ = await userInfoService.SetUserInfoByEmail(userInfo.UserEmail);
-            
-            userInfo.CanUserAddItems = false;
-            userInfo.ProgenyList = [];
-            userInfo.FamilyList = [];
-            List<int> progeniesWithAddPermission = await accessManagementService.ProgeniesUserCanAccess(userInfo, PermissionLevel.Add);
+
+            addedUserInfo.CanUserAddItems = false;
+            addedUserInfo.ProgenyList = [];
+            addedUserInfo.FamilyList = [];
+            List<int> progeniesWithAddPermission = await accessManagementService.ProgeniesUserCanAccess(addedUserInfo, PermissionLevel.Add);
             if (progeniesWithAddPermission.Count > 0)
             {
-                userInfo.CanUserAddItems = true;
+                addedUserInfo.CanUserAddItems = true;
                 foreach (int progenyId in progeniesWithAddPermission)
                 {
-                    Progeny progeny = await progenyService.GetProgeny(progenyId, userInfo);
+                    Progeny progeny = await progenyService.GetProgeny(progenyId, addedUserInfo);
                     if (progeny != null && progeny.Id != 0)
                     {
-                        userInfo.ProgenyList.Add(progeny);
+                        addedUserInfo.ProgenyList.Add(progeny);
                     }
                 }
             }
 
-            List<int> familiesWithAddPermission = await accessManagementService.FamiliesUserCanAccess(userInfo, PermissionLevel.Add);
+            List<int> familiesWithAddPermission = await accessManagementService.FamiliesUserCanAccess(addedUserInfo, PermissionLevel.Add);
             if (familiesWithAddPermission.Count > 0)
             {
-                userInfo.CanUserAddItems = true;
+                addedUserInfo.CanUserAddItems = true;
                 foreach (int familyId in familiesWithAddPermission)
                 {
-                    Family family = await familiesService.GetFamilyById(familyId, userInfo);
+                    Family family = await familiesService.GetFamilyById(familyId, addedUserInfo);
                     if (family != null && family.FamilyId != 0)
                     {
-                        userInfo.FamilyList.Add(family);
+                        addedUserInfo.FamilyList.Add(family);
                     }
                 }
             }
 
-            return Ok(userInfo);
+            return Ok(addedUserInfo);
         }
 
         /// <summary>
