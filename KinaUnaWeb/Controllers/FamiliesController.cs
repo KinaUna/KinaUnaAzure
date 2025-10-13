@@ -76,11 +76,6 @@ namespace KinaUnaWeb.Controllers
                 Family = await familiesHttpClient.GetFamily(familyId)
             };
             
-            if (model.Family.IsInAdminList(model.CurrentUser.UserEmail))
-            {
-                model.IsCurrentUserFamilyAdmin = true;
-            }
-
             return PartialView("_FamilyDetailsPartial", model);
         }
 

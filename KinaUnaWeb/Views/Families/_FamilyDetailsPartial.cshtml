@@ -51,7 +51,7 @@
                         <div class="col-12 bg-display-rich-text p-4">@Html.Raw(HttpUtility.HtmlDecode(Model.Family.Description))</div>
                     </div>
                 }
-                @if (Model.IsCurrentUserFamilyAdmin)
+                @if (Model.Family.FamilyPermission.PermissionLevel >= PermissionLevel.Edit)
                 {
                     <div class="space-10"></div>
                     <div class="row text-white">
