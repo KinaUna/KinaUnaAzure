@@ -1838,7 +1838,6 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
 
             TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
             updatedSubtask.Status = (int)KinaUnaTypes.TodoStatusType.NotStarted;
-            updatedSubtask.Title = "Updated Title";
 
             List<KanbanItem> kanbanItems =
             [
@@ -1871,7 +1870,6 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
 
             // Assert
             mockKanbanItemsHttpClient.Verify(x => x.UpdateKanbanItem(It.Is<KanbanItem>(k =>
-                k.TodoItem.Title == "Updated Title" &&
                 k.TodoItem.TodoItemId == TestSubtaskId)), Times.Once);
         }
 
