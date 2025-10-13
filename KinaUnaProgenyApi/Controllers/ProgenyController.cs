@@ -96,8 +96,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!progeny.IsInAdminList(userEmail))
+            if (!progeny.IsInAdminList(currentUserInfo.UserEmail))
             {
                 return Unauthorized();
             }
@@ -107,7 +106,7 @@ namespace KinaUnaProgenyApi.Controllers
             progeny.NickName = value.NickName;
             progeny.TimeZone = value.TimeZone;
             progeny.PictureLink = value.PictureLink;
-            progeny.ModifiedBy = User.GetUserId();
+            progeny.ModifiedBy = currentUserInfo.UserId;
             
             progeny = await progenyService.UpdateProgeny(progeny, currentUserInfo);
             if (progeny == null)
@@ -133,13 +132,13 @@ namespace KinaUnaProgenyApi.Controllers
             Progeny progeny = await progenyService.GetProgeny(id, currentUserInfo);
             if (progeny == null) return NotFound();
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!progeny.IsInAdminList(userEmail))
+            
+            if (!progeny.IsInAdminList(currentUserInfo.UserEmail))
             {
                 return Unauthorized();
             }
             
-            progeny.ModifiedBy = User.GetUserId();
+            progeny.ModifiedBy = currentUserInfo.UserId;
 
             Progeny deletedProgeny = await progenyService.DeleteProgeny(progeny, currentUserInfo);
             if (deletedProgeny == null)
@@ -191,8 +190,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!progeny.IsInAdminList(userEmail))
+            if (!progeny.IsInAdminList(currentUserInfo.UserEmail))
             {
                 return Unauthorized();
             }
@@ -201,7 +199,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return BadRequest();
             }
-            progenyInfo.ModifiedBy = User.GetUserId();
+            progenyInfo.ModifiedBy = currentUserInfo.UserId;
             ProgenyInfo updatedProgenyInfo = await progenyService.UpdateProgenyInfo(progenyInfo, currentUserInfo);
             if (updatedProgenyInfo == null)
             {
