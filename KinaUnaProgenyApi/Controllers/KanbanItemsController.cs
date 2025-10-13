@@ -131,8 +131,8 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest("The Kanban item must be linked to a valid Todo item.");
             }
 
-            kanbanItem.CreatedBy = User.GetUserId();
-            kanbanItem.ModifiedBy = User.GetUserId();
+            kanbanItem.CreatedBy = currentUserInfo.UserId;
+            kanbanItem.ModifiedBy = currentUserInfo.UserId;
             KanbanItem savedKanbanItem = await kanbanItemsService.AddKanbanItem(kanbanItem, currentUserInfo);
             if (savedKanbanItem == null)
             {
@@ -186,7 +186,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest("The linked Todo item could not be found.");
             }
             
-            kanbanItem.ModifiedBy = User.GetUserId();
+            kanbanItem.ModifiedBy = currentUserInfo.UserId;
             
             KanbanItem resultKanbanItem = await kanbanItemsService.UpdateKanbanItem(kanbanItem, currentUserInfo);
             if (resultKanbanItem == null)
@@ -224,7 +224,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
             
-            existingKanbanItem.ModifiedBy = User.GetUserId();
+            existingKanbanItem.ModifiedBy = currentUserInfo.UserId;
             KanbanItem deletedKanbanItem = await kanbanItemsService.DeleteKanbanItem(existingKanbanItem, currentUserInfo);
             if (deletedKanbanItem == null)
             {
