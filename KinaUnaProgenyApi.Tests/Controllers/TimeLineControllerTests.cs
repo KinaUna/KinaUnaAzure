@@ -97,8 +97,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             List<Claim> claims =
             [
-                new Claim(ClaimTypes.NameIdentifier, TestUserId),
-                new Claim(ClaimTypes.Email, TestUserEmail)
+                new(ClaimTypes.NameIdentifier, TestUserId),
+                new(ClaimTypes.Email, TestUserEmail)
             ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
@@ -115,7 +115,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task GetTimeLineRequestData_ReturnsOk_WhenValidRequestProvided()
         {
             // Arrange
-            var request = new TimelineRequest
+            TimelineRequest request = new()
             {
                 ProgenyId = TestProgenyId,
                 Progenies = [TestProgenyId],
@@ -124,7 +124,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 SortOrder = 0
             };
 
-            var expectedResponse = new TimelineResponse
+            TimelineResponse expectedResponse = new()
             {
                 TimeLineItems = [_testTimeLineItem],
                 Request = request
@@ -134,11 +134,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await _controller.GetTimeLineRequestData(request);
+            IActionResult? result = await _controller.GetTimeLineRequestData(request);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedResponse = Assert.IsType<TimelineResponse>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            TimelineResponse returnedResponse = Assert.IsType<TimelineResponse>(okResult.Value);
             Assert.Single(returnedResponse.TimeLineItems);
         }
 
@@ -146,8 +146,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task GetTimeLineRequestData_AdjustsStartDateTime_WhenSortOrderIsDescending()
         {
             // Arrange
-            var startDate = new DateTime(2023, 5, 15, 10, 30, 0);
-            var request = new TimelineRequest
+            DateTime startDate = new(2023, 5, 15, 10, 30, 0);
+            TimelineRequest request = new()
             {
                 ProgenyId = TestProgenyId,
                 Progenies = [TestProgenyId],
@@ -177,7 +177,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progeny_ReturnsOk_WithTimeLineItems()
         {
             // Arrange
-            var timeLineItems = new List<TimeLineItem> { _testTimeLineItem };
+            List<TimeLineItem> timeLineItems = new() { _testTimeLineItem };
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(timeLineItems);
 
@@ -185,11 +185,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.Progeny(TestProgenyId);
+            IActionResult? result = await _controller.Progeny(TestProgenyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Single(returnedItems);
         }
 
@@ -197,7 +197,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progeny_FiltersOutFutureItems()
         {
             // Arrange
-            var futureItem = new TimeLineItem
+            TimeLineItem futureItem = new()
             {
                 TimeLineId = 2,
                 ProgenyId = TestProgenyId,
@@ -206,7 +206,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 ProgenyTime = DateTime.UtcNow.AddDays(10)
             };
 
-            var timeLineItems = new List<TimeLineItem> { _testTimeLineItem, futureItem };
+            List<TimeLineItem> timeLineItems = new() { _testTimeLineItem, futureItem };
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(timeLineItems);
 
@@ -214,11 +214,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.Progeny(TestProgenyId);
+            IActionResult? result = await _controller.Progeny(TestProgenyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Single(returnedItems);
             Assert.DoesNotContain(returnedItems, item => item.TimeLineId == 2);
         }
@@ -227,11 +227,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progeny_IncludesRecurringCalendarItems()
         {
             // Arrange
-            var timeLineItems = new List<TimeLineItem> { _testTimeLineItem };
+            List<TimeLineItem> timeLineItems = new() { _testTimeLineItem };
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(timeLineItems);
 
-            var recurringItem = new CalendarItem
+            CalendarItem recurringItem = new()
             {
                 EventId = 10,
                 ProgenyId = TestProgenyId,
@@ -247,11 +247,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(recurringItem);
 
             // Act
-            var result = await _controller.Progeny(TestProgenyId);
+            IActionResult? result = await _controller.Progeny(TestProgenyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Equal(2, returnedItems.Count);
         }
 
@@ -259,11 +259,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progeny_SkipsRecurringItemsWithoutOriginal()
         {
             // Arrange
-            var timeLineItems = new List<TimeLineItem> { _testTimeLineItem };
+            List<TimeLineItem> timeLineItems = new() { _testTimeLineItem };
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(timeLineItems);
 
-            var recurringItem = new CalendarItem
+            CalendarItem recurringItem = new()
             {
                 EventId = 10,
                 ProgenyId = TestProgenyId,
@@ -277,11 +277,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((CalendarItem)null!);
 
             // Act
-            var result = await _controller.Progeny(TestProgenyId);
+            IActionResult? result = await _controller.Progeny(TestProgenyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Single(returnedItems);
         }
 
@@ -296,11 +296,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.Progeny(TestProgenyId);
+            IActionResult? result = await _controller.Progeny(TestProgenyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Empty(returnedItems);
         }
 
@@ -312,7 +312,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Family_ReturnsOk_WithTimeLineItems()
         {
             // Arrange
-            var familyTimeLineItem = new TimeLineItem
+            TimeLineItem familyTimeLineItem = new()
             {
                 TimeLineId = 1,
                 ProgenyId = 0,
@@ -329,11 +329,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.Family(TestFamilyId);
+            IActionResult? result = await _controller.Family(TestFamilyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Single(returnedItems);
             Assert.Equal(TestFamilyId, returnedItems[0].FamilyId);
         }
@@ -342,14 +342,14 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Family_FiltersOutFutureItems()
         {
             // Arrange
-            var pastItem = new TimeLineItem
+            TimeLineItem pastItem = new()
             {
                 TimeLineId = 1,
                 FamilyId = TestFamilyId,
                 ProgenyTime = DateTime.UtcNow.AddDays(-1)
             };
 
-            var futureItem = new TimeLineItem
+            TimeLineItem futureItem = new()
             {
                 TimeLineId = 2,
                 FamilyId = TestFamilyId,
@@ -363,11 +363,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.Family(TestFamilyId);
+            IActionResult? result = await _controller.Family(TestFamilyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Single(returnedItems);
             Assert.Equal(1, returnedItems[0].TimeLineId);
         }
@@ -380,14 +380,14 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progenies_ReturnsOk_WithCombinedTimeLineItems()
         {
             // Arrange
-            var progenies = new List<int> { TestProgenyId, TestProgenyId + 1 };
+            List<int> progenies = new() { TestProgenyId, TestProgenyId + 1 };
             
-            var progeny1Items = new List<TimeLineItem>
+            List<TimeLineItem> progeny1Items = new()
             {
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = DateTime.UtcNow.AddDays(-1) }
             };
 
-            var progeny2Items = new List<TimeLineItem>
+            List<TimeLineItem> progeny2Items = new()
             {
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId + 1, ProgenyTime = DateTime.UtcNow.AddDays(-2) }
             };
@@ -402,11 +402,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.Progenies(progenies);
+            IActionResult? result = await _controller.Progenies(progenies);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Equal(2, returnedItems.Count);
         }
 
@@ -414,14 +414,14 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progenies_ReturnsEmptyList_WhenNoProgeniesProvided()
         {
             // Arrange
-            var progenies = new List<int>();
+            List<int> progenies = new();
 
             // Act
-            var result = await _controller.Progenies(progenies);
+            IActionResult? result = await _controller.Progenies(progenies);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Empty(returnedItems);
         }
 
@@ -433,14 +433,14 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Families_ReturnsOk_WithCombinedTimeLineItems()
         {
             // Arrange
-            var families = new List<int> { TestFamilyId, TestFamilyId + 1 };
+            List<int> families = new() { TestFamilyId, TestFamilyId + 1 };
             
-            var family1Items = new List<TimeLineItem>
+            List<TimeLineItem> family1Items = new()
             {
                 new() { TimeLineId = 1, FamilyId = TestFamilyId, ProgenyTime = DateTime.UtcNow.AddDays(-1) }
             };
 
-            var family2Items = new List<TimeLineItem>
+            List<TimeLineItem> family2Items = new()
             {
                 new() { TimeLineId = 2, FamilyId = TestFamilyId + 1, ProgenyTime = DateTime.UtcNow.AddDays(-2) }
             };
@@ -455,11 +455,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.Families(families);
+            IActionResult? result = await _controller.Families(families);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Equal(2, returnedItems.Count);
         }
 
@@ -471,7 +471,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgenyLatest_ReturnsOk_WithLimitedItems()
         {
             // Arrange
-            var items = new List<TimeLineItem>();
+            List<TimeLineItem> items = new();
             for (int i = 0; i < 10; i++)
             {
                 items.Add(new TimeLineItem
@@ -489,11 +489,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.ProgenyLatest(TestProgenyId, count: 5, start: 0);
+            IActionResult? result = await _controller.ProgenyLatest(TestProgenyId, count: 5, start: 0);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<IEnumerable<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            IEnumerable<TimeLineItem> returnedItems = Assert.IsAssignableFrom<IEnumerable<TimeLineItem>>(okResult.Value);
             Assert.Equal(5, returnedItems.Count());
         }
 
@@ -501,7 +501,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgenyLatest_RespectsSkipParameter()
         {
             // Arrange
-            var items = new List<TimeLineItem>();
+            List<TimeLineItem> items = new();
             for (int i = 0; i < 10; i++)
             {
                 items.Add(new TimeLineItem
@@ -519,11 +519,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.ProgenyLatest(TestProgenyId, count: 3, start: 2);
+            IActionResult? result = await _controller.ProgenyLatest(TestProgenyId, count: 3, start: 2);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<IEnumerable<TimeLineItem>>(okResult.Value).ToList();
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<IEnumerable<TimeLineItem>>(okResult.Value).ToList();
             Assert.Equal(3, returnedItems.Count);
         }
 
@@ -531,7 +531,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgenyLatest_ReturnsReversedOrder()
         {
             // Arrange
-            var items = new List<TimeLineItem>
+            List<TimeLineItem> items = new()
             {
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = DateTime.UtcNow.AddDays(-10) },
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId, ProgenyTime = DateTime.UtcNow.AddDays(-5) },
@@ -545,11 +545,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.ProgenyLatest(TestProgenyId, count: 5, start: 0);
+            IActionResult? result = await _controller.ProgenyLatest(TestProgenyId, count: 5, start: 0);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<IEnumerable<TimeLineItem>>(okResult.Value).ToList();
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<IEnumerable<TimeLineItem>>(okResult.Value).ToList();
             Assert.Equal(3, returnedItems[0].TimeLineId); // Most recent first
         }
 
@@ -564,11 +564,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.ProgenyLatest(TestProgenyId, count: 5, start: 0);
+            IActionResult? result = await _controller.ProgenyLatest(TestProgenyId, count: 5, start: 0);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<IEnumerable<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            IEnumerable<TimeLineItem> returnedItems = Assert.IsAssignableFrom<IEnumerable<TimeLineItem>>(okResult.Value);
             Assert.Empty(returnedItems);
         }
 
@@ -580,8 +580,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgenyYearAgo_ReturnsOk_WithMatchingDayAndMonthItems()
         {
             // Arrange
-            var today = DateTime.UtcNow;
-            var items = new List<TimeLineItem>
+            DateTime today = DateTime.UtcNow;
+            List<TimeLineItem> items = new()
             {
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) },
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 2, today.Month, today.Day, 14, 0, 0) },
@@ -592,11 +592,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(items);
 
             // Act
-            var result = await _controller.ProgenyYearAgo(TestProgenyId);
+            IActionResult? result = await _controller.ProgenyYearAgo(TestProgenyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Equal(2, returnedItems.Count);
             Assert.DoesNotContain(returnedItems, item => item.TimeLineId == 3);
         }
@@ -609,11 +609,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<TimeLineItem>());
 
             // Act
-            var result = await _controller.ProgenyYearAgo(TestProgenyId);
+            IActionResult? result = await _controller.ProgenyYearAgo(TestProgenyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Empty(returnedItems);
         }
 
@@ -621,8 +621,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgenyYearAgo_ReturnsReversedOrder()
         {
             // Arrange
-            var today = DateTime.UtcNow;
-            var items = new List<TimeLineItem>
+            DateTime today = DateTime.UtcNow;
+            List<TimeLineItem> items = new()
             {
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 3, today.Month, today.Day, 10, 0, 0) },
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 14, 0, 0) }
@@ -632,11 +632,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(items);
 
             // Act
-            var result = await _controller.ProgenyYearAgo(TestProgenyId);
+            IActionResult? result = await _controller.ProgenyYearAgo(TestProgenyId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Equal(2, returnedItems[0].TimeLineId); // Most recent first
         }
 
@@ -648,15 +648,15 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgeniesYearAgo_ReturnsOk_WithCombinedItems()
         {
             // Arrange
-            var today = DateTime.UtcNow;
-            var progenies = new List<int> { TestProgenyId, TestProgenyId + 1 };
+            DateTime today = DateTime.UtcNow;
+            List<int> progenies = new() { TestProgenyId, TestProgenyId + 1 };
             
-            var progeny1Items = new List<TimeLineItem>
+            List<TimeLineItem> progeny1Items = new()
             {
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) }
             };
 
-            var progeny2Items = new List<TimeLineItem>
+            List<TimeLineItem> progeny2Items = new()
             {
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId + 1, ProgenyTime = new DateTime(today.Year - 2, today.Month, today.Day, 14, 0, 0) }
             };
@@ -671,11 +671,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.ProgeniesYearAgo(progenies);
+            IActionResult? result = await _controller.ProgeniesYearAgo(progenies);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Equal(2, returnedItems.Count);
         }
 
@@ -683,10 +683,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgeniesYearAgo_IncludesRecurringCalendarItems()
         {
             // Arrange
-            var today = DateTime.UtcNow;
-            var progenies = new List<int> { TestProgenyId };
+            DateTime today = DateTime.UtcNow;
+            List<int> progenies = new() { TestProgenyId };
             
-            var progenyItems = new List<TimeLineItem>
+            List<TimeLineItem> progenyItems = new()
             {
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) }
             };
@@ -694,7 +694,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(progenyItems);
 
-            var recurringItem = new CalendarItem
+            CalendarItem recurringItem = new()
             {
                 EventId = 10,
                 ProgenyId = TestProgenyId,
@@ -709,11 +709,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(recurringItem);
 
             // Act
-            var result = await _controller.ProgeniesYearAgo(progenies);
+            IActionResult? result = await _controller.ProgeniesYearAgo(progenies);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Equal(2, returnedItems.Count);
         }
 
@@ -721,10 +721,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgeniesYearAgo_ReturnsSortedDescending()
         {
             // Arrange
-            var today = DateTime.UtcNow;
-            var progenies = new List<int> { TestProgenyId };
+            DateTime today = DateTime.UtcNow;
+            List<int> progenies = new() { TestProgenyId };
             
-            var items = new List<TimeLineItem>
+            List<TimeLineItem> items = new()
             {
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 3, today.Month, today.Day, 10, 0, 0) },
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 14, 0, 0) }
@@ -737,11 +737,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.ProgeniesYearAgo(progenies);
+            IActionResult? result = await _controller.ProgeniesYearAgo(progenies);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Equal(2, returnedItems[0].TimeLineId); // Most recent first
         }
 
@@ -753,15 +753,15 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task FamiliesYearAgo_ReturnsOk_WithCombinedItems()
         {
             // Arrange
-            var today = DateTime.UtcNow;
-            var families = new List<int> { TestFamilyId, TestFamilyId + 1 };
+            DateTime today = DateTime.UtcNow;
+            List<int> families = new() { TestFamilyId, TestFamilyId + 1 };
             
-            var family1Items = new List<TimeLineItem>
+            List<TimeLineItem> family1Items = new()
             {
                 new() { TimeLineId = 1, FamilyId = TestFamilyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) }
             };
 
-            var family2Items = new List<TimeLineItem>
+            List<TimeLineItem> family2Items = new()
             {
                 new() { TimeLineId = 2, FamilyId = TestFamilyId + 1, ProgenyTime = new DateTime(today.Year - 2, today.Month, today.Day, 14, 0, 0) }
             };
@@ -776,11 +776,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem>());
 
             // Act
-            var result = await _controller.FamiliesYearAgo(families);
+            IActionResult? result = await _controller.FamiliesYearAgo(families);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<TimeLineItem> returnedItems = Assert.IsAssignableFrom<List<TimeLineItem>>(okResult.Value);
             Assert.Equal(2, returnedItems.Count);
         }
 
@@ -796,11 +796,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testTimeLineItem);
 
             // Act
-            var result = await _controller.GetTimeLineItemByItemId("1", (int)KinaUnaTypes.TimeLineType.Photo);
+            IActionResult? result = await _controller.GetTimeLineItemByItemId("1", (int)KinaUnaTypes.TimeLineType.Photo);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItem = Assert.IsType<TimeLineItem>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            TimeLineItem returnedItem = Assert.IsType<TimeLineItem>(okResult.Value);
             Assert.Equal(_testTimeLineItem.TimeLineId, returnedItem.TimeLineId);
         }
 
@@ -812,7 +812,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((TimeLineItem)null!);
 
             // Act
-            var result = await _controller.GetTimeLineItemByItemId("999", (int)KinaUnaTypes.TimeLineType.Photo);
+            IActionResult? result = await _controller.GetTimeLineItemByItemId("999", (int)KinaUnaTypes.TimeLineType.Photo);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -830,11 +830,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testTimeLineItem);
 
             // Act
-            var result = await _controller.GetTimeLineItem(TestTimeLineId);
+            IActionResult? result = await _controller.GetTimeLineItem(TestTimeLineId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItem = Assert.IsType<TimeLineItem>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            TimeLineItem returnedItem = Assert.IsType<TimeLineItem>(okResult.Value);
             Assert.Equal(TestTimeLineId, returnedItem.TimeLineId);
         }
 
@@ -846,7 +846,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((TimeLineItem)null!);
 
             // Act
-            var result = await _controller.GetTimeLineItem(999);
+            IActionResult? result = await _controller.GetTimeLineItem(999);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -860,7 +860,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ReturnsOk_WhenValidItemProvided()
         {
             // Arrange
-            var newItem = new TimeLineItem
+            TimeLineItem newItem = new()
             {
                 ProgenyId = TestProgenyId,
                 ItemId = "10",
@@ -868,7 +868,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 ProgenyTime = DateTime.UtcNow.AddDays(-5)
             };
 
-            var addedItem = new TimeLineItem
+            TimeLineItem addedItem = new()
             {
                 TimeLineId = 150,
                 ProgenyId = TestProgenyId,
@@ -882,11 +882,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(addedItem);
 
             // Act
-            var result = await _controller.Post(newItem);
+            IActionResult? result = await _controller.Post(newItem);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItem = Assert.IsType<TimeLineItem>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            TimeLineItem returnedItem = Assert.IsType<TimeLineItem>(okResult.Value);
             Assert.Equal(150, returnedItem.TimeLineId);
         }
 
@@ -894,7 +894,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ReturnsUnauthorized_WhenServiceReturnsNull()
         {
             // Arrange
-            var newItem = new TimeLineItem
+            TimeLineItem newItem = new()
             {
                 ProgenyId = TestProgenyId,
                 ItemId = "10",
@@ -906,7 +906,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((TimeLineItem)null!);
 
             // Act
-            var result = await _controller.Post(newItem);
+            IActionResult? result = await _controller.Post(newItem);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -920,7 +920,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Put_ReturnsOk_WhenValidUpdateProvided()
         {
             // Arrange
-            var updatedItem = new TimeLineItem
+            TimeLineItem updatedItem = new()
             {
                 TimeLineId = TestTimeLineId,
                 ProgenyId = TestProgenyId,
@@ -937,11 +937,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(updatedItem);
 
             // Act
-            var result = await _controller.Put(TestTimeLineId, updatedItem);
+            IActionResult? result = await _controller.Put(TestTimeLineId, updatedItem);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItem = Assert.IsType<TimeLineItem>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            TimeLineItem returnedItem = Assert.IsType<TimeLineItem>(okResult.Value);
             Assert.Equal(updatedItem.ProgenyTime.Date, returnedItem.ProgenyTime.Date);
             Assert.Equal(updatedItem.ProgenyTime.Hour, returnedItem.ProgenyTime.Hour);
             Assert.Equal(updatedItem.ProgenyTime.Minute, returnedItem.ProgenyTime.Minute);
@@ -951,7 +951,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Put_ReturnsNotFound_WhenItemDoesNotExist()
         {
             // Arrange
-            var updatedItem = new TimeLineItem
+            TimeLineItem updatedItem = new()
             {
                 TimeLineId = TestTimeLineId,
                 ProgenyId = TestProgenyId
@@ -961,7 +961,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((TimeLineItem)null!);
 
             // Act
-            var result = await _controller.Put(TestTimeLineId, updatedItem);
+            IActionResult? result = await _controller.Put(TestTimeLineId, updatedItem);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -971,7 +971,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Put_ReturnsUnauthorized_WhenServiceUpdateFails()
         {
             // Arrange
-            var updatedItem = new TimeLineItem
+            TimeLineItem updatedItem = new()
             {
                 TimeLineId = TestTimeLineId,
                 ProgenyId = TestProgenyId
@@ -984,7 +984,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((TimeLineItem)null!);
 
             // Act
-            var result = await _controller.Put(TestTimeLineId, updatedItem);
+            IActionResult? result = await _controller.Put(TestTimeLineId, updatedItem);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -1005,7 +1005,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testTimeLineItem);
 
             // Act
-            var result = await _controller.Delete(TestTimeLineId);
+            IActionResult? result = await _controller.Delete(TestTimeLineId);
 
             // Assert
             Assert.IsType<NoContentResult>(result);
@@ -1019,7 +1019,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((TimeLineItem)null!);
 
             // Act
-            var result = await _controller.Delete(TestTimeLineId);
+            IActionResult? result = await _controller.Delete(TestTimeLineId);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -1036,7 +1036,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((TimeLineItem)null!);
 
             // Act
-            var result = await _controller.Delete(TestTimeLineId);
+            IActionResult? result = await _controller.Delete(TestTimeLineId);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -1050,7 +1050,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task GetOnThisDayTimeLineItems_ReturnsOk_WhenValidRequestProvided()
         {
             // Arrange
-            var request = new OnThisDayRequest
+            OnThisDayRequest request = new()
             {
                 ProgenyId = TestProgenyId,
                 Progenies = [TestProgenyId],
@@ -1059,7 +1059,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 SortOrder = 0
             };
 
-            var expectedResponse = new OnThisDayResponse
+            OnThisDayResponse expectedResponse = new()
             {
                 TimeLineItems = [_testTimeLineItem]
             };
@@ -1071,11 +1071,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await _controller.GetOnThisDayTimeLineItems(request);
+            IActionResult? result = await _controller.GetOnThisDayTimeLineItems(request);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedResponse = Assert.IsType<OnThisDayResponse>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            OnThisDayResponse returnedResponse = Assert.IsType<OnThisDayResponse>(okResult.Value);
             Assert.Single(returnedResponse.TimeLineItems);
         }
 
@@ -1083,7 +1083,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task GetOnThisDayTimeLineItems_ReturnsEmptyResponse_WhenProgenyNotFound()
         {
             // Arrange
-            var request = new OnThisDayRequest
+            OnThisDayRequest request = new()
             {
                 ProgenyId = TestProgenyId,
                 ThisDayDateTime = DateTime.UtcNow
@@ -1093,11 +1093,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((Progeny)null!);
 
             // Act
-            var result = await _controller.GetOnThisDayTimeLineItems(request);
+            IActionResult? result = await _controller.GetOnThisDayTimeLineItems(request);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedResponse = Assert.IsType<OnThisDayResponse>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            OnThisDayResponse returnedResponse = Assert.IsType<OnThisDayResponse>(okResult.Value);
             Assert.Empty(returnedResponse.TimeLineItems);
         }
 
@@ -1105,8 +1105,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task GetOnThisDayTimeLineItems_AdjustsDateTime_WhenSortOrderIsDescending()
         {
             // Arrange
-            var requestDate = new DateTime(2023, 5, 15, 10, 30, 0);
-            var request = new OnThisDayRequest
+            DateTime requestDate = new(2023, 5, 15, 10, 30, 0);
+            OnThisDayRequest request = new()
             {
                 ProgenyId = TestProgenyId,
                 ThisDayDateTime = requestDate,
