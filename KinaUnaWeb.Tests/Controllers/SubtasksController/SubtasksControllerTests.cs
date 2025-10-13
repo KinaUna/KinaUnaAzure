@@ -1334,7 +1334,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
                 ParentTodoItemId = TestParentTodoItemId,
                 Title = "New Inline Subtask",
                 ProgenyId = 999, // Should be overwritten
-                FamilyId = 0   // Should be overwritten
+                FamilyId = 0 // Should be overwritten
             };
 
             TodoItem parentTodoItem = new()
@@ -2746,7 +2746,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
             List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList =
             [
                 new() { Text = "Child 1", Value = "1" },
-        new() { Text = "Child 2", Value = "2" }
+                new() { Text = "Child 2", Value = "2" }
             ];
             List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList =
             [
@@ -2845,13 +2845,13 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
             List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> progenyList =
             [
                 new() { Text = "Child 1", Value = "1" },
-        new() { Text = "Child 2", Value = "2" },
-        new() { Text = "Child 3", Value = "3" }
+                new() { Text = "Child 2", Value = "2" },
+                new() { Text = "Child 3", Value = "3" }
             ];
             List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> familyList =
             [
                 new() { Text = "Family 1", Value = "1" },
-        new() { Text = "Family 2", Value = "2" }
+                new() { Text = "Family 2", Value = "2" }
             ];
 
             _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
@@ -3414,7 +3414,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
             List<Progeny> progenies =
             [
                 CreateMockProgeny(),
-        new Progeny { Id = differentProgenyId, Name = "Different Child" }
+                new Progeny { Id = differentProgenyId, Name = "Different Child" }
             ];
 
             _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, differentProgenyId, 0, false))
@@ -3541,6 +3541,880 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
             // Assert
             // Progeny permission check is always called first, but family check should happen
             _mockFamiliesHttpClient.Verify(x => x.GetFamiliesUserCanAccess(PermissionLevel.Add), Times.Once);
+        }
+
+        #endregion
+        
+
+        #region SetSubtaskAsNotStarted Tests
+
+        [Fact]
+        public async Task SetSubtaskAsNotStarted_Should_Return_NotFound_When_Subtask_Is_Null()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync((TodoItem)null!);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsNotStarted(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsNotStarted_Should_Return_NotFound_When_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.TodoItemId = 0;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsNotStarted(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsNotStarted_Should_Return_Unauthorized_When_Permission_Level_Too_Low()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.View;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsNotStarted(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsNotStarted_Should_Update_Status_And_Return_Json()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            subtask.Status = (int)KinaUnaTypes.TodoStatusType.Completed;
+            subtask.CompletedDate = DateTime.UtcNow;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.Status = (int)KinaUnaTypes.TodoStatusType.NotStarted;
+            updatedSubtask.CompletedDate = null;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsNotStarted(TestSubtaskId);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
+            Assert.Equal((int)KinaUnaTypes.TodoStatusType.NotStarted, resultTodoItem.Status);
+            Assert.Null(resultTodoItem.CompletedDate);
+
+            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(t =>
+                t.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted &&
+                t.CompletedDate == null)), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsNotStarted_Should_Clear_CompletedDate()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            subtask.CompletedDate = DateTime.UtcNow;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.CompletedDate = null;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            await controller.SetSubtaskAsNotStarted(TestSubtaskId);
+
+            // Assert
+            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(t =>
+                t.CompletedDate == null)), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsNotStarted_Should_Call_UpdateKanbanItemsStatus()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            await controller.SetSubtaskAsNotStarted(TestSubtaskId);
+
+            // Assert
+            mockKanbanItemsHttpClient.Verify(x => x.GetKanbanItemsForTodoItem(TestSubtaskId), Times.Once);
+        }
+
+        #endregion
+
+        #region SetSubtaskAsInProgress Tests
+
+        [Fact]
+        public async Task SetSubtaskAsInProgress_Should_Return_NotFound_When_Subtask_Is_Null()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync((TodoItem)null!);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsInProgress(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsInProgress_Should_Return_NotFound_When_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.TodoItemId = 0;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsInProgress(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsInProgress_Should_Return_Unauthorized_When_Permission_Level_Too_Low()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.View;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsInProgress(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsInProgress_Should_Update_Status_And_Return_Json()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            subtask.Status = (int)KinaUnaTypes.TodoStatusType.NotStarted;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.Status = (int)KinaUnaTypes.TodoStatusType.InProgress;
+            updatedSubtask.CompletedDate = null;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsInProgress(TestSubtaskId);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
+            Assert.Equal((int)KinaUnaTypes.TodoStatusType.InProgress, resultTodoItem.Status);
+
+            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(t =>
+                t.Status == (int)KinaUnaTypes.TodoStatusType.InProgress &&
+                t.CompletedDate == null)), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsInProgress_Should_Clear_CompletedDate()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            subtask.CompletedDate = DateTime.UtcNow;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.CompletedDate = null;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            await controller.SetSubtaskAsInProgress(TestSubtaskId);
+
+            // Assert
+            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(t =>
+                t.CompletedDate == null)), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsInProgress_Should_Call_UpdateKanbanItemsStatus()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            await controller.SetSubtaskAsInProgress(TestSubtaskId);
+
+            // Assert
+            mockKanbanItemsHttpClient.Verify(x => x.GetKanbanItemsForTodoItem(TestSubtaskId), Times.Once);
+        }
+
+        #endregion
+
+        #region SetSubtaskAsCompleted Tests
+
+        [Fact]
+        public async Task SetSubtaskAsCompleted_Should_Return_NotFound_When_Subtask_Is_Null()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync((TodoItem)null!);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsCompleted(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsCompleted_Should_Return_NotFound_When_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.TodoItemId = 0;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsCompleted(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsCompleted_Should_Return_Unauthorized_When_Permission_Level_Too_Low()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.View;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsCompleted(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsCompleted_Should_Update_Status_And_Return_Json()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            subtask.Status = (int)KinaUnaTypes.TodoStatusType.InProgress;
+            subtask.CompletedDate = null;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.Status = (int)KinaUnaTypes.TodoStatusType.Completed;
+            updatedSubtask.CompletedDate = DateTime.UtcNow;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsCompleted(TestSubtaskId);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
+            Assert.Equal((int)KinaUnaTypes.TodoStatusType.Completed, resultTodoItem.Status);
+            Assert.NotNull(resultTodoItem.CompletedDate);
+
+            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(t =>
+                t.Status == (int)KinaUnaTypes.TodoStatusType.Completed &&
+                t.CompletedDate != null)), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsCompleted_Should_Set_CompletedDate_To_UTC()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            subtask.CompletedDate = null;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.CompletedDate = DateTime.UtcNow;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            await controller.SetSubtaskAsCompleted(TestSubtaskId);
+
+            // Assert
+            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(t =>
+                t.CompletedDate.HasValue &&
+                t.CompletedDate.Value.Kind == DateTimeKind.Utc)), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsCompleted_Should_Call_UpdateKanbanItemsStatus()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            await controller.SetSubtaskAsCompleted(TestSubtaskId);
+
+            // Assert
+            mockKanbanItemsHttpClient.Verify(x => x.GetKanbanItemsForTodoItem(TestSubtaskId), Times.Once);
+        }
+
+        #endregion
+
+        #region SetSubtaskAsCancelled Tests
+
+        [Fact]
+        public async Task SetSubtaskAsCancelled_Should_Return_NotFound_When_Subtask_Is_Null()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync((TodoItem)null!);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsCancelled(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsCancelled_Should_Return_NotFound_When_TodoItemId_Is_Zero()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.TodoItemId = 0;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsCancelled(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsCancelled_Should_Return_Unauthorized_When_Permission_Level_Too_Low()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.View;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsCancelled(TestSubtaskId);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsCancelled_Should_Update_Status_And_Return_Json()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            subtask.Status = (int)KinaUnaTypes.TodoStatusType.InProgress;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.Status = (int)KinaUnaTypes.TodoStatusType.Cancelled;
+            updatedSubtask.CompletedDate = null;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            IActionResult result = await controller.SetSubtaskAsCancelled(TestSubtaskId);
+
+            // Assert
+            JsonResult jsonResult = Assert.IsType<JsonResult>(result);
+            TodoItem resultTodoItem = Assert.IsType<TodoItem>(jsonResult.Value);
+            Assert.Equal((int)KinaUnaTypes.TodoStatusType.Cancelled, resultTodoItem.Status);
+
+            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(t =>
+                t.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled &&
+                t.CompletedDate == null)), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsCancelled_Should_Clear_CompletedDate()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+            subtask.CompletedDate = DateTime.UtcNow;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+            updatedSubtask.CompletedDate = null;
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            await controller.SetSubtaskAsCancelled(TestSubtaskId);
+
+            // Assert
+            _mockSubtasksHttpClient.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(t =>
+                t.CompletedDate == null)), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetSubtaskAsCancelled_Should_Call_UpdateKanbanItemsStatus()
+        {
+            // Arrange
+            Mock<IKanbanItemsHttpClient> mockKanbanItemsHttpClient = new();
+            Mock<IKanbanBoardsHttpClient> mockKanbanBoardsHttpClient = new();
+
+            KinaUnaWeb.Controllers.SubtasksController controller = new(
+                _mockSubtasksHttpClient.Object,
+                Mock.Of<ITodoItemsHttpClient>(),
+                _mockViewModelSetupService.Object,
+                _mockUserInfosHttpClient.Object,
+                _mockProgenyHttpClient.Object,
+                _mockFamiliesHttpClient.Object,
+                mockKanbanItemsHttpClient.Object,
+                mockKanbanBoardsHttpClient.Object);
+            SetupControllerContextForController(controller);
+
+            TodoItem subtask = CreateMockSubtaskForProgeny();
+            subtask.ItemPerMission.PermissionLevel = PermissionLevel.Edit;
+
+            TodoItem updatedSubtask = CreateMockSubtaskForProgeny();
+
+            _mockSubtasksHttpClient.Setup(x => x.GetSubtask(TestSubtaskId))
+                .ReturnsAsync(subtask);
+            _mockSubtasksHttpClient.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+                .ReturnsAsync(updatedSubtask);
+            mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestSubtaskId))
+                .ReturnsAsync([]);
+
+            // Act
+            await controller.SetSubtaskAsCancelled(TestSubtaskId);
+
+            // Assert
+            mockKanbanItemsHttpClient.Verify(x => x.GetKanbanItemsForTodoItem(TestSubtaskId), Times.Once);
         }
 
         #endregion
