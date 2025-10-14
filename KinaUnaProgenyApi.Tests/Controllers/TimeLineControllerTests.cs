@@ -84,7 +84,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Initialize controller
             _controller = new TimeLineController(
-                _mockProgenyService.Object,
                 _mockTimelineService.Object,
                 mockUserInfoService.Object,
                 _mockCalendarService.Object
@@ -1072,29 +1071,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             OnThisDayResponse returnedResponse = Assert.IsType<OnThisDayResponse>(okResult.Value);
             Assert.Single(returnedResponse.TimeLineItems);
         }
-
-        [Fact]
-        public async Task GetOnThisDayTimeLineItems_ReturnsEmptyResponse_WhenProgenyNotFound()
-        {
-            // Arrange
-            OnThisDayRequest request = new()
-            {
-                ProgenyId = TestProgenyId,
-                ThisDayDateTime = DateTime.UtcNow
-            };
-
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
-                .ReturnsAsync((Progeny)null!);
-
-            // Act
-            IActionResult? result = await _controller.GetOnThisDayTimeLineItems(request);
-
-            // Assert
-            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
-            OnThisDayResponse returnedResponse = Assert.IsType<OnThisDayResponse>(okResult.Value);
-            Assert.Empty(returnedResponse.TimeLineItems);
-        }
-
+        
         [Fact]
         public async Task GetOnThisDayTimeLineItems_AdjustsDateTime_WhenSortOrderIsDescending()
         {

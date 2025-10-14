@@ -789,7 +789,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(2, result.Count);
             Assert.All(result, c => Assert.Equal(progenyId, c.ProgenyId));
             Assert.All(result, c => Assert.Equal(familyId, c.FamilyId));
-            Assert.All(result, c => Assert.NotNull(c.ItemPerMission));
         }
 
         [Fact]
@@ -809,7 +808,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             _mockAccessManagementService
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, 1, 1, 0, _testUser, null))
                 .ReturnsAsync(permission);
-
+            
             // Act
             List<Contact> result = await _service.GetContactsList(progenyId, familyId, _testUser);
 

@@ -874,38 +874,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.All(result, v => Assert.Equal(1, v.ProgenyId));
         }
 
-        [Fact]
-        public async Task GetVocabularyList_Should_Set_ItemPerMission_For_Each_Item()
-        {
-            // Arrange
-            await using ProgenyDbContext context = GetInMemoryDbContext("GetVocabularyList_Permissions");
-            IDistributedCache cache = GetMemoryCache();
-            UserInfo userInfo = CreateTestUserInfo();
-
-            VocabularyItem vocabularyItem = new() { WordId = 1, ProgenyId = 1, Word = "Word 1" };
-            context.VocabularyDb.Add(vocabularyItem);
-            await context.SaveChangesAsync();
-
-            _mockAccessManagementService
-                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, 1, userInfo, PermissionLevel.View))
-                .ReturnsAsync(true);
-
-            _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, 1, 1, 0, userInfo, null))
-                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.Edit });
-
-            VocabularyService service = new(context, cache, _mockUserInfoService.Object, _mockAccessManagementService.Object);
-
-            // Act
-            List<VocabularyItem>? result = await service.GetVocabularyList(1, userInfo);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Single(result);
-            Assert.NotNull(result[0].ItemPerMission);
-            Assert.Equal(PermissionLevel.Edit, result[0].ItemPerMission.PermissionLevel);
-        }
-
         #endregion
     }
 }

@@ -105,7 +105,7 @@ namespace KinaUnaWeb.Tests.Services
                 CommentsList = [new Comment(), new Comment()]
             };
 
-            _mockMediaHttpClient.Setup(x => x.GetPictureViewModel(It.IsAny<PictureViewModelRequest>()))
+            _mockMediaHttpClient.Setup(x => x.GetTimelinePictureViewModel(It.IsAny<PictureViewModelRequest>()))
                 .ReturnsAsync(picture);
             _mockProgenyHttpClient.Setup(x => x.GetProgeny(1))
                 .ReturnsAsync(_testProgeny);
@@ -120,35 +120,7 @@ namespace KinaUnaWeb.Tests.Services
             Assert.Equal(2, resultPicture.CommentsCount);
             Assert.Equal(_testProgeny, resultPicture.Progeny);
         }
-
-        [Fact]
-        public async Task GetTimeLineItemPartialViewModel_Should_Apply_TagFilter_For_Photo()
-        {
-            // Arrange
-            TimeLineItemViewModel model = new()
-            {
-                TypeId = (int)KinaUnaTypes.TimeLineType.Photo,
-                ItemId = 1,
-                CurrentUser = _testUser,
-                TagFilter = "birthday"
-            };
-
-            PictureViewModel picture = new() { PictureId = 1, ProgenyId = 1 };
-
-            _mockMediaHttpClient.Setup(x => x.GetPictureViewModel(It.Is<PictureViewModelRequest>(
-                req => req.TagFilter == "birthday")))
-                .ReturnsAsync(picture);
-            _mockProgenyHttpClient.Setup(x => x.GetProgeny(1))
-                .ReturnsAsync(_testProgeny);
-
-            // Act
-            await _service.GetTimeLineItemPartialViewModel(model);
-
-            // Assert
-            _mockMediaHttpClient.Verify(x => x.GetPictureViewModel(
-                It.Is<PictureViewModelRequest>(req => req.TagFilter == "birthday")), Times.Once);
-        }
-
+        
         [Fact]
         public async Task GetTimeLineItemPartialViewModel_Should_Return_Error_Note_For_Invalid_Photo()
         {

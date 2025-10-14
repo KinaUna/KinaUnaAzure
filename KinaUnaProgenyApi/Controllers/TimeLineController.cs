@@ -16,14 +16,13 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for TimeLineItems.
     /// </summary>
-    /// <param name="progenyService"></param>
     /// <param name="timelineService"></param>
     /// <param name="userInfoService"></param>
     [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class TimeLineController(IProgenyService progenyService, ITimelineService timelineService, IUserInfoService userInfoService, ICalendarService calendarService) : ControllerBase
+    public class TimeLineController(ITimelineService timelineService, IUserInfoService userInfoService, ICalendarService calendarService) : ControllerBase
     {
         /// <summary>
         /// Gets a list of TimeLineItems for a Progeny,

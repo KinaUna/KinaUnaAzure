@@ -466,12 +466,13 @@ namespace KinaUnaProgenyApi.Tests.Services
             Mock<IAccessManagementService> accessMock = new();
             accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<UserInfo>(), PermissionLevel.View))
                       .ReturnsAsync(true);
-
+            
             Mock<ITimelineFilteringService> timelineFilteringMock = new();
             // No tag/category/context filters are provided in this test, so mocks are not used.
 
             Mock<ICalendarService> calendarMock = new();
-
+            calendarMock.Setup(x => x.GetRecurringCalendarItemsLatestPosts(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<UserInfo>()))
+                .ReturnsAsync([]);
             TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
             UserInfo user = CreateTestUser();
 
@@ -531,7 +532,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                                 Location = "Home"
                             }
                         });
-
+            calendarMock.Setup(x => x.GetCalendarItem(It.IsAny<int>(), It.IsAny<UserInfo>())).ReturnsAsync(new CalendarItem());
             TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
             UserInfo user = CreateTestUser();
 
