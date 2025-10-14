@@ -4481,7 +4481,7 @@ noUi-handle:after, .noUi-handle:before {
 
 @media (min-width: 576px) {
     .page-tab {
-        padding-top: 46px;
+        padding-top: 42px;
         padding-bottom: 10px;
         padding-left: 0;
         padding-right: 0;
@@ -4506,6 +4506,7 @@ noUi-handle:after, .noUi-handle:before {
     border-top-left-radius: 0;
     border-bottom-right-radius: 15px;
     border-bottom-left-radius: 0;
+    line-height: 1.9;
 }
 
     .btn-page-tab:hover {

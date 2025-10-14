@@ -693,8 +693,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(userInfo.UserId, result.UserId);
             Assert.Equal(userInfo.UserEmail, result.UserEmail);
             Assert.False(result.Deleted);
-            Assert.NotNull(result.DeletedTime);
-
+            
             UserInfo? deletedUser = await context.DeletedUsers.FirstOrDefaultAsync(u => u.UserId == userInfo.UserId);
             Assert.NotNull(deletedUser);
         }

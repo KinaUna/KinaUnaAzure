@@ -4,7 +4,7 @@
 @model KinaUnaWeb.Models.BaseItemsViewModel
 @inject ILocaleManager LocaleManager
 <div class="col-12 col-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
-    <div id="other-people-element-@Model.CurrentProgeny.Id" class="card-compact bg-todos todo-item m-1" data-other-people-id="@Model.CurrentProgeny.Id" align="left">
+    <div id="other-people-element-@Model.CurrentProgeny.Id" class="card-compact bg-todos todo-item m-1 p-2" data-other-people-id="@Model.CurrentProgeny.Id" align="left">
         @if (Model.CurrentProgeny.Id == 0)
         {
             <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
@@ -16,7 +16,7 @@
                     <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="profile-picture-small"/>
                     <span>@Model.CurrentProgeny.NickName</span>
                     <span>@Model.CurrentProgeny.Email</span>
-                    <button id="add-to-family-button-@Model.CurrentProgeny.Id" data-other-people-id="@Model.CurrentProgeny.Id">Add to family</button>
+                    <button class="btn btn-success float-right" id="add-to-family-button-@Model.CurrentProgeny.Id" data-other-people-id="@Model.CurrentProgeny.Id">Add to family</button>
                 </div>
             </div>
         }

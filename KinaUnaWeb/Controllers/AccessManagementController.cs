@@ -26,7 +26,7 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Families");
         }
         
-        [HttpGet]
+        [HttpPost]
         public async Task<IActionResult> ItemPermissionsModal([FromBody] TimeLineItem timelineItem)
         {
             int.TryParse(timelineItem.ItemId, out int itemId);

@@ -831,7 +831,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             // Assert
             Assert.NotNull(result);
             Assert.Equal(1, result.NumberOfLocations);
-            Assert.Equal(1, result.LocationsList.Count);
+            Assert.Single(result.LocationsList);
         }
 
         #endregion

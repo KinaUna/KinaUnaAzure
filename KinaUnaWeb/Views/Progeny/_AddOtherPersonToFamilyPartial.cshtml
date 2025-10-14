@@ -24,7 +24,7 @@
                     @addToFamilyString
                 </div>
             </div>
-            <button type="button" class="btn btn-link modal-close-button move-kanban-item-close-button"><span>×</span></button>
+            <button type="button" class="btn btn-link modal-close-button add-to-family-close-button"><span>×</span></button>
         </div>
         <div class="space-50"></div>
         <div class="row m-0">
@@ -36,28 +36,37 @@
                 </div>
             </div>
             <div class="col-12">
-                <form id="add-to-family-form" asp-action="AddOtherPersonToFamily" asp-controller="Progeny" role="form" method="post">
-                    <div class="form-group">
-                        <label asp-for="CurrentFamilyId" class="col-auto control-label">@await LocaleManager.GetTranslation("Select family", PageNames.Family, Model.LanguageId):</label>
-                        <div class="col-auto">
-                            <select id="add-to-family-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="CurrentFamilyId" asp-items="@Model.FamilyList"></select>
+                @if (Model.FamilyList.Count > 0)
+                {
+                    <form id="add-to-family-form" asp-action="AddOtherPersonToFamily" asp-controller="Progeny" role="form" method="post">
+                        <div class="form-group">
+                            <label asp-for="CurrentFamilyId" class="col-auto control-label">@await LocaleManager.GetTranslation("Select family", PageNames.Family, Model.LanguageId):</label>
+                            <div class="col-auto">
+                                <select id="add-to-family-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="CurrentFamilyId" asp-items="@Model.FamilyList"></select>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="MemberType" class="col-auto control-label">@await LocaleManager.GetTranslation("Select family member type", PageNames.Family, Model.LanguageId):</label>
-                        <div class="col-auto">
-                            <select id="family-member-type-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.MemberTypeList.Count" asp-for="MemberType" asp-items="@Model.MemberTypeList"></select>
+                        <div class="form-group">
+                            <label asp-for="MemberType" class="col-auto control-label">@await LocaleManager.GetTranslation("Select family member type", PageNames.Family, Model.LanguageId):</label>
+                            <div class="col-auto">
+                                <select id="family-member-type-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.MemberTypeList.Count" asp-for="MemberType" asp-items="@Model.MemberTypeList"></select>
+                            </div>
                         </div>
-                    </div>
-                    <div class="space-20"></div>
-                    <div class="form-group">
-                        <input type="hidden" asp-for="CurrentProgenyId" value="@Model.CurrentProgenyId"/>
-                        <div class="col">
-                            <button id="add-progeny-to-family-submit-button" type="submit" class="btn btn-success">@addToFamilyString</button>
-                            <button type="button" class="btn btn-danger">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
+                        <div class="space-20"></div>
+                        <div class="form-group">
+                            <input type="hidden" asp-for="CurrentProgenyId" value="@Model.CurrentProgenyId"/>
+                            <div class="col">
+                                <button id="add-progeny-to-family-submit-button" type="submit" class="btn btn-success">@addToFamilyString</button>
+                                <button type="button" class="btn btn-danger add-to-family-close-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
+                            </div>
                         </div>
+                    </form>
+                }
+                else
+                {
+                    <div>
+                        @await LocaleManager.GetTranslation("You don't have any families where you can add family members.", PageNames.Family, Model.LanguageId)
                     </div>
-                </form>
+                }
             </div>
         </div>
     </div>
