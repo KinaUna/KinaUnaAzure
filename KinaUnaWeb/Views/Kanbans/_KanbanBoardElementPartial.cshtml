@@ -17,7 +17,7 @@
                 {
                     <img src="@Model.KanbanBoard.Progeny.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;"/>
                 }
-                if (Model.KanbanBoard.FamilyId > 0 && Model.KanbanBoard.Family != null)
+                @if (Model.KanbanBoard.FamilyId > 0 && Model.KanbanBoard.Family != null)
                 {
                     <img src="@Model.KanbanBoard.Family.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;"/>
                 }

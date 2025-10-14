@@ -89,7 +89,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
@@ -167,7 +167,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
@@ -472,7 +472,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
@@ -622,7 +622,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
@@ -657,7 +657,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(false);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
@@ -741,7 +741,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
@@ -773,7 +773,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
@@ -812,7 +812,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
@@ -860,7 +860,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
@@ -906,7 +906,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);

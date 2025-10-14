@@ -15,7 +15,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for Skill items.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
     /// <param name="timelineService"></param>
     /// <param name="skillService"></param>
@@ -26,7 +25,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class SkillsController(
-        IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
         ITimelineService timelineService,
         ISkillService skillService,
@@ -99,9 +97,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             Progeny progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
             string notificationTitle = "Skill added for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FullName() + " added a new skill for " + progeny.NickName;
-
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
+            
             await webNotificationsService.SendSkillNotification(skillItem, currentUserInfo, notificationTitle);
 
             return Ok(skillItem);
@@ -170,11 +166,9 @@ namespace KinaUnaProgenyApi.Controllers
 
             Progeny progeny = await progenyService.GetProgeny(skillItem.ProgenyId, currentUserInfo);
             string notificationTitle = "Skill deleted for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FirstName + " " + currentUserInfo.MiddleName + " " + currentUserInfo.LastName + " deleted a skill for " + progeny.NickName + ". Measurement date: " + skillItem.Name;
-
+            
             skillItem.AccessLevel = timeLineItem.AccessLevel = 0;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendSkillNotification(skillItem, currentUserInfo, notificationTitle);
 
             return NoContent();

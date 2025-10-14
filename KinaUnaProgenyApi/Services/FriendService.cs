@@ -221,7 +221,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, currentUserInfo, PermissionLevel.View))
                 {
-                    friend.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, friend.ProgenyId, 0, currentUserInfo);
+                    //friend.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, friend.ProgenyId, 0, currentUserInfo);
                     accessibleFriends.Add(friend);
                 }
             }

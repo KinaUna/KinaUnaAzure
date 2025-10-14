@@ -11,7 +11,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for Vaccinations.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
     /// <param name="timelineService"></param>
     /// <param name="vaccinationService"></param>
@@ -22,7 +21,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class VaccinationsController(
-        IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
         ITimelineService timelineService,
         IVaccinationService vaccinationService,
@@ -102,9 +100,7 @@ namespace KinaUnaProgenyApi.Controllers
             _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
             string notificationTitle = "Vaccination added for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FullName() + " added a new vaccination for " + progeny.NickName;
-
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
+            
             await webNotificationsService.SendVaccinationNotification(vaccinationItem, currentUserInfo, notificationTitle);
 
             return Ok(vaccinationItem);
@@ -176,11 +172,9 @@ namespace KinaUnaProgenyApi.Controllers
             if (timeLineItem == null) return NoContent();
 
             string notificationTitle = "Vaccination deleted for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FullName() + " deleted a vaccination for " + progeny.NickName + ". Vaccination: " + vaccinationItem.VaccinationName;
-
+            
             vaccinationItem.AccessLevel = timeLineItem.AccessLevel = 0;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendVaccinationNotification(vaccinationItem, currentUserInfo, notificationTitle);
 
             return NoContent();

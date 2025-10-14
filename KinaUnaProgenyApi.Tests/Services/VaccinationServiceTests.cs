@@ -111,7 +111,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, vaccinationId, _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccinationId, 1, 0, _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccinationId, 1, 0, _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -175,7 +175,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, vaccinationId, _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccinationId, 1, 0, _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccinationId, 1, 0, _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -586,7 +586,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, 2, _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -616,7 +616,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, 2, _testUser, PermissionLevel.View))
                 .ReturnsAsync(false);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, 1, 1, 0, _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, 1, 1, 0, _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -655,7 +655,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -700,7 +700,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, 3, _otherUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, 3, 2, 0, _otherUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, 3, 2, 0, _otherUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -726,7 +726,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act

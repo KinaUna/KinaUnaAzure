@@ -73,6 +73,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
+        [Route("[action]")]
         public async Task<IActionResult> ConvertUserAccessesToUserGroups()
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
@@ -82,7 +83,8 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok();
         }
 
-        [HttpGet("[action]/itemType:int")]
+        [HttpGet]
+        [Route("[action]/{itemType:int}")]
         public async Task<IActionResult> ConvertItemAccessLevelToItemPermissions(int itemType)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());

@@ -70,7 +70,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 .ReturnsAsync(true);
 
             _mockAccessManagementService.Setup(x => x.GetItemPermissionForUser(
-                KinaUnaTypes.TimeLineType.Calendar, 1, 1, 0, userInfo))
+                KinaUnaTypes.TimeLineType.Calendar, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
@@ -127,7 +127,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 .ReturnsAsync(true);
 
             _mockAccessManagementService.Setup(x => x.GetItemPermissionForUser(
-                KinaUnaTypes.TimeLineType.Calendar, 1, 1, 0, userInfo))
+                KinaUnaTypes.TimeLineType.Calendar, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
@@ -707,7 +707,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 .ReturnsAsync(true);
 
             _mockAccessManagementService.Setup(x => x.GetItemPermissionForUser(
-                KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo))
+                KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
@@ -754,7 +754,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 .ReturnsAsync(true);
 
             _mockAccessManagementService.Setup(x => x.GetItemPermissionForUser(
-                KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo))
+                KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             _mockCalendarRecurrencesService.Setup(x => x.GetRecurringEventsForProgenyOrFamily(
@@ -790,7 +790,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 .ReturnsAsync(true);
 
             _mockAccessManagementService.Setup(x => x.GetItemPermissionForUser(
-                KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo))
+                KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             _mockCalendarRecurrencesService.Setup(x => x.GetRecurringEventsForProgenyOrFamily(
@@ -827,7 +827,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 .ReturnsAsync(false);
 
             _mockAccessManagementService.Setup(x => x.GetItemPermissionForUser(
-                KinaUnaTypes.TimeLineType.Calendar, 1, 1, 0, userInfo))
+                KinaUnaTypes.TimeLineType.Calendar, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
@@ -973,7 +973,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 .ReturnsAsync(true);
 
             _mockAccessManagementService.Setup(x => x.GetItemPermissionForUser(
-                KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo))
+                KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
@@ -1003,7 +1003,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 .ReturnsAsync(true);
 
             _mockAccessManagementService.Setup(x => x.GetItemPermissionForUser(
-                KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo))
+                KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);

@@ -15,7 +15,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for Measurements.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
     /// <param name="timelineService"></param>
     /// <param name="measurementService"></param>
@@ -26,7 +25,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class MeasurementsController(
-        IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
         ITimelineService timelineService,
         IMeasurementService measurementService,
@@ -101,8 +99,6 @@ namespace KinaUnaProgenyApi.Controllers
             await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
             string notificationTitle = "Measurement added for " + progeny.NickName; // Todo: Localize.
-            string notificationMessage = currentUserInfo.FullName() + " added a new measurement for " + progeny.NickName;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendMeasurementNotification(measurementItem, currentUserInfo, notificationTitle);
 
             return Ok(measurementItem);
@@ -179,11 +175,9 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
                 Progeny progeny = await progenyService.GetProgeny(measurementItem.ProgenyId, currentUserInfo);
                 string notificationTitle = "Measurement deleted for " + progeny.NickName; // Todo: Localize.
-                string notificationMessage = userInfo.FullName() + " deleted a measurement for " + progeny.NickName + ". Measurement date: " + measurementItem.Date.Date.ToString("dd-MMM-yyyy");
-
+                
                 measurementItem.AccessLevel = timeLineItem.AccessLevel = 0;
 
-                await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                 await webNotificationsService.SendMeasurementNotification(measurementItem, userInfo, notificationTitle);
 
                 return NoContent();

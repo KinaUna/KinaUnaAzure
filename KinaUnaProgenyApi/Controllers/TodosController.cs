@@ -24,7 +24,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="todosService"></param>
     /// <param name="userInfoService"></param>
     /// <param name="timelineService"></param>
-    /// <param name="azureNotifications"></param>
     /// <param name="webNotificationsService"></param>
     [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
@@ -35,7 +34,6 @@ namespace KinaUnaProgenyApi.Controllers
         ITodosService todosService,
         IUserInfoService userInfoService,
         ITimelineService timelineService,
-        IAzureNotifications azureNotifications,
         IWebNotificationsService webNotificationsService,
         IAccessManagementService accessManagementService) : ControllerBase
     {
@@ -162,7 +160,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (todoItem.ProgenyId > 0)
             {
                 Progeny progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
-                await NotifyTodoItemAdded(progeny, currentUserInfo, timeLineItem, todoItem);
+                await NotifyTodoItemAdded(progeny, currentUserInfo, todoItem);
             }
             // Todo: Send notification for family too.
 
@@ -236,15 +234,12 @@ namespace KinaUnaProgenyApi.Controllers
         /// and the user who added the item.</remarks>
         /// <param name="progeny">The progeny for whom the TodoItem was added. Cannot be null.</param>
         /// <param name="userInfo">The user who added the TodoItem. Cannot be null.</param>
-        /// <param name="timeLineItem">The timeline item associated with the TodoItem. Cannot be null.</param>
         /// <param name="todoItem">The TodoItem that was added. Cannot be null.</param>
         /// <returns>A task that represents the asynchronous notification operation.</returns>
-        private async Task NotifyTodoItemAdded(Progeny progeny, UserInfo userInfo, TimeLineItem timeLineItem, TodoItem todoItem)
+        private async Task NotifyTodoItemAdded(Progeny progeny, UserInfo userInfo, TodoItem todoItem)
         {
             string notificationTitle = "Todo item added for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " added a new todo item for " + progeny.NickName;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-
+            
             await webNotificationsService.SendTodoItemNotification(todoItem, userInfo, notificationTitle);
         }
 
@@ -298,11 +293,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 Progeny progeny = await progenyService.GetProgeny(todoItem.ProgenyId, currentUserInfo);
                 string notificationTitle = "Todo item deleted for " + progeny.NickName;
-                string notificationMessage = currentUserInfo.FullName() + " deleted a todo item for " + progeny.NickName + ". Todo: " + todoItem.Title;
-
                 todoItem.AccessLevel = timeLineItem.AccessLevel = 0; // Set access level to 0 for notifications, to only notify admins.
-
-                await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
                 await webNotificationsService.SendTodoItemNotification(todoItem, currentUserInfo, notificationTitle);
             }
             // Todo: Send notification for family too.

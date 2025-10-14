@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUnaWeb.Models.FamiliesViewModels;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -596,9 +597,12 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpGet]
-        public IActionResult OtherPeopleAndPets()
+        public async Task<IActionResult> OtherPeopleAndPets()
         {
-            return View();
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
+            FamiliesViewModel model = new(baseModel);
+            
+            return View(model);
         }
 
         [HttpGet]
@@ -653,8 +657,10 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_NotFoundPartial");
             }
 
-            AddProgenyToFamilyViewModel model = new AddProgenyToFamilyViewModel(baseModel);
-            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
+            AddProgenyToFamilyViewModel model = new(baseModel)
+            {
+                FamilyList = await viewModelSetupService.GetFamilySelectList()
+            };
             model.SetMemberTypeList();
             return PartialView("_AddOtherPersonToFamilyPartial", model);
         }
@@ -677,7 +683,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return Unauthorized();
             }
-            FamilyMember newFamilyMember = new FamilyMember
+            FamilyMember newFamilyMember = new()
             {
                 ProgenyId = progenyToAddToFamily.Id,
                 FamilyId = familyToAddProgenyTo.FamilyId,

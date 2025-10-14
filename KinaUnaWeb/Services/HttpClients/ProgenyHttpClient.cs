@@ -109,7 +109,7 @@ namespace KinaUnaWeb.Services.HttpClients
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
             
-            string accessManagementPath = "/api/AccessManagement/ProgeniesUserCanAccessList/" + permissionLevel;
+            string accessManagementPath = "/api/AccessManagement/ProgeniesUserCanAccessList/" + (int)permissionLevel;
             HttpResponseMessage progeniesResponse = await _httpClient.GetAsync(accessManagementPath);
 
             if (!progeniesResponse.IsSuccessStatusCode) return new List<Progeny>();

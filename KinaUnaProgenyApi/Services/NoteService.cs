@@ -207,7 +207,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Note, note.NoteId, currentUserInfo, PermissionLevel.View))
                 {
-                    note.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Note, note.NoteId, note.ProgenyId, 0, currentUserInfo);
+                    //note.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Note, note.NoteId, note.ProgenyId, 0, currentUserInfo);
                     accessibleNotes.Add(note);
                 }
             }

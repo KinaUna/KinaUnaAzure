@@ -451,7 +451,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, todoId, _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, todoId, 1, 0, _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, todoId, 1, 0, _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -524,7 +524,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 2, _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -555,7 +555,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -584,7 +584,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -612,7 +612,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -641,7 +641,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -670,7 +670,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -699,7 +699,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -730,7 +730,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 2, _testUser, PermissionLevel.View))
                 .ReturnsAsync(false);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, 1, 1, 0, _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, 1, 1, 0, _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act

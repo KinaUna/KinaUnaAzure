@@ -14,8 +14,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int Forward5Pages { get; set; }
         public int PageNumberIfSortChanges { get; set; }
         public int SortBy { get; init; }
-        public List<Picture> PicturesList { get; set; }
-        public string TagFilter { get; init; }
+        public List<Picture> PicturesList { get; set; } = [];
+        public string TagFilter { get; init; } = string.Empty;
         public int Year { get; set; } = 0;
         public int Month { get; set; } = 0;
         public int Day { get; set; } = 0;

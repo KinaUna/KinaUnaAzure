@@ -255,7 +255,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, video.VideoId, currentUserInfo, PermissionLevel.View))
                 {
-                    video.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, currentUserInfo);
+                    //video.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, currentUserInfo);
                     filteredList.Add(video);
                 }
             }

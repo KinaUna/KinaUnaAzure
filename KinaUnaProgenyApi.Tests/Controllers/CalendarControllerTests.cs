@@ -20,7 +20,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
     public class CalendarControllerTests : IDisposable
     {
         private readonly ProgenyDbContext _progenyDbContext;
-        private readonly Mock<IAzureNotifications> _mockAzureNotifications;
         private readonly Mock<ICalendarService> _mockCalendarService;
         private readonly Mock<ITimelineService> _mockTimelineService;
         private readonly Mock<IProgenyService> _mockProgenyService;
@@ -105,7 +104,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             // Setup mocks
-            _mockAzureNotifications = new Mock<IAzureNotifications>();
             Mock<IUserInfoService> mockUserInfoService = new();
             _mockCalendarService = new Mock<ICalendarService>();
             _mockTimelineService = new Mock<ITimelineService>();
@@ -120,7 +118,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Initialize controller
             _controller = new CalendarController(
-                _mockAzureNotifications.Object,
                 mockUserInfoService.Object,
                 _mockCalendarService.Object,
                 _mockTimelineService.Object,
@@ -585,12 +582,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             await _controller.Post(newCalendarItem);
 
             // Assert
-            _mockAzureNotifications.Verify(x => x.ProgenyUpdateNotification(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<TimeLineItem>(),
-                _testUser.ProfilePicture), Times.Once);
-
             _mockWebNotificationsService.Verify(x => x.SendCalendarNotification(
                 addedCalendarItem,
                 _testUser,
@@ -973,12 +964,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             await _controller.Delete(TestCalendarItemId);
 
             // Assert
-            _mockAzureNotifications.Verify(x => x.ProgenyUpdateNotification(
-                It.Is<string>(s => s.Contains(_testProgeny.NickName)),
-                It.Is<string>(s => s.Contains(_testUser.FirstName) && s.Contains(_testCalendarItem.Title)),
-                _testTimeLineItem,
-                _testUser.ProfilePicture), Times.Once);
-
             _mockWebNotificationsService.Verify(x => x.SendCalendarNotification(
                 _testCalendarItem,
                 _testUser,
@@ -1041,12 +1026,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             await _controller.Delete(TestCalendarItemId);
 
             // Assert
-            _mockAzureNotifications.Verify(x => x.ProgenyUpdateNotification(
-                It.Is<string>(s => s.Contains(_testFamily.Name)),
-                It.Is<string>(s => s.Contains(_testUser.FirstName) && s.Contains(familyCalendarItem.Title)),
-                familyTimeLineItem,
-                _testUser.ProfilePicture), Times.Once);
-
             _mockWebNotificationsService.Verify(x => x.SendCalendarNotification(
                 familyCalendarItem,
                 _testUser,
@@ -1080,12 +1059,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             await _controller.Delete(TestCalendarItemId);
 
             // Assert
-            _mockAzureNotifications.Verify(x => x.ProgenyUpdateNotification(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<TimeLineItem>(),
-                It.IsAny<string>()), Times.Never);
-
             _mockWebNotificationsService.Verify(x => x.SendCalendarNotification(
                 It.IsAny<CalendarItem>(),
                 It.IsAny<UserInfo>(),

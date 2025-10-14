@@ -276,7 +276,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .Returns(expectedResponse);
 
             // Act
-            IActionResult result = await _controller.GetProgeniesKanbanBoardsList(request);
+            IActionResult result = await _controller.GetKanbanBoardsList(request);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
@@ -300,7 +300,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((Progeny?)null);
 
             // Act
-            IActionResult result = await _controller.GetProgeniesKanbanBoardsList(request);
+            IActionResult result = await _controller.GetKanbanBoardsList(request);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -330,7 +330,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .Returns(expectedResponse);
 
             // Act
-            IActionResult result = await _controller.GetProgeniesKanbanBoardsList(request);
+            IActionResult result = await _controller.GetKanbanBoardsList(request);
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
@@ -372,7 +372,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .Returns(expectedResponse);
 
             // Act
-            IActionResult result = await _controller.GetProgeniesKanbanBoardsList(request);
+            IActionResult result = await _controller.GetKanbanBoardsList(request);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);

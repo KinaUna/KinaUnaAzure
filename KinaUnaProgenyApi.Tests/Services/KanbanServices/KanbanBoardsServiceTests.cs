@@ -165,7 +165,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, boardId, _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, boardId, 1, 0, _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, boardId, 1, 0, _testUser, null))
                 .ReturnsAsync(itemPermission);
 
             // Act
@@ -658,7 +658,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -690,7 +690,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -721,7 +721,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -775,7 +775,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -807,7 +807,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -839,7 +839,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -1000,7 +1000,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -1026,7 +1026,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act
@@ -1049,7 +1049,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 2, _testUser, PermissionLevel.View))
                 .ReturnsAsync(false);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, 1, 1, 0, _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, 1, 1, 0, _testUser, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             // Act
@@ -1090,7 +1090,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser, null))
                 .ReturnsAsync(permission);
 
             // Act

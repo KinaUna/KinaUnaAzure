@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.Timeline;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -183,6 +184,27 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(timeLineList.Count != 0 ? timeLineList : []);
         }
 
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TimelineList([FromBody] TimelineListRequest request)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            TimelineList response = new()
+            {
+                TimelineItems = await timelineService.GetFilteredTimeLineList(request, currentUserInfo)
+            };
+            List<TimeLineItem> moreTimeLineItems = await timelineService.GetFilteredTimeLineList(request, currentUserInfo);
+            if (moreTimeLineItems.Count > 0)
+            {
+                response.RemainingItemsCount = moreTimeLineItems.Count;
+            }
+            response.AllItemsCount = response.TimelineItems.Count + response.RemainingItemsCount;
+
+            response.FirstItemYear = await timelineService.GetTimeLineListFirstItemYear(request.Progenies, request.Families, currentUserInfo);
+
+            return Ok(response);
+        }
+
         /// <summary>
         /// Gets a list of the latest TimeLineItems for a Progeny with the given ProgenyId that a user with a given access level can access.
         /// </summary>
@@ -258,14 +280,8 @@ namespace KinaUnaProgenyApi.Controllers
             foreach (int progenyId in progenies)
             {
                 // Todo: Rewrite, this is inefficient. We should not get the full timeline for each progeny, just to filter it down to a few items.
-                List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId, 0, currentUserInfo);
-                progenyTimeLineList =
-                [
-                    .. progenyTimeLineList
-                        .Where(t => t.ProgenyTime.Year < DateTime.UtcNow.Year
-                                     && t.ProgenyTime.Month == DateTime.UtcNow.Month
-                                     && t.ProgenyTime.Day == DateTime.UtcNow.Day)
-                ];
+                List<TimeLineItem> progenyTimeLineList = await timelineService.GetYearAgoList(progenyId, 0, currentUserInfo);
+                
                 timeLineList.AddRange(progenyTimeLineList);
                 List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsOnThisDay(progenyId, 0, currentUserInfo);
                 foreach (CalendarItem calendarItem in calendarItems)
@@ -298,14 +314,8 @@ namespace KinaUnaProgenyApi.Controllers
             foreach (int familyId in families)
             {
                 // Todo: Rewrite, this is inefficient. We should not get the full timeline for each progeny, just to filter it down to a few items.
-                List<TimeLineItem> familyTimeLineList = await timelineService.GetTimeLineList(0, familyId, currentUserInfo);
-                familyTimeLineList =
-                [
-                    .. familyTimeLineList
-                        .Where(t => t.ProgenyTime.Year < DateTime.UtcNow.Year
-                                    && t.ProgenyTime.Month == DateTime.UtcNow.Month
-                                    && t.ProgenyTime.Day == DateTime.UtcNow.Day)
-                ];
+                List<TimeLineItem> familyTimeLineList = await timelineService.GetYearAgoList(0, familyId, currentUserInfo);
+                
                 timeLineList.AddRange(familyTimeLineList);
                 List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsOnThisDay(0, familyId, currentUserInfo);
                 foreach (CalendarItem calendarItem in calendarItems)
@@ -447,9 +457,6 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetOnThisDayTimeLineItems([FromBody] OnThisDayRequest onThisDayRequest)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            Progeny progeny = await progenyService.GetProgeny(onThisDayRequest.ProgenyId, currentUserInfo);
-            if (progeny == null) return Ok(new OnThisDayResponse());
-
             
             if (onThisDayRequest.SortOrder == 1)
             {

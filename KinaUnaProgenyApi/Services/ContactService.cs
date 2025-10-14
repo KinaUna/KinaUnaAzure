@@ -242,7 +242,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Contact, contact.ContactId, currentUserInfo, PermissionLevel.View))
                 {
-                    contact.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, contact.ContactId, contact.ProgenyId, contact.FamilyId, currentUserInfo);
+                    //contact.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Contact, contact.ContactId, contact.ProgenyId, contact.FamilyId, currentUserInfo);
                     accessibleContacts.Add(contact);
                 }
             }

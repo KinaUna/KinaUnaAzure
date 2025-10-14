@@ -90,7 +90,7 @@ namespace KinaUnaWeb.Services.HttpClients
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
-            string accessManagementPath = "/api/AccessManagement/FamiliesUserCanAccessList/" + permissionLevel;
+            string accessManagementPath = "/api/AccessManagement/FamiliesUserCanAccessList/" + (int)permissionLevel;
             HttpResponseMessage familiesResponse = await _httpClient.GetAsync(accessManagementPath);
 
             if (!familiesResponse.IsSuccessStatusCode) return new List<Family>();

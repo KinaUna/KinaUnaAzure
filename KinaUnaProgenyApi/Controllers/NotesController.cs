@@ -15,7 +15,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for Notes.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="imageStore"></param>
     /// <param name="userInfoService"></param>
     /// <param name="timelineService"></param>
@@ -27,7 +26,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class NotesController(
-        IAzureNotifications azureNotifications,
         IImageStore imageStore,
         IUserInfoService userInfoService,
         ITimelineService timelineService,
@@ -105,8 +103,6 @@ namespace KinaUnaProgenyApi.Controllers
             _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
             
             string notificationTitle = "Note added for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FullName() + " added a new note for " + progeny.NickName;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendNoteNotification(noteItem, currentUserInfo, notificationTitle);
 
             return Ok(noteItem);
@@ -182,10 +178,8 @@ namespace KinaUnaProgenyApi.Controllers
             if (timeLineItem == null) return NoContent();
             
             string notificationTitle = "Note deleted for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FullName() + " deleted a note for " + progeny.NickName + ". Note: " + noteItem.Title;
-
+            
             noteItem.AccessLevel = timeLineItem.AccessLevel = 0;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendNoteNotification(noteItem, currentUserInfo, notificationTitle);
 
             return NoContent();

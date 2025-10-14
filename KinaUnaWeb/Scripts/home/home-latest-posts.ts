@@ -132,6 +132,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
     timeLineParameters.progenies = getSelectedProgenies();
+    timeLineParameters.year = -1;
     addSelectedProgeniesChangedEventListener();
 
     moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#more-latest-posts-items-button');

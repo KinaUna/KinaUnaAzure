@@ -100,6 +100,7 @@ namespace KinaUnaProgenyApi.Services
         /// <returns></returns>
         Task RemovePictureFromCache(int pictureId, int progenyId);
 
+        Task<Picture> RandomPicture(int progenyId, UserInfo currentUserInfo);
         /// <summary>
         /// Gets a list of all Pictures for a Progeny from the cache.
         /// </summary>

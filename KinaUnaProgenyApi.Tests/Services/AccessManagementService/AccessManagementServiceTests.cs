@@ -3,6 +3,9 @@ using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
@@ -45,7 +48,14 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             _service = new KinaUnaProgenyApi.Services.AccessManagementService.AccessManagementService(
                 _progenyDbContext,
                 mediaDbContext,
-                _mockPermissionAuditLogService.Object);
+                _mockPermissionAuditLogService.Object,
+                GetMemoryCache());
+        }
+
+        private static IDistributedCache GetMemoryCache()
+        {
+            IOptions<MemoryDistributedCacheOptions> options = Options.Create(new MemoryDistributedCacheOptions());
+            return new MemoryDistributedCache(options);
         }
 
         #region HasItemPermission Tests

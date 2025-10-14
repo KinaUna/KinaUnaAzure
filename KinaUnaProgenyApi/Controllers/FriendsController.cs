@@ -17,7 +17,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// API endpoints for Friends.
     /// </summary>
     /// <param name="imageStore"></param>
-    /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
     /// <param name="friendService"></param>
     /// <param name="timelineService"></param>
@@ -29,7 +28,6 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class FriendsController(
         IImageStore imageStore,
-        IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
         IFriendService friendService,
         ITimelineService timelineService,
@@ -112,8 +110,6 @@ namespace KinaUnaProgenyApi.Controllers
             await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
             Progeny progeny = await progenyService.GetProgeny(friendItem.ProgenyId, currentUserInfo);
             string notificationTitle = "Friend added for " + progeny.NickName; // Todo: Localize.
-            string notificationMessage = currentUserInfo.FullName() + " added a new friend for " + progeny.NickName;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendFriendNotification(friendItem, currentUserInfo, notificationTitle);
 
             return Ok(friendItem);
@@ -210,11 +206,9 @@ namespace KinaUnaProgenyApi.Controllers
             friendItem.Author = User.GetUserId();
             
             string notificationTitle = "Friend deleted for " + progeny.NickName; // Todo: Localize.
-            string notificationMessage = currentUserInfo.FullName() + " deleted a friend for " + progeny.NickName + ". Friend: " + friendItem.Name;
-
+            
             friendItem.AccessLevel = timeLineItem.AccessLevel = 0;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendFriendNotification(friendItem, currentUserInfo, notificationTitle);
 
             return NoContent();

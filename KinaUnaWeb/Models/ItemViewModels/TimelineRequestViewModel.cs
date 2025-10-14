@@ -24,10 +24,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
             {
                 tagFilter = string.Empty;
             }
-
+            
             TimelineRequest = new TimelineRequest
             {
-                ProgenyId = CurrentProgeny.Id,
+                ProgenyId = CurrentProgenyId,
                 FamilyId = CurrentFamilyId,
                 Skip = skip,
                 NumberOfItems = numberOfItems,

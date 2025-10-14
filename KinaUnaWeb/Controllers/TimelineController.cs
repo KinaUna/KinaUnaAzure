@@ -11,6 +11,7 @@ using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Timeline;
 using KinaUnaWeb.Services.HttpClients;
 using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.Timeline;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -35,7 +36,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int familyId = 0, int sortOrder = 1, int items = 10, int skip = 0, int year=0, int month=0, int day=0, string tagFilter = "", string categoryFilter = "", string contextFilter = "")
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId, false);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId, true);
 
             TimelineRequestViewModel model = new(baseModel);
             model.SetRequestParameters(skip, items, year, month, day, tagFilter, categoryFilter, contextFilter, sortOrder);
@@ -70,43 +71,25 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetTimelineList([FromBody] TimelineParameters parameters)
         {
-            // Todo: Refactor to get combined progeny and family lists, and the filtered list directly from the API, instead of getting all items and filtering here.
-            TimelineList timelineList = new()
+            if (parameters.Year < 0)
             {
-                TimelineItems = await timelineHttpClient.GetProgeniesTimeline(parameters.Progenies, parameters.SortBy)
+                parameters.Year = DateTime.UtcNow.Year;
+                parameters.Month = DateTime.UtcNow.Month;
+                parameters.Day = DateTime.UtcNow.Day;
+            }
+            TimelineListRequest request = new()
+            {
+                Progenies = parameters.Progenies,
+                Families = parameters.Families,
+                SortOrder = parameters.SortBy,
+                Count = parameters.Count,
+                Skip = parameters.Skip,
+                Year = parameters.Year,
+                Month = parameters.Month,
+                Day = parameters.Day
             };
 
-            List<TimeLineItem> familyItems = await timelineHttpClient.GetFamiliesTimeline(parameters.Families, parameters.SortBy);
-            timelineList.TimelineItems.AddRange(familyItems);
-
-            if (timelineList.TimelineItems.Count > 0)
-            {
-                timelineList.FirstItemYear = timelineList.TimelineItems.Min(t => t.ProgenyTime).Year;
-                if (parameters.Year != 0)
-                {
-                    DateTime startDate = new(parameters.Year, parameters.Month, parameters.Day, 23, 59, 59);
-                    if (parameters.SortBy == 1)
-                    {
-
-                        timelineList.TimelineItems = [.. timelineList.TimelineItems.Where(t => t.ProgenyTime <= startDate)];
-                    }
-                    else
-                    {
-                        startDate = new(parameters.Year, parameters.Month, parameters.Day, 0, 0, 0);
-                        timelineList.TimelineItems = [.. timelineList.TimelineItems.Where(t => t.ProgenyTime >= startDate)];
-                    }
-                }
-
-                timelineList.AllItemsCount = timelineList.TimelineItems.Count;
-                timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count;
-                timelineList.TimelineItems = [.. timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count)];
-            }
-            else
-            {
-                timelineList.FirstItemYear = DateTime.Now.Year;
-                timelineList.AllItemsCount = 0;
-                timelineList.RemainingItemsCount = 0;
-            }
+            TimelineList timelineList = await timelineHttpClient.GetTimelineList(request);
 
             return Json(timelineList);
 

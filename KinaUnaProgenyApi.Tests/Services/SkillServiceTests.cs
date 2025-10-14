@@ -76,7 +76,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             SkillService service = new(context, cache, _mockAccessManagementService.Object);
@@ -157,7 +157,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             SkillService service = new(context, cache, _mockAccessManagementService.Object);
@@ -533,7 +533,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             SkillService service = new(context, cache, _mockAccessManagementService.Object);
@@ -573,7 +573,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             SkillService service = new(context, cache, _mockAccessManagementService.Object);
@@ -625,7 +625,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             SkillService service = new(context, cache, _mockAccessManagementService.Object);
@@ -662,7 +662,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(false);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             SkillService service = new(context, cache, _mockAccessManagementService.Object);
@@ -693,7 +693,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             SkillService service = new(context, cache, _mockAccessManagementService.Object);
@@ -740,7 +740,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             SkillService service = new(context, cache, _mockAccessManagementService.Object);
@@ -773,7 +773,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             SkillService service = new(context, cache, _mockAccessManagementService.Object);
@@ -805,7 +805,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             SkillService service = new(context, cache, _mockAccessManagementService.Object);
@@ -838,7 +838,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Skill, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             SkillService service = new(context, cache, _mockAccessManagementService.Object);

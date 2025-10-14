@@ -75,7 +75,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new LocationService(context, cache, _mockAccessManagementService.Object);
@@ -167,7 +167,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new LocationService(context, cache, _mockAccessManagementService.Object);
@@ -648,7 +648,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new LocationService(context, cache, _mockAccessManagementService.Object);
@@ -692,7 +692,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new LocationService(context, cache, _mockAccessManagementService.Object);
@@ -742,7 +742,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new LocationService(context, cache, _mockAccessManagementService.Object);
@@ -785,7 +785,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new LocationService(context, cache, _mockAccessManagementService.Object);
@@ -822,7 +822,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new LocationService(context, cache, _mockAccessManagementService.Object);
@@ -852,7 +852,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             var service = new LocationService(context, cache, _mockAccessManagementService.Object);

@@ -13,7 +13,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for vocabulary items.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
     /// <param name="timelineService"></param>
     /// <param name="vocabularyService"></param>
@@ -24,7 +23,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class VocabularyController(
-        IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
         ITimelineService timelineService,
         IVocabularyService vocabularyService,
@@ -97,9 +95,6 @@ namespace KinaUnaProgenyApi.Controllers
             _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
             
             string notificationTitle = "Word added for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FullName() + " added a new word for " + progeny.NickName;
-
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendVocabularyNotification(vocabularyItem, currentUserInfo, notificationTitle);
 
             return Ok(vocabularyItem);
@@ -174,11 +169,8 @@ namespace KinaUnaProgenyApi.Controllers
             
             // Todo: Translate
             string notificationTitle = "Word deleted for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FullName() + " deleted a word for " + progeny.NickName + ". Word: " + vocabularyItem.Word;
-
             vocabularyItem.AccessLevel = timeLineItem.AccessLevel = 0;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendVocabularyNotification(vocabularyItem, currentUserInfo, notificationTitle);
 
             return NoContent();

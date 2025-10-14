@@ -19,7 +19,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for Locations.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
     /// <param name="locationService"></param>
     /// <param name="timelineService"></param>
@@ -30,7 +29,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class LocationsController(
-        IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
         ILocationService locationService,
         ITimelineService timelineService,
@@ -164,10 +162,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-
             string notificationTitle = "Location added for " + nameString; // Todo: Localize.
-            string notificationMessage = currentUserInfo.FullName() + " added a new location for " + nameString;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendLocationNotification(location, currentUserInfo, notificationTitle);
 
             return Ok(location);
@@ -276,9 +271,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
             string notificationTitle = "Location deleted for " + nameString;
-            string notificationMessage = currentUserInfo.FullName() + " deleted a location for " + nameString + ". Location: " + location.Name;
             
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendLocationNotification(location, currentUserInfo, notificationTitle);
 
             return NoContent();

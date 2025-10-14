@@ -208,7 +208,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, currentUserInfo, PermissionLevel.View))
                 {
-                    vocabularyItem.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, vocabularyItem.ProgenyId, 0, currentUserInfo);
+                    //vocabularyItem.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, vocabularyItem.ProgenyId, 0, currentUserInfo);
                     allowedVocabularyList.Add(vocabularyItem);
                 }
             }

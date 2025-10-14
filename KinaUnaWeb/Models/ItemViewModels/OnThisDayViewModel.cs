@@ -27,7 +27,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             OnThisDayRequest = new OnThisDayRequest
             {
-                ProgenyId = CurrentProgeny.Id,
+                ProgenyId = CurrentProgenyId,
                 FamilyId = CurrentFamilyId,
                 Skip = skip,
                 NumberOfItems = numberOfItems,

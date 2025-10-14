@@ -74,7 +74,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             VocabularyService service = new(context, cache, _mockUserInfoService.Object, _mockAccessManagementService.Object);
@@ -166,7 +166,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             VocabularyService service = new(context, cache, _mockUserInfoService.Object, _mockAccessManagementService.Object);
@@ -680,7 +680,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             VocabularyService service = new(context, cache, _mockUserInfoService.Object, _mockAccessManagementService.Object);
@@ -726,7 +726,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             VocabularyService service = new(context, cache, _mockUserInfoService.Object, _mockAccessManagementService.Object);
@@ -770,7 +770,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             VocabularyService service = new(context, cache, _mockUserInfoService.Object, _mockAccessManagementService.Object);
@@ -821,7 +821,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             VocabularyService service = new(context, cache, _mockUserInfoService.Object, _mockAccessManagementService.Object);
@@ -860,7 +860,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, It.IsAny<int>(), 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
             VocabularyService service = new(context, cache, _mockUserInfoService.Object, _mockAccessManagementService.Object);
@@ -891,7 +891,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
 
             _mockAccessManagementService
-                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, 1, 1, 0, userInfo))
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.Edit });
 
             VocabularyService service = new(context, cache, _mockUserInfoService.Object, _mockAccessManagementService.Object);

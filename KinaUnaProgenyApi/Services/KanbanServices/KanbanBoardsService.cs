@@ -357,7 +357,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             {
                 if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo, PermissionLevel.View))
                 {
-                    kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, currentUserInfo);
+                    //kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, currentUserInfo);
                     accessibleKanbanBoards.Add(kanbanBoard);
                 }
             }

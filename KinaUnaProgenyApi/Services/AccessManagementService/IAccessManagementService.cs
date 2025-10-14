@@ -36,10 +36,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="familyId">The unique identifier of the family associated with the timeline item.</param>
         /// <param name="userInfo">The user information, represented as a <see cref="UserInfo"/> object, for whom the permission is being
         /// retrieved.</param>
+        /// <param name="requiredLevel">An optional parameter specifying a minimum required permission level.
+        /// If provided, the method may optimize its search by stopping early if this level is met or exceeded.</param>
         /// <returns>A <see cref="TimelineItemPermission"/> object representing the highest permission level the specified user
         /// has for the given timeline item. If no permissions are found, the returned object will have a <see
         /// cref="PermissionLevel"/> of <see cref="PermissionLevel.None"/>.</returns>
-        Task<TimelineItemPermission> GetItemPermissionForUser(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, UserInfo userInfo);
+        Task<TimelineItemPermission> GetItemPermissionForUser(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, UserInfo userInfo, PermissionLevel? requiredLevel = null);
 
         /// <summary>
         /// Grants a specified permission to a user or group for a timeline item, if the current user has the necessary

@@ -1,15 +1,17 @@
-﻿using KinaUna.Data.Contexts;
+﻿using KinaUna.Data;
+using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
 using KinaUna.Data.Models.Family;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
@@ -17,7 +19,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     /// Service for managing access permissions for users and groups to various resources such as progeny, families, and timeline items.
     /// </summary>
     /// <param name="progenyDbContext"></param>
-    public class AccessManagementService(ProgenyDbContext progenyDbContext, MediaDbContext mediaDbContext, IPermissionAuditLogsService permissionAuditLogService) : IAccessManagementService
+    public class AccessManagementService(ProgenyDbContext progenyDbContext, MediaDbContext mediaDbContext, IPermissionAuditLogsService permissionAuditLogService, IDistributedCache cache) : IAccessManagementService
     {
         /// <summary>
         /// Determines whether a user has the specified access level for a given timeline item (e.g., Note, TodoItem, Sleep, etc.).
@@ -47,9 +49,23 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return await HasPrivatePermission(itemType, itemId, userInfo);
             }
 
-            // We don't check for add permission here, as it is not relevant for existing items.
-            TimelineItemPermission itemPermission = await GetItemPermissionForUser(itemType, itemId, 0, 0, userInfo);
-
+            TimelineItemPermission itemPermission;
+            string cachedItemPermission = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion +
+                                                                     "hasItemPermissionPermission" + itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId + "_level_" + (int)requiredLevel);
+            if (string.IsNullOrEmpty(cachedItemPermission))
+            {
+                // We don't check for add permission here, as it is not relevant for existing items.
+                itemPermission = await GetItemPermissionForUser(itemType, itemId, 0, 0, userInfo, requiredLevel);
+                DistributedCacheEntryOptions cacheOptionsSliding = new();
+                cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(0, 0, 5, 0)); // Expire after a week.
+                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "hasItemPermissionPermission" + itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId + "_level_" + (int)requiredLevel
+                    , JsonConvert.SerializeObject(itemPermission), cacheOptionsSliding);
+            }
+            else
+            {
+                itemPermission = JsonConvert.DeserializeObject<TimelineItemPermission>(cachedItemPermission);
+            }
+            
             return itemPermission.PermissionLevel >= requiredLevel;
         }
 
@@ -65,10 +81,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="familyId">The unique identifier of the family associated with the timeline item.</param>
         /// <param name="userInfo">The user information, represented as a <see cref="UserInfo"/> object, for whom the permission is being
         /// retrieved.</param>
+        /// <param name="requiredLevel">An optional parameter specifying a minimum required permission level.
+        /// If provided, the method may optimize its search by stopping early if this level is met or exceeded.</param>
         /// <returns>A <see cref="TimelineItemPermission"/> object representing the highest permission level the specified user
         /// has for the given timeline item. If no permissions are found, the returned object will have a <see
         /// cref="PermissionLevel"/> of <see cref="PermissionLevel.None"/>.</returns>
-        public async Task<TimelineItemPermission> GetItemPermissionForUser(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, UserInfo userInfo)
+        public async Task<TimelineItemPermission> GetItemPermissionForUser(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, UserInfo userInfo, PermissionLevel? requiredLevel = null)
         {
             TimelineItemPermission resultPermission = new()
             {
@@ -79,6 +97,16 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 // Default progeny, allow view access to everyone.
                 resultPermission.PermissionLevel = PermissionLevel.View;
+            }
+
+            if (requiredLevel == null)
+            {
+                string cachedItemPermission = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion +
+                                                                         "getItemPermissionForUser" + itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId);
+                if (!string.IsNullOrEmpty(cachedItemPermission))
+                {
+                    return JsonConvert.DeserializeObject<TimelineItemPermission>(cachedItemPermission);
+                }
             }
 
             PermissionLevel highestPermission = PermissionLevel.None;
@@ -95,6 +123,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                         highestPermission = progenyPermission.PermissionLevel;
                         inheritedPermission.PermissionLevel = progenyPermission.PermissionLevel;
                         resultPermission = inheritedPermission;
+                        if (requiredLevel != null)
+                        {
+                            if (requiredLevel <= highestPermission)
+                            {
+                                return resultPermission;
+                            }
+                        }
 
                     }
                 }
@@ -107,6 +142,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                         highestPermission = familyPermission.PermissionLevel;
                         inheritedPermission.PermissionLevel = familyPermission.PermissionLevel;
                         resultPermission = inheritedPermission;
+                        if (requiredLevel != null)
+                        {
+                            if (requiredLevel <= highestPermission)
+                            {
+                                return resultPermission;
+                            }
+                        }
                     }
                 }
             }
@@ -139,6 +181,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 {
                     resultPermission = timelineItemPermission;
                     highestPermission = timelineItemPermission.PermissionLevel;
+                    if (requiredLevel != null)
+                    {
+                        if (requiredLevel <= highestPermission)
+                        {
+                            return resultPermission;
+                        }
+                    }
                 }
             }
 
@@ -156,6 +205,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
                 highestPermission = permission.PermissionLevel;
                 resultPermission = permission;
+                if (requiredLevel != null)
+                {
+                    if (requiredLevel <= highestPermission)
+                    {
+                        return resultPermission;
+                    }
+                }
             }
 
             if (highestPermission == PermissionLevel.View)
@@ -171,6 +227,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     resultPermission.PermissionLevel = PermissionLevel.Add;
                 }
             }
+
+            DistributedCacheEntryOptions cacheOptionsSliding = new();
+            cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(0, 0, 5, 0)); // Expire after a week.
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "getItemPermissionForUser" + itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId
+                , JsonConvert.SerializeObject(resultPermission), cacheOptionsSliding);
 
             return resultPermission;
         }
@@ -1861,6 +1922,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 PermissionLevel = PermissionLevel.None
             };
+
+            if (progenyId == Constants.DefaultChildId)
+            {
+
+            }
             // Check direct user permissions.
             ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb
                 .AsNoTracking()

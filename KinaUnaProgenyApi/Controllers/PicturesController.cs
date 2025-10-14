@@ -23,7 +23,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// API endpoints for Pictures.
     /// </summary>
     /// <param name="imageStore"></param>
-    /// <param name="azureNotifications"></param>
     /// <param name="picturesService"></param>
     /// <param name="videosService"></param>
     /// <param name="commentsService"></param>
@@ -37,7 +36,6 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class PicturesController(
         IImageStore imageStore,
-        IAzureNotifications azureNotifications,
         IPicturesService picturesService,
         IVideosService videosService,
         ICommentsService commentsService,
@@ -243,6 +241,31 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             model.SetTagsList(tagsList);
+            return Ok(model);
+
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TimelinePictureViewModel([FromBody] PictureViewModelRequest request)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Picture picture = await picturesService.GetPicture(request.PictureId, currentUserInfo);
+
+            if (picture == null) return NotFound();
+
+            if (request.Progenies == null || request.Progenies.Count == 0)
+            {
+                request.Progenies = [picture.ProgenyId];
+            }
+
+            PictureViewModel model = new();
+            model.SetPicturePropertiesFromPictureItem(picture);
+            model.PictureNumber = 1;
+            model.PictureCount = 1;
+            model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
+            model.TagsList = "";
+            
             return Ok(model);
 
         }
@@ -466,13 +489,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             
             string notificationTitle = "New Photo added for " + progeny.NickName; // Todo: Localize.
-            string notificationMessage = currentUserInfo.FullName() + " added a new photo for " + progeny.NickName; // Todo: Localize.
-
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyPicturePropertiesForAdd(model);
             _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendPictureNotification(model, currentUserInfo, notificationTitle);
             
             return Ok(model);
@@ -584,9 +604,6 @@ namespace KinaUnaProgenyApi.Controllers
 
             Progeny progeny = await progenyService.GetProgeny(picture.ProgenyId, currentUserInfo);
             string notificationTitle = "Photo deleted for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FirstName + " " + currentUserInfo.MiddleName + " " + currentUserInfo.LastName + " deleted a photo for " + progeny.NickName;
-
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendPictureNotification(picture, currentUserInfo, notificationTitle);
 
             return NoContent();
@@ -606,22 +623,11 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            List<Picture> picturesList = await picturesService.GetPicturesList(progenyId, currentUserInfo);
-            if (picturesList.Count == 0)
-            {
-                Picture tempPicture = new();
-                tempPicture.ApplyPlaceholderProperties();
-                return Ok(tempPicture);
-            }
+            
 
-            Random r = new();
-            int pictureNumber = r.Next(0, picturesList.Count);
-
-            Picture picture = picturesList[pictureNumber];
-            if (!picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !picture.PictureLink.Contains('.'))
-            {
-                picture = await picturesService.GetPicture(picture.PictureId, currentUserInfo);
-            }
+            
+            Picture picture = await picturesService.RandomPicture(progenyId, currentUserInfo);
+            
 
             return Ok(picture);
         }

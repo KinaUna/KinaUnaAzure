@@ -15,7 +15,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for Sleep items.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="timelineService"></param>
     /// <param name="sleepService"></param>
     /// <param name="progenyService"></param>
@@ -26,7 +25,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class SleepController(
-        IAzureNotifications azureNotifications,
         ITimelineService timelineService,
         ISleepService sleepService,
         IProgenyService progenyService,
@@ -106,9 +104,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             
             string notificationTitle = "Sleep added for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FullName() + " added a new sleep item for " + progeny.NickName;
-
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
+            
             await webNotificationsService.SendSleepNotification(sleepItem, currentUserInfo, notificationTitle);
 
             return Ok(sleepItem);
@@ -183,11 +179,9 @@ namespace KinaUnaProgenyApi.Controllers
                 if (timeLineItem == null) return NoContent();
                 
                 string notificationTitle = "Sleep for " + progeny.NickName + " deleted";
-                string notificationMessage = currentUserInfo.FullName() + " deleted a sleep item for " + progeny.NickName + ". Sleep start: " + sleepItem.SleepStart.ToString("dd-MMM-yyyy HH:mm");
-
+                
                 sleepItem.AccessLevel = timeLineItem.AccessLevel = 0;
 
-                await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
                 await webNotificationsService.SendSleepNotification(sleepItem, currentUserInfo, notificationTitle);
 
                 return NoContent();

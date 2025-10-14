@@ -40,11 +40,16 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId, true);
             HomeFeedViewModel model = new(baseModel);
             
-            if (model.CurrentProgeny.Name == "401")
-            {
-                return RedirectToAction("LogOut", "Account");
-            }
+            //if (model.CurrentProgeny.Name == "401")
+            //{
+            //    return RedirectToAction("LogOut", "Account");
+            //}
 
+            if (model.CurrentProgenyId == 0 && model.CurrentFamilyId == 0)
+            {
+                baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), Constants.DefaultChildId, familyId, false);
+                model = new(baseModel);
+            }
             model.SetBirthTimeData();
 
             model.DisplayPicture = await mediaHttpClient.GetRandomPicture(model.CurrentProgeny.Id, model.CurrentUser.Timezone);

@@ -695,11 +695,70 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
                 {
-                    picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);
+                    //picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);
                     filteredList.Add(picture);
                 }
             }
             return filteredList;
+        }
+
+
+        /// <summary>
+        /// Retrieves a random picture associated with the specified progeny, ensuring the current user has permission
+        /// to view it.
+        /// </summary>
+        /// <remarks>This method attempts to retrieve a random picture from the cache or database. If the
+        /// user does not have  permission to view any pictures after a maximum number of attempts, a placeholder
+        /// picture is returned instead.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose pictures are being accessed.</param>
+        /// <param name="currentUserInfo">The user information used to verify access permissions for the picture.</param>
+        /// <returns>A <see cref="Picture"/> object representing a random picture the user has permission to view.  If no
+        /// pictures are available or accessible, a placeholder picture is returned.</returns>
+        public async Task<Picture> RandomPicture(int progenyId, UserInfo currentUserInfo)
+        {
+            List<Picture> picturesList = await GetPicturesListFromCache(progenyId);
+            if (picturesList.Count == 0)
+            {
+                picturesList = await SetPicturesListInCache(progenyId);
+            }
+            
+            if (picturesList.Count == 0)
+            {
+                Picture tempPicture = new();
+                tempPicture.ApplyPlaceholderProperties();
+                return tempPicture;
+            }
+
+            Picture randomPicture = new Picture();
+            bool hasAccess = false;
+            int maxTries = 1000;
+            int tries = 0;
+            while (!hasAccess)
+            {
+                tries++;
+                Random r = new();
+                int pictureNumber = r.Next(0, picturesList.Count);
+                Picture picture = picturesList[pictureNumber];
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
+                {
+                    randomPicture = picture;
+                    hasAccess = true;
+                }
+                if (tries > maxTries)
+                {
+                    break;
+                }
+            }
+
+            if (!hasAccess)
+            {
+                Picture tempPicture = new();
+                tempPicture.ApplyPlaceholderProperties();
+                return tempPicture;
+            }
+
+            randomPicture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, randomPicture.PictureId, randomPicture.ProgenyId, 0, currentUserInfo);
+            return randomPicture;
         }
 
         /// <summary>

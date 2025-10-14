@@ -244,7 +244,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Location, location.LocationId, currentUserInfo, PermissionLevel.View))
                 {
-                    location.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, location.LocationId, progenyId, familyId, currentUserInfo);
+                    //location.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, location.LocationId, progenyId, familyId, currentUserInfo);
                     accessibleLocations.Add(location);
                 }
             }

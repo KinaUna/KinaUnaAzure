@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
     timeLineParameters.progenies = getSelectedProgenies();
+    timeLineParameters.year = -1;
     addSelectedProgeniesChangedEventListener();
     moreTimelineItemsButton = document.querySelector('#more-latest-posts-items-button');
     if (moreTimelineItemsButton !== null) {

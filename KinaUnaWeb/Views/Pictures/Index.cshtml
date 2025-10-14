@@ -117,7 +117,7 @@
             </div>
         </div>
 
-        @if (Model.PicturesList.Exists(p => p.ItemPerMission.PermissionLevel >= PermissionLevel.Admin))
+        @if (Model.PicturesList.Count > 0 && Model.PicturesList.Exists(p => p.ItemPerMission?.PermissionLevel >= PermissionLevel.Admin))
         {
             <div class="space-70"></div>
             <div class="row">

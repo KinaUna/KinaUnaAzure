@@ -4,6 +4,7 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.Timeline;
 using KinaUnaProgenyApi.Helpers;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using KinaUnaProgenyApi.Services.CalendarServices;
@@ -338,6 +339,192 @@ namespace KinaUnaProgenyApi.Services
             return filteredTimeLineList;
         }
 
+        public async Task<List<TimeLineItem>> GetFilteredTimeLineList(TimelineListRequest request, UserInfo currentUserInfo)
+        {
+            List<TimeLineItem> allTimelineItems = [];
+            foreach (int progenyId in request.Progenies)
+            {
+                List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(progenyId, 0);
+                if (timeLineList.Count == 0)
+                {
+                    timeLineList = await SetTimeLineListInCache(progenyId, 0);
+                }
+
+                List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(progenyId, 0, currentUserInfo);
+                foreach (CalendarItem calendarItem in calendarItems)
+                {
+                    if (calendarItem.StartTime.HasValue)
+                    {
+                        CalendarItem originalCalendarItem = await _calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
+                        {
+                            continue;
+                        }
+
+                        TimeLineItem timeLineItem = new();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        timeLineList.Add(timeLineItem);
+                    }
+                }
+                
+                allTimelineItems.AddRange(timeLineList);
+                
+            }
+            foreach (int familyId in request.Families)
+            {
+                List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(0, familyId);
+                if (timeLineList.Count == 0)
+                {
+                    timeLineList = await SetTimeLineListInCache(0, familyId);
+                }
+
+                List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(0, familyId, currentUserInfo);
+                foreach (CalendarItem calendarItem in calendarItems)
+                {
+                    if (calendarItem.StartTime.HasValue)
+                    {
+                        CalendarItem originalCalendarItem = await _calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
+                        {
+                            continue;
+                        }
+
+                        TimeLineItem timeLineItem = new();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        timeLineList.Add(timeLineItem);
+                    }
+                }
+                allTimelineItems.AddRange(timeLineList);
+            }
+            
+
+            if (request.SortOrder == 1)
+            {
+                allTimelineItems = [.. allTimelineItems.OrderByDescending(t => t.ProgenyTime)];
+            }
+            else
+            {
+                allTimelineItems = [.. allTimelineItems.OrderBy(t => t.ProgenyTime)];
+            }
+
+            if (request.Year != 0)
+            {
+                DateTime startDate = new(request.Year, request.Month, request.Day, 23, 59, 59);
+                if (request.SortOrder == 1)
+                {
+
+                    allTimelineItems = [.. allTimelineItems.Where(t => t.ProgenyTime <= startDate)];
+                }
+                else
+                {
+                    startDate = new(request.Year, request.Month, request.Day, 0, 0, 0);
+                    allTimelineItems = [.. allTimelineItems.Where(t => t.ProgenyTime >= startDate)];
+                }
+            }
+
+            List<TimeLineItem> filteredTimeLineList = [];
+            int skipped = 0;
+            int added = 0;
+            foreach (TimeLineItem timeLineItem in allTimelineItems)
+            {
+                _ = int.TryParse(timeLineItem.ItemId, out int itemId);
+                KinaUnaTypes.TimeLineType itemType = (KinaUnaTypes.TimeLineType)timeLineItem.ItemType;
+                if (itemId <= 0) continue;
+                if (await _accessManagementService.HasItemPermission(itemType, itemId, currentUserInfo, PermissionLevel.View))
+                {
+                    if (skipped < request.Skip)
+                    {
+                        skipped++;
+                        continue;
+                    }
+                    if (added >= request.Count)
+                    {
+                        break;
+                    }
+                    added++;
+                    filteredTimeLineList.Add(timeLineItem);
+                }
+            }
+
+            return filteredTimeLineList;
+        }
+
+        public async Task<int> GetTimeLineListFirstItemYear(List<int> progenies, List<int> families, UserInfo currentUserInfo)
+        {
+            List<TimeLineItem> allTimelineItems = [];
+            foreach (int progenyId in progenies)
+            {
+                List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(progenyId, 0);
+
+                if (timeLineList.Count == 0)
+                {
+                    timeLineList = await SetTimeLineListInCache(progenyId, 0);
+                }
+
+                allTimelineItems.AddRange(timeLineList);
+            }
+
+            foreach (int familyId in families)
+            {
+                List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(0, familyId);
+                if (timeLineList.Count == 0)
+                {
+                    timeLineList = await SetTimeLineListInCache(0, familyId);
+                }
+
+                allTimelineItems.AddRange(timeLineList);
+            }
+
+            allTimelineItems = [.. allTimelineItems.OrderBy(t => t.ProgenyTime)];
+
+            int firstItemYear = DateTime.UtcNow.Year;
+            foreach (TimeLineItem timeLineItem in allTimelineItems)
+            {
+                _ = int.TryParse(timeLineItem.ItemId, out int itemId);
+                KinaUnaTypes.TimeLineType itemType = (KinaUnaTypes.TimeLineType)timeLineItem.ItemType;
+                if (itemId <= 0) continue;
+                if (await _accessManagementService.HasItemPermission(itemType, itemId, currentUserInfo, PermissionLevel.View))
+                {
+                    firstItemYear = timeLineItem.ProgenyTime.Year;
+                    break;
+                }
+            }
+
+            return firstItemYear;
+        }
+
+        public async Task<List<TimeLineItem>> GetYearAgoList(int progenyId, int familyId, UserInfo currentUserInfo)
+        {
+
+            List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(progenyId, familyId);
+            if (timeLineList.Count == 0)
+            {
+                timeLineList = await SetTimeLineListInCache(progenyId, familyId);
+            }
+
+            timeLineList =
+            [
+                .. timeLineList
+                    .Where(t => t.ProgenyTime.Year < DateTime.UtcNow.Year
+                                && t.ProgenyTime.Month == DateTime.UtcNow.Month
+                                && t.ProgenyTime.Day == DateTime.UtcNow.Day)
+            ];
+
+            List<TimeLineItem> filteredTimeLineList = [];
+            foreach (TimeLineItem timeLineItem in timeLineList)
+            {
+                _ = int.TryParse(timeLineItem.ItemId, out int itemId);
+                KinaUnaTypes.TimeLineType itemType = (KinaUnaTypes.TimeLineType)timeLineItem.ItemType;
+                if (itemId <= 0) continue;
+                if (await _accessManagementService.HasItemPermission(itemType, itemId, currentUserInfo, PermissionLevel.View))
+                {
+                    filteredTimeLineList.Add(timeLineItem);
+                }
+            }
+
+            return filteredTimeLineList;
+        }
+
         /// <summary>
         /// Gets a list of all TimeLineItems for a Progeny from the cache.
         /// </summary>
@@ -383,115 +570,200 @@ namespace KinaUnaProgenyApi.Services
                 Request = onThisDayRequest
             };
 
-            List<TimeLineItem> allTimeLineItems = [];
+            List<TimeLineItem> allTimelineItems = [];
             foreach (int progenyId in onThisDayRequest.Progenies)
             {
-                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId, 0, currentUserInfo);
-                progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
-                allTimeLineItems.AddRange(progenyTimeLineItems);
-            }
+                List<TimeLineItem> progenyTimeLineItems = [];
+                List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(progenyId, 0);
+                if (timeLineList.Count == 0)
+                {
+                    timeLineList = await SetTimeLineListInCache(progenyId, 0);
+                }
 
+                List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(progenyId, 0, currentUserInfo);
+                foreach (CalendarItem calendarItem in calendarItems)
+                {
+                    if (calendarItem.StartTime.HasValue)
+                    {
+                        CalendarItem originalCalendarItem = await _calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
+                        {
+                            continue;
+                        }
+
+                        TimeLineItem timeLineItem = new();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        timeLineList.Add(timeLineItem);
+                    }
+                }
+
+                bool anyFilter = false;
+                if (!string.IsNullOrEmpty(onThisDayRequest.TagFilter))
+                {
+                    anyFilter = true;
+                    progenyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyId, 0, timeLineList, onThisDayRequest.TagFilter, currentUserInfo));
+
+                }
+
+                if (!string.IsNullOrEmpty(onThisDayRequest.CategoryFilter))
+                {
+                    anyFilter = true;
+                    progenyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyId, 0, timeLineList, onThisDayRequest.CategoryFilter, currentUserInfo));
+                }
+
+                if (!string.IsNullOrEmpty(onThisDayRequest.ContextFilter))
+                {
+                    anyFilter = true;
+
+                    progenyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyId, 0, timeLineList, onThisDayRequest.ContextFilter, currentUserInfo));
+                }
+
+                if (anyFilter)
+                {
+                    progenyTimeLineItems = [.. progenyTimeLineItems.Distinct()];
+                }
+                else
+                {
+                    progenyTimeLineItems = timeLineList;
+                }
+
+                allTimelineItems.AddRange(progenyTimeLineItems);
+            }
             foreach (int familyId in onThisDayRequest.Families)
             {
-                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(0, familyId, currentUserInfo);
-                progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
-                allTimeLineItems.AddRange(progenyTimeLineItems);
+                List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(0, familyId);
+                if (timeLineList.Count == 0)
+                {
+                    timeLineList = await SetTimeLineListInCache(0, familyId);
+                }
+
+                List<TimeLineItem> familyTimeLineItems = [];
+                List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(0, familyId, currentUserInfo);
+                foreach (CalendarItem calendarItem in calendarItems)
+                {
+                    if (calendarItem.StartTime.HasValue)
+                    {
+                        CalendarItem originalCalendarItem = await _calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
+                        {
+                            continue;
+                        }
+
+                        TimeLineItem timeLineItem = new();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        timeLineList.Add(timeLineItem);
+                    }
+                }
+
+                bool anyFilter = false;
+                if (!string.IsNullOrEmpty(onThisDayRequest.TagFilter))
+                {
+                    anyFilter = true;
+                    familyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(0, familyId, timeLineList, onThisDayRequest.TagFilter, currentUserInfo));
+
+                }
+
+                if (!string.IsNullOrEmpty(onThisDayRequest.CategoryFilter))
+                {
+                    anyFilter = true;
+                    familyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(0, familyId, timeLineList, onThisDayRequest.CategoryFilter, currentUserInfo));
+                }
+
+                if (!string.IsNullOrEmpty(onThisDayRequest.ContextFilter))
+                {
+                    anyFilter = true;
+
+                    familyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(0, familyId, timeLineList, onThisDayRequest.ContextFilter, currentUserInfo));
+                }
+
+                if (anyFilter)
+                {
+                    familyTimeLineItems = [.. familyTimeLineItems.Distinct()];
+                }
+                else
+                {
+                    familyTimeLineItems = timeLineList;
+                }
+
+                allTimelineItems.AddRange(familyTimeLineItems);
+
             }
 
-            allTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
-            if (allTimeLineItems.Count == 0)
+            allTimelineItems = [.. allTimelineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
+            if (allTimelineItems.Count == 0)
             {
                 onThisDayResponse.TimeLineItems = [];
                 onThisDayResponse.RemainingItemsCount = 0;
                 return onThisDayResponse;
             }
 
-            onThisDayResponse.Request.FirstItemYear = allTimeLineItems.Min(t => t.ProgenyTime.Year);
-            allTimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimeLineItems, onThisDayRequest.TimeLineTypeFilter);
+            allTimelineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimelineItems, onThisDayRequest.TimeLineTypeFilter);
             
             foreach (TimeLineItem timeLineItem in onThisDayResponse.TimeLineItems)
             {
                 timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUserInfo.Timezone));
             }
 
-            allTimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(allTimeLineItems, onThisDayRequest);
+            allTimelineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByPeriod(allTimelineItems, onThisDayRequest);
 
-            // Todo: Implement Tags for TimeLineItems.
-            // onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
-
-            bool anyFilter = false;
-            if (!string.IsNullOrEmpty(onThisDayRequest.TagFilter))
+            if (onThisDayRequest.SortOrder == 1)
             {
-                anyFilter = true;
-                foreach (int progenyId in onThisDayRequest.Progenies)
-                {
-                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyId, 0, progenyTimeLineItems, onThisDayRequest.TagFilter, currentUserInfo));
-                }
-
-                foreach (int familyId in onThisDayRequest.Families)
-                {
-                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(0, familyId, familyTimeLineItems, onThisDayRequest.TagFilter, currentUserInfo));
-                }
-            }
-
-            if (!string.IsNullOrEmpty(onThisDayRequest.CategoryFilter))
-            {
-                anyFilter = true;
-                foreach (int progenyId in onThisDayRequest.Progenies)
-                {
-                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyId, 0, progenyTimeLineItems, onThisDayRequest.CategoryFilter, currentUserInfo));
-                }
-
-                foreach (int familyId in onThisDayRequest.Families)
-                {
-                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(0, familyId, familyTimeLineItems, onThisDayRequest.CategoryFilter, currentUserInfo));
-                }
-            }
-
-            if (!string.IsNullOrEmpty(onThisDayRequest.ContextFilter))
-            {
-                anyFilter = true;
-                foreach (int progenyId in onThisDayRequest.Progenies)
-                {
-                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyId, 0, progenyTimeLineItems, onThisDayRequest.ContextFilter, currentUserInfo));
-                }
-
-                foreach (int familyId in onThisDayRequest.Families)
-                {
-                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
-                    onThisDayResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(0, familyId, familyTimeLineItems, onThisDayRequest.ContextFilter, currentUserInfo));
-                }
-            }
-
-            if (anyFilter)
-            {
-                onThisDayResponse.TimeLineItems = [.. onThisDayResponse.TimeLineItems.Distinct()];
+                allTimelineItems = [.. allTimelineItems.OrderByDescending(t => t.ProgenyTime)];
             }
             else
             {
-                onThisDayResponse.TimeLineItems = allTimeLineItems;
+                allTimelineItems = [.. allTimelineItems.OrderBy(t => t.ProgenyTime)];
             }
 
-            onThisDayResponse.TimeLineItems = [.. onThisDayResponse.TimeLineItems.OrderByDescending(t => t.ProgenyTime)];
-            if (onThisDayRequest.SortOrder == 0)
+            if (onThisDayRequest.Year != 0)
             {
-                onThisDayResponse.TimeLineItems.Reverse();
+                DateTime startDate = new(onThisDayRequest.Year, onThisDayRequest.Month, onThisDayRequest.Day, 23, 59, 59);
+                if (onThisDayRequest.SortOrder == 1)
+                {
+
+                    allTimelineItems = [.. allTimelineItems.Where(t => t.ProgenyTime <= startDate)];
+                }
+                else
+                {
+                    startDate = new(onThisDayRequest.Year, onThisDayRequest.Month, onThisDayRequest.Day, 0, 0, 0);
+                    allTimelineItems = [.. allTimelineItems.Where(t => t.ProgenyTime >= startDate)];
+                }
             }
 
-            int filteredItemsCount = onThisDayResponse.TimeLineItems.Count;
-            onThisDayResponse.TimeLineItems = [.. onThisDayResponse.TimeLineItems.Skip(onThisDayRequest.Skip).Take(onThisDayRequest.NumberOfItems)];
-            onThisDayResponse.RemainingItemsCount = filteredItemsCount - (onThisDayRequest.Skip + onThisDayRequest.NumberOfItems);
+            List<TimeLineItem> filteredTimeLineList = [];
+            int skipped = 0;
+            int added = 0;
+            foreach (TimeLineItem timeLineItem in allTimelineItems)
+            {
+                _ = int.TryParse(timeLineItem.ItemId, out int itemId);
+                KinaUnaTypes.TimeLineType itemType = (KinaUnaTypes.TimeLineType)timeLineItem.ItemType;
+                if (itemId <= 0) continue;
+                if (await _accessManagementService.HasItemPermission(itemType, itemId, currentUserInfo, PermissionLevel.View))
+                {
+                    if (skipped < onThisDayRequest.Skip)
+                    {
+                        skipped++;
+                        continue;
+                    }
+
+                    if (added >= 2 * onThisDayRequest.NumberOfItems)
+                    {
+                        break;
+                    }
+
+                    added++;
+                    filteredTimeLineList.Add(timeLineItem);
+                }
+            }
+
+            onThisDayResponse.Request.FirstItemYear = await GetTimeLineListFirstItemYear(onThisDayRequest.Progenies, onThisDayRequest.Families, currentUserInfo);
+            onThisDayResponse.RemainingItemsCount = filteredTimeLineList.Count - onThisDayRequest.NumberOfItems;
+            onThisDayResponse.TimeLineItems = [.. filteredTimeLineList.Take(onThisDayRequest.NumberOfItems)];
 
             if (onThisDayResponse.RemainingItemsCount < 0)
             {
                 onThisDayResponse.RemainingItemsCount = 0;
             }
-
             return onThisDayResponse;
         }
 
@@ -508,129 +780,192 @@ namespace KinaUnaProgenyApi.Services
                 Request = timelineRequest
             };
 
-            List<TimeLineItem> allTimeLineItems = [];
-
+            List<TimeLineItem> allTimelineItems = [];
             foreach (int progenyId in timelineRequest.Progenies)
             {
-                List<TimeLineItem> progenyTimeLineItems = await GetTimeLineList(progenyId, 0, currentUserInfo);
-                progenyTimeLineItems = [.. progenyTimeLineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
-                allTimeLineItems.AddRange(progenyTimeLineItems);
+                List<TimeLineItem> progenyTimeLineItems = [];
+                List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(progenyId, 0);
+                if (timeLineList.Count == 0)
+                {
+                    timeLineList = await SetTimeLineListInCache(progenyId, 0);
+                }
 
                 List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(progenyId, 0, currentUserInfo);
                 foreach (CalendarItem calendarItem in calendarItems)
                 {
                     if (calendarItem.StartTime.HasValue)
                     {
+                        CalendarItem originalCalendarItem = await _calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
+                        {
+                            continue;
+                        }
+
                         TimeLineItem timeLineItem = new();
                         timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
-                        allTimeLineItems.Add(timeLineItem);
+                        timeLineList.Add(timeLineItem);
                     }
                 }
-            }
 
+                bool anyFilter = false;
+                if (!string.IsNullOrEmpty(timelineRequest.TagFilter))
+                {
+                    anyFilter = true;
+                    progenyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyId, 0, timeLineList, timelineRequest.TagFilter, currentUserInfo));
+                    
+                }
+
+                if (!string.IsNullOrEmpty(timelineRequest.CategoryFilter))
+                {
+                    anyFilter = true;
+                    progenyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyId, 0, timeLineList, timelineRequest.CategoryFilter, currentUserInfo));
+                }
+
+                if (!string.IsNullOrEmpty(timelineRequest.ContextFilter))
+                {
+                    anyFilter = true;
+                    
+                    progenyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyId, 0, timeLineList, timelineRequest.ContextFilter, currentUserInfo));
+                }
+
+                if (anyFilter)
+                {
+                    progenyTimeLineItems = [.. progenyTimeLineItems.Distinct()];
+                }
+                else
+                {
+                    progenyTimeLineItems = timeLineList;
+                }
+                
+                allTimelineItems.AddRange(progenyTimeLineItems);
+            }
             foreach (int familyId in timelineRequest.Families)
             {
-                List<TimeLineItem> familyTimelineItems = await GetTimeLineList(0, familyId, currentUserInfo);
-                familyTimelineItems = [.. familyTimelineItems.Where(t => t.ProgenyTime <= DateTime.UtcNow)];
-                allTimeLineItems.AddRange(familyTimelineItems);
+                List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(0, familyId);
+                if (timeLineList.Count == 0)
+                {
+                    timeLineList = await SetTimeLineListInCache(0, familyId);
+                }
 
+                List<TimeLineItem> familyTimeLineItems = [];
                 List<CalendarItem> calendarItems = await _calendarService.GetRecurringCalendarItemsLatestPosts(0, familyId, currentUserInfo);
                 foreach (CalendarItem calendarItem in calendarItems)
                 {
                     if (calendarItem.StartTime.HasValue)
                     {
+                        CalendarItem originalCalendarItem = await _calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
+                        {
+                            continue;
+                        }
+
                         TimeLineItem timeLineItem = new();
                         timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
-                        allTimeLineItems.Add(timeLineItem);
+                        timeLineList.Add(timeLineItem);
                     }
+                }
+
+                bool anyFilter = false;
+                if (!string.IsNullOrEmpty(timelineRequest.TagFilter))
+                {
+                    anyFilter = true;
+                    familyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(0, familyId, timeLineList, timelineRequest.TagFilter, currentUserInfo));
+
+                }
+
+                if (!string.IsNullOrEmpty(timelineRequest.CategoryFilter))
+                {
+                    anyFilter = true;
+                    familyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(0, familyId, timeLineList, timelineRequest.CategoryFilter, currentUserInfo));
+                }
+
+                if (!string.IsNullOrEmpty(timelineRequest.ContextFilter))
+                {
+                    anyFilter = true;
+
+                    familyTimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(0, familyId, timeLineList, timelineRequest.ContextFilter, currentUserInfo));
+                }
+
+                if (anyFilter)
+                {
+                    familyTimeLineItems = [.. familyTimeLineItems.Distinct()];
+                }
+                else
+                {
+                    familyTimeLineItems = timeLineList;
+                }
+
+                allTimelineItems.AddRange(familyTimeLineItems);
+
+            }
+
+            allTimelineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimelineItems, timelineRequest.TimeLineTypeFilter);
+
+            foreach (TimeLineItem timeLineItem in allTimelineItems)
+            {
+                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUserInfo.Timezone));
+            }
+
+            if (timelineRequest.SortOrder == 1)
+            {
+                allTimelineItems = [.. allTimelineItems.OrderByDescending(t => t.ProgenyTime)];
+            }
+            else
+            {
+                allTimelineItems = [.. allTimelineItems.OrderBy(t => t.ProgenyTime)];
+            }
+
+            if (timelineRequest.Year != 0)
+            {
+                DateTime startDate = new(timelineRequest.Year, timelineRequest.Month, timelineRequest.Day, 23, 59, 59);
+                if (timelineRequest.SortOrder == 1)
+                {
+
+                    allTimelineItems = [.. allTimelineItems.Where(t => t.ProgenyTime <= startDate)];
+                }
+                else
+                {
+                    startDate = new(timelineRequest.Year, timelineRequest.Month, timelineRequest.Day, 0, 0, 0);
+                    allTimelineItems = [.. allTimelineItems.Where(t => t.ProgenyTime >= startDate)];
                 }
             }
 
-            if (allTimeLineItems.Count == 0)
+            if (allTimelineItems.Count == 0)
             {
                 timelineResponse.TimeLineItems = [];
                 timelineResponse.RemainingItemsCount = 0;
                 return timelineResponse;
             }
 
-            timelineResponse.Request.FirstItemYear = allTimeLineItems.Min(t => t.ProgenyTime.Year);
-            allTimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTimeLineType(allTimeLineItems, timelineRequest.TimeLineTypeFilter);
-
-            foreach (TimeLineItem timeLineItem in allTimeLineItems)
+            List<TimeLineItem> filteredTimeLineList = [];
+            int skipped = 0;
+            int added = 0;
+            foreach (TimeLineItem timeLineItem in allTimelineItems)
             {
-                timeLineItem.ProgenyTime = TimeZoneInfo.ConvertTimeFromUtc(timeLineItem.ProgenyTime, TimeZoneInfo.FindSystemTimeZoneById(currentUserInfo.Timezone));
+                _ = int.TryParse(timeLineItem.ItemId, out int itemId);
+                KinaUnaTypes.TimeLineType itemType = (KinaUnaTypes.TimeLineType)timeLineItem.ItemType;
+                if (itemId <= 0) continue;
+                if (await _accessManagementService.HasItemPermission(itemType, itemId, currentUserInfo, PermissionLevel.View))
+                {
+                    if (skipped < timelineRequest.Skip)
+                    {
+                        skipped++;
+                        continue;
+                    }
+                    if (added >= 2 * timelineRequest.NumberOfItems)
+                    {
+                        break;
+                    }
+                    added++;
+                    filteredTimeLineList.Add(timeLineItem);
+                }
             }
+
             
-            // Todo: Implement Tags for TimeLineItems.
-            // onThisDayResponse.TimeLineItems = OnThisDayItemsFilters.FilterOnThisDayItemsByTags(onThisDayResponse.TimeLineItems, onThisDayRequest.TagFilter);
-
-            bool anyFilter = false;
-            if (!string.IsNullOrEmpty(timelineRequest.TagFilter))
-            {
-                anyFilter = true;
-                foreach (int progenyId in timelineRequest.Progenies)
-                {
-                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(progenyId, 0, progenyTimeLineItems, timelineRequest.TagFilter, currentUserInfo));
-                }
-
-                foreach (int familyId in timelineRequest.Families)
-                {
-                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithTags(0, familyId, familyTimeLineItems, timelineRequest.TagFilter, currentUserInfo));
-                }
-            }
-
-            if (!string.IsNullOrEmpty(timelineRequest.CategoryFilter))
-            {
-                anyFilter = true;
-                foreach (int progenyId in timelineRequest.Progenies)
-                {
-                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(progenyId, 0, progenyTimeLineItems, timelineRequest.CategoryFilter, currentUserInfo));
-                }
-
-                foreach (int familyId in timelineRequest.Families)
-                {
-                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithCategories(0, familyId, familyTimeLineItems, timelineRequest.CategoryFilter, currentUserInfo));
-                }
-            }
-
-            if (!string.IsNullOrEmpty(timelineRequest.ContextFilter))
-            {
-                anyFilter = true;
-                foreach (int progenyId in timelineRequest.Progenies)
-                {
-                    List<TimeLineItem> progenyTimeLineItems = [.. allTimeLineItems.Where(t => t.ProgenyId == progenyId)];
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(progenyId, 0, progenyTimeLineItems, timelineRequest.ContextFilter, currentUserInfo));
-                }
-
-                foreach (int familyId in timelineRequest.Families)
-                {
-                    List<TimeLineItem> familyTimeLineItems = [.. allTimeLineItems.Where(t => t.FamilyId == familyId)];
-                    timelineResponse.TimeLineItems.AddRange(await _timelineFilteringService.GetTimeLineItemsWithContexts(0, familyId, familyTimeLineItems, timelineRequest.ContextFilter, currentUserInfo));
-                }
-            }
-
-            if (anyFilter)
-            {
-                timelineResponse.TimeLineItems = [.. timelineResponse.TimeLineItems.Distinct()];
-            }
-            else
-            {
-                timelineResponse.TimeLineItems = allTimeLineItems;
-            }
-
-            timelineResponse.TimeLineItems = [.. timelineResponse.TimeLineItems.OrderByDescending(t => t.ProgenyTime)];
-            if (timelineRequest.SortOrder == 0)
-            {
-                timelineResponse.TimeLineItems.Reverse();
-            }
-
-            int filteredItemsCount = timelineResponse.TimeLineItems.Count;
-            timelineResponse.TimeLineItems = [.. timelineResponse.TimeLineItems.Skip(timelineRequest.Skip).Take(timelineRequest.NumberOfItems)];
-            timelineResponse.RemainingItemsCount = filteredItemsCount - (timelineRequest.Skip + timelineRequest.NumberOfItems);
+            timelineResponse.Request.FirstItemYear = await GetTimeLineListFirstItemYear(timelineRequest.Progenies, timelineRequest.Families, currentUserInfo);
+            
+            timelineResponse.RemainingItemsCount =  filteredTimeLineList.Count - timelineRequest.NumberOfItems;
+            timelineResponse.TimeLineItems = [.. filteredTimeLineList.Take(timelineRequest.NumberOfItems)];
 
             if (timelineResponse.RemainingItemsCount < 0)
             {

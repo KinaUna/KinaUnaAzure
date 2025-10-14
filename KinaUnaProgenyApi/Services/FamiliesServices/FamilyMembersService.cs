@@ -21,7 +21,7 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
     /// associated permission level.</remarks>
     /// <param name="progenyDbContext"></param>
     public class FamilyMembersService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService,
-        IFamilyAuditLogsService familyAuditLogService, IProgenyService progenyService, IUserInfoService userInfoService) : IFamilyMembersService
+        IFamilyAuditLogsService familyAuditLogService, IProgenyService progenyService) : IFamilyMembersService
     {
         /// <summary>
         /// Retrieves a family member by their unique identifier, ensuring the current user has the necessary
@@ -67,7 +67,7 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             if (!string.IsNullOrWhiteSpace(familyMember.UserId))
             {
                 // Todo: Permission Check for UserInfo.
-                familyMember.UserInfo = await userInfoService.GetUserInfoByUserId(familyMember.UserId);
+                familyMember.UserInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserId == familyMember.UserId);
             }
             
             return familyMember;
@@ -379,7 +379,7 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                 if (!string.IsNullOrWhiteSpace(familyMember.UserId))
                 {
                     // Todo: Permission Check for UserInfo.
-                    familyMember.UserInfo = await userInfoService.GetUserInfoByUserId(familyMember.UserId);
+                    familyMember.UserInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserId == familyMember.UserId);
                 }
                 if (familyMember.ProgenyId > 0)
                 {

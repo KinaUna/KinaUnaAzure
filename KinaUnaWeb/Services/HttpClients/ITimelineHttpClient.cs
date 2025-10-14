@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.Timeline;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -54,6 +55,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <returns>List of TimeLineItem objects.</returns>
         Task<List<TimeLineItem>> GetFamiliesTimeline(List<int> familiesList, int order);
 
+        Task<TimelineList> GetTimelineList(TimelineListRequest request);
         /// <summary>
         /// Gets data for the OnThisDay page.
         /// </summary>

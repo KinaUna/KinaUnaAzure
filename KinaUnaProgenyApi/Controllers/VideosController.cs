@@ -18,7 +18,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for Videos.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="videosService"></param>
     /// <param name="commentsService"></param>
     /// <param name="progenyService"></param>
@@ -30,7 +29,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class VideosController(
-        IAzureNotifications azureNotifications,
         IVideosService videosService,
         ICommentsService commentsService,
         IProgenyService progenyService,
@@ -288,6 +286,48 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TimelineVideoViewModel([FromBody] VideoViewModelRequest request)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Video video = await videosService.GetVideo(request.VideoId, currentUserInfo);
+
+            if (video == null) return NotFound();
+
+            if (request.Progenies == null || request.Progenies.Count == 0)
+            {
+                request.Progenies = [video.ProgenyId];
+            }
+
+            VideoViewModel model = new()
+            {
+                VideoId = video.VideoId,
+                VideoType = video.VideoType,
+                VideoTime = video.VideoTime,
+                Duration = video.Duration,
+                ProgenyId = video.ProgenyId,
+                Owners = video.Owners,
+                VideoLink = video.VideoLink,
+                ThumbLink = video.ThumbLink,
+                AccessLevel = video.AccessLevel,
+                Author = video.Author
+            };
+            model.CommentThreadNumber = video.CommentThreadNumber;
+            model.Tags = video.Tags;
+            model.VideoNumber = 1;
+            model.VideoCount = 1;
+            model.CommentsList = await commentsService.GetCommentsList(video.CommentThreadNumber);
+            model.Location = video.Location;
+            model.Longtitude = video.Longtitude;
+            model.Latitude = video.Latitude;
+            model.Altitude = video.Latitude;
+            model.TagsList = "";
+            
+            return Ok(model);
+
+        }
+
         /// <summary>
         /// Generates a VideoViewModel for a specific Video.
         /// </summary>
@@ -425,13 +465,11 @@ namespace KinaUnaProgenyApi.Controllers
             Progeny progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
             string notificationTitle = "New Video added for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " added a new video for " + progeny.NickName;
-
+            
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyVideoPropertiesForAdd(value);
             _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
             await webNotificationsService.SendVideoNotification(value, userInfo, notificationTitle);
             return Ok(value);
         }
@@ -535,17 +573,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             Progeny progeny = await progenyService.GetProgeny(video.ProgenyId, currentUserInfo);
             string notificationTitle = "Video deleted for " + progeny.NickName;
-            string notificationMessage = currentUserInfo.FullName() + " deleted a video for " + progeny.NickName;
             
-            TimeLineItem timeLineItem = new()
-            {
-                ProgenyId = video.ProgenyId,
-                ItemId = video.VideoId.ToString(),
-                ItemType = (int)KinaUnaTypes.TimeLineType.Video,
-                AccessLevel = 0
-            };
-
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendVideoNotification(video, currentUserInfo, notificationTitle);
 
             return NoContent();

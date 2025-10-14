@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace KinaUnaWeb.Models.TypeScriptModels.Timeline
+namespace KinaUna.Data.Models.Timeline
 {
     public class TimelineList
     {

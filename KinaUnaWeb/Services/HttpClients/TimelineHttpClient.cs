@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.Timeline;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -185,6 +186,22 @@ namespace KinaUnaWeb.Services.HttpClients
             }
 
             return familyTimeline;
+        }
+
+        public async Task<TimelineList> GetTimelineList(TimelineListRequest request)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            const string timelineApiPath = "/api/Timeline/TimelineList/";
+            HttpResponseMessage timelineResponse = await _httpClient.PostAsync(timelineApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
+            if (!timelineResponse.IsSuccessStatusCode) return new TimelineList();
+
+            string timelineListAsString = await timelineResponse.Content.ReadAsStringAsync();
+            TimelineList timelineList = JsonConvert.DeserializeObject<TimelineList>(timelineListAsString);
+
+            return timelineList ?? new TimelineList();
         }
 
         public async Task<OnThisDayResponse> GetOnThisDayTimeLineItems(OnThisDayRequest onThisDayRequest)

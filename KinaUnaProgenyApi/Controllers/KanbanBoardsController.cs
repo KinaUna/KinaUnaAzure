@@ -57,7 +57,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> GetProgeniesKanbanBoardsList([FromBody] KanbanBoardsRequest request)
+        public async Task<IActionResult> GetKanbanBoardsList([FromBody] KanbanBoardsRequest request)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             List<Progeny> progenyList = [];

@@ -46,7 +46,7 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The Progeny with the given Id. Null if the Progeny doesn't exist.</returns>
         public async Task<Progeny> GetProgeny(int id, UserInfo currentUserInfo)
         {
-            if (!await _accessManagementService.HasProgenyPermission(id, currentUserInfo, PermissionLevel.View))
+            if (id != Constants.DefaultChildId && !await _accessManagementService.HasProgenyPermission(id, currentUserInfo, PermissionLevel.View))
             {
                 // User doesn't have permissions to view this Progeny.
                 return null;

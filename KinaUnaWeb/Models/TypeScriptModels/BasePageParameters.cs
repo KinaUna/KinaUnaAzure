@@ -17,9 +17,9 @@ namespace KinaUnaWeb.Models.TypeScriptModels
         /// <summary>
         /// Gets or sets the list of progeny entities.
         /// </summary>
-        public List<int> Progenies { get; set; }
+        public List<int> Progenies { get; set; } = [];
 
-        public List<int> Families { get; set; }
+        public List<int> Families { get; set; } = [];
         /// <summary>
         /// Gets or sets the identifier for the language.
         /// </summary>
@@ -53,6 +53,6 @@ namespace KinaUnaWeb.Models.TypeScriptModels
         /// <summary>
         /// Comma-separated list of tags to filter by (e.g., "tag1,tag2").
         /// </summary>
-        public string TagFilter { get; set; }
+        public string TagFilter { get; set; } = string.Empty;
     }
 }

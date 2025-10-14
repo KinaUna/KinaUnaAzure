@@ -17,7 +17,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for CalendarItems.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
     /// <param name="calendarService"></param>
     /// <param name="timelineService"></param>
@@ -28,7 +27,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class CalendarController(
-        IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
         ICalendarService calendarService,
         ITimelineService timelineService,
@@ -192,9 +190,7 @@ namespace KinaUnaProgenyApi.Controllers
                 nameString = family.Name;
             }
             string notificationTitle = "Calendar item added for " + nameString;
-            string notificationMessage = userInfo.FullName() + " added a new calendar item for " + nameString;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-
+            
             await webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
         }
 
@@ -288,9 +284,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             string notificationTitle = "Calendar item deleted for " + nameString;
-            string notificationMessage = currentUserInfo.FullName() + " deleted a calendar item for " + nameString + ". Event: " + calendarItem.Title;
             
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendCalendarNotification(calendarItem, currentUserInfo, notificationTitle);
 
             return NoContent();

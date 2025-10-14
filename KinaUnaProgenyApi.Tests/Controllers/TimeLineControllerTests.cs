@@ -661,10 +661,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId + 1, ProgenyTime = new DateTime(today.Year - 2, today.Month, today.Day, 14, 0, 0) }
             };
 
-            _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
+            _mockTimelineService.Setup(x => x.GetYearAgoList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(progeny1Items);
 
-            _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId + 1, 0, _testUser))
+            _mockTimelineService.Setup(x => x.GetYearAgoList(TestProgenyId + 1, 0, _testUser))
                 .ReturnsAsync(progeny2Items);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsOnThisDay(It.IsAny<int>(), 0, _testUser))
@@ -691,7 +691,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) }
             };
 
-            _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
+            _mockTimelineService.Setup(x => x.GetYearAgoList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(progenyItems);
 
             CalendarItem recurringItem = new()
@@ -730,7 +730,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 14, 0, 0) }
             };
 
-            _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
+            _mockTimelineService.Setup(x => x.GetYearAgoList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(items);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsOnThisDay(TestProgenyId, 0, _testUser))
@@ -754,26 +754,20 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             DateTime today = DateTime.UtcNow;
-            List<int> families = new() { TestFamilyId, TestFamilyId + 1 };
+            List<int> families = [TestFamilyId, TestFamilyId + 1];
             
-            List<TimeLineItem> family1Items = new()
-            {
-                new() { TimeLineId = 1, FamilyId = TestFamilyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) }
-            };
+            List<TimeLineItem> family1Items = [new() { TimeLineId = 1, FamilyId = TestFamilyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) }];
 
-            List<TimeLineItem> family2Items = new()
-            {
-                new() { TimeLineId = 2, FamilyId = TestFamilyId + 1, ProgenyTime = new DateTime(today.Year - 2, today.Month, today.Day, 14, 0, 0) }
-            };
+            List<TimeLineItem> family2Items = [new() { TimeLineId = 2, FamilyId = TestFamilyId + 1, ProgenyTime = new DateTime(today.Year - 2, today.Month, today.Day, 14, 0, 0) }];
 
-            _mockTimelineService.Setup(x => x.GetTimeLineList(0, TestFamilyId, _testUser))
+            _mockTimelineService.Setup(x => x.GetYearAgoList(0, TestFamilyId, _testUser))
                 .ReturnsAsync(family1Items);
 
-            _mockTimelineService.Setup(x => x.GetTimeLineList(0, TestFamilyId + 1, _testUser))
+            _mockTimelineService.Setup(x => x.GetYearAgoList(0, TestFamilyId + 1, _testUser))
                 .ReturnsAsync(family2Items);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsOnThisDay(0, It.IsAny<int>(), _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.FamiliesYearAgo(families);

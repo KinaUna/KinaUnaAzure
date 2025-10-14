@@ -646,6 +646,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                 moreItemRemaining = await ConvertKanbanBoardsAccessLevels(count);
             }
 
+
             return moreItemRemaining;
         }
 
@@ -1211,7 +1212,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     {
                         TimelineItemPermission timelineItemPermission = new()
                         {
-                            TimelineType = KinaUnaTypes.TimeLineType.Skill,
+                            TimelineType = KinaUnaTypes.TimeLineType.Friend,
                             ItemId = friend.FriendId,
                             ProgenyId = friend.ProgenyId,
                             Email = adminEmail,
@@ -1407,7 +1408,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     {
                         TimelineItemPermission timelineItemPermission = new()
                         {
-                            TimelineType = KinaUnaTypes.TimeLineType.Skill,
+                            TimelineType = KinaUnaTypes.TimeLineType.Sleep,
                             ItemId = sleep.SleepId,
                             ProgenyId = sleep.ProgenyId,
                             Email = adminEmail,
@@ -1507,7 +1508,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     {
                         TimelineItemPermission timelineItemPermission = new()
                         {
-                            TimelineType = KinaUnaTypes.TimeLineType.Skill,
+                            TimelineType = KinaUnaTypes.TimeLineType.Note,
                             ItemId = note.NoteId,
                             ProgenyId = note.ProgenyId,
                             Email = adminEmail,

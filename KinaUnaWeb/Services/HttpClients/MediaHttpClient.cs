@@ -299,6 +299,35 @@ namespace KinaUnaWeb.Services.HttpClients
         }
 
         /// <summary>
+        /// Gets a simplified PictureViewModel, without information from other pictures, for the Picture with a given PictureId.
+        /// PictureTime will be converted to the given time zone.
+        /// </summary>
+        /// <param name="request">PictureViewModelRequest object with PictureId, SortOrder, TimeZone, and TagFilter.</param>
+        /// <returns>PictureVieModel.</returns>
+        public async Task<PictureViewModel> GetTimelinePictureViewModel(PictureViewModelRequest request)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            const string pageApiPath = "/api/Pictures/TimelinePictureViewModel/";
+            HttpResponseMessage picturesResponse = await _httpClient.PostAsync(pageApiPath, new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
+            if (!picturesResponse.IsSuccessStatusCode) return new PictureViewModel();
+
+            string picturesViewModelAsString = await picturesResponse.Content.ReadAsStringAsync();
+            PictureViewModel pictureViewModel = JsonConvert.DeserializeObject<PictureViewModel>(picturesViewModelAsString);
+            if (request.TimeZone == "" || pictureViewModel == null) return pictureViewModel ?? new PictureViewModel();
+
+            if (pictureViewModel.PictureTime.HasValue && !string.IsNullOrEmpty(request.TimeZone))
+            {
+                pictureViewModel.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pictureViewModel.PictureTime.Value,
+                    TimeZoneInfo.FindSystemTimeZoneById(request.TimeZone));
+            }
+            
+            return pictureViewModel;
+        }
+
+        /// <summary>
         /// Gets a simplified PictureViewModel for a Picture entity with the provided PictureId.
         /// PictureNumber, PictureCount, CommentsList, and TagsList are not included. Time zone for PictureTime will not be converted and should be assumed to be UTC.
         /// </summary>
@@ -406,6 +435,42 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string pageApiPath = "/api/Videos/VideoViewModel";
+
+            HttpResponseMessage videoViewModelResponse = await _httpClient.PostAsync(pageApiPath, new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
+            if (!videoViewModelResponse.IsSuccessStatusCode) return new VideoViewModel();
+
+            string videoViewModelAsString = await videoViewModelResponse.Content.ReadAsStringAsync();
+            VideoViewModel videoViewModel = JsonConvert.DeserializeObject<VideoViewModel>(videoViewModelAsString);
+
+            if (videoViewModel == null || string.IsNullOrEmpty(request.TimeZone)) return videoViewModel ?? new VideoViewModel();
+
+            if (videoViewModel.VideoTime.HasValue)
+            {
+                videoViewModel.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(videoViewModel.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(request.TimeZone));
+            }
+
+            if (videoViewModel.CommentsList.Count <= 0) return videoViewModel;
+
+            foreach (Comment cmnt in videoViewModel.CommentsList)
+            {
+                cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created, TimeZoneInfo.FindSystemTimeZoneById(request.TimeZone));
+            }
+
+            return videoViewModel;
+        }
+
+        /// <summary>
+        /// Gets a VideoViewModel for the Video with a given VideoId.
+        /// </summary>
+        /// <param name="request">VideoViewModelRequest object with VideoId, TimeZone, progenies, sort order.</param>
+        /// <returns>VideoViewModel</returns>
+        public async Task<VideoViewModel> GetTimelineVideoViewModel(VideoViewModelRequest request)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string pageApiPath = "/api/Videos/TimelineVideoViewModel";
 
             HttpResponseMessage videoViewModelResponse = await _httpClient.PostAsync(pageApiPath, new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
             if (!videoViewModelResponse.IsSuccessStatusCode) return new VideoViewModel();

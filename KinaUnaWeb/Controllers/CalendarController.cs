@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.Timeline;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -81,8 +82,15 @@ namespace KinaUnaWeb.Controllers
                 // ToDo: Replace format string with configuration or user defined value
                 ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
                 ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
-
-                ev.IsReadonly = ev.ItemPerMission.PermissionLevel < PermissionLevel.Edit;
+                if (ev.ItemPerMission != null)
+                {
+                    ev.IsReadonly = ev.ItemPerMission.PermissionLevel < PermissionLevel.Edit;
+                }
+                else
+                {
+                    ev.IsReadonly = true;
+                }
+                 
                 // Todo: Add color property
                 resultList.Add(ev);
             }

@@ -155,7 +155,12 @@ namespace KinaUnaProgenyApi.Controllers
                 // User is trying to access their own UserInfo.
                 return true;
             }
-            
+            if (otherUserEmail == Constants.DefaultUserEmail)
+            {
+                // User is trying to access the default user.
+                return true;
+            }
+
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(currentUserEmail);
             if (currentUserInfo == null || currentUserInfo.Id == 0) return false;
 

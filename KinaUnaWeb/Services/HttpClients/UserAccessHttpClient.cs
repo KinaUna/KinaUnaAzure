@@ -42,6 +42,7 @@ namespace KinaUnaWeb.Services.HttpClients
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
+            httpClient.Timeout = TimeSpan.FromMinutes(15);
         }
         
         /// <summary>
@@ -74,14 +75,13 @@ namespace KinaUnaWeb.Services.HttpClients
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
             
             _httpClient.Timeout = TimeSpan.FromMinutes(20);
             
             string accessApiPath = "/api/Access/ConvertUserAccessesToUserGroups/";
             HttpResponseMessage accessManagementResponse = await _httpClient.GetAsync(accessApiPath);
-
-            _httpClient.Timeout = TimeSpan.FromSeconds(100);
             
             if (!accessManagementResponse.IsSuccessStatusCode) return false;
             
@@ -98,9 +98,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string accessApiPath = "/api/Access/ConvertItemAccessLevelToItemPermissions/" + itemType;
             HttpResponseMessage accessManagementResponse = await _httpClient.GetAsync(accessApiPath);
-
-            _httpClient.Timeout = TimeSpan.FromSeconds(100);
-
+            
             if (!accessManagementResponse.IsSuccessStatusCode) return false;
 
             return true;

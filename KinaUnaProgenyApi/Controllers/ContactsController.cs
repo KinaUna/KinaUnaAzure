@@ -19,7 +19,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// API endpoints for Contacts.
     /// </summary>
     /// <param name="imageStore"></param>
-    /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
     /// <param name="contactService"></param>
     /// <param name="locationService"></param>
@@ -32,7 +31,6 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class ContactsController(
         IImageStore imageStore,
-        IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
         IContactService contactService,
         ILocationService locationService,
@@ -185,8 +183,6 @@ namespace KinaUnaProgenyApi.Controllers
                 nameString = family.Name;
             }
             string notificationTitle = "Contact added for " + nameString;
-            string notificationMessage = currentUserInfo.FullName() + " added a new contact for " + nameString;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendContactNotification(contactItem, currentUserInfo, notificationTitle);
 
             return Ok(contactItem);
@@ -338,11 +334,9 @@ namespace KinaUnaProgenyApi.Controllers
                 nameString = family.Name;
             }
             string notificationTitle = "Contact deleted for " + nameString;
-            string notificationMessage = currentUserInfo.FullName() + " deleted a contact for " + nameString + ". Contact: " + contactItem.DisplayName;
-
+            
             if (timeLineItem == null) return NoContent();
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, currentUserInfo.ProfilePicture);
             await webNotificationsService.SendContactNotification(contactItem, currentUserInfo, notificationTitle);
 
             return NoContent();

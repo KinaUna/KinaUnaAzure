@@ -50,7 +50,7 @@ namespace KinaUnaWeb.Services
                         TagFilter = model.TagFilter
                     };
 
-                    PictureViewModel picture = await mediaHttpClient.GetPictureViewModel(pictureViewModelRequest);
+                    PictureViewModel picture = await mediaHttpClient.GetTimelinePictureViewModel(pictureViewModelRequest);
                     if (picture != null && picture.PictureId > 0)
                     {
                         string pictureUrl = "/Pictures/File?id=" + picture.PictureId + "&size=600";

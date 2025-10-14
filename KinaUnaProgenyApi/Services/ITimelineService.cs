@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using KinaUna.Data.Models;
+﻿using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.Timeline;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -58,6 +59,10 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of TimeLineItem objects.</returns>
         Task<List<TimeLineItem>> GetTimeLineList(int progenyId, int familyId, UserInfo currentUserInfo);
+
+        Task<List<TimeLineItem>> GetFilteredTimeLineList(TimelineListRequest request, UserInfo currentUserInfo);
+        Task<int> GetTimeLineListFirstItemYear(List<int> progenies, List<int> families, UserInfo currentUserInfo);
+        Task<List<TimeLineItem>> GetYearAgoList(int progenyId, int familyId, UserInfo currentUserInfo);
 
         /// <summary>
         /// Creates a OnThisDayResponse for displaying TimeLineItems on the OnThisDay page.

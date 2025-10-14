@@ -18,7 +18,10 @@
         <div class="space-50"></div>
         @foreach (int itemType in itemTypes)
         {
-            if (itemType == (int)KinaUnaTypes.TimeLineType.User || itemType == (int)KinaUnaTypes.TimeLineType.UserAccess || itemType == (int)KinaUnaTypes.TimeLineType.Progeny)
+            if (itemType == (int)KinaUnaTypes.TimeLineType.User 
+                || itemType == (int)KinaUnaTypes.TimeLineType.UserAccess 
+                || itemType == (int)KinaUnaTypes.TimeLineType.Progeny 
+                || itemType == (int)KinaUnaTypes.TimeLineType.KanbanItem)
             {
                 continue;
             }

@@ -359,8 +359,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
                 {
-                    calendarItem.ItemPerMission =
-                        await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, calendarItem.ProgenyId, calendarItem.FamilyId, currentUserInfo);
+                    //calendarItem.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, calendarItem.ProgenyId, calendarItem.FamilyId, currentUserInfo);
                     accessibleCalendarItems.Add(calendarItem);
                 }
             }

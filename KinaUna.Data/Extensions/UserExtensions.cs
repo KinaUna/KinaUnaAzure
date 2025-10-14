@@ -33,7 +33,7 @@ namespace KinaUna.Data.Extensions
         public static string GetUserId(this ClaimsPrincipal principal)
         {
             string userIdString = principal?.FindFirst(x => x.Type.Equals(OpenIddictConstants.Claims.Subject))?.Value;
-            if (string.IsNullOrEmpty(userIdString))
+            if (string.IsNullOrEmpty(userIdString) || !userIdString.Contains('-')) // If there is no '-', it's probably a client id, not a user id.
             {
                 userIdString = Constants.DefaultUserId;
             }

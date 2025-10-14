@@ -46,8 +46,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 _progenyDbContext,
                 _mockAccessManagementService.Object,
                 _mockFamilyAuditLogService.Object,
-                _mockProgenyService.Object,
-                _mockUserInfoService.Object);
+                _mockProgenyService.Object);
 
             // Seed test data
             SeedTestData();

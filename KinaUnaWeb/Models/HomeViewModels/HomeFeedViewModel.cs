@@ -1,4 +1,5 @@
 ﻿using System;
+using KinaUna.Data;
 
 namespace KinaUnaWeb.Models.HomeViewModels
 {
@@ -48,6 +49,10 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public void SetBirthTimeData()
         {
             BirthTime progBirthTime;
+            if (string.IsNullOrEmpty(CurrentProgeny.TimeZone))
+            {
+                CurrentProgeny.TimeZone = Constants.DefaultTimezone;
+            }
             if (!string.IsNullOrEmpty(CurrentProgeny.NickName) && CurrentProgeny.BirthDay.HasValue)
             {
                 progBirthTime = new BirthTime(CurrentProgeny.BirthDay.Value,

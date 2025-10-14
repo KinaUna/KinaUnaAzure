@@ -22,7 +22,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         private readonly Mock<ITodosService> _mockTodosService;
         private readonly Mock<IUserInfoService> _mockUserInfoService;
         private readonly Mock<ITimelineService> _mockTimelineService;
-        private readonly Mock<IAzureNotifications> _mockAzureNotifications;
         private readonly Mock<IWebNotificationsService> _mockWebNotificationsService;
         private readonly Mock<IAccessManagementService> _mockAccessManagementService;
         private readonly TodosController _controller;
@@ -95,7 +94,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockTodosService = new Mock<ITodosService>();
             _mockUserInfoService = new Mock<IUserInfoService>();
             _mockTimelineService = new Mock<ITimelineService>();
-            _mockAzureNotifications = new Mock<IAzureNotifications>();
             _mockWebNotificationsService = new Mock<IWebNotificationsService>();
             _mockAccessManagementService = new Mock<IAccessManagementService>();
 
@@ -104,7 +102,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 _mockTodosService.Object,
                 _mockUserInfoService.Object,
                 _mockTimelineService.Object,
-                _mockAzureNotifications.Object,
                 _mockWebNotificationsService.Object,
                 _mockAccessManagementService.Object);
 
@@ -350,8 +347,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockTodosService.Verify(x => x.AddTodoItem(It.Is<TodoItem>(t =>
                 t.CreatedBy == TestUserId && !string.IsNullOrWhiteSpace(t.UId)), _testUser), Times.Once);
             _mockTimelineService.Verify(x => x.AddTimeLineItem(It.IsAny<TimeLineItem>(), _testUser), Times.Once);
-            _mockAzureNotifications.Verify(x => x.ProgenyUpdateNotification(
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TimeLineItem>(), It.IsAny<string>()), Times.Once);
             _mockWebNotificationsService.Verify(x => x.SendTodoItemNotification(
                 It.IsAny<TodoItem>(), It.IsAny<UserInfo>(), It.IsAny<string>()), Times.Once);
         }
@@ -833,8 +828,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockTodosService.Verify(x => x.DeleteTodoItem(It.Is<TodoItem>(t =>
                 t.ModifiedBy == TestUserId), _testUser, false), Times.Once);
             _mockTimelineService.Verify(x => x.DeleteTimeLineItem(_testTimeLineItem, _testUser), Times.Once);
-            _mockAzureNotifications.Verify(x => x.ProgenyUpdateNotification(
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TimeLineItem>(), It.IsAny<string>()), Times.Once);
             _mockWebNotificationsService.Verify(x => x.SendTodoItemNotification(
                 It.IsAny<TodoItem>(), It.IsAny<UserInfo>(), It.IsAny<string>()), Times.Once);
         }
@@ -896,8 +889,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Assert
             Assert.IsType<NoContentResult>(result);
             _mockTimelineService.Verify(x => x.DeleteTimeLineItem(It.IsAny<TimeLineItem>(), It.IsAny<UserInfo>()), Times.Never);
-            _mockAzureNotifications.Verify(x => x.ProgenyUpdateNotification(
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TimeLineItem>(), It.IsAny<string>()), Times.Never);
         }
 
         [Fact]

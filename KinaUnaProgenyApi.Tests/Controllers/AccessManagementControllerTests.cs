@@ -415,7 +415,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockAccessManagementService.Setup(x => x.GetItemPermissionForUser(
-                KinaUnaTypes.TimeLineType.Note, TestItemId, TestProgenyId, 0, _testUser))
+                KinaUnaTypes.TimeLineType.Note, TestItemId, TestProgenyId, 0, _testUser, null))
                 .ReturnsAsync(_testTimelineItemPermission);
 
             // Act
@@ -443,7 +443,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockAccessManagementService.Setup(x => x.GetItemPermissionForUser(
-                KinaUnaTypes.TimeLineType.Note, TestItemId, 0, TestFamilyId, _testUser))
+                KinaUnaTypes.TimeLineType.Note, TestItemId, 0, TestFamilyId, _testUser, null))
                 .ReturnsAsync(familyItemPermission);
 
             // Act

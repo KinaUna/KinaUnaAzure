@@ -14,12 +14,12 @@ namespace KinaUna.Data.Models.DTOs
         /// <summary>
         /// Gets or sets the list of Ids for the progenies to get Todos for.
         /// </summary>
-        public List<int> ProgenyIds { get; set; }
+        public List<int> ProgenyIds { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the list of Ids for the families to get Todos for.
         /// </summary>
-        public List<int> FamilyIds { get; set; }
+        public List<int> FamilyIds { get; set; } = [];
         /// <summary>
         /// Gets or sets the starting date of the items to include.
         /// </summary>
@@ -96,7 +96,8 @@ namespace KinaUna.Data.Models.DTOs
         /// 0 for no grouping, 1 for Status, 2 for Progeny
         /// </summary>
         public int GroupBy { get; set; } = 0;
-        public string LocationFilter { get; set; }
+
+        public string LocationFilter { get; set; } = string.Empty;
 
         /// <summary>
         /// Sets the StartDate and EndDate properties based on the provided year, month, and day values.

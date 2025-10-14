@@ -11,7 +11,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for comments.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="commentsService"></param>
     /// <param name="progenyService"></param>
     /// <param name="userInfoService"></param>
@@ -21,7 +20,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class CommentsController(
-        IAzureNotifications azureNotifications,
         ICommentsService commentsService,
         IProgenyService progenyService,
         IUserInfoService userInfoService,
@@ -104,17 +102,8 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "New comment for " + newComment.Progeny.NickName;
             string notificationMessage = value.DisplayName + " added a new comment for " + newComment.Progeny.NickName;
 
-            TimeLineItem timeLineItem = new()
-            {
-                ProgenyId = newComment.Progeny.Id,
-                ItemId = newComment.ItemId,
-                ItemType = newComment.ItemType,
-                AccessLevel = newComment.AccessLevel
-            };
-
             UserInfo userinfo = await userInfoService.GetUserInfoByUserId(value.Author);
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
             await webNotificationsService.SendCommentNotification(newComment, userinfo, notificationTitle, notificationMessage);
 
             return Ok(newComment);

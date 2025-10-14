@@ -78,6 +78,14 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<PictureViewModel> GetPictureViewModel(PictureViewModelRequest request);
 
         /// <summary>
+        /// Gets a simplified PictureViewModel, without information from other pictures, for the Picture with a given PictureId.
+        /// PictureTime will be converted to the given time zone.
+        /// </summary>
+        /// <param name="request">PictureViewModelRequest object with PictureId, SortOrder, TimeZone, and TagFilter.</param>
+        /// <returns>PictureVieModel.</returns>
+        Task<PictureViewModel> GetTimelinePictureViewModel(PictureViewModelRequest request);
+
+        /// <summary>
         /// Gets a list of Locations that are obtained from Pictures.
         /// </summary>
         /// <param name="picturesLocationsRequest">PicturesLocationsRequest with the Id of the Progeny to get Picture locations for and the distance in kilometers to group them by.</param>
@@ -161,6 +169,13 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="request">VideoViewModelRequest object with VideoId, TimeZone, progenies, sort order.</param>
         /// <returns>VideoViewModel</returns>
         Task<VideoViewModel> GetVideoViewModel(VideoViewModelRequest request);
+
+        /// <summary>
+        /// Gets a simplified VideoViewModel for the Video with a given VideoId.
+        /// </summary>
+        /// <param name="request">VideoViewModelRequest object with VideoId, TimeZone, progenies, sort order.</param>
+        /// <returns>VideoViewModel</returns>
+        Task<VideoViewModel> GetTimelineVideoViewModel(VideoViewModelRequest request);
 
         /// <summary>
         /// Gets a list of all Pictures for a given progeny that a user has access to.
