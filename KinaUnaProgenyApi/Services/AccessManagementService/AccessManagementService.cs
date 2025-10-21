@@ -58,7 +58,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (viewPermission == null) return false;
 
                 DistributedCacheEntryOptions cacheOptionsSlidingView = new();
-                cacheOptionsSlidingView.SetAbsoluteExpiration(new TimeSpan(0, 0, 5, 0));
+                cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(0, 0, 5, 0));
                 await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "hasItemPermissionPermission" + itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId + "_level_" + (int)requiredLevel
                     , JsonConvert.SerializeObject(viewPermission), cacheOptionsSlidingView).ConfigureAwait(false);
                 return true;
@@ -223,7 +223,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             DistributedCacheEntryOptions cacheOptionsSliding = new();
-            cacheOptionsSliding.SetAbsoluteExpiration(new TimeSpan(0, 0, 5, 0));
+            cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(0, 0, 5, 0));
             await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "getItemPermissionForUser" + itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId
                 , JsonConvert.SerializeObject(resultPermission), cacheOptionsSliding);
 
