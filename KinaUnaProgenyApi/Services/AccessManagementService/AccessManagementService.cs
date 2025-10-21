@@ -48,24 +48,23 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 return await HasPrivatePermission(itemType, itemId, userInfo);
             }
-
-            TimelineItemPermission itemPermission;
+            
             string cachedItemPermission = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion +
-                                                                     "hasItemPermissionPermission" + itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId + "_level_" + (int)requiredLevel);
+                                                                     "hasItemPermissionPermission" + itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId + "_level_" + (int)requiredLevel).ConfigureAwait(false);
             if (string.IsNullOrEmpty(cachedItemPermission))
             {
-                // We don't check for add permission here, as it is not relevant for existing items.
-                itemPermission = await GetItemPermissionForUser(itemType, itemId, 0, 0, userInfo, requiredLevel);
-                DistributedCacheEntryOptions cacheOptionsSliding = new();
-                cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(0, 0, 5, 0)); // Expire after a week.
+                List<TimelineItemPermission> allPermissions = await AllUsersTimelineItemPermissions(userInfo).ConfigureAwait(false);
+                TimelineItemPermission viewPermission = allPermissions.FirstOrDefault(tp => tp.TimelineType == itemType && tp.ItemId == itemId && tp.PermissionLevel >= requiredLevel);
+                if (viewPermission == null) return false;
+
+                DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+                cacheOptionsSlidingView.SetAbsoluteExpiration(new TimeSpan(0, 0, 5, 0));
                 await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "hasItemPermissionPermission" + itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId + "_level_" + (int)requiredLevel
-                    , JsonConvert.SerializeObject(itemPermission), cacheOptionsSliding);
+                    , JsonConvert.SerializeObject(viewPermission), cacheOptionsSlidingView).ConfigureAwait(false);
+                return true;
             }
-            else
-            {
-                itemPermission = JsonConvert.DeserializeObject<TimelineItemPermission>(cachedItemPermission);
-            }
-            
+
+            TimelineItemPermission itemPermission = JsonConvert.DeserializeObject<TimelineItemPermission>(cachedItemPermission);
             return itemPermission.PermissionLevel >= requiredLevel;
         }
 
@@ -111,8 +110,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             PermissionLevel highestPermission = PermissionLevel.None;
 
+            List<TimelineItemPermission> usersItemPermissions = await AllUsersTimelineItemPermissions(userInfo);
             // Check for inherited permissions.
-            TimelineItemPermission inheritedPermission = await progenyDbContext.TimelineItemPermissionsDb.SingleOrDefaultAsync(tp => tp.InheritPermissions && tp.TimelineType == itemType && tp.ItemId == itemId);
+            TimelineItemPermission inheritedPermission = usersItemPermissions.Find(tp => tp.InheritPermissions && tp.TimelineType == itemType && tp.ItemId == itemId);
             if (inheritedPermission != null)
             {
                 if (inheritedPermission.ProgenyId > 0)
@@ -154,9 +154,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
             
             // Check direct user permissions.
-            TimelineItemPermission timelineItemPermission = await progenyDbContext.TimelineItemPermissionsDb
-                .AsNoTracking()
-                .SingleOrDefaultAsync(tp => tp.UserId == userInfo.UserId && tp.TimelineType == itemType && tp.ItemId == itemId);
+            TimelineItemPermission timelineItemPermission = usersItemPermissions.Find(tp => tp.UserId == userInfo.UserId && tp.TimelineType == itemType && tp.ItemId == itemId);
             if (timelineItemPermission != null)
             {
                 if (timelineItemPermission.PermissionLevel == PermissionLevel.CreatorOnly)
@@ -192,11 +190,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             // Check group permissions.
-            List<TimelineItemPermission> groupPermissions = await progenyDbContext.TimelineItemPermissionsDb
-                .AsNoTracking()
-                .Where(tp => tp.GroupId > 0 && tp.TimelineType == itemType && tp.ItemId == itemId && tp.PermissionLevel < PermissionLevel.CreatorOnly)
-                .ToListAsync();
-
+            List<TimelineItemPermission> groupPermissions = usersItemPermissions.Where(tp => tp.GroupId > 0 && tp.TimelineType == itemType && tp.ItemId == itemId && tp.PermissionLevel < PermissionLevel.CreatorOnly).ToList();
             
             foreach (TimelineItemPermission permission in groupPermissions)
             {
@@ -229,7 +223,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             DistributedCacheEntryOptions cacheOptionsSliding = new();
-            cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(0, 0, 5, 0)); // Expire after a week.
+            cacheOptionsSliding.SetAbsoluteExpiration(new TimeSpan(0, 0, 5, 0));
             await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "getItemPermissionForUser" + itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId
                 , JsonConvert.SerializeObject(resultPermission), cacheOptionsSliding);
 
@@ -2144,6 +2138,49 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             List<int> resultFamilies = families.Distinct().ToList();
             return resultFamilies;
+        }
+
+        private async Task<List<TimelineItemPermission>> AllUsersTimelineItemPermissions(UserInfo userInfo)
+        {
+            string cachedItemPermissions = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion +
+                                                                     "allUsersTimelineItemPermissions" + "_userId_" + userInfo.UserId);
+            if (!string.IsNullOrEmpty(cachedItemPermissions))
+            {
+                return JsonConvert.DeserializeObject<List<TimelineItemPermission>>(cachedItemPermissions);
+            }
+
+            // Get user specific permissions.
+            List<TimelineItemPermission> timelineItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.UserId == userInfo.UserId).ToListAsync();
+            // Get group permissions.
+            List<UserGroupMember> userGroups = await progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ug => ug.UserId == userInfo.UserId).ToListAsync();
+            foreach (UserGroupMember group in userGroups)
+            {
+                List<TimelineItemPermission> groupPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.GroupId == group.UserGroupId).ToListAsync();
+                timelineItemPermissions.AddRange(groupPermissions);
+            }
+            // Get inherited permissions.
+            List<int> progeniesUserCanAccess = await ProgeniesUserCanAccess(userInfo, PermissionLevel.View); 
+            foreach (int progenyId in progeniesUserCanAccess)
+            {
+                List<TimelineItemPermission> inheritedPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                    .Where(tp => tp.ProgenyId == progenyId && tp.InheritPermissions).ToListAsync();
+                timelineItemPermissions.AddRange(inheritedPermissions);
+            }
+
+            List<int> familiesUserCanAccess = await FamiliesUserCanAccess(userInfo, PermissionLevel.View);
+            foreach (int familyId in familiesUserCanAccess)
+            {
+                List<TimelineItemPermission> inheritedPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                    .Where(tp => tp.FamilyId == familyId && tp.InheritPermissions).ToListAsync();
+                timelineItemPermissions.AddRange(inheritedPermissions);
+            }
+
+            DistributedCacheEntryOptions cacheOptionsSliding = new();
+            cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(0, 0, 5, 0));
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "allUsersTimelineItemPermissions" + "_userId_" + userInfo.UserId
+                , JsonConvert.SerializeObject(timelineItemPermissions), cacheOptionsSliding);
+
+            return timelineItemPermissions;
         }
 
         /// <summary>

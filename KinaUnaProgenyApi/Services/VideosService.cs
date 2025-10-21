@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -250,15 +252,23 @@ namespace KinaUnaProgenyApi.Services
                 videosList = await SetVideosListInCache(progenyId);
             }
 
-            List<Video> filteredList = [];
-            foreach (Video video in videosList)
+            Stopwatch watch = Stopwatch.StartNew();
+            ConcurrentBag<Video> videosConcurrentBag = [];
+            ParallelOptions parallelOptions = new()
+            {
+                MaxDegreeOfParallelism = 4
+            };
+            await Parallel.ForEachAsync(videosList, parallelOptions, async (video, _) =>
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, video.VideoId, currentUserInfo, PermissionLevel.View))
                 {
                     //video.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, currentUserInfo);
-                    filteredList.Add(video);
+                    videosConcurrentBag.Add(video);
                 }
-            }
+            });
+            watch.Stop();
+            Console.WriteLine("GetVideosList Time Taken: " + watch.Elapsed.Minutes + "m " + watch.Elapsed.Seconds + "s");
+            List<Video> filteredList = videosConcurrentBag.ToList();
 
             return filteredList;
         }

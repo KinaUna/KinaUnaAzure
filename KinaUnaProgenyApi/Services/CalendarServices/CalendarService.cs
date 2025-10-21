@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -346,8 +347,6 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 calendarList = await SetCalendarListInCache(progenyId, familyId);
             }
 
-            List<CalendarItem> accessibleCalendarItems = [];
-
             if (start != null && end != null)
             {
                 calendarList = [.. calendarList.Where(c => c.StartTime >= start && c.StartTime <= end)];
@@ -355,15 +354,21 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 calendarList.AddRange(recurringEvents);
             }
 
-            foreach (CalendarItem calendarItem in calendarList)
+            ConcurrentBag<CalendarItem> calendarItemsConcurrentBag = [];
+            ParallelOptions parallelOptions = new()
             {
-                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
+                MaxDegreeOfParallelism = 4
+            };
+            await Parallel.ForEachAsync(calendarList, parallelOptions, async (calendarItem, _) =>
+            {
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View).ConfigureAwait(false))
                 {
-                    //calendarItem.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, calendarItem.ProgenyId, calendarItem.FamilyId, currentUserInfo);
-                    accessibleCalendarItems.Add(calendarItem);
+                    calendarItemsConcurrentBag.Add(calendarItem);
                 }
-            }
+            });
 
+            List<CalendarItem> accessibleCalendarItems = calendarItemsConcurrentBag.ToList();
+            
             return accessibleCalendarItems;
 
         }

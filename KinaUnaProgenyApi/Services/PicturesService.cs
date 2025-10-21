@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -690,15 +692,25 @@ namespace KinaUnaProgenyApi.Services
                 picturesList = await SetPicturesListInCache(progenyId);
             }
 
-            List<Picture> filteredList = [];
-            foreach (Picture picture in picturesList)
+            Stopwatch watch = Stopwatch.StartNew();
+            ConcurrentBag<Picture> picturesConcurrentBag = [];
+            ParallelOptions parallelOptions = new()
             {
-                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
+                MaxDegreeOfParallelism = 4
+            };
+            await Parallel.ForEachAsync(picturesList, parallelOptions, async (picture, _) =>
+            {
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View).ConfigureAwait(false))
                 {
                     //picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);
-                    filteredList.Add(picture);
+                    picturesConcurrentBag.Add(picture);
                 }
-            }
+            });
+            watch.Stop();
+            Console.WriteLine("GetPicturesList Time Taken: " + watch.Elapsed.Minutes + "m " + watch.Elapsed.Seconds + "s");
+            List<Picture> filteredList = picturesConcurrentBag.ToList();
+            filteredList = filteredList.OrderByDescending(p => p.PictureTime).ToList();
+
             return filteredList;
         }
 

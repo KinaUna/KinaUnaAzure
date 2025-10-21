@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using KinaUna.Data.Models;
+﻿using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
 
 namespace KinaUnaProgenyApi.Models.ViewModels
 {
@@ -36,7 +37,8 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         public int PictureCount { get; set; }
         public int PrevPicture { get; set; }
         public int NextPicture { get; set; }
-        
+        public TimelineItemPermission ItemPerMission { get; set; }
+
         public void SetPicturePropertiesFromPictureItem(Picture picture)
         {
             PictureId = picture.PictureId;
@@ -52,6 +54,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
             Longtitude = picture.Longtitude;
             Altitude = picture.Altitude;
             CommentThreadNumber = picture.CommentThreadNumber;
+            ItemPerMission = picture.ItemPerMission;
         }
 
         public void SetTagsList(List<string> tagsList)

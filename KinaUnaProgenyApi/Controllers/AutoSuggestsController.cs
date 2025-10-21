@@ -120,13 +120,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             AutoSuggestListBuilder autoSuggestListBuilder = new();
-
-            List<Picture> allPictures = await picturesService.GetPicturesList(progenyId, currentUserInfo); 
-            autoSuggestListBuilder.AddItemsToLocationsList(allPictures);
             
-            List<Video> allVideos = await videosService.GetVideosList(progenyId, currentUserInfo);
-            autoSuggestListBuilder.AddItemsToLocationsList(allVideos);
-
             List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToLocationsList(allCalendarItems);
 
@@ -135,6 +129,12 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<TodoItem> allTodoItems = await todosService.GetTodosList(progenyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToLocationsList(allTodoItems);
+
+            List<Picture> allPictures = await picturesService.GetPicturesList(progenyId, currentUserInfo);
+            autoSuggestListBuilder.AddItemsToLocationsList(allPictures);
+
+            List<Video> allVideos = await videosService.GetVideosList(progenyId, currentUserInfo);
+            autoSuggestListBuilder.AddItemsToLocationsList(allVideos);
 
             List<string> autoSuggestList = autoSuggestListBuilder.GetLocationsList();
             autoSuggestList.Sort();
@@ -156,13 +156,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             AutoSuggestListBuilder autoSuggestListBuilder = new();
-
-            List<Picture> allPictures = await picturesService.GetPicturesList(progenyId, currentUserInfo);
-            autoSuggestListBuilder.AddItemsToTagsList(allPictures);
-
-            List<Video> allVideos = await videosService.GetVideosList(progenyId, currentUserInfo);
-            autoSuggestListBuilder.AddItemsToTagsList(allVideos);
-
+            
             List<Location> allLocations = await locationService.GetLocationsList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allLocations);
 
@@ -177,6 +171,12 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsListForProgenyOrFamily(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allKanbanBoards);
+            
+            List<Picture> allPictures = await picturesService.GetPicturesList(progenyId, currentUserInfo);
+            autoSuggestListBuilder.AddItemsToTagsList(allPictures);
+
+            List<Video> allVideos = await videosService.GetVideosList(progenyId, currentUserInfo);
+            autoSuggestListBuilder.AddItemsToTagsList(allVideos);
 
             List<string> autoSuggestList = autoSuggestListBuilder.GetTagsList();
             autoSuggestList.Sort();

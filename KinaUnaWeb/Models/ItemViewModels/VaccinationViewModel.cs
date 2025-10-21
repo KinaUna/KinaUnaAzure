@@ -40,7 +40,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             if (vaccinationsList.Count != 0)
             {
-                VaccinationList = [.. VaccinationList.OrderBy(v => v.VaccinationDate)];
+                VaccinationList = [.. vaccinationsList.OrderBy(v => v.VaccinationDate)];
             }
         }
 

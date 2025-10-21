@@ -172,6 +172,7 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_NotFoundPartial");
             }
             
+            
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId, 0, false);
             PictureItemViewModel model = new(baseModel)
             {
@@ -202,7 +203,8 @@ namespace KinaUnaWeb.Controllers
 
                 }
             }
-            if (model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
+
+            if (model.Picture.ItemPerMission != null && model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
                 model.ProgenyLocations = [];
                 foreach (Progeny progeny in model.CurrentUser.ProgenyList)
