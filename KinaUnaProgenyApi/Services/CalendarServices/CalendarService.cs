@@ -6,6 +6,7 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -23,8 +24,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly ICalendarRecurrencesService _calendarRecurrencesService;
         private readonly IAccessManagementService _accessManagementService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public CalendarService(ProgenyDbContext context, IDistributedCache cache, ICalendarRecurrencesService calendarRecurrencesService, IAccessManagementService accessManagementService)
+        public CalendarService(ProgenyDbContext context, IDistributedCache cache, ICalendarRecurrencesService calendarRecurrencesService, IAccessManagementService accessManagementService, IServiceScopeFactory serviceScopeFactory)
         {
             _context = context;
             _accessManagementService = accessManagementService;
@@ -32,6 +34,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             _calendarRecurrencesService = calendarRecurrencesService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0)); // Expire after a week.
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         /// <summary>
@@ -361,7 +364,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             };
             await Parallel.ForEachAsync(calendarList, parallelOptions, async (calendarItem, _) =>
             {
-                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View).ConfigureAwait(false))
+                using IServiceScope scope = _serviceScopeFactory.CreateScope();
+                IAccessManagementService accessManagementService = scope.ServiceProvider.GetRequiredService<IAccessManagementService>();
+                
+                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
                 {
                     calendarItemsConcurrentBag.Add(calendarItem);
                 }

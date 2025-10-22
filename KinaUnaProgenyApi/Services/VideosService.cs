@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
@@ -12,7 +6,14 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -23,14 +24,16 @@ namespace KinaUnaProgenyApi.Services
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public VideosService(MediaDbContext mediaContext, IDistributedCache cache, IAccessManagementService accessManagementService)
+        public VideosService(MediaDbContext mediaContext, IDistributedCache cache, IAccessManagementService accessManagementService, IServiceScopeFactory serviceScopeFactory)
         {
             _mediaContext = mediaContext;
             _accessManagementService = accessManagementService;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         /// <summary>
@@ -260,11 +263,14 @@ namespace KinaUnaProgenyApi.Services
             };
             await Parallel.ForEachAsync(videosList, parallelOptions, async (video, _) =>
             {
-                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, video.VideoId, currentUserInfo, PermissionLevel.View))
+                using IServiceScope scope = _serviceScopeFactory.CreateScope();
+                IAccessManagementService accessManagementService = scope.ServiceProvider.GetRequiredService<IAccessManagementService>();
+                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, video.VideoId, currentUserInfo, PermissionLevel.View))
                 {
                     //video.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, currentUserInfo);
                     videosConcurrentBag.Add(video);
                 }
+
             });
             watch.Stop();
             Console.WriteLine("GetVideosList Time Taken: " + watch.Elapsed.Minutes + "m " + watch.Elapsed.Seconds + "s");

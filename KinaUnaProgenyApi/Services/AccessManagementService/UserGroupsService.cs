@@ -33,7 +33,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             // Check if the user has access to the group. User must have Edit permission for the family to be able to see the group and its members.
             if (group.FamilyId != 0)
             {
-                hasAccess = await accessManagementService.HasFamilyPermission(group.FamilyId, currentUserInfo, PermissionLevel.Edit);
+                if(await accessManagementService.HasFamilyPermission(group.FamilyId, currentUserInfo, PermissionLevel.Edit))
+                {
+                    hasAccess = true;
+                    FamilyPermission familyPermission = await accessManagementService.GetFamilyPermissionForGroup(group.FamilyId, group.UserGroupId, currentUserInfo);
+                    group.PermissionLevel = familyPermission.PermissionLevel;
+                }
                 
             }
             else
@@ -43,6 +48,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     if (await accessManagementService.HasProgenyPermission(group.ProgenyId, currentUserInfo, PermissionLevel.Edit))
                     {
                         hasAccess = true;
+                        ProgenyPermission progenyPermission = await accessManagementService.GetProgenyPermissionForGroup(group.ProgenyId, group.UserGroupId, currentUserInfo);
+                        group.PermissionLevel = progenyPermission.PermissionLevel;
                     }
                 }
             }
@@ -51,7 +58,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 return new UserGroup();
             }
-
+            
             group.Members = await GetUserGroupMembersList(group.UserGroupId);
 
             return group;
@@ -77,6 +84,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 bool hasAccess = await accessManagementService.HasProgenyPermission(progenyId, currentUserInfo, PermissionLevel.Admin);
                 if (!hasAccess) continue;
                 ProgenyPermission groupPermission = await accessManagementService.GetProgenyPermissionForGroup(group.ProgenyId, group.UserGroupId, currentUserInfo);
+                if (groupPermission == null) continue;
+
                 group.PermissionLevel = groupPermission.PermissionLevel;
                 group.Members = await GetUserGroupMembersList(group.UserGroupId);
                 accessibleGroups.Add(group);
@@ -412,6 +421,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         private async Task<List<UserGroupMember>> GetUserGroupMembersList(int userGroupId)
         {
             List<UserGroupMember> members = await progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ugm => ugm.UserGroupId == userGroupId).ToListAsync();
+            foreach (UserGroupMember member in members)
+            {
+                if (!string.IsNullOrEmpty(member.UserId))
+                {
+                    member.UserInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserId == member.UserId);
+                }
+            }
             // Todo: Filter out members that the current user should not see?
             return members;
         }

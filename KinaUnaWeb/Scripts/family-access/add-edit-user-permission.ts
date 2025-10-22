@@ -11,17 +11,22 @@ export async function displayAddUserPermissionModal(progenyId: string, familyId:
     });
     if (response.ok) {
         const addGroupContent = await response.text();
-        const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
-        if (modalDiv) {
-            modalDiv.innerHTML = addGroupContent;
+        let popup = document.getElementById('item-details-div');
+        if (popup) {
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = addGroupContent;
+            popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
-            modalDiv.classList.remove('d-none');
+            popup.classList.remove('d-none');
             addAddUserPermissionModalEventListeners();
             validateInputs();
 
             return Promise.resolve();
-        } else {
-            return Promise.reject('Modal div not found in the document.');
+        }
+        else {
+            return Promise.reject('Item details div not found in the document.');
         }
     } else {
         console.error('Failed to fetch add permission details:', response.statusText);
@@ -35,7 +40,7 @@ function addAddUserPermissionModalEventListeners(): void {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
-            const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+            const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
@@ -63,7 +68,7 @@ function addAddUserPermissionModalEventListeners(): void {
                 body: formData
             });
             if (response.ok) {
-                const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+                const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (modalDiv) {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
@@ -93,17 +98,22 @@ export async function displayEditFamilyPermissionModal(permissionId: string) {
     });
     if (response.ok) {
         const editPermissionContent = await response.text();
-        const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
-        if (modalDiv) {
-            modalDiv.innerHTML = editPermissionContent;
+        let popup = document.getElementById('item-details-div');
+        if (popup) {
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = editPermissionContent;
+            popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
-            modalDiv.classList.remove('d-none');
+            popup.classList.remove('d-none');
             addEditFamilyPermissionModalEventListeners();
             validateInputs();
 
             return Promise.resolve();
-        } else {
-            return Promise.reject('Modal div not found in the document.');
+        }
+        else {
+            return Promise.reject('Item details div not found in the document.');
         }
     } else {
         console.error('Failed to fetch edit family permission details:', response.statusText);
@@ -117,7 +127,7 @@ function addEditFamilyPermissionModalEventListeners(): void {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
-            const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+            const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
@@ -145,7 +155,7 @@ function addEditFamilyPermissionModalEventListeners(): void {
                 body: formData
             });
             if (response.ok) {
-                const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+                const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (modalDiv) {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
@@ -174,16 +184,21 @@ export async function displayDeleteFamilyPermissionModal(permissionId: string) {
     });
     if (response.ok) {
         const deletePermissionContent = await response.text();
-        const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
-        if (modalDiv) {
-            modalDiv.innerHTML = deletePermissionContent;
+        let popup = document.getElementById('item-details-div');
+        if (popup) {
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = deletePermissionContent;
+            popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
-            modalDiv.classList.remove('d-none');
+            popup.classList.remove('d-none');
             addDeleteFamilyPermissionModalEventListeners();
 
             return Promise.resolve();
-        } else {
-            return Promise.reject('Modal div not found in the document.');
+        }
+        else {
+            return Promise.reject('Item details div not found in the document.');
         }
     } else {
         console.error('Failed to fetch delete family permission details:', response.statusText);
@@ -197,7 +212,7 @@ function addDeleteFamilyPermissionModalEventListeners(): void {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
-            const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+            const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
@@ -219,7 +234,7 @@ function addDeleteFamilyPermissionModalEventListeners(): void {
                 body: formData
             });
             if (response.ok) {
-                const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+                const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (modalDiv) {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
@@ -248,17 +263,22 @@ export async function displayEditProgenyPermissionModal(permissionId: string) {
     });
     if (response.ok) {
         const editPermissionContent = await response.text();
-        const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
-        if (modalDiv) {
-            modalDiv.innerHTML = editPermissionContent;
+        let popup = document.getElementById('item-details-div');
+        if (popup) {
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = editPermissionContent;
+            popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
-            modalDiv.classList.remove('d-none');
+            popup.classList.remove('d-none');
             addEditProgenyPermissionModalEventListeners();
             validateInputs();
 
             return Promise.resolve();
-        } else {
-            return Promise.reject('Modal div not found in the document.');
+        }
+        else {
+            return Promise.reject('Item details div not found in the document.');
         }
     } else {
         console.error('Failed to fetch edit progeny permission details:', response.statusText);
@@ -272,7 +292,7 @@ function addEditProgenyPermissionModalEventListeners(): void {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
-            const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+            const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
@@ -300,7 +320,7 @@ function addEditProgenyPermissionModalEventListeners(): void {
                 body: formData
             });
             if (response.ok) {
-                const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+                const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (modalDiv) {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
@@ -329,16 +349,21 @@ export async function displayDeleteProgenyPermissionModal(permissionId: string) 
     });
     if (response.ok) {
         const deletePermissionContent = await response.text();
-        const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
-        if (modalDiv) {
-            modalDiv.innerHTML = deletePermissionContent;
+        let popup = document.getElementById('item-details-div');
+        if (popup) {
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = deletePermissionContent;
+            popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
-            modalDiv.classList.remove('d-none');
+            popup.classList.remove('d-none');
             addDeleteProgenyPermissionModalEventListeners();
-
+            
             return Promise.resolve();
-        } else {
-            return Promise.reject('Modal div not found in the document.');
+        }
+        else {
+            return Promise.reject('Item details div not found in the document.');
         }
     } else {
         console.error('Failed to fetch delete progeny permission details:', response.statusText);
@@ -352,7 +377,7 @@ function addDeleteProgenyPermissionModalEventListeners(): void {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
-            const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+            const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
@@ -374,7 +399,7 @@ function addDeleteProgenyPermissionModalEventListeners(): void {
                 body: formData
             });
             if (response.ok) {
-                const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+                const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (modalDiv) {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');

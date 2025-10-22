@@ -25,6 +25,7 @@ namespace KinaUnaWeb.Models.FamilyAccessViewModels
 
         public void SetPermissionsLevelsList()
         {
+            PermissionLevelsList = [];
             foreach (PermissionLevel level in (PermissionLevel[])Enum.GetValues(typeof(PermissionLevel)))
             {
                 PermissionLevelsList.Add(new SelectListItem

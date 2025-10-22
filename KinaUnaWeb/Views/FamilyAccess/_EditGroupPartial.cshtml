@@ -37,7 +37,9 @@
             </div>
             <div class="form-group">
                 <label asp-for="UserGroup.Description" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Family, Model.LanguageId)</label>
-                <textarea class="form-control" rows="4" asp-for="UserGroup.Description">@Model.UserGroup.Description</textarea>
+                <div class="col-auto">
+                    <textarea class="form-control" rows="4" asp-for="UserGroup.Description">@Model.UserGroup.Description</textarea>
+                </div>
             </div>
             <div class="form-group">
                 <label asp-for="PermissionLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Select group's permission", PageNames.AccessManagement, Model.LanguageId):</label>
@@ -53,7 +55,7 @@
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">
                     <button id="save-group-button" disabled="disabled" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                    <a class="btn btn-danger item-details-cancel-button close-edit-group-modal-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    <button class="btn btn-danger item-details-cancel-button close-edit-group-modal-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
                 </div>
                 <div id="validation-errors-div" class="col-auto">
                     <div id="name-required-div" class="d-none text-warning">

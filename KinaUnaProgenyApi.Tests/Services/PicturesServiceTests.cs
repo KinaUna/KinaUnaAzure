@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -19,6 +20,7 @@ namespace KinaUnaProgenyApi.Tests.Services
     {
         private readonly Mock<IAccessManagementService> _mockAccessManagementService = new();
         private readonly Mock<IImageStore> _mockImageStore = new();
+        private readonly Mock<IServiceScopeFactory> _mockServiceScopeFactory = new();
 
         private static MediaDbContext GetInMemoryDbContext(string dbName)
         {
@@ -92,7 +94,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.GetPicture(1, userInfo);
@@ -120,7 +122,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.View))
                 .ReturnsAsync(false);
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.GetPicture(1, userInfo);
@@ -141,7 +143,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 999, userInfo, PermissionLevel.View))
                 .ReturnsAsync(true);
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.GetPicture(999, userInfo);
@@ -170,7 +172,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result1 = await service.GetPicture(1, userInfo);
@@ -205,7 +207,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .Returns(Task.CompletedTask);
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.AddPicture(picture, userInfo);
@@ -231,7 +233,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
                 .ReturnsAsync(false);
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.AddPicture(picture, userInfo);
@@ -267,7 +269,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .ReturnsAsync(new List<TimelineItemPermission>());
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.UpdatePicture(picture, userInfo);
@@ -295,7 +297,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.Edit))
                 .ReturnsAsync(false);
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.UpdatePicture(picture, userInfo);
@@ -317,7 +319,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 999, userInfo, PermissionLevel.Edit))
                 .ReturnsAsync(true);
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.UpdatePicture(picture, userInfo);
@@ -350,7 +352,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync("deleted");
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.DeletePicture(picture, userInfo);
@@ -377,7 +379,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.Admin))
                 .ReturnsAsync(false);
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.DeletePicture(picture, userInfo);
@@ -411,7 +413,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Callback(() => deleteCallCount++)
                 .ReturnsAsync("deleted");
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.DeletePicture(picture1, userInfo);
@@ -440,7 +442,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync("deleted");
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.DeletePictureAsSystem(picture);
@@ -475,7 +477,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.GetPictureByLink("unique-link.jpg", userInfo);
@@ -501,7 +503,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.View))
                 .ReturnsAsync(false);
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.GetPictureByLink("unique-link.jpg", userInfo);
@@ -525,7 +527,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.PicturesDb.Add(picture);
             await context.SaveChangesAsync();
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.SetPictureInCache(1);
@@ -543,7 +545,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("SetPictureInCache_NotFound");
             IDistributedCache cache = GetMemoryCache();
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.SetPictureInCache(999);
@@ -564,7 +566,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.PicturesDb.Add(picture);
             await context.SaveChangesAsync();
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             Picture? result = await service.SetPictureInCache(1);
@@ -589,7 +591,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.PicturesDb.Add(picture);
             await context.SaveChangesAsync();
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
             await service.SetPictureInCache(1);
 
             // Act
@@ -625,7 +627,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             List<Picture>? result = await service.GetPicturesList(1, userInfo);
@@ -660,7 +662,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             List<Picture>? result = await service.GetPicturesList(1, userInfo);
@@ -679,7 +681,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             List<Picture>? result = await service.GetPicturesList(1, userInfo);
@@ -705,7 +707,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.PicturesDb.AddRange(picture1, picture2);
             await context.SaveChangesAsync();
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             List<Picture>? result = await service.SetPicturesListInCache(1);
@@ -744,7 +746,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             List<Picture>? result = await service.GetPicturesWithTag(1, "Tag1", userInfo);
@@ -776,7 +778,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             List<Picture>? result = await service.GetPicturesWithTag(1, "", userInfo);
@@ -815,7 +817,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             PicturesLocationsRequest request = new()
             {
@@ -863,7 +865,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             NearByPhotosRequest request = new()
             {
@@ -909,7 +911,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             NearByPhotosRequest request = new()
             {
@@ -940,21 +942,21 @@ namespace KinaUnaProgenyApi.Tests.Services
         //    await using MediaDbContext context = GetInMemoryDbContext("ProcessPicture_Valid");
         //    IDistributedCache cache = GetMemoryCache();
         //    Picture picture = CreateTestPicture();
-
+        //
         //    MemoryStream imageStream = new MemoryStream();
         //    _mockImageStore
         //        .Setup(x => x.GetStream(It.IsAny<string>(), It.IsAny<string>()))
         //        .ReturnsAsync(imageStream);
-
+        //
         //    _mockImageStore
         //        .Setup(x => x.SaveImage(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()))
         //        .ReturnsAsync("processed-image.jpg");
-
-        //    PicturesService service = new PicturesService(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
-
+        //
+        //    PicturesService service = new PicturesService(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+        //
         //    // Act
         //    Picture? result = await service.ProcessPicture(picture);
-
+        //
         //    // Assert
         //    Assert.NotNull(result);
         //    // Note: Full processing requires valid image data
@@ -980,7 +982,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.SaveImage(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync("updated-image.jpg");
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             string? result = await service.UpdateItemPictureExtension("old-image", BlobContainers.Pictures);
@@ -1004,7 +1006,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.SaveImage(It.IsAny<Stream>(), BlobContainers.Progeny, It.IsAny<string>()))
                 .ReturnsAsync("progeny-picture.jpg");
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Create a mock IFormFile
             Mock<IFormFile> mockFile = new();
@@ -1041,7 +1043,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.SaveImage(It.IsAny<Stream>(), BlobContainers.Profiles, It.IsAny<string>()))
                 .ReturnsAsync("profile-picture.jpg");
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             Mock<IFormFile> mockFile = new();
             string content = "Fake image content";
@@ -1076,7 +1078,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.SaveImage(It.IsAny<Stream>(), BlobContainers.Friends, It.IsAny<string>()))
                 .ReturnsAsync("friend-picture.jpg");
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             Mock<IFormFile> mockFile = new();
             string content = "Fake image content";
@@ -1111,7 +1113,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.SaveImage(It.IsAny<Stream>(), BlobContainers.Contacts, It.IsAny<string>()))
                 .ReturnsAsync("contact-picture.jpg");
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             Mock<IFormFile> mockFile = new();
             string content = "Fake image content";
@@ -1152,7 +1154,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.PicturesDb.Add(picture);
             await context.SaveChangesAsync();
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             await service.CheckPicturePropertiesForNull();
@@ -1191,7 +1193,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync("deleted");
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             await service.CheckPictureLinks();
@@ -1220,7 +1222,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync("deleted");
 
-            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object);
+            PicturesService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
 
             // Act
             await service.CheckPictureLinks();

@@ -10,17 +10,21 @@ export async function displayAddGroupMemberModal(groupId) {
     });
     if (response.ok) {
         const addGroupMemberContent = await response.text();
-        const modalDiv = document.querySelector('#access-details-div');
-        if (modalDiv) {
-            modalDiv.innerHTML = addGroupMemberContent;
+        let popup = document.getElementById('item-details-div');
+        if (popup) {
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = addGroupMemberContent;
+            popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
-            modalDiv.classList.remove('d-none');
+            popup.classList.remove('d-none');
             addAddGroupMemberModalEventListeners();
             validateInputs();
             return Promise.resolve();
         }
         else {
-            return Promise.reject('Modal div not found in the document.');
+            return Promise.reject('Item details div not found in the document.');
         }
     }
     else {
@@ -34,7 +38,7 @@ function addAddGroupMemberModalEventListeners() {
         const closeButtonClickedAction = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            const modalDiv = document.querySelector('#access-details-div');
+            const modalDiv = document.querySelector('#item-details-div');
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
@@ -60,7 +64,7 @@ function addAddGroupMemberModalEventListeners() {
                 body: formData
             });
             if (response.ok) {
-                const modalDiv = document.querySelector('#access-details-div');
+                const modalDiv = document.querySelector('#item-details-div');
                 if (modalDiv) {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
@@ -89,17 +93,21 @@ export async function displayEditGroupMemberModal(groupMemberId) {
     });
     if (response.ok) {
         const editGroupMemberContent = await response.text();
-        const modalDiv = document.querySelector('#access-details-div');
-        if (modalDiv) {
-            modalDiv.innerHTML = editGroupMemberContent;
+        let popup = document.getElementById('item-details-div');
+        if (popup) {
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = editGroupMemberContent;
+            popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
-            modalDiv.classList.remove('d-none');
+            popup.classList.remove('d-none');
             addEditGroupMemberModalEventListeners();
             validateInputs();
             return Promise.resolve();
         }
         else {
-            return Promise.reject('Modal div not found in the document.');
+            return Promise.reject('Item details div not found in the document.');
         }
     }
     else {
@@ -113,7 +121,7 @@ function addEditGroupMemberModalEventListeners() {
         const closeButtonClickedAction = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            const modalDiv = document.querySelector('#access-details-div');
+            const modalDiv = document.querySelector('#item-details-div');
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
@@ -139,7 +147,7 @@ function addEditGroupMemberModalEventListeners() {
                 body: formData
             });
             if (response.ok) {
-                const modalDiv = document.querySelector('#access-details-div');
+                const modalDiv = document.querySelector('#item-details-div');
                 if (modalDiv) {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
@@ -168,16 +176,20 @@ export async function displayDeleteGroupMemberModal(groupMemberId) {
     });
     if (response.ok) {
         const deleteGroupMemberContent = await response.text();
-        const modalDiv = document.querySelector('#access-details-div');
-        if (modalDiv) {
-            modalDiv.innerHTML = deleteGroupMemberContent;
+        let popup = document.getElementById('item-details-div');
+        if (popup) {
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = deleteGroupMemberContent;
+            popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
-            modalDiv.classList.remove('d-none');
+            popup.classList.remove('d-none');
             addDeleteGroupMemberModalEventListeners();
             return Promise.resolve();
         }
         else {
-            return Promise.reject('Modal div not found in the document.');
+            return Promise.reject('Item details div not found in the document.');
         }
     }
     else {
@@ -191,7 +203,7 @@ function addDeleteGroupMemberModalEventListeners() {
         const closeButtonClickedAction = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            const modalDiv = document.querySelector('#access-details-div');
+            const modalDiv = document.querySelector('#item-details-div');
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
@@ -213,7 +225,7 @@ function addDeleteGroupMemberModalEventListeners() {
                 body: formData
             });
             if (response.ok) {
-                const modalDiv = document.querySelector('#access-details-div');
+                const modalDiv = document.querySelector('#item-details-div');
                 if (modalDiv) {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');

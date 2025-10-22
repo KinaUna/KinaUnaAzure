@@ -17,6 +17,7 @@ using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Location = KinaUna.Data.Models.Location;
 
@@ -30,8 +31,9 @@ namespace KinaUnaProgenyApi.Services
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly IImageStore _imageStore;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public PicturesService(MediaDbContext mediaContext, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService)
+        public PicturesService(MediaDbContext mediaContext, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService, IServiceScopeFactory serviceScopeFactory)
         {
             _mediaContext = mediaContext;
             _accessManagementService = accessManagementService;
@@ -39,6 +41,7 @@ namespace KinaUnaProgenyApi.Services
             _cache = cache;
             _ = _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _ = _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         /// <summary>
@@ -700,12 +703,21 @@ namespace KinaUnaProgenyApi.Services
             };
             await Parallel.ForEachAsync(picturesList, parallelOptions, async (picture, _) =>
             {
-                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View).ConfigureAwait(false))
+                // Create a scope for each parallel task to avoid threading issues.
+                if (picture == null)
+                {
+                    return;
+                }
+
+                using IServiceScope scope = _serviceScopeFactory.CreateScope();
+                IAccessManagementService accessManagementService = scope.ServiceProvider.GetRequiredService<IAccessManagementService>();
+                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
                 {
                     //picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);
                     picturesConcurrentBag.Add(picture);
                 }
             });
+
             watch.Stop();
             Console.WriteLine("GetPicturesList Time Taken: " + watch.Elapsed.Minutes + "m " + watch.Elapsed.Seconds + "s");
             List<Picture> filteredList = picturesConcurrentBag.ToList();
@@ -713,7 +725,6 @@ namespace KinaUnaProgenyApi.Services
 
             return filteredList;
         }
-
 
         /// <summary>
         /// Retrieves a random picture associated with the specified progeny, ensuring the current user has permission

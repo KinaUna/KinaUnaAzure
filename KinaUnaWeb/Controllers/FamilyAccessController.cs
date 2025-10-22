@@ -24,7 +24,7 @@ namespace KinaUnaWeb.Controllers
             {
                 Families = await familiesHttpClient.GetMyFamilies()
             };
-            model.Progenies = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            model.Progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Edit);
 
             return View(model);
         }
@@ -36,7 +36,7 @@ namespace KinaUnaWeb.Controllers
             {
                 Families = await familiesHttpClient.GetMyFamilies()
             };
-            model.Progenies = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            model.Progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Admin);
 
             foreach (Family family in model.Families)
             {
@@ -53,11 +53,12 @@ namespace KinaUnaWeb.Controllers
                 List<ProgenyPermission> progenyPermissions = await progenyHttpClient.GetProgenyPermissionsList(progeny.Id);
                 model.ProgenyPermissions.AddRange(progenyPermissions);
             }
-
+            
             return PartialView("_PermissionsListPartial", model);
         }
 
-        [HttpGet("[action]/{progenyId:int}/{familyId:int}")]
+        [HttpGet]
+        [Route("[action]/{progenyId:int}/{familyId:int}")]
         public async Task<IActionResult> AddGroup(int progenyId, int familyId)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, familyId, false);
@@ -120,7 +121,8 @@ namespace KinaUnaWeb.Controllers
             return Json(newGroup);
         }
 
-        [HttpGet("[action]/{groupId:int}")]
+        [HttpGet]
+        [Route("[controller]/[action]/{groupId:int}")]
         public async Task<IActionResult> EditGroup(int groupId)
         {
             UserGroup userGroup = await userGroupsHttpClient.GetUserGroup(groupId);
@@ -196,7 +198,8 @@ namespace KinaUnaWeb.Controllers
             return Json(updatedGroup);
         }
 
-        [HttpGet("[action]/{groupId:int}")]
+        [HttpGet]
+        [Route("[controller]/[action]/{groupId:int}")]
         public async Task<IActionResult> DeleteGroup(int groupId)
         {
             UserGroup userGroup = await userGroupsHttpClient.GetUserGroup(groupId);
@@ -229,7 +232,8 @@ namespace KinaUnaWeb.Controllers
             return PartialView("_DeleteGroupPartial", model);
         }
 
-        [HttpGet("[action]/{groupId:int}")]
+        [HttpGet]
+        [Route("[controller]/[action]/{groupId:int}")]
         public async Task<IActionResult> AddGroupMember(int groupId)
         {
             UserGroup userGroup = await userGroupsHttpClient.GetUserGroup(groupId);
@@ -298,7 +302,8 @@ namespace KinaUnaWeb.Controllers
             return Json(newMember);
         }
 
-        [HttpGet("[action]/{groupMemberId:int}")]
+        [HttpGet]
+        [Route("[controller]/[action]/{groupId:int}")]
         public async Task<IActionResult> EditGroupMember(int groupMemberId)
         {
             UserGroupMember userGroupMember = await userGroupsHttpClient.GetUserGroupMember(groupMemberId);
@@ -379,7 +384,8 @@ namespace KinaUnaWeb.Controllers
             return Json(updatedMember);
         }
 
-        [HttpGet("[action]/{groupMemberId:int}")]
+        [HttpGet]
+        [Route("[controller]/[action]/{groupMemberId:int}")]
         public async Task<IActionResult> DeleteGroupMember(int groupMemberId)
         {
             UserGroupMember userGroupMember = await userGroupsHttpClient.GetUserGroupMember(groupMemberId);
@@ -442,7 +448,8 @@ namespace KinaUnaWeb.Controllers
             return Json(result);
         }
 
-        [HttpGet("[action]/{progenyId:int}/{familyId:int}")]
+        [HttpGet]
+        [Route("[controller]/[action]/{progenyId:int}/{familyId:int}")]
         public async Task<IActionResult> AddPermission(int progenyId, int familyId)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, familyId, false);
@@ -509,7 +516,8 @@ namespace KinaUnaWeb.Controllers
             return Json(null);
         }
 
-        [HttpGet("[action]/{permissionId:int}")]
+        [HttpGet]
+        [Route("[controller]/[action]/{permissionId:int}")]
         public async Task<IActionResult> EditFamilyPermission(int permissionId)
         {
             FamilyPermission familyPermission = await familiesHttpClient.GetFamilyPermission(permissionId);
@@ -554,7 +562,8 @@ namespace KinaUnaWeb.Controllers
         }
 
 
-        [HttpGet("[action]/{permissionId:int}")]
+        [HttpGet]
+        [Route("[controller]/[action]/{permissionId:int}")]
         public async Task<IActionResult> EditProgenyPermission(int permissionId)
         {
             ProgenyPermission progenyPermission = await progenyHttpClient.GetProgenyPermission(permissionId);
@@ -598,7 +607,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{permissionId:int}")]
+        [Route("[controller]/[action]/{permissionId:int}")]
         public async Task<IActionResult> DeleteFamilyPermission(int permissionId)
         {
             FamilyPermission familyPermission = await familiesHttpClient.GetFamilyPermission(permissionId);
@@ -640,7 +649,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{permissionId:int}")]
+        [Route("[controller]/[action]/{permissionId:int}")]
         public async Task<IActionResult> DeleteProgenyPermission(int permissionId)
         {
             ProgenyPermission progenyPermission = await progenyHttpClient.GetProgenyPermission(permissionId);

@@ -119,7 +119,6 @@ function onRichTextEditorCreated(): void {
             if (rteElement.ej2_instances && rteElement.ej2_instances.length > 0) {
                 rteElement.ej2_instances[0].refreshUI();
             }
-
         }
     },
         1000);

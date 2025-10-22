@@ -22,71 +22,87 @@
     string individualAccessString = await LocaleManager.GetTranslation("Individual access", PageNames.AccessManagement, Model.LanguageId);
 }
 <div class="row m-0">
-    <div class="col-12 h-4">
-        @familyAccessString
-    </div>
-    @foreach (Family family in Model.Families)
+    @if (Model.Families.Count > 0)
     {
-        <div class="col-12 mt-3 mb-1 h4">
-            <i class="material-icons kinauna-icon-medium" style="font-size: 32px">family_restroom</i> @family.Name
+        <div class="col-12 h4">
+            @familyAccessString
         </div>
-        <div class="col-12 h5">@groupPermissionsString</div>
-        <div class="col-12">
-            <button class="add-group-button" data-progeny-id="0" data-family-id="@family.FamilyId">@addgroupString</button>
-        </div>
-        @foreach (UserGroup userGroup in Model.UserGroups)
+        @foreach (Family family in Model.Families)
         {
-            if (userGroup.FamilyId == family.FamilyId)
-            {
-                <div class="col-12">
-                    <span>@groupNameString: @userGroup.Name</span><span>@permissionString: @userGroup.PermissionLevel.ToString()</span>
-                    <button class="add-group-member-button" data-group-id="@userGroup.UserGroupId">@addMemberString</button>
-                    <button class="edit-group-button" data-edit-group-id="@userGroup.UserGroupId">@editString</button>
-                    <button class="delete-group-button" data-delete-group-id="@userGroup.UserGroupId">@deleteString</button>
-                </div>
-                <div class="col-12">
-                    @membersString:
-                    <div class="row">
-                        @foreach (UserGroupMember userGroupMember in userGroup.Members)
-                        {
-                            <div class="col-12">
-                                <span>Email: @userGroupMember.Email</span>
-                                @if (userGroupMember.UserInfo != null)
-                                {
-                                    <span> @userGroupMember.UserInfo.FullName()</span>
-                                }
-                            </div>
-                            <div class="col-12">
-                                <button class="edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">@editString</button>
-                                <button class="delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">@deleteString</button>
-                            </div>
-                        }
+            <div class="col-12 mb-2">
+                <div class="row">
+                    <div class="col-12 mt-3 mb-1 h4">
+                        <i class="material-icons kinauna-icon-medium" style="font-size: 32px">family_restroom</i> @family.Name
+                    </div>
+                    <div class="col-12 h5">@groupPermissionsString</div>
+                    <div class="col-12">
+                        <button class="add-group-button" data-progeny-id="0" data-family-id="@family.FamilyId">@addgroupString</button>
                     </div>
                 </div>
-            }
-        }
-
-        <div class="col-12 h5">@userPermissionsString:</div>
-        <div class="col-12">
-            <button class="add-user-button" data-progeny-id="0" data-family-id="@family.FamilyId">@addUserString</button>
-        </div>
-        @foreach (FamilyPermission familyPermission in Model.FamilyPermissions)
-        {
-            if (familyPermission.FamilyId == family.FamilyId)
-            {
-                <div class="col-12">
-                    <span>Email: @familyPermission.Email</span>
-                    @if (!string.IsNullOrWhiteSpace(familyPermission.UserId) && familyPermission.UserInfo != null)
+                <div class="space-20"></div>
+                @foreach (UserGroup userGroup in Model.UserGroups)
+                {
+                    @if (userGroup.FamilyId == family.FamilyId)
                     {
-                        <span> @familyPermission.UserInfo.FullName()</span>
+                        <div class="row">
+                            <div class="col-12">
+                                <span>@groupNameString: </span><span class="h6 mr-3">@userGroup.Name</span><span>@permissionString: @userGroup.PermissionLevel.ToString()</span>
+                                <button class="edit-group-button" data-edit-group-id="@userGroup.UserGroupId">@editString</button>
+                                <button class="delete-group-button" data-delete-group-id="@userGroup.UserGroupId">@deleteString</button>
+                            </div>
+                            <div class="col-12">
+                                <button class="add-group-member-button" data-group-id="@userGroup.UserGroupId">@addMemberString</button>
+                            </div>
+                            <div class="col-12">
+                                <div class="space-20"></div>
+                                @membersString:
+                                <div class="row">
+                                    @foreach (UserGroupMember userGroupMember in userGroup.Members)
+                                    {
+                                        <div class="col-12">
+                                            <span>Email: @userGroupMember.Email</span>
+                                            @if (userGroupMember.UserInfo != null)
+                                            {
+                                                <span> @userGroupMember.UserInfo.FullName()</span>
+                                            }
+                                            <button class="edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">@editString</button>
+                                            <button class="delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">@deleteString</button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-20"></div>
                     }
-                    <span>@permissionString: @familyPermission.PermissionLevel.ToString()</span>
+                }
+                <div class="row">
+                    <div class="col-12 h5">@userPermissionsString:</div>
+                    <div class="col-12">
+                        <button class="add-user-button" data-progeny-id="0" data-family-id="@family.FamilyId">@addUserString</button>
+                    </div>
                 </div>
-                <div class="col-12">
-                    <button class="edit-user-family-permission-button" data-edit-user-family-permission-id="@familyPermission.FamilyPermissionId" data-family-id="@family.FamilyId">@editString</button>
-                    <button class="delete-user-family-permission-button" data-delete-user-family-permission-id="@familyPermission.FamilyPermissionId" data-family-id="@family.FamilyId">@deleteString</button>
-                </div>
-            }
+                <div class="space-20"></div>
+                @foreach (FamilyPermission familyPermission in Model.FamilyPermissions)
+                {
+                    if (familyPermission.FamilyId == family.FamilyId)
+                    {
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="space-20"></div>
+                                <span>Email: @familyPermission.Email</span>
+                                @if (!string.IsNullOrWhiteSpace(familyPermission.UserId) && familyPermission.UserInfo != null)
+                                {
+                                    <span> @familyPermission.UserInfo.FullName()</span>
+                                }
+                                <span>@permissionString: @familyPermission.PermissionLevel.ToString()</span>
+                                <button class="edit-user-family-permission-button" data-edit-user-family-permission-id="@familyPermission.FamilyPermissionId" data-family-id="@family.FamilyId">@editString</button>
+                                <button class="delete-user-family-permission-button" data-delete-user-family-permission-id="@familyPermission.FamilyPermissionId" data-family-id="@family.FamilyId">@deleteString</button>
+                            </div>
+                        </div>
+                        <div class="space-20"></div>
+                    }
+                }
+            </div>
         }
     }
 </div>
@@ -94,68 +110,92 @@
     <div class="col-12 h4">
         @individualAccessString
     </div>
+    <div class="space-20"></div>
     @foreach (Progeny progeny in Model.Progenies)
     {
-        <div class="col-12 mt-3 mb-1 h4">
-            <i class="material-icons kinauna-icon-medium" style="font-size: 32px">family_restroom</i> @progeny.NickName
-        </div>
-        <div class="col-12 h5">@groupPermissionsString</div>
-        <div class="col-12">
-            <button class="add-group-button" data-progeny-id="@progeny.Id" data-family-id="0">@addgroupString</button>
-        </div>
-        @foreach (UserGroup userGroup in Model.UserGroups)
-        {
-            if (userGroup.ProgenyId == progeny.Id)
-            {
-                <div class="col-12">
-                    <span>@groupNameString: @userGroup.Name</span><span>@permissionString: @userGroup.PermissionLevel.ToString()</span>
-                    <button class="add-group-member-button" data-group-id="@userGroup.UserGroupId">@addMemberString</button>
-                    <button class="edit-group-button" data-edit-group-id="@userGroup.UserGroupId">@editString</button>
-                    <button class="delete-group-button" data-delete-group-id="@userGroup.UserGroupId">@deleteString</button>
+        <div class="col-12 mb-2" style="border: 1px solid;">
+            <div class="row bg-dark">
+                <div class="col-12 mt-3 mb-2 h4">
+                    <i class="material-icons kinauna-icon-medium" style="font-size: 32px">family_restroom</i> @progeny.NickName
                 </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12 h5">@groupPermissionsString</div>
                 <div class="col-12">
-                    @membersString:
+                    <button class="btn btn-success btn-sm add-group-button" data-progeny-id="@progeny.Id" data-family-id="0">@addgroupString</button>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="w-50 horizontal-bar-thin"></div>
+            @foreach (UserGroup userGroup in Model.UserGroups)
+            {
+                @if (userGroup.ProgenyId == progeny.Id)
+                {
                     <div class="row">
-                        @foreach (UserGroupMember userGroupMember in userGroup.Members)
-                        {
-                            <div class="col-12">
-                                <span>Email: @userGroupMember.Email</span>
-                                @if (userGroupMember.UserInfo != null)
+                        <div class="col-12">
+                            <span>@groupNameString: </span><span class="h6 mr-4">@userGroup.Name</span>
+                            <div>@permissionString: @userGroup.PermissionLevel.ToString()</div>
+                            <button class="btn btn-info btn-sm edit-group-button" data-edit-group-id="@userGroup.UserGroupId">@editString</button>
+                            <button class="btn btn-danger btn-sm delete-group-button" data-delete-group-id="@userGroup.UserGroupId">@deleteString</button>
+                        </div>
+                        <div class="col-12">
+                            <div class="space-20"></div>
+                            @membersString:
+                            <div>
+                                <button class="btn btn-success btn-sm add-group-member-button" data-group-id="@userGroup.UserGroupId">@addMemberString</button>
+                            </div>
+                            <div class="space-20"></div>
+                            <div></div>
+                            <div class="row">
+                                <div class="ml-3 w-25 horizontal-bar-thin"></div>
+                                @foreach (UserGroupMember userGroupMember in userGroup.Members)
                                 {
-                                    <span> @userGroupMember.UserInfo.FullName()</span>
+                                    <div class="col-12 ml-3 mt-2 mb-2">
+                                        @if (userGroupMember.UserInfo != null)
+                                        {
+                                            <div class="">@userGroupMember.UserInfo.FullName()</div>
+                                        }
+                                        <div>Email: @userGroupMember.Email</div>
+                                        <button class="btn btn-info btn-sm edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">@editString</button>
+                                        <button class="btn btn-danger btn-sm delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">@deleteString</button>
+                                    </div>
+                                    <div class="ml-3 w-25 horizontal-bar-thin"></div>
                                 }
                             </div>
-                            <div class="col-12">
-                                <button class="edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">@editString</button>
-                                <button class="delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">@deleteString</button>
-                            </div>
-                        }
+                        </div>
                     </div>
-                </div>
+                    <div class="w-50 horizontal-bar-thin"></div>
+                    <div class="space-20"></div>
+                }
             }
-        }
-
-        <div class="col-12 h5">@userPermissionsString</div>
-        <div class="col-12">
-            <button class="add-user-button" data-progeny-id="@progeny.Id" data-family-id="0">@addUserString</button>
-        </div>
-        @foreach (ProgenyPermission progenyPermission in Model.ProgenyPermissions)
-        {
-            if (progenyPermission.ProgenyId == progeny.Id)
+            <div class="row">
+                <div class="col-12 h5">@userPermissionsString</div>
+                <div class="col-12">
+                    <button class="btn btn-success btn-sm add-user-button" data-progeny-id="@progeny.Id" data-family-id="0">@addUserString</button>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            @foreach (ProgenyPermission progenyPermission in Model.ProgenyPermissions)
             {
-                <div class="col-12">
-                    <span>Email: @progenyPermission.Email</span>
-                    @if (!string.IsNullOrWhiteSpace(progenyPermission.UserId) && progenyPermission.UserInfo != null)
-                    {
-                        <span> @progenyPermission.UserInfo.FullName()</span>
-                    }
-                    <span>@permissionString: @progenyPermission.PermissionLevel.ToString()</span>
-                </div>
-                <div class="col-12">
-                    <button class="edit-user-progeny-permission-button" data-edit-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId" data-progeny-id="@progeny.Id">@editString</button>
-                    <button class="delete-user-progeny-permission-button" data-delete-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId" data-progeny-id="@progeny.Id">@deleteString</button>
-                </div>
+                if (progenyPermission.ProgenyId == progeny.Id && progenyPermission.GroupId == 0)
+                {
+                    <div class="row">
+                        <div class="col-12 ml-3">
+                            <span>Email: @progenyPermission.Email</span>
+                            @if (!string.IsNullOrWhiteSpace(progenyPermission.UserId) && progenyPermission.UserInfo != null)
+                            {
+                                <span> @progenyPermission.UserInfo.FullName()</span>
+                            }
+                            <span>@permissionString: @progenyPermission.PermissionLevel.ToString()</span>
+                            <button class="btn btn-info btn-sm edit-user-progeny-permission-button" data-edit-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId" data-progeny-id="@progeny.Id">@editString</button>
+                            <button class="btn btn-danger btn-sm delete-user-progeny-permission-button" data-delete-user-progeny-permission-id="@progenyPermission.ProgenyPermissionId" data-progeny-id="@progeny.Id">@deleteString</button>
+                        </div>
+                    </div>
+                    <div class="space-20"></div>
+                }
             }
-        }
+        </div>
+        <div class="space-50"></div>
     }
 </div>

@@ -13,16 +13,22 @@ export async function displayAddGroupModal(progenyId: string, familyId: string) 
     });
     if (response.ok) {
         const addGroupContent = await response.text();
-        const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
-        if (modalDiv) {
-            modalDiv.innerHTML = addGroupContent;
+        let popup = document.getElementById('item-details-div');
+        if (popup) {
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = addGroupContent;
+            popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
-            modalDiv.classList.remove('d-none');
+            popup.classList.remove('d-none');
             addAddGroupModalEventListeners();
             validateInputs();
+
             return Promise.resolve();
-        } else {
-            return Promise.reject('Modal div not found in the document.');
+        }
+        else {
+            return Promise.reject('Item details div not found in the document.');
         }
     } else {
         console.error('Failed to fetch add group details:', response.statusText);
@@ -36,7 +42,7 @@ function addAddGroupModalEventListeners(): void {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
-            const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+            const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
@@ -64,7 +70,7 @@ function addAddGroupModalEventListeners(): void {
                 body: formData
             });
             if (response.ok) {
-                const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+                const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (modalDiv) {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
@@ -94,17 +100,23 @@ export async function displayEditGroupModal(groupId: string) {
     });
     if (response.ok) {
         const editGroupContent = await response.text();
-        const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
-        if (modalDiv) {
-            modalDiv.innerHTML = editGroupContent;
+        let popup = document.getElementById('item-details-div');
+        if (popup) {
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = editGroupContent;
+            popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
-            modalDiv.classList.remove('d-none');
+            popup.classList.remove('d-none');
             addEditGroupModalEventListeners();
             validateInputs();
+            ($(".selectpicker") as any).selectpicker('refresh');
 
             return Promise.resolve();
-        } else {
-            return Promise.reject('Modal div not found in the document.');
+        }
+        else {
+            return Promise.reject('Item details div not found in the document.');
         }
     } else {
         console.error('Failed to fetch edit group details:', response.statusText);
@@ -118,7 +130,7 @@ function addEditGroupModalEventListeners(): void {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
-            const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+            const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
@@ -146,7 +158,7 @@ function addEditGroupModalEventListeners(): void {
                 body: formData
             });
             if (response.ok) {
-                const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+                const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (modalDiv) {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
@@ -176,16 +188,21 @@ export async function displayDeleteGroupModal(groupId: string) {
     });
     if (response.ok) {
         const deleteGroupContent = await response.text();
-        const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
-        if (modalDiv) {
-            modalDiv.innerHTML = deleteGroupContent;
+        let popup = document.getElementById('item-details-div');
+        if (popup) {
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = deleteGroupContent;
+            popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
-            modalDiv.classList.remove('d-none');
+            popup.classList.remove('d-none');
             addDeleteGroupModalEventListeners();
-
+            
             return Promise.resolve();
-        } else {
-            return Promise.reject('Modal div not found in the document.');
+        }
+        else {
+            return Promise.reject('Item details div not found in the document.');
         }
     } else {
         console.error('Failed to fetch delete group details:', response.statusText);
@@ -199,7 +216,7 @@ function addDeleteGroupModalEventListeners(): void {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
-            const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+            const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
@@ -221,7 +238,7 @@ function addDeleteGroupModalEventListeners(): void {
                 body: formData
             });
             if (response.ok) {
-                const modalDiv = document.querySelector<HTMLDivElement>('#access-details-div');
+                const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (modalDiv) {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
