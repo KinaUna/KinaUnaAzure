@@ -80,17 +80,7 @@ namespace KinaUnaWeb.Controllers
                 {
                     model.SetPermissionTypeSelectListItems(0);
                 }
-
-                foreach (ProgenyPermission permission in model.ProgenyPermissionsList)
-                {
-                    if (string.IsNullOrWhiteSpace(permission.UserId) || model.UserList.Exists(u => u.UserId == permission.UserId))
-                    {
-                        continue;
-                    }
-                    UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
-                    model.UserList.Add(userInfo);
-                }
-
+                
                 foreach (UserGroup group in model.UserGroupsList)
                 {
                     foreach (UserGroupMember member in group.Members)
@@ -171,17 +161,7 @@ namespace KinaUnaWeb.Controllers
                         }
                     }
                 }
-
-                foreach (FamilyPermission permission in model.FamilyPermissionsList)
-                {
-                    if (string.IsNullOrWhiteSpace(permission.UserId) || model.UserList.Exists(u => u.UserId == permission.UserId))
-                    {
-                        continue;
-                    }
-                    UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
-                    model.UserList.Add(userInfo);
-                }
-
+                
                 foreach (UserGroup group in model.UserGroupsList)
                 {
                     foreach (UserGroupMember member in group.Members)

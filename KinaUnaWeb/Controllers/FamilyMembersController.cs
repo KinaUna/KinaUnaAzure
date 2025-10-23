@@ -7,11 +7,13 @@ using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.FamiliesViewModels;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Controllers
 {
+    [Authorize]
     public class FamilyMembersController(
         IFamiliesHttpClient familiesHttpClient,
         IProgenyHttpClient progenyHttpClient,
@@ -33,6 +35,9 @@ namespace KinaUnaWeb.Controllers
 
             return View(model);
         }
+
+        [HttpGet]
+        [Route("[controller]/[action]/{familyMemberId:int}")]
         public async Task<IActionResult> FamilyMemberElement(int familyMemberId)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
@@ -50,6 +55,8 @@ namespace KinaUnaWeb.Controllers
             return PartialView("_FamilyMemberElementPartial", model);
         }
 
+        [HttpGet]
+        [Route("[controller]/[action]/{familyMemberId:int}")]
         public async Task<IActionResult> FamilyMemberDetails(int familyMemberId)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
@@ -68,6 +75,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpGet]
+        [Route("[controller]/[action]/{familyId:int}")]
         public async Task<IActionResult> AddFamilyMember(int familyId)
         {
             Family family = await familiesHttpClient.GetFamily(familyId);
@@ -121,9 +129,10 @@ namespace KinaUnaWeb.Controllers
 
             return PartialView("_AddFamilyMemberPartial", model);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<FamilyMember> AddFamilyMember([FromForm] FamilyMemberDetailsViewModel model)
+        public async Task<IActionResult> AddFamilyMember([FromForm] FamilyMemberDetailsViewModel model)
         {
             Progeny progeny;
             if (model.CurrentProgenyId == 0)
@@ -141,14 +150,13 @@ namespace KinaUnaWeb.Controllers
                 FamilyId = model.CurrentFamilyId,
                 ProgenyId = model.CurrentProgenyId,
                 MemberType = model.MemberType,
-                Email = progeny.Email,
-                PermissionLevel = model.PermissionLevel
+                Email = progeny.Email
             };
             FamilyMember addedFamilyMember = await familiesHttpClient.AddFamilyMember(familyMember);
-            return addedFamilyMember;
+            return Json(addedFamilyMember);
         }
 
-        [HttpGet("[action]/{familyMemberId:int}")]
+        [HttpGet("[controller]/[action]/{familyMemberId:int}")]
         public async Task<IActionResult> UpdateFamilyMember(int familyMemberId)
         {
             FamilyMember familyMember = await familiesHttpClient.GetFamilyMember(familyMemberId);
@@ -177,7 +185,6 @@ namespace KinaUnaWeb.Controllers
             };
 
             model.SetMemberTypeList();
-            model.SetPermissionsLevelsList();
             
             return PartialView("_UpdateFamilyMemberPartial", model);
         }
@@ -232,7 +239,7 @@ namespace KinaUnaWeb.Controllers
             return Json(updatedFamilyMember);
         }
 
-        [HttpGet("[action]/{familyMemberId:int}")]
+        [HttpGet("[controller]/[action]/{familyMemberId:int}")]
         public async Task<IActionResult> DeleteFamilyMember(int familyMemberId)
         {
             FamilyMember familyMember = await familiesHttpClient.GetFamilyMember(familyMemberId);

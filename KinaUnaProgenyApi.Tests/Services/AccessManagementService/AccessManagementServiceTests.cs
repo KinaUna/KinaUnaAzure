@@ -225,7 +225,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission progenyPermission = new()
             {
                 ProgenyId = _progenyId,
-                UserId = _testUser.UserId,
                 PermissionLevel = PermissionLevel.Admin
             };
 
@@ -306,7 +305,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission permission = new()
             {
                 ProgenyId = _progenyId,
-                UserId = _testUser.UserId,
                 PermissionLevel = PermissionLevel.Edit
             };
 
@@ -381,7 +379,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             FamilyPermission permission = new()
             {
                 FamilyId = _familyId,
-                UserId = _testUser.UserId,
                 PermissionLevel = PermissionLevel.Edit
             };
 
@@ -465,7 +462,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission adminPermission = new()
             {
                 ProgenyId = _progenyId,
-                UserId = _adminUser.UserId,
                 PermissionLevel = PermissionLevel.Admin
             };
 
@@ -510,7 +506,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission adminPermission = new()
             {
                 ProgenyId = _progenyId,
-                UserId = _adminUser.UserId,
                 PermissionLevel = PermissionLevel.Admin
             };
 
@@ -557,7 +552,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission permission = new()
             {
                 ProgenyId = _progenyId,
-                UserId = _otherUser.UserId,
                 PermissionLevel = PermissionLevel.View
             };
 
@@ -578,7 +572,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission adminPermission = new()
             {
                 ProgenyId = _progenyId,
-                UserId = _adminUser.UserId,
                 PermissionLevel = PermissionLevel.Admin
             };
 
@@ -586,7 +579,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission newPermission = new()
             {
                 ProgenyId = _progenyId,
-                UserId = _otherUser.UserId,
                 PermissionLevel = PermissionLevel.CreatorOnly
             };
 
@@ -608,7 +600,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission adminPermission = new()
             {
                 ProgenyId = _progenyId,
-                UserId = _adminUser.UserId,
                 PermissionLevel = PermissionLevel.Admin
             };
 
@@ -616,8 +607,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission newPermission = new()
             {
                 ProgenyId = _progenyId,
-                UserId = _otherUser.UserId,
-                Email = _otherUser.UserEmail,
                 PermissionLevel = PermissionLevel.View
             };
 
@@ -638,9 +627,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.NotNull(result);
             Assert.Equal(_adminUser.UserId, result.CreatedBy);
             Assert.Equal(PermissionLevel.View, result.PermissionLevel);
-
-            ProgenyPermission? saved = await _progenyDbContext.ProgenyPermissionsDb.FirstOrDefaultAsync(p => p.UserId == _otherUser.UserId && p.ProgenyId == _progenyId);
-            Assert.NotNull(saved);
         }
 
         #endregion
@@ -723,7 +709,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission adminPermission = new()
             {
                 ProgenyId = _progenyId,
-                UserId = _adminUser.UserId,
                 PermissionLevel = PermissionLevel.Admin
             };
 
@@ -792,7 +777,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission directPermission = new()
             {
                 ProgenyId = progenyId1,
-                UserId = _testUser.UserId,
                 PermissionLevel = PermissionLevel.View
             };
 
@@ -836,7 +820,6 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             FamilyPermission directPermission = new()
             {
                 FamilyId = familyId1,
-                UserId = _testUser.UserId,
                 PermissionLevel = PermissionLevel.View
             };
 
@@ -878,17 +861,9 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             // Arrange
             string newEmail = "newemail@example.com";
 
-            ProgenyPermission progenyPermission = new()
-            {
-                UserId = _testUser.UserId,
-                Email = _testUser.UserEmail
-            };
+            ProgenyPermission progenyPermission = new();
 
-            FamilyPermission familyPermission = new()
-            {
-                UserId = _testUser.UserId,
-                Email = _testUser.UserEmail
-            };
+            FamilyPermission familyPermission = new();
 
             TimelineItemPermission timelineItemPermission = new()
             {
@@ -905,12 +880,8 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             await _service.ChangeUsersEmailForPermissions(_testUser, newEmail);
 
             // Assert
-            ProgenyPermission? p = await _progenyDbContext.ProgenyPermissionsDb.FirstOrDefaultAsync(x => x.UserId == _testUser.UserId);
-            FamilyPermission? f = await _progenyDbContext.FamilyPermissionsDb.FirstOrDefaultAsync(x => x.UserId == _testUser.UserId);
             TimelineItemPermission? t = await _progenyDbContext.TimelineItemPermissionsDb.FirstOrDefaultAsync(x => x.UserId == _testUser.UserId);
 
-            Assert.Equal(newEmail, p?.Email);
-            Assert.Equal(newEmail, f?.Email);
             Assert.Equal(newEmail, t?.Email);
         }
 
@@ -918,17 +889,9 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
         public async Task UpdatePermissionsForNewUser_UpdatesAllPermissionTypes()
         {
             // Arrange
-            ProgenyPermission progenyPermission = new()
-            {
-                UserId = "",
-                Email = _testUser.UserEmail
-            };
+            ProgenyPermission progenyPermission = new();
 
-            FamilyPermission familyPermission = new()
-            {
-                UserId = "",
-                Email = _testUser.UserEmail
-            };
+            FamilyPermission familyPermission = new();
 
             TimelineItemPermission timelineItemPermission = new()
             {
@@ -945,12 +908,8 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             await _service.UpdatePermissionsForNewUser(_testUser);
 
             // Assert
-            ProgenyPermission? p = await _progenyDbContext.ProgenyPermissionsDb.FirstOrDefaultAsync(x => x.Email == _testUser.UserEmail);
-            FamilyPermission? f = await _progenyDbContext.FamilyPermissionsDb.FirstOrDefaultAsync(x => x.Email == _testUser.UserEmail);
             TimelineItemPermission? t = await _progenyDbContext.TimelineItemPermissionsDb.FirstOrDefaultAsync(x => x.Email == _testUser.UserEmail);
 
-            Assert.Equal(_testUser.UserId, p?.UserId);
-            Assert.Equal(_testUser.UserId, f?.UserId);
             Assert.Equal(_testUser.UserId, t?.UserId);
         }
 

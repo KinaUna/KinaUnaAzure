@@ -55,11 +55,6 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                     return null;
                 }
                 
-                if (progeny.IsInAdminList(currentUserInfo.UserEmail))
-                {
-                    return null;
-                }
-
                 familyMember.Progeny = progeny;
 
             }
@@ -85,13 +80,11 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
         /// changes.</remarks>
         /// <param name="familyMember">The <see cref="FamilyMember"/> object representing the family member to add. The <see
         /// cref="FamilyMember.FamilyId"/> property must be set to the ID of the target family.</param>
-        /// <param name="permissionLevel">The <see cref="PermissionLevel"/> to assign to the new family member. This determines the level of access
-        /// the family member will have within the family.</param>
         /// <param name="currentUserInfo">The <see cref="UserInfo"/> object representing the user performing the operation. This user must have
         /// sufficient permissions to add family members to the specified family.</param>
         /// <returns>A <see cref="FamilyMember"/> object representing the newly added family member, or <see langword="null"/> if
         /// the operation fails due to insufficient permissions or an invalid family ID.</returns>
-        public async Task<FamilyMember> AddFamilyMember(FamilyMember familyMember, PermissionLevel permissionLevel, UserInfo currentUserInfo)
+        public async Task<FamilyMember> AddFamilyMember(FamilyMember familyMember, UserInfo currentUserInfo)
         {
             // Check if the current user has access to add family members to the family.
             bool allowAdd = false;
@@ -127,7 +120,12 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                     return null;
                 }
             }
-            
+
+            if (string.IsNullOrEmpty(familyMember.Email))
+            {
+                familyMember.Email = string.Empty;
+            }
+
             familyMember.Email = familyMember.Email.Trim();
             if (!string.IsNullOrWhiteSpace(familyMember.Email))
             {
@@ -147,25 +145,6 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             await progenyDbContext.SaveChangesAsync();
 
             await familyAuditLogService.AddFamilyMemberAddedAuditLogEntry(familyMember, currentUserInfo);
-
-            if (string.IsNullOrWhiteSpace(familyMember.Email)) return familyMember;
-
-            // Create or update permission for the new family member.
-            FamilyPermission familyPermission = new()
-            {
-                FamilyId = familyMember.FamilyId,
-                UserId = familyMember.UserId,
-                PermissionLevel = permissionLevel,
-                CreatedBy = currentUserInfo.UserId,
-                CreatedTime = DateTime.UtcNow,
-                ModifiedBy = currentUserInfo.UserId,
-                ModifiedTime = DateTime.UtcNow
-            };
-            FamilyPermission addedFamilyPermission = await accessManagementService.GrantFamilyPermission(familyPermission, currentUserInfo);
-            if (addedFamilyPermission == null)
-            {
-                await accessManagementService.UpdateFamilyPermission(familyPermission, currentUserInfo);
-            }
             
             return familyMember;
         }
@@ -228,12 +207,10 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                 return null;
             }
 
-            bool emailChanged = false;
             familyMember.Email = familyMember.Email.Trim();
             if (familyMember.Email.ToUpper() != existingFamilyMember.Email.ToUpper())
             {
-                emailChanged = true;
-
+                // Email has changed, update UserId accordingly.
                 if (!string.IsNullOrWhiteSpace(familyMember.Email))
                 {
                     UserInfo familyMemberUserInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == familyMember.Email.ToUpper());
@@ -243,23 +220,7 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                     }
                 }
             }
-
-            // Update permission if permission level or email changed.
-            if (existingFamilyMember.PermissionLevel != familyMember.PermissionLevel || emailChanged)
-            {
-                List<FamilyPermission> familyPermissions = await accessManagementService.GetFamilyPermissionsList(existingFamilyMember.FamilyId, currentUserInfo);
-                FamilyPermission existingFamilyPermission = familyPermissions.SingleOrDefault(fp => fp.Email == existingFamilyMember.Email);
-                if (existingFamilyPermission != null)
-                {
-                    existingFamilyPermission.PermissionLevel = familyMember.PermissionLevel;
-                    if (emailChanged)
-                    {
-                        existingFamilyPermission.Email = familyMember.Email;
-                    }
-                    await accessManagementService.UpdateFamilyPermission(existingFamilyPermission, currentUserInfo);
-                }
-            }
-
+            
             FamilyAuditLog logEntry = await familyAuditLogService.AddFamilyMemberUpdatedAuditLogEntry(existingFamilyMember, currentUserInfo);
 
             existingFamilyMember.MemberType = familyMember.MemberType;
@@ -336,18 +297,6 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             await progenyDbContext.SaveChangesAsync();
 
             await familyAuditLogService.AddFamilyMemberDeletedAuditLogEntry(familyMember, currentUserInfo);
-
-            // Also remove any permissions associated with this family member.
-            List<FamilyPermission> permissions = await progenyDbContext.FamilyPermissionsDb
-                .Where(p => p.UserId == familyMember.UserId && p.FamilyId == familyMember.FamilyId)
-                .ToListAsync();
-            if (permissions.Count > 0)
-            {
-                foreach (FamilyPermission permission in permissions)
-                {
-                    await accessManagementService.RevokeFamilyPermission(permission, currentUserInfo);
-                }
-            }
             
             return true;
         }

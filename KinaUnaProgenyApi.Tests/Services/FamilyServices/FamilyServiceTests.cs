@@ -15,7 +15,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
         private readonly Mock<IFamilyMembersService> _mockFamilyMembersService;
         private readonly Mock<IAccessManagementService> _mockAccessManagementService;
         private readonly Mock<IFamilyAuditLogsService> _mockFamilyAuditLogService;
-        private readonly Mock<IPermissionAuditLogsService> _mockPermissionAuditLogService;
         private readonly FamiliesService _service;
         private readonly UserInfo _testUser;
         private readonly UserInfo _adminUser;
@@ -38,7 +37,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             _mockFamilyMembersService = new Mock<IFamilyMembersService>();
             _mockAccessManagementService = new Mock<IAccessManagementService>();
             _mockFamilyAuditLogService = new Mock<IFamilyAuditLogsService>();
-            _mockPermissionAuditLogService = new Mock<IPermissionAuditLogsService>();
+            Mock<IUserGroupsService> mockUserGroupsService = new();
 
             // Initialize service
             _service = new FamiliesService(
@@ -46,7 +45,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 _mockFamilyMembersService.Object,
                 _mockAccessManagementService.Object,
                 _mockFamilyAuditLogService.Object,
-                _mockPermissionAuditLogService.Object);
+                mockUserGroupsService.Object);
 
             // Seed test data
             SeedTestData();
@@ -110,8 +109,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             {
                 FamilyPermissionId = 1,
                 FamilyId = 1,
-                UserId = "admin1",
-                Email = "admin@example.com",
                 PermissionLevel = PermissionLevel.Admin
             };
             _progenyDbContext.FamilyPermissionsDb.Add(permission1);
@@ -120,8 +117,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             {
                 FamilyPermissionId = 2,
                 FamilyId = 1,
-                UserId = "user1",
-                Email = "user1@example.com",
                 PermissionLevel = PermissionLevel.Edit
             };
             _progenyDbContext.FamilyPermissionsDb.Add(permission2);
@@ -683,10 +678,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .Setup(x => x.RevokeFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser))
                 .ReturnsAsync(true);
 
-            _mockPermissionAuditLogService
-                .Setup(x => x.AddFamilyPermissionAuditLogEntry(It.IsAny<PermissionAction>(), It.IsAny<FamilyPermission>(), _adminUser))
-                .ReturnsAsync(new PermissionAuditLog());
-
+            
             // Act
             bool result = await _service.DeleteFamily(familyId, _adminUser);
 
@@ -753,10 +745,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .Setup(x => x.RevokeFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser))
                 .ReturnsAsync(true);
 
-            _mockPermissionAuditLogService
-                .Setup(x => x.AddFamilyPermissionAuditLogEntry(It.IsAny<PermissionAction>(), It.IsAny<FamilyPermission>(), _adminUser))
-                .ReturnsAsync(new PermissionAuditLog());
-
+            
             // Act
             bool result = await _service.DeleteFamily(familyId, _adminUser);
 
@@ -783,17 +772,13 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .Setup(x => x.RevokeFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser))
                 .ReturnsAsync(true);
 
-            _mockPermissionAuditLogService
-                .Setup(x => x.AddFamilyPermissionAuditLogEntry(It.IsAny<PermissionAction>(), It.IsAny<FamilyPermission>(), _adminUser))
-                .ReturnsAsync(new PermissionAuditLog());
-
+            
             // Act
             bool result = await _service.DeleteFamily(familyId, _adminUser);
 
             // Assert
             Assert.True(result);
             _mockAccessManagementService.Verify(x => x.RevokeFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser), Times.Once);
-            _mockPermissionAuditLogService.Verify(x => x.AddFamilyPermissionAuditLogEntry(PermissionAction.Delete, It.IsAny<FamilyPermission>(), _adminUser), Times.Once);
         }
 
         #endregion

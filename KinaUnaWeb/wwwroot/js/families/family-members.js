@@ -27,13 +27,12 @@ export async function GetFamiliesList() {
     }
 }
 async function RenderFamilyMembers(family) {
-    const familyMembersDiv = document.querySelector('#family-details-div');
+    const familyMembersDiv = document.querySelector('#family-members-list-div-' + family.familyId);
     if (familyMembersDiv) {
         // Create div element with id 'family-members-{familyId}' to contain family name and its members.
         const familyMembersElement = document.createElement('div');
         familyMembersElement.id = 'family-members-' + family.familyId;
-        familyMembersElement.className = 'family-members-element mb-4 p-3 border rounded';
-        familyMembersDiv.appendChild(familyMembersElement);
+        familyMembersElement.className = 'col-12 family-members-element mb-4 p-3 border rounded';
         familyMembersElement.innerHTML = `<h5 class="mb-3">${family.name}</h5>`;
         if (family.familyMembers.length > 0) {
             family.familyMembers.forEach(async (member) => {
@@ -46,12 +45,13 @@ async function RenderFamilyMembers(family) {
             let noMembersMessage = getTranslation('No members found for this family.', 'Family', languageId);
             familyMembersElement.innerHTML += `<p>${noMembersMessage}</p>`;
         }
+        familyMembersDiv.appendChild(familyMembersElement);
         return Promise.resolve();
     }
     return Promise.reject('Family members div not found in the document.');
 }
 async function getFamilyMemberElement(familyMember) {
-    let memberDivResponse = await fetch('/Families/FamilyMemberElement?familyMemberId=' + familyMember.familyMemberId, {
+    let memberDivResponse = await fetch('/FamilyMembers/FamilyMemberElement/' + familyMember.familyMemberId, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -82,20 +82,23 @@ function addFamilyMemberElementEventListeners(familyMemberId) {
     }
 }
 function addAddFamilyMemberButtonEventListeners() {
-    const addFamilyMemberButton = document.querySelector('#add-new-family-member-button');
-    if (addFamilyMemberButton) {
+    const addFamilyMemberButtons = document.querySelectorAll('.add-new-family-member-button');
+    addFamilyMemberButtons.forEach((button) => {
         const addFamilyMemberButtonClickedAction = async function (event) {
             event.preventDefault();
-            // Show add family member modal
-            await displayAddFamilyMemberModal();
+            const familyId = button.getAttribute('data-family-id');
+            if (familyId) {
+                // Show add family member modal
+                await displayAddFamilyMemberModal(familyId);
+            }
             return Promise.resolve();
         };
-        addFamilyMemberButton.removeEventListener('click', addFamilyMemberButtonClickedAction);
-        addFamilyMemberButton.addEventListener('click', addFamilyMemberButtonClickedAction);
-    }
+        button.removeEventListener('click', addFamilyMemberButtonClickedAction);
+        button.addEventListener('click', addFamilyMemberButtonClickedAction);
+    });
 }
 export async function displayFamilyMemberDetails(familyMemberId) {
-    const response = await fetch('/Families/FamilyMemberDetails?familyMemberId=' + familyMemberId, {
+    const response = await fetch('/FamilyMembers/FamilyMemberDetails/' + familyMemberId, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -170,9 +173,9 @@ export async function RenderAllFamilies() {
     }
     return Promise.resolve();
 }
-export async function displayAddFamilyMemberModal() {
+export async function displayAddFamilyMemberModal(familyId) {
     startFullPageSpinner();
-    const response = await fetch('/FamilyMembers/AddFamilyMember', {
+    const response = await fetch('/FamilyMembers/AddFamilyMember/' + familyId, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'

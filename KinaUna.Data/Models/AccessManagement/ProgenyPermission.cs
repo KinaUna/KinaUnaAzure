@@ -22,19 +22,7 @@ namespace KinaUna.Data.Models.AccessManagement
         /// Gets or sets the unique identifier for the progeny.
         /// </summary>
         public int ProgenyId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unique identifier for the user.
-        /// </summary>
-        [MaxLength(256)]
-        public string UserId { get; set; } = string.Empty;
         
-        /// <summary>
-        /// Gets or sets the email address associated with the user.
-        /// </summary>
-        [MaxLength(256)]
-        public string Email { get; set; } = string.Empty; // Fallback for UserId, in case we want to invite a user by email.
-
         /// <summary>
         /// Gets or sets the group identifier if the permission is granted to a group.
         /// </summary>

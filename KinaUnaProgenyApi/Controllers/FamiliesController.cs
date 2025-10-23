@@ -112,7 +112,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
             FamilyMember familyMember = await familyMembersService.GetFamilyMember(familyMemberId, currentUserInfo);
             
-            if (familyMember.FamilyMemberId == 0)
+            if (familyMember == null || familyMember.FamilyMemberId == 0)
             {
                 return Unauthorized();
             }
@@ -127,7 +127,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            FamilyMember newFamilyMember = await familyMembersService.AddFamilyMember(familyMember, familyMember.PermissionLevel, currentUserInfo);
+            FamilyMember newFamilyMember = await familyMembersService.AddFamilyMember(familyMember, currentUserInfo);
             
             if (newFamilyMember.FamilyMemberId == 0)
             {

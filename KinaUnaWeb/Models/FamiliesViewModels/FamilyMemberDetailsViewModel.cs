@@ -10,6 +10,11 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
 {
     public class FamilyMemberDetailsViewModel: BaseItemsViewModel
     {
+        public FamilyMemberDetailsViewModel()
+        {
+            
+        }
+
         public FamilyMemberDetailsViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
@@ -24,7 +29,6 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
             ];
 
             SetMemberTypeList();
-            SetPermissionsLevelsList();
         }
 
         public FamilyMember FamilyMember { get; set; } = new();
@@ -32,11 +36,11 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
         public FamilyMemberType MemberType { get; set; } = FamilyMemberType.Unknown;
         public List<SelectListItem> MemberTypeList = [];
         public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
-        public List<SelectListItem> PermissionLevelsList { get; set; } = [];
         public SelectListItem[] TimezoneList { get; init; }
 
         public void SetMemberTypeList()
         {
+            MemberTypeList = [];
             foreach (FamilyMemberType type in (FamilyMemberType[])Enum.GetValues(typeof(FamilyMemberType)))
             {
                 MemberTypeList.Add(new SelectListItem
@@ -47,19 +51,5 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
                 });
             }
         }
-
-        public void SetPermissionsLevelsList()
-        {
-            foreach (PermissionLevel level in (PermissionLevel[])Enum.GetValues(typeof(PermissionLevel)))
-            {
-                PermissionLevelsList.Add(new SelectListItem
-                {
-                    Text = level.ToString(),
-                    Value = ((int)level).ToString(),
-                    Selected = level == PermissionLevel
-                });
-            }
-        }
-
     }
 }

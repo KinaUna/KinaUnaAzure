@@ -1,4 +1,5 @@
 ﻿@using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.FamilyAccessViewModels.UserGroupViewModel
 @inject ILocaleManager LocaleManager
@@ -44,7 +45,16 @@
             <div class="form-group">
                 <label asp-for="PermissionLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Select group's permission", PageNames.AccessManagement, Model.LanguageId):</label>
                 <div class="col-auto">
-                    <select id="family-member-permission-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.PermissionLevelsList.Count" asp-for="PermissionLevel" asp-items="@Model.PermissionLevelsList"></select>
+                    @{
+                        if (Model.PermissionLevel == PermissionLevel.Admin)
+                        {
+                            <select id="family-member-permission-select" class="selectpicker form-control-noline" disabled="disabled" data-style="btn-kinaunaselect" data-size="@Model.PermissionLevelsList.Count" asp-for="PermissionLevel" asp-items="@Model.PermissionLevelsList"></select>
+                        }
+                        else
+                        {
+                            <select id="family-member-permission-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.PermissionLevelsList.Count" asp-for="PermissionLevel" asp-items="@Model.PermissionLevelsList"></select>
+                        }
+                    }
                 </div>
             </div>
             <input type="hidden" asp-for="UserGroup.FamilyId" value="@Model.UserGroup.FamilyId"/>

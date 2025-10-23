@@ -562,8 +562,6 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     {
                         continue;
                     }
-                    userId = progenyPermission.UserId;
-                    email = progenyPermission.Email;
                     groupId = progenyPermission.GroupId;
                 }
                 if (permissionDto.FamilyPermissionId > 0)
@@ -573,8 +571,6 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     {
                         continue;
                     }
-                    userId = familyPermission.UserId;
-                    email = familyPermission.Email;
                     groupId = familyPermission.GroupId;
                 }
                 TimelineItemPermission timelineItemPermission = new()
@@ -788,7 +784,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             bool canGrantAccess = false;
             if (timelineItemPermission.ProgenyId > 0)
             {
-                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
+                if (!await IsUserAccessManager(currentUserInfo, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
                 {
                     if(timelineItemPermission.PermissionLevel == PermissionLevel.CreatorOnly){
                         canGrantAccess = true;
@@ -802,7 +798,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     else
                     {
                         // If the user being assigned to is admin, add the permission.
-                        if (await IsUserAccessManager(timelineItemPermission.UserId, PermissionType.Progeny, timelineItemPermission.ProgenyId))
+                        UserInfo assigneeUserInfo = await progenyDbContext.UserInfoDb.SingleOrDefaultAsync(ui => ui.UserId == timelineItemPermission.UserId);
+                        if (assigneeUserInfo != null && await IsUserAccessManager(assigneeUserInfo, PermissionType.Progeny, timelineItemPermission.ProgenyId))
                         {
                             canGrantAccess = true;
                             timelineItemPermission.PermissionLevel = PermissionLevel.Admin;
@@ -816,7 +813,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
             else
             {
-                if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
+                if (!await IsUserAccessManager(currentUserInfo, PermissionType.Family, timelineItemPermission.FamilyId))
                 {
                     if (timelineItemPermission.PermissionLevel == PermissionLevel.CreatorOnly)
                     {
@@ -832,7 +829,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     else
                     {
                         // If the user being assigned to is admin, add the permission.
-                        if (await IsUserAccessManager(timelineItemPermission.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
+                        UserInfo assigneeUserInfo = await progenyDbContext.UserInfoDb.SingleOrDefaultAsync(ui => ui.UserId == timelineItemPermission.UserId);
+                        if (assigneeUserInfo != null && await IsUserAccessManager(assigneeUserInfo, PermissionType.Family, timelineItemPermission.FamilyId))
                         {
                             canGrantAccess = true;
                             timelineItemPermission.PermissionLevel = PermissionLevel.Admin;
@@ -937,14 +935,19 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                         .Where(pp => pp.ProgenyId == timelineItemPermission.ProgenyId).ToListAsync();
                     foreach (ProgenyPermission progenyPermission in progenyPermissions)
                     {
-                        if (!string.IsNullOrEmpty(progenyPermission.UserId))
+                        List<UserGroupMember> groupMembers = await progenyDbContext.UserGroupMembersDb.AsNoTracking()
+                            .Where(ugm => ugm.UserGroupId == progenyPermission.GroupId).ToListAsync();
+                        foreach (UserGroupMember groupMember in groupMembers)
                         {
-                            foreach (PermissionLevel level in Enum.GetValues(typeof(PermissionLevel)))
+                            if (!string.IsNullOrEmpty(groupMember.UserId))
                             {
-                                await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion +
-                                                        "hasItemPermissionPermission" + (int)timelineItemPermission.TimelineType + "_itemId_" + timelineItemPermission.ItemId + "_userId_" + progenyPermission.UserId +
-                                                        "_level_" +
-                                                        (int)level);
+                                foreach (PermissionLevel level in Enum.GetValues(typeof(PermissionLevel)))
+                                {
+                                    await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion +
+                                                            "hasItemPermissionPermission" + (int)timelineItemPermission.TimelineType + "_itemId_" + timelineItemPermission.ItemId + "_userId_" + groupMember.UserId +
+                                                            "_level_" +
+                                                            (int)level);
+                                }
                             }
                         }
                     }
@@ -956,14 +959,19 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                         .Where(pp => pp.FamilyId == timelineItemPermission.FamilyId).ToListAsync();
                     foreach (FamilyPermission familyPermission in familyPermissions)
                     {
-                        if (!string.IsNullOrEmpty(familyPermission.UserId))
+                        List<UserGroupMember> groupMembers = await progenyDbContext.UserGroupMembersDb.AsNoTracking()
+                            .Where(ugm => ugm.UserGroupId == familyPermission.GroupId).ToListAsync();
+                        foreach (UserGroupMember groupMember in groupMembers)
                         {
                             foreach (PermissionLevel level in Enum.GetValues(typeof(PermissionLevel)))
                             {
-                                await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion +
-                                                        "hasItemPermissionPermission" + (int)timelineItemPermission.TimelineType + "_itemId_" + timelineItemPermission.ItemId + "_userId_" + familyPermission.UserId +
-                                                        "_level_" +
-                                                        (int)level);
+                                if (!string.IsNullOrEmpty(groupMember.UserId))
+                                {
+                                    await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion +
+                                                            "hasItemPermissionPermission" + (int)timelineItemPermission.TimelineType + "_itemId_" + timelineItemPermission.ItemId + "_userId_" + groupMember.UserId +
+                                                            "_level_" +
+                                                            (int)level);
+                                }
                             }
                         }
                     }
@@ -1001,10 +1009,15 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                         .Where(pp => pp.ProgenyId == timelineItemPermission.ProgenyId).ToListAsync();
                     foreach (ProgenyPermission progenyPermission in progenyPermissions)
                     {
-                        if (!string.IsNullOrEmpty(progenyPermission.UserId))
+                        List<UserGroupMember> groupMembers = await progenyDbContext.UserGroupMembersDb.AsNoTracking()
+                            .Where(ugm => ugm.UserGroupId == progenyPermission.GroupId).ToListAsync();
+                        foreach (UserGroupMember groupMember in groupMembers)
                         {
-                            await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion +
-                                                    "allUsersTimelineItemPermissions" + "_userId_" + progenyPermission.UserId + "_type_" + (int)timelineItemPermission.TimelineType);
+                            if (!string.IsNullOrEmpty(groupMember.UserId))
+                            {
+                                await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion +
+                                                        "allUsersTimelineItemPermissions" + "_userId_" + groupMember.UserId + "_type_" + (int)timelineItemPermission.TimelineType);
+                            }
                         }
                     }
                 }
@@ -1015,10 +1028,15 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                         .Where(pp => pp.FamilyId == timelineItemPermission.FamilyId).ToListAsync();
                     foreach (FamilyPermission familyPermission in familyPermissions)
                     {
-                        if (!string.IsNullOrEmpty(familyPermission.UserId))
+                        List<UserGroupMember> groupMembers = await progenyDbContext.UserGroupMembersDb.AsNoTracking()
+                            .Where(ugm => ugm.UserGroupId == familyPermission.GroupId).ToListAsync();
+                        foreach (UserGroupMember groupMember in groupMembers)
                         {
-                            await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion +
-                                                    "allUsersTimelineItemPermissions" + "_userId_" + familyPermission.UserId + "_type_" + (int)timelineItemPermission.TimelineType);
+                            if (!string.IsNullOrEmpty(groupMember.UserId))
+                            {
+                                await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion +
+                                                        "allUsersTimelineItemPermissions" + "_userId_" + groupMember.UserId + "_type_" + (int)timelineItemPermission.TimelineType);
+                            }
                         }
                     }
                 }
@@ -1087,14 +1105,14 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             // Check if the current user can grant the specified permission level.
             if (existingPermission.ProgenyId > 0)
             {
-                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
+                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
                 {
                     return false;
                 }
             }
             else
             {
-                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
+                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo, PermissionType.Family, timelineItemPermission.FamilyId))
                 {
                     return false; // Todo: Use result object instead.
                 }
@@ -1179,14 +1197,14 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             // Check if the current user can grant the specified permission level.
             if (timelineItemPermission.ProgenyId > 0)
             {
-                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo.UserId, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
+                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo, PermissionType.TimelineItem, timelineItemPermission.ProgenyId))
                 {
                     return null; // Todo: Use result object instead.
                 }
             }
             else
             {
-                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, timelineItemPermission.FamilyId))
+                if (existingPermission.PermissionLevel < PermissionLevel.CreatorOnly && !await IsUserAccessManager(currentUserInfo, PermissionType.Family, timelineItemPermission.FamilyId))
                 {
                     return null; // Todo: Use result object instead.
                 }
@@ -1250,14 +1268,14 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     // Check if the current user can view the specified permission level.
                     if (permission.ProgenyId > 0)
                     {
-                        if (await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, permission.ProgenyId))
+                        if (await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, permission.ProgenyId))
                         {
                             accessibleItemPermissions.Add(permission);
                         }
                     }
                     else
                     {
-                        if (await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, permission.FamilyId))
+                        if (await IsUserAccessManager(currentUserInfo, PermissionType.Family, permission.FamilyId))
                         {
                             accessibleItemPermissions.Add(permission);
                         }
@@ -1283,14 +1301,6 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             if (progenyId == Constants.DefaultChildId && requiredLevel == PermissionLevel.View)
-            {
-                return true;
-            }
-
-            ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb
-                .AsNoTracking()
-                .SingleOrDefaultAsync(pp => pp.UserId == userInfo.UserId && pp.ProgenyId == progenyId);
-            if (progenyPermission != null && progenyPermission.PermissionLevel >= requiredLevel)
             {
                 return true;
             }
@@ -1327,7 +1337,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
                 .SingleOrDefaultAsync(pp => pp.ProgenyPermissionId == progenyPermissionId);
 
-            if (await HasProgenyPermission(progenyPermission.ProgenyId, currentUserInfo, PermissionLevel.Admin) || progenyPermission.UserId == currentUserInfo.UserId)
+            if (await HasProgenyPermission(progenyPermission.ProgenyId, currentUserInfo, PermissionLevel.Admin))
             {
                 return progenyPermission;
             }
@@ -1351,25 +1361,16 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         public async Task<ProgenyPermission> GrantProgenyPermission(ProgenyPermission progenyPermission, UserInfo currentUserInfo)
         {
             // Check if the current user can grant the specified permission level.
-            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, progenyPermission.ProgenyId))
+            if (!await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, progenyPermission.ProgenyId))
             {
                 return null; // Todo: Use result object instead.
             }
 
-            // Check if a permission with the same user id or group id already exists for this progeny.
+            // Check if a permission with the same group id already exists for this progeny.
             ProgenyPermission existingPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
-                .SingleOrDefaultAsync(pp => pp.UserId == progenyPermission.UserId 
-                                            && pp.GroupId == progenyPermission.GroupId
-                                            && pp.ProgenyId == progenyPermission.ProgenyId);
-
-            // Check if a permission with the same user email already exists for this progeny.
-            if (existingPermission == null)
-            {
-                existingPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(pp => pp.Email == progenyPermission.Email
-                                                && pp.ProgenyId == progenyPermission.ProgenyId);
-            }
-
+                .SingleOrDefaultAsync(pp => pp.GroupId == progenyPermission.GroupId
+                                             && pp.ProgenyId == progenyPermission.ProgenyId);
+            
             if (existingPermission != null)
             {
                 // Permission for user or group already exists for this progeny. Use UpdateProgenyPermission to change existing permissions.
@@ -1382,18 +1383,14 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return null; // Todo: Use result object instead.
             }
 
-            // If the new permission is admin, add to the Progeny Admins list.
+            // If the new permission is admin, ensure only one admin group exists.
             if (progenyPermission.PermissionLevel == PermissionLevel.Admin)
             {
-                Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progenyPermission.ProgenyId);
-                if (progeny != null)
+                ProgenyPermission adminPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
+                    .SingleOrDefaultAsync(pp => pp.ProgenyId == progenyPermission.ProgenyId && pp.PermissionLevel == PermissionLevel.Admin);
+                if (adminPermission != null)
                 {
-                    if (!progeny.IsInAdminList(progenyPermission.Email))
-                    {
-                        progeny.AddToAdminList(progenyPermission.Email);
-                        progenyDbContext.ProgenyDb.Update(progeny);
-                        await progenyDbContext.SaveChangesAsync();
-                    }
+                    return null;
                 }
             }
             
@@ -1421,14 +1418,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <returns><see langword="true"/> if the permission was successfully revoked; otherwise, <see langword="false"/>.</returns>
         public async Task<bool> RevokeProgenyPermission(ProgenyPermission progenyPermission, UserInfo currentUserInfo)
         {
+            Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progenyPermission.ProgenyId);
             // Check if the current user can grant the specified permission level.
-            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, progenyPermission.ProgenyId))
-            {
-                return false; // Todo: Use result object instead.
-            }
-
-            // Don't allow removing own admin rights. You need to assign admin rights to another user first, then they may remove your access.
-            if (progenyPermission.UserId == currentUserInfo.UserId)
+            if (progeny!= null && !await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, progenyPermission.ProgenyId))
             {
                 return false; // Todo: Use result object instead.
             }
@@ -1438,47 +1430,20 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 .SingleOrDefaultAsync(pp => pp.ProgenyPermissionId == progenyPermission.ProgenyPermissionId && pp.ProgenyId == progenyPermission.ProgenyId);
             if (existingPermission == null)
             {
-                existingPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progenyPermission.ProgenyId && pp.UserId == progenyPermission.UserId);
-                if (existingPermission == null)
+                return false; // Todo: Use result object instead
+            }
+
+            // Don't allow removing admin groups permission, unless the progeny has been deleted.
+            if (progenyPermission.PermissionLevel == PermissionLevel.Admin)
+            {
+                if (progeny != null)
                 {
-                    existingPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progenyPermission.ProgenyId && pp.Email == progenyPermission.Email);
-                    if (existingPermission == null)
-                    {
-                        return false; // Todo: Use result object instead
-                    }
+                    return false; // Todo: Use result object instead.
                 }
             }
 
             PermissionAuditLog logEntry = await permissionAuditLogService.AddProgenyPermissionAuditLogEntry(PermissionAction.Delete, progenyPermission, currentUserInfo);
             
-            // If the existing permission is admin, remove from Family Admins list.
-            if (existingPermission.PermissionLevel == PermissionLevel.Admin && progenyPermission.PermissionLevel != PermissionLevel.Admin)
-            {
-                Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progenyPermission.ProgenyId);
-                if (progeny != null)
-                {
-                    if (progeny.IsInAdminList(progenyPermission.Email))
-                    {
-                        progeny.RemoveFromAdminList(progenyPermission.Email);
-                        progenyDbContext.ProgenyDb.Update(progeny);
-                    }
-                }
-            }
-
-            // If the existing permission is not admin and the new permission is, add to the Family Admins list.
-            if (progenyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
-            {
-                Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progenyPermission.ProgenyId);
-                if (progeny != null)
-                {
-                    if (!progeny.IsInAdminList(progenyPermission.Email))
-                    {
-                        progeny.AddToAdminList(progenyPermission.Email);
-                        progenyDbContext.ProgenyDb.Update(progeny);
-                    }
-                }
-            }
-
             progenyDbContext.ProgenyPermissionsDb.Remove(existingPermission);
             await progenyDbContext.SaveChangesAsync();
             
@@ -1501,7 +1466,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         public async Task<ProgenyPermission> UpdateProgenyPermission(ProgenyPermission progenyPermission, UserInfo currentUserInfo)
         {
             // Check if the current user can grant the specified permission level.
-            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, progenyPermission.ProgenyId))
+            if (!await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, progenyPermission.ProgenyId))
             {
                 return null; // Todo: Use result object instead.
             }
@@ -1518,45 +1483,21 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                                             && pp.ProgenyId == progenyPermission.ProgenyId);
             if (existingPermission == null)
             {
-                existingPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progenyPermission.ProgenyId && pp.UserId == progenyPermission.UserId);
-                if (existingPermission == null)
-                {
-                    existingPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progenyPermission.ProgenyId && pp.Email == progenyPermission.Email);
-                    if (existingPermission == null)
-                    {
-                        return null; // Todo: Use result object instead
-                    }
-                }
+                return null; // Todo: Use result object instead
             }
 
             PermissionAuditLog logEntry = await permissionAuditLogService.AddProgenyPermissionAuditLogEntry(PermissionAction.Update, progenyPermission, currentUserInfo);
 
-            // If the existing permission is admin and the new permission isn't, remove from Progeny Admins list.
+            // If the existing permission is admin and the new permission isn't, return. One, and only one admin group allowed.
             if (progenyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
             {
-                Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progenyPermission.ProgenyId);
-                if (progeny != null)
-                {
-                    if (progeny.IsInAdminList(progenyPermission.Email))
-                    {
-                        progeny.RemoveFromAdminList(progenyPermission.Email);
-                        progenyDbContext.ProgenyDb.Update(progeny);
-                    }
-                }
+                return null;
             }
 
-            // If the existing permission is not admin and the new permission is, add to the Progeny Admins list.
+            // If the existing permission is not admin and the new permission is, return. One, and only one admin group allowed.
             if (progenyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
             {
-                Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(f => f.Id == progenyPermission.ProgenyId);
-                if (progeny != null)
-                {
-                    if (!progeny.IsInAdminList(progenyPermission.Email))
-                    {
-                        progeny.AddToAdminList(progenyPermission.Email);
-                        progenyDbContext.ProgenyDb.Update(progeny);
-                    }
-                }
+                return null;
             }
 
             existingPermission.PermissionLevel = progenyPermission.PermissionLevel;
@@ -1584,9 +1525,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// Returns an empty list if the current user does not have the required access rights.</returns>
         public async Task<List<ProgenyPermission>> GetProgenyPermissionsList(int progenyId, UserInfo currentUserInfo)
         {
-            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, progenyId))
+            if (!await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, progenyId))
             {
-                return new List<ProgenyPermission>();
+                return [];
             }
 
             return await progenyDbContext.ProgenyPermissionsDb.AsNoTracking().Where(pp => pp.ProgenyId == progenyId).ToListAsync();
@@ -1612,53 +1553,64 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             // Get all existing admin permissions for the progeny.
-            List<ProgenyPermission> adminPermissions = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
-                .Where(pp => pp.ProgenyId == progenyId && pp.PermissionLevel == PermissionLevel.Admin)
-                .ToListAsync();
-            
+            ProgenyPermission adminPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
+                .SingleOrDefaultAsync(pp => pp.ProgenyId == progenyId && pp.PermissionLevel == PermissionLevel.Admin);
+            List<UserGroupMember> adminGroupMembers = await progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ugm => ugm.UserGroupId == adminPermission.GroupId).ToListAsync();
             List<string> adminEmails = progeny.GetAdminsList();
 
             // Downgrade permissions for users no longer in the admin list.
-            foreach (ProgenyPermission permission in adminPermissions)
+            foreach (UserGroupMember member in adminGroupMembers)
             {
-                if (!adminEmails.Contains(permission.Email, StringComparer.InvariantCultureIgnoreCase))
+                if (!adminEmails.Contains(member.Email, StringComparer.InvariantCultureIgnoreCase))
                 {
-                    permission.PermissionLevel = PermissionLevel.Edit;
-                    progenyDbContext.ProgenyPermissionsDb.Update(permission);
+                    // User is no longer an admin, downgrade their permission.
+                    UserGroupMember userGroupMember = await progenyDbContext.UserGroupMembersDb
+                        .SingleOrDefaultAsync(ugm => ugm.UserGroupMemberId == member.UserGroupMemberId);
+                    if (userGroupMember != null)
+                    {
+                        // Remove from admin group.
+                        progenyDbContext.UserGroupMembersDb.Remove(userGroupMember);
+                        // Add or update to regular permission.
+                        List<ProgenyPermission> groupPermissions = await progenyDbContext.ProgenyPermissionsDb
+                            .Where(pp => pp.ProgenyId == progenyId && pp.PermissionLevel < PermissionLevel.Admin).OrderBy(pp => pp.PermissionLevel).ToListAsync();
+                        ProgenyPermission highestPermission = groupPermissions.LastOrDefault();
+                        if (highestPermission != null)
+                        {
+                            UserGroupMember newUserGroupMember = new UserGroupMember()
+                            {
+                                UserId = member.UserId,
+                                Email = member.Email,
+                                UserGroupId = highestPermission.GroupId,
+                                CreatedBy = "System",
+                                CreatedTime = DateTime.UtcNow,
+                                ModifiedBy = "System",
+                                ModifiedTime = DateTime.UtcNow
+                            };
+                            progenyDbContext.UserGroupMembersDb.Add(newUserGroupMember);
+                        }
+                    }
                 }
             }
+            
 
             // Add admin permissions for new admins.
             foreach (string email in adminEmails)
             {
-                if (adminPermissions.All(ap => ap.Email != email))
+                if (adminGroupMembers.All(ap => ap.Email.ToUpper() != email.ToUpper()))
                 {
-                    ProgenyPermission existingPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.Email.ToUpper() == email.ToUpper() && pp.ProgenyId == progenyId);
-                    if (existingPermission != null)
-                    {
-                        if(existingPermission.PermissionLevel != PermissionLevel.Admin)
-                        {
-                            existingPermission.PermissionLevel = PermissionLevel.Admin;
-                            progenyDbContext.ProgenyPermissionsDb.Update(existingPermission);
-                        }
-                        
-                        continue;
-                    }
-
+                    
                     UserInfo adminsUserInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == email.ToUpper());
-                    ProgenyPermission newPermission = new ProgenyPermission
+                    UserGroupMember newAdminMember = new UserGroupMember()
                     {
-                        ProgenyId = progenyId,
+                        UserId = adminsUserInfo != null ? adminsUserInfo.UserId : "",
                         Email = email,
-                        UserId = adminsUserInfo?.UserId ?? string.Empty,
-                        GroupId = 0,
-                        PermissionLevel = PermissionLevel.Admin,
+                        UserGroupId = adminPermission.GroupId,
                         CreatedBy = "System",
                         CreatedTime = DateTime.UtcNow,
                         ModifiedBy = "System",
                         ModifiedTime = DateTime.UtcNow
                     };
-                    progenyDbContext.ProgenyPermissionsDb.Add(newPermission);
+                    progenyDbContext.UserGroupMembersDb.Add(newAdminMember);
                 }
             }
 
@@ -1681,10 +1633,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return false;
             }
 
-            FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb
-                .AsNoTracking()
-                .SingleOrDefaultAsync(fp => fp.UserId == userInfo.UserId && fp.FamilyId == familyId);
-            if (familyPermission != null && familyPermission.PermissionLevel >= requiredLevel)
+            Family family = await progenyDbContext.FamiliesDb.AsNoTracking().SingleOrDefaultAsync(f => f.FamilyId == familyId);
+            if (family == null)
+            {
+                return false;
+            }
+
+            if (family.IsInAdminList(userInfo.UserEmail))
             {
                 return true;
             }
@@ -1721,7 +1676,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
                 .SingleOrDefaultAsync(fp => fp.FamilyPermissionId == familyPermissionId);
 
-            if (await HasFamilyPermission(familyPermission.FamilyId, currentUserInfo, PermissionLevel.Admin) || familyPermission.UserId == currentUserInfo.UserId)
+            if (await HasFamilyPermission(familyPermission.FamilyId, currentUserInfo, PermissionLevel.Admin))
             {
                 return familyPermission;
             }
@@ -1745,7 +1700,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         public async Task<FamilyPermission> GrantFamilyPermission(FamilyPermission familyPermission, UserInfo currentUserInfo)
         {
             // Check if the current user can grant the specified permission level.
-            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, familyPermission.FamilyId))
+            if (!await IsUserAccessManager(currentUserInfo, PermissionType.Family, familyPermission.FamilyId))
             {
                 return null; // Todo: Use result object instead.
             }
@@ -1758,34 +1713,23 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             // Check if the permission already exists.
             FamilyPermission existingPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
-                .SingleOrDefaultAsync(fp => fp.UserId == familyPermission.UserId && fp.GroupId == familyPermission.GroupId
+                .SingleOrDefaultAsync(fp => fp.GroupId == familyPermission.GroupId
                                            && fp.FamilyId == familyPermission.FamilyId);
-
-            // Check if a permission with the same user email already exists for this family.
-            if (existingPermission == null)
-            {
-                existingPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(fp => fp.Email == familyPermission.Email && fp.FamilyId == familyPermission.FamilyId);
-            }
 
             if (existingPermission != null)
             {
-                // Permission for user or group already exists
+                // Permission for group already exists
                 return null; // Todo: Use result object instead.
             }
 
-            // If the new permission is admin, add to the Family Admins list.
+            // If the new permission is admin, check if another admin permission exists. Only one admin group is allowed.
             if (familyPermission.PermissionLevel == PermissionLevel.Admin)
             {
-                Family family = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == familyPermission.FamilyId);
-                if (family != null)
+                FamilyPermission adminPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
+                    .SingleOrDefaultAsync(fp => fp.FamilyId == familyPermission.FamilyId && fp.PermissionLevel == PermissionLevel.Admin);
+                if (adminPermission != null)
                 {
-                    if (!family.IsInAdminList(familyPermission.Email))
-                    {
-                        family.AddToAdminList(familyPermission.Email);
-                        progenyDbContext.FamiliesDb.Update(family);
-                        await progenyDbContext.SaveChangesAsync();
-                    }
+                    return null;
                 }
             }
 
@@ -1814,47 +1758,30 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         public async Task<bool> RevokeFamilyPermission(FamilyPermission familyPermission, UserInfo currentUserInfo)
         {
             // Check if the current user can grant the specified permission level.
-            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, familyPermission.FamilyId))
+            if (!await IsUserAccessManager(currentUserInfo, PermissionType.Family, familyPermission.FamilyId))
             {
                 return false; // Todo: Use result object instead.
             }
-
-            // Don't allow removing own admin rights. You need to assign admin rights to another user first, then they may remove your access.
-            if (familyPermission.UserId == currentUserInfo.UserId)
-            {
-                return false; // Todo: Use result object instead.
-            }
-
+            
             // Check if the permission exists.
             FamilyPermission existingPermission = await progenyDbContext.FamilyPermissionsDb
                 .SingleOrDefaultAsync(fp => fp.FamilyPermissionId == familyPermission.FamilyPermissionId && fp.FamilyId == familyPermission.FamilyId);
             if (existingPermission == null)
             {
-                existingPermission = await progenyDbContext.FamilyPermissionsDb.SingleOrDefaultAsync(fp => fp.FamilyId == familyPermission.FamilyId && fp.UserId == familyPermission.UserId);
-                if (existingPermission == null) {
-                    existingPermission = await progenyDbContext.FamilyPermissionsDb.SingleOrDefaultAsync(fp => fp.FamilyId == familyPermission.FamilyId && fp.Email == familyPermission.Email);
-                    if (existingPermission == null)
-                    {
-                        return false; // Todo: Use result object instead
-                    }
-                }
+                return false; // Todo: Use result object instead
             }
 
-            PermissionAuditLog logEntry = await permissionAuditLogService.AddFamilyPermissionAuditLogEntry(PermissionAction.Delete, familyPermission, currentUserInfo);
-
-            // If the existing permission is admin, remove from Family Admins list.
+            // If the existing permission is admin, only allow removing admin rights if the family has been deleted.
             if (existingPermission.PermissionLevel == PermissionLevel.Admin)
             {
                 Family family = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == familyPermission.FamilyId);
                 if (family != null)
                 {
-                    if (family.IsInAdminList(familyPermission.Email))
-                    {
-                        family.RemoveFromAdminList(familyPermission.Email);
-                        progenyDbContext.FamiliesDb.Update(family);
-                    }
+                    return false;
                 }
             }
+
+            PermissionAuditLog logEntry = await permissionAuditLogService.AddFamilyPermissionAuditLogEntry(PermissionAction.Delete, familyPermission, currentUserInfo);
             
             progenyDbContext.FamilyPermissionsDb.Remove(existingPermission);
             await progenyDbContext.SaveChangesAsync();
@@ -1878,7 +1805,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         public async Task<FamilyPermission> UpdateFamilyPermission(FamilyPermission familyPermission, UserInfo currentUserInfo)
         {
             // Check if the current user can grant the specified permission level.
-            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, familyPermission.FamilyId))
+            if (!await IsUserAccessManager(currentUserInfo, PermissionType.Family, familyPermission.FamilyId))
             {
                 return null; // Todo: Use result object instead.
             }
@@ -1894,45 +1821,21 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 .SingleOrDefaultAsync(fp => fp.FamilyPermissionId == familyPermission.FamilyPermissionId && fp.FamilyId == familyPermission.FamilyId);
             if (existingPermission == null)
             {
-                existingPermission = await progenyDbContext.FamilyPermissionsDb.SingleOrDefaultAsync(fp => fp.FamilyId == familyPermission.FamilyId && fp.UserId == familyPermission.UserId);
-                if (existingPermission == null)
-                {
-                    existingPermission = await progenyDbContext.FamilyPermissionsDb.SingleOrDefaultAsync(fp => fp.FamilyId == familyPermission.FamilyId && fp.Email == familyPermission.Email);
-                    if (existingPermission == null)
-                    {
-                        return null; // Todo: Use result object instead
-                    }
-                }
+                return null; // Todo: Use result object instead
             }
 
             PermissionAuditLog logEntry = await permissionAuditLogService.AddFamilyPermissionAuditLogEntry(PermissionAction.Update, familyPermission, currentUserInfo);
 
-            // If the existing permission is admin and the new permission isn't, remove from Family Admins list.
+            // If the existing permission is admin and the new permission isn't return. Only one admin group is allowed.
             if (familyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
             {
-                Family family = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == familyPermission.FamilyId);
-                if (family != null)
-                {
-                    if (family.IsInAdminList(familyPermission.Email))
-                    {
-                        family.RemoveFromAdminList(familyPermission.Email);
-                        progenyDbContext.FamiliesDb.Update(family);
-                    }
-                }
+                return null;
             }
 
-            // If the existing permission is not admin and the new permission is, add to the Family Admins list.
+            // If the existing permission is not admin and the new permission is, return. Only one admin group is allowed.
             if (familyPermission.PermissionLevel == PermissionLevel.Admin && existingPermission.PermissionLevel != PermissionLevel.Admin)
             {
-                Family family = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == familyPermission.FamilyId);
-                if (family != null)
-                {
-                    if (!family.IsInAdminList(familyPermission.Email))
-                    {
-                        family.AddToAdminList(familyPermission.Email);
-                        progenyDbContext.FamiliesDb.Update(family);
-                    }
-                }
+                return null;
             }
 
             existingPermission.PermissionLevel = familyPermission.PermissionLevel;
@@ -1960,7 +1863,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// Returns an empty list if the user does not have access to manage the specified family.</returns>
         public async Task<List<FamilyPermission>> GetFamilyPermissionsList(int familyId, UserInfo currentUserInfo)
         {
-            if (!await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, familyId))
+            if (!await IsUserAccessManager(currentUserInfo, PermissionType.Family, familyId))
             {
                 return new List<FamilyPermission>();
             }
@@ -1987,7 +1890,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return null;
             }
 
-            bool hasAccess = await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Progeny, progenyId);
+            bool hasAccess = await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, progenyId);
             if (!hasAccess)
             {
                 return null;
@@ -2018,7 +1921,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return null;
             }
 
-            bool hasAccess = await IsUserAccessManager(currentUserInfo.UserId, PermissionType.Family, familyId);
+            bool hasAccess = await IsUserAccessManager(currentUserInfo, PermissionType.Family, familyId);
             if (!hasAccess)
             {
                 return null;
@@ -2049,17 +1952,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
 
             }
-            // Check direct user permissions.
-            ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb
-                .AsNoTracking()
-                .SingleOrDefaultAsync(pp => pp.UserId == userInfo.UserId && pp.ProgenyId == progenyId);
-
-            if (progenyPermission != null)
-            {
-                highestPermission = progenyPermission.PermissionLevel;
-                resultPermission = progenyPermission;
-            }
-
+            
             // Check group permissions.
             List<ProgenyPermission> groupPermissions = await progenyDbContext.ProgenyPermissionsDb
                 .AsNoTracking()
@@ -2097,17 +1990,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 PermissionLevel = PermissionLevel.None
             };
-            // Check direct user permissions.
-            FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb
-                .AsNoTracking()
-                .SingleOrDefaultAsync(fp => fp.UserId == userInfo.UserId && fp.FamilyId == familyId);
-
-            if (familyPermission != null)
-            {
-                highestPermission = familyPermission.PermissionLevel;
-                resultPermission = familyPermission;
-            }
-
+            
             // Check group permissions.
             List<FamilyPermission> groupPermissions = await progenyDbContext.FamilyPermissionsDb
                 .AsNoTracking()
@@ -2133,23 +2016,29 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <remarks>This method evaluates the user's access by querying the resource permissions database
         /// for matching entries. The user must have an administrative permission level for the specified resource and
         /// permission type to be granted access.</remarks>
-        /// <param name="currentUserUserId">The unique identifier of the user who is adding/updating the access is being checked. Cannot be <see langword="null"/> or empty.</param>
+        /// <param name="currentUserInfo">The information of the current user whose access is being evaluated.</param>
         /// <param name="permissionType">The type of permission to evaluate. This determines the scope of the access check (e.g., timeline item,
         /// family member, or family).</param>
         /// <param name="entityId">The unique identifier of the resource entity for which admin access is being checked. (e.g., ProgenyId, FamilyMemberId, or FamilyId)</param>
         /// <returns><see langword="true"/> if the user has administrative access to the specified resource based on the provided
         /// parameters; otherwise, <see langword="false"/>.</returns>
-        private async Task<bool> IsUserAccessManager(string currentUserUserId, PermissionType permissionType, int entityId)
+        private async Task<bool> IsUserAccessManager(UserInfo currentUserInfo, PermissionType permissionType, int entityId)
         {
             if (permissionType == PermissionType.TimelineItem)
             {
                 // For timeline items, we need to check if the user has admin rights for the Progeny associated with the timeline item.
                 ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(pp => pp.UserId == currentUserUserId
-                                               && pp.ProgenyId == entityId 
-                                               && pp.PermissionLevel == PermissionLevel.Admin);
-                
-                if (progenyPermission != null)
+                    .SingleOrDefaultAsync(pp => pp.ProgenyId == entityId && pp.PermissionLevel == PermissionLevel.Admin);
+
+                if (progenyPermission == null)
+                {
+                    return false; 
+                }
+                // Check if the user is a member of the admin group.
+                List<UserGroupMember> userGroupMembers = await progenyDbContext.UserGroupMembersDb.AsNoTracking()
+                    .Where(ug => ug.UserId == currentUserInfo.UserId && ug.UserGroupId == progenyPermission.GroupId)
+                    .ToListAsync();
+                if (userGroupMembers.Count != 0)
                 {
                     return true;
                 }
@@ -2157,12 +2046,14 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             if (permissionType == PermissionType.Progeny)
             {
-                ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(pp => pp.UserId == currentUserUserId
-                                               && pp.ProgenyId == entityId
-                                               && pp.PermissionLevel == PermissionLevel.Admin);
+                Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking()
+                    .SingleOrDefaultAsync(p => p.Id == entityId);
+                if (progeny == null)
+                {
+                    return false;
+                }
 
-                if (progenyPermission != null)
+                if (progeny.IsInAdminList(currentUserInfo.UserEmail))
                 {
                     return true;
                 }
@@ -2174,9 +2065,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 foreach (ProgenyPermission permission in groupPermissions)
                 {
                     List<UserGroupMember> userGroupMembers = await progenyDbContext.UserGroupMembersDb.AsNoTracking()
-                        .Where(ug => ug.UserId == currentUserUserId && ug.UserGroupId == permission.GroupId)
+                        .Where(ug => ug.UserId == currentUserInfo.UserId && ug.UserGroupId == permission.GroupId)
                         .ToListAsync();
-                    if (userGroupMembers.Any())
+                    if (userGroupMembers.Count != 0)
                     {
                         return true;
                     }
@@ -2185,11 +2076,14 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             if (permissionType == PermissionType.Family)
             {
-                FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(fp => fp.UserId == currentUserUserId
-                                               && fp.FamilyId == entityId 
-                                               && fp.PermissionLevel == PermissionLevel.Admin);
-                if (familyPermission != null)
+                Family family = await progenyDbContext.FamiliesDb.AsNoTracking()
+                    .SingleOrDefaultAsync(f => f.FamilyId == entityId);
+                if (family == null)
+                {
+                    return false;
+                }
+
+                if (family.IsInAdminList(currentUserInfo.UserEmail))
                 {
                     return true;
                 }
@@ -2198,10 +2092,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 List<FamilyPermission> groupPermissions = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
                     .Where(pp => pp.GroupId > 0 && pp.FamilyId == entityId && pp.PermissionLevel == PermissionLevel.Admin)
                     .ToListAsync();
+                
                 foreach (FamilyPermission permission in groupPermissions)
                 {
                     List<UserGroupMember> userGroupMembers = await progenyDbContext.UserGroupMembersDb.AsNoTracking()
-                        .Where(ug => ug.UserId == currentUserUserId && ug.UserGroupId == permission.GroupId)
+                        .Where(ug => ug.UserId == currentUserInfo.UserId && ug.UserGroupId == permission.GroupId)
                         .ToListAsync();
                     if (userGroupMembers.Count != 0)
                     {
@@ -2226,17 +2121,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         public async Task<List<int>> ProgeniesUserCanAccess(UserInfo userInfo, PermissionLevel permissionLevel)
         {
             List<int> progenies = [];
-
-            // Get user specific permissions.
-            List<ProgenyPermission> progenyPermissions = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking().Where(pp => pp.UserId == userInfo.UserId).ToListAsync();
-            foreach (ProgenyPermission permission in progenyPermissions)
-            {
-                if (permission.PermissionLevel >= permissionLevel)
-                {
-                    progenies.Add(permission.ProgenyId);
-                }
-            }
-
+            
             // Get group permissions.
             List<UserGroupMember> userGroups = await progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ug => ug.UserId == userInfo.UserId).ToListAsync();
             foreach (UserGroupMember group in userGroups)
@@ -2269,17 +2154,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         public async Task<List<int>> FamiliesUserCanAccess(UserInfo userInfo, PermissionLevel permissionLevel)
         {
             List<int> families = [];
-
-            // Get user specific permissions.
-            List<FamilyPermission> familyPermissions = await progenyDbContext.FamilyPermissionsDb.AsNoTracking().Where(pp => pp.UserId == userInfo.UserId).ToListAsync();
-            foreach (FamilyPermission permission in familyPermissions)
-            {
-                if (permission.PermissionLevel >= permissionLevel)
-                {
-                    families.Add(permission.FamilyId);
-                }
-            }
-
+            
             // Get group permissions.
             List<UserGroupMember> userGroups = await progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ug => ug.UserId == userInfo.UserId).ToListAsync();
             foreach (UserGroupMember group in userGroups)
@@ -2352,19 +2227,6 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task ChangeUsersEmailForPermissions(UserInfo userInfo, string newEmail)
         {
-            List<ProgenyPermission> progenyPermissions = await progenyDbContext.ProgenyPermissionsDb.Where(pp => pp.UserId == userInfo.UserId).ToListAsync();
-            foreach (ProgenyPermission permission in progenyPermissions)
-            {
-                permission.Email = newEmail;
-                progenyDbContext.ProgenyPermissionsDb.Update(permission);
-            }
-
-            List<FamilyPermission> familyPermissions = await progenyDbContext.FamilyPermissionsDb.Where(fp => fp.UserId == userInfo.UserId).ToListAsync();
-            foreach (FamilyPermission permission in familyPermissions)
-            {
-                permission.Email = newEmail;
-                progenyDbContext.FamilyPermissionsDb.Update(permission);
-            }
             List<TimelineItemPermission> timelineItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.Where(tp => tp.UserId == userInfo.UserId).ToListAsync();
             foreach (TimelineItemPermission permission in timelineItemPermissions)
             {
@@ -2382,20 +2244,6 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <returns></returns>
         public async Task UpdatePermissionsForNewUser(UserInfo userInfo)
         {
-            List<ProgenyPermission> progenyPermissions = await progenyDbContext.ProgenyPermissionsDb.Where(pp => pp.Email.ToUpper() == userInfo.UserEmail.ToUpper()).ToListAsync();
-            foreach (ProgenyPermission permission in progenyPermissions)
-            {
-                permission.UserId = userInfo.UserId;
-                progenyDbContext.ProgenyPermissionsDb.Update(permission);
-            }
-
-            List<FamilyPermission> familyPermissions = await progenyDbContext.FamilyPermissionsDb.Where(fp => fp.Email.ToUpper() == userInfo.UserEmail.ToUpper()).ToListAsync();
-            foreach (FamilyPermission permission in familyPermissions)
-            {
-                permission.UserId = userInfo.UserId;
-                progenyDbContext.FamilyPermissionsDb.Update(permission);
-            }
-
             List<TimelineItemPermission> timelineItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.Where(tp => tp.Email.ToUpper() == userInfo.UserEmail.ToUpper()).ToListAsync();
             foreach (TimelineItemPermission permission in timelineItemPermissions)
             {

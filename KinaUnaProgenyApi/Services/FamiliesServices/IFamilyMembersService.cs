@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
 
 namespace KinaUnaProgenyApi.Services.FamiliesServices
@@ -40,13 +39,11 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
         /// changes.</remarks>
         /// <param name="familyMember">The <see cref="FamilyMember"/> object representing the family member to add. The <see
         /// cref="FamilyMember.FamilyId"/> property must be set to the ID of the target family.</param>
-        /// <param name="permissionLevel">The <see cref="PermissionLevel"/> to assign to the new family member. This determines the level of access
-        /// the family member will have within the family.</param>
         /// <param name="currentUserInfo">The <see cref="UserInfo"/> object representing the user performing the operation. This user must have
         /// sufficient permissions to add family members to the specified family.</param>
         /// <returns>A <see cref="FamilyMember"/> object representing the newly added family member, or <see langword="null"/> if
         /// the operation fails due to insufficient permissions or an invalid family ID.</returns>
-        Task<FamilyMember> AddFamilyMember(FamilyMember familyMember, PermissionLevel permissionLevel, UserInfo currentUserInfo);
+        Task<FamilyMember> AddFamilyMember(FamilyMember familyMember, UserInfo currentUserInfo);
 
         /// <summary>
         /// Updates the details of an existing family member in the database.

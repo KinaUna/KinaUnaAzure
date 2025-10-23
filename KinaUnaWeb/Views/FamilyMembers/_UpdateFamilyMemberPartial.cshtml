@@ -9,10 +9,7 @@
     {
         selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text, PageNames.Family, Model.LanguageId);
     }
-    foreach (SelectListItem selectListItem in Model.PermissionLevelsList)
-    {
-        selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text, PageNames.AccessManagement, Model.LanguageId);
-    }
+    
     Model.ProgenyList.First().Text = await LocaleManager.GetTranslation("New family member", PageNames.Family, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
@@ -100,12 +97,6 @@
                         <label asp-for="MemberType" class="col-auto control-label">@await LocaleManager.GetTranslation("Select family member type", PageNames.Family, Model.LanguageId):</label>
                         <div class="col-auto">
                             <select id="family-member-type-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.MemberTypeList.Count" asp-for="MemberType" asp-items="@Model.MemberTypeList"></select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="PermissionLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Select family member's permission", PageNames.Family, Model.LanguageId):</label>
-                        <div class="col-auto">
-                            <select id="family-member-permission-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.PermissionLevelsList.Count" asp-for="PermissionLevel" asp-items="@Model.PermissionLevelsList"></select>
                         </div>
                     </div>
                     <div class="space-20"></div>

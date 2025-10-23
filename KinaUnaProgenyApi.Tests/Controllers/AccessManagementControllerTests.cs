@@ -108,8 +108,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             {
                 ProgenyPermissionId = TestPermissionId,
                 ProgenyId = TestProgenyId,
-                UserId = TestUserId,
-                Email = TestUserEmail,
                 PermissionLevel = PermissionLevel.Edit
             };
 
@@ -117,8 +115,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             {
                 FamilyPermissionId = TestPermissionId,
                 FamilyId = TestFamilyId,
-                UserId = TestUserId,
-                Email = TestUserEmail,
                 PermissionLevel = PermissionLevel.Edit
             };
 
@@ -524,16 +520,12 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 {
                     ProgenyPermissionId = TestPermissionId,
                     ProgenyId = TestProgenyId,
-                    UserId = TestUserId,
-                    Email = TestUserEmail,
                     PermissionLevel = PermissionLevel.Edit
                 },
                 new ProgenyPermission
                 {
                     ProgenyPermissionId = TestPermissionId + 1,
                     ProgenyId = TestProgenyId,
-                    UserId = OtherUserId,
-                    Email = OtherUserEmail,
                     PermissionLevel = PermissionLevel.View
                 }
             };
@@ -568,8 +560,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 {
                     ProgenyPermissionId = TestPermissionId,
                     ProgenyId = TestProgenyId,
-                    UserId = "",
-                    Email = TestUserEmail,
                     GroupId = 1,
                     PermissionLevel = PermissionLevel.Edit
                 }
@@ -620,16 +610,12 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 {
                     FamilyPermissionId = TestPermissionId,
                     FamilyId = TestFamilyId,
-                    UserId = TestUserId,
-                    Email = TestUserEmail,
                     PermissionLevel = PermissionLevel.Edit
                 },
                 new FamilyPermission
                 {
                     FamilyPermissionId = TestPermissionId + 1,
                     FamilyId = TestFamilyId,
-                    UserId = OtherUserId,
-                    Email = OtherUserEmail,
                     PermissionLevel = PermissionLevel.View
                 }
             };
@@ -664,8 +650,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 {
                     FamilyPermissionId = TestPermissionId,
                     FamilyId = TestFamilyId,
-                    UserId = "",
-                    Email = TestUserEmail,
                     GroupId = 1,
                     PermissionLevel = PermissionLevel.Edit
                 }
@@ -736,8 +720,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             {
                 FamilyPermissionId = TestPermissionId,
                 FamilyId = TestFamilyId,
-                UserId = "",
-                Email = TestUserEmail,
                 GroupId = 1,
                 PermissionLevel = PermissionLevel.Edit
             };
@@ -769,8 +751,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             FamilyPermission newPermission = new()
             {
                 FamilyId = TestFamilyId,
-                UserId = OtherUserId,
-                Email = OtherUserEmail,
                 PermissionLevel = PermissionLevel.View
             };
 
@@ -778,8 +758,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             {
                 FamilyPermissionId = TestPermissionId + 1,
                 FamilyId = TestFamilyId,
-                UserId = OtherUserId,
-                Email = OtherUserEmail,
                 PermissionLevel = PermissionLevel.View
             };
 
@@ -795,7 +773,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
             FamilyPermission returnedPermission = Assert.IsType<FamilyPermission>(okResult.Value);
             Assert.Equal(TestPermissionId + 1, returnedPermission.FamilyPermissionId);
-            Assert.Equal(OtherUserId, returnedPermission.UserId);
         }
 
         #endregion
@@ -848,8 +825,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             {
                 ProgenyPermissionId = TestPermissionId,
                 ProgenyId = TestProgenyId,
-                UserId = "",
-                Email = TestUserEmail,
                 GroupId = 1,
                 PermissionLevel = PermissionLevel.Edit
             };
@@ -881,8 +856,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             ProgenyPermission newPermission = new()
             {
                 ProgenyId = TestProgenyId,
-                UserId = OtherUserId,
-                Email = OtherUserEmail,
                 PermissionLevel = PermissionLevel.View
             };
 
@@ -890,8 +863,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             {
                 ProgenyPermissionId = TestPermissionId + 1,
                 ProgenyId = TestProgenyId,
-                UserId = OtherUserId,
-                Email = OtherUserEmail,
                 PermissionLevel = PermissionLevel.View
             };
 
@@ -907,7 +878,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
             ProgenyPermission returnedPermission = Assert.IsType<ProgenyPermission>(okResult.Value);
             Assert.Equal(TestPermissionId + 1, returnedPermission.ProgenyPermissionId);
-            Assert.Equal(OtherUserId, returnedPermission.UserId);
         }
 
         #endregion

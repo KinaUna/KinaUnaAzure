@@ -21,7 +21,8 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
     /// <param name="progenyDbContext"></param>
     /// <param name="familyMembersService"></param>
     public class FamiliesService(ProgenyDbContext progenyDbContext, IFamilyMembersService familyMembersService,
-        IAccessManagementService accessManagementService, IFamilyAuditLogsService familyAuditLogService, IPermissionAuditLogsService permissionAuditLogService): IFamiliesService
+        IAccessManagementService accessManagementService, IFamilyAuditLogsService familyAuditLogService, 
+        IUserGroupsService userGroupsService): IFamiliesService
     {
         /// <summary>
         /// Retrieves a family by its unique identifier, including its members, if the current user has the necessary
@@ -117,6 +118,22 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                 }
             }
 
+            List<Family> adminFamilies = await progenyDbContext.FamiliesDb.AsNoTracking()
+                .Where(f => f.Admins.ToUpper().Contains(currentUserInfo.UserEmail.ToUpper()))
+                .ToListAsync();
+            foreach (Family adminFamily in adminFamilies)
+            {
+                if (!userFamilies.Exists(f => f.FamilyId == adminFamily.FamilyId))
+                {
+                    Family family = await GetFamilyById(adminFamily.FamilyId, currentUserInfo);
+                    if (family.FamilyId != 0 && family.IsInAdminList(currentUserInfo.UserEmail))
+                    {
+                        family.FamilyPermission = await accessManagementService.GetFamilyPermissionForUser(family.FamilyId, currentUserInfo);
+                        userFamilies.Add(family);
+                    }
+                }
+            }
+
             return userFamilies;
         }
 
@@ -153,15 +170,28 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
 
             await familyAuditLogService.AddFamilyCreatedAuditLogEntry(family, currentUserInfo);
 
-            // Add FamilyPermissions for all admins in the family.
+            // Add Admin user group for family.
+            UserGroup adminGroup = new()
+            {
+                FamilyId = family.FamilyId,
+                Name = "Administrators - " + family.Name,
+                CreatedBy = currentUserInfo.UserEmail,
+                CreatedTime = System.DateTime.UtcNow,
+                ModifiedBy = currentUserInfo.UserEmail,
+                ModifiedTime = System.DateTime.UtcNow,
+                PermissionLevel = PermissionLevel.Admin
+            };
+            
+            adminGroup = await userGroupsService.AddUserGroup(adminGroup, currentUserInfo);
+            
+            // Add all admins in the family to admin group.
             foreach (string adminEmail in family.GetAdminsList())
             {
                 UserInfo userInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == adminEmail.ToUpper());
-
-                FamilyPermission familyPermission = new()
+                
+                UserGroupMember groupMember = new()
                 {
-                    FamilyId = family.FamilyId,
-                    PermissionLevel = PermissionLevel.Admin,
+                    UserGroupId = adminGroup.UserGroupId,
                     UserId = userInfo?.UserId ?? string.Empty,
                     Email = adminEmail,
                     CreatedBy = currentUserInfo.UserEmail,
@@ -170,7 +200,21 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                     ModifiedTime = System.DateTime.UtcNow
                 };
 
-                await accessManagementService.GrantFamilyPermission(familyPermission, currentUserInfo);
+                await userGroupsService.AddUserGroupMember(groupMember, currentUserInfo);
+
+                // Also add as family member.
+                FamilyMember familyMember = new()
+                {
+                    FamilyId = family.FamilyId,
+                    MemberType = FamilyMemberType.Unknown,
+                    UserId = userInfo?.UserId ?? string.Empty,
+                    Email = adminEmail,
+                    CreatedBy = currentUserInfo.UserEmail,
+                    CreatedTime = System.DateTime.UtcNow,
+                    ModifiedBy = currentUserInfo.UserEmail,
+                    ModifiedTime = System.DateTime.UtcNow
+                };
+                await familyMembersService.AddFamilyMember(familyMember, currentUserInfo);
             }
             
             return family;
@@ -223,45 +267,43 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             logEntry.EntityAfter = System.Text.Json.JsonSerializer.Serialize(existingFamily);
             await familyAuditLogService.UpdateFamilyAuditLogEntry(logEntry);
 
+            List<UserGroup> familyUserGroups = await userGroupsService.GetUserGroupsForFamily(existingFamily.FamilyId, currentUserInfo);
+            UserGroup adminGroup = familyUserGroups.FirstOrDefault(ug => ug.PermissionLevel == PermissionLevel.Admin);
+            if (adminGroup == null)
+            {
+                return existingFamily;
+            }
             // Add FamilyPermissions for new admins
             foreach (string newAdmin in newAdmins)
             {
                 if (!existingAdmins.Exists(a => a.ToUpper() == newAdmin.ToUpper()))
                 {
-                    // Check if we already have a permission entry for this user.
                     UserInfo userInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == newAdmin.ToUpper());
-                    FamilyPermission familyPermission = new FamilyPermission
+                    UserGroupMember groupMember = new()
                     {
-                        FamilyId = existingFamily.FamilyId,
-                        PermissionLevel = PermissionLevel.Admin,
-                        UserId = userInfo?.UserId ?? string.Empty,
+                        UserGroupId = adminGroup.UserGroupId,
                         Email = newAdmin,
+                        UserId = userInfo?.UserId ?? string.Empty,
+                        CreatedBy = currentUserInfo.UserEmail,
+                        CreatedTime = System.DateTime.UtcNow,
+                        ModifiedBy = currentUserInfo.UserEmail,
+                        ModifiedTime = System.DateTime.UtcNow
                     };
-
-                    FamilyPermission existingPermission = await accessManagementService.UpdateFamilyPermission(familyPermission, currentUserInfo);
-                    if (existingPermission == null)
-                    {
-                        await accessManagementService.GrantFamilyPermission(familyPermission, currentUserInfo);
-                    }
+                    await userGroupsService.AddUserGroupMember(groupMember, currentUserInfo);
                 }
             }
 
-
-            // Remove FamilyPermissions for old admins
+            // Remove administrator group membership for old admins
             foreach (string existingAdmin in existingAdmins)
             {
                 if (!newAdmins.Exists(a => a.ToUpper() == existingAdmin.ToUpper()))
                 {
                     // Remove admin permission for this user.
-                    UserInfo userInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == existingAdmin.ToUpper());
-                    FamilyPermission familyPermission = new FamilyPermission
+                    UserGroupMember groupMember = adminGroup.Members.SingleOrDefault(gm => gm.Email.ToUpper() == existingAdmin.ToUpper());
+                    if (groupMember != null)
                     {
-                        FamilyId = existingFamily.FamilyId,
-                        PermissionLevel = PermissionLevel.Edit,
-                        UserId = userInfo?.UserId ?? string.Empty,
-                        Email = existingAdmin,
-                    };
-                    _ = await accessManagementService.UpdateFamilyPermission(familyPermission, currentUserInfo);
+                        await userGroupsService.RemoveUserGroupMember(groupMember.UserGroupMemberId, currentUserInfo);
+                    }
                 }
             }
             
@@ -303,22 +345,13 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                 }
             }
             
-            List<FamilyPermission> familyPermissions = await progenyDbContext.FamilyPermissionsDb.Where(fp => fp.FamilyId == familyId && fp.UserId != currentUserInfo.UserId).ToListAsync();
+            List<FamilyPermission> familyPermissions = await progenyDbContext.FamilyPermissionsDb.Where(fp => fp.FamilyId == familyId).ToListAsync();
             if (familyPermissions.Count > 0)
             {
                 foreach (FamilyPermission familyPermission in familyPermissions)
                 {
                     await accessManagementService.RevokeFamilyPermission(familyPermission, currentUserInfo);
                 }
-            }
-
-            // Current user cannot remove own permission from the access management service, so we do it here.
-            FamilyPermission ownPermission = await progenyDbContext.FamilyPermissionsDb.SingleOrDefaultAsync(fp => fp.FamilyId == familyId && fp.UserId == currentUserInfo.UserId);
-            if (ownPermission != null)
-            {
-                progenyDbContext.FamilyPermissionsDb.Remove(ownPermission);
-                await progenyDbContext.SaveChangesAsync();
-                await permissionAuditLogService.AddFamilyPermissionAuditLogEntry(PermissionAction.Delete, ownPermission, currentUserInfo);
             }
             
             return true;

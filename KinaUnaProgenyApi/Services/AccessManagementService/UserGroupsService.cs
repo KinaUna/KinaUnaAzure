@@ -241,12 +241,10 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     PermissionLevel = userGroup.PermissionLevel,
                     CreatedBy = currentUserInfo.UserEmail,
                     CreatedTime = DateTime.UtcNow,
-                    Email = string.Empty,
                     FamilyId = userGroup.FamilyId,
                     GroupId = userGroup.UserGroupId,
                     ModifiedBy = currentUserInfo.UserEmail,
-                    ModifiedTime = DateTime.UtcNow,
-                    UserId = string.Empty
+                    ModifiedTime = DateTime.UtcNow
                 };
                 await accessManagementService.GrantFamilyPermission(permission, currentUserInfo);
             }
@@ -258,12 +256,10 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     PermissionLevel = userGroup.PermissionLevel,
                     CreatedBy = currentUserInfo.UserEmail,
                     CreatedTime = DateTime.UtcNow,
-                    Email = string.Empty,
                     ProgenyId = userGroup.ProgenyId,
                     GroupId = userGroup.UserGroupId,
                     ModifiedBy = currentUserInfo.UserId,
-                    ModifiedTime = DateTime.UtcNow,
-                    UserId = string.Empty
+                    ModifiedTime = DateTime.UtcNow
                 };
                 await accessManagementService.GrantProgenyPermission(permission, currentUserInfo);
             }
@@ -616,6 +612,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             await progenyDbContext.SaveChangesAsync();
 
             await userGroupAuditLogService.AddUserGroupMemberDeletedAuditLogEntry(member, currentUserInfo);
+            // Todo: Update cache for user?
 
             return true;
         }

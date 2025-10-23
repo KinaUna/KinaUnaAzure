@@ -150,8 +150,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             {
                 FamilyPermissionId = 1,
                 FamilyId = 1,
-                UserId = "admin1",
-                Email = "admin@example.com",
                 PermissionLevel = PermissionLevel.Admin,
                 CreatedTime = DateTime.UtcNow.AddDays(-5),
                 ModifiedTime = DateTime.UtcNow.AddDays(-5),
@@ -164,8 +162,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             {
                 FamilyPermissionId = 2,
                 FamilyId = 1,
-                UserId = "user1",
-                Email = "user1@example.com",
                 PermissionLevel = PermissionLevel.Edit,
                 CreatedTime = DateTime.UtcNow.AddDays(-5),
                 ModifiedTime = DateTime.UtcNow.AddDays(-5),
@@ -369,7 +365,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .ReturnsAsync(new FamilyPermission());
 
             // Act
-            FamilyMember result = await _service.AddFamilyMember(newMember, PermissionLevel.Edit, _adminUser);
+            FamilyMember result = await _service.AddFamilyMember(newMember, _adminUser);
 
             // Assert
             Assert.NotNull(result);
@@ -411,7 +407,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .ReturnsAsync(new FamilyPermission());
 
             // Act
-            FamilyMember result = await _service.AddFamilyMember(newMember, PermissionLevel.Edit, _testUser);
+            FamilyMember result = await _service.AddFamilyMember(newMember, _testUser);
 
             // Assert
             Assert.NotNull(result);
@@ -431,7 +427,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             };
 
             // Act
-            FamilyMember result = await _service.AddFamilyMember(newMember, PermissionLevel.Edit, _adminUser);
+            FamilyMember result = await _service.AddFamilyMember(newMember, _adminUser);
 
             // Assert
             Assert.Null(result);
@@ -454,7 +450,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .ReturnsAsync(false);
 
             // Act
-            FamilyMember result = await _service.AddFamilyMember(newMember, PermissionLevel.Edit, _otherUser);
+            FamilyMember result = await _service.AddFamilyMember(newMember, _otherUser);
 
             // Assert
             Assert.Null(result);
@@ -481,7 +477,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .ReturnsAsync(new FamilyPermission());
 
             // Act
-            FamilyMember result = await _service.AddFamilyMember(newMember, PermissionLevel.Edit, _adminUser);
+            FamilyMember result = await _service.AddFamilyMember(newMember, _adminUser);
 
             // Assert
             Assert.NotNull(result);
@@ -509,7 +505,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .ReturnsAsync(new FamilyPermission());
 
             // Act
-            FamilyMember result = await _service.AddFamilyMember(newMember, PermissionLevel.Edit, _adminUser);
+            FamilyMember result = await _service.AddFamilyMember(newMember, _adminUser);
 
             // Assert
             Assert.NotNull(result);
@@ -533,7 +529,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .ReturnsAsync(new FamilyAuditLog());
 
             // Act
-            FamilyMember result = await _service.AddFamilyMember(newMember, PermissionLevel.Edit, _adminUser);
+            FamilyMember result = await _service.AddFamilyMember(newMember, _adminUser);
 
             // Assert
             Assert.NotNull(result);
@@ -567,7 +563,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .ReturnsAsync(new FamilyPermission());
 
             // Act
-            FamilyMember result = await _service.AddFamilyMember(newMember, PermissionLevel.Edit, _adminUser);
+            FamilyMember result = await _service.AddFamilyMember(newMember, _adminUser);
 
             // Assert
             Assert.NotNull(result);
@@ -593,7 +589,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .ReturnsAsync((Progeny)null!);
 
             // Act
-            FamilyMember result = await _service.AddFamilyMember(newMember, PermissionLevel.Edit, _adminUser);
+            FamilyMember result = await _service.AddFamilyMember(newMember, _adminUser);
 
             // Assert
             Assert.Null(result);
@@ -631,7 +627,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .ReturnsAsync(new FamilyPermission());
 
             // Act
-            FamilyMember result = await _service.AddFamilyMember(newMember, PermissionLevel.Edit, _adminUser);
+            FamilyMember result = await _service.AddFamilyMember(newMember, _adminUser);
 
             // Assert
             Assert.NotNull(result);
@@ -672,7 +668,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                     {
                         FamilyPermissionId = 1,
                         FamilyId = 1,
-                        Email = "admin@example.com",
                         PermissionLevel = PermissionLevel.Admin
                     }
                 });
@@ -843,7 +838,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                     {
                         FamilyPermissionId = 1,
                         FamilyId = 1,
-                        Email = "admin@example.com",
                         PermissionLevel = PermissionLevel.Admin
                     }
                 });
@@ -896,7 +890,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                     {
                         FamilyPermissionId = 1,
                         FamilyId = 1,
-                        Email = "admin@example.com",
                         PermissionLevel = PermissionLevel.Admin
                     }
                 });
@@ -1089,8 +1082,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             {
                 FamilyPermissionId = 10,
                 FamilyId = 1,
-                UserId = "admin1",
-                Email = "admin@example.com",
                 PermissionLevel = PermissionLevel.View
             };
             _progenyDbContext.FamilyPermissionsDb.Add(extraPermission);

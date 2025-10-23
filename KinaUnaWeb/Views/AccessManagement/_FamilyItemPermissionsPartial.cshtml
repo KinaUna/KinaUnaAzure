@@ -109,30 +109,6 @@
     <div>
         @await LocaleManager.GetTranslation("User permissions", PageNames.AccessManagement, Model.LanguageId):
         <div id="item-permissions-users-div">
-            @if (Model.ItemId == 0 || Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
-            {
-                foreach (FamilyPermission permission in Model.FamilyPermissionsList)
-                {
-                    int permissionLevelValue = (int)permission.PermissionLevel;
-                    if (!string.IsNullOrWhiteSpace(permission.UserId))
-                    {
-                        UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == permission.UserId);
-                        if (user != null)
-                        {
-                            <div class="permission-user-div" data-family-permission-id="@permission.FamilyPermissionId" data-permission-level="@permissionLevelValue">
-                                @user.UserEmail (@user.FullName()) <select data-family-permission-id="@permission.FamilyPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        <div class="permission-user-div" data-family-permission-id="@permission.FamilyPermissionId" data-permission-level="@permissionLevelValue">
-                            @permission.Email (@noUserAccountString) <select data-family-permission-id="@permission.FamilyPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
-                        </div>
-                    }
-                }
-            }
-            
             @if (Model.ItemId > 0 || !Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
             {
                 foreach (TimelineItemPermission permission in Model.ItemPermissionsList)

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace KinaUnaWeb.Models.FamilyAccessViewModels
 {
@@ -21,8 +22,16 @@ namespace KinaUnaWeb.Models.FamilyAccessViewModels
 
         public void SetPermissionsLevelsList()
         {
-            foreach (PermissionLevel level in (PermissionLevel[])Enum.GetValues(typeof(PermissionLevel)))
+            PermissionLevelsList = [];
+            PermissionLevel[] permissionLevels = (PermissionLevel[])Enum.GetValues(typeof(PermissionLevel));
+            foreach (PermissionLevel level in permissionLevels.Where(p => (int)p < (int)PermissionLevel.Admin))
             {
+                // Only show admin level if the current level is admin.
+                if (level == PermissionLevel.Admin && PermissionLevel != PermissionLevel.Admin)
+                {
+                    continue;
+                }
+
                 PermissionLevelsList.Add(new SelectListItem
                 {
                     Text = level.ToString(),

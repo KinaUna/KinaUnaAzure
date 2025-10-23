@@ -25,13 +25,15 @@ namespace KinaUnaProgenyApi.Services
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly IImageStore _imageStore;
         private readonly IAccessManagementService _accessManagementService;
+        private readonly IUserGroupsService _userGroupsService;
 
-        public ProgenyService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, ILocationService locationService, IAccessManagementService accessManagementService)
+        public ProgenyService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, ILocationService locationService, IAccessManagementService accessManagementService, IUserGroupsService userGroupsService)
         {
             _context = context;
             _locationService = locationService;
             _imageStore = imageStore;
             _accessManagementService = accessManagementService;
+            _userGroupsService = userGroupsService;
             _cache = cache;
             _ = _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _ = _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -94,7 +96,17 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetProgenyInCache(progeny.Id);
 
-            // Add permissions for the user creating the progeny, the admins and the progeny (if email is provided).
+            UserGroup adminGroup = new UserGroup() { 
+                Name = "Admins - " + progeny.NickName, 
+                CreatedBy = progeny.CreatedBy, 
+                CreatedTime = DateTime.UtcNow, 
+                ModifiedBy = progeny.CreatedBy, 
+                ModifiedTime = DateTime.UtcNow,
+                PermissionLevel = PermissionLevel.Admin
+            };
+            adminGroup = await _userGroupsService.AddUserGroup(adminGroup, currentUserInfo);
+            
+            // Add permissions the admins and the progeny (if email is provided).
             List<string> adminEmails = progeny.GetAdminsList();
             foreach (string adminEmail in adminEmails)
             {
@@ -105,42 +117,61 @@ namespace KinaUnaProgenyApi.Services
                 }
 
                 UserInfo adminsUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToLower() == adminEmail.ToLower());
-                
-                ProgenyPermission progenyPermission = new()
+                UserGroupMember userGroupMember = new()
                 {
-                    ProgenyId = progeny.Id,
-                    UserId = adminsUserInfo?.UserId ?? string.Empty,
+                    UserId = adminsUserInfo != null ? adminsUserInfo.UserId : string.Empty,
                     Email = adminEmail,
-                    PermissionLevel = PermissionLevel.Admin,
+                    UserGroupId = adminGroup.UserGroupId,
                     CreatedBy = progeny.CreatedBy,
                     CreatedTime = DateTime.UtcNow,
                     ModifiedBy = progeny.CreatedBy,
                     ModifiedTime = DateTime.UtcNow
                 };
-                _ = await _accessManagementService.GrantProgenyPermission(progenyPermission, currentUserInfo);
+                _ = await _userGroupsService.AddUserGroupMember(userGroupMember, currentUserInfo);
             }
 
             // Add permission for the progeny user, if email is provided.
             if (!string.IsNullOrEmpty(progeny.Email))
             {
-                ProgenyPermission progenyPermission = new()
-                {
-                    ProgenyId = progeny.Id,
-                    UserId = progeny.UserId,
-                    Email = progeny.Email,
-                    PermissionLevel = PermissionLevel.View,
-                    CreatedBy = progeny.CreatedBy,
-                    CreatedTime = DateTime.UtcNow,
-                    ModifiedBy = progeny.CreatedBy,
-                    ModifiedTime = DateTime.UtcNow
-                };
-
                 if (progeny.IsInAdminList(progeny.Email))
                 {
-                    progenyPermission.PermissionLevel = PermissionLevel.Admin;
+                    UserGroupMember userGroupMember = new()
+                    {
+                        UserId = progeny.UserId,
+                        Email = progeny.Email,
+                        UserGroupId = adminGroup.UserGroupId,
+                        CreatedBy = progeny.CreatedBy,
+                        CreatedTime = DateTime.UtcNow,
+                        ModifiedBy = progeny.CreatedBy,
+                        ModifiedTime = DateTime.UtcNow
+                    };
+                    _ = await _userGroupsService.AddUserGroupMember(userGroupMember, currentUserInfo);
                 }
-
-                _ = await _accessManagementService.GrantProgenyPermission(progenyPermission, currentUserInfo);
+                else
+                {
+                    UserGroup familyGroup = new UserGroup()
+                    {
+                        Name = "Family - " + progeny.NickName,
+                        CreatedBy = progeny.CreatedBy,
+                        CreatedTime = DateTime.UtcNow,
+                        ModifiedBy = progeny.CreatedBy,
+                        ModifiedTime = DateTime.UtcNow,
+                        PermissionLevel = PermissionLevel.Add
+                    };
+                    familyGroup = await _userGroupsService.AddUserGroup(familyGroup, currentUserInfo);
+                    
+                    UserGroupMember userGroupMember = new()
+                    {
+                        UserId = progeny.UserId,
+                        Email = progeny.Email,
+                        UserGroupId = familyGroup.UserGroupId,
+                        CreatedBy = progeny.CreatedBy,
+                        CreatedTime = DateTime.UtcNow,
+                        ModifiedBy = progeny.CreatedBy,
+                        ModifiedTime = DateTime.UtcNow
+                    };
+                    _ = await _userGroupsService.AddUserGroupMember(userGroupMember, currentUserInfo);
+                }
             }
 
             return progeny;
@@ -246,8 +277,25 @@ namespace KinaUnaProgenyApi.Services
             _ = await _context.SaveChangesAsync();
 
             _ = await _imageStore.DeleteImage(progeny.PictureLink, "progeny");
+            
+            // Remove UserGroups and UserGroupMembers for this progeny.
+            List<UserGroup> userGroups = await _userGroupsService.GetUserGroupsForProgeny(progeny.Id, currentUserInfo);
+            foreach (UserGroup userGroup in userGroups)
+            {
+                foreach (UserGroupMember userGroupMember in userGroup.Members)
+                {
+                    _ = await _userGroupsService.RemoveUserGroupMember(userGroupMember.UserGroupMemberId, currentUserInfo);
+                }
+                _ = await _userGroupsService.RemoveUserGroup(userGroup.UserGroupId, currentUserInfo);
+            }
 
-            // Todo: Remove permissions for this progeny.
+            // Remove permissions for this progeny.
+            List<ProgenyPermission> progenyPermissions = await _accessManagementService.GetProgenyPermissionsList(progeny.Id, currentUserInfo);
+            foreach (ProgenyPermission progenyPermission in progenyPermissions)
+            {
+                _ = await _accessManagementService.RevokeProgenyPermission(progenyPermission, currentUserInfo);
+            }
+
             return progenyToDelete;
         }
 

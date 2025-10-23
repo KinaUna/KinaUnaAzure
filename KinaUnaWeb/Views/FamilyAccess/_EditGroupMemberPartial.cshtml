@@ -34,7 +34,7 @@
             @if (!string.IsNullOrWhiteSpace(Model.UserGroupMember.UserId) && Model.UserGroupMember.UserInfo != null)
             {
                 <div class="form-group">
-                    <div class="col-auto">@await LocaleManager.GetTranslation("User:", PageNames.AccessManagement, Model.LanguageId):</div>
+                    <div class="col-auto">@await LocaleManager.GetTranslation("User", PageNames.AccessManagement, Model.LanguageId):</div>
                     <div class="col-auto h-6">
                         @Model.UserGroupMember.UserInfo.FullName()
                     </div>
