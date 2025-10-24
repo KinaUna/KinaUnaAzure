@@ -184,5 +184,6 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="permissionId">The unique identifier of the family permission to delete.</param>
         /// <returns><see langword="true"/> if the deletion was successful; otherwise, <see langword="false"/>.</returns>
         Task<bool> DeleteFamilyPermission(int permissionId);
+        Task<List<Family>> GetFamiliesForProgeny(int progenyId);
     }
 }

@@ -25,35 +25,50 @@
                         <span>@Model.FamilyMember.Email</span>
                     }
                 }
-                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+                <button type="button" class="btn btn-link item-details-close-button family-member-details-close-button"><span>×</span></button>
             </div>
         </div>
         <div class="space-10"></div>
         <div class="row m-0">
-
+            <div class="col-12">
+                Email: <span>@Model.FamilyMember.Email</span>
+            </div>
+            <div class="col-12">
+                @await LocaleManager.GetTranslation("Family member type", PageNames.Family, Model.LanguageId): <span>@await LocaleManager.GetTranslation(Model.FamilyMember.MemberType.ToString(), PageNames.Family, Model.LanguageId)</span>
+            </div>
+            @if (Model.FamilyMember.Progeny != null)
+            {
+                <div class="col-12">
+                    @Model.FamilyMember.Progeny.Name
+                </div>
+                @if (Model.FamilyMember.Progeny.BirthDay.HasValue)
+                {
+                    <div class="col-12">
+                        @await LocaleManager.GetTranslation("Birthday", PageNames.Progeny, Model.LanguageId) @Model.FamilyMember.Progeny.BirthDay.Value.ToString("dd-MMM-yyyy")
+                    </div>
+                }
+                
+            }
+            <div class="space-20"></div>
         </div>
-    </div>
-</div>
-<div class="col-12 col-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
-    <div class="card-compact bg-todos todo-item m-1" data-family-member-id="@Model.FamilyMember.FamilyMemberId" align="left">
-        @if (Model.FamilyMember.FamilyMemberId == 0)
-        {
-            <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
-        }
-        else
-        {
-            <div class="row m-0">
+        <div class="row m-0">
+            @if (Model.FamilyMember.FamilyMemberId == 0)
+            {
+                <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
+            }
+            else
+            {
                 <div class="col-12">
                     @if (Model.FamilyMember.PermissionLevel >= PermissionLevel.Edit)
                     {
-                        <button id="edit-family-member-button-@Model.FamilyMember.FamilyMemberId">Edit</button>
+                        <button id="edit-family-member-button-@Model.FamilyMember.FamilyMemberId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></button>
                         @if (Model.FamilyMember.PermissionLevel >= PermissionLevel.Admin)
                         {
-                            <button id="delete-family-member-button-@Model.FamilyMember.FamilyMemberId">Delete</button>
+                            <button id="delete-family-member-button-@Model.FamilyMember.FamilyMemberId" class="btn btn-danger item-details-delete-button family-member-details-close-button float-right"><i class="fas fa-trash-alt"></i></button>
                         }
                     }
                 </div>
-            </div>
-        }
+            }
+        </div>
     </div>
 </div>

@@ -35,24 +35,18 @@ async function RenderFamilyMembers(family: Family): Promise<void> {
     const familyMembersDiv = document.querySelector<HTMLDivElement>('#family-members-list-div-' + family.familyId);
     if (familyMembersDiv) {
         // Create div element with id 'family-members-{familyId}' to contain family name and its members.
-        const familyMembersElement = document.createElement('div');
-        familyMembersElement.id = 'family-members-' + family.familyId;
-        familyMembersElement.className = 'col-12 family-members-element mb-4 p-3 border rounded';
-        
-        familyMembersElement.innerHTML = `<h5 class="mb-3">${family.name}</h5>`;
         if (family.familyMembers.length > 0) {
             family.familyMembers.forEach(async (member) => {
                 let familyMemberHTML = await getFamilyMemberElement(member);
-                familyMembersElement.appendChild(familyMemberHTML);
+                familyMembersDiv.appendChild(familyMemberHTML);
                 addFamilyMemberElementEventListeners(member.familyMemberId);
             });
         } else {
             let noMembersMessage = getTranslation('No members found for this family.', 'Family', languageId)
-            familyMembersElement.innerHTML += `<p>${noMembersMessage}</p>`;
+            familyMembersDiv.innerHTML += `<p>${noMembersMessage}</p>`;
         }
-        familyMembersDiv.appendChild(familyMembersElement);
+        
         return Promise.resolve();
-
     }    
     return Promise.reject('Family members div not found in the document.');
 }
@@ -118,7 +112,11 @@ export async function displayFamilyMemberDetails(familyMemberId: number): Promis
         const familyMemberDetails = await response.text();
         const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
         if (modalDiv) {
-            modalDiv.innerHTML = familyMemberDetails;
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.id = 'full-screen-overlay-div';
+            fullScreenOverlay.innerHTML = familyMemberDetails;
+            modalDiv.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
             modalDiv.classList.remove('d-none');
 
@@ -278,7 +276,7 @@ function addAddFamilyMemberModalEventListeners() {
 export async function displayEditFamilyMemberModal(familyMemberId: string): Promise<void> {
     startFullPageSpinner();
 
-    const response = await fetch('/FamilyMembers/EditFamilyMember/' + familyMemberId, {
+    const response = await fetch('/FamilyMembers/UpdateFamilyMember/' + familyMemberId, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'

@@ -169,5 +169,16 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(true);
         }
 
+        [HttpGet]
+        [Route("[action]/{progenyId:int}")]
+        public async Task<IActionResult> GetFamiliesForProgeny(int progenyId)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+
+            List<Family> families = await familyService.GetFamiliesForProgeny(progenyId, currentUserInfo);
+
+            return Ok(families);
+        }
     }
 }

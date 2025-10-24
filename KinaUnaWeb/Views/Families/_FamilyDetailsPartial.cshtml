@@ -14,7 +14,7 @@
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-todos-header">
                 <span class="h4 mr-3 align-bottom">@title</span>
-                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+                <button id="close-family-details-modal-button" type="button" class="btn btn-link item-details-close-button family-details-close-button"><span>×</span></button>
             </div>
         </div>
         <div class="space-10"></div>
@@ -24,7 +24,7 @@
                 </div>
             </div>
             <div class="col-auto">
-                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">people</i></span>
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">family_restroom</i></span>
             </div>
             <div class="col">
                 <div class="timeline-title row">
@@ -53,7 +53,7 @@
                 }
                 @if (Model.Family.FamilyPermission.PermissionLevel >= PermissionLevel.Edit)
                 {
-                    <div class="space-10"></div>
+                    <div class="space-20"></div>
                     <div class="row text-white">
                         <div class="col-auto">
                             <span class="text-white-75">@await LocaleManager.GetTranslation("Administrators", PageNames.Family, Model.LanguageId):</span>
@@ -67,7 +67,8 @@
                 <div class="row m-0">
                     @await LocaleManager.GetTranslation("Family members:", PageNames.Family, Model.LanguageId)
                 </div>
-                <div id="family-members-list-div" class="row m-0">
+                <div class="space-10"></div>
+                <div id="family-details-members-list-div" class="row m-0">
                     @foreach (FamilyMember familyMember in Model.Family.FamilyMembers)
                     {
                         <div class="col-12">
@@ -90,20 +91,22 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="space-10"></div>
                     }
                 </div>
-                @if (Model.Family.FamilyPermission.PermissionLevel >= PermissionLevel.Edit)
-                {
-                    <div class="space-50"></div>
-                    <div class="col-12">
-                        <a data-edit-item-type="family" data-edit-item-item-id="@Model.Family.FamilyId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                        @if (Model.Family.FamilyPermission.PermissionLevel >= PermissionLevel.Admin)
-                        {
-                            <a data-delete-item-type="family" data-delete-item-item-id="@Model.Family.FamilyId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
-                        }
-                    </div>
-                }
+                
             </div>
         </div>
+        @if (Model.Family.FamilyPermission.PermissionLevel >= PermissionLevel.Edit)
+        {
+            <div class="space-50"></div>
+            <div class="col-12">
+                <button id="edit-family-button" data-edit-item-type="family" data-edit-item-item-id="@Model.Family.FamilyId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></button>
+                @if (Model.Family.FamilyPermission.PermissionLevel >= PermissionLevel.Admin)
+                {
+                    <button id="delete-family-button" data-delete-item-type="family" data-delete-item-item-id="@Model.Family.FamilyId" class="btn btn-danger item-details-delete-button family-details-close-button float-right"><i class="fas fa-trash-alt"></i></button>
+                }
+            </div>
+        }
     </div>
 </div>

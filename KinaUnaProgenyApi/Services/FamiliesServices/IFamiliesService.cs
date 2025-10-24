@@ -110,5 +110,6 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
         /// <param name="newEmail">The new email address to replace the user's current email address.</param>
         /// <returns></returns>
         Task ChangeUsersEmailForFamilies(UserInfo userInfo, string newEmail);
+        Task<List<Family>> GetFamiliesForProgeny(int progenyId, UserInfo currentUserInfo);
     }
 }

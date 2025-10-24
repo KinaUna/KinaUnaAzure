@@ -11,7 +11,7 @@
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-add-item-header">
                 <span class="h4 mr-3 align-bottom">@pageTitle</span>
-                <button id="close-add-family-modal-button" type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+                <button id="close-add-family-modal-button" type="button" class="btn btn-link item-details-close-button family-details-close-button"><span>×</span></button>
             </div>
         </div>
         <form id="edit-family-form" asp-action="EditFamily" asp-controller="Families" role="form" method="post">
@@ -62,7 +62,7 @@
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">
                     <button id="save-family-button" disabled="disabled" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                    <button class="btn btn-danger item-details-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
+                    <button class="btn btn-danger family-details-close-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
                 </div>
                 <div id="validation-errors-div" class="col-auto">
                     <div id="name-required-div" class="d-none text-warning">

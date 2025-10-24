@@ -1,5 +1,6 @@
 ﻿@using System.Globalization
 @using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.FamiliesViewModels.FamilyMemberDetailsViewModel
 @inject ILocaleManager LocaleManager
@@ -10,7 +11,6 @@
         selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text, PageNames.Family, Model.LanguageId);
     }
     
-    Model.ProgenyList.First().Text = await LocaleManager.GetTranslation("New family member", PageNames.Family, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
@@ -44,55 +44,52 @@
             </div>
             <div class="col-12">
                 <form id="edit-family-member-form" asp-action="UpdateFamilyMember" asp-controller="FamilyMembers" role="form" method="post">
-                    <div class="form-group d-none">
-                        <label asp-for="CurrentProgenyId" class="col-auto control-label">@await LocaleManager.GetTranslation("Select a person or pet", PageNames.Family, Model.LanguageId):</label>
-                        <div class="col-auto">
-                            <select id="add-to-family-progeny-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="CurrentProgenyId" asp-items="@Model.ProgenyList"></select>
-                        </div>
-                    </div>
-                    <div id="new-progeny-data-div">
-                        <div class="form-group">
-                            <label asp-for="CurrentProgeny.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Name", PageNames.Progeny, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="family-member-name-input" asp-for="CurrentProgeny.Name" value="@Model.CurrentProgeny.Name" class="form-control" />
+                    @if (Model.FamilyMember.Progeny.ProgenyPerMission.PermissionLevel >= PermissionLevel.Edit)
+                    {
+                        <div id="new-progeny-data-div">
+                            <div class="form-group">
+                                <label asp-for="CurrentProgeny.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Name", PageNames.Progeny, Model.LanguageId)</label>
+                                <div class="col-auto">
+                                    <input id="family-member-name-input" asp-for="CurrentProgeny.Name" value="@Model.CurrentProgeny.Name" class="form-control" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="CurrentProgeny.NickName" class="col-auto control-label">@await LocaleManager.GetTranslation("Display name (nickname)", PageNames.Progeny, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="family-member-nick-name-input" asp-for="CurrentProgeny.NickName" value="@Model.CurrentProgeny.NickName" class="form-control" />
+                            <div class="form-group">
+                                <label asp-for="CurrentProgeny.NickName" class="col-auto control-label">@await LocaleManager.GetTranslation("Display name (nickname)", PageNames.Progeny, Model.LanguageId)</label>
+                                <div class="col-auto">
+                                    <input id="family-member-nick-name-input" asp-for="CurrentProgeny.NickName" value="@Model.CurrentProgeny.NickName" class="form-control" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="CurrentProgeny.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.Progeny, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="family-member-email-input" asp-for="CurrentProgeny.Email" type="email" value="@Model.CurrentProgeny.Email" class="form-control"/>
+                            <div class="form-group">
+                                <label asp-for="CurrentProgeny.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.Progeny, Model.LanguageId)</label>
+                                <div class="col-auto">
+                                    <input id="family-member-email-input" asp-for="CurrentProgeny.Email" type="email" value="@Model.CurrentProgeny.Email" class="form-control" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="CurrentProgeny.BirthDay" class="col-auto control-label">@await LocaleManager.GetTranslation("Birthday", PageNames.Progeny, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <div class="input-group date">
-                                    @{
-                                        Model.CurrentProgeny.BirthDay ??= DateTime.UtcNow;
-                                    }
-                                    <input id="progeny-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CurrentProgeny.BirthDay" value="@Model.CurrentProgeny.BirthDay.Value.ToString(longDateTimeFormat)"/>
+                            <div class="form-group">
+                                <label asp-for="CurrentProgeny.BirthDay" class="col-auto control-label">@await LocaleManager.GetTranslation("Birthday", PageNames.Progeny, Model.LanguageId)</label>
+                                <div class="col-auto">
+                                    <div class="input-group date">
+                                        @{
+                                            Model.CurrentProgeny.BirthDay ??= DateTime.UtcNow;
+                                        }
+                                        <input id="progeny-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CurrentProgeny.BirthDay" value="@Model.CurrentProgeny.BirthDay.Value.ToString(longDateTimeFormat)" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="CurrentProgeny.TimeZone" class="col-auto control-label">@await LocaleManager.GetTranslation("Time zone", PageNames.Progeny, Model.LanguageId)</label>
+                                <div class="col-auto">
+                                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="8" asp-for="CurrentProgeny.TimeZone" asp-items="@Model.TimezoneList"></select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="CurrentProgeny.Admins" class="col-auto control-label">@await LocaleManager.GetTranslation("Administrators", PageNames.Progeny, Model.LanguageId)</label>
+                                <div class="col-auto">
+                                    <input id="family-member-admins-input" asp-for="CurrentProgeny.Admins" value="@Model.CurrentUser.UserEmail" class="form-control" />
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label asp-for="CurrentProgeny.TimeZone" class="col-auto control-label">@await LocaleManager.GetTranslation("Time zone", PageNames.Progeny, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="8" asp-for="CurrentProgeny.TimeZone" asp-items="@Model.TimezoneList"></select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="CurrentProgeny.Admins" class="col-auto control-label">@await LocaleManager.GetTranslation("Administrators", PageNames.Progeny, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="family-member-admins-input" asp-for="CurrentProgeny.Admins" value="@Model.CurrentUser.UserEmail" class="form-control" />
-                            </div>
-                        </div>
-                    </div>
+                    }
                     <div class="form-group">
                         <label asp-for="MemberType" class="col-auto control-label">@await LocaleManager.GetTranslation("Select family member type", PageNames.Family, Model.LanguageId):</label>
                         <div class="col-auto">
@@ -103,8 +100,9 @@
                     <div class="form-group">
                         <input type="hidden" asp-for="CurrentFamilyId" value="@Model.CurrentFamilyId" />
                         <input type="hidden" asp-for="FamilyMember.FamilyMemberId" value="@Model.FamilyMember.FamilyMemberId"/>
+                        <input type="hidden" asp-for="CurrentProgenyId" value="@Model.CurrentProgenyId" />
                         <div class="col">
-                            <button id="save-family-member-submit-button" type="submit" class="btn btn-success">@addToFamilyString</button>
+                            <button id="save-family-member-submit-button" type="submit" class="btn btn-success">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
                             <button type="button" class="btn btn-danger add-family-member-close-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
                         </div>
                         <div id="validation-errors-div" class="col-auto">

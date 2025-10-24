@@ -380,5 +380,23 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
 
             await progenyDbContext.SaveChangesAsync();
         }
+
+        public async Task<List<Family>> GetFamiliesForProgeny(int progenyId, UserInfo currentUserInfo)
+        {
+            List<Family> families = [];
+            List<FamilyMember> familyMembers = await progenyDbContext.FamilyMembersDb.AsNoTracking()
+                .Where(fm => fm.ProgenyId == progenyId)
+                .ToListAsync();
+            foreach (FamilyMember familyMember in familyMembers)
+            {
+                Family family = await GetFamilyById(familyMember.FamilyId, currentUserInfo);
+                if (family.FamilyId != 0 && !families.Exists(f => f.FamilyId == family.FamilyId))
+                {
+                    families.Add(family);
+                }
+            }
+
+            return families;
+        }
     }
 }

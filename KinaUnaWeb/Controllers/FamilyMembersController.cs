@@ -52,6 +52,8 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_NotFoundPartial");
             }
 
+            model.FamilyMember.PermissionLevel = model.FamilyMember.Progeny.ProgenyPerMission.PermissionLevel;
+
             return PartialView("_FamilyMemberElementPartial", model);
         }
 
@@ -70,6 +72,8 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_NotFoundPartial");
             }
+
+            model.FamilyMember.PermissionLevel = model.FamilyMember.Progeny.ProgenyPerMission.PermissionLevel;
 
             return PartialView("_FamilyMemberDetailsPartial", model);
         }
@@ -183,7 +187,9 @@ namespace KinaUnaWeb.Controllers
                 FamilyMember = familyMember,
                 Family = family
             };
+            model.FamilyMember.PermissionLevel = model.FamilyMember.Progeny.ProgenyPerMission.PermissionLevel;
 
+            model.MemberType = model.FamilyMember.MemberType;
             model.SetMemberTypeList();
             
             return PartialView("_UpdateFamilyMemberPartial", model);
@@ -213,26 +219,28 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_NotFoundPartial");
             }
 
-            if (progeny.NickName != model.CurrentProgeny.NickName
-                || progeny.Name != model.CurrentProgeny.Name
-                || progeny.Email != model.CurrentProgeny.Email
-                || progeny.BirthDay != model.CurrentProgeny.BirthDay
-                || progeny.Admins != model.CurrentProgeny.Admins 
-                || progeny.TimeZone != model.CurrentProgeny.TimeZone)
+            if (familyMember.Progeny.ProgenyPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
-                progeny.NickName = model.CurrentProgeny.NickName;
-                progeny.Name = model.CurrentProgeny.Name;
-                progeny.Email = model.CurrentProgeny.Email;
-                progeny.BirthDay = model.CurrentProgeny.BirthDay;
-                progeny.Admins = model.CurrentProgeny.Admins;
-                progeny.TimeZone = model.CurrentProgeny.TimeZone;
-                // Todo: Profile picture.
-                await progenyHttpClient.UpdateProgeny(progeny);
-                
+                if (progeny.NickName != model.CurrentProgeny.NickName
+                    || progeny.Name != model.CurrentProgeny.Name
+                    || progeny.Email != model.CurrentProgeny.Email
+                    || progeny.BirthDay != model.CurrentProgeny.BirthDay
+                    || progeny.Admins != model.CurrentProgeny.Admins
+                    || progeny.TimeZone != model.CurrentProgeny.TimeZone)
+                {
+                    progeny.NickName = model.CurrentProgeny.NickName;
+                    progeny.Name = model.CurrentProgeny.Name;
+                    progeny.Email = model.CurrentProgeny.Email;
+                    progeny.BirthDay = model.CurrentProgeny.BirthDay;
+                    progeny.Admins = model.CurrentProgeny.Admins;
+                    progeny.TimeZone = model.CurrentProgeny.TimeZone;
+                    // Todo: Profile picture.
+                    await progenyHttpClient.UpdateProgeny(progeny);
+
+                }
             }
 
             familyMember.MemberType = model.MemberType;
-            familyMember.PermissionLevel = model.PermissionLevel;
             
             FamilyMember updatedFamilyMember = await familiesHttpClient.UpdateFamilyMember(familyMember);
             
@@ -252,7 +260,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_NotFoundPartial");
             }
-            if (family.FamilyPermission.PermissionLevel < PermissionLevel.Edit)
+            if (family.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
@@ -262,6 +270,10 @@ namespace KinaUnaWeb.Controllers
                 FamilyMember = familyMember,
                 Family = family
             };
+            
+            model.MemberType = model.FamilyMember.MemberType;
+            model.SetMemberTypeList();
+
             return PartialView("_DeleteFamilyMemberPartial", model);
         }
 

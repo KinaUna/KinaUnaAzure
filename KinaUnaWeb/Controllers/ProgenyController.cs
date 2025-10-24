@@ -609,30 +609,8 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> OtherPeopleAndPetsList()
         {
             List<Progeny> allMyProgenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.View);
-            List<Family> myFamilies = await familiesHttpClient.GetMyFamilies();
-
-
-            // Get a list of progenies user has access to, but are not a member of any of the user's families.
-            List<Progeny> otherProgenies = [];
-            foreach (Progeny progeny in allMyProgenies)
-            {
-                bool isMemberOfMyFamily = false;
-                foreach (Family family in myFamilies)
-                {
-                    if (family.FamilyMembers.Any(fm => fm.ProgenyId == progeny.Id))
-                    {
-                        isMemberOfMyFamily = true;
-                        break;
-                    }
-                }
-
-                if (!isMemberOfMyFamily)
-                {
-                    otherProgenies.Add(progeny);
-                }
-            }
-
-            return Json(otherProgenies);
+            
+            return Json(allMyProgenies);
         }
 
         [HttpGet]
@@ -656,12 +634,20 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_NotFoundPartial");
             }
-
+            
             AddProgenyToFamilyViewModel model = new(baseModel)
             {
                 FamilyList = await viewModelSetupService.GetFamilySelectList()
             };
+
+            List<Family> progenysFamilies = await familiesHttpClient.GetFamiliesForProgeny(progenyId);
+            foreach (Family family in progenysFamilies)
+            {
+                model.FamilyList = model.FamilyList.Where(f => f.Value != family.FamilyId.ToString()).ToList();
+            }
+
             model.SetMemberTypeList();
+            
             return PartialView("_AddOtherPersonToFamilyPartial", model);
         }
 

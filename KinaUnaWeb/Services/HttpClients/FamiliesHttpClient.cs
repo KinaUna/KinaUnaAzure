@@ -403,5 +403,19 @@ namespace KinaUnaWeb.Services.HttpClients
             HttpResponseMessage accessResponse = await _httpClient.DeleteAsync(accessApiPath);
             return accessResponse.IsSuccessStatusCode;
         }
+
+        public async Task<List<Family>> GetFamiliesForProgeny(int progenyId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string familiesPath = "/api/Families/GetFamiliesForProgeny/" + progenyId;
+            HttpResponseMessage familiesReponse = await _httpClient.GetAsync(familiesPath);
+            if (!familiesReponse.IsSuccessStatusCode) return [];
+
+            List<Family> families = await familiesReponse.Content.ReadAsAsync<List<Family>>();
+            return families;
+        }
     }
 }

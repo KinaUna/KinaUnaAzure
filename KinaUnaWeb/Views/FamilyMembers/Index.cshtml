@@ -32,7 +32,7 @@
         </div>
     </div>
 </div>
-<div class="space-20"></div>
+<div class="space-50"></div>
 @foreach (Family family in Model.Families)
 {
     <div class="row m-0">
@@ -40,9 +40,7 @@
             <div class="row">
                 <div class="col-12">
                     <span class="h4">@family.Name</span>
-                </div>
-                <div class="col-12 text-right">
-                    <button id="add-new-family-member-button-@family.FamilyId" data-family-id="@family.FamilyId" class="btn btn-primary add-new-family-member-button"><i class="material-icons icon-top-4">add</i> @await LocaleManager.GetTranslation("Add family member", PageNames.Family, Model.LanguageId)</button>
+                    <button id="add-new-family-member-button-@family.FamilyId" data-family-id="@family.FamilyId" class="btn btn-primary float-right add-new-family-member-button"><i class="material-icons icon-top-4">add</i> @await LocaleManager.GetTranslation("Add family member", PageNames.Family, Model.LanguageId)</button>
                 </div>
             </div>
             <div class="space-20"></div>
@@ -50,7 +48,7 @@
             </div>
         </div>
     </div>
-    <div class="space-20"></div>
+    <div class="space-50"></div>
 }
 <div id="family-details-div" class="d-none item-details-popup"></div>
 <script src="/js/families/family-members.js" type="module" asp-append-version="true"></script>

@@ -1,4 +1,5 @@
 ﻿import { getCurrentLanguageId } from "../data-tools-v9.js";
+import { hideBodyScrollbars } from "../item-details/items-display-v9.js";
 import { Progeny } from "../page-models-v9.js";
 
 let progeniesList = new Array<Progeny>();
@@ -65,10 +66,15 @@ function addOtherPeopleElementEventListeners(progenyId: number): void {
             if (response.ok) {
                 const addToFamilyDiv = document.querySelector<HTMLDivElement>('#add-to-family-div');
                 if (addToFamilyDiv) {
-                    addToFamilyDiv.innerHTML = '';
                     const addToFamilyContent = await response.text();
-                    addToFamilyDiv.innerHTML = addToFamilyContent;
+                    addToFamilyDiv.innerHTML = '';
+                    const fullScreenOverlay = document.createElement('div');
+                    fullScreenOverlay.classList.add('full-screen-bg');
+                    fullScreenOverlay.innerHTML = addToFamilyContent;
+                    addToFamilyDiv.appendChild(fullScreenOverlay);
+                    hideBodyScrollbars();
                     addToFamilyDiv.classList.remove('d-none');
+                    ($(".selectpicker") as any).selectpicker('refresh');
                     addAddToFamilyDivEventListeners();
                 }
 

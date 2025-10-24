@@ -3,7 +3,7 @@
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.FamiliesViewModels.FamilyMemberDetailsViewModel
 @inject ILocaleManager LocaleManager
-<div class="col-12 col-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
+<div class="col-auto">
     <div id="family-member-element-@Model.FamilyMember.FamilyMemberId" class="card-compact bg-todos todo-item m-1" data-family-member-id="@Model.FamilyMember.FamilyMemberId" align="left">
         @if (Model.FamilyMember.FamilyMemberId == 0)
         {
@@ -11,7 +11,7 @@
         }
         else
         {
-            <div class="row m-0">
+            <div class="row m-0 p-3">
                 <div class="col-12">
                     @if (Model.FamilyMember.ProgenyId > 0 && Model.FamilyMember.Progeny != null)
                     {
@@ -27,9 +27,10 @@
                         }
                     }
                     <span>@Model.FamilyMember.Email</span>
-
+                    
                 </div>
             </div>
         }
     </div>
+    <div class="space-10"></div>
 </div>

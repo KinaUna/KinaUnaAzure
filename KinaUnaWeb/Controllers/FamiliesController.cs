@@ -145,7 +145,48 @@ namespace KinaUnaWeb.Controllers
 
             return Json(updatedFamily);
         }
-        
+
+        public async Task<IActionResult> DeleteFamily(int familyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, familyId, false);
+            FamilyDetailsViewModel model = new(baseModel)
+            {
+                Family = await familiesHttpClient.GetFamily(familyId)
+            };
+
+            if (model.Family == null || model.Family.FamilyId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            if (model.Family.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            return PartialView("_DeleteFamilyPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteFamily([FromForm] FamilyDetailsViewModel model)
+        {
+            Family existingFamily = await familiesHttpClient.GetFamily(model.Family.FamilyId);
+            if (existingFamily == null || existingFamily.FamilyId == 0)
+            {
+                return NotFound();
+            }
+
+            if (existingFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return Unauthorized();
+            }
+            
+            await familiesHttpClient.DeleteFamily(model.Family.FamilyId);
+
+            return Json(model.Family);
+        }
+
         /// <summary>
         /// Profile picture for a family. If the family has no picture or the user has no access to the picture, a default image is returned.
         /// Images are stored in Azure Blob Storage, this provides a static URL for profile pictures.

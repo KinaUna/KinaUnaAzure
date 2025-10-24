@@ -112,8 +112,54 @@ async function displayFamilyDetails(familyId: number): Promise<void> {
     return Promise.resolve();
 }
 
-function addFamilyDetailsEventListeners(): void {
+function addCloseButtonsEventListeners(): void {
+    const closeButtons = document.querySelectorAll<HTMLButtonElement>('.family-details-close-button');
+    closeButtons.forEach((closeButton) => {
+        const closeButtonClickedAction = function (event: MouseEvent): void {
+            event.preventDefault();
+            event.stopPropagation();
+            const modalDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+            if (modalDiv) {
+                modalDiv.innerHTML = '';
+                modalDiv.classList.add('d-none');
+                document.body.style.overflow = 'auto';
+            }
+        };
+        closeButton.removeEventListener('click', closeButtonClickedAction);
+        closeButton.addEventListener('click', closeButtonClickedAction);
+    });
+}
 
+function addFamilyDetailsEventListeners(): void {
+    addCloseButtonsEventListeners();
+    
+    const editFamilyButton = document.querySelector<HTMLButtonElement>('#edit-family-button');
+    if (editFamilyButton) {
+        const editFamilyClickedAction = function (event: MouseEvent): void {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const familyId = parseInt(editFamilyButton.getAttribute('data-edit-item-item-id') || '0');
+            displayEditFamilyModal(familyId);
+        }
+
+        editFamilyButton.removeEventListener('click', editFamilyClickedAction);
+        editFamilyButton.addEventListener('click', editFamilyClickedAction);
+    }
+
+    const deleteFamilyButton = document.querySelector<HTMLButtonElement>('#delete-family-button');
+    if (deleteFamilyButton) {
+        const deleteFamilyClickedAction = async function (event: MouseEvent): Promise<void> {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const familyId = parseInt(deleteFamilyButton.getAttribute('data-delete-item-item-id') || '0');
+            displayDeleteFamilyModal(familyId);
+            
+        }
+        deleteFamilyButton.removeEventListener('click', deleteFamilyClickedAction);
+        deleteFamilyButton.addEventListener('click', deleteFamilyClickedAction);
+    }
 }
 
 function addNewFamilyButtonEventListener(): void {
@@ -169,21 +215,7 @@ async function displayAddFamilyModal(): Promise<void> {
 }
 
 function addAddFamilyModalEventListeners(): void {
-    const closeButton = document.querySelector<HTMLButtonElement>('#close-add-family-modal-button');
-    if (closeButton) {
-        const closeButtonClickedAction = function (event: MouseEvent): void {
-            event.preventDefault();
-            event.stopPropagation();
-            let popup = document.getElementById('item-details-div');
-            if (popup) {
-                popup.innerHTML = '';
-                popup.classList.add('d-none');
-                document.body.style.overflow = 'auto';
-            }
-        };
-        closeButton.removeEventListener('click', closeButtonClickedAction);
-        closeButton.addEventListener('click', closeButtonClickedAction);
-    }
+    addCloseButtonsEventListeners();
 
     const addFamilyForm = document.querySelector<HTMLFormElement>('#add-family-form');
     if (addFamilyForm) {
@@ -257,21 +289,7 @@ async function displayEditFamilyModal(familyId: number): Promise<void> {
 }
 
 function addEditFamilyModalEventListeners(): void {
-    const closeButton = document.querySelector<HTMLButtonElement>('#close-family-modal-button');
-    if (closeButton) {
-        const closeButtonClickedAction = function (event: MouseEvent): void {
-            event.preventDefault();
-            event.stopPropagation();
-            let popup = document.getElementById('item-details-div');
-            if (popup) {
-                popup.innerHTML = '';
-                popup.classList.add('d-none');
-                document.body.style.overflow = 'auto';
-            }
-        };
-        closeButton.removeEventListener('click', closeButtonClickedAction);
-        closeButton.addEventListener('click', closeButtonClickedAction);
-    }
+    addCloseButtonsEventListeners();
 
     const editFamilyForm = document.querySelector<HTMLFormElement>('#edit-family-form');
     if (editFamilyForm) {
@@ -285,7 +303,7 @@ function addEditFamilyModalEventListeners(): void {
                 body: formData
             });
             if (response.ok) {
-                const familyDetailsDiv = document.querySelector<HTMLDivElement>('#family-details-div');
+                const familyDetailsDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (familyDetailsDiv) {
                     familyDetailsDiv.innerHTML = '';
                     familyDetailsDiv.classList.add('d-none');
@@ -304,6 +322,81 @@ function addEditFamilyModalEventListeners(): void {
         };
         editFamilyForm.removeEventListener('submit', editFamilyFormSubmitAction);
         editFamilyForm.addEventListener('submit', editFamilyFormSubmitAction);
+    }
+}
+
+async function displayDeleteFamilyModal(familyId: number): Promise<void> {
+    startFullPageSpinner();
+    let popup = document.getElementById('item-details-div');
+    const response = await fetch('/Families/DeleteFamily?familyId=' + familyId, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    if (response.ok) {
+        if (popup) {
+            const familyDetailsHTML = await response.text();
+            popup.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = familyDetailsHTML;
+            popup.appendChild(fullScreenOverlay);
+            hideBodyScrollbars();
+            popup.classList.remove('d-none');
+            addDeleteFamilyModalEventListeners();
+            await initializeAddEditFamily(familyId);
+        }
+        else {
+            stopFullPageSpinner();
+            return Promise.reject('Item details div not found in the document.');
+        }
+
+    } else {
+        stopFullPageSpinner();
+        console.error('Failed to fetch edit family element:', response.statusText);
+        return Promise.reject('Failed to fetch edit family element: ' + response.statusText);
+    }
+
+    stopFullPageSpinner();
+
+    return Promise.resolve();
+}
+
+function addDeleteFamilyModalEventListeners(): void {
+    addCloseButtonsEventListeners();
+
+    const deleteFamilyForm = document.querySelector<HTMLFormElement>('#delete-family-form');
+    if (deleteFamilyForm) {
+        const deleteFamilyFormSubmitAction = async function (event: Event): Promise<void> {
+            event.preventDefault();
+            event.stopPropagation();
+            startFullPageSpinner();
+            const formData = new FormData(deleteFamilyForm);
+            const response = await fetch('/Families/DeleteFamily', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                const familyDetailsDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+                if (familyDetailsDiv) {
+                    familyDetailsDiv.innerHTML = '';
+                    familyDetailsDiv.classList.add('d-none');
+                    document.body.style.overflow = 'auto';
+                    // Refresh the families list on the main page.
+                    await getFamiliesList();
+                }
+
+            } else {
+                stopFullPageSpinner();
+                console.error('Failed to update family:', response.statusText);
+                return Promise.reject('Failed to update family: ' + response.statusText);
+            }
+            stopFullPageSpinner();
+            return Promise.resolve();
+        };
+        deleteFamilyForm.removeEventListener('submit', deleteFamilyFormSubmitAction);
+        deleteFamilyForm.addEventListener('submit', deleteFamilyFormSubmitAction);
     }
 }
 
