@@ -238,6 +238,7 @@ async function displayEditFamilyModal(familyId) {
             popup.innerHTML = '';
             const fullScreenOverlay = document.createElement('div');
             fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.id = 'full-screen-overlay-div';
             fullScreenOverlay.innerHTML = familyDetailsHTML;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
@@ -367,7 +368,6 @@ function addDeleteFamilyModalEventListeners() {
 * Sets up the Rich Text Editor for the todo description field and adds event listeners for image upload success and editor creation.
 */
 function setupRichTextEditor() {
-    console.log('setupRichTextEditor begin..');
     const fullScreenOverlay = document.getElementById('full-screen-overlay-div');
     if (fullScreenOverlay !== null) {
         if (fullScreenOverlay.querySelector('script') !== null) {
@@ -452,7 +452,6 @@ function validateInputs() {
 }
 export async function initializeAddEditFamily(familyId) {
     languageId = getCurrentLanguageId();
-    console.log('init addEditFamily..');
     setupRichTextEditor();
     const nameInput = document.getElementById('family-name-input');
     if (nameInput) {

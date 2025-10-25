@@ -22,6 +22,7 @@ export async function displayAddGroupModal(progenyId, familyId) {
             popup.classList.remove('d-none');
             addAddGroupModalEventListeners();
             validateInputs();
+            $(".selectpicker").selectpicker('refresh');
             return Promise.resolve();
         }
         else {

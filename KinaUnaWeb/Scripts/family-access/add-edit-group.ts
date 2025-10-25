@@ -24,6 +24,7 @@ export async function displayAddGroupModal(progenyId: string, familyId: string) 
             popup.classList.remove('d-none');
             addAddGroupModalEventListeners();
             validateInputs();
+            ($(".selectpicker") as any).selectpicker('refresh');
 
             return Promise.resolve();
         }

@@ -90,6 +90,8 @@ namespace KinaUnaWeb.Controllers
                 };
             }
 
+            model.SetPermissionsLevelsList();
+
             return PartialView("_AddGroupPartial", model);
         }
 
