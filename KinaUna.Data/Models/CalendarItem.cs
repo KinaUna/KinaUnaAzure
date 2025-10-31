@@ -39,10 +39,11 @@ namespace KinaUna.Data.Models
         /// </summary>
         [MaxLength(256)]
         public string Title { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Notes and detailed description of the event.
         /// </summary>
+        [MaxLength(4000)]
         public string Notes { get; set; } = string.Empty;
         
         /// <summary>

@@ -23,7 +23,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int sleepId = 0)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, 0, true);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SleepViewModel model = new(baseModel);
 
             List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId);

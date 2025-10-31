@@ -628,7 +628,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(deletedBoard);
 
             // Act
-            IActionResult result = await _controller.Delete(TestKanbanBoardId, false);
+            IActionResult result = await _controller.Delete(TestKanbanBoardId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);

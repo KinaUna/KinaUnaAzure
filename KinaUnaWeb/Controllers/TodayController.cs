@@ -32,7 +32,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> OnThisDay(int progenyId = 0, int familyId = 0, int items = 10, int skip = 0, int year = 0, int month = 0, int day = 0, int period = 4, string tagFilter = "", string categoryFilter = "", string contextFilter = "", int sortOrder = 1)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, familyId, true);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, familyId);
             OnThisDayViewModel model = new(baseModel);
             model.SetRequestParameters(skip, items, (OnThisDayPeriod)period, year, month, day, tagFilter, categoryFilter, contextFilter, sortOrder);
 

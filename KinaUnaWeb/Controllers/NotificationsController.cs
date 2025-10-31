@@ -36,6 +36,7 @@ namespace KinaUnaWeb.Controllers
         /// <param name="Id">Optional Notification Id to highlight.</param>
         /// <param name="count">Number of Notfications to load.</param>
         /// <returns>View with NotificationsListViewModel.</returns>
+        // ReSharper disable once InconsistentNaming
         public async Task<IActionResult> Index(int Id = 0, int count = 10)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
@@ -152,6 +153,7 @@ namespace KinaUnaWeb.Controllers
         /// </summary>
         /// <param name="Id">The Id of the WebNotification to update.</param>
         /// <returns>OkObjectResult with string.</returns>
+        // ReSharper disable once InconsistentNaming
         public async Task<IActionResult> SetUnread(int Id)
         {
             string userId = User.GetUserId() ?? "NoUser";
@@ -175,6 +177,7 @@ namespace KinaUnaWeb.Controllers
         /// </summary>
         /// <param name="Id">The Id of the WebNotification to update.</param>
         /// <returns>OkObjectResult with string.</returns>
+        // ReSharper disable once InconsistentNaming
         public async Task<IActionResult> SetRead(int Id)
         {
             string userId = User.GetUserId() ?? "NoUser";
@@ -229,6 +232,7 @@ namespace KinaUnaWeb.Controllers
         /// </summary>
         /// <param name="Id">The Id of the WebNotification to delete.</param>
         /// <returns>OkObjectResult with string.</returns>
+        // ReSharper disable once InconsistentNaming
         public async Task<IActionResult> Remove(int Id)
         {
             string userId = User.GetUserId() ?? "NoUser";

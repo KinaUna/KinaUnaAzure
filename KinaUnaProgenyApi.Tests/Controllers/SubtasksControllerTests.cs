@@ -406,7 +406,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, 0, TestParentTodoItemId);
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0, 0);
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0);
             TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
 
             _mockAccessManagementService.Setup(x => x.HasProgenyPermission(TestProgenyId, _testUser, PermissionLevel.Add))
@@ -438,7 +438,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             TodoItem subtaskToAdd = CreateTestTodoItem(0, 0, TestFamilyId, TestParentTodoItemId);
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, 0, TestFamilyId, 0);
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, 0, TestFamilyId);
             TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, 0, TestFamilyId, TestParentTodoItemId);
 
             _mockAccessManagementService.Setup(x => x.HasFamilyPermission(TestFamilyId, _testUser, PermissionLevel.Add))
@@ -577,7 +577,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
             TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
             updateValues.Title = "Updated Title";
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0, 0);
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0);
             TodoItem updatedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
             updatedSubtask.Title = "Updated Title";
 

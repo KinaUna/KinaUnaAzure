@@ -19,6 +19,8 @@ namespace KinaUna.Data.Models
 
         [MaxLength(1024)]
         public string Title { get; set; } = string.Empty;
+
+        [MaxLength(1000000)]
         public string Text { get; set; } = string.Empty;
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }

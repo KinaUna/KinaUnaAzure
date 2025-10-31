@@ -23,6 +23,7 @@ namespace KinaUna.Data.Models
 
         [MaxLength(2048)]
         public string Website { get; set; } = string.Empty;
+        [MaxLength(4000)]
         public string Notes { get; set; } = string.Empty;
 
         /// <summary>

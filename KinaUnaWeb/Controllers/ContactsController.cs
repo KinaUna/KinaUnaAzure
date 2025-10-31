@@ -46,7 +46,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int familyId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0, int contactId = 0)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId, true);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
             ContactListViewModel model = new(baseModel);
             // Todo: Use ProgenyList and FamilyList to show contacts for multiple progenies/families.
             List<Contact> contactList = await contactsHttpClient.GetContactsList(model.CurrentProgenyId, model.CurrentFamilyId, tagFilter);

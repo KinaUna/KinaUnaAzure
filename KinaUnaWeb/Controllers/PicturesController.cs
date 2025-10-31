@@ -49,7 +49,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int id = 1, int pageSize = 10, int childId = 0, int sortBy = 2, string tagFilter = "", int year = 0, int month = 0, int day = 0, int pictureId = 0)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, 0, true);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             PicturesListViewModel model = new(baseModel)
             {
                 PageSize = pageSize,

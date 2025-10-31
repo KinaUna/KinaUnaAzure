@@ -42,7 +42,7 @@ namespace KinaUnaWeb.Hubs
             string userTimeZone = Context.GetHttpContext()?.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
             if (userId != "NoUser")
             {
-                List<WebNotification> notifications = await notificationsService.GetLatestNotifications(userId, 0, 10, true);
+                List<WebNotification> notifications = await notificationsService.GetLatestNotifications(userId);
 
                 notifications = [.. notifications.OrderByDescending(n => n.DateTime).Skip(start).Take(count)];
 

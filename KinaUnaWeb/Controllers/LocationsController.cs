@@ -40,7 +40,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int familyId = 0, int sortBy = 0, string tagFilter = "", int sort = 0, int sortTags = 0, int locationId = 0)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId, true);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
             LocationViewModel model = new(baseModel)
             {
                 HereMapsApiKey = _hereMapsApiKey
@@ -250,7 +250,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> PhotoLocations(int childId = 0, int familyId = 0, string tagFilter = "", int sortOrder = 1)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId, true);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
             LocationViewModel model = new(baseModel)
             {
                 LocationsList = [],

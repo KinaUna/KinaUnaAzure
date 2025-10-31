@@ -17,6 +17,7 @@ namespace KinaUna.Data.Models
 
         [MaxLength(256)]
         public string Title { get; set; } = string.Empty;
+        [MaxLength(1000000)]
         public string Content { get; set; } = string.Empty;
 
         [MaxLength(256)]

@@ -284,7 +284,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(kanbanItems);
 
             // Act
-            IActionResult result = await _controller.GetKanbanItemsForBoard(TestKanbanBoardId, false);
+            IActionResult result = await _controller.GetKanbanItemsForBoard(TestKanbanBoardId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
@@ -301,7 +301,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((KanbanBoard?)null);
 
             // Act
-            IActionResult result = await _controller.GetKanbanItemsForBoard(TestKanbanBoardId, false);
+            IActionResult result = await _controller.GetKanbanItemsForBoard(TestKanbanBoardId);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -347,7 +347,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<KanbanItem>());
 
             // Act
-            IActionResult result = await _controller.GetKanbanItemsForBoard(TestKanbanBoardId, false);
+            IActionResult result = await _controller.GetKanbanItemsForBoard(TestKanbanBoardId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
@@ -377,7 +377,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(kanbanItems);
 
             // Act
-            IActionResult result = await _controller.GetKanbanItemsForTodoItem(TestTodoItemId, false);
+            IActionResult result = await _controller.GetKanbanItemsForTodoItem(TestTodoItemId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
@@ -394,7 +394,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((TodoItem?)null);
 
             // Act
-            IActionResult result = await _controller.GetKanbanItemsForTodoItem(TestTodoItemId, false);
+            IActionResult result = await _controller.GetKanbanItemsForTodoItem(TestTodoItemId);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -438,7 +438,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<KanbanItem>());
 
             // Act
-            IActionResult result = await _controller.GetKanbanItemsForTodoItem(TestTodoItemId, false);
+            IActionResult result = await _controller.GetKanbanItemsForTodoItem(TestTodoItemId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
@@ -913,7 +913,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<KanbanItem>());
 
             // Act
-            IActionResult result = await _controller.GetKanbanItemsForBoard(TestKanbanBoardId, false);
+            IActionResult result = await _controller.GetKanbanItemsForBoard(TestKanbanBoardId);
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
@@ -930,7 +930,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<KanbanItem>());
 
             // Act
-            IActionResult result = await _controller.GetKanbanItemsForTodoItem(TestTodoItemId, false);
+            IActionResult result = await _controller.GetKanbanItemsForTodoItem(TestTodoItemId);
 
             // Assert
             Assert.IsType<OkObjectResult>(result);

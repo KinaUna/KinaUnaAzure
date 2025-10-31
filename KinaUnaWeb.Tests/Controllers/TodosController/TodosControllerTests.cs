@@ -100,7 +100,7 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
                 .ReturnsAsync(baseModel);
 
             // Act
-            IActionResult result = await _controller.Index(null, 0, 0);
+            IActionResult result = await _controller.Index(null);
 
             // Assert
             ViewResult viewResult = Assert.IsType<ViewResult>(result);
@@ -121,7 +121,7 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
                 .ReturnsAsync(todoItem);
 
             // Act
-            IActionResult result = await _controller.Index(TestTodoItemId, 0, 0);
+            IActionResult result = await _controller.Index(TestTodoItemId);
 
             // Assert
             ViewResult viewResult = Assert.IsType<ViewResult>(result);
@@ -393,7 +393,7 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
                 .ReturnsAsync(new KanbanBoardsResponse { KanbanBoards = [] });
 
             // Act
-            IActionResult result = await _controller.ViewTodo(TestTodoItemId, false);
+            IActionResult result = await _controller.ViewTodo(TestTodoItemId);
 
             // Assert
             ViewResult viewResult = Assert.IsType<ViewResult>(result);

@@ -184,8 +184,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using ProgenyDbContext context = GetInMemoryDbContext("AddSkill_Valid");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Skill skillToAdd = CreateTestSkill(0, 1);
-            skillToAdd.ItemPermissionsDtoList = new List<ItemPermissionDto>();
+            Skill skillToAdd = CreateTestSkill(0);
+            skillToAdd.ItemPermissionsDtoList = [];
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
@@ -226,7 +226,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using ProgenyDbContext context = GetInMemoryDbContext("AddSkill_NoPermission");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Skill skillToAdd = CreateTestSkill(0, 1);
+            Skill skillToAdd = CreateTestSkill(0);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
@@ -249,7 +249,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using ProgenyDbContext context = GetInMemoryDbContext("AddSkill_Timestamps");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Skill skillToAdd = CreateTestSkill(0, 1);
+            Skill skillToAdd = CreateTestSkill(0);
             skillToAdd.ItemPermissionsDtoList = new List<ItemPermissionDto>();
             DateTime beforeAdd = DateTime.UtcNow;
 
@@ -370,7 +370,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using ProgenyDbContext context = GetInMemoryDbContext("UpdateSkill_NotFound");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Skill updatedSkill = CreateTestSkill(999, 1);
+            Skill updatedSkill = CreateTestSkill(999);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 999, userInfo, PermissionLevel.Edit))
@@ -497,7 +497,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using ProgenyDbContext context = GetInMemoryDbContext("DeleteSkill_NotFound");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Skill skill = CreateTestSkill(999, 1);
+            Skill skill = CreateTestSkill(999);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 999, userInfo, PermissionLevel.Admin))
@@ -561,8 +561,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            Skill skill1 = CreateTestSkill(1, 1);
-            Skill skill2 = CreateTestSkill(2, 1);
+            Skill skill1 = CreateTestSkill();
+            Skill skill2 = CreateTestSkill(2);
             skill2.Name = "Second Skill";
 
             context.SkillsDb.AddRange(skill1, skill2);
@@ -614,7 +614,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            Skill skill1 = CreateTestSkill(1, 1);
+            Skill skill1 = CreateTestSkill();
             Skill skill2 = CreateTestSkill(2, 2);
 
             context.SkillsDb.AddRange(skill1, skill2);
@@ -647,8 +647,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            Skill skill1 = CreateTestSkill(1, 1);
-            Skill skill2 = CreateTestSkill(2, 1);
+            Skill skill1 = CreateTestSkill();
+            Skill skill2 = CreateTestSkill(2);
 
             context.SkillsDb.AddRange(skill1, skill2);
             await context.SaveChangesAsync();
@@ -684,7 +684,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            Skill skill1 = CreateTestSkill(1, 1);
+            Skill skill1 = CreateTestSkill();
             context.SkillsDb.Add(skill1);
             await context.SaveChangesAsync();
 
@@ -702,7 +702,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             List<Skill>? result1 = await service.GetSkillsList(1, userInfo);
 
             // Add another skill after first call
-            Skill skill2 = CreateTestSkill(2, 1);
+            Skill skill2 = CreateTestSkill(2);
             context.SkillsDb.Add(skill2);
             await context.SaveChangesAsync();
 
@@ -725,11 +725,11 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            Skill skill1 = CreateTestSkill(1, 1);
+            Skill skill1 = CreateTestSkill();
             skill1.Category = "Physical";
-            Skill skill2 = CreateTestSkill(2, 1);
+            Skill skill2 = CreateTestSkill(2);
             skill2.Category = "Cognitive";
-            Skill skill3 = CreateTestSkill(3, 1);
+            Skill skill3 = CreateTestSkill(3);
             skill3.Category = "Physical Development";
 
             context.SkillsDb.AddRange(skill1, skill2, skill3);
@@ -762,7 +762,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            Skill skill1 = CreateTestSkill(1, 1);
+            Skill skill1 = CreateTestSkill();
             skill1.Category = "Physical";
 
             context.SkillsDb.Add(skill1);
@@ -794,7 +794,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            Skill skill1 = CreateTestSkill(1, 1);
+            Skill skill1 = CreateTestSkill();
             skill1.Category = "Physical";
 
             context.SkillsDb.Add(skill1);
@@ -827,7 +827,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            Skill skill1 = CreateTestSkill(1, 1);
+            Skill skill1 = CreateTestSkill();
             skill1.Category = null;
 
             context.SkillsDb.Add(skill1);

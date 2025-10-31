@@ -44,7 +44,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int? eventId, int childId = 0, int familyId = 0)
         {
             // Todo: Add EventDate parameter for popup with recurring events.
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId, true);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
             CalendarListViewModel model = new(baseModel)
             {
                 PopupEventId = eventId ?? 0

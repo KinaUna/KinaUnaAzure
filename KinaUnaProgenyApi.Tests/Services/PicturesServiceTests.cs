@@ -613,8 +613,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("GetPicturesList_Valid");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Picture picture1 = CreateTestPicture(1, 1);
-            Picture picture2 = CreateTestPicture(2, 1);
+            Picture picture1 = CreateTestPicture();
+            Picture picture2 = CreateTestPicture(2);
 
             context.PicturesDb.AddRange(picture1, picture2);
             await context.SaveChangesAsync();
@@ -644,8 +644,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("GetPicturesList_Filter");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Picture picture1 = CreateTestPicture(1, 1);
-            Picture picture2 = CreateTestPicture(2, 1);
+            Picture picture1 = CreateTestPicture();
+            Picture picture2 = CreateTestPicture(2);
 
             context.PicturesDb.AddRange(picture1, picture2);
             await context.SaveChangesAsync();
@@ -701,8 +701,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             // Arrange
             await using MediaDbContext context = GetInMemoryDbContext("SetPicturesListInCache_Valid");
             IDistributedCache cache = GetMemoryCache();
-            Picture picture1 = CreateTestPicture(1, 1);
-            Picture picture2 = CreateTestPicture(2, 1);
+            Picture picture1 = CreateTestPicture();
+            Picture picture2 = CreateTestPicture(2);
 
             context.PicturesDb.AddRange(picture1, picture2);
             await context.SaveChangesAsync();
@@ -730,9 +730,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("GetPicturesWithTag_Valid");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Picture picture1 = CreateTestPicture(1, 1);
+            Picture picture1 = CreateTestPicture();
             picture1.Tags = "Tag1, Tag2";
-            Picture picture2 = CreateTestPicture(2, 1);
+            Picture picture2 = CreateTestPicture(2);
             picture2.Tags = "Tag3, Tag4";
 
             context.PicturesDb.AddRange(picture1, picture2);
@@ -764,8 +764,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("GetPicturesWithTag_EmptyTag");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Picture picture1 = CreateTestPicture(1, 1);
-            Picture picture2 = CreateTestPicture(2, 1);
+            Picture picture1 = CreateTestPicture();
+            Picture picture2 = CreateTestPicture(2);
 
             context.PicturesDb.AddRange(picture1, picture2);
             await context.SaveChangesAsync();
@@ -799,10 +799,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("GetPicturesLocations_Valid");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Picture picture1 = CreateTestPicture(1, 1);
+            Picture picture1 = CreateTestPicture();
             picture1.Latitude = "40.7128";
             picture1.Longtitude = "-74.0060";
-            Picture picture2 = CreateTestPicture(2, 1);
+            Picture picture2 = CreateTestPicture(2);
             picture2.Latitude = "40.7580";
             picture2.Longtitude = "-73.9855";
 
@@ -847,10 +847,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("GetPicturesNearLocation_Valid");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Picture picture1 = CreateTestPicture(1, 1);
+            Picture picture1 = CreateTestPicture();
             picture1.Latitude = "40.7128";
             picture1.Longtitude = "-74.0060";
-            Picture picture2 = CreateTestPicture(2, 1);
+            Picture picture2 = CreateTestPicture(2);
             picture2.Latitude = "34.0522";
             picture2.Longtitude = "-118.2437";
 
@@ -891,11 +891,11 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("GetPicturesNearLocation_SortDesc");
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
-            Picture picture1 = CreateTestPicture(1, 1);
+            Picture picture1 = CreateTestPicture();
             picture1.Latitude = "40.7128";
             picture1.Longtitude = "-74.0060";
             picture1.PictureTime = DateTime.UtcNow.AddDays(-1);
-            Picture picture2 = CreateTestPicture(2, 1);
+            Picture picture2 = CreateTestPicture(2);
             picture2.Latitude = "40.7128";
             picture2.Longtitude = "-74.0060";
             picture2.PictureTime = DateTime.UtcNow;

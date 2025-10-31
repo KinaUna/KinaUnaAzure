@@ -522,7 +522,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
                 .ReturnsAsync(userInfo);
 
             // Act
-            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId);
 
             // Assert
             ViewResult viewResult = Assert.IsType<ViewResult>(result);
@@ -572,7 +572,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
                 .ReturnsAsync(userInfo);
 
             // Act
-            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId);
 
             // Assert
             ViewResult viewResult = Assert.IsType<ViewResult>(result);
@@ -599,7 +599,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
                 .ReturnsAsync(CreateMockFamily());
 
             // Act
-            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId);
 
             // Assert
             ViewResult viewResult = Assert.IsType<ViewResult>(result);
@@ -627,7 +627,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
                 .ReturnsAsync(userInfo);
 
             // Act
-            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId);
 
             // Assert
             ViewResult viewResult = Assert.IsType<ViewResult>(result);
@@ -658,7 +658,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
                 .ReturnsAsync(userInfo);
 
             // Act
-            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId);
 
             // Assert
             ViewResult viewResult = Assert.IsType<ViewResult>(result);
@@ -685,7 +685,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
                 .ReturnsAsync(userInfo);
 
             // Act
-            IActionResult result = await _controller.ViewSubtask(TestSubtaskId, false);
+            IActionResult result = await _controller.ViewSubtask(TestSubtaskId);
 
             // Assert
             ViewResult viewResult = Assert.IsType<ViewResult>(result);

@@ -36,7 +36,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int familyId = 0, int sortOrder = 1, int items = 10, int skip = 0, int year=0, int month=0, int day=0, string tagFilter = "", string categoryFilter = "", string contextFilter = "")
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId, true);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
 
             TimelineRequestViewModel model = new(baseModel);
             model.SetRequestParameters(skip, items, year, month, day, tagFilter, categoryFilter, contextFilter, sortOrder);

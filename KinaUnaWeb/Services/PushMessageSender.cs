@@ -42,7 +42,7 @@ namespace KinaUnaWeb.Services
             {
                 foreach (PushDevices dev in deviceList)
                 {
-                    PushSubscription pushSubscription = new(dev.PushEndpoint, dev.PushP256DH, dev.PushAuth);
+                    PushSubscription pushSubscription = new(dev.PushEndpoint, dev.PushP256Dh, dev.PushAuth);
                     VapidDetails vapidDetails = new("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
                     if (string.IsNullOrEmpty(dev.PushAuth) || string.IsNullOrEmpty(dev.PushEndpoint))
                     {

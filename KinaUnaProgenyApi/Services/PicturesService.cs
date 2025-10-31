@@ -175,9 +175,9 @@ namespace KinaUnaProgenyApi.Services
                 
 
                 picture = await UpdatePictureAsSystem(picture);
-                _ = await _imageStore.DeleteImage(originalPictureLink, BlobContainers.Pictures);
-                _ = await _imageStore.DeleteImage(originalPictureLink600, BlobContainers.Pictures);
-                _ = await _imageStore.DeleteImage(originalPictureLink1200, BlobContainers.Pictures);
+                _ = await _imageStore.DeleteImage(originalPictureLink);
+                _ = await _imageStore.DeleteImage(originalPictureLink600);
+                _ = await _imageStore.DeleteImage(originalPictureLink1200);
 
                 return picture;
             }
@@ -991,7 +991,7 @@ namespace KinaUnaProgenyApi.Services
                 }
 
                 if (picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase)) continue;
-                if (!await _imageStore.ImageExists(picture.PictureLink, BlobContainers.Pictures))
+                if (!await _imageStore.ImageExists(picture.PictureLink))
                 {
                     _ = await DeletePictureAsSystem(picture);
                 }

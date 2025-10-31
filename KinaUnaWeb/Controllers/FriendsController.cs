@@ -35,7 +35,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0, int friendId = 0)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, 0, true);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             FriendsListViewModel model = new(baseModel);
             // Todo: Use progeny list to show friends from multiple progenies.
             List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, tagFilter);
@@ -450,7 +450,7 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId, 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
             FriendViewModel model = new(baseModel);
             
             friend.PictureLink = friend.GetProfilePictureUrl();
@@ -543,7 +543,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> CopyFriend(FriendViewModel model)
         {
             Friend originalFriend = await friendsHttpClient.GetFriend(model.FriendItem.FriendId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId, 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             bool canUserAdd = false;

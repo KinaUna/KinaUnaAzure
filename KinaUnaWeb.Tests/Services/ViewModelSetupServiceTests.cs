@@ -113,7 +113,7 @@ namespace KinaUnaWeb.Tests.Services
             _userInfosHttpClientMock.Setup(x => x.GetUserInfo(userEmail)).ReturnsAsync(testUserInfo);
 
             // Act
-            BaseItemsViewModel result = await _service.SetupViewModel(languageId, userEmail, progenyId, familyId);
+            BaseItemsViewModel result = await _service.SetupViewModel(languageId, userEmail, progenyId);
 
             // Assert
             Assert.NotNull(result);
@@ -248,7 +248,7 @@ namespace KinaUnaWeb.Tests.Services
             _progenyHttpClientMock.Setup(x => x.GetProgeny(progenyId)).ReturnsAsync(testProgeny);
 
             // Act
-            await _service.SetupViewModel(languageId, userEmail, progenyId, familyId);
+            await _service.SetupViewModel(languageId, userEmail, progenyId);
 
             // Assert
             string cacheKey = Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId + "_family_" + familyId;
@@ -340,7 +340,7 @@ namespace KinaUnaWeb.Tests.Services
                 .ReturnsAsync(progenies);
 
             // Act
-            List<SelectListItem> result = await _service.GetProgenySelectList(0);
+            List<SelectListItem> result = await _service.GetProgenySelectList();
 
             // Assert
             Assert.NotNull(result);
@@ -431,7 +431,7 @@ namespace KinaUnaWeb.Tests.Services
                 .ReturnsAsync(families);
 
             // Act
-            List<SelectListItem> result = await _service.GetFamilySelectList(0);
+            List<SelectListItem> result = await _service.GetFamilySelectList();
 
             // Assert
             Assert.NotNull(result);

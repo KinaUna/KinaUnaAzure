@@ -170,7 +170,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<PushDevices> GetPushDevice(PushDevices device)
         {
             PushDevices result = await progenyDbContext.PushDevices.AsNoTracking().SingleOrDefaultAsync(p =>
-                p.Name == device.Name && p.PushP256DH == device.PushP256DH && p.PushAuth == device.PushAuth && p.PushEndpoint == device.PushEndpoint);
+                p.Name == device.Name && p.PushP256Dh == device.PushP256Dh && p.PushAuth == device.PushAuth && p.PushEndpoint == device.PushEndpoint);
 
             return result;
         }

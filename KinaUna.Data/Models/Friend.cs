@@ -33,7 +33,8 @@ namespace KinaUna.Data.Models
 
         [MaxLength(1024)]
         public string Context { get; set; }
-        
+
+        [MaxLength(4000)]
         public string Notes { get; set; }
 
         [MaxLength(1024)]
