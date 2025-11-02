@@ -18,9 +18,16 @@
     string noUserAccountString = await LocaleManager.GetTranslation("No user account", PageNames.AccessManagement, Model.LanguageId);
     string groupMembersString = await LocaleManager.GetTranslation("Group members", PageNames.AccessManagement, Model.LanguageId);
 }
-<div class="col-12">@await LocaleManager.GetTranslation("Permission type", PageNames.AccessManagement, Model.LanguageId): <select id="permission-type-select" class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" asp-items="@Model.PermissionTypeSelectListItems"></select></div>
+<div class="form-group">
+    <label class="col-auto control-label" for="permission-type-select">
+        @await LocaleManager.GetTranslation("Permission type", PageNames.AccessManagement, Model.LanguageId):
+    </label>
+    <div class="col-auto">
+        <select id="permission-type-select" class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" asp-items="@Model.PermissionTypeSelectListItems"></select>
+    </div>
+</div>
 <div class="space-20"></div>
-<div class="col-12" id="inherit-permissions-div">
+<div class="col-12 d-none" id="inherit-permissions-div">
     @foreach (UserGroup group in Model.UserGroupsList)
     {
         PermissionLevel permissionLevel = group.PermissionLevel;
@@ -36,9 +43,15 @@
     }
 </div>
 <div id="custom-permissions-div" class="d-none col-12">
-    <div>@await LocaleManager.GetTranslation("Custom Permissions", PageNames.AccessManagement, Model.LanguageId):</div>
     <div class="row m-0">
-        @await LocaleManager.GetTranslation("Group permissions", PageNames.AccessManagement, Model.LanguageId):
+        <div class="col-12">
+            @await LocaleManager.GetTranslation("Custom Permissions", PageNames.AccessManagement, Model.LanguageId):
+        </div>
+    </div>
+    <div class="row m-3">
+        <div class="col-12">
+            @await LocaleManager.GetTranslation("Group permissions", PageNames.AccessManagement, Model.LanguageId):
+        </div>
         <div id="item-permissions-groups-div" class="col-12">
             @if (Model.ItemId == 0 || Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
             {

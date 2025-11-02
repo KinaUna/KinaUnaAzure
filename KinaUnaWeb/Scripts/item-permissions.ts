@@ -32,23 +32,39 @@ function addPermissionTypeChangeListener() {
     const permissionTypeSelect = document.getElementById('permission-type-select') as HTMLSelectElement;
     if (permissionTypeSelect !== null) {
         // On initial load, check if custom permissions should be shown.
+        const customPermissionsDiv = document.getElementById('custom-permissions-div');
         if (permissionTypeSelect.value === '3') {
-            const customPermissionsDiv = document.getElementById('custom-permissions-div');
+            
             if (customPermissionsDiv !== null) {
                 customPermissionsDiv.classList.remove('d-none');
-            }
+            }            
         }
 
+        const inheritPermissionsDiv = document.getElementById('inherit-permissions-div');
+        if (inheritPermissionsDiv !== null) {
+            if (permissionTypeSelect.value !== '0') {
+                inheritPermissionsDiv.classList.add('d-none');
+            } else {
+                inheritPermissionsDiv.classList.remove('d-none');
+            }
+        }
+        
         permissionTypeSelect.addEventListener('change', () => {
             const selectedValue = permissionTypeSelect.value;
-            const customPermissionsDiv = document.getElementById('custom-permissions-div');
             if (customPermissionsDiv !== null) {
                 if (selectedValue === '3') {
                     customPermissionsDiv.classList.remove('d-none');
                 } else {
                     customPermissionsDiv.classList.add('d-none');
-                }
+                }                
             }
+            if (inheritPermissionsDiv !== null) {
+                if (selectedValue === '0') {
+                    inheritPermissionsDiv.classList.remove('d-none');
+                } else {
+                    inheritPermissionsDiv.classList.add('d-none');
+                }
+            }            
         });
     }
 }

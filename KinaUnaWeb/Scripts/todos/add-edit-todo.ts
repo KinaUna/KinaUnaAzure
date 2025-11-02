@@ -72,16 +72,100 @@ async function setupDateTimePicker(): Promise<void> {
     });
 }
 
+async function setupForIndividualOrFamilyButtons(itemId: string) {
+    let individualButton = document.querySelector<HTMLButtonElement>('#add-item-for-individual-button');
+
+    if (currentFamilyId > 0) {
+        await onFamilyButtonClicked();
+    }
+    else {
+        await onIndividualButtonClicked();
+    }
+
+    if (individualButton !== null) {
+        individualButton.removeEventListener('click', onIndividualButtonClicked);
+        individualButton.addEventListener('click', onIndividualButtonClicked);
+    }
+
+    let familyButton = document.querySelector<HTMLButtonElement>('#add-item-for-family-button');
+    if (familyButton !== null) {
+        familyButton.removeEventListener('click', onFamilyButtonClicked);
+        familyButton.addEventListener('click', onFamilyButtonClicked);
+    }
+
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = currentFamilyId;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+}
+
+async function onIndividualButtonClicked(): Promise<void> {
+    let individualButton = document.querySelector<HTMLButtonElement>('#add-item-for-individual-button');
+    if (individualButton !== null) {
+        individualButton.classList.add('btn-primary');
+        individualButton.classList.remove('btn-outline-primary');
+
+    }
+    const individualFormGroup = document.querySelector<HTMLDivElement>('#individual-select-from-group');
+    if (individualFormGroup !== null) {
+        individualFormGroup.classList.remove('d-none');
+    }
+    let familyButton = document.querySelector<HTMLButtonElement>('#add-item-for-family-button');
+    if (familyButton !== null) {
+        familyButton.classList.remove('btn-primary');
+        familyButton.classList.add('btn-outline-primary');
+    }
+    const familyFormGroup = document.querySelector<HTMLDivElement>('#family-select-from-group');
+    if (familyFormGroup !== null) {
+        familyFormGroup.classList.add('d-none');
+    }
+    await setupProgenySelectList();
+}
+
+async function onFamilyButtonClicked(): Promise<void> {
+    let familyButton = document.querySelector<HTMLButtonElement>('#add-item-for-family-button');
+    if (familyButton !== null) {
+        familyButton.classList.add('btn-primary');
+        familyButton.classList.remove('btn-outline-primary');
+    }
+    const familyFormGroup = document.querySelector<HTMLDivElement>('#family-select-from-group');
+    if (familyFormGroup !== null) {
+        familyFormGroup.classList.remove('d-none');
+    }
+    let individualButton = document.querySelector<HTMLButtonElement>('#add-item-for-individual-button');
+    if (individualButton !== null) {
+        individualButton.classList.remove('btn-primary');
+        individualButton.classList.add('btn-outline-primary');
+    }
+    const individualFormGroup = document.querySelector<HTMLDivElement>('#individual-select-from-group');
+    if (individualFormGroup !== null) {
+        individualFormGroup.classList.add('d-none');
+    }
+    await setupFamilySelectList();
+}
+
 /**
  * Sets up the Progeny select list and adds an event listener to update the tags and categories auto suggest lists when the selected Progeny changes.
  */
-function setupProgenySelectList(): void {
+async function setupProgenySelectList(): Promise<void> {
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         progenyIdSelect.removeEventListener('change', onProgenySelectListChanged);
         progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
         currentProgenyId = parseInt(progenyIdSelect.value);
+        if (currentProgenyId > 0) {
+            setTagsAutoSuggestList([currentProgenyId], []);
+            setContextAutoSuggestList([currentProgenyId], []);
+            setLocationAutoSuggestList([currentProgenyId], []);
+            currentFamilyId = 0;
+            permissionsEditorTimelineItem.progenyId = currentProgenyId;
+            permissionsEditorTimelineItem.familyId = currentFamilyId;
+            await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+        }
     }
+
+    ($(".selectpicker") as any).selectpicker('refresh');
 }
 
 async function onProgenySelectListChanged(): Promise<void> {
@@ -95,6 +179,7 @@ async function onProgenySelectListChanged(): Promise<void> {
     await setTagsAutoSuggestList([currentProgenyId], []);
     await setContextAutoSuggestList([currentProgenyId], []);
     await setLocationAutoSuggestList([currentProgenyId], []);
+    
     const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
     if (familyIdSelect !== null) {
         currentFamilyId = 0;
@@ -102,17 +187,33 @@ async function onProgenySelectListChanged(): Promise<void> {
         // Deselect all items in the selectpicker.
         familyIdSelect.selectedIndex = -1;
     }
+
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = currentFamilyId;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
-function setupFamilySelectList(): void {
+async function setupFamilySelectList(): Promise<void> {
     const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
     if (familyIdSelect !== null) {
         familyIdSelect.removeEventListener('change', onFamilySelectListChanged);
         familyIdSelect.addEventListener('change', onFamilySelectListChanged);
+        currentFamilyId = parseInt(familyIdSelect.value);
+        if (currentFamilyId > 0) {
+            setTagsAutoSuggestList([], [currentFamilyId]);
+            setContextAutoSuggestList([], [currentFamilyId]);
+            setLocationAutoSuggestList([], [currentFamilyId]);
+            currentProgenyId = 0;
+            permissionsEditorTimelineItem.progenyId = currentProgenyId;
+            permissionsEditorTimelineItem.familyId = currentFamilyId;
+            await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+        }
     }
+    ($(".selectpicker") as any).selectpicker('refresh');
 }
 
 async function onFamilySelectListChanged(): Promise<void> {
@@ -133,6 +234,11 @@ async function onFamilySelectListChanged(): Promise<void> {
         // Deselect all items in the selectpicker.
         progenyIdSelect.selectedIndex = -1;
     }
+
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = currentFamilyId;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
@@ -292,20 +398,12 @@ export async function initializeAddEditTodo(itemId: string): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentItemProgenyId();
     currentFamilyId = getCurrentItemFamilyId();
-
+    
     await setupDateTimePicker();
-    setupProgenySelectList();
-    await setTagsAutoSuggestList([currentProgenyId], []);
-    await setContextAutoSuggestList([currentProgenyId], []);
-    await setLocationAutoSuggestList([currentProgenyId], []);
-    console.log('Current Progeny Id:');
-    console.log(currentProgenyId);
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = currentFamilyId;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
-
+    //setupProgenySelectList();
+    //setupFamilySelectList();
+    await setupForIndividualOrFamilyButtons(itemId);
+    
     ($(".selectpicker") as any).selectpicker('refresh');
 
     setupRichTextEditor();

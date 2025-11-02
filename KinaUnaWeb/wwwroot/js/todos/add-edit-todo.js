@@ -65,16 +65,91 @@ async function setupDateTimePicker() {
         resolve();
     });
 }
+async function setupForIndividualOrFamilyButtons(itemId) {
+    let individualButton = document.querySelector('#add-item-for-individual-button');
+    if (currentFamilyId > 0) {
+        await onFamilyButtonClicked();
+    }
+    else {
+        await onIndividualButtonClicked();
+    }
+    if (individualButton !== null) {
+        individualButton.removeEventListener('click', onIndividualButtonClicked);
+        individualButton.addEventListener('click', onIndividualButtonClicked);
+    }
+    let familyButton = document.querySelector('#add-item-for-family-button');
+    if (familyButton !== null) {
+        familyButton.removeEventListener('click', onFamilyButtonClicked);
+        familyButton.addEventListener('click', onFamilyButtonClicked);
+    }
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = currentFamilyId;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+}
+async function onIndividualButtonClicked() {
+    let individualButton = document.querySelector('#add-item-for-individual-button');
+    if (individualButton !== null) {
+        individualButton.classList.add('btn-primary');
+        individualButton.classList.remove('btn-outline-primary');
+    }
+    const individualFormGroup = document.querySelector('#individual-select-from-group');
+    if (individualFormGroup !== null) {
+        individualFormGroup.classList.remove('d-none');
+    }
+    let familyButton = document.querySelector('#add-item-for-family-button');
+    if (familyButton !== null) {
+        familyButton.classList.remove('btn-primary');
+        familyButton.classList.add('btn-outline-primary');
+    }
+    const familyFormGroup = document.querySelector('#family-select-from-group');
+    if (familyFormGroup !== null) {
+        familyFormGroup.classList.add('d-none');
+    }
+    await setupProgenySelectList();
+}
+async function onFamilyButtonClicked() {
+    let familyButton = document.querySelector('#add-item-for-family-button');
+    if (familyButton !== null) {
+        familyButton.classList.add('btn-primary');
+        familyButton.classList.remove('btn-outline-primary');
+    }
+    const familyFormGroup = document.querySelector('#family-select-from-group');
+    if (familyFormGroup !== null) {
+        familyFormGroup.classList.remove('d-none');
+    }
+    let individualButton = document.querySelector('#add-item-for-individual-button');
+    if (individualButton !== null) {
+        individualButton.classList.remove('btn-primary');
+        individualButton.classList.add('btn-outline-primary');
+    }
+    const individualFormGroup = document.querySelector('#individual-select-from-group');
+    if (individualFormGroup !== null) {
+        individualFormGroup.classList.add('d-none');
+    }
+    await setupFamilySelectList();
+}
 /**
  * Sets up the Progeny select list and adds an event listener to update the tags and categories auto suggest lists when the selected Progeny changes.
  */
-function setupProgenySelectList() {
+async function setupProgenySelectList() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         progenyIdSelect.removeEventListener('change', onProgenySelectListChanged);
         progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
         currentProgenyId = parseInt(progenyIdSelect.value);
+        if (currentProgenyId > 0) {
+            setTagsAutoSuggestList([currentProgenyId], []);
+            setContextAutoSuggestList([currentProgenyId], []);
+            setLocationAutoSuggestList([currentProgenyId], []);
+            currentFamilyId = 0;
+            permissionsEditorTimelineItem.progenyId = currentProgenyId;
+            permissionsEditorTimelineItem.familyId = currentFamilyId;
+            await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+        }
     }
+    $(".selectpicker").selectpicker('refresh');
 }
 async function onProgenySelectListChanged() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
@@ -94,16 +169,30 @@ async function onProgenySelectListChanged() {
         // Deselect all items in the selectpicker.
         familyIdSelect.selectedIndex = -1;
     }
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = currentFamilyId;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
     return new Promise(function (resolve, reject) {
         resolve();
     });
 }
-function setupFamilySelectList() {
+async function setupFamilySelectList() {
     const familyIdSelect = document.querySelector('#item-family-id-select');
     if (familyIdSelect !== null) {
         familyIdSelect.removeEventListener('change', onFamilySelectListChanged);
         familyIdSelect.addEventListener('change', onFamilySelectListChanged);
+        currentFamilyId = parseInt(familyIdSelect.value);
+        if (currentFamilyId > 0) {
+            setTagsAutoSuggestList([], [currentFamilyId]);
+            setContextAutoSuggestList([], [currentFamilyId]);
+            setLocationAutoSuggestList([], [currentFamilyId]);
+            currentProgenyId = 0;
+            permissionsEditorTimelineItem.progenyId = currentProgenyId;
+            permissionsEditorTimelineItem.familyId = currentFamilyId;
+            await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+        }
     }
+    $(".selectpicker").selectpicker('refresh');
 }
 async function onFamilySelectListChanged() {
     const familyIdSelect = document.querySelector('#item-family-id-select');
@@ -123,6 +212,9 @@ async function onFamilySelectListChanged() {
         // Deselect all items in the selectpicker.
         progenyIdSelect.selectedIndex = -1;
     }
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = currentFamilyId;
+    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -268,17 +360,9 @@ export async function initializeAddEditTodo(itemId) {
     currentProgenyId = getCurrentItemProgenyId();
     currentFamilyId = getCurrentItemFamilyId();
     await setupDateTimePicker();
-    setupProgenySelectList();
-    await setTagsAutoSuggestList([currentProgenyId], []);
-    await setContextAutoSuggestList([currentProgenyId], []);
-    await setLocationAutoSuggestList([currentProgenyId], []);
-    console.log('Current Progeny Id:');
-    console.log(currentProgenyId);
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = currentFamilyId;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+    //setupProgenySelectList();
+    //setupFamilySelectList();
+    await setupForIndividualOrFamilyButtons(itemId);
     $(".selectpicker").selectpicker('refresh');
     setupRichTextEditor();
     const titleInput = document.getElementById('todo-title-input');

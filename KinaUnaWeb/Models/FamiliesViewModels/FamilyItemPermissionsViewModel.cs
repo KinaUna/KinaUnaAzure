@@ -67,12 +67,15 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
                 if (item.Value == selectedType.ToString())
                 {
                     item.Selected = true;
-                    break;
+                }
+                else
+                {
+                    item.Selected = false;
                 }
             }
         }
 
-        public List<SelectListItem> CreatePermissionLevelsSelectListItems(int selectedLevel)
+        public List<SelectListItem> CreatePermissionLevelsSelectListItems(int selectedLevel, bool isAdmin)
         {
             // We do not want to have Add, CreatorOnly or Private as options in the select list.
             if ((PermissionLevel)selectedLevel == PermissionLevel.Add || (PermissionLevel)selectedLevel >= PermissionLevel.CreatorOnly)
@@ -86,7 +89,19 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
                 if (item.Value == selectedLevel.ToString())
                 {
                     item.Selected = true;
-                    break;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+
+                // Only show Admin level if the user is an admin.
+                if (selectedLevel != (int)PermissionLevel.Admin && item.Value == ((int)PermissionLevel.Admin).ToString())
+                {
+                    if (!isAdmin)
+                    {
+                        continue;
+                    }
                 }
 
                 permissionLevels.Add(item);

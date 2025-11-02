@@ -18,29 +18,58 @@
     string noUserAccountString = await LocaleManager.GetTranslation("No user account", PageNames.AccessManagement, Model.LanguageId);
     string groupMembersString = await LocaleManager.GetTranslation("Group members", PageNames.AccessManagement, Model.LanguageId);
 }
-<div>@await LocaleManager.GetTranslation("Permission type", PageNames.AccessManagement, Model.LanguageId): <select id="permission-type-select" asp-items="@Model.PermissionTypeSelectListItems"></select></div>
+<<div class="form-group">
+    <label class="col-auto control-label" for="permission-type-select">
+        @await LocaleManager.GetTranslation("Permission type", PageNames.AccessManagement, Model.LanguageId):
+    </label>
+    <div class="col-auto">
+        <select id="permission-type-select" class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" asp-items="@Model.PermissionTypeSelectListItems"></select>
+    </div>
+</div>
 <div class="space-20"></div>
-<div id="custom-permissions-div" class="d-none">
-    <div>@await LocaleManager.GetTranslation("Custom Permissions", PageNames.AccessManagement, Model.LanguageId):</div>
-    <div>
-        @await LocaleManager.GetTranslation("Group permissions", PageNames.AccessManagement, Model.LanguageId):
-        <div id="item-permissions-groups-div">
+<div class="col-12 d-none" id="inherit-permissions-div">
+    @foreach (UserGroup group in Model.UserGroupsList)
+    {
+        PermissionLevel permissionLevel = group.PermissionLevel;
+        if (permissionLevel == PermissionLevel.Add)
+        {
+            permissionLevel = PermissionLevel.View;
+        }
+        <div class="row m-0">
+            <div class="col-12">
+                @group.Name: @await LocaleManager.GetTranslation(permissionLevel.ToString(), PageNames.AccessManagement, Model.LanguageId)
+            </div>
+        </div>
+    }
+</div>
+<div id="custom-permissions-div" class="d-none col-12">
+    <div class="row m-0">
+        <div class="col-12">
+            @await LocaleManager.GetTranslation("Custom Permissions", PageNames.AccessManagement, Model.LanguageId):
+        </div>
+    </div>
+    <div class="row m-3">
+        <div class="col-12">
+            @await LocaleManager.GetTranslation("Group permissions", PageNames.AccessManagement, Model.LanguageId):
+        </div>
+        <div id="item-permissions-groups-div" class="col-12">
             @if (Model.ItemId == 0 || Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
             {
                 foreach (FamilyPermission permission in Model.FamilyPermissionsList)
                 {
                     int permissionLevelValue = (int)permission.PermissionLevel;
+                    bool isAdmin = permissionLevelValue == (int)PermissionLevel.Admin;
                     if (permission.GroupId > 0)
                     {
                         UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
                         if (group != null)
                         {
                             <div class="permission-group-div" data-family-permission-id="@permission.FamilyPermissionId" data-permission-level="@permissionLevelValue">
-                                @group.Name <select data-family-permission-id="@permission.FamilyPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
+                                @group.Name <select class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-family-permission-id="@permission.FamilyPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue, isAdmin)"></select>
                             </div>
-                            <div class="d-none">
+                            <div class="row m-0 d-none">
                                 <div>@groupMembersString:</div>
-                                <div>
+                                <div class="col-12">
                                     @foreach (UserGroupMember member in group.Members)
                                     {
                                         UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
@@ -64,19 +93,19 @@
                     }
                 }
             }
-            
-            @if (Model.ItemId > 0 || !Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
+            @if (Model.ItemId > 0 && !Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
             {
                 foreach (TimelineItemPermission permission in Model.ItemPermissionsList)
                 {
                     int permissionLevelValue = (int)permission.PermissionLevel;
+                    bool isAdmin = permissionLevelValue == (int)PermissionLevel.Admin;
                     if (permission.GroupId > 0)
                     {
                         UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
                         if (group != null)
                         {
                             <div class="permission-group-div" data-item-permission-id="@permission.TimelineItemPermissionId" data-permission-level="@permissionLevelValue">
-                                @group.Name <select data-item-permission-id="@permission.TimelineItemPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
+                                @group.Name <select class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-item-permission-id="@permission.TimelineItemPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue, isAdmin)"></select>
                             </div>
                             <div class="d-none">
                                 <div>@groupMembersString:</div>
@@ -104,36 +133,7 @@
                     }
                 }
             }
-        </div>
-    </div>
-    <div>
-        @await LocaleManager.GetTranslation("User permissions", PageNames.AccessManagement, Model.LanguageId):
-        <div id="item-permissions-users-div">
-            @if (Model.ItemId > 0 || !Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
-            {
-                foreach (TimelineItemPermission permission in Model.ItemPermissionsList)
-                {
-                    int permissionLevelValue = (int)permission.PermissionLevel;
-                    if (!string.IsNullOrWhiteSpace(permission.UserId))
-                    {
-                        UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == permission.UserId);
-                        if (user != null)
-                        {
-                            <div class="permission-user-div" data-item-permission-id="@permission.TimelineItemPermissionId" data-permission-level="@permissionLevelValue">
-                                @user.UserEmail (@user.FullName()) <select data-item-permission-id="@permission.TimelineItemPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        <div class="permission-user-div" data-item-permission-id="@permission.TimelineItemPermissionId" data-permission-level="@permissionLevelValue">
-                            @permission.Email (@noUserAccountString) <select data-item-permission-id="@permission.TimelineItemPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue)"></select>
-                        </div>
-                    }
-                }
-            }
-            
-        </div>
 
+        </div>
     </div>
 </div>

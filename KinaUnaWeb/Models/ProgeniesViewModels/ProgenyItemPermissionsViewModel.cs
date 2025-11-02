@@ -62,6 +62,10 @@ namespace KinaUnaWeb.Models.ProgeniesViewModels
                 {
                     item.Selected = true;
                 }
+                else
+                {
+                    item.Selected = false;
+                }
             }
         }
 
@@ -99,6 +103,5 @@ namespace KinaUnaWeb.Models.ProgeniesViewModels
             
             return permissionLevels;
         }
-
     }
 }
