@@ -80,6 +80,7 @@ function setupProgenySelectList(): void {
     if (progenyIdSelect !== null) {
         progenyIdSelect.removeEventListener('change', onProgenySelectListChanged);
         progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
+        currentProgenyId = parseInt(progenyIdSelect.value);
     }
 }
 
@@ -297,7 +298,8 @@ export async function initializeAddEditTodo(itemId: string): Promise<void> {
     await setTagsAutoSuggestList([currentProgenyId], []);
     await setContextAutoSuggestList([currentProgenyId], []);
     await setLocationAutoSuggestList([currentProgenyId], []);
-
+    console.log('Current Progeny Id:');
+    console.log(currentProgenyId);
     permissionsEditorTimelineItem.itemId = itemId;
     permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
     permissionsEditorTimelineItem.progenyId = currentProgenyId;

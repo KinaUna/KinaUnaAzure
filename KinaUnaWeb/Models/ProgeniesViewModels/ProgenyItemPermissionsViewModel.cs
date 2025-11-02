@@ -36,9 +36,7 @@ namespace KinaUnaWeb.Models.ProgeniesViewModels
         public void SetPermissionTypeSelectListItems(int selectedType)
         {
             IsUserAccessManager = ProgenyPermissionsList.Count > 0; // If the user has access to the list, they are an access manager.
-            PermissionTypeSelectListItems = new List<SelectListItem>{
-            new() { Value = "0", Text = "Inherit" }
-            };
+            PermissionTypeSelectListItems = [new SelectListItem { Value = "0", Text = "Inherit" }];
 
             // Only add "Only me" if the item is new (ItemId == 0) or if it is already set to "Only me".
             // If a user wants to change an existing item to Only Me they will have to copy it, set the copy to Only Me and delete the original.
@@ -63,12 +61,11 @@ namespace KinaUnaWeb.Models.ProgeniesViewModels
                 if (item.Value == selectedType.ToString())
                 {
                     item.Selected = true;
-                    break;
                 }
             }
         }
 
-        public List<SelectListItem> CreatePermissionLevelsSelectListItems(int selectedLevel)
+        public List<SelectListItem> CreatePermissionLevelsSelectListItems(int selectedLevel, bool isAdmin)
         {
             // We do not want to have Add, CreatorOnly or Private as options in the select list.
             if ((PermissionLevel)selectedLevel == PermissionLevel.Add || (PermissionLevel)selectedLevel >= PermissionLevel.CreatorOnly)
@@ -82,8 +79,21 @@ namespace KinaUnaWeb.Models.ProgeniesViewModels
                 if (item.Value == selectedLevel.ToString())
                 {
                     item.Selected = true;
-                    break;
                 }
+                else
+                {
+                    item.Selected = false;
+                }
+
+                // Only show Admin level if the user is an admin.
+                if (selectedLevel != (int)PermissionLevel.Admin && item.Value == ((int)PermissionLevel.Admin).ToString())
+                {
+                    if (!isAdmin)
+                    {
+                        continue;
+                    }
+                }
+
                 permissionLevels.Add(item);
             }
             

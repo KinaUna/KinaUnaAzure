@@ -59,7 +59,7 @@ function setAdminPermissionsAsReadonly() {
         const permissionId = selectInput.getAttribute('data-progeny-permission-id');
         if (permissionId !== null) {
             const selectedPermission = selectInput.value;
-            if (selectedPermission == PermissionLevel.Admin.toString()) {
+            if (selectedPermission === PermissionLevel.Admin.toString()) {
                 selectInput.setAttribute('disabled', 'true');
             }
         }
