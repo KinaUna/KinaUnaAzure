@@ -16,7 +16,7 @@
     <PackageReference Include="Azure.Storage.Blobs" Version="12.26.0" />
     <PackageReference Include="Azure.Storage.Common" Version="12.25.0" />
     <PackageReference Include="IdentityModel.AspNetCore.OAuth2Introspection" Version="6.2.0" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.9.0" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.9.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="9.0.10" />
@@ -52,7 +52,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.77.1" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.78.0" />
     <PackageReference Include="Microsoft.IdentityModel.Abstractions" Version="8.14.0" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.14.0" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="7.0.4" />
@@ -87,7 +87,7 @@
     <PackageReference Include="System.ValueTuple" Version="4.6.1" />
     <PackageReference Include="System.Windows.Extensions" Version="9.0.10" />
     <PackageReference Include="WebPush" Version="1.0.12" />
-    <PackageReference Include="xunit.analyzers" Version="1.24.0">
+    <PackageReference Include="xunit.analyzers" Version="1.25.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

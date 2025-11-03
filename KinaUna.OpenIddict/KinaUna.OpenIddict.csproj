@@ -30,7 +30,7 @@
     <PackageReference Include="OpenIddict.AspNetCore" Version="7.1.0" />
     <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.1.0" />
     <PackageReference Include="OpenIddict.Quartz" Version="7.1.0" />
-    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.0" />
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.1" />
   </ItemGroup>
 
   <ItemGroup>

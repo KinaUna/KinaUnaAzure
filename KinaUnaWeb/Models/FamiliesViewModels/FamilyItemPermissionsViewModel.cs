@@ -19,6 +19,7 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
         public List<SelectListItem> PermissionLevelsSelectListItems { get; set; } = [];
         public bool IsUserAccessManager { get; set; }
         public List<SelectListItem> PermissionTypeSelectListItems { get; set; } = [];
+        public TimeLineItem TimeLineItem { get; set; } = null;
 
         public void SetInitialPermissionLevelsSelectListItems()
         {
@@ -33,6 +34,7 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
                     });
                 }
             }
+            IsUserAccessManager = FamilyPermissionsList.Count > 0; // If the user has access to the list, they are an access manager.
         }
 
         public void SetPermissionTypeSelectListItems(int selectedType)

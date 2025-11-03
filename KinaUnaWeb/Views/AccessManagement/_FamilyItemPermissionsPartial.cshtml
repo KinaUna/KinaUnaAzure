@@ -5,6 +5,17 @@
 @model KinaUnaWeb.Models.FamiliesViewModels.FamilyItemPermissionsViewModel
 @inject ILocaleManager LocaleManager
 @{
+    bool familyChanged = false;
+    if (Model.ItemId > 0)
+    {
+        if (Model.TimeLineItem != null)
+        {
+            if (Model.TimeLineItem.FamilyId != Model.FamilyId)
+            {
+                familyChanged = true;
+            }
+        }
+    }
     foreach (SelectListItem selectListItem in Model.PermissionLevelsSelectListItems)
     {
         selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text + "_select_", PageNames.AccessManagement, Model.LanguageId);
@@ -18,7 +29,7 @@
     string noUserAccountString = await LocaleManager.GetTranslation("No user account", PageNames.AccessManagement, Model.LanguageId);
     string groupMembersString = await LocaleManager.GetTranslation("Group members", PageNames.AccessManagement, Model.LanguageId);
 }
-<<div class="form-group">
+<div class="form-group">
     <label class="col-auto control-label" for="permission-type-select">
         @await LocaleManager.GetTranslation("Permission type", PageNames.AccessManagement, Model.LanguageId):
     </label>
@@ -53,7 +64,7 @@
             @await LocaleManager.GetTranslation("Group permissions", PageNames.AccessManagement, Model.LanguageId):
         </div>
         <div id="item-permissions-groups-div" class="col-12">
-            @if (Model.ItemId == 0 || Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
+            @if (Model.ItemId == 0 || familyChanged || Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
             {
                 foreach (FamilyPermission permission in Model.FamilyPermissionsList)
                 {
@@ -93,7 +104,7 @@
                     }
                 }
             }
-            @if (Model.ItemId > 0 && !Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
+            @if (Model.ItemId > 0 && !familyChanged && !Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
             {
                 foreach (TimelineItemPermission permission in Model.ItemPermissionsList)
                 {

@@ -1,6 +1,10 @@
 import { ItemPermissionDto, PermissionLevel } from "./page-models-v9.js";
 export async function renderItemPermissionsEditor(timelineItem) {
     let url = '/AccessManagement/ItemPermissionsModal/';
+    const permissionsDiv = document.getElementById('item-permissions-editor-div');
+    if (permissionsDiv !== null) {
+        permissionsDiv.innerHTML = '';
+    }
     await fetch(url, {
         method: 'POST',
         headers: {
@@ -10,13 +14,13 @@ export async function renderItemPermissionsEditor(timelineItem) {
     }).then(async (response) => {
         if (response.ok) {
             const data = await response.text();
-            const permissionsDiv = document.getElementById('item-permissions-editor-div');
             if (permissionsDiv !== null) {
                 permissionsDiv.innerHTML = data;
                 // Show the modal
                 permissionsDiv.classList.remove('d-none');
                 addPermissionTypeChangeListener();
                 setAdminPermissionsAsReadonly();
+                $(".selectpicker").selectpicker('refresh');
             }
         }
         else {
@@ -31,10 +35,8 @@ function addPermissionTypeChangeListener() {
     if (permissionTypeSelect !== null) {
         // On initial load, check if custom permissions should be shown.
         const customPermissionsDiv = document.getElementById('custom-permissions-div');
-        if (permissionTypeSelect.value === '3') {
-            if (customPermissionsDiv !== null) {
-                customPermissionsDiv.classList.remove('d-none');
-            }
+        if (customPermissionsDiv !== null && permissionTypeSelect.value === '3') {
+            customPermissionsDiv.classList.remove('d-none');
         }
         const inheritPermissionsDiv = document.getElementById('inherit-permissions-div');
         if (inheritPermissionsDiv !== null) {
@@ -45,7 +47,7 @@ function addPermissionTypeChangeListener() {
                 inheritPermissionsDiv.classList.remove('d-none');
             }
         }
-        permissionTypeSelect.addEventListener('change', () => {
+        const permissionTypeChanged = () => {
             const selectedValue = permissionTypeSelect.value;
             if (customPermissionsDiv !== null) {
                 if (selectedValue === '3') {
@@ -63,7 +65,9 @@ function addPermissionTypeChangeListener() {
                     inheritPermissionsDiv.classList.add('d-none');
                 }
             }
-        });
+        };
+        permissionTypeSelect.removeEventListener('change', permissionTypeChanged);
+        permissionTypeSelect.addEventListener('change', permissionTypeChanged);
     }
 }
 function setAdminPermissionsAsReadonly() {

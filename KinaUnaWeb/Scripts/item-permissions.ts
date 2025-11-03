@@ -2,6 +2,10 @@
 
 export async function renderItemPermissionsEditor(timelineItem: TimelineItem) {
     let url = '/AccessManagement/ItemPermissionsModal/';
+    const permissionsDiv = document.getElementById('item-permissions-editor-div');
+    if (permissionsDiv !== null) {
+        permissionsDiv.innerHTML = '';
+    }
     await fetch(url,
         {
             method: 'POST',
@@ -12,13 +16,15 @@ export async function renderItemPermissionsEditor(timelineItem: TimelineItem) {
         }).then(async (response) => {
             if (response.ok) {
                 const data = await response.text();
-                const permissionsDiv = document.getElementById('item-permissions-editor-div');
+                
                 if (permissionsDiv !== null) {
+
                     permissionsDiv.innerHTML = data;
                     // Show the modal
                     permissionsDiv.classList.remove('d-none');
                     addPermissionTypeChangeListener();
                     setAdminPermissionsAsReadonly();
+                    ($(".selectpicker") as any).selectpicker('refresh');
                 }
             } else {
                 console.error('Failed to load item permissions editor. Status:', response.status);
@@ -33,11 +39,8 @@ function addPermissionTypeChangeListener() {
     if (permissionTypeSelect !== null) {
         // On initial load, check if custom permissions should be shown.
         const customPermissionsDiv = document.getElementById('custom-permissions-div');
-        if (permissionTypeSelect.value === '3') {
-            
-            if (customPermissionsDiv !== null) {
-                customPermissionsDiv.classList.remove('d-none');
-            }            
+        if (customPermissionsDiv !== null && permissionTypeSelect.value === '3') {
+            customPermissionsDiv.classList.remove('d-none');        
         }
 
         const inheritPermissionsDiv = document.getElementById('inherit-permissions-div');
@@ -48,15 +51,14 @@ function addPermissionTypeChangeListener() {
                 inheritPermissionsDiv.classList.remove('d-none');
             }
         }
-        
-        permissionTypeSelect.addEventListener('change', () => {
+        const permissionTypeChanged =() => {
             const selectedValue = permissionTypeSelect.value;
             if (customPermissionsDiv !== null) {
                 if (selectedValue === '3') {
                     customPermissionsDiv.classList.remove('d-none');
                 } else {
                     customPermissionsDiv.classList.add('d-none');
-                }                
+                }
             }
             if (inheritPermissionsDiv !== null) {
                 if (selectedValue === '0') {
@@ -64,8 +66,10 @@ function addPermissionTypeChangeListener() {
                 } else {
                     inheritPermissionsDiv.classList.add('d-none');
                 }
-            }            
-        });
+            }        
+        }
+        permissionTypeSelect.removeEventListener('change', permissionTypeChanged);
+        permissionTypeSelect.addEventListener('change', permissionTypeChanged);
     }
 }
 

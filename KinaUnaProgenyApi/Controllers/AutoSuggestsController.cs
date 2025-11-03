@@ -79,7 +79,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <returns>List of string</returns>
         [Route("[action]/{progenyId:int}/{familyId:int}")]
         [HttpGet]
-        public async Task<IActionResult> GetContextAutoSuggestList(int progenyId, int familyId = 0)
+        public async Task<IActionResult> GetContextAutoSuggestList(int progenyId, int familyId)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
@@ -115,7 +115,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <returns>List of string.</returns>
         [Route("[action]/{progenyId:int}/{familyId:int}")]
         [HttpGet]
-        public async Task<IActionResult> GetLocationAutoSuggestList(int progenyId, int familyId = 0)
+        public async Task<IActionResult> GetLocationAutoSuggestList(int progenyId, int familyId)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
@@ -151,7 +151,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <returns>List of string.</returns>
         [Route("[action]/{progenyId:int}/{familyId:int}")]
         [HttpGet]
-        public async Task<IActionResult> GetTagsAutoSuggestList(int progenyId, int familyId = 0)
+        public async Task<IActionResult> GetTagsAutoSuggestList(int progenyId, int familyId)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 

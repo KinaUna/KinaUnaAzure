@@ -483,11 +483,16 @@ namespace KinaUnaWeb.Controllers
             {
                 suggestionsList.Progenies = [Constants.DefaultChildId];
             }
-
+            
             List<string> tagsList = [];
             foreach (int progenyId in suggestionsList.Progenies)
             {
-                tagsList.AddRange(await autoSuggestsHttpClient.GetTagsList(progenyId));
+                tagsList.AddRange(await autoSuggestsHttpClient.GetTagsList(progenyId, 0));
+            }
+
+            foreach (int familyId in suggestionsList.Families)
+            {
+                tagsList.AddRange(await autoSuggestsHttpClient.GetTagsList(0, familyId));
             }
 
             suggestionsList.Suggestions = [.. tagsList.Distinct()];
@@ -512,7 +517,11 @@ namespace KinaUnaWeb.Controllers
             List<string> contextsList = [];
             foreach (int progenyId in suggestionsList.Progenies)
             {
-                contextsList.AddRange(await autoSuggestsHttpClient.GetContextsList(progenyId));
+                contextsList.AddRange(await autoSuggestsHttpClient.GetContextsList(progenyId, 0));
+            }
+            foreach (int familyId in suggestionsList.Families)
+            {
+                contextsList.AddRange(await autoSuggestsHttpClient.GetContextsList(0, familyId));
             }
 
             suggestionsList.Suggestions = [.. contextsList.Distinct()];
@@ -537,7 +546,11 @@ namespace KinaUnaWeb.Controllers
             List<string> locationsList = [];
             foreach (int progenyId in suggestionsList.Progenies)
             {
-                locationsList.AddRange(await autoSuggestsHttpClient.GetLocationsList(progenyId));
+                locationsList.AddRange(await autoSuggestsHttpClient.GetLocationsList(progenyId, 0));
+            }
+            foreach (int familyId in suggestionsList.Families)
+            {
+                locationsList.AddRange(await autoSuggestsHttpClient.GetLocationsList(0, familyId));
             }
 
             suggestionsList.Suggestions = [.. locationsList.Distinct()];
@@ -564,7 +577,7 @@ namespace KinaUnaWeb.Controllers
             {
                 categoriesList.AddRange(await autoSuggestsHttpClient.GetCategoriesList(progenyId));
             }
-
+            
             suggestionsList.Suggestions = [.. categoriesList.Distinct()];
 
 

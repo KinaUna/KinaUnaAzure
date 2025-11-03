@@ -49,8 +49,8 @@
             <div class="space-20"></div>
             @if (Model.ProgenyList.Count > 0)
             {
-                <div class="form-group">
-                    <label asp-for="TodoItem.ProgenyId" class="col-auto control-label" for="item-progeny-id-select">@assignedToString </label>
+                <div id="individual-select-from-group" class="form-group">
+                    <label asp-for="TodoItem.ProgenyId" class="col-auto control-label">@assignedToString </label>
                     <div class="col-auto">
                         <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="TodoItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
@@ -58,8 +58,8 @@
             }
             @if (Model.FamilyList.Count > 0)
             {
-                <div class="form-group">
-                    <label asp-for="TodoItem.FamilyId" class="col-auto control-label" for="item-family-id-select">@assignedToString </label>
+                <div id="family-select-from-group" class="form-group d-none">
+                    <label asp-for="TodoItem.FamilyId" class="col-auto control-label">@assignedToString </label>
                     <div class="col-auto">
                         <select id="item-family-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="TodoItem.FamilyId" asp-items="@Model.FamilyList"></select>
                     </div>

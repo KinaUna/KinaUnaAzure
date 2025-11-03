@@ -212,7 +212,6 @@ async function setDefaultProgeny(progenyId) {
  * Initializes the page settings when the website is first loaded.
  */
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('app.ts: DomContentLoaded');
     initPageSettings();
     showSelectProgenyDropdownWhenCurrentProgenyClicked();
     setDocumentClickEventListeners();

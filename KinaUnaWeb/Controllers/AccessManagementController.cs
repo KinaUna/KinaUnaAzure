@@ -14,7 +14,7 @@ namespace KinaUnaWeb.Controllers
     /// <param name="userInfosHttpClient"></param>
     /// <param name="userAccessHttpClient"></param>
     public class AccessManagementController(IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient,
-        IProgenyHttpClient progenyHttpClient, IFamiliesHttpClient familiesHttpClient, IUserGroupsHttpClient userGroupsHttpClient)
+        IProgenyHttpClient progenyHttpClient, IFamiliesHttpClient familiesHttpClient, IUserGroupsHttpClient userGroupsHttpClient, ITimelineHttpClient timelineHttpClient)
         : Controller
     {
         /// <summary>
@@ -47,7 +47,9 @@ namespace KinaUnaWeb.Controllers
                 
                 if (model.ItemId > 0)
                 {
-                    if (model.IsUserAccessManager)
+                    model.TimeLineItem = await timelineHttpClient.GetTimeLineItem(timelineItem.ItemId, timelineItem.ItemType);
+
+                    if (model.IsUserAccessManager && model.TimeLineItem?.ProgenyId == model.ProgenyId)
                     {
                         model.ItemPermissionsList = await userAccessHttpClient.GetTimelineItemPermissionsList(itemType, itemId);
                         int permissionType = 0;
@@ -74,6 +76,10 @@ namespace KinaUnaWeb.Controllers
                             model.UserList.Add(userInfo);
                         }
                         model.SetPermissionTypeSelectListItems(permissionType);
+                    }
+                    else
+                    {
+                        model.SetPermissionTypeSelectListItems(0);
                     }
                 }
                 else
@@ -110,7 +116,8 @@ namespace KinaUnaWeb.Controllers
 
                 if (model.ItemId > 0)
                 {
-                    if (model.IsUserAccessManager)
+                    model.TimeLineItem = await timelineHttpClient.GetTimeLineItem(timelineItem.ItemId, timelineItem.ItemType);
+                    if (model.IsUserAccessManager && model.TimeLineItem?.FamilyId == model.FamilyId)
                     {
                         model.ItemPermissionsList = await userAccessHttpClient.GetTimelineItemPermissionsList(itemType, itemId);
                         int permissionType = 0;
@@ -139,6 +146,10 @@ namespace KinaUnaWeb.Controllers
 
                         model.SetPermissionTypeSelectListItems(permissionType);
                     }
+                    else
+                    {
+                        model.SetPermissionTypeSelectListItems(0);
+                    }
                 }
                 else
                 {
@@ -147,7 +158,7 @@ namespace KinaUnaWeb.Controllers
 
                 if (model.ItemId > 0)
                 {
-                    if (model.IsUserAccessManager)
+                    if (model.IsUserAccessManager && model.TimeLineItem?.FamilyId == model.FamilyId)
                     {
                         model.ItemPermissionsList = await userAccessHttpClient.GetTimelineItemPermissionsList(itemType, itemId);
                         foreach (TimelineItemPermission permission in model.ItemPermissionsList)

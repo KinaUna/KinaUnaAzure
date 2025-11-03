@@ -73,6 +73,11 @@ async function setupDateTimePicker(): Promise<void> {
 }
 
 async function setupForIndividualOrFamilyButtons(itemId: string) {
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = currentFamilyId;
+
     let individualButton = document.querySelector<HTMLButtonElement>('#add-item-for-individual-button');
 
     if (currentFamilyId > 0) {
@@ -91,13 +96,7 @@ async function setupForIndividualOrFamilyButtons(itemId: string) {
     if (familyButton !== null) {
         familyButton.removeEventListener('click', onFamilyButtonClicked);
         familyButton.addEventListener('click', onFamilyButtonClicked);
-    }
-
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = currentFamilyId;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+    }    
 }
 
 async function onIndividualButtonClicked(): Promise<void> {
@@ -120,6 +119,13 @@ async function onIndividualButtonClicked(): Promise<void> {
     if (familyFormGroup !== null) {
         familyFormGroup.classList.add('d-none');
     }
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+    if (progenyIdSelect) {
+        if (progenyIdSelect.selectedIndex < 0) {
+            progenyIdSelect.selectedIndex = 0;
+        }        
+    }
+
     await setupProgenySelectList();
 }
 
@@ -142,6 +148,14 @@ async function onFamilyButtonClicked(): Promise<void> {
     if (individualFormGroup !== null) {
         individualFormGroup.classList.add('d-none');
     }
+
+    const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
+    if (familyIdSelect) {
+        if (familyIdSelect.selectedIndex < 0) {
+            familyIdSelect.selectedIndex = 0;
+        }        
+    }
+
     await setupFamilySelectList();
 }
 
@@ -164,8 +178,6 @@ async function setupProgenySelectList(): Promise<void> {
             await renderItemPermissionsEditor(permissionsEditorTimelineItem);
         }
     }
-
-    ($(".selectpicker") as any).selectpicker('refresh');
 }
 
 async function onProgenySelectListChanged(): Promise<void> {
@@ -213,7 +225,6 @@ async function setupFamilySelectList(): Promise<void> {
             await renderItemPermissionsEditor(permissionsEditorTimelineItem);
         }
     }
-    ($(".selectpicker") as any).selectpicker('refresh');
 }
 
 async function onFamilySelectListChanged(): Promise<void> {
@@ -403,8 +414,6 @@ export async function initializeAddEditTodo(itemId: string): Promise<void> {
     //setupProgenySelectList();
     //setupFamilySelectList();
     await setupForIndividualOrFamilyButtons(itemId);
-    
-    ($(".selectpicker") as any).selectpicker('refresh');
 
     setupRichTextEditor();
 

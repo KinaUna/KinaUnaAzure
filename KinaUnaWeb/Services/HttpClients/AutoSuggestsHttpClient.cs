@@ -48,8 +48,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all unique tags for a Progeny, including only items that the user has access to.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get tags for.</param>
+        /// <param name="familyId">The FamilyId of the Family to get tags for.</param>
         /// <returns>List of strings.</returns>
-        public async Task<List<string>> GetTagsList(int progenyId)
+        public async Task<List<string>> GetTagsList(int progenyId, int familyId)
         {
             string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
@@ -57,7 +58,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             List<string> resultTagsList = [];
 
-            string tagsApiPath = "/api/AutoSuggests/GetTagsAutoSuggestList/" + progenyId;
+            string tagsApiPath = "/api/AutoSuggests/GetTagsAutoSuggestList/" + progenyId + "/" + familyId;
 
             HttpResponseMessage tagsResponse = await _httpClient.GetAsync(tagsApiPath).ConfigureAwait(false);
             if (!tagsResponse.IsSuccessStatusCode) return resultTagsList;
@@ -73,8 +74,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all unique contexts for a Progeny, including only items that the user has access to.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get contexts for.</param>
+        /// <param name="familyId">The FamilyId of the Family to get contexts for.</param>
         /// <returns>List of strings.</returns>
-        public async Task<List<string>> GetContextsList(int progenyId)
+        public async Task<List<string>> GetContextsList(int progenyId, int familyId)
         {
             string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
@@ -82,7 +84,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             List<string> resultContextsList = [];
 
-            string contextsApiPath = "/api/AutoSuggests/GetContextAutoSuggestList/" + progenyId;
+            string contextsApiPath = "/api/AutoSuggests/GetContextAutoSuggestList/" + progenyId + "/" + familyId;
 
             HttpResponseMessage contextsResponse = await _httpClient.GetAsync(contextsApiPath).ConfigureAwait(false);
             if (!contextsResponse.IsSuccessStatusCode) return resultContextsList;
@@ -98,8 +100,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all unique location names for a Progeny, including only items that the user has access to.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get locations for.</param>
+        /// <param name="familyId">The FamilyId of the Family to get locations for.</param>
         /// <returns>List of strings.</returns>
-        public async Task<List<string>> GetLocationsList(int progenyId)
+        public async Task<List<string>> GetLocationsList(int progenyId, int familyId)
         {
             string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
@@ -107,7 +110,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             List<string> resultLocationsList = [];
 
-            string locationsApiPath = "/api/AutoSuggests/GetLocationAutoSuggestList/" + progenyId;
+            string locationsApiPath = "/api/AutoSuggests/GetLocationAutoSuggestList/" + progenyId + "/" + familyId;
 
             HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath).ConfigureAwait(false);
             if (!locationsResponse.IsSuccessStatusCode) return resultLocationsList;

@@ -5,6 +5,17 @@
 @model KinaUnaWeb.Models.ProgeniesViewModels.ProgenyItemPermissionsViewModel
 @inject ILocaleManager LocaleManager
 @{
+    bool progenyChanged = false;
+    if (Model.ItemId > 0)
+    {
+        if (Model.TimeLineItem != null)
+        {
+            if (Model.TimeLineItem.ProgenyId != Model.ProgenyId)
+            {
+                progenyChanged = true;
+            }
+        }
+    }
     foreach (SelectListItem selectListItem in Model.PermissionLevelsSelectListItems)
     {
         selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text + "_select_", PageNames.AccessManagement, Model.LanguageId);
@@ -53,7 +64,7 @@
             @await LocaleManager.GetTranslation("Group permissions", PageNames.AccessManagement, Model.LanguageId):
         </div>
         <div id="item-permissions-groups-div" class="col-12">
-            @if (Model.ItemId == 0 || Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
+            @if (Model.ItemId == 0 || progenyChanged  || Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
             {
                 foreach (ProgenyPermission permission in Model.ProgenyPermissionsList)
                 {
@@ -93,7 +104,7 @@
                     }
                 }
             }
-            @if (Model.ItemId > 0 && !Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
+            @if (Model.ItemId > 0 && !progenyChanged && !Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
             {
                 foreach (TimelineItemPermission permission in Model.ItemPermissionsList)
                 {

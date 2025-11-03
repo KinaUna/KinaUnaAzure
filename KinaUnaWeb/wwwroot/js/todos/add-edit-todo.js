@@ -66,6 +66,10 @@ async function setupDateTimePicker() {
     });
 }
 async function setupForIndividualOrFamilyButtons(itemId) {
+    permissionsEditorTimelineItem.itemId = itemId;
+    permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
+    permissionsEditorTimelineItem.progenyId = currentProgenyId;
+    permissionsEditorTimelineItem.familyId = currentFamilyId;
     let individualButton = document.querySelector('#add-item-for-individual-button');
     if (currentFamilyId > 0) {
         await onFamilyButtonClicked();
@@ -82,11 +86,6 @@ async function setupForIndividualOrFamilyButtons(itemId) {
         familyButton.removeEventListener('click', onFamilyButtonClicked);
         familyButton.addEventListener('click', onFamilyButtonClicked);
     }
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = currentFamilyId;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
 }
 async function onIndividualButtonClicked() {
     let individualButton = document.querySelector('#add-item-for-individual-button');
@@ -106,6 +105,12 @@ async function onIndividualButtonClicked() {
     const familyFormGroup = document.querySelector('#family-select-from-group');
     if (familyFormGroup !== null) {
         familyFormGroup.classList.add('d-none');
+    }
+    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
+    if (progenyIdSelect) {
+        if (progenyIdSelect.selectedIndex < 0) {
+            progenyIdSelect.selectedIndex = 0;
+        }
     }
     await setupProgenySelectList();
 }
@@ -128,6 +133,12 @@ async function onFamilyButtonClicked() {
     if (individualFormGroup !== null) {
         individualFormGroup.classList.add('d-none');
     }
+    const familyIdSelect = document.querySelector('#item-family-id-select');
+    if (familyIdSelect) {
+        if (familyIdSelect.selectedIndex < 0) {
+            familyIdSelect.selectedIndex = 0;
+        }
+    }
     await setupFamilySelectList();
 }
 /**
@@ -149,7 +160,6 @@ async function setupProgenySelectList() {
             await renderItemPermissionsEditor(permissionsEditorTimelineItem);
         }
     }
-    $(".selectpicker").selectpicker('refresh');
 }
 async function onProgenySelectListChanged() {
     const progenyIdSelect = document.querySelector('#item-progeny-id-select');
@@ -192,7 +202,6 @@ async function setupFamilySelectList() {
             await renderItemPermissionsEditor(permissionsEditorTimelineItem);
         }
     }
-    $(".selectpicker").selectpicker('refresh');
 }
 async function onFamilySelectListChanged() {
     const familyIdSelect = document.querySelector('#item-family-id-select');
@@ -363,7 +372,6 @@ export async function initializeAddEditTodo(itemId) {
     //setupProgenySelectList();
     //setupFamilySelectList();
     await setupForIndividualOrFamilyButtons(itemId);
-    $(".selectpicker").selectpicker('refresh');
     setupRichTextEditor();
     const titleInput = document.getElementById('todo-title-input');
     if (titleInput) {

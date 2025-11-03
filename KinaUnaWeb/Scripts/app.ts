@@ -253,7 +253,6 @@ async function setDefaultProgeny(progenyId: number) {
  */
 
 document.addEventListener('DOMContentLoaded', function (): void {
-    console.log('app.ts: DomContentLoaded');
     initPageSettings();
 
     showSelectProgenyDropdownWhenCurrentProgenyClicked();

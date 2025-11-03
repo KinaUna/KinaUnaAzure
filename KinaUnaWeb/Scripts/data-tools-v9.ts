@@ -114,8 +114,7 @@ export async function getTagsList(progenies: number[], families: number[]): Prom
     let tagsList: AutoSuggestList = new AutoSuggestList(progenies, families);
 
     const getTagsListParameters: AutoSuggestList = new AutoSuggestList(progenies, families);
-
-
+    
     await fetch('/Progeny/GetAllProgenyTags/', {
         method: 'POST',
         body: JSON.stringify(getTagsListParameters),
