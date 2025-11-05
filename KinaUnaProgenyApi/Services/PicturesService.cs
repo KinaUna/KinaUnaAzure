@@ -696,11 +696,13 @@ namespace KinaUnaProgenyApi.Services
             }
 
             Stopwatch watch = Stopwatch.StartNew();
+            
             ConcurrentBag<Picture> picturesConcurrentBag = [];
             ParallelOptions parallelOptions = new()
             {
                 MaxDegreeOfParallelism = 4
             };
+
             await Parallel.ForEachAsync(picturesList, parallelOptions, async (picture, _) =>
             {
                 // Create a scope for each parallel task to avoid threading issues.

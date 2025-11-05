@@ -129,112 +129,6 @@ async function submitComment(): Promise<void> {
 }
 
 /**
- * If the user has access, adds event listeners to the edit button and related elements in the item details popup.
- */
-async function addEditEventListeners(): Promise<void> {
-    const toggleEditButton = document.querySelector<HTMLButtonElement>('#toggle-edit-button');
-    if (toggleEditButton !== null) {
-        $("#toggle-edit-button").on('click', function () {
-            $("#edit-section").toggle(500);
-        });
-
-        await setTagsAutoSuggestList([getCurrentProgenyId()], []);
-        await setLocationAutoSuggestList([getCurrentProgenyId()], []);
-        setupDateTimePicker();
-        setupAccessLevelList();
-        addCopyLocationButtonEventListener();
-        const submitForm = document.getElementById('edit-picture-form') as HTMLFormElement;
-        if (submitForm !== null) {
-            submitForm.addEventListener('submit', onSubmitEditPicture);
-        }
-
-        ($(".selectpicker") as any).selectpicker("refresh");
-    }
-    
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
-
-async function onSubmitEditPicture(event: SubmitEvent): Promise<void> {
-    event.preventDefault();
-    await submitPictureEdit();
-
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
-
-/**
- * Gets the data from the edit picture form and sends it to the server to update the picture data.
- * Then refreshes the picture details popup.
- */
-async function submitPictureEdit(): Promise<void> {
-    startLoadingItemsSpinner('item-details-content-wrapper', 0.25, 128, 128, 128);
-
-    const submitForm = document.getElementById('edit-picture-form') as HTMLFormElement;
-    if (submitForm !== null) {
-        const formData = new FormData(submitForm);
-        
-        const response = await fetch('/Pictures/EditPicture', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json',
-                'enctype': 'multipart/form-data'
-            }
-        }).catch(function (error) {
-            console.log('Error editing Picture. Error: ' + error);
-        });
-
-        if (response) {
-            const currentPictureIdDiv = document.querySelector<HTMLDivElement>('#current-picture-id-div');
-            if (currentPictureIdDiv) {
-                const currentPictureId = currentPictureIdDiv.getAttribute('data-current-picture-id');
-                if (currentPictureId) {
-                    await displayPictureDetails(currentPictureId, true);
-                }
-            }
-        }
-    }
-
-    stopLoadingItemsSpinner('item-details-content-wrapper');
-
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
-
-function setupAccessLevelList(): void {
-
-}
-/**
- * Configures the date time picker for the picture edit form.
- */
-async function setupDateTimePicker(): Promise<void> {
-    setMomentLocale();
-    const zebraDateTimeFormat = getZebraDateTimeFormat('#add-photo-zebra-date-time-format-div');
-    const zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(getCurrentLanguageId());
-
-    if (document.getElementById('picture-date-time-picker') !== null) {
-        const dateTimePicker: any = $('#picture-date-time-picker');
-        dateTimePicker.Zebra_DatePicker({
-            format: zebraDateTimeFormat,
-            open_icon_only: true,
-            days: zebraDatePickerTranslations.daysArray,
-            months: zebraDatePickerTranslations.monthsArray,
-            lang_clear_date: zebraDatePickerTranslations.clearString,
-            show_select_today: zebraDatePickerTranslations.todayString,
-            select_other_months: true
-        });
-    }
-
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
-
-/**
  * Adds event listeners to the previous and next links in the item details popup.
  * Adds event listners for swipe navigation and full screen image display.
  */
@@ -437,7 +331,6 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
                 hideBodyScrollbars();
                 addCloseButtonEventListener();
                 addNavigationEventListeners();
-                addEditEventListeners();
                 await addCommentEventListeners();
                 addShowMapButtonEventListener();
                 setEditItemButtonEventListeners();

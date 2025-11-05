@@ -67,20 +67,6 @@ async function onProgenySelectListChanged(): Promise<void> {
 }
 
 /**
- * Adds an event listener to the edit button to toggle the edit section.
- * Shows/hides the edit section when the edit button is clicked.
- */
-function addEditButtonEventListener(): void {
-    toggleEditButton = document.querySelector<HTMLButtonElement>('#toggle-edit-button');
-    if (toggleEditButton !== null) {
-        $("#toggle-edit-button").on('click', function () {
-            $("#edit-section").toggle(500);
-            ($(".selectpicker") as any).selectpicker("refresh");
-        });
-    }
-}
-
-/**
  * Hides the input fields and buttons when the pictures are being uploaded.
  */
 function hideInputsWhenUploading(): void {
@@ -287,8 +273,8 @@ function addSelectPhotoButtonEventListener(): void {
         
         selectPhotoButton.addEventListener('click', selectFiles);
     }
-
 }
+
 /**
  * Opens a file picker dialog and selects a file.
  * As it uses showOpenFilePicker, it only works in some browsers, it is not supported for mobile browsers.
@@ -652,7 +638,6 @@ export async function initializeAddEditPicture(itemId: string): Promise<void> {
     await setTagsAutoSuggestList([currentProgenyId], []);
     await setLocationAutoSuggestList([currentProgenyId], []);
 
-    addEditButtonEventListener();
     addCopyLocationButtonEventListener();
     addFileInputEventListener();
     addDropEventListener();

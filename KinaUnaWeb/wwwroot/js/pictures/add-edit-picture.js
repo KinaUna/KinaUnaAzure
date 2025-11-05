@@ -59,19 +59,6 @@ async function onProgenySelectListChanged() {
     });
 }
 /**
- * Adds an event listener to the edit button to toggle the edit section.
- * Shows/hides the edit section when the edit button is clicked.
- */
-function addEditButtonEventListener() {
-    toggleEditButton = document.querySelector('#toggle-edit-button');
-    if (toggleEditButton !== null) {
-        $("#toggle-edit-button").on('click', function () {
-            $("#edit-section").toggle(500);
-            $(".selectpicker").selectpicker("refresh");
-        });
-    }
-}
-/**
  * Hides the input fields and buttons when the pictures are being uploaded.
  */
 function hideInputsWhenUploading() {
@@ -563,7 +550,6 @@ export async function initializeAddEditPicture(itemId) {
     setupProgenySelectList();
     await setTagsAutoSuggestList([currentProgenyId], []);
     await setLocationAutoSuggestList([currentProgenyId], []);
-    addEditButtonEventListener();
     addCopyLocationButtonEventListener();
     addFileInputEventListener();
     addDropEventListener();

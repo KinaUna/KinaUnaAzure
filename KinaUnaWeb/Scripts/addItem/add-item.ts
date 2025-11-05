@@ -241,21 +241,7 @@ async function onCopyItemButtonClicked(event: MouseEvent): Promise<void> {
  */
 async function popupEditItemModal(editItemType: string, editItemItemId: string): Promise<void> {
 
-    // Picture and video items are handled differently.
-    if (editItemType === 'picture') {
-        await popupPictureDetails(editItemItemId);
-        return new Promise<void>(function (resolve, reject) {
-            resolve();
-        });
-    }
-    // Picture and video items are handled differently.
-    if (editItemType === 'video') {
-        await popupVideoDetails(editItemItemId);
-        return new Promise<void>(function (resolve, reject) {
-            resolve();
-        });
-    }
-
+    // Kanban item editing is handled differently.
     if (editItemType === 'kanbanitem') {
         await editKanbanItemFunction(editItemItemId);
         return new Promise<void>(function (resolve, reject) {
@@ -340,6 +326,14 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
 
         if (editItemType === 'todo') {
             await initializeAddEditTodo(editItemItemId);
+        }
+
+        if (editItemType === 'video') {
+            await initializeAddEditVideo(editItemItemId);
+        }
+
+        if (editItemType === 'picture') {
+            await initializeAddEditPicture(editItemItemId);
         }
 
         if (editItemType === 'subtask') {
@@ -615,6 +609,10 @@ async function popupPreviousItem(buttonClicked: HTMLElement): Promise<void> {
 
         if (previousItemType === 'kanbanboard') {
             await popupKanbanBoard(previousItemId);
+        }
+
+        if (previousItemType === 'picture') {
+            await popupPictureDetails(previousItemId);
         }
     }
     else {

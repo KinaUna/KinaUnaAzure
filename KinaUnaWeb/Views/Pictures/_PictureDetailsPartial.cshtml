@@ -20,9 +20,6 @@
         viewNextText = olderString;
     }
 
-    string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
-    string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
-    string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
     string hereMapsLatitude = "";
     string hereMapsLongitude = "";
@@ -31,13 +28,9 @@
         hereMapsLatitude = Model.Picture.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')[..6];
         hereMapsLongitude = Model.Picture.Longtitude.ToString(new CultureInfo("en-US")).Replace(',', '.')[..6];
     }
-
-    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Photo;
 }
 <div class="d-none" id="item-progeny-id-div" data-progeny-id="@Model.Picture.ProgenyId"></div>
 <div id="current-picture-id-div" data-current-picture-id="@Model.Picture.PictureId"></div>
-<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
-<div id="add-photo-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div id="item-details-content-wrapper" class="item-details-content-wrapper m-0 full-screen bg-body">
     <div id="item-details-content" class="item-details-content item-details-content-full-screen">
         <div>
@@ -195,104 +188,7 @@
                 </form>
             }
             <div class="space-20"></div>
-            @if (Model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
-            {
-                <div class="col-sm-3" style="margin-top: 35px;"></div>
-                <div id="edit-section" style="display: none; padding: 15px;">
-                    <div>@await LocaleManager.GetTranslation("Edit user access, location, or date and time for this photo", PageNames.Pictures, Model.LanguageId)</div><br />
-                    <form id="edit-picture-form" role="form" method="post">
-                        <div class="form-group">
-                            <label asp-for="Picture.Tags" class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="tag-list" type="text" asp-for="Picture.Tags" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="Picture.PictureTime" class="col-auto control-label">@await LocaleManager.GetTranslation("Photo date and time", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-12">
-                                <input id="picture-date-time-picker" type="text" class="form-control-noline pl-3" asp-for="Picture.PictureTime"
-                                       value="@Model.Picture.PictureTime?.ToString(longDateTimeFormat)" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="Picture.Location" class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="location-input" type="text" asp-for="Picture.Location" value="@Model.Picture.Location" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="Picture.Latitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="latitude" type="text" asp-for="Picture.Latitude" value="@Model.Picture.Latitude" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="Picture.Longtitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="longitude" type="text" asp-for="Picture.Longtitude" value="@Model.Picture.Longtitude" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="Picture.Altitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Altitude", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="altitude" type="text" asp-for="Picture.Altitude" value="@Model.Picture.Altitude" class="form-control" />
-                            </div>
-                        </div>
-                        @if (Model.ProgenyLocations.Any())
-                        {
-                            <div class="form-group">
-                                <label for="copy-location" class="col-auto control-label">@await LocaleManager.GetTranslation("Copy location latitude and longitude from existing location", PageNames.Pictures, Model.LanguageId)</label>
-                                <div class="col-auto">
-                                    <div class="row row-cols-auto ml-0 mr-0">
-                                        <select id="copy-location" class="selectpicker form-control-noline col pl-0" data-style="btn-kinaunaselect">
-                                            @foreach (Location loc in Model.ProgenyLocations)
-                                            {
-                                                <option value="@loc.LocationId" data-location-name="@loc.Name" 
-                                                        data-latitude="@loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')"
-                                                        data-longitude="@loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.')">@loc.Name</option>
-                                            }
-                                        </select>
-                                        <button id="copy-location-button" type="button" class="btn btn-primary col-auto mt-0 mb-0 ml-2">@await LocaleManager.GetTranslation("Copy", PageNames.Pictures, Model.LanguageId)</button>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                        <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.Picture.PictureId"></div>
-                        <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
-                        <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
-                        <div class="space-20"></div>
-                        <input asp-for="Picture.PictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
-                        <input asp-for="Picture.ProgenyId" class="form-control" value="@Model.Picture.ProgenyId" type="hidden" />
-                        <input asp-for="TagFilter" class="form-control" value="@Model.TagFilter" type="hidden" />
-                        <input asp-for="Picture.Author" class="form-control" value="@Model.Picture.Author" type="hidden" />
-                        <input asp-for="SortBy" class="form-control" value="@Model.SortBy" type="hidden" />
-                        <input asp-for="PartialView" class="form-control" value="@Model.PartialView" type="hidden" />
-                        <div>
-                            <div class="form-group">
-                                <div class="col-auto control-label"></div>
-                                <div class="col-auto">
-                                    <button id="save-edit-picture-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                                    <a class="btn btn-danger leave-page" asp-controller="@ViewContext.RouteData.Values["controller"]" asp-action="@ViewContext.RouteData.Values["action"]!" asp-route-id="@ViewContext.RouteData.Values["id"]" asp-route-childId="@Model.Picture.ProgenyId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                    @if (Model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
-                    {
-                        <form asp-controller="Pictures" asp-action="DeletePicture" role="form" method="get">
-                        <div class="form-group">
-                            <label class="col-auto control-label">@await LocaleManager.GetTranslation("Remove this picture:", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete picture", PageNames.Pictures, Model.LanguageId)</button>
-                            </div>
-                        </div>
-                        <input name="pictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
-                        <input name="partialView" class="form-control" value="@Model.PartialView" type="hidden"/>
-                    </form>
-                    }
-                    
-                </div>
-            }
+            
             <div class="space-20"></div>
             <div class="text-center">
                 @{
@@ -302,8 +198,13 @@
             </div>
             @if (Model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
+                <div class="space-50"></div>
                 <div class="col-12">
-                    <button id="toggle-edit-button" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></button>
+                    <a data-edit-item-type="picture" data-edit-item-item-id="@Model.Picture.PictureId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
+                    @if (Model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a data-delete-item-type="picture" data-delete-item-item-id="@Model.Picture.PictureId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
                 </div>
 
             }

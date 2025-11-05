@@ -1,22 +1,22 @@
-﻿using KinaUnaWeb.Models;
+﻿using KinaUna.Data;
+using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
+using KinaUnaWeb.Models.TypeScriptModels.Pictures;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using KinaUna.Data;
-using KinaUna.Data.Extensions;
-using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using KinaUna.Data.Models.AccessManagement;
-using KinaUna.Data.Models.DTOs;
-using KinaUnaWeb.Models.TypeScriptModels.Pictures;
-using KinaUnaWeb.Services.HttpClients;
-using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -134,19 +134,7 @@ namespace KinaUnaWeb.Controllers
 
                 }
             }
-            if (model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
-            {
-                model.ProgenyLocations = [];
-                foreach (Progeny progeny in model.CurrentUser.ProgenyList)
-                {
-                    List<Location> locations = await locationsHttpClient.GetProgenyLocations(progeny.Id);
-                    if (locations != null)
-                    {
-                        model.ProgenyLocations.AddRange(locations);
-                    }
-                }
-            }
-
+            
             model.Picture.Progeny.PictureLink = model.Picture.Progeny.GetProfilePictureUrl();
             
             if (partialView)
@@ -437,6 +425,29 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        public async Task<IActionResult> EditPicture(int itemId)
+        {
+            Picture picture = await mediaHttpClient.GetPicture(itemId, Constants.DefaultTimezone);
+            if (picture == null || picture.ProgenyId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId, 0, false);
+            PictureItemViewModel model = new(baseModel)
+            {
+                HereMapsApiKey = _hereMapsApiKey,
+                PartialView = true,
+                Picture = picture
+            };
+            model.Picture.Progeny = await progenyHttpClient.GetProgeny(model.Picture.ProgenyId);
+            model.Picture.Progeny.PictureLink = model.Picture.Progeny.GetProfilePictureUrl();
+            
+            model.ProgenyLocations = await locationsHttpClient.GetLocationsList(model.Picture.ProgenyId, 0);
+
+            return PartialView("_EditPicturePartial", model);
+        }
+
         /// <summary>
         /// HttpPost method for saving a new picture.
         /// </summary>
@@ -447,6 +458,9 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditPicture(PictureItemViewModel model)
         {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+
             Picture pictureToUpdate = await mediaHttpClient.GetPicture(model.Picture.PictureId, model.CurrentUser.Timezone);
             if (pictureToUpdate == null || pictureToUpdate.ProgenyId == 0 || pictureToUpdate.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
@@ -459,8 +473,6 @@ namespace KinaUnaWeb.Controllers
                     sortBy = model.SortBy
                 });
             }
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId, 0, false);
-            model.SetBaseProperties(baseModel);
             
             pictureToUpdate.CopyPropertiesForUserUpdate(model.Picture);
             pictureToUpdate.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString);
@@ -469,11 +481,50 @@ namespace KinaUnaWeb.Controllers
             {
                 pictureToUpdate.PictureTime = TimeZoneInfo.ConvertTimeToUtc(model.Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
-            _ = await mediaHttpClient.UpdatePicture(pictureToUpdate);
+            Picture updatedPicture = await mediaHttpClient.UpdatePicture(pictureToUpdate);
+            
+            PictureItemViewModel pictureItemViewModel = new(baseModel)
+            {
+                HereMapsApiKey = _hereMapsApiKey,
+                PartialView = true
+            };
+            PictureViewModelRequest pictureViewModelRequest = new()
+            {
+                PictureId = updatedPicture.PictureId,
+                Progenies = [updatedPicture.ProgenyId],
+                SortOrder = model.SortBy,
+                TimeZone = model.CurrentUser.Timezone,
+                TagFilter = model.TagFilter
+            };
+
+            PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(pictureViewModelRequest);
+
+            pictureItemViewModel.SetPropertiesFromPictureViewModel(pictureViewModel);
+
+            pictureItemViewModel.TagFilter = model.TagFilter;
+            pictureItemViewModel.SortBy = model.SortBy;
+
+            if (pictureItemViewModel.CommentsCount > 0)
+            {
+                foreach (Comment comment in pictureItemViewModel.CommentsList)
+                {
+                    UserInfo commentAuthor = await userInfosHttpClient.GetUserInfoByUserId(comment.Author);
+                    if (commentAuthor == null) continue;
+                    if (commentAuthor.ProfilePicture != null)
+                    {
+                        comment.AuthorImage = commentAuthor.GetProfilePictureUrl();
+                    }
+
+                    comment.DisplayName = commentAuthor.FullName();
+
+                }
+            }
+
+            pictureItemViewModel.Picture.Progeny.PictureLink = model.Picture.Progeny.GetProfilePictureUrl();
 
             if (model.PartialView)
             {
-                return Json(model);
+                return PartialView("_PictureDetailsPartial", pictureItemViewModel);
             }
             
             return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = model.Picture.PictureId, childId = model.Picture.ProgenyId, tagFilter = model.TagFilter, sortBy = model.SortBy });

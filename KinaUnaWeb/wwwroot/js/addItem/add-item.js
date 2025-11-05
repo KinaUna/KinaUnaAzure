@@ -13,7 +13,6 @@ import { initializeAddEditSkill } from "../skills/add-edit-skill.js";
 import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
 import { initializeAddEditVaccination } from "../vaccinations/add-edit-vaccination.js";
 import { initializeAddEditVideo } from "../videos/add-edit-video.js";
-import { popupVideoDetails } from "../videos/video-details.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
 import { initializeAddEditTodo } from "../todos/add-edit-todo.js";
 import { TimelineChangedEvent } from "../data-tools-v9.js";
@@ -204,20 +203,7 @@ async function onCopyItemButtonClicked(event) {
  * @param editItemItemId
  */
 async function popupEditItemModal(editItemType, editItemItemId) {
-    // Picture and video items are handled differently.
-    if (editItemType === 'picture') {
-        await popupPictureDetails(editItemItemId);
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
-    }
-    // Picture and video items are handled differently.
-    if (editItemType === 'video') {
-        await popupVideoDetails(editItemItemId);
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
-    }
+    // Kanban item editing is handled differently.
     if (editItemType === 'kanbanitem') {
         await editKanbanItemFunction(editItemItemId);
         return new Promise(function (resolve, reject) {
@@ -286,6 +272,12 @@ async function popupEditItemModal(editItemType, editItemItemId) {
         }
         if (editItemType === 'todo') {
             await initializeAddEditTodo(editItemItemId);
+        }
+        if (editItemType === 'video') {
+            await initializeAddEditVideo(editItemItemId);
+        }
+        if (editItemType === 'picture') {
+            await initializeAddEditPicture(editItemItemId);
         }
         if (editItemType === 'subtask') {
             await initializeAddEditTodo(editItemItemId);
@@ -518,6 +510,9 @@ async function popupPreviousItem(buttonClicked) {
         }
         if (previousItemType === 'kanbanboard') {
             await popupKanbanBoard(previousItemId);
+        }
+        if (previousItemType === 'picture') {
+            await popupPictureDetails(previousItemId);
         }
     }
     else {

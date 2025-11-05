@@ -1,8 +1,7 @@
-import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
+import { getCurrentLanguageId } from '../data-tools-v9.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
-import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
+import { setupHereMaps } from '../locations/location-tools.js';
 import { PicturesPageParameters, PictureViewModelRequest } from '../page-models-v9.js';
 import { setEditItemButtonEventListeners } from '../addItem/add-item.js';
 import { getSelectedProgenies } from '../settings-tools-v9.js';
@@ -106,96 +105,6 @@ async function submitComment() {
         }
     }
     stopLoadingItemsSpinner('item-details-content-wrapper');
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
-/**
- * If the user has access, adds event listeners to the edit button and related elements in the item details popup.
- */
-async function addEditEventListeners() {
-    const toggleEditButton = document.querySelector('#toggle-edit-button');
-    if (toggleEditButton !== null) {
-        $("#toggle-edit-button").on('click', function () {
-            $("#edit-section").toggle(500);
-        });
-        await setTagsAutoSuggestList([getCurrentProgenyId()], []);
-        await setLocationAutoSuggestList([getCurrentProgenyId()], []);
-        setupDateTimePicker();
-        setupAccessLevelList();
-        addCopyLocationButtonEventListener();
-        const submitForm = document.getElementById('edit-picture-form');
-        if (submitForm !== null) {
-            submitForm.addEventListener('submit', onSubmitEditPicture);
-        }
-        $(".selectpicker").selectpicker("refresh");
-    }
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
-async function onSubmitEditPicture(event) {
-    event.preventDefault();
-    await submitPictureEdit();
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
-/**
- * Gets the data from the edit picture form and sends it to the server to update the picture data.
- * Then refreshes the picture details popup.
- */
-async function submitPictureEdit() {
-    startLoadingItemsSpinner('item-details-content-wrapper', 0.25, 128, 128, 128);
-    const submitForm = document.getElementById('edit-picture-form');
-    if (submitForm !== null) {
-        const formData = new FormData(submitForm);
-        const response = await fetch('/Pictures/EditPicture', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json',
-                'enctype': 'multipart/form-data'
-            }
-        }).catch(function (error) {
-            console.log('Error editing Picture. Error: ' + error);
-        });
-        if (response) {
-            const currentPictureIdDiv = document.querySelector('#current-picture-id-div');
-            if (currentPictureIdDiv) {
-                const currentPictureId = currentPictureIdDiv.getAttribute('data-current-picture-id');
-                if (currentPictureId) {
-                    await displayPictureDetails(currentPictureId, true);
-                }
-            }
-        }
-    }
-    stopLoadingItemsSpinner('item-details-content-wrapper');
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
-function setupAccessLevelList() {
-}
-/**
- * Configures the date time picker for the picture edit form.
- */
-async function setupDateTimePicker() {
-    setMomentLocale();
-    const zebraDateTimeFormat = getZebraDateTimeFormat('#add-photo-zebra-date-time-format-div');
-    const zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(getCurrentLanguageId());
-    if (document.getElementById('picture-date-time-picker') !== null) {
-        const dateTimePicker = $('#picture-date-time-picker');
-        dateTimePicker.Zebra_DatePicker({
-            format: zebraDateTimeFormat,
-            open_icon_only: true,
-            days: zebraDatePickerTranslations.daysArray,
-            months: zebraDatePickerTranslations.monthsArray,
-            lang_clear_date: zebraDatePickerTranslations.clearString,
-            show_select_today: zebraDatePickerTranslations.todayString,
-            select_other_months: true
-        });
-    }
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -380,7 +289,6 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
                 hideBodyScrollbars();
                 addCloseButtonEventListener();
                 addNavigationEventListeners();
-                addEditEventListeners();
                 await addCommentEventListeners();
                 addShowMapButtonEventListener();
                 setEditItemButtonEventListeners();
