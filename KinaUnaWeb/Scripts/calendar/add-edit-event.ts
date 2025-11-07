@@ -4,6 +4,7 @@ import { setupRemindersSection } from '../reminders/reminders.js';
 import { setupRecurrenceSection } from './add-edit-recurrence.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
@@ -15,7 +16,7 @@ let currentProgenyId: number;
 let currentFamilyId: number;
 let startDateTimePickerId: string = '#event-start-date-time-picker';
 let endDateTimePickerId: string = '#event-end-date-time-picker';
-let permissionsEditorTimelineItem = new TimelineItem();
+
 /**
  * Validates that the start date is before the end date.
  * If the start date is after the end date, the submit button is disabled and a warning is shown.
@@ -194,12 +195,8 @@ export async function initializeAddEditEvent(itemId: string): Promise<void> {
     setupDateTimePickers();
     setupRemindersSection();
     setupRecurrenceSection();
-
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.Calendar;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = currentFamilyId;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+    
+    await setupForIndividualOrFamilyButtons(itemId, TimeLineType.Calendar, currentProgenyId, currentFamilyId);
 
     ($(".selectpicker") as any).selectpicker('refresh');
 

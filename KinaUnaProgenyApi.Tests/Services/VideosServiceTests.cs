@@ -8,7 +8,6 @@ using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -17,7 +16,6 @@ namespace KinaUnaProgenyApi.Tests.Services
     public class VideosServiceTests
     {
         private readonly Mock<IAccessManagementService> _mockAccessManagementService = new();
-        private readonly Mock<IServiceScopeFactory> _mockServiceScopeFactory = new();
 
         private static MediaDbContext GetInMemoryDbContext(string dbName)
         {
@@ -78,7 +76,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.GetVideo(1, userInfo);
@@ -113,7 +111,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
                 .ReturnsAsync(false);
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.GetVideo(1, userInfo);
@@ -134,7 +132,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 999, userInfo, PermissionLevel.View))
                 .ReturnsAsync(true);
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.GetVideo(999, userInfo);
@@ -170,7 +168,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result1 = await service.GetVideo(1, userInfo);
@@ -214,7 +212,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.GetVideo(1, userInfo);
@@ -255,7 +253,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.GetVideoByLink("https://example.com/video.mp4", 1, userInfo);
@@ -289,7 +287,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
                 .ReturnsAsync(false);
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.GetVideoByLink("https://example.com/video.mp4", 1, userInfo);
@@ -306,7 +304,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.GetVideoByLink("https://example.com/nonexistent.mp4", 1, userInfo);
@@ -333,7 +331,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.VideoDb.Add(video);
             await context.SaveChangesAsync();
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.GetVideoByLink("https://example.com/video.mp4", 2, userInfo);
@@ -364,7 +362,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.VideoDb.Add(video);
             await context.SaveChangesAsync();
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.SetVideoInCache(1);
@@ -386,7 +384,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("SetVideoInCache_NotFound");
             IDistributedCache cache = GetMemoryCache();
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.SetVideoInCache(999);
@@ -417,7 +415,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.VideoDb.Add(video);
             await context.SaveChangesAsync();
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.SetVideoInCache(1);
@@ -466,7 +464,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.AddItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .Returns(Task.CompletedTask);
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.AddVideo(video, userInfo);
@@ -500,7 +498,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
                 .ReturnsAsync(false);
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.AddVideo(video, userInfo);
@@ -535,7 +533,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.AddItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .Returns(Task.CompletedTask);
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.AddVideo(video, userInfo);
@@ -589,7 +587,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .ReturnsAsync(new List<TimelineItemPermission>());
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.UpdateVideo(updatedVideo, userInfo);
@@ -634,7 +632,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.Edit))
                 .ReturnsAsync(false);
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.UpdateVideo(updatedVideo, userInfo);
@@ -666,7 +664,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 999, userInfo, PermissionLevel.Edit))
                 .ReturnsAsync(true);
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.UpdateVideo(updatedVideo, userInfo);
@@ -701,7 +699,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.Admin))
                 .ReturnsAsync(true);
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.DeleteVideo(video, userInfo);
@@ -736,7 +734,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.Admin))
                 .ReturnsAsync(false);
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.DeleteVideo(video, userInfo);
@@ -768,7 +766,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 999, userInfo, PermissionLevel.Admin))
                 .ReturnsAsync(true);
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             Video? result = await service.DeleteVideo(video, userInfo);
@@ -814,7 +812,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Prime the cache
             await service.GetVideosList(1, userInfo);
@@ -851,7 +849,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.VideoDb.Add(video);
             await context.SaveChangesAsync();
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Add to cache first
             await service.SetVideoInCache(1);
@@ -894,7 +892,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosList(1, userInfo);
@@ -938,7 +936,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosList(1, userInfo);
@@ -959,7 +957,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosList(1, userInfo);
@@ -989,7 +987,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result1 = await service.GetVideosList(1, userInfo);
@@ -1028,7 +1026,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosList(1, userInfo);
@@ -1069,7 +1067,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosWithTag(1, "Family", userInfo);
@@ -1106,7 +1104,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosWithTag(1, null, userInfo);
@@ -1141,7 +1139,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosWithTag(1, "", userInfo);
@@ -1171,7 +1169,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosWithTag(1, "family", userInfo);
@@ -1201,7 +1199,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosWithTag(1, "Family", userInfo);
@@ -1237,7 +1235,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosWithTag(1, "Family", userInfo);
@@ -1273,7 +1271,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosWithTag(1, "Family", userInfo);
@@ -1317,7 +1315,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.GetVideosWithTag(1, "Family", userInfo);
@@ -1349,7 +1347,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync();
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.SetVideosListInCache(1);
@@ -1370,7 +1368,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("SetVideosListInCache_Empty");
             IDistributedCache cache = GetMemoryCache();
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.SetVideosListInCache(1);
@@ -1397,7 +1395,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync();
 
-            VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            VideosService service = new(context, cache, _mockAccessManagementService.Object);
 
             // Act
             List<Video>? result = await service.SetVideosListInCache(1);

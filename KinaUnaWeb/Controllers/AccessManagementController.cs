@@ -99,6 +99,7 @@ namespace KinaUnaWeb.Controllers
                         model.UserList.Add(userInfo);
                     }
                 }
+                
                 return PartialView("_ProgenyItemPermissionsPartial", model);
             }
             else

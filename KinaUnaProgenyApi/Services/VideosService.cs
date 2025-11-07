@@ -6,12 +6,9 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -24,16 +21,14 @@ namespace KinaUnaProgenyApi.Services
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
-        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public VideosService(MediaDbContext mediaContext, IDistributedCache cache, IAccessManagementService accessManagementService, IServiceScopeFactory serviceScopeFactory)
+        public VideosService(MediaDbContext mediaContext, IDistributedCache cache, IAccessManagementService accessManagementService)
         {
             _mediaContext = mediaContext;
             _accessManagementService = accessManagementService;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
-            _serviceScopeFactory = serviceScopeFactory;
         }
 
         /// <summary>
@@ -255,26 +250,15 @@ namespace KinaUnaProgenyApi.Services
                 videosList = await SetVideosListInCache(progenyId);
             }
 
-            Stopwatch watch = Stopwatch.StartNew();
-            ConcurrentBag<Video> videosConcurrentBag = [];
-            ParallelOptions parallelOptions = new()
+            List<Video> filteredList = [];
+            foreach (Video video in videosList)
             {
-                MaxDegreeOfParallelism = 4
-            };
-            await Parallel.ForEachAsync(videosList, parallelOptions, async (video, _) =>
-            {
-                using IServiceScope scope = _serviceScopeFactory.CreateScope();
-                IAccessManagementService accessManagementService = scope.ServiceProvider.GetRequiredService<IAccessManagementService>();
-                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, video.VideoId, currentUserInfo, PermissionLevel.View))
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, video.VideoId, currentUserInfo, PermissionLevel.View))
                 {
-                    //video.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, currentUserInfo);
-                    videosConcurrentBag.Add(video);
+                    filteredList.Add(video);
                 }
-
-            });
-            watch.Stop();
-            Console.WriteLine("GetVideosList Time Taken: " + watch.Elapsed.Minutes + "m " + watch.Elapsed.Seconds + "s");
-            List<Video> filteredList = videosConcurrentBag.ToList();
+            }
+            filteredList = filteredList.OrderByDescending(v => v.VideoTime).ToList();
 
             return filteredList;
         }

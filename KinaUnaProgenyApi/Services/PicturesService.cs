@@ -693,35 +693,9 @@ namespace KinaUnaProgenyApi.Services
             Console.WriteLine("GetPicturesList for Progeny: " + progenyId + " pictures list count: " + picturesList.Count);
             Stopwatch watch = Stopwatch.StartNew();
             
-            //ConcurrentBag<Picture> picturesConcurrentBag = [];
-            //ParallelOptions parallelOptions = new()
-            //{
-            //    MaxDegreeOfParallelism = 8
-            //};
-
-            //await Parallel.ForEachAsync(picturesList, parallelOptions, async (picture, _) =>
-            //{
-            //    // Create a scope for each parallel task to avoid threading issues.
-            //    if (picture == null)
-            //    {
-            //        return;
-            //    }
-
-            //    using IServiceScope scope = _serviceScopeFactory.CreateScope();
-            //    IAccessManagementService accessManagementService = scope.ServiceProvider.GetRequiredService<IAccessManagementService>();
-            //    if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
-            //    {
-            //        //picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);
-            //        picturesConcurrentBag.Add(picture);
-            //    }
-            //});
-            
-            //List<Picture> filteredList = picturesConcurrentBag.ToList();
-            //filteredList = filteredList.OrderByDescending(p => p.PictureTime).ToList();
-            List<Picture> filteredList = new List<Picture>();
-            for (int i = 0; i < picturesList.Count; i++)
+            List<Picture> filteredList = [];
+            foreach (Picture picture in picturesList)
             {
-                Picture picture = picturesList[i];
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
                 {
                     // picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);

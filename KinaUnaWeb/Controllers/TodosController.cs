@@ -602,15 +602,15 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
             TodoViewModel model = new(baseModel);
-            
-            model.SetPropertiesFromTodoItem(todoItem);
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
             model.FamilyList = await viewModelSetupService.GetFamilySelectList();
             model.SetFamilyList();
-            model.SetStatusList(model.TodoItem.Status);
 
+            model.SetPropertiesFromTodoItem(todoItem);
+            model.SetStatusList(model.TodoItem.Status);
+            
             return PartialView("_CopyTodoPartial", model);
         }
 

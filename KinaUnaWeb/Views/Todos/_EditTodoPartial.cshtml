@@ -47,6 +47,13 @@
         </div>
         <form id="save-item-form" asp-action="EditTodo" asp-controller="Todos" role="form" method="post">
             <div class="space-20"></div>
+            <div class="form-group">
+                <label class="col-auto control-label">@assignedToString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
             @if (Model.ProgenyList.Count > 0)
             {
                 <div id="individual-select-from-group" class="form-group">

@@ -1304,21 +1304,20 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return true;
             }
             
-            List<ProgenyPermission> groupPermissions = await progenyDbContext.ProgenyPermissionsDb
+            IEnumerable<ProgenyPermission> groupPermissions = progenyDbContext.ProgenyPermissionsDb
                 .AsNoTracking()
-                .Where(pp => pp.GroupId > 0 && pp.ProgenyId == progenyId)
-                .ToListAsync();
-            PermissionLevel highestGroupPermission = PermissionLevel.None;
+                .Where(pp => pp.GroupId > 0 && pp.ProgenyId == progenyId);
+
             foreach (ProgenyPermission permission in groupPermissions)
             {
                 bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
-                if (isMember && permission.PermissionLevel > highestGroupPermission)
+                if (isMember && permission.PermissionLevel >= requiredLevel)
                 {
-                    highestGroupPermission = permission.PermissionLevel;
+                    return true;
                 }
             }
 
-            return highestGroupPermission >= requiredLevel;
+            return false;
         }
 
         /// <summary>

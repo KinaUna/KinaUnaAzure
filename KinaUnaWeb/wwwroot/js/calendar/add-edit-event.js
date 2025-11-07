@@ -2,8 +2,8 @@ import * as LocaleHelper from '../localization-v9.js';
 import { setContextAutoSuggestList, setLocationAutoSuggestList, getCurrentLanguageId, setMomentLocale, checkStartBeforeEndTime, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getCurrentItemFamilyId, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { setupRemindersSection } from '../reminders/reminders.js';
 import { setupRecurrenceSection } from './add-edit-recurrence.js';
-import { TimelineItem, TimeLineType } from '../page-models-v9.js';
-import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { TimeLineType } from '../page-models-v9.js';
+import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let longDateTimeFormatMoment;
@@ -14,7 +14,6 @@ let currentProgenyId;
 let currentFamilyId;
 let startDateTimePickerId = '#event-start-date-time-picker';
 let endDateTimePickerId = '#event-end-date-time-picker';
-let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Validates that the start date is before the end date.
  * If the start date is after the end date, the submit button is disabled and a warning is shown.
@@ -174,11 +173,7 @@ export async function initializeAddEditEvent(itemId) {
     setupDateTimePickers();
     setupRemindersSection();
     setupRecurrenceSection();
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.Calendar;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = currentFamilyId;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+    await setupForIndividualOrFamilyButtons(itemId, TimeLineType.Calendar, currentProgenyId, currentFamilyId);
     $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve, reject) {
         resolve();
