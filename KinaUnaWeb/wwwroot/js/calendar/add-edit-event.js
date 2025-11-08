@@ -166,10 +166,6 @@ export async function initializeAddEditEvent(itemId) {
     currentProgenyId = getCurrentItemProgenyId();
     currentFamilyId = getCurrentItemFamilyId();
     languageId = getCurrentLanguageId();
-    await setContextAutoSuggestList([currentProgenyId], []);
-    await setLocationAutoSuggestList([currentProgenyId], []);
-    setupProgenySelectList();
-    setupFamilySelectList();
     setupDateTimePickers();
     setupRemindersSection();
     setupRecurrenceSection();

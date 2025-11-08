@@ -4,6 +4,7 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Edit skill", PageNames.Skills, Model.LanguageId);
+    string skillForString = await LocaleManager.GetTranslation("Skill for", PageNames.Skills, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     const int changedItemTypeSkillItem = (int)KinaUnaTypes.TimeLineType.Skill;
@@ -23,10 +24,27 @@
         </div>
         <form id="save-item-form" asp-action="EditSkill" asp-controller="Skills" role="form" method="post">
             <div class="space-20"></div>
+            <div class="form-group d-none">
+                <label class="col-auto control-label">@skillForString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
+            {
+                <div id="individual-select-from-group" class="form-group">
+                    <label asp-for="SkillItem.ProgenyId" class="col-auto control-label">@skillForString </label>
+                    <div class="col-auto">
+                        <select id="item-progeny-id-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="SkillItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                    </div>
+                </div>
+            }
+            <div class="space-20"></div>
             <div class="form-group">
                 <label asp-for="SkillItem.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Skill name", PageNames.Skills, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="SkillItem.Name" class="form-control" value="@Model.SkillItem.Name" />
+                    <input asp-for="SkillItem.Name" class="form-control" value="@Model.SkillItem.Name"/>
                 </div>
             </div>
             <div class="form-group">
@@ -38,7 +56,7 @@
             <div class="form-group">
                 <label asp-for="SkillItem.Category" class="col-auto control-label">@await LocaleManager.GetTranslation("Category", PageNames.Skills, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="category-input" asp-for="SkillItem.Category" class="form-control" value="@Model.SkillItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Skills, Model.LanguageId)" />
+                    <input id="category-input" asp-for="SkillItem.Category" class="form-control" value="@Model.SkillItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Skills, Model.LanguageId)"/>
                 </div>
             </div>
             <div class="form-group">
@@ -54,17 +72,17 @@
                         }
                         <input id="skill-date-time-picker" type="text"
                                class="form-control" data-zdp_readonly_element="false" asp-for="SkillItem.SkillFirstObservation"
-                               value="@firstObservation.ToString(longDateTimeFormat)" />
+                               value="@firstObservation.ToString(longDateTimeFormat)"/>
                     </div>
                 </div>
             </div>
             <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.SkillItem.SkillId"></div>
             <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
             <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
-            <input asp-for="SkillItem.ProgenyId" value="@Model.SkillItem.ProgenyId" type="hidden" />
-            <input asp-for="SkillItem.SkillAddedDate" value="@Model.SkillItem.SkillAddedDate" type="hidden" />
-            <input asp-for="SkillItem.SkillId" value="@Model.SkillItem.SkillId" type="hidden" />
-            <input asp-for="SkillItem.Author" value="@Model.SkillItem.Author" type="hidden" />
+            <input asp-for="SkillItem.ProgenyId" value="@Model.SkillItem.ProgenyId" type="hidden"/>
+            <input asp-for="SkillItem.SkillAddedDate" value="@Model.SkillItem.SkillAddedDate" type="hidden"/>
+            <input asp-for="SkillItem.SkillId" value="@Model.SkillItem.SkillId" type="hidden"/>
+            <input asp-for="SkillItem.Author" value="@Model.SkillItem.Author" type="hidden"/>
             <div class="space-20"></div>
             <div>
                 <div class="form-group">

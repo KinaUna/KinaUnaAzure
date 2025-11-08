@@ -175,7 +175,10 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId, 0, false);
             SkillViewModel model = new(baseModel);
-            
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(skill.ProgenyId);
+            model.SetProgenyList();
+
             skill.SkillFirstObservation ??= DateTime.UtcNow;
 
             model.SetPropertiesFromSkillItem(skill);

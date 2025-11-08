@@ -4,7 +4,8 @@
 @model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = await LocaleManager.GetTranslation("Edit event", PageNames.Calendar, Model.LanguageId);
+    string title = await LocaleManager.GetTranslation("Edit event", PageNames.Calendar, Model.LanguageId);
+    string eventForString = await LocaleManager.GetTranslation("Event for", PageNames.Calendar, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string longDateTimeFormatMoment = "DD-MMMM-YYYY HH" + timeSeparator + "mm";
@@ -48,12 +49,37 @@
     <div class="timeline-card-body modal-content item-details-content">
     <div class="row sticky-top m-0 item-details-header">
         <div class="col-12 bg-add-item-header">
-            <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                <span class="h4 mr-3 align-bottom">@title</span>
             <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
         </div>
     </div>
     <form id="save-item-form" asp-action="EditEvent" asp-controller="Calendar" role="form">
-            <div class="space-20"></div>
+    <div class="space-20"></div>
+            <div class="form-group d-none">
+                <label class="col-auto control-label">@eventForString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
+            {
+                <div id="individual-select-from-group" class="form-group d-none">
+                    <label asp-for="CalendarItem.ProgenyId" class="col-auto control-label">@eventForString </label>
+                    <div class="col-auto">
+                        <select id="item-progeny-id-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="CalendarItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                    </div>
+                </div>
+            }
+            @if (Model.FamilyList.Count > 0)
+            {
+                <div id="family-select-from-group" class="form-group d-none">
+                    <label asp-for="CalendarItem.FamilyId" class="col-auto control-label">@eventForString </label>
+                    <div class="col-auto">
+                        <select id="item-family-id-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="CalendarItem.FamilyId" asp-items="@Model.FamilyList"></select>
+                    </div>
+                </div>
+            }
     <div class="form-group">
         <label asp-for="CalendarItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-auto">

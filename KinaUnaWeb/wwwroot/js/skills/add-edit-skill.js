@@ -1,13 +1,12 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setCategoriesAutoSuggestList, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getCurrentItemProgenyId } from '../data-tools-v9.js';
-import { TimelineItem, TimeLineType } from '../page-models-v9.js';
-import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getCurrentItemProgenyId } from '../data-tools-v9.js';
+import { TimeLineType } from '../page-models-v9.js';
+import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let longDateTimeFormatMoment;
 let zebraDateTimeFormat;
 let currentProgenyId;
-let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Configures the date time picker for the skill date input field.
  */
@@ -30,36 +29,11 @@ async function setupDateTimePicker() {
         resolve();
     });
 }
-/**
- * Sets up the Progeny select list and adds an event listener to update the categories auto suggest lists when the selected Progeny changes.
- */
-function setupProgenySelectList() {
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
-    }
-}
-async function onProgenySelectListChanged() {
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = parseInt(progenyIdSelect.value);
-        await setCategoriesAutoSuggestList([currentProgenyId], []);
-    }
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
 export async function initializeAddEditSkill(itemId) {
     currentProgenyId = getCurrentItemProgenyId();
     languageId = getCurrentLanguageId();
-    await setCategoriesAutoSuggestList([currentProgenyId], []);
     await setupDateTimePicker();
-    setupProgenySelectList();
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.Skill;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = 0;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+    await setupForIndividualOrFamilyButtons(itemId, TimeLineType.Skill, currentProgenyId, 0);
     $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve, reject) {
         resolve();

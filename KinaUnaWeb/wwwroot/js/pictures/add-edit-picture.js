@@ -1,10 +1,10 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v9.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
-import { PictureViewModel, TimelineItem, TimeLineType } from '../page-models-v9.js';
+import { PictureViewModel, TimeLineType } from '../page-models-v9.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
 import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
-import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat;
@@ -14,7 +14,6 @@ let copyLocationButton;
 let fileList = [];
 let notSupportedFiles = [];
 let imagesLoaded = 0;
-let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Configures the date time picker for the picture date input field.
  */
@@ -33,26 +32,6 @@ async function setupDateTimePicker() {
             show_select_today: zebraDatePickerTranslations.todayString,
             select_other_months: true
         });
-    }
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
-/**
- * Sets up the Progeny select list and adds an event listener to update the tags and location auto suggest lists when the selected Progeny changes.
- */
-function setupProgenySelectList() {
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
-    }
-}
-async function onProgenySelectListChanged() {
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = parseInt(progenyIdSelect.value);
-        await setTagsAutoSuggestList([currentProgenyId], []);
-        await setLocationAutoSuggestList([currentProgenyId], []);
     }
     return new Promise(function (resolve, reject) {
         resolve();
@@ -547,19 +526,12 @@ export async function initializeAddEditPicture(itemId) {
     notSupportedFiles = [];
     imagesLoaded = 0;
     await setupDateTimePicker();
-    setupProgenySelectList();
-    await setTagsAutoSuggestList([currentProgenyId], []);
-    await setLocationAutoSuggestList([currentProgenyId], []);
+    await setupForIndividualOrFamilyButtons(itemId, TimeLineType.Photo, currentProgenyId, 0);
     addCopyLocationButtonEventListener();
     addFileInputEventListener();
     addDropEventListener();
     addOverrideSubmitEvent();
     setAddItemButtonEventListeners();
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.Photo;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = 0;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
     $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve, reject) {
         resolve();

@@ -2,12 +2,13 @@
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, setVocabularyLanguagesAutoSuggestList, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat: string;
 let currentProgenyId: number;
-let permissionsEditorTimelineItem = new TimelineItem();
+
 /**
  * Configures the date time picker for the word date input field.
  */
@@ -32,41 +33,13 @@ async function setupDateTimePicker(): Promise<void> {
     });
 }
 
-/**
- * Sets up the Progeny select list and adds an event listener to update the progenyId when the selected Progeny changes.
- */
-function setupProgenySelectList(): void {
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
-    }
-}
-
-async function onProgenySelectListChanged(): Promise<void> {
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = parseInt(progenyIdSelect.value);
-        await setVocabularyLanguagesAutoSuggestList([currentProgenyId]);
-    }
-
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
-
 export async function initializeAddEditVocabulary(itemId: string): Promise<void> {
     currentProgenyId = getCurrentItemProgenyId();
     languageId = getCurrentLanguageId();
 
     await setupDateTimePicker();
-    setupProgenySelectList();
-    await setVocabularyLanguagesAutoSuggestList([currentProgenyId]);
 
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.Vocabulary;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = 0;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+    await setupForIndividualOrFamilyButtons(itemId, TimeLineType.Vocabulary, currentProgenyId, 0);
 
     ($(".selectpicker") as any).selectpicker('refresh');
 

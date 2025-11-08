@@ -21,23 +21,20 @@
         </div>
         <form id="save-item-form" asp-action="CopyMeasurement" asp-controller="Measurements" role="form" method="post">
             <div class="space-20"></div>
-            @if (Model.ProgenyList.Count > 1)
+            <div class="form-group d-none">
+                <label class="col-auto control-label">@copyMeasurementToString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
             {
-                <div class="form-group">
+                <div id="individual-select-from-group" class="form-group">
                     <label asp-for="MeasurementItem.ProgenyId" class="col-auto control-label">@copyMeasurementToString </label>
                     <div class="col-auto">
                         <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="MeasurementItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
-                </div>
-            }
-            else
-            {
-                <div class="form-group">
-                    <label asp-for="MeasurementItem.ProgenyId" class="col-auto control-label">@copyMeasurementToString </label>
-                    <div class="col-auto">
-                        <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
-                    </div>
-                    <input asp-for="MeasurementItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
                 </div>
             }
             <div class="form-group">

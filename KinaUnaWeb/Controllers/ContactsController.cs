@@ -395,7 +395,12 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), contact.ProgenyId, contact.FamilyId, false);
             ContactViewModel model = new(baseModel);
-            
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(contact.ProgenyId);
+            model.SetProgenyList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList(contact.FamilyId);
+            model.SetFamilyList();
+
             if (contact.AddressIdNumber != null)
             {
                 contact.Address = await locationsHttpClient.GetAddress(contact.AddressIdNumber.Value);

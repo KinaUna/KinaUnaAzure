@@ -255,7 +255,10 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
             NoteViewModel model = new(baseModel);
-            
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(note.ProgenyId);
+            model.SetProgenyList();
+
             model.SetPropertiesFromNote(note);
             model.PathName = model.CurrentUser.UserId;
             

@@ -4,6 +4,7 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Edit vaccination", PageNames.Vaccinations, Model.LanguageId);
+    string vaccinationForString = await LocaleManager.GetTranslation("Vaccination for", PageNames.Vaccinations, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     const int changedItemTypeVaccinationItem = (int)KinaUnaTypes.TimeLineType.Vaccination;
@@ -22,10 +23,27 @@
         </div>
         <form id="save-item-form" asp-action="EditVaccination" asp-controller="Vaccinations" role="form" method="post">
             <div class="space-20"></div>
+            <div class="form-group d-none">
+                <label class="col-auto control-label">@vaccinationForString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
+            {
+                <div id="individual-select-from-group" class="form-group">
+                    <label asp-for="VaccinationItem.ProgenyId" class="col-auto control-label">@vaccinationForString </label>
+                    <div class="col-auto">
+                        <select id="item-progeny-id-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="VaccinationItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                    </div>
+                </div>
+            }
+            <div class="space-20"></div>
             <div class="form-group">
                 <label asp-for="VaccinationItem.VaccinationName" class="col-auto control-label">@await LocaleManager.GetTranslation("Vaccination name", PageNames.Vaccinations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="VaccinationItem.VaccinationName" class="form-control" value="@Model.VaccinationItem.VaccinationName" />
+                    <input asp-for="VaccinationItem.VaccinationName" class="form-control" value="@Model.VaccinationItem.VaccinationName"/>
                 </div>
             </div>
             <div class="form-group">
@@ -45,7 +63,7 @@
                 <div class="col-auto">
                     <div class="input-group date">
                         <input id="vaccination-date-time-picker" type="text"
-                               class="form-control" data-zdp_readonly_element="false" asp-for="VaccinationItem.VaccinationDate" value="@Model.VaccinationItem.VaccinationDate.ToString(longDateTimeFormat)" />
+                               class="form-control" data-zdp_readonly_element="false" asp-for="VaccinationItem.VaccinationDate" value="@Model.VaccinationItem.VaccinationDate.ToString(longDateTimeFormat)"/>
                     </div>
                 </div>
             </div>
@@ -53,9 +71,9 @@
             <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
             <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
-            <input asp-for="VaccinationItem.ProgenyId" value="@Model.VaccinationItem.ProgenyId" type="hidden" />
-            <input asp-for="VaccinationItem.VaccinationId" value="@Model.VaccinationItem.VaccinationId" type="hidden" />
-            <input asp-for="VaccinationItem.Author" value="@Model.VaccinationItem.Author" type="hidden" />
+            <input asp-for="VaccinationItem.ProgenyId" value="@Model.VaccinationItem.ProgenyId" type="hidden"/>
+            <input asp-for="VaccinationItem.VaccinationId" value="@Model.VaccinationItem.VaccinationId" type="hidden"/>
+            <input asp-for="VaccinationItem.Author" value="@Model.VaccinationItem.Author" type="hidden"/>
             <div>
                 <div class="form-group">
                     <div class="col-auto control-label"></div>

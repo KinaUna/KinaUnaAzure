@@ -184,13 +184,6 @@ export async function initializeAddEditEvent(itemId: string): Promise<void> {
     currentProgenyId = getCurrentItemProgenyId();
     currentFamilyId = getCurrentItemFamilyId();
     languageId = getCurrentLanguageId();
-
-    await setContextAutoSuggestList([currentProgenyId], []);
-    await setLocationAutoSuggestList([currentProgenyId], []);
-    
-
-    setupProgenySelectList();
-    setupFamilySelectList();
     
     setupDateTimePickers();
     setupRemindersSection();

@@ -4,6 +4,7 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Edit contact", PageNames.Contacts, Model.LanguageId);
+    string contactForString = await LocaleManager.GetTranslation("Contact for", PageNames.Contacts, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Contact;
@@ -20,22 +21,48 @@
             <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             <div class="space-20"></div>
             <form id="save-item-form" asp-action="EditContact" asp-controller="Contacts" role="form" method="post" enctype="multipart/form-data">
+                <div class="space-20"></div>
+                <div class="form-group d-none">
+                    <label class="col-auto control-label">@contactForString</label>
+                    <div class="col-auto">
+                        <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                        <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                    </div>
+                </div>
+                @if (Model.ProgenyList.Count > 0)
+                {
+                    <div id="individual-select-from-group" class="form-group">
+                        <label asp-for="ContactItem.ProgenyId" class="col-auto control-label">@contactForString </label>
+                        <div class="col-auto">
+                            <select id="item-progeny-id-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="ContactItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                        </div>
+                    </div>
+                }
+                @if (Model.FamilyList.Count > 0)
+                {
+                    <div id="family-select-from-group" class="form-group d-none">
+                        <label asp-for="ContactItem.FamilyId" class="col-auto control-label">@contactForString </label>
+                        <div class="col-auto">
+                            <select id="item-family-id-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="ContactItem.FamilyId" asp-items="@Model.FamilyList"></select>
+                        </div>
+                    </div>
+                }
                 <div class="form-group">
                     <label asp-for="ContactItem.FirstName" class="col-auto control-label">@await LocaleManager.GetTranslation("First name", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="ContactItem.FirstName" class="form-control" value="@Model.ContactItem.FirstName" />
+                        <input asp-for="ContactItem.FirstName" class="form-control" value="@Model.ContactItem.FirstName"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="ContactItem.MiddleName" class="col-auto control-label">@await LocaleManager.GetTranslation("Middle name", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="ContactItem.MiddleName" class="form-control" value="@Model.ContactItem.MiddleName" />
+                        <input asp-for="ContactItem.MiddleName" class="form-control" value="@Model.ContactItem.MiddleName"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="ContactItem.LastName" class="col-auto control-label">@await LocaleManager.GetTranslation("Last name", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="ContactItem.LastName" class="form-control" value="@Model.ContactItem.LastName" />
+                        <input asp-for="ContactItem.LastName" class="form-control" value="@Model.ContactItem.LastName"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -50,9 +77,9 @@
                                 <div class="btn btn-primary btn-round btn-file ">
                                     <span data-trigger="fileinput" class="fileinput-new">@await LocaleManager.GetTranslation("New picture", PageNames.Contacts, Model.LanguageId)</span>
                                     <span class="fileinput-exists">@await LocaleManager.GetTranslation("Change picture", PageNames.Contacts, Model.LanguageId)</span>
-                                    <input id="contact-profile-picture-input" type="file" name="File" accept="image/*" />
+                                    <input id="contact-profile-picture-input" type="file" name="File" accept="image/*"/>
                                 </div>
-                                <br />
+                                <br/>
                                 <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
                                     <i class="fa fa-times"></i> @await LocaleManager.GetTranslation("Remove picture", PageNames.Contacts, Model.LanguageId)
                                 </a>
@@ -63,79 +90,79 @@
                 <div class="form-group">
                     <label asp-for="ContactItem.DisplayName" class="col-auto control-label">@await LocaleManager.GetTranslation("Display name", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="ContactItem.DisplayName" class="form-control" value="@Model.ContactItem.DisplayName" />
+                        <input asp-for="ContactItem.DisplayName" class="form-control" value="@Model.ContactItem.DisplayName"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="AddressItem.AddressLine1" class="col-auto control-label">@await LocaleManager.GetTranslation("Address line 1", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="AddressItem.AddressLine1" class="form-control" value="@Model.AddressItem.AddressLine1" />
+                        <input asp-for="AddressItem.AddressLine1" class="form-control" value="@Model.AddressItem.AddressLine1"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="AddressItem.AddressLine2" class="col-auto control-label">@await LocaleManager.GetTranslation("Address line 2", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="AddressItem.AddressLine2" class="form-control" value="@Model.AddressItem.AddressLine2" />
+                        <input asp-for="AddressItem.AddressLine2" class="form-control" value="@Model.AddressItem.AddressLine2"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="AddressItem.City" class="col-auto control-label">@await LocaleManager.GetTranslation("City", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="AddressItem.City" class="form-control" value="@Model.AddressItem.City" />
+                        <input asp-for="AddressItem.City" class="form-control" value="@Model.AddressItem.City"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="AddressItem.State" class="col-auto control-label">@await LocaleManager.GetTranslation("State/region", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="AddressItem.State" class="form-control" value="@Model.AddressItem.State" />
+                        <input asp-for="AddressItem.State" class="form-control" value="@Model.AddressItem.State"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="AddressItem.PostalCode" class="col-auto control-label">@await LocaleManager.GetTranslation("Postal code", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="AddressItem.PostalCode" class="form-control" value="@Model.AddressItem.PostalCode" />
+                        <input asp-for="AddressItem.PostalCode" class="form-control" value="@Model.AddressItem.PostalCode"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="AddressItem.Country" class="col-auto control-label">@await LocaleManager.GetTranslation("Country", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="AddressItem.Country" class="form-control" value="@Model.AddressItem.Country" />
+                        <input asp-for="AddressItem.Country" class="form-control" value="@Model.AddressItem.Country"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="ContactItem.Email1" class="col-auto control-label">@await LocaleManager.GetTranslation("Email 1", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="ContactItem.Email1" class="form-control" value="@Model.ContactItem.Email1" />
+                        <input asp-for="ContactItem.Email1" class="form-control" value="@Model.ContactItem.Email1"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="ContactItem.Email2" class="col-auto control-label">@await LocaleManager.GetTranslation("Email 2", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="ContactItem.Email2" class="form-control" value="@Model.ContactItem.Email2" />
+                        <input asp-for="ContactItem.Email2" class="form-control" value="@Model.ContactItem.Email2"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="ContactItem.PhoneNumber" class="col-auto control-label">@await LocaleManager.GetTranslation("Phone number", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="ContactItem.PhoneNumber" class="form-control" value="@Model.ContactItem.PhoneNumber" />
+                        <input asp-for="ContactItem.PhoneNumber" class="form-control" value="@Model.ContactItem.PhoneNumber"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="ContactItem.MobileNumber" class="col-auto control-label">@await LocaleManager.GetTranslation("Mobile number", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="ContactItem.MobileNumber" class="form-control" value="@Model.ContactItem.MobileNumber" />
+                        <input asp-for="ContactItem.MobileNumber" class="form-control" value="@Model.ContactItem.MobileNumber"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="ContactItem.Website" class="col-auto control-label">@await LocaleManager.GetTranslation("Website", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input asp-for="ContactItem.Website" class="form-control" value="@Model.ContactItem.Website" />
+                        <input asp-for="ContactItem.Website" class="form-control" value="@Model.ContactItem.Website"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="ContactItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="context-input" asp-for="ContactItem.Context" class="form-control" value="@Model.ContactItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)" />
+                        <input id="context-input" asp-for="ContactItem.Context" class="form-control" value="@Model.ContactItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -147,7 +174,7 @@
                 <div class="form-group">
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col-auto">
-                        <input id="tag-list" type="text" asp-for="Tags" value="@Model.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
+                        <input id="tag-list" type="text" asp-for="Tags" value="@Model.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control"/>
                     </div>
 
                 </div>
@@ -160,25 +187,25 @@
                                 Model.ContactItem.DateAdded = DateTime.UtcNow;
                             }
                             <input id="contact-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="ContactItem.DateAdded"
-                                   value="@Model.ContactItem.DateAdded.Value.ToString(longDateTimeFormat)" />
+                                   value="@Model.ContactItem.DateAdded.Value.ToString(longDateTimeFormat)"/>
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="ContactItem.Active" class="col-auto control-label">@await LocaleManager.GetTranslation("Active", PageNames.Contacts, Model.LanguageId)</label>
                     <div class="col" style="max-width: 5em;">
-                        <input type="checkbox" asp-for="ContactItem.Active" class="form-control" style="width: 2em; height: 2em;" checked="@Model.ContactItem.Active" value="@Model.ContactItem.Active" onchange="this.value=this.checked" />
+                        <input type="checkbox" asp-for="ContactItem.Active" class="form-control" style="width: 2em; height: 2em;" checked="@Model.ContactItem.Active" value="@Model.ContactItem.Active" onchange="this.value=this.checked"/>
                     </div>
                 </div>
                 <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.ContactItem.ContactId"></div>
                 <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
                 <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
-                <input asp-for="ContactItem.AddressIdNumber" value="@Model.ContactItem.AddressIdNumber" type="hidden" />
-                <input asp-for="ContactItem.ProgenyId" value="@Model.ContactItem.ProgenyId" type="hidden" />
+                <input asp-for="ContactItem.AddressIdNumber" value="@Model.ContactItem.AddressIdNumber" type="hidden"/>
+                <input asp-for="ContactItem.ProgenyId" value="@Model.ContactItem.ProgenyId" type="hidden"/>
                 <input asp-for="ContactItem.FamilyId" value="@Model.ContactItem.FamilyId" type="hidden"/>
-                <input asp-for="ContactItem.ContactId" value="@Model.ContactItem.ContactId" type="hidden" />
-                <input asp-for="ContactItem.PictureLink" value="@Model.ContactItem.PictureLink" type="hidden" />
-                <input asp-for="ContactItem.Author" value="@Model.ContactItem.Author" type="hidden" />
+                <input asp-for="ContactItem.ContactId" value="@Model.ContactItem.ContactId" type="hidden"/>
+                <input asp-for="ContactItem.PictureLink" value="@Model.ContactItem.PictureLink" type="hidden"/>
+                <input asp-for="ContactItem.Author" value="@Model.ContactItem.Author" type="hidden"/>
                 <div>
                     <div class="form-group">
                         <div class="col-auto control-label"></div>

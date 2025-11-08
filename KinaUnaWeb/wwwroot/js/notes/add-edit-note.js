@@ -1,12 +1,11 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setCategoriesAutoSuggestList, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemProgenyId } from '../data-tools-v9.js';
-import { TimelineItem, TimeLineType } from '../page-models-v9.js';
-import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemProgenyId } from '../data-tools-v9.js';
+import { TimeLineType } from '../page-models-v9.js';
+import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat;
 let currentProgenyId;
-let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Configures the date time picker for the note date input field.
  */
@@ -27,19 +26,6 @@ async function setupDateTimePicker() {
     return new Promise(function (resolve, reject) {
         resolve();
     });
-}
-/**
- * Sets up the Progeny select list and adds an event listener to update the tags and categories auto suggest lists when the selected Progeny changes.
- */
-function setupProgenySelectList() {
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', async () => {
-            currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsAutoSuggestList([currentProgenyId], []);
-            await setCategoriesAutoSuggestList([currentProgenyId], []);
-        });
-    }
 }
 /**
  * Sets up the Rich Text Editor for the note content field and adds event listeners for image upload success and editor creation.
@@ -105,14 +91,7 @@ export async function initializeAddEditNote(itemId) {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentItemProgenyId();
     await setupDateTimePicker();
-    setupProgenySelectList();
-    await setTagsAutoSuggestList([currentProgenyId], []);
-    await setCategoriesAutoSuggestList([currentProgenyId], []);
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.Note;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = 0;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+    await setupForIndividualOrFamilyButtons(itemId, TimeLineType.Note, currentProgenyId, 0);
     $(".selectpicker").selectpicker('refresh');
     setupRichTextEditor();
     return new Promise(function (resolve, reject) {

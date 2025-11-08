@@ -22,23 +22,29 @@
         </div>
         <form id="save-item-form" asp-action="AddContact" asp-controller="Contacts" role="form" method="post" enctype="multipart/form-data">
             <div class="space-20"></div>
-            @if (Model.ProgenyList.Count > 1)
+            <div class="form-group">
+                <label class="col-auto control-label">@addContactForString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
             {
-                <div class="form-group">
-                    <label asp-for="ContactItem.ProgenyId" class="control-label col-auto">@addContactForString</label>
+                <div id="individual-select-from-group" class="form-group">
+                    <label asp-for="ContactItem.ProgenyId" class="col-auto control-label">@addContactForString </label>
                     <div class="col-auto">
                         <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="ContactItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
                 </div>
             }
-            else
+            @if (Model.FamilyList.Count > 0)
             {
-                <div class="form-group">
-                    <label asp-for="ContactItem.ProgenyId" class="control-label col-auto">@addContactForString</label>
+                <div id="family-select-from-group" class="form-group d-none">
+                    <label asp-for="ContactItem.FamilyId" class="col-auto control-label">@addContactForString </label>
                     <div class="col-auto">
-                        <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text"/>
+                        <select id="item-family-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="ContactItem.FamilyId" asp-items="@Model.FamilyList"></select>
                     </div>
-                    <input asp-for="ContactItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden"/>
                 </div>
             }
             <div class="space-20"></div>

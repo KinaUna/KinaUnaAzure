@@ -149,7 +149,10 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId, 0, false);
             MeasurementViewModel model = new(baseModel);
-            
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(measurement.ProgenyId);
+            model.SetProgenyList();
+
             model.SetPropertiesFromMeasurement(measurement);
             
             return PartialView("_EditMeasurementPartial", model);

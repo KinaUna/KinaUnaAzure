@@ -664,9 +664,9 @@ namespace KinaUnaWeb.Controllers
                 KanbanItem = kanbanItem
             };
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(kanbanItem.TodoItem.ProgenyId);
             model.SetProgenyList();
-            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList(kanbanItem.TodoItem.FamilyId);
             model.SetFamilyList();
 
             model.SetStatusList(model.KanbanItem.TodoItem.Status);

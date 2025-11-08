@@ -5,6 +5,7 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Edit sleep", PageNames.Sleep, Model.LanguageId);
+    string sleepForString = await LocaleManager.GetTranslation("Sleep for", PageNames.Sleep, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string longDateTimeFormatMoment = "DD-MMMM-YYYY HH" + timeSeparator + "mm";
@@ -28,6 +29,23 @@
         </div>
         <form id="save-item-form" asp-action="EditSleep" asp-controller="Sleep" role="form">
             <div class="space-20"></div>
+            <div class="form-group d-none">
+                <label class="col-auto control-label">@sleepForString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
+            {
+                <div id="individual-select-from-group" class="form-group">
+                    <label asp-for="SleepItem.ProgenyId" class="col-auto control-label">@sleepForString </label>
+                    <div class="col-auto">
+                        <select id="item-progeny-id-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="SleepItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                    </div>
+                </div>
+            }
+            <div class="space-20"></div>
             <div class="row">
                 <div class="form-group col-12 col-md-6">
                     <label asp-for="SleepItem.SleepStart" class="col-auto control-label">@await LocaleManager.GetTranslation("Start", PageNames.Sleep, Model.LanguageId)</label>
@@ -36,7 +54,7 @@
                             @{
                                 string sleepStartValue = Model.SleepItem.SleepStart.ToString(longDateTimeFormat);
                             }
-                            <input id="sleep-start-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepStart" value="@sleepStartValue" />
+                            <input id="sleep-start-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepStart" value="@sleepStartValue"/>
                         </div>
                     </div>
                 </div>
@@ -47,7 +65,7 @@
                             @{
                                 string sleepEndValue = Model.SleepItem.SleepEnd.ToString(longDateTimeFormat);
                             }
-                            <input id="sleep-end-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepEnd" value="@sleepEndValue" />
+                            <input id="sleep-end-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepEnd" value="@sleepEndValue"/>
                         </div>
                     </div>
                 </div>
@@ -67,10 +85,10 @@
             <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.SleepItem.SleepId"></div>
             <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
             <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
-            <input asp-for="SleepItem.ProgenyId" value="@Model.SleepItem.ProgenyId" type="hidden" />
-            <input asp-for="SleepItem.CreatedDate" value="@Model.SleepItem.CreatedDate" type="hidden" />
-            <input asp-for="SleepItem.SleepId" value="@Model.SleepItem.SleepId" type="hidden" />
-            <input asp-for="SleepItem.Author" value="@Model.SleepItem.Author" type="hidden" />
+            <input asp-for="SleepItem.ProgenyId" value="@Model.SleepItem.ProgenyId" type="hidden"/>
+            <input asp-for="SleepItem.CreatedDate" value="@Model.SleepItem.CreatedDate" type="hidden"/>
+            <input asp-for="SleepItem.SleepId" value="@Model.SleepItem.SleepId" type="hidden"/>
+            <input asp-for="SleepItem.Author" value="@Model.SleepItem.Author" type="hidden"/>
             <div class="form-group">
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">

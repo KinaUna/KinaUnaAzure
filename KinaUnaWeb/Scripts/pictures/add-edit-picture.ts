@@ -5,6 +5,7 @@ import { Picture, PictureViewModel, TimelineItem, TimeLineType } from '../page-m
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
 import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
 import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat: string;
@@ -15,7 +16,6 @@ let fileList: File[] = [];
 let notSupportedFiles: File[] = [];
 declare var copyLocationList: any;
 let imagesLoaded = 0;
-let permissionsEditorTimelineItem = new TimelineItem();
 
 /**
  * Configures the date time picker for the picture date input field.
@@ -36,29 +36,6 @@ async function setupDateTimePicker(): Promise<void> {
             show_select_today: zebraDatePickerTranslations.todayString,
             select_other_months: true
         });
-    }
-
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
-
-/**
- * Sets up the Progeny select list and adds an event listener to update the tags and location auto suggest lists when the selected Progeny changes.
- */
-function setupProgenySelectList(): void {
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
-    }
-}
-
-async function onProgenySelectListChanged(): Promise<void> {
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = parseInt(progenyIdSelect.value);
-        await setTagsAutoSuggestList([currentProgenyId], []);
-        await setLocationAutoSuggestList([currentProgenyId], []);
     }
 
     return new Promise<void>(function (resolve, reject) {
@@ -633,23 +610,15 @@ export async function initializeAddEditPicture(itemId: string): Promise<void> {
     imagesLoaded = 0;
 
     await setupDateTimePicker();
-    
-    setupProgenySelectList();
-    await setTagsAutoSuggestList([currentProgenyId], []);
-    await setLocationAutoSuggestList([currentProgenyId], []);
+
+    await setupForIndividualOrFamilyButtons(itemId, TimeLineType.Photo, currentProgenyId, 0);
 
     addCopyLocationButtonEventListener();
     addFileInputEventListener();
     addDropEventListener();
     addOverrideSubmitEvent();
     setAddItemButtonEventListeners();
-
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.Photo;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = 0;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
-
+        
     ($(".selectpicker") as any).selectpicker('refresh');
 
     return new Promise<void>(function (resolve, reject) {

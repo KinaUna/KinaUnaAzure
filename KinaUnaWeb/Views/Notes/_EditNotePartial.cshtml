@@ -5,6 +5,7 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Edit note", PageNames.Notes, Model.LanguageId);
+    string noteForString = await LocaleManager.GetTranslation("Note for", PageNames.Notes, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
@@ -25,10 +26,27 @@
         </div>
         <form id="save-item-form" asp-action="EditNote" asp-controller="Notes" role="form" method="post">
             <div class="space-20"></div>
+            <div class="form-group d-none">
+                <label class="col-auto control-label">@noteForString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
+            {
+                <div id="individual-select-from-group" class="form-group">
+                    <label asp-for="NoteItem.ProgenyId" class="col-auto control-label">@noteForString </label>
+                    <div class="col-auto">
+                        <select id="item-progeny-id-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="NoteItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                    </div>
+                </div>
+            }
+            <div class="space-20"></div>
             <div class="form-group">
                 <label asp-for="NoteItem.Title" class="col-auto control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="NoteItem.Title" class="form-control" value="@Model.NoteItem.Title" />
+                    <input asp-for="NoteItem.Title" class="form-control" value="@Model.NoteItem.Title"/>
                 </div>
             </div>
             <div class="form-group">
@@ -37,14 +55,14 @@
                     @{
                         string[] toolbarItems = new[]
                         {
-                                        "Bold", "Italic", "Underline", "StrikeThrough",
-                                        "FontName", "FontSize", "FontColor", "BackgroundColor",
-                                        "LowerCase", "UpperCase", "|",
-                                        "Formats", "Alignments", "OrderedList", "UnorderedList",
-                                        "Outdent", "Indent", "|",
-                                        "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
-                                        "SourceCode", "FullScreen", "|", "Undo", "Redo"
-                                        };
+                            "Bold", "Italic", "Underline", "StrikeThrough",
+                            "FontName", "FontSize", "FontColor", "BackgroundColor",
+                            "LowerCase", "UpperCase", "|",
+                            "Formats", "Alignments", "OrderedList", "UnorderedList",
+                            "Outdent", "Indent", "|",
+                            "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
+                            "SourceCode", "FullScreen", "|", "Undo", "Redo"
+                        };
                     }
                     <ejs-richtexteditor id="content-rich-text-editor" ejs-for="NoteItem.Content" height="300px" enableResize="true">
                         <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
@@ -58,14 +76,14 @@
             <div class="form-group">
                 <label asp-for="NoteItem.Category" class="col-auto control-label">@await LocaleManager.GetTranslation("Category", PageNames.Notes, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="category-input" asp-for="NoteItem.Category" class="form-control" value="@Model.NoteItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Notes, Model.LanguageId)" />
+                    <input id="category-input" asp-for="NoteItem.Category" class="form-control" value="@Model.NoteItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Notes, Model.LanguageId)"/>
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="NoteItem.CreatedDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Date and time", PageNames.Notes, Model.LanguageId)</label>
                 <div class="col-auto">
                     <div class="input-group date">
-                        <input id="note-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="NoteItem.CreatedDate" value="@Model.NoteItem.CreatedDate.ToString(longDateTimeFormat)" />
+                        <input id="note-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="NoteItem.CreatedDate" value="@Model.NoteItem.CreatedDate.ToString(longDateTimeFormat)"/>
                     </div>
                 </div>
             </div>
@@ -73,9 +91,9 @@
             <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
             <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
-            <input asp-for="NoteItem.ProgenyId" value="@Model.NoteItem.ProgenyId" type="hidden" />
-            <input asp-for="NoteItem.NoteId" value="@Model.NoteItem.NoteId" type="hidden" />
-            <input asp-for="NoteItem.Owner" value="@Model.NoteItem.Owner" type="hidden" />
+            <input asp-for="NoteItem.ProgenyId" value="@Model.NoteItem.ProgenyId" type="hidden"/>
+            <input asp-for="NoteItem.NoteId" value="@Model.NoteItem.NoteId" type="hidden"/>
+            <input asp-for="NoteItem.Owner" value="@Model.NoteItem.Owner" type="hidden"/>
             <div class="form-group">
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">

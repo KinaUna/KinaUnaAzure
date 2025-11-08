@@ -8,7 +8,6 @@ using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -259,28 +258,6 @@ namespace KinaUnaWeb.Controllers
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
             
-            List<string> tagsList = [];
-            foreach (SelectListItem item in model.ProgenyList)
-            {
-                if (!int.TryParse(item.Value, out int progenyId)) continue;
-
-                List<Friend> friendsList = await friendsHttpClient.GetFriendsList(progenyId);
-                foreach (Friend friend in friendsList)
-                {
-                    if (string.IsNullOrEmpty(friend.Tags)) continue;
-
-                    List<string> friendTagsList = [.. friend.Tags.Split(',')];
-                    foreach (string tagstring in friendTagsList)
-                    {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
-                    }
-                }
-            }
-            
-            model.SetTagList(tagsList);
             model.SetFriendTypeList();
             
             return PartialView("_AddFriendPartial", model);
@@ -359,24 +336,10 @@ namespace KinaUnaWeb.Controllers
             friend.PictureLink = friend.GetProfilePictureUrl();
 
             model.SetPropertiesFromFriendItem(friend);
-            
-            List<string> tagsList = [];
-            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId);
-            foreach (Friend friendItem in friendsList)
-            {
-                if (string.IsNullOrEmpty(friendItem.Tags)) continue;
 
-                List<string> friendTagsList = [.. friendItem.Tags.Split(',')];
-                foreach (string tagstring in friendTagsList)
-                {
-                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                    {
-                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                    }
-                }
-            }
-            
-            model.SetTagList(tagsList);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(friend.ProgenyId);
+            model.SetProgenyList();
+
             model.SetFriendTypeList();
 
             return PartialView("_EditFriendPartial", model);
@@ -509,24 +472,7 @@ namespace KinaUnaWeb.Controllers
             friend.PictureLink = friend.GetProfilePictureUrl();
 
             model.SetPropertiesFromFriendItem(friend);
-
-            List<string> tagsList = [];
-            List<Friend> friendsList1 = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId);
-            foreach (Friend friendItem in friendsList1)
-            {
-                if (string.IsNullOrEmpty(friendItem.Tags)) continue;
-
-                List<string> friendTagsList = [.. friendItem.Tags.Split(',')];
-                foreach (string tagstring in friendTagsList)
-                {
-                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                    {
-                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                    }
-                }
-            }
-
-            model.SetTagList(tagsList);
+            
             model.SetFriendTypeList();
 
             return PartialView("_CopyFriendPartial", model);

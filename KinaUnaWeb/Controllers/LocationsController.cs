@@ -368,8 +368,12 @@ namespace KinaUnaWeb.Controllers
             {
                 HereMapsApiKey = _hereMapsApiKey
             };
-            
-            
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(location.ProgenyId);
+            model.SetProgenyList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList(location.FamilyId);
+            model.SetFamilyList();
+
             model.SetPropertiesFromLocation(location, model.CurrentUser.Timezone);
             
             return PartialView("_EditLocationPartial", model);

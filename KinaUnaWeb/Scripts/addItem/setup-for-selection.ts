@@ -1,4 +1,4 @@
-﻿import { setTagsAutoSuggestList, setContextAutoSuggestList, setLocationAutoSuggestList } from "../data-tools-v9.js";
+﻿import { setTagsAutoSuggestList, setContextAutoSuggestList, setLocationAutoSuggestList, setCategoriesAutoSuggestList, setVocabularyLanguagesAutoSuggestList } from "../data-tools-v9.js";
 import { renderItemPermissionsEditor } from "../item-permissions.js";
 import { TimelineItem, TimeLineType } from "../page-models-v9.js";
 
@@ -109,9 +109,12 @@ async function setupProgenySelectList(): Promise<void> {
         progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
         currentProgenyId = parseInt(progenyIdSelect.value);
         if (currentProgenyId > 0) {
-            setTagsAutoSuggestList([currentProgenyId], []);
-            setContextAutoSuggestList([currentProgenyId], []);
-            setLocationAutoSuggestList([currentProgenyId], []);
+            await setTagsAutoSuggestList([currentProgenyId], []);
+            await setContextAutoSuggestList([currentProgenyId], []);
+            await setLocationAutoSuggestList([currentProgenyId], []);
+            await setCategoriesAutoSuggestList([currentProgenyId], []);
+            await setVocabularyLanguagesAutoSuggestList([currentProgenyId]);
+
             currentFamilyId = 0;
             permissionsEditorTimelineItem.progenyId = currentProgenyId;
             permissionsEditorTimelineItem.familyId = currentFamilyId;
@@ -131,6 +134,7 @@ async function onProgenySelectListChanged(): Promise<void> {
     await setTagsAutoSuggestList([currentProgenyId], []);
     await setContextAutoSuggestList([currentProgenyId], []);
     await setLocationAutoSuggestList([currentProgenyId], []);
+    await setCategoriesAutoSuggestList([currentProgenyId], []);
 
     const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
     if (familyIdSelect !== null) {
@@ -156,9 +160,10 @@ async function setupFamilySelectList(): Promise<void> {
         familyIdSelect.addEventListener('change', onFamilySelectListChanged);
         currentFamilyId = parseInt(familyIdSelect.value);
         if (currentFamilyId > 0) {
-            setTagsAutoSuggestList([], [currentFamilyId]);
-            setContextAutoSuggestList([], [currentFamilyId]);
-            setLocationAutoSuggestList([], [currentFamilyId]);
+            await setTagsAutoSuggestList([], [currentFamilyId]);
+            await setContextAutoSuggestList([], [currentFamilyId]);
+            await setLocationAutoSuggestList([], [currentFamilyId]);
+            await setCategoriesAutoSuggestList([currentProgenyId], []);
             currentProgenyId = 0;
             permissionsEditorTimelineItem.progenyId = currentProgenyId;
             permissionsEditorTimelineItem.familyId = currentFamilyId;
@@ -178,6 +183,8 @@ async function onFamilySelectListChanged(): Promise<void> {
     await setTagsAutoSuggestList([], [currentFamilyId]);
     await setContextAutoSuggestList([], [currentFamilyId]);
     await setLocationAutoSuggestList([], [currentFamilyId]);
+    await setCategoriesAutoSuggestList([currentProgenyId], []);
+
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         currentProgenyId = 0;

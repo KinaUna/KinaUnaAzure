@@ -1,76 +1,11 @@
-﻿import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList, getCurrentItemProgenyId, getCurrentItemFamilyId } from '../data-tools-v9.js';
+﻿import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
+import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList, getCurrentItemProgenyId, getCurrentItemFamilyId } from '../data-tools-v9.js';
 import { renderItemPermissionsEditor } from '../item-permissions.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 
 let currentProgenyId: number;
 let currentFamilyId: number;
 let languageId = 1;
-let permissionsEditorTimelineItem = new TimelineItem();
-
-/**
- * Sets up the Progeny select list and adds an event listener to update the tags and categories auto suggest lists when the selected Progeny changes.
- */
-function setupProgenySelectList(): void {
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        progenyIdSelect.removeEventListener('change', onProgenySelectListChanged);
-        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
-    }
-}
-
-async function onProgenySelectListChanged(): Promise<void> {
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect === null) {
-        return new Promise<void>(function (resolve, reject) {
-            resolve();
-        });
-    }
-    currentProgenyId = parseInt(progenyIdSelect.value);
-    await setTagsAutoSuggestList([currentProgenyId], []);
-    await setContextAutoSuggestList([currentProgenyId], []);
-    await setLocationAutoSuggestList([currentProgenyId], []);
-    const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
-    if (familyIdSelect !== null) {
-        currentFamilyId = 0;
-        familyIdSelect.value = '0';
-        // Deselect all items in the selectpicker.
-        familyIdSelect.selectedIndex = -1;
-    }
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
-
-function setupFamilySelectList(): void {
-    const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
-    if (familyIdSelect !== null) {
-        familyIdSelect.removeEventListener('change', onFamilySelectListChanged);
-        familyIdSelect.addEventListener('change', onFamilySelectListChanged);
-    }
-}
-
-async function onFamilySelectListChanged(): Promise<void> {
-    const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
-    if (familyIdSelect === null) {
-        return new Promise<void>(function (resolve, reject) {
-            resolve();
-        });
-    }
-    currentFamilyId = parseInt(familyIdSelect.value);
-    await setTagsAutoSuggestList([], [currentFamilyId]);
-    await setContextAutoSuggestList([], [currentFamilyId]);
-    await setLocationAutoSuggestList([], [currentFamilyId]);
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = 0;
-        progenyIdSelect.value = '0';
-        // Deselect all items in the selectpicker.
-        progenyIdSelect.selectedIndex = -1;
-    }
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
 
 /**
  * Sets up the Rich Text Editor for the KanbanBoard description field and adds event listeners for image upload success and editor creation.
@@ -190,13 +125,7 @@ export async function initializeAddEditKanbanBoard(itemId: string): Promise<void
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentItemProgenyId();
     currentFamilyId = getCurrentItemFamilyId();
-
-    setupProgenySelectList();
-    setupFamilySelectList();
-    await setTagsAutoSuggestList([currentProgenyId], []);
-    await setContextAutoSuggestList([currentProgenyId], []);
-    await setLocationAutoSuggestList([currentProgenyId], []);
-    
+        
     setupRichTextEditor();
 
     const titleInput = document.getElementById('kanban-board-title-input') as HTMLInputElement;
@@ -204,12 +133,8 @@ export async function initializeAddEditKanbanBoard(itemId: string): Promise<void
         titleInput.addEventListener('input', validateInputs);
     }
 
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.KanbanBoard;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = currentFamilyId;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
-        
+    await setupForIndividualOrFamilyButtons(itemId, TimeLineType.KanbanBoard, currentProgenyId, currentFamilyId);
+    
     ($(".selectpicker") as any).selectpicker('refresh');
 
     validateInputs();

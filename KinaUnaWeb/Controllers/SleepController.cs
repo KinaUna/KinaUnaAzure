@@ -168,7 +168,10 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId, 0, false);
             SleepViewModel model = new(baseModel);
-            
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(sleep.ProgenyId);
+            model.SetProgenyList();
+
             model.SetPropertiesFromSleepItem(sleep);
             model.SetRatingList();
             

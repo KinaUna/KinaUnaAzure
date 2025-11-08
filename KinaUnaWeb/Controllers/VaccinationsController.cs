@@ -142,7 +142,10 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId, 0, false);
             VaccinationViewModel model = new(baseModel);
-            
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(vaccination.ProgenyId);
+            model.SetProgenyList();
+
             model.SetPropertiesFromVaccinationItem(vaccination);
 
             return PartialView("_EditVaccinationPartial", model);

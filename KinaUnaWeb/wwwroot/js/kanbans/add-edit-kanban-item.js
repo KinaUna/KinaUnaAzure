@@ -1,13 +1,12 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, setLocationAutoSuggestList, getCurrentItemFamilyId, getCurrentItemProgenyId } from '../data-tools-v9.js';
-import { TimelineItem, TimeLineType } from '../page-models-v9.js';
-import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, validateDateValue, getCurrentItemFamilyId, getCurrentItemProgenyId } from '../data-tools-v9.js';
+import { TimeLineType } from '../page-models-v9.js';
+import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat;
 let currentProgenyId;
 let currentFamilyId;
-let permissionsEditorTimelineItem = new TimelineItem();
 /**
  * Configures the date time picker for the todo due date and start date input fields.
  */
@@ -61,67 +60,6 @@ async function setupDateTimePicker() {
         });
     }
     ;
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
-/**
- * Sets up the Progeny select list and adds an event listener to update the tags and categories auto suggest lists when the selected Progeny changes.
- */
-function setupProgenySelectList() {
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        progenyIdSelect.removeEventListener('change', onProgenySelectListChanged);
-        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
-    }
-}
-async function onProgenySelectListChanged() {
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect === null) {
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
-    }
-    currentProgenyId = parseInt(progenyIdSelect.value);
-    await setTagsAutoSuggestList([currentProgenyId], []);
-    await setContextAutoSuggestList([currentProgenyId], []);
-    await setLocationAutoSuggestList([currentProgenyId], []);
-    const familyIdSelect = document.querySelector('#item-family-id-select');
-    if (familyIdSelect !== null) {
-        currentFamilyId = 0;
-        familyIdSelect.value = '0';
-        // Deselect all items in the selectpicker.
-        familyIdSelect.selectedIndex = -1;
-    }
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
-function setupFamilySelectList() {
-    const familyIdSelect = document.querySelector('#item-family-id-select');
-    if (familyIdSelect !== null) {
-        familyIdSelect.removeEventListener('change', onFamilySelectListChanged);
-        familyIdSelect.addEventListener('change', onFamilySelectListChanged);
-    }
-}
-async function onFamilySelectListChanged() {
-    const familyIdSelect = document.querySelector('#item-family-id-select');
-    if (familyIdSelect === null) {
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
-    }
-    currentFamilyId = parseInt(familyIdSelect.value);
-    await setTagsAutoSuggestList([], [currentFamilyId]);
-    await setContextAutoSuggestList([], [currentFamilyId]);
-    await setLocationAutoSuggestList([], [currentFamilyId]);
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = 0;
-        progenyIdSelect.value = '0';
-        // Deselect all items in the selectpicker.
-        progenyIdSelect.selectedIndex = -1;
-    }
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -267,21 +205,13 @@ export async function initializeAddEditKanbanItem(containerElementId, itemId) {
     currentProgenyId = getCurrentItemProgenyId();
     currentFamilyId = getCurrentItemFamilyId();
     await setupDateTimePicker();
-    setupProgenySelectList();
-    await setTagsAutoSuggestList([currentProgenyId], []);
-    await setContextAutoSuggestList([currentProgenyId], []);
-    await setLocationAutoSuggestList([currentProgenyId], []);
-    $(".selectpicker").selectpicker('refresh');
     setupRichTextEditor(containerElementId);
     const titleInput = document.getElementById('todo-title-input');
     if (titleInput) {
         titleInput.addEventListener('input', validateInputs);
     }
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.TodoItem;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = currentFamilyId;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+    await setupForIndividualOrFamilyButtons(itemId, TimeLineType.KanbanItem, currentProgenyId, currentFamilyId);
+    $(".selectpicker").selectpicker('refresh');
     validateInputs();
     return new Promise(function (resolve, reject) {
         resolve();

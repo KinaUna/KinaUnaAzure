@@ -1,7 +1,7 @@
 import * as LocaleHelper from '../localization-v9.js';
 import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
-import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat;
@@ -53,14 +53,7 @@ export async function initializeAddEditFriend(itemId) {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentItemProgenyId();
     await setupDateTimePicker();
-    await setTagsAutoSuggestList([currentProgenyId], []);
-    await setContextAutoSuggestList([currentProgenyId], []);
-    setupProgenySelectList();
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.Friend;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = 0;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+    await setupForIndividualOrFamilyButtons(itemId, TimeLineType.Friend, currentProgenyId, 0);
     $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve, reject) {
         resolve();

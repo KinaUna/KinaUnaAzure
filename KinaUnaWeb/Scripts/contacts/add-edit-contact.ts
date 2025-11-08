@@ -2,6 +2,7 @@
 import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemFamilyId, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
@@ -102,16 +103,8 @@ export async function initializeAddEditContact(itemId: string): Promise<void> {
     currentFamilyId = getCurrentItemFamilyId();
 
     await setupDateTimePicker();
-    await setTagsAutoSuggestList([currentProgenyId], []);
-    await setContextAutoSuggestList([currentProgenyId], []);
-    setupProgenySelectList();
-    setupFamilySelectList();
 
-    permissionsEditorTimelineItem.itemId = itemId;
-    permissionsEditorTimelineItem.itemType = TimeLineType.Contact;
-    permissionsEditorTimelineItem.progenyId = currentProgenyId;
-    permissionsEditorTimelineItem.familyId = currentFamilyId;
-    await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+    await setupForIndividualOrFamilyButtons(itemId, TimeLineType.Contact, currentProgenyId, currentFamilyId);
 
     ($(".selectpicker") as any).selectpicker('refresh');
 
