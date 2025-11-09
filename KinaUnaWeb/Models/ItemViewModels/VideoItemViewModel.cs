@@ -30,7 +30,12 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public bool PartialView { get; set; }
         public string HereMapsApiKey { get; init; } = "";
         public int VideoNumber { get; internal set; }
-        
+
+        public VideoItemViewModel()
+        {
+            ProgenyList = [];
+        }
+
         public VideoItemViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
@@ -59,6 +64,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             VideoCount = videoViewModel.VideoCount;
             PrevVideo = videoViewModel.PrevVideo;
             NextVideo = videoViewModel.NextVideo;
+            Video.ItemPerMission = videoViewModel.ItemPerMission;
             CommentsList = videoViewModel.CommentsList;
             CommentsCount = CommentsList?.Count ?? 0;
             TagFilter = videoViewModel.TagFilter;
@@ -97,9 +103,26 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Video.VideoId = video.VideoId;
             Video.ThumbLink = video.ThumbLink;
             Video.VideoTime = video.VideoTime;
+            Video.ItemPerMission = video.ItemPerMission;
             if (video.VideoTime.HasValue)
             {
                 Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+            }
+        }
+
+        public void SetProgenyList()
+        {
+            Video.ProgenyId = CurrentProgenyId;
+            foreach (SelectListItem item in ProgenyList)
+            {
+                if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
             }
         }
     }

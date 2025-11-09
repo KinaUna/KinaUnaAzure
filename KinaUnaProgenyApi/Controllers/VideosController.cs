@@ -172,7 +172,8 @@ namespace KinaUnaProgenyApi.Controllers
                 VideoLink = video.VideoLink,
                 ThumbLink = video.ThumbLink,
                 AccessLevel = video.AccessLevel,
-                Author = video.Author
+                Author = video.Author,
+                ItemPerMission = video.ItemPerMission
             };
             model.CommentThreadNumber = video.CommentThreadNumber;
             model.Tags = video.Tags;
@@ -271,9 +272,9 @@ namespace KinaUnaProgenyApi.Controllers
             string tagItems = "[";
             if (tagsList.Count != 0)
             {
-                foreach (string tagstring in tagsList)
+                foreach (string tagString in tagsList)
                 {
-                    tagItems = tagItems + "'" + tagstring + "',";
+                    tagItems = tagItems + "'" + tagString + "',";
                 }
 
                 tagItems = tagItems[..^1];

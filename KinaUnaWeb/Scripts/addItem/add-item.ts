@@ -614,6 +614,10 @@ async function popupPreviousItem(buttonClicked: HTMLElement): Promise<void> {
         if (previousItemType === 'picture') {
             await popupPictureDetails(previousItemId);
         }
+
+        if (previousItemType === 'video') {
+            await popupVideoDetails(previousItemId);
+        }
     }
     else {
         const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');

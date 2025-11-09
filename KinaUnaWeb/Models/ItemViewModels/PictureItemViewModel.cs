@@ -102,5 +102,21 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
             }
         }
+
+        public void SetProgenyList()
+        {
+            Picture.ProgenyId = CurrentProgenyId;
+            foreach (SelectListItem item in ProgenyList)
+            {
+                if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
     }
 }

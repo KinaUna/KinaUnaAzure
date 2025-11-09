@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using KinaUna.Data.Models.AccessManagement;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 
@@ -39,7 +40,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int VideoCount { get; init; }
         public int PrevVideo { get; init; }
         public int NextVideo { get; init; }
-
+        public TimelineItemPermission ItemPerMission { get; set; }
         public string VidTime { get; init; } = string.Empty;
         public bool VidTimeValid { get; init; }
         public string VidYears { get; init; } = string.Empty;
@@ -48,5 +49,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string VidDays { get; init; } = string.Empty;
         public string VidHours { get; init; } = string.Empty;
         public string VidMinutes { get; init; } = string.Empty;
+
     }
 }

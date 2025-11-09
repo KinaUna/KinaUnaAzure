@@ -182,7 +182,7 @@ namespace KinaUnaWeb.Controllers
             VideoViewModel videoViewModel = await mediaHttpClient.GetVideoViewModel(request);
 
             model.SetPropertiesFromVideoViewModel(videoViewModel);
-
+            
             if (model.CommentsCount > 0)
             {
                 foreach (Comment comment in model.CommentsList)
@@ -195,18 +195,6 @@ namespace KinaUnaWeb.Controllers
                     }
 
                     comment.DisplayName = commentAuthor.FullName();
-                }
-            }
-            if (model.Video.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
-            {
-                model.ProgenyLocations = [];
-                foreach (Progeny progeny in model.CurrentUser.ProgenyList)
-                {
-                    List<Location> locations = await locationsHttpClient.GetProgenyLocations(progeny.Id);
-                    if (locations != null)
-                    {
-                        model.ProgenyLocations.AddRange(locations);
-                    }
                 }
             }
             
@@ -236,6 +224,7 @@ namespace KinaUnaWeb.Controllers
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
+
             model.Video.Owners = model.CurrentUser.UserEmail;
             model.Video.Author = model.CurrentUser.UserId;
             model.Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
@@ -288,6 +277,33 @@ namespace KinaUnaWeb.Controllers
             return PartialView(model);
         }
 
+        public async Task<IActionResult> EditVideo(int itemId)
+        {
+            Video video = await mediaHttpClient.GetVideo(itemId, Constants.DefaultTimezone);
+            if (video == null || video.ProgenyId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), video.ProgenyId, 0, false);
+            VideoItemViewModel model = new(baseModel)
+            {
+                HereMapsApiKey = _hereMapsApiKey,
+                PartialView = true,
+                Video = video
+            };
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(video.ProgenyId);
+            model.SetProgenyList();
+
+            model.Video.Progeny = await progenyHttpClient.GetProgeny(model.Video.ProgenyId);
+            model.Video.Progeny.PictureLink = model.Video.Progeny.GetProfilePictureUrl();
+
+            model.ProgenyLocations = await locationsHttpClient.GetLocationsList(model.Video.ProgenyId, 0);
+
+            return PartialView("_EditVideoPartial", model);
+        }
+
         /// <summary>
         /// HttpPost method for updating a Video.
         /// </summary>
@@ -298,6 +314,9 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditVideo(VideoItemViewModel model)
         {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Video.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+
             Video videoToUpdate = await mediaHttpClient.GetVideo(model.Video.VideoId, model.CurrentUser.Timezone);
             if (videoToUpdate == null || videoToUpdate.VideoId == 0)
             {
@@ -308,9 +327,6 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_AccessDeniedPartial");
             }
-
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Video.ProgenyId, 0, false);
-            model.SetBaseProperties(baseModel);
             
             videoToUpdate.CopyPropertiesForUpdate(model.Video, true);
             
@@ -323,7 +339,41 @@ namespace KinaUnaWeb.Controllers
 
             if (model.PartialView)
             {
-                return Json(model);
+                VideoItemViewModel videoModel = new(baseModel)
+                {
+                    HereMapsApiKey = _hereMapsApiKey,
+                    PartialView = true
+                };
+
+                VideoViewModelRequest request = new VideoViewModelRequest()
+                {
+                    VideoId = model.Video.VideoId,
+                    TimeZone = model.CurrentUser.Timezone,
+                    TagFilter = model.TagFilter,
+                    SortOrder = model.SortBy,
+                    Progenies = [model.Video.ProgenyId]
+                };
+
+                VideoViewModel videoViewModel = await mediaHttpClient.GetVideoViewModel(request);
+
+                videoModel.SetPropertiesFromVideoViewModel(videoViewModel);
+
+                if (videoModel.CommentsCount > 0)
+                {
+                    foreach (Comment comment in videoModel.CommentsList)
+                    {
+                        UserInfo commentAuthor = await userInfosHttpClient.GetUserInfoByUserId(comment.Author);
+                        if (commentAuthor == null) continue;
+                        if (commentAuthor.ProfilePicture != null)
+                        {
+                            comment.AuthorImage = commentAuthor.GetProfilePictureUrl();
+                        }
+
+                        comment.DisplayName = commentAuthor.FullName();
+                    }
+                }
+
+                return PartialView("_VideoDetailsPartial", videoModel);
             }
 
             return RedirectToRoute(new { controller = "Videos", action = "Video", id = model.Video.VideoId, childId = model.Video.ProgenyId, tagFilter = model.TagFilter, sortBy = model.SortBy });

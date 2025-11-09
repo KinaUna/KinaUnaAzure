@@ -33,25 +33,13 @@ async function setupDateTimePicker() {
         resolve();
     });
 }
-/**
- * Sets up the Edit button and adds an event listener to toggle show/hide edit section.
- */
-function setupEditButton() {
-    toggleEditButton = document.querySelector('#toggle-edit-button');
-    if (toggleEditButton !== null) {
-        $("#toggle-edit-button").on('click', function () {
-            $("#edit-section").toggle(500);
-        });
-    }
-}
 export async function initializeAddEditVideo(itemId) {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentItemProgenyId();
     await setupDateTimePicker();
-    addCopyLocationButtonEventListener();
-    setupEditButton();
-    setAddItemButtonEventListeners();
     await setupForIndividualOrFamilyButtons(itemId, TimeLineType.Video, currentProgenyId, 0);
+    addCopyLocationButtonEventListener();
+    setAddItemButtonEventListeners();
     $(".selectpicker").selectpicker('refresh');
     return new Promise(function (resolve, reject) {
         resolve();

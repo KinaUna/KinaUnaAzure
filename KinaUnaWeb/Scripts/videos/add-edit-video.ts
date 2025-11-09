@@ -40,30 +40,17 @@ async function setupDateTimePicker(): Promise<void> {
     });
 }
 
-/**
- * Sets up the Edit button and adds an event listener to toggle show/hide edit section.
- */
-function setupEditButton(): void {
-    toggleEditButton = document.querySelector<HTMLButtonElement>('#toggle-edit-button');
-    if (toggleEditButton !== null) {
-        $("#toggle-edit-button").on('click', function () {
-            $("#edit-section").toggle(500);
-        });
-    }
-}
-
 export async function initializeAddEditVideo(itemId: string): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentItemProgenyId();
 
     await setupDateTimePicker();
 
-    addCopyLocationButtonEventListener();
-    setupEditButton();
-    setAddItemButtonEventListeners();
-
     await setupForIndividualOrFamilyButtons(itemId, TimeLineType.Video, currentProgenyId, 0);
-    
+
+    addCopyLocationButtonEventListener();
+    setAddItemButtonEventListeners();
+        
     ($(".selectpicker") as any).selectpicker('refresh');
 
     return new Promise<void>(function (resolve, reject) {

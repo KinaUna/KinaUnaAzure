@@ -445,6 +445,8 @@ namespace KinaUnaWeb.Controllers
             
             model.ProgenyLocations = await locationsHttpClient.GetLocationsList(model.Picture.ProgenyId, 0);
 
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.Picture.ProgenyId);
+            model.SetProgenyList();
             return PartialView("_EditPicturePartial", model);
         }
 

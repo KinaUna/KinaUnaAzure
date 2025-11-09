@@ -13,6 +13,7 @@ import { initializeAddEditSkill } from "../skills/add-edit-skill.js";
 import { initializeAddEditSleep } from "../sleep/add-edit-sleep.js";
 import { initializeAddEditVaccination } from "../vaccinations/add-edit-vaccination.js";
 import { initializeAddEditVideo } from "../videos/add-edit-video.js";
+import { popupVideoDetails } from "../videos/video-details.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary.js";
 import { initializeAddEditTodo } from "../todos/add-edit-todo.js";
 import { TimelineChangedEvent } from "../data-tools-v9.js";
@@ -513,6 +514,9 @@ async function popupPreviousItem(buttonClicked) {
         }
         if (previousItemType === 'picture') {
             await popupPictureDetails(previousItemId);
+        }
+        if (previousItemType === 'video') {
+            await popupVideoDetails(previousItemId);
         }
     }
     else {

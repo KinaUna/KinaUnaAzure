@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using KinaUna.Data.Models;
+﻿using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
 
 namespace KinaUnaProgenyApi.Models.ViewModels
 {
@@ -45,7 +46,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         public int VideoCount { get; set; }
         public int PrevVideo { get; set; }
         public int NextVideo { get; set; }
-
+        public TimelineItemPermission ItemPerMission { get; set; }
 
         public void SetVideoPropertiesFromVideoItem(Video video)
         {
