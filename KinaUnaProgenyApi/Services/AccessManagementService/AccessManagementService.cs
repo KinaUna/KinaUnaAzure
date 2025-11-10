@@ -2197,15 +2197,32 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 IEnumerable<TimelineItemPermission> inheritedPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
                     .Where(tp => tp.ProgenyId == progenyId && tp.InheritPermissions && tp.TimelineType == type);
-                timelineItemPermissions.AddRange(inheritedPermissions);
+                if (inheritedPermissions.Any())
+                {
+                    ProgenyPermission progenyPermission = await GetProgenyPermissionForUser(progenyId, userInfo);
+                    foreach (TimelineItemPermission timelineItemPermission in inheritedPermissions)
+                    {
+                        timelineItemPermission.PermissionLevel = progenyPermission.PermissionLevel;
+                        timelineItemPermissions.Add(timelineItemPermission);
+                    }
+                }
             }
 
             IEnumerable<int> familiesUserCanAccess = await FamiliesUserCanAccess(userInfo, PermissionLevel.View);
             foreach (int familyId in familiesUserCanAccess)
             {
+                
                 IEnumerable<TimelineItemPermission> inheritedPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
                     .Where(tp => tp.FamilyId == familyId && tp.InheritPermissions && tp.TimelineType == type);
-                timelineItemPermissions.AddRange(inheritedPermissions);
+                if (inheritedPermissions.Any())
+                {
+                    FamilyPermission familyPermission = await GetFamilyPermissionForUser(familyId, userInfo);
+                    foreach (TimelineItemPermission timelineItemPermission in inheritedPermissions)
+                    {
+                        timelineItemPermission.PermissionLevel = familyPermission.PermissionLevel;
+                        timelineItemPermissions.Add(timelineItemPermission);
+                    }
+                }
             }
 
             foreach (TimelineItemPermission timelineItemPermission in timelineItemPermissions)

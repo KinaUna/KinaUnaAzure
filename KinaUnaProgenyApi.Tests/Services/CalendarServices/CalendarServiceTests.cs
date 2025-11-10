@@ -7,7 +7,6 @@ using KinaUnaProgenyApi.Services.CalendarServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -18,8 +17,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
         private readonly Mock<ICalendarRecurrencesService> _mockCalendarRecurrencesService;
         private readonly Mock<IAccessManagementService> _mockAccessManagementService;
         private readonly IDistributedCache _memoryCache;
-        private readonly Mock<IServiceScopeFactory> _mockServiceScopeFactory = new();
-
+        
         public CalendarServiceTests()
         {
             _mockCalendarRecurrencesService = new Mock<ICalendarRecurrencesService>();
@@ -75,7 +73,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetCalendarItem(1, userInfo);
@@ -97,7 +95,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
                 .ReturnsAsync(false);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetCalendarItem(1, userInfo);
@@ -132,7 +130,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result1 = await service.GetCalendarItem(1, userInfo);
@@ -171,7 +169,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .Returns(Task.CompletedTask);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.AddCalendarItem(newItem, userInfo);
@@ -206,7 +204,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .Returns(Task.CompletedTask);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.AddCalendarItem(newItem, userInfo);
@@ -230,7 +228,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 Title = "Invalid Event"
             };
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.AddCalendarItem(newItem, userInfo);
@@ -255,7 +253,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             _mockAccessManagementService.Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
                 .ReturnsAsync(false);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.AddCalendarItem(newItem, userInfo);
@@ -293,7 +291,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .Returns(Task.CompletedTask);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.AddCalendarItem(newItem, userInfo);
@@ -344,7 +342,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .ReturnsAsync(new List<TimelineItemPermission>());
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.UpdateCalendarItem(updatedItem, userInfo);
@@ -372,7 +370,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.Edit))
                 .ReturnsAsync(false);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.UpdateCalendarItem(updatedItem, userInfo);
@@ -426,7 +424,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .ReturnsAsync(new List<TimelineItemPermission>());
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.UpdateCalendarItem(updatedItem, userInfo);
@@ -481,7 +479,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .ReturnsAsync(new List<TimelineItemPermission>());
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.UpdateCalendarItem(updatedItem, userInfo);
@@ -540,7 +538,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 It.IsAny<List<ItemPermissionDto>>(), userInfo))
                 .ReturnsAsync(new List<TimelineItemPermission>());
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.UpdateCalendarItem(updatedItem, userInfo);
@@ -576,7 +574,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.Admin))
                 .ReturnsAsync(true);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.DeleteCalendarItem(itemToDelete, userInfo);
@@ -605,7 +603,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.Admin))
                 .ReturnsAsync(false);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.DeleteCalendarItem(itemToDelete, userInfo);
@@ -643,7 +641,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.Admin))
                 .ReturnsAsync(true);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.DeleteCalendarItem(itemToDelete, userInfo);
@@ -678,7 +676,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.Admin))
                 .ReturnsAsync(true);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.DeleteCalendarItem(itemToDelete, userInfo);
@@ -712,7 +710,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetCalendarList(1, 0, userInfo);
@@ -728,7 +726,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             // Arrange
             await using var context = GetInMemoryContext("GetCalendarList_NoIds");
             var userInfo = GetTestUserInfo();
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetCalendarList(0, 0, userInfo);
@@ -763,7 +761,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 1, 0, It.IsAny<DateTime>(), It.IsAny<DateTime>(), false, userInfo))
                 .ReturnsAsync(new List<CalendarItem>());
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetCalendarList(1, 0, userInfo, now.AddDays(-1), now.AddDays(1));
@@ -799,7 +797,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 1, 0, It.IsAny<DateTime>(), It.IsAny<DateTime>(), false, userInfo))
                 .ReturnsAsync(new List<CalendarItem> { recurringItem });
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetCalendarList(1, 0, userInfo, now.AddDays(-1), now.AddDays(2));
@@ -832,7 +830,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, 1, 1, 0, userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetCalendarList(1, 0, userInfo);
@@ -873,7 +871,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 1, 0, It.IsAny<DateTime>(), It.IsAny<DateTime>(), false, userInfo))
                 .ReturnsAsync(recurringEvents);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetRecurringCalendarItemsOnThisDay(1, 0, userInfo);
@@ -889,7 +887,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             // Arrange
             await using var context = GetInMemoryContext("GetRecurringCalendarItemsOnThisDay_NoRules");
             var userInfo = GetTestUserInfo();
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetRecurringCalendarItemsOnThisDay(1, 0, userInfo);
@@ -928,7 +926,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 1, 0, new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc), It.IsAny<DateTime>(), false, userInfo))
                 .ReturnsAsync(recurringEvents);
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetRecurringCalendarItemsLatestPosts(1, 0, userInfo);
@@ -944,7 +942,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             // Arrange
             await using var context = GetInMemoryContext("GetRecurringCalendarItemsLatestPosts_NoRules");
             var userInfo = GetTestUserInfo();
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetRecurringCalendarItemsLatestPosts(1, 0, userInfo);
@@ -978,7 +976,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetCalendarItemsWithContext(1, 0, "birthday", userInfo);
@@ -1008,7 +1006,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), userInfo, null))
                 .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             var result = await service.GetCalendarItemsWithContext(1, 0, null, userInfo);
@@ -1033,7 +1031,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarDb.AddRange(item1, item2, item3);
             await context.SaveChangesAsync();
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             await service.CheckCalendarItemsForUId();
@@ -1053,7 +1051,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarDb.Add(item);
             await context.SaveChangesAsync();
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             await service.CheckCalendarItemsForUId();
@@ -1073,7 +1071,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarDb.AddRange(item1, item2);
             await context.SaveChangesAsync();
 
-            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockServiceScopeFactory.Object);
+            var service = new CalendarService(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object);
 
             // Act
             await service.CheckCalendarItemsForUId();

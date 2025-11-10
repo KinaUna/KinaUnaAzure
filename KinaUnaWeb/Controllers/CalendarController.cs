@@ -132,8 +132,18 @@ namespace KinaUnaWeb.Controllers
                 model.CalendarItem.EndTime = model.CalendarItem.StartTime.Value + eventDuration;
             }
 
-            model.CalendarItem.Progeny = model.CurrentProgeny;
-            model.CalendarItem.Progeny.PictureLink = model.CalendarItem.Progeny.GetProfilePictureUrl();
+            if (model.CalendarItem.ProgenyId > 0)
+            {
+                model.CalendarItem.Progeny = model.CurrentProgeny;
+                model.CalendarItem.Progeny.PictureLink = model.CalendarItem.Progeny.GetProfilePictureUrl();
+            }
+
+            if (model.CalendarItem.FamilyId > 0)
+            {
+                model.CalendarItem.Family = model.CurrentFamily;
+                model.CalendarItem.Family.PictureLink = model.CalendarItem.Family.GetProfilePictureUrl();
+            }
+            
             model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
             
             List<CalendarReminder> calendarReminders = await calendarRemindersHttpClient.GetUsersCalendarRemindersForEvent(eventId, model.CurrentUser.UserId);

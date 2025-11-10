@@ -6,10 +6,8 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,9 +22,8 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly ICalendarRecurrencesService _calendarRecurrencesService;
         private readonly IAccessManagementService _accessManagementService;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public CalendarService(ProgenyDbContext context, IDistributedCache cache, ICalendarRecurrencesService calendarRecurrencesService, IAccessManagementService accessManagementService, IServiceScopeFactory serviceScopeFactory)
+        public CalendarService(ProgenyDbContext context, IDistributedCache cache, ICalendarRecurrencesService calendarRecurrencesService, IAccessManagementService accessManagementService)
         {
             _context = context;
             _accessManagementService = accessManagementService;
@@ -34,7 +31,6 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             _calendarRecurrencesService = calendarRecurrencesService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0)); // Expire after a week.
-            _serviceScopeFactory = serviceScopeFactory;
         }
 
         /// <summary>
@@ -356,24 +352,15 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 List<CalendarItem> recurringEvents = await GetRecurringEventsForProgenyOrFamily(progenyId, familyId, start.Value, end.Value, false, currentUserInfo);
                 calendarList.AddRange(recurringEvents);
             }
-
-            ConcurrentBag<CalendarItem> calendarItemsConcurrentBag = [];
-            ParallelOptions parallelOptions = new()
+            
+            List<CalendarItem> accessibleCalendarItems = [];
+            foreach (CalendarItem calendarItem in calendarList)
             {
-                MaxDegreeOfParallelism = 4
-            };
-            await Parallel.ForEachAsync(calendarList, parallelOptions, async (calendarItem, _) =>
-            {
-                using IServiceScope scope = _serviceScopeFactory.CreateScope();
-                IAccessManagementService accessManagementService = scope.ServiceProvider.GetRequiredService<IAccessManagementService>();
-                
-                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
                 {
-                    calendarItemsConcurrentBag.Add(calendarItem);
+                    accessibleCalendarItems.Add(calendarItem);
                 }
-            });
-
-            List<CalendarItem> accessibleCalendarItems = calendarItemsConcurrentBag.ToList();
+            }
             
             return accessibleCalendarItems;
 

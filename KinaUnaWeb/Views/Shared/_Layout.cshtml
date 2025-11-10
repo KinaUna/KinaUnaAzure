@@ -1,6 +1,7 @@
 ﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.Family
 @using KinaUnaWeb.Models.HomeViewModels
 @using KinaUnaWeb.Services
 @inject ILocaleManager LocaleManager;
@@ -10,12 +11,13 @@
     {
         Context.Response.Redirect("https://web.kinauna.com");
     }
-    
+
 
     KinaUnaLanguage kinaUnaLanguage = Context.Request.GetKinaUnaLanguage();
     int languageId = kinaUnaLanguage.Id;
     string languageCode = kinaUnaLanguage.Code;
-    List<Progeny> childList = new();
+    List<Progeny> childList = [];
+    List<Family> familiesList = [];
     Progeny child = new();
     UserInfo userInfo = new();
     bool showUndelete = false;
@@ -36,6 +38,7 @@
             {
                 childList = userInfo.ProgenyList;
                 child = userInfo.ProgenyList.SingleOrDefault(p => p.Id == userInfo.ViewChild);
+                familiesList = userInfo.FamilyList;
             }
         }
         else
@@ -187,6 +190,26 @@
 
                                 </div>
                             }
+                                @foreach (Family family in familiesList)
+                                {
+                                    <div class="dropdown-item">
+                                        <a class="btn btn-link btn-block text-white text-left ml-0 select-family-button" data-select-family-id="@family.FamilyId">
+                                            @{
+                                                string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
+                                                if (!string.IsNullOrWhiteSpace(family.PictureLink))
+                                                {
+                                                    string picLink2 = family.GetProfilePictureUrl();
+                                                    profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; width: 42px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px; object-fit: contain;\" /img> ";
+                                                }
+                                            }
+                                            @Html.Raw(profilePic2) @family.Name <span class="d-none family-check-span ml-2 text-success"><i class="material-icons">check</i></span>
+                                        </a>
+                                        <a class="btn btn-link text-white default-progeny-button" data-family-info-id="@family.FamilyId" style="width: 64px;">
+                                            <i class="material-icons" data-family-info-id="@family.FamilyId">info</i>
+                                        </a>
+
+                                    </div>
+                                }
                         </div>
                     </li>
                 }

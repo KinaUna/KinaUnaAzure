@@ -1,10 +1,11 @@
 const serviceWorkerVersion = 'v8';
 import { setAddItemButtonEventListeners } from './addItem/add-item.js';
 import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v9.js';
+import { addFamilyItemEventListenersForAllFamilies } from './families/family-details.js';
 import { startFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v9.js';
 import { SetProgenyRequest } from './page-models-v9.js';
 import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-details.js';
-import { getSelectedProgenies } from './settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from './settings-tools-v9.js';
 import { initSidebar } from './sidebar-v9.js';
 const serviceWorkerVersion_key = 'service_worker_version';
 /**
@@ -133,11 +134,16 @@ function showSelectProgenyDropdownWhenCurrentProgenyClicked() {
         }
     });
 }
-function setSelectProgenyButtonsEventListeners() {
+function setSelectProgenyAndFamilyButtonsEventListeners() {
     let selectProgenyButtons = document.querySelectorAll('.select-progeny-button');
     selectProgenyButtons.forEach(function (button) {
         button.removeEventListener('click', onSelectProgenyButtonClicked);
         button.addEventListener('click', onSelectProgenyButtonClicked);
+    });
+    let selectFamilyButtons = document.querySelectorAll('.select-family-button');
+    selectFamilyButtons.forEach(function (button) {
+        button.removeEventListener('click', onSelectFamilyButtonClicked);
+        button.addEventListener('click', onSelectFamilyButtonClicked);
     });
 }
 function onSelectProgenyButtonClicked(event) {
@@ -146,6 +152,13 @@ function onSelectProgenyButtonClicked(event) {
     selectedButton.classList.toggle('selected');
     setSelectedProgenies();
     getSelectedProgenies();
+}
+function onSelectFamilyButtonClicked(event) {
+    event.preventDefault();
+    let selectedButton = event.currentTarget;
+    selectedButton.classList.toggle('selected');
+    setSelectedFamilies();
+    getSelectedFamilies();
 }
 function setSelectedProgenies() {
     let selectedProgenyButtons = document.querySelectorAll('.select-progeny-button.selected');
@@ -172,6 +185,28 @@ function setSelectedProgenies() {
     localStorage.setItem('selectedProgenies', JSON.stringify(selectedProgenyIds));
     const selectedProgeniesChangedEvent = new Event('progeniesChanged');
     window.dispatchEvent(selectedProgeniesChangedEvent);
+}
+function setSelectedFamilies() {
+    let selectedFamilyButtons = document.querySelectorAll('.select-family-button.selected');
+    let selectedFamilyIds = [];
+    selectedFamilyButtons.forEach(function (button) {
+        let selectedFamilyData = button.getAttribute('data-select-family-id');
+        if (selectedFamilyData) {
+            selectedFamilyIds.push(selectedFamilyData);
+        }
+    });
+    if (selectedFamilyIds.length === 0) {
+        let allFamilyButtons = document.querySelectorAll('.select-family-button');
+        allFamilyButtons.forEach(function (button) {
+            let selectedFamilyData = button.getAttribute('data-select-family-id');
+            if (selectedFamilyData) {
+                selectedFamilyIds.push(selectedFamilyData);
+            }
+        });
+    }
+    localStorage.setItem('selectedFamilies', JSON.stringify(selectedFamilyIds));
+    const selectedFamiliesChangedEvent = new Event('familiesChanged');
+    window.dispatchEvent(selectedFamiliesChangedEvent);
 }
 function setSetDefaultProgenyEventListeners() {
     let setDefaultProgenyButtons = document.querySelectorAll('.set-default-progeny-button');
@@ -215,10 +250,12 @@ document.addEventListener('DOMContentLoaded', function () {
     initPageSettings();
     showSelectProgenyDropdownWhenCurrentProgenyClicked();
     setDocumentClickEventListeners();
-    setSelectProgenyButtonsEventListeners();
+    setSelectProgenyAndFamilyButtonsEventListeners();
     getSelectedProgenies();
+    getSelectedFamilies();
     setSetDefaultProgenyEventListeners();
     addProgenyItemEventListenersForAllProgenies();
+    addFamilyItemEventListenersForAllFamilies();
     setAddItemButtonEventListeners();
 });
 //# sourceMappingURL=app.js.map

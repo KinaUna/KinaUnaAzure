@@ -104,7 +104,6 @@ export function getSelectedProgenies(): number[] {
             });
         }
         
-
         if (selectedProgenyIds.length === 0) {
             let allProgenyButtons = document.querySelectorAll<HTMLAnchorElement>('.select-progeny-button');
             allProgenyButtons.forEach(function (button) {

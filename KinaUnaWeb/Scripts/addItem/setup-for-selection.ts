@@ -66,6 +66,13 @@ async function onIndividualButtonClicked(): Promise<void> {
         }
     }
 
+    const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
+    if (familyIdSelect) {
+        if (familyIdSelect.selectedIndex >= 0) {
+            familyIdSelect.selectedIndex = -1;
+        }
+    }
+
     await setupProgenySelectList();
 }
 
@@ -93,6 +100,13 @@ async function onFamilyButtonClicked(): Promise<void> {
     if (familyIdSelect) {
         if (familyIdSelect.selectedIndex < 0) {
             familyIdSelect.selectedIndex = 0;
+        }
+    }
+
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+    if (progenyIdSelect) {
+        if (progenyIdSelect.selectedIndex >= 0) {
+            progenyIdSelect.selectedIndex = -1;
         }
     }
 

@@ -56,6 +56,12 @@ async function onIndividualButtonClicked() {
             progenyIdSelect.selectedIndex = 0;
         }
     }
+    const familyIdSelect = document.querySelector('#item-family-id-select');
+    if (familyIdSelect) {
+        if (familyIdSelect.selectedIndex >= 0) {
+            familyIdSelect.selectedIndex = -1;
+        }
+    }
     await setupProgenySelectList();
 }
 async function onFamilyButtonClicked() {
@@ -81,6 +87,12 @@ async function onFamilyButtonClicked() {
     if (familyIdSelect) {
         if (familyIdSelect.selectedIndex < 0) {
             familyIdSelect.selectedIndex = 0;
+        }
+    }
+    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
+    if (progenyIdSelect) {
+        if (progenyIdSelect.selectedIndex >= 0) {
+            progenyIdSelect.selectedIndex = -1;
         }
     }
     await setupFamilySelectList();

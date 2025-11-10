@@ -1,11 +1,12 @@
 ﻿const serviceWorkerVersion = 'v8';
 import { setAddItemButtonEventListeners } from './addItem/add-item.js';
 import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v9.js';
+import { addFamilyItemEventListenersForAllFamilies } from './families/family-details.js';
 import { hideBodyScrollbars, showBodyScrollbars } from './item-details/items-display-v9.js';
 import { startFullPageSpinner, stopFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v9.js';
 import { SetProgenyRequest } from './page-models-v9.js';
 import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-details.js';
-import { getSelectedProgenies } from './settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from './settings-tools-v9.js';
 import { initSidebar } from './sidebar-v9.js';
 
 const serviceWorkerVersion_key = 'service_worker_version';
@@ -158,12 +159,18 @@ function showSelectProgenyDropdownWhenCurrentProgenyClicked(): void {
     });
 }
 
-function setSelectProgenyButtonsEventListeners(): void {
+function setSelectProgenyAndFamilyButtonsEventListeners(): void {
 
     let selectProgenyButtons = document.querySelectorAll <HTMLAnchorElement>('.select-progeny-button');
     selectProgenyButtons.forEach(function (button) {
         button.removeEventListener('click', onSelectProgenyButtonClicked);
         button.addEventListener('click', onSelectProgenyButtonClicked);
+    });
+
+    let selectFamilyButtons = document.querySelectorAll<HTMLAnchorElement>('.select-family-button');
+    selectFamilyButtons.forEach(function (button) {
+        button.removeEventListener('click', onSelectFamilyButtonClicked);
+        button.addEventListener('click', onSelectFamilyButtonClicked);
     });
 }
 
@@ -174,6 +181,15 @@ function onSelectProgenyButtonClicked(event: MouseEvent) {
 
     setSelectedProgenies();
     getSelectedProgenies();
+}
+
+function onSelectFamilyButtonClicked(event: MouseEvent) {
+    event.preventDefault();
+    let selectedButton = event.currentTarget as HTMLAnchorElement;
+    selectedButton.classList.toggle('selected');
+
+    setSelectedFamilies();
+    getSelectedFamilies();
 }
 
 function setSelectedProgenies() {
@@ -204,6 +220,32 @@ function setSelectedProgenies() {
 
     const selectedProgeniesChangedEvent = new Event('progeniesChanged');
     window.dispatchEvent(selectedProgeniesChangedEvent);
+}
+
+function setSelectedFamilies() {
+    let selectedFamilyButtons = document.querySelectorAll<HTMLAnchorElement>('.select-family-button.selected');
+    let selectedFamilyIds: string[] = [];
+    selectedFamilyButtons.forEach(function (button) {
+        let selectedFamilyData = button.getAttribute('data-select-family-id');
+        if (selectedFamilyData) {
+            selectedFamilyIds.push(selectedFamilyData);
+        }
+    });
+    
+    if (selectedFamilyIds.length === 0) {
+        let allFamilyButtons = document.querySelectorAll<HTMLAnchorElement>('.select-family-button');
+        allFamilyButtons.forEach(function (button) {
+            let selectedFamilyData = button.getAttribute('data-select-family-id');
+            if (selectedFamilyData) {
+                selectedFamilyIds.push(selectedFamilyData);
+            }
+        });
+    }
+
+    localStorage.setItem('selectedFamilies', JSON.stringify(selectedFamilyIds));
+
+    const selectedFamiliesChangedEvent = new Event('familiesChanged');
+    window.dispatchEvent(selectedFamiliesChangedEvent);
 }
 
 function setSetDefaultProgenyEventListeners() {
@@ -259,13 +301,15 @@ document.addEventListener('DOMContentLoaded', function (): void {
 
     setDocumentClickEventListeners();
 
-    setSelectProgenyButtonsEventListeners();
+    setSelectProgenyAndFamilyButtonsEventListeners();
 
     getSelectedProgenies();
+    getSelectedFamilies();
 
     setSetDefaultProgenyEventListeners();
 
     addProgenyItemEventListenersForAllProgenies();
+    addFamilyItemEventListenersForAllFamilies();
 
     setAddItemButtonEventListeners();
 });
