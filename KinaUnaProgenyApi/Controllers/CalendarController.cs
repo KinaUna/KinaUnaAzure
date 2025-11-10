@@ -161,6 +161,7 @@ namespace KinaUnaProgenyApi.Controllers
             _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
             await NotifyCalendarItemAdded(currentUserInfo, timeLineItem, calendarItem);
+            calendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
 
             return Ok(calendarItem);
         }
@@ -226,7 +227,9 @@ namespace KinaUnaProgenyApi.Controllers
             if (timeLineItem == null || !timeLineItem.CopyCalendarItemPropertiesForUpdate(calendarItem)) return Ok(calendarItem);
             
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
-            
+
+            calendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+
             return Ok(calendarItem);
         }
 

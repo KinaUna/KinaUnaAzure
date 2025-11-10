@@ -103,6 +103,8 @@ namespace KinaUnaProgenyApi.Controllers
             
             await webNotificationsService.SendVaccinationNotification(vaccinationItem, currentUserInfo, notificationTitle);
 
+            vaccinationItem = await vaccinationService.GetVaccination(vaccinationItem.VaccinationId, currentUserInfo);
+
             return Ok(vaccinationItem);
         }
 
@@ -139,7 +141,9 @@ namespace KinaUnaProgenyApi.Controllers
 
             timeLineItem.CopyVaccinationPropertiesForUpdate(vaccinationItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
-            
+
+            vaccinationItem = await vaccinationService.GetVaccination(vaccinationItem.VaccinationId, currentUserInfo);
+
             return Ok(vaccinationItem);
         }
 

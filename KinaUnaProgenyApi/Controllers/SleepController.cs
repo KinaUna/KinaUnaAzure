@@ -107,6 +107,8 @@ namespace KinaUnaProgenyApi.Controllers
             
             await webNotificationsService.SendSleepNotification(sleepItem, currentUserInfo, notificationTitle);
 
+            sleepItem = await sleepService.GetSleep(sleepItem.SleepId, currentUserInfo);
+
             return Ok(sleepItem);
         }
 
@@ -142,6 +144,8 @@ namespace KinaUnaProgenyApi.Controllers
 
             timeLineItem.CopySleepPropertiesForUpdate(sleepItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+
+            sleepItem = await sleepService.GetSleep(sleepItem.SleepId, currentUserInfo);
 
             return Ok(sleepItem);
         }

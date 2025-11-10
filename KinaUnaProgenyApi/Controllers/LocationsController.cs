@@ -165,6 +165,8 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "Location added for " + nameString; // Todo: Localize.
             await webNotificationsService.SendLocationNotification(location, currentUserInfo, notificationTitle);
 
+            location = await locationService.GetLocation(location.LocationId, currentUserInfo);
+
             return Ok(location);
         }
 
@@ -216,6 +218,7 @@ namespace KinaUnaProgenyApi.Controllers
                 await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
             }
 
+            location = await locationService.GetLocation(location.LocationId, currentUserInfo);
             location.Author = User.GetUserId();
             
             return Ok(location);

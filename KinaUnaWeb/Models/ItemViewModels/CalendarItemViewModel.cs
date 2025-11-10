@@ -181,7 +181,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 FamilyId = CalendarItem.FamilyId,
                 Title = CalendarItem.Title,
                 Notes = CalendarItem.Notes,
-                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
 
             if (CalendarItem.StartTime != null && CalendarItem.EndTime != null)

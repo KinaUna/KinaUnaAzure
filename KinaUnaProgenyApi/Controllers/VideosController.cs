@@ -472,6 +472,10 @@ namespace KinaUnaProgenyApi.Controllers
             _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
             await webNotificationsService.SendVideoNotification(value, userInfo, notificationTitle);
+
+            value = await videosService.GetVideo(value.VideoId, currentUserInfo);
+            value.Comments = await commentsService.GetCommentsList(value.CommentThreadNumber);
+
             return Ok(value);
         }
 
@@ -520,6 +524,9 @@ namespace KinaUnaProgenyApi.Controllers
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyVideoPropertiesForUpdate(video);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+
+            video = await videosService.GetVideo(video.VideoId, currentUserInfo);
+            video.Comments = await commentsService.GetCommentsList(video.CommentThreadNumber);
 
             return Ok(video);
         }

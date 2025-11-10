@@ -185,6 +185,8 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "Contact added for " + nameString;
             await webNotificationsService.SendContactNotification(contactItem, currentUserInfo, notificationTitle);
 
+            contactItem = await contactService.GetContact(contactItem.ContactId, currentUserInfo);
+
             return Ok(contactItem);
         }
 
@@ -274,7 +276,9 @@ namespace KinaUnaProgenyApi.Controllers
             if (timeLineItem == null || !timeLineItem.CopyContactItemPropertiesForUpdate(contactItem)) return Ok(contactItem);
 
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
-            
+
+            contactItem = await contactService.GetContact(contactItem.ContactId, currentUserInfo);
+
             return Ok(contactItem);
         }
 

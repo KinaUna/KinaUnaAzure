@@ -141,9 +141,11 @@ export function setPermissions() {
     }
     // Custom permission type
     if (permissionType == '3') {
-        const progenyPermissionsSelectInputs = document.querySelectorAll('[data-progeny-permission-id]');
-        const familyPermissionsSelectInputs = document.querySelectorAll('[data-family-permission-id]');
-        const itemPermissionsSelectInputs = document.querySelectorAll('[data-item-permission-id]');
+        const progenyPermissionsSelectInputs = document.querySelectorAll('select[data-progeny-permission-id]');
+        const familyPermissionsSelectInputs = document.querySelectorAll('select[data-family-permission-id]');
+        const itemPermissionsSelectInputs = document.querySelectorAll('select[data-item-permission-id]');
+        console.log('itemPermissionsSelectInputs:');
+        console.log(itemPermissionsSelectInputs);
         progenyPermissionsSelectInputs.forEach((selectInput) => {
             const permissionId = selectInput.getAttribute('data-progeny-permission-id');
             if (permissionId !== null) {
@@ -162,6 +164,7 @@ export function setPermissions() {
                 let itemPermission = new ItemPermissionDto();
                 itemPermission.familyPermissionId = parseInt(permissionId);
                 itemPermission.permissionLevel = parseInt(selectedPermission);
+                itemPermission.inheritPermissions = false;
                 timelineItemPermissionsList.push(itemPermission);
             }
         });
@@ -172,6 +175,7 @@ export function setPermissions() {
                 let itemPermission = new ItemPermissionDto();
                 itemPermission.itemPermissionId = parseInt(permissionId);
                 itemPermission.permissionLevel = parseInt(selectedPermission);
+                itemPermission.inheritPermissions = false;
                 timelineItemPermissionsList.push(itemPermission);
             }
         });

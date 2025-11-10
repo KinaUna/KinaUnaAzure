@@ -101,6 +101,8 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "Measurement added for " + progeny.NickName; // Todo: Localize.
             await webNotificationsService.SendMeasurementNotification(measurementItem, currentUserInfo, notificationTitle);
 
+            measurementItem = await measurementService.GetMeasurement(measurementItem.MeasurementId, currentUserInfo);
+
             return Ok(measurementItem);
         }
 
@@ -136,6 +138,8 @@ namespace KinaUnaProgenyApi.Controllers
 
             timeLineItem.CopyMeasurementPropertiesForUpdate(measurementItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+
+            measurementItem = await measurementService.GetMeasurement(measurementItem.MeasurementId, currentUserInfo);
 
             return Ok(measurementItem);
         }

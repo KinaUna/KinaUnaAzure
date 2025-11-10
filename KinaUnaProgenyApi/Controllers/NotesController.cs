@@ -105,6 +105,8 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "Note added for " + progeny.NickName;
             await webNotificationsService.SendNoteNotification(noteItem, currentUserInfo, notificationTitle);
 
+            noteItem = await noteService.GetNote(noteItem.NoteId, currentUserInfo);
+
             return Ok(noteItem);
         }
 
@@ -140,6 +142,8 @@ namespace KinaUnaProgenyApi.Controllers
 
             timeLineItem.CopyNotePropertiesForUpdate(noteItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+
+            noteItem = await noteService.GetNote(noteItem.NoteId, currentUserInfo);
 
             return Ok(noteItem);
         }
@@ -183,7 +187,6 @@ namespace KinaUnaProgenyApi.Controllers
             await webNotificationsService.SendNoteNotification(noteItem, currentUserInfo, notificationTitle);
 
             return NoContent();
-
         }
         
         /// <summary>

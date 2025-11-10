@@ -329,7 +329,7 @@ namespace KinaUnaWeb.Controllers
                         TimeZone = model.CurrentUser.Timezone,
                         Location = model.Picture.Location,
                         Tags = model.Picture.Tags,
-                        ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString)
+                        ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web)
                     };
 
                     await using (Stream stream = formFile.OpenReadStream())
@@ -400,7 +400,7 @@ namespace KinaUnaWeb.Controllers
                         TimeZone = model.CurrentUser.Timezone,
                         Location = model.Picture.Location,
                         Tags = model.Picture.Tags,
-                        ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString)
+                        ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web)
                     };
 
                     await using (Stream stream = formFile.OpenReadStream())
@@ -477,7 +477,7 @@ namespace KinaUnaWeb.Controllers
             }
             
             pictureToUpdate.CopyPropertiesForUserUpdate(model.Picture);
-            pictureToUpdate.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString);
+            pictureToUpdate.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
 
             if (model.Picture.PictureTime != null)
             {

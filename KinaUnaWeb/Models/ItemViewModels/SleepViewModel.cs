@@ -95,7 +95,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 SleepStart = TimeZoneInfo.ConvertTimeToUtc(SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
                 SleepEnd = TimeZoneInfo.ConvertTimeToUtc(SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
                 SleepRating = SleepItem.SleepRating,
-                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
 
             if (sleep.SleepRating == 0)

@@ -52,7 +52,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 HairColor = MeasurementItem.HairColor,
                 EyeColor = MeasurementItem.EyeColor,
                 Author = MeasurementItem.Author,
-                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
 
             return measurement;

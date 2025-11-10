@@ -112,6 +112,8 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "Friend added for " + progeny.NickName; // Todo: Localize.
             await webNotificationsService.SendFriendNotification(friendItem, currentUserInfo, notificationTitle);
 
+            friendItem = await friendService.GetFriend(friendItem.FriendId, currentUserInfo);
+
             return Ok(friendItem);
         }
 
@@ -160,6 +162,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
             }
+
+            friendItem = await friendService.GetFriend(friendItem.FriendId, currentUserInfo);
 
             return Ok(friendItem);
         }

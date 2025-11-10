@@ -164,6 +164,8 @@ namespace KinaUnaProgenyApi.Controllers
             }
             // Todo: Send notification for family too.
 
+            todoItem = await todosService.GetTodoItem(todoItem.TodoItemId, currentUserInfo);
+
             return Ok(todoItem);
         }
 
@@ -222,6 +224,8 @@ namespace KinaUnaProgenyApi.Controllers
             if (timeLineItem == null || !timeLineItem.CopyTodoItemPropertiesForUpdate(todoItem)) return Ok(todoItem);
 
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+
+            todoItem = await todosService.GetTodoItem(todoItem.TodoItemId, currentUserInfo);
 
             return Ok(todoItem);
         }

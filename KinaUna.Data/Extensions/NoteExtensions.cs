@@ -26,6 +26,7 @@ namespace KinaUna.Data.Extensions
             currentNote.Progeny = otherNote.Progeny;
             currentNote.ModifiedBy = otherNote.ModifiedBy;
             currentNote.ModifiedTime = DateTime.UtcNow;
+            currentNote.ItemPermissionsDtoList = otherNote.ItemPermissionsDtoList;
         }
 
         /// <summary>

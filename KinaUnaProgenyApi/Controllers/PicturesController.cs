@@ -484,9 +484,6 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-
-            model.Comments = await commentsService.SetCommentsList(model.CommentThreadNumber);
-
             
             string notificationTitle = "New Photo added for " + progeny.NickName; // Todo: Localize.
             TimeLineItem timeLineItem = new();
@@ -495,6 +492,9 @@ namespace KinaUnaProgenyApi.Controllers
 
             await webNotificationsService.SendPictureNotification(model, currentUserInfo, notificationTitle);
             
+            model = await picturesService.GetPicture(model.PictureId, currentUserInfo);
+            model.Comments = await commentsService.SetCommentsList(model.CommentThreadNumber);
+
             return Ok(model);
         }
 
@@ -531,19 +531,16 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-
-            await picturesService.SetPictureInCache(picture.PictureId);
-            await commentsService.SetCommentsList(picture.CommentThreadNumber);
-
-
+            
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(picture.PictureId.ToString(), (int)KinaUnaTypes.TimeLineType.Photo, currentUserInfo);
             if (timeLineItem == null) return Ok(picture);
-
             
-
             timeLineItem.CopyPicturePropertiesForUpdate(picture);
 
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+
+            picture = await picturesService.GetPicture(picture.PictureId, currentUserInfo);
+            await commentsService.SetCommentsList(picture.CommentThreadNumber);
 
             return Ok(picture);
         }

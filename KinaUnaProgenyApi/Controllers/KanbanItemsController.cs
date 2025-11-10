@@ -139,6 +139,8 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest();
             }
 
+            savedKanbanItem = await kanbanItemsService.GetKanbanItemById(savedKanbanItem.KanbanItemId, currentUserInfo);
+
             savedKanbanItem.TodoItem = kanbanItem.TodoItem;
 
             return Ok(savedKanbanItem);
@@ -194,6 +196,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
+            resultKanbanItem = await kanbanItemsService.GetKanbanItemById(resultKanbanItem.KanbanItemId, currentUserInfo);
             resultKanbanItem.TodoItem = kanbanItem.TodoItem;
 
             return Ok(resultKanbanItem);

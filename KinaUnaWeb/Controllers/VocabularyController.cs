@@ -119,7 +119,7 @@ namespace KinaUnaWeb.Controllers
             model.VocabularyItem.Date ??= TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
             model.VocabularyItem.Author = model.CurrentUser.UserId;
-            model.VocabularyItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString);
+            model.VocabularyItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
             model.VocabularyItem = await wordsHttpClient.AddWord(model.VocabularyItem);
             if (model.VocabularyItem.Date.HasValue)
             {
@@ -180,7 +180,7 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
             
             model.VocabularyItem.Date ??= TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            model.VocabularyItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString);
+            model.VocabularyItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
             model.VocabularyItem = await wordsHttpClient.UpdateWord(model.VocabularyItem);
             if (model.VocabularyItem.Date.HasValue)
             {
@@ -299,7 +299,7 @@ namespace KinaUnaWeb.Controllers
 
             model.VocabularyItem.Date ??= TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
-            model.VocabularyItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString);
+            model.VocabularyItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
             model.VocabularyItem = await wordsHttpClient.AddWord(model.VocabularyItem);
             if (model.VocabularyItem.Date.HasValue)
             {

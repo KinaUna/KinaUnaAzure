@@ -151,9 +151,11 @@ export function setPermissions(): void {
 
     // Custom permission type
     if (permissionType == '3') {
-        const progenyPermissionsSelectInputs = document.querySelectorAll<HTMLSelectElement>('[data-progeny-permission-id]');
-        const familyPermissionsSelectInputs = document.querySelectorAll<HTMLSelectElement>('[data-family-permission-id]');
-        const itemPermissionsSelectInputs = document.querySelectorAll<HTMLSelectElement>('[data-item-permission-id]');
+        const progenyPermissionsSelectInputs = document.querySelectorAll<HTMLSelectElement>('select[data-progeny-permission-id]');
+        const familyPermissionsSelectInputs = document.querySelectorAll<HTMLSelectElement>('select[data-family-permission-id]');
+        const itemPermissionsSelectInputs = document.querySelectorAll<HTMLSelectElement>('select[data-item-permission-id]');
+        console.log('itemPermissionsSelectInputs:');
+        console.log(itemPermissionsSelectInputs);
 
         progenyPermissionsSelectInputs.forEach((selectInput) => {
             const permissionId = selectInput.getAttribute('data-progeny-permission-id');
@@ -173,6 +175,7 @@ export function setPermissions(): void {
                 let itemPermission = new ItemPermissionDto();
                 itemPermission.familyPermissionId = parseInt(permissionId);
                 itemPermission.permissionLevel = parseInt(selectedPermission);
+                itemPermission.inheritPermissions = false;
                 timelineItemPermissionsList.push(itemPermission);
             }
         });
@@ -184,6 +187,7 @@ export function setPermissions(): void {
                 let itemPermission = new ItemPermissionDto();
                 itemPermission.itemPermissionId = parseInt(permissionId);
                 itemPermission.permissionLevel = parseInt(selectedPermission);
+                itemPermission.inheritPermissions = false;
                 timelineItemPermissionsList.push(itemPermission);
             }
         });

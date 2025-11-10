@@ -56,7 +56,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Owners = CurrentUser.UserEmail,
                 ThumbLink = Constants.WebAppUrl + "/videodb/moviethumb.png",
                 VideoTime = DateTime.UtcNow,
-                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
             if (Video.VideoTime != null)
             {

@@ -112,7 +112,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 State = LocationItem.State,
                 Country = LocationItem.Country,
                 Notes = LocationItem.Notes,
-                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
             if (LocationItem.Date.HasValue)
             {

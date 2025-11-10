@@ -46,7 +46,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Description = SkillItem.Description,
                 Name = SkillItem.Name,
                 SkillAddedDate = SkillItem.SkillAddedDate,
-                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
             
             if (SkillItem.SkillFirstObservation.HasValue)

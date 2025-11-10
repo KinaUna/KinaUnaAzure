@@ -100,6 +100,8 @@ namespace KinaUnaProgenyApi.Controllers
             
             await webNotificationsService.SendSkillNotification(skillItem, currentUserInfo, notificationTitle);
 
+            skillItem = await skillService.GetSkill(skillItem.SkillId, currentUserInfo);
+
             return Ok(skillItem);
         }
 
@@ -134,6 +136,8 @@ namespace KinaUnaProgenyApi.Controllers
 
             timeLineItem.CopySkillPropertiesForUpdate(skillItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+
+            skillItem = await skillService.GetSkill(skillItem.SkillId, currentUserInfo);
 
             return Ok(skillItem);
         }

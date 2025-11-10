@@ -148,6 +148,8 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
+            savedKanbanItem = await kanbanBoardsService.GetKanbanBoardById(savedKanbanItem.KanbanBoardId, currentUserInfo);
+
             return Ok(savedKanbanItem);
         }
 
@@ -184,6 +186,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
+
+            resultKanbanItem = await kanbanBoardsService.GetKanbanBoardById(resultKanbanItem.KanbanBoardId, currentUserInfo);
 
             return Ok(resultKanbanItem);
         }

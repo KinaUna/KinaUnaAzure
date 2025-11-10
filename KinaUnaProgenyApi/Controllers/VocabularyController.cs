@@ -97,6 +97,8 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "Word added for " + progeny.NickName;
             await webNotificationsService.SendVocabularyNotification(vocabularyItem, currentUserInfo, notificationTitle);
 
+            vocabularyItem = await vocabularyService.GetVocabularyItem(vocabularyItem.WordId, currentUserInfo);
+
             return Ok(vocabularyItem);
         }
 
@@ -132,7 +134,9 @@ namespace KinaUnaProgenyApi.Controllers
 
             timeLineItem.CopyVocabularyItemPropertiesForUpdate(vocabularyItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
-            
+
+            vocabularyItem = await vocabularyService.GetVocabularyItem(vocabularyItem.WordId, currentUserInfo);
+
             return Ok(vocabularyItem);
         }
 

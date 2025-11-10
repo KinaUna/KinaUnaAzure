@@ -145,7 +145,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Tags = KanbanItem.TodoItem.Tags,
                 Location = KanbanItem.TodoItem.Location,
                 UId = KanbanItem.TodoItem.UId,
-                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString)
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
 
             return todoItem;

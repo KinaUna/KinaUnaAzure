@@ -163,7 +163,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-            
+
+            subtask = await subtasksService.GetSubtask(subtask.TodoItemId, currentUserInfo);
+
             return Ok(subtask);
         }
 
@@ -219,6 +221,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
+
+            subtask = await subtasksService.GetSubtask(subtask.TodoItemId, currentUserInfo);
 
             return Ok(subtask);
         }
