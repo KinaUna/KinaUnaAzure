@@ -10,6 +10,7 @@ export function addSleepEventListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-sleep-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onSleepItemDivClicked);
             element.addEventListener('click', onSleepItemDivClicked);
         });
     }
@@ -60,11 +61,13 @@ async function displaySleepItem(sleepId) {
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closeButtonAction = function () {
                             sleepDetailsPopupDiv.innerHTML = '';
                             sleepDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        };
+                        button.removeEventListener('click', closeButtonAction);
+                        button.addEventListener('click', closeButtonAction);
                     });
                 }
                 setEditItemButtonEventListeners();

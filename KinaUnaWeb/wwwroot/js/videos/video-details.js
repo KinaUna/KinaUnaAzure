@@ -19,6 +19,7 @@ export function addVideoItemEventListeners(videoId) {
     const videoElementsWithDataId = document.querySelectorAll('[data-video-id="' + videoId + '"]');
     if (videoElementsWithDataId) {
         videoElementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onVideoItemDivClicked);
             element.addEventListener('click', onVideoItemDivClicked);
         });
     }
@@ -48,10 +49,12 @@ export async function popupVideoDetails(videoId) {
 async function addCommentEventListeners() {
     const submitForm = document.getElementById('new-video-comment-form');
     if (submitForm !== null) {
+        submitForm.removeEventListener('submit', onSubmitComment);
         submitForm.addEventListener('submit', onSubmitComment);
     }
     const newCommentTextArea = document.getElementById('new-video-comment-text-area');
     if (newCommentTextArea !== null) {
+        newCommentTextArea.removeEventListener('input', onCommentInput);
         newCommentTextArea.addEventListener('input', onCommentInput);
     }
     return new Promise(function (resolve, reject) {
@@ -124,6 +127,7 @@ async function addEditEventListeners() {
         addCopyLocationButtonEventListener();
         const submitForm = document.getElementById('edit-video-form');
         if (submitForm !== null) {
+            submitForm.removeEventListener('submit', onSubmitEditVideoForm);
             submitForm.addEventListener('submit', onSubmitEditVideoForm);
         }
         $(".selectpicker").selectpicker("refresh");
@@ -203,16 +207,20 @@ async function setupDateTimePicker() {
 function addNavigationEventListeners() {
     let previousLink = document.querySelector('#previous-video-link');
     if (previousLink) {
+        previousLink.removeEventListener('click', onPreviousLinkClicked);
         previousLink.addEventListener('click', onPreviousLinkClicked);
     }
     let nextLink = document.querySelector('#next-video-link');
     if (nextLink) {
+        nextLink.removeEventListener('click', onNextLinkClicked);
         nextLink.addEventListener('click', onNextLinkClicked);
     }
     // Swipe navigation
     const videoDetailsDiv = document.querySelector('#video-details-div');
     if (videoDetailsDiv) {
+        videoDetailsDiv.removeEventListener('touchstart', onVideoDetailsTouchStart);
         videoDetailsDiv.addEventListener('touchstart', onVideoDetailsTouchStart);
+        videoDetailsDiv.removeEventListener('touchend', onVideoDetailsTouchEnd);
         videoDetailsDiv.addEventListener('touchend', onVideoDetailsTouchEnd);
     }
 }
@@ -289,14 +297,16 @@ function addCloseButtonEventListener() {
     let closeButtonsList = document.querySelectorAll('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
-            button.addEventListener('click', function () {
+            const closeButtonAction = function () {
                 const itemDetailsPopupDiv = document.querySelector('#item-details-div');
                 if (itemDetailsPopupDiv) {
                     itemDetailsPopupDiv.innerHTML = '';
                     itemDetailsPopupDiv.classList.add('d-none');
                     showBodyScrollbars();
                 }
-            });
+            };
+            button.removeEventListener('click', closeButtonAction);
+            button.addEventListener('click', closeButtonAction);
         });
     }
 }
@@ -307,6 +317,7 @@ function addCloseButtonEventListener() {
 function addShowMapButtonEventListener() {
     let showMapButton = document.querySelector('#show-here-maps-button');
     if (showMapButton) {
+        showMapButton.removeEventListener('click', onShowHereMapsButtonClicked);
         showMapButton.addEventListener('click', onShowHereMapsButtonClicked);
     }
 }

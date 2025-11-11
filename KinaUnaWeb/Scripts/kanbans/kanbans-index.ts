@@ -122,27 +122,45 @@ async function getKanbanBoardElement(id: number): Promise<void> {
 }
 
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             kanbanBoardsPageParameters.progenies = getSelectedProgenies();
+            kanbanBoardsPageParameters.families = getSelectedFamilies();
             kanbanBoardsPageParameters.currentPageNumber = 1;
             await getKanbanBoards();
         }
-    });
+    }
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 
+function addSelectedFamiliesChangedEventListener() {
+    const familiesChangedAction = async () => {
+        let selectedFamilies = localStorage.getItem('selectedFamilies');
+        if (selectedFamilies !== null) {
+            kanbanBoardsPageParameters.progenies = getSelectedProgenies();
+            kanbanBoardsPageParameters.families = getSelectedFamilies();
+            kanbanBoardsPageParameters.currentPageNumber = 1;
+            await getKanbanBoards();
+        }
+    }
+    window.removeEventListener('familiesChanged', familiesChangedAction);
+    window.addEventListener('familiesChanged', familiesChangedAction);
+}
 
 function addTimelineChangedEventListener() {
     // Subscribe to the timelineChanged event to refresh the KanbanBoards list when a KanbanBoard is added, updated, or deleted.
-    window.addEventListener('timelineChanged', async (event: TimelineChangedEvent) => {
+    const kanbanIndexTimelineChangedAction = async (event: TimelineChangedEvent) => {
         let changedItem = event.TimelineItem;
         if (changedItem !== null && changedItem.itemType === 16) { // 16 is the item type for KanbanBoards.
             if (changedItem.itemId !== '') {
                 await refreshKanbanBoards(changedItem.itemId);
             }
         }
-    });
+    }
+    window.removeEventListener('timelineChanged', kanbanIndexTimelineChangedAction);
+    window.addEventListener('timelineChanged', kanbanIndexTimelineChangedAction);
 }
 
 /** Shows the loading spinner in the loading-todo-items-div.
@@ -201,9 +219,11 @@ function setEventListenersForItemsPerPage(): void {
     const decreaseItemsPerPageButton = document.querySelector<HTMLButtonElement>('#decrease-kanban-index-items-per-page-button');
     const increaseItemsPerPageButton = document.querySelector<HTMLButtonElement>('#increase-kanban-index-items-per-page-button');
     if (decreaseItemsPerPageButton !== null) {
+        decreaseItemsPerPageButton.removeEventListener('click', decreaseKanbanBoardsItemsPerPage);
         decreaseItemsPerPageButton.addEventListener('click', decreaseKanbanBoardsItemsPerPage);
     }
     if (increaseItemsPerPageButton !== null) {
+        increaseItemsPerPageButton.removeEventListener('click', increaseKanbanBoardsItemsPerPage);
         increaseItemsPerPageButton.addEventListener('click', increaseKanbanBoardsItemsPerPage);
     }
 }
@@ -361,6 +381,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     setKabansPageParametersFromPageData();
     loadKanbansPageSettings();
     addSelectedProgeniesChangedEventListener();
+    addSelectedFamiliesChangedEventListener();
     addTimelineChangedEventListener();
     kanbanBoardsPageParameters.progenies = getSelectedProgenies();
     kanbanBoardsPageParameters.families = getSelectedFamilies();

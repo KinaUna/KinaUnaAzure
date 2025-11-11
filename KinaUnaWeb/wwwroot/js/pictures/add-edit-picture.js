@@ -94,7 +94,8 @@ function hideInputsWhenUploading() {
     const dropZone = document.getElementById('drop-files-div');
     if (dropZone !== null) {
         dropZone.classList.add('d-none');
-        dropZone.removeEventListener('drop', async function (event) { });
+        dropZone.removeEventListener('drop', onDropFilesDivDrop);
+        dropZone.removeEventListener('dragover', onDropFilesDivDragOver);
     }
     // Elements are gone, scroll up to upload-file-div to keep image previews in view.
     const photoHeaderLabel = document.getElementById('photo-header-label');
@@ -122,6 +123,7 @@ function showLoadingSpinners() {
 function addOverrideSubmitEvent() {
     const submitForm = document.getElementById('add-pictures-form');
     if (submitForm !== null) {
+        submitForm.removeEventListener('submit', onSubmitAddPicturesForm);
         submitForm.addEventListener('submit', onSubmitAddPicturesForm);
     }
 }
@@ -213,6 +215,7 @@ async function uploadPicture(formData, pictureFile, itemNumber) {
 function addSelectPhotoButtonEventListener() {
     const selectPhotoButton = document.querySelector('#select-photos-button');
     if (selectPhotoButton !== null) {
+        selectPhotoButton.removeEventListener('click', selectFiles);
         selectPhotoButton.addEventListener('click', selectFiles);
     }
 }
@@ -313,7 +316,9 @@ function addDropEventListener() {
     if (dropZone === null) {
         return;
     }
+    dropZone.removeEventListener('dragover', onDropFilesDivDragOver);
     dropZone.addEventListener('dragover', onDropFilesDivDragOver);
+    dropZone.removeEventListener('drop', onDropFilesDivDrop);
     dropZone.addEventListener('drop', onDropFilesDivDrop);
 }
 function onDropFilesDivDragOver(event) {
@@ -343,6 +348,7 @@ function addFileInputEventListener() {
     if (filesInput === null) {
         return;
     }
+    filesInput.removeEventListener('change', onFilesInputChanged);
     filesInput.addEventListener('change', onFilesInputChanged);
     filesInput.value = '';
 }

@@ -10,6 +10,7 @@ export function addLocationItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-location-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onLocationItemDivClicked);
             element.addEventListener('click', onLocationItemDivClicked);
         });
     }
@@ -89,11 +90,13 @@ async function displayLocationItem(locationId) {
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closeClickedAction = function () {
                             locationDetailsPopupDiv.innerHTML = '';
                             locationDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        };
+                        button.removeEventListener('click', closeClickedAction);
+                        button.addEventListener('click', closeClickedAction);
                     });
                 }
                 setEditItemButtonEventListeners();

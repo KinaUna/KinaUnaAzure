@@ -13,6 +13,7 @@ export function addLocationItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-location-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onLocationItemDivClicked);
             element.addEventListener('click', onLocationItemDivClicked);
         });
     }
@@ -96,11 +97,13 @@ async function displayLocationItem(locationId: string): Promise<void> {
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closeClickedAction = function () {
                             locationDetailsPopupDiv.innerHTML = '';
                             locationDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        }
+                        button.removeEventListener('click', closeClickedAction);
+                        button.addEventListener('click', closeClickedAction);
                     });
                 }
                 setEditItemButtonEventListeners();

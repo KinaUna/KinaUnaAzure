@@ -11,6 +11,7 @@ export function addVocabularyItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-vocabulary-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onVocabularyItemDivClicked);
             element.addEventListener('click', onVocabularyItemDivClicked);
         });
     }
@@ -68,12 +69,14 @@ async function displayVocabularyItem(vocabularyId: string): Promise<void> {
                 vocabularyDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
+                    const closeButtonAction = function () {
+                        vocabularyDetailsPopupDiv.innerHTML = '';
+                        vocabularyDetailsPopupDiv.classList.add('d-none');
+                        showBodyScrollbars();
+                    };
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
-                            vocabularyDetailsPopupDiv.innerHTML = '';
-                            vocabularyDetailsPopupDiv.classList.add('d-none');
-                            showBodyScrollbars();
-                        });
+                        button.removeEventListener('click', closeButtonAction);
+                        button.addEventListener('click', closeButtonAction);
                     });
                 }
                 setEditItemButtonEventListeners();

@@ -413,36 +413,46 @@ async function initialSettingsPanelSetup() {
     });
     const onThisDaySaveSettingsButton = document.querySelector('#on-this-day-page-save-settings-button');
     if (onThisDaySaveSettingsButton !== null) {
+        onThisDaySaveSettingsButton.removeEventListener('click', saveOnThisDayPageSettings);
         onThisDaySaveSettingsButton.addEventListener('click', saveOnThisDayPageSettings);
     }
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.removeEventListener('click', sortTimelineAscending);
         sortAscendingSettingsButton.addEventListener('click', sortTimelineAscending);
+        sortDescendingSettingsButton.removeEventListener('click', sortTimelineDescending);
         sortDescendingSettingsButton.addEventListener('click', sortTimelineDescending);
     }
     // Event listeners for period buttons.
     const periodButtons = document.querySelectorAll('.on-this-day-period-button');
     periodButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
+        const setPeriodAction = function () {
             setPeriod(parseInt(button.dataset.period ?? '-1'));
-        });
+        };
+        button.removeEventListener('click', setPeriodAction);
+        button.addEventListener('click', setPeriodAction);
     });
     // Event listener for the show filters button.
     const toggleShowFiltersButton = document.querySelector('#timeline-toggle-filters-button');
     if (toggleShowFiltersButton !== null) {
-        toggleShowFiltersButton.addEventListener('click', function (event) {
+        const showFilterAction = function (event) {
             event.preventDefault();
             toggleShowFilters();
-        });
+        };
+        toggleShowFiltersButton.removeEventListener('click', showFilterAction);
+        toggleShowFiltersButton.addEventListener('click', showFilterAction);
     }
     // Event listeners for TimeLineType buttons.
     const typeButtons = document.querySelectorAll('.timeline-type-filter-button');
     typeButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
+        const typeButtonAction = function () {
             toggleTimeLineType(parseInt(button.dataset.type ?? '-1'));
-        });
+        };
+        button.removeEventListener('click', typeButtonAction);
+        button.addEventListener('click', typeButtonAction);
     });
     const allButton = document.querySelector('#toggle-all-time-line-types-button');
     if (allButton !== null) {
+        allButton.removeEventListener('click', setTimeLineTypeFilterToAll);
         allButton.addEventListener('click', setTimeLineTypeFilterToAll);
     }
     await setTagsAutoSuggestList(onThisDayParameters.progenies, onThisDayParameters.families, 'tag-filter-input', true);
@@ -460,7 +470,7 @@ function refreshSelectPickers() {
     }
 }
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             onThisDayParameters.progenies = getSelectedProgenies();
@@ -472,10 +482,12 @@ function addSelectedProgeniesChangedEventListener() {
             }
             await getOnThisDayData(onThisDayParameters);
         }
-    });
+    };
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 function addSelectedFamiliesChangedEventListener() {
-    window.addEventListener('familiesChanged', async () => {
+    const familiesChangedAction = async () => {
         let selectedFamilies = localStorage.getItem('selectedFamilies');
         if (selectedFamilies !== null) {
             onThisDayParameters.progenies = getSelectedProgenies();
@@ -487,7 +499,9 @@ function addSelectedFamiliesChangedEventListener() {
             }
             await getOnThisDayData(onThisDayParameters);
         }
-    });
+    };
+    window.removeEventListener('familiesChanged', familiesChangedAction);
+    window.addEventListener('familiesChanged', familiesChangedAction);
 }
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function () {

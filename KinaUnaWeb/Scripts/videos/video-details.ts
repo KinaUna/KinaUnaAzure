@@ -21,6 +21,7 @@ export function addVideoItemEventListeners(videoId: string): void {
     const videoElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-video-id="' + videoId + '"]');
     if (videoElementsWithDataId) {
         videoElementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onVideoItemDivClicked);
             element.addEventListener('click', onVideoItemDivClicked);
         });
     }
@@ -55,11 +56,13 @@ export async function popupVideoDetails(videoId: string): Promise<void> {
 async function addCommentEventListeners(): Promise<void> {
     const submitForm = document.getElementById('new-video-comment-form') as HTMLFormElement;
     if (submitForm !== null) {
+        submitForm.removeEventListener('submit', onSubmitComment);
         submitForm.addEventListener('submit', onSubmitComment);
     }
 
     const newCommentTextArea = document.getElementById('new-video-comment-text-area') as HTMLTextAreaElement;
     if (newCommentTextArea !== null) {
+        newCommentTextArea.removeEventListener('input', onCommentInput);
         newCommentTextArea.addEventListener('input', onCommentInput);
     }
 
@@ -143,6 +146,7 @@ async function addEditEventListeners(): Promise<void> {
         addCopyLocationButtonEventListener();
         const submitForm = document.getElementById('edit-video-form') as HTMLFormElement;
         if (submitForm !== null) {
+            submitForm.removeEventListener('submit', onSubmitEditVideoForm);
             submitForm.addEventListener('submit', onSubmitEditVideoForm);
         }
 
@@ -236,17 +240,21 @@ async function setupDateTimePicker(): Promise<void> {
 function addNavigationEventListeners(): void {
     let previousLink = document.querySelector<HTMLAnchorElement>('#previous-video-link');
     if (previousLink) {
+        previousLink.removeEventListener('click', onPreviousLinkClicked);
         previousLink.addEventListener('click', onPreviousLinkClicked);
     }
     let nextLink = document.querySelector<HTMLAnchorElement>('#next-video-link');
     if (nextLink) {
+        nextLink.removeEventListener('click', onNextLinkClicked);
         nextLink.addEventListener('click', onNextLinkClicked);
     }
 
     // Swipe navigation
     const videoDetailsDiv = document.querySelector<HTMLDivElement>('#video-details-div');
     if (videoDetailsDiv) {
+        videoDetailsDiv.removeEventListener('touchstart', onVideoDetailsTouchStart);
         videoDetailsDiv.addEventListener('touchstart', onVideoDetailsTouchStart);
+        videoDetailsDiv.removeEventListener('touchend', onVideoDetailsTouchEnd);
         videoDetailsDiv.addEventListener('touchend', onVideoDetailsTouchEnd);
     }
 }
@@ -338,14 +346,16 @@ function addCloseButtonEventListener(): void {
     let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
-            button.addEventListener('click', function () {
+            const closeButtonAction = function () {
                 const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (itemDetailsPopupDiv) {
                     itemDetailsPopupDiv.innerHTML = '';
                     itemDetailsPopupDiv.classList.add('d-none');
                     showBodyScrollbars();
                 }
-            });
+            };
+            button.removeEventListener('click', closeButtonAction);
+            button.addEventListener('click', closeButtonAction);
         });
     }
 }
@@ -357,6 +367,7 @@ function addCloseButtonEventListener(): void {
 function addShowMapButtonEventListener(): void {
     let showMapButton = document.querySelector<HTMLButtonElement>('#show-here-maps-button');
     if (showMapButton) {
+        showMapButton.removeEventListener('click', onShowHereMapsButtonClicked);
         showMapButton.addEventListener('click', onShowHereMapsButtonClicked);
     }
 }

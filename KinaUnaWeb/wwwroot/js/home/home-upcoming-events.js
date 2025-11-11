@@ -100,16 +100,18 @@ async function renderUpcomingEvent(timelineItem) {
 function setUpcomingEventsEventListeners() {
     moreUpcomingEventsButton = document.querySelector('#more-upcoming-events-button');
     if (moreUpcomingEventsButton !== null) {
-        moreUpcomingEventsButton.addEventListener('click', async () => {
+        const moreUpcomingButtonAction = async () => {
             getUpcomingEventsList(upcomingEventsParameters);
-        });
+        };
+        moreUpcomingEventsButton.removeEventListener('click', moreUpcomingButtonAction);
+        moreUpcomingEventsButton.addEventListener('click', moreUpcomingButtonAction);
     }
 }
 /**
  * Adds an event listener for the 'progeniesChanged' event to update the upcoming events list when the selected progenies change.
  */
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             upcomingEventsParameters.progenies = getSelectedProgenies();
@@ -121,10 +123,12 @@ function addSelectedProgeniesChangedEventListener() {
             }
             await getUpcomingEventsList(upcomingEventsParameters);
         }
-    });
+    };
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 function addSelectedFamiliesChangedEventListener() {
-    window.addEventListener('familiesChanged', async () => {
+    const familiesChangedAction = async () => {
         let selectedFamilies = localStorage.getItem('selectedFamilies');
         if (selectedFamilies !== null) {
             upcomingEventsParameters.progenies = getSelectedProgenies();
@@ -136,7 +140,9 @@ function addSelectedFamiliesChangedEventListener() {
             }
             await getUpcomingEventsList(upcomingEventsParameters);
         }
-    });
+    };
+    window.removeEventListener('familiesChanged', familiesChangedAction);
+    window.addEventListener('familiesChanged', familiesChangedAction);
 }
 /**
  * Initialization when the page is loaded.

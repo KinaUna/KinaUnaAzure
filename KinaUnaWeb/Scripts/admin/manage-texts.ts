@@ -210,27 +210,33 @@ document.addEventListener('DOMContentLoaded', function (): void {
     editButtons.forEach(function (element) {
         const editButton = element as HTMLButtonElement;
         if (editButton !== null) {
-            editButton.addEventListener('click', () => {
+            const editClickedAction = () => {
                 const senderTextId = editButton.dataset.manageTextsEditTextId;
                 const senderLanguageId = editButton.dataset.manageTextsEditLanguageId;
                 if (senderTextId && senderLanguageId) {
                     editTextTranslationCurrentTextItem.textId = parseInt(senderTextId);
                     editTextTranslationCurrentTextItem.languageId = parseInt(senderLanguageId);
                     loadManageTextsEditTextModal(editTextTranslationCurrentTextItem);
-                }                
-            });
+                }
+            };
+            editButton.removeEventListener('click', editClickedAction);
+            editButton.addEventListener('click', editClickedAction);
         }        
     });
 
     const manageTextsEditForm = document.querySelector<HTMLFormElement>('#manage-texts-edit-form');
     if (manageTextsEditForm !== null) {
-        manageTextsEditForm.addEventListener('submit', async (submitEvent) => {
+        const manageTextsSubmitAction = async (submitEvent: SubmitEvent) => {
             submitEvent.preventDefault();
-            await saveManageTextsContent();            
-        });
+            await saveManageTextsContent();
+        };
+        manageTextsEditForm.removeEventListener('submit', manageTextsSubmitAction);
+        manageTextsEditForm.addEventListener('submit', manageTextsSubmitAction);
     }
-    
-    window.addEventListener('languageChanged', () => {
+
+    const languageChangedAction = () => {
         editTextTranslationLanguageListChanged();
-    });
+    };
+    window.removeEventListener('languageChanged', languageChangedAction);
+    window.addEventListener('languageChanged', languageChangedAction);
 });

@@ -10,6 +10,7 @@ export function addSkillItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-skill-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onSkillItemDivClicked);
             element.addEventListener('click', onSkillItemDivClicked);
         });
     }
@@ -63,11 +64,13 @@ async function displaySkillItem(skillId) {
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closeButtonAction = function () {
                             skillDetailsPopupDiv.innerHTML = '';
                             skillDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        };
+                        button.removeEventListener('click', closeButtonAction);
+                        button.addEventListener('click', closeButtonAction);
                     });
                 }
                 setEditItemButtonEventListeners();

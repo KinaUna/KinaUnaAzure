@@ -38,14 +38,16 @@ export function setKanbanItems(kanbanItemsList) {
 }
 function addTimelineChangedEventListener() {
     // Subscribe to the timelineChanged event to refresh the KanbanBoards list when a KanbanBoard is added, updated, or deleted.
-    window.addEventListener('timelineChanged', async (event) => {
+    const kanbanBoardTimelineChangedAction = async (event) => {
         let changedItem = event.TimelineItem;
         if (changedItem !== null && changedItem.itemType === 16) { // 16 is the item type for KanbanBoards.
             if (changedItem.itemId === kanbanBoard.kanbanBoardId.toString()) {
                 await renderKanbanBoard(true);
             }
         }
-    });
+    };
+    window.removeEventListener('timelineChanged', kanbanBoardTimelineChangedAction);
+    window.addEventListener('timelineChanged', kanbanBoardTimelineChangedAction);
 }
 /**
  * Trigger a timelineChanged event for the specified KanbanBoard id.

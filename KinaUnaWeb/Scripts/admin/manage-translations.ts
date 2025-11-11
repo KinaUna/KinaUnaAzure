@@ -132,25 +132,33 @@ function createTranslationColumn(translationItem: pageModels.TextTranslation): H
     translationInput.value = translationItem.translation;
     translationInput.dataset.translationId = translationItem.id.toString();
 
-    translationInput.addEventListener('keydown', (keyPressed) => {
+    const translationInputKeyDownAction = (keyPressed: KeyboardEvent) => {
         if (keyPressed.key === 'Enter') {
             saveTranslationItem(translationItem.id);
         }
-    });
-    translationInput.addEventListener('focusin', () => {
+    };
+    translationInput.removeEventListener('keydown', translationInputKeyDownAction);
+    translationInput.addEventListener('keydown', translationInputKeyDownAction);
+
+    const translationInputFocusInAction = () => {
         const saveButton = document.querySelector<HTMLButtonElement>('[data-save-button-id="' + translationItem.id + '"]');
         if (saveButton !== null) {
             saveButton.classList.remove('d-none');
         }
-    });
-    translationInput.addEventListener('focusout', async () => {
+    };
+    translationInput.removeEventListener('focusin', translationInputFocusInAction);
+    translationInput.addEventListener('focusin', translationInputFocusInAction);
+
+    const translationInputFocusOutAction = async () => {
 
         const saveButton = document.querySelector<HTMLButtonElement>('[data-save-button-id="' + translationItem.id + '"]');
         if (saveButton !== null) {
             await hideElementDelay(500);
             saveButton.classList.add('d-none');
         }
-    });
+    };
+    translationInput.removeEventListener('focusout', translationInputFocusOutAction);
+    translationInput.addEventListener('focusout', translationInputFocusOutAction);
 
     let translationColumnInputGroupAppend = document.createElement('div');
     translationColumnInputGroupAppend.classList.add('input-group-append');
@@ -348,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function (): void {
             pageName = pageLiElement.dataset.viewid;
         }
 
-        selectPageElement.addEventListener('click', (event) => {
+        const selectPageClickAction = function(event: MouseEvent){
             const translationsPageSelectedDiv = document.querySelector<HTMLDivElement>('#translations-page-selected-div');
             if (translationsPageSelectedDiv !== null) {
                 translationsPageSelectedDiv.innerHTML = pageName;
@@ -360,7 +368,9 @@ document.addEventListener('DOMContentLoaded', function (): void {
 
             const liElement = event.target as HTMLLIElement;
             liElement.classList.add('select-view-item-selected')
-            getPageTranslations(pageName); 
-        })
+            getPageTranslations(pageName);
+        };
+        pageLiElement.removeEventListener('click', selectPageClickAction);
+        pageLiElement.addEventListener('click', selectPageClickAction);
     });
 });

@@ -6,6 +6,7 @@
 export function addCopyLocationButtonEventListener(): void {
     const copyLocationButton = document.querySelector<HTMLButtonElement>('#copy-location-button');
     if (copyLocationButton !== null) {
+        copyLocationButton.removeEventListener('click', onCopyLocationButtonClicked);
         copyLocationButton.addEventListener('click', onCopyLocationButtonClicked);
     }
 }

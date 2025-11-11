@@ -135,6 +135,7 @@ function setupFilterButtons(): void {
 
     const resetTagFilterButton = document.querySelector<HTMLButtonElement>('#reset-tag-filter-button');
     if (resetTagFilterButton !== null) {
+        resetTagFilterButton.removeEventListener('click', resetActiveTagFilter);
         resetTagFilterButton.addEventListener('click', resetActiveTagFilter);
     }
 }
@@ -145,16 +146,21 @@ function setupFilterButtons(): void {
 async function initialSettingsPanelSetup(): Promise<void> {
     const friendsPageSaveSettingsButton = document.querySelector<HTMLButtonElement>('#friends-page-save-settings-button');
     if (friendsPageSaveSettingsButton !== null) {
+        friendsPageSaveSettingsButton.removeEventListener('click', saveFriendsPageSettings);
         friendsPageSaveSettingsButton.addEventListener('click', saveFriendsPageSettings);
     }
 
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.removeEventListener('click', sortFriendsAscending);
         sortAscendingSettingsButton.addEventListener('click', sortFriendsAscending);
+        sortDescendingSettingsButton.removeEventListener('click', sortFriendsDescending);
         sortDescendingSettingsButton.addEventListener('click', sortFriendsDescending);
     }
 
     if (sortByFriendsSinceSettingsButton !== null && sortByNameSettingsButton !== null) {
+        sortByFriendsSinceSettingsButton.removeEventListener('click', sortByFriendsSince);
         sortByFriendsSinceSettingsButton.addEventListener('click', sortByFriendsSince);
+        sortByNameSettingsButton.removeEventListener('click', sortByName);
         sortByNameSettingsButton.addEventListener('click', sortByName);
     }
     
@@ -291,6 +297,7 @@ function updateTagsListDiv(tagsList: string[], sortOrder: number): void {
 
         const tagButtons = document.querySelectorAll('[data-tag-link]');
         tagButtons.forEach((tagButton) => {
+            tagButton.removeEventListener('click', tagButtonClick);
             tagButton.addEventListener('click', tagButtonClick);
         });
     }
@@ -332,6 +339,7 @@ async function resetActiveTagFilter(): Promise<void> {
 function addResetActiveTagFilterEventListener(): void {
     const resetTagFilterButton = document.querySelector<HTMLButtonElement>('#reset-tag-filter-button');
     if (resetTagFilterButton !== null) {
+        resetTagFilterButton.removeEventListener('click', resetActiveTagFilter);
         resetTagFilterButton.addEventListener('click', resetActiveTagFilter);
     }
 }
@@ -361,15 +369,18 @@ function refreshSelectPickers(): void {
         ($(".selectpicker") as any).selectpicker('refresh');
     }
 }
+
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             friendsPageParameters.progenies = getSelectedProgenies();
             friendsPageParameters.currentPageNumber = 1;
             await getFriendsList();
         }
-    });
+    }
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 
 /**

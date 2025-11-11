@@ -490,20 +490,23 @@ export function updateNoficationElementEvents(notificationButtonsList: HTMLColle
             if (button === null) {
                 return;
             }
-
-            button.addEventListener('click', async function (event: MouseEvent) {
+            const notificationClickedAction = async function (event: MouseEvent) {
                 event.stopImmediatePropagation();
                 await notificationItemClick(button);
-            });
+            }
+            button.removeEventListener('click', notificationClickedAction);
+            button.addEventListener('click', notificationClickedAction);
 
             const markReadButton = button.getElementsByClassName('mark-notification-read-button');
             if (markReadButton !== null) {
                 Array.from(markReadButton).forEach((markReadElement) => {
                     let markReadSpan = markReadElement as HTMLElement;
-                    markReadSpan.addEventListener('click', async function (event: MouseEvent) {
+                    const markReadAction = async function (event: MouseEvent) {
                         event.stopImmediatePropagation();
                         await markRead(markReadSpan);
-                    });
+                    }
+                    markReadSpan.removeEventListener('click', markReadAction);
+                    markReadSpan.addEventListener('click', markReadAction);
                 });
             }
 
@@ -511,10 +514,12 @@ export function updateNoficationElementEvents(notificationButtonsList: HTMLColle
             if (deleteButton !== null) {
                 Array.from(deleteButton).forEach((deleteElement) => {
                     let deleteSpan = deleteElement as HTMLElement;
-                    deleteSpan.addEventListener('click', async function (event: MouseEvent) {
+                    const deleteButtonAction = async function (event: MouseEvent) {
                         event.stopImmediatePropagation();
                         await removeNotification(deleteSpan);
-                    });
+                    }
+                    deleteSpan.removeEventListener('click', deleteButtonAction);
+                    deleteSpan.addEventListener('click', deleteButtonAction);
                 });
             }
         });

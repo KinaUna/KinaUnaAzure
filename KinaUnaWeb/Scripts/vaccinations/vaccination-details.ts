@@ -11,6 +11,7 @@ export function addVaccinationItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-vaccination-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onVaccinationItemDivClicked);
             element.addEventListener('click', onVaccinationItemDivClicked);
         });
     }
@@ -69,11 +70,13 @@ async function displayVaccinationItem(vaccinationId: string): Promise<void> {
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closeButtonAction = function () {
                             vaccinationDetailsPopupDiv.innerHTML = '';
                             vaccinationDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        };
+                        button.removeEventListener('click', closeButtonAction);
+                        button.addEventListener('click', closeButtonAction);
                     });
                 }
 

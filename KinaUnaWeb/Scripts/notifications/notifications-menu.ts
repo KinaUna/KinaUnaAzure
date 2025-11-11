@@ -240,7 +240,7 @@ async function start() {
 document.addEventListener('DOMContentLoaded', async function () {
     let notificationsButton = document.getElementById('notificationsButton');
     if (notificationsButton !== null) {
-        notificationsButton.addEventListener('click', function () {
+        const notificationClickedAction = function () {
             let notificationsIcon = document.getElementById('menu-notification-bell-icon');
             if (notificationsIcon !== null) {
                 notificationsIcon.classList.remove('notification-icon-animation');
@@ -248,7 +248,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (menuToggler !== null) {
                 menuToggler.classList.remove('notification-icon-animation');
             }
-        });
+        }
+        notificationsButton.removeEventListener('click', notificationClickedAction);
+        notificationsButton.addEventListener('click', notificationClickedAction);
     }
     await start();
     checkNotifications = setInterval(getNotifications, 600000);

@@ -187,18 +187,22 @@ function removeNotificationDiv(id: number): void {
 function addLoadMoreButtonEventListener(): void {
     moreNotificationsButton = document.querySelector<HTMLButtonElement>('#load-more-web-notifications-button');
     if (moreNotificationsButton !== null) {
-        moreNotificationsButton.addEventListener('click', async () => {
+        const moreButtonClickedAction = async () => {
             getWebNotificationsList(webNotificationsParameters);
-        });
+        }
+        moreNotificationsButton.removeEventListener('click', moreButtonClickedAction);
+        moreNotificationsButton.addEventListener('click', moreButtonClickedAction);
     }
 }
 
 function addMarkAllAsReadButtonEventListener(): void {
     markAllAsReadButton = document.querySelector<HTMLButtonElement>('#mark-all-notifications-as-read-button');
     if (markAllAsReadButton !== null) {
-        markAllAsReadButton.addEventListener('click', async () => {
+        const markAllAsReadAction = async () => {
             markAllNotificationsAsRead();
-        });
+        }
+        markAllAsReadButton.removeEventListener('click', markAllAsReadAction);
+        markAllAsReadButton.addEventListener('click', markAllAsReadAction);
     }
 }
 /**

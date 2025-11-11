@@ -438,29 +438,37 @@ async function initialSettingsPanelSetup() {
     });
     const timelineSaveSettingsButton = document.querySelector('#timeline-page-save-settings-button');
     if (timelineSaveSettingsButton !== null) {
+        timelineSaveSettingsButton.removeEventListener('click', saveTimelinePageSettings);
         timelineSaveSettingsButton.addEventListener('click', saveTimelinePageSettings);
     }
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.removeEventListener('click', sortTimelineAscending);
         sortAscendingSettingsButton.addEventListener('click', sortTimelineAscending);
+        sortDescendingSettingsButton.removeEventListener('click', sortTimelineDescending);
         sortDescendingSettingsButton.addEventListener('click', sortTimelineDescending);
     }
     // Event listener for the show filters button.
     const toggleShowFiltersButton = document.querySelector('#timeline-toggle-filters-button');
     if (toggleShowFiltersButton !== null) {
-        toggleShowFiltersButton.addEventListener('click', function (event) {
+        const toggleShowFilterAction = function (event) {
             event.preventDefault();
             toggleShowFilters();
-        });
+        };
+        toggleShowFiltersButton.removeEventListener('click', toggleShowFilterAction);
+        toggleShowFiltersButton.addEventListener('click', toggleShowFilterAction);
     }
     // Event listeners for TimeLineType buttons.
     const typeButtons = document.querySelectorAll('.timeline-type-filter-button');
     typeButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
+        const typeButtonAction = function () {
             toggleTimeLineType(parseInt(button.dataset.type ?? '-1'));
-        });
+        };
+        button.removeEventListener('click', typeButtonAction);
+        button.addEventListener('click', typeButtonAction);
     });
     const allButton = document.querySelector('#toggle-all-time-line-types-button');
     if (allButton !== null) {
+        allButton.removeEventListener('click', setTimeLineTypeFilterToAll);
         allButton.addEventListener('click', setTimeLineTypeFilterToAll);
     }
     await setTagsAutoSuggestList(timeLineParameters.progenies, timeLineParameters.families, 'tag-filter-input', true);
@@ -492,7 +500,7 @@ function refreshSelectPickers() {
  * It updates the timeLineParameters with the new selected progenies and reloads the timeline items list.
  */
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             timeLineParameters.progenies = getSelectedProgenies();
@@ -504,10 +512,12 @@ function addSelectedProgeniesChangedEventListener() {
             }
             await getTimelineList(timeLineParameters);
         }
-    });
+    };
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 function addSelectedFamiliesChangedEventListener() {
-    window.addEventListener('familiesChanged', async () => {
+    const familiesChangedAction = async () => {
         let selectedFamilies = localStorage.getItem('selectedFamilies');
         if (selectedFamilies !== null) {
             timeLineParameters.progenies = getSelectedProgenies();
@@ -519,7 +529,9 @@ function addSelectedFamiliesChangedEventListener() {
             }
             await getTimelineList(timeLineParameters);
         }
-    });
+    };
+    window.removeEventListener('familiesChanged', familiesChangedAction);
+    window.addEventListener('familiesChanged', familiesChangedAction);
 }
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function () {
@@ -533,9 +545,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     timeLineParameters.families = getSelectedFamilies();
     moreTimelineItemsButton = document.querySelector('#more-timeline-items-button');
     if (moreTimelineItemsButton !== null) {
-        moreTimelineItemsButton.addEventListener('click', async () => {
+        const moreTimelineItemAction = async () => {
             getTimelineList(timeLineParameters);
-        });
+        };
+        moreTimelineItemsButton.removeEventListener('click', moreTimelineItemAction);
+        moreTimelineItemsButton.addEventListener('click', moreTimelineItemAction);
     }
     addBrowserNavigationEventListeners();
     getParametersFromPageProperties();

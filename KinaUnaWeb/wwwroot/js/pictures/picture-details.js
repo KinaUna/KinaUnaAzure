@@ -51,10 +51,12 @@ export async function popupPictureDetails(pictureId) {
 async function addCommentEventListeners() {
     const submitForm = document.getElementById('new-picture-comment-form');
     if (submitForm !== null) {
+        submitForm.removeEventListener('submit', onSubmitComment);
         submitForm.addEventListener('submit', onSubmitComment);
     }
     const newCommentTextArea = document.getElementById('new-picture-comment-text-area');
     if (newCommentTextArea !== null) {
+        newCommentTextArea.removeEventListener('input', onCommentInput);
         newCommentTextArea.addEventListener('input', onCommentInput);
     }
     return new Promise(function (resolve, reject) {
@@ -116,16 +118,20 @@ async function submitComment() {
 function addNavigationEventListeners() {
     let previousLink = document.querySelector('#previous-picture-link');
     if (previousLink) {
+        previousLink.removeEventListener('click', onPreviousPictureClicked);
         previousLink.addEventListener('click', onPreviousPictureClicked);
     }
     let nextLink = document.querySelector('#next-picture-link');
     if (nextLink) {
+        nextLink.removeEventListener('click', onNextPictureClicked);
         nextLink.addEventListener('click', onNextPictureClicked);
     }
     // Swipe navigation
     const photoDetailsDiv = document.querySelector('#photo-details-div');
     if (photoDetailsDiv) {
+        photoDetailsDiv.removeEventListener('touchstart', onTouchStart);
         photoDetailsDiv.addEventListener('touchstart', onTouchStart);
+        photoDetailsDiv.removeEventListener('touchend', onTouchEnd);
         photoDetailsDiv.addEventListener('touchend', onTouchEnd);
     }
     // Todo: Add pinch/scroll zoom
@@ -133,6 +139,7 @@ function addNavigationEventListeners() {
     const imageElements = document.querySelectorAll('.picture-details-image');
     if (imageElements) {
         imageElements.forEach((imageElement) => {
+            imageElement.removeEventListener('click', onImageElementClicked);
             imageElement.addEventListener('click', onImageElementClicked);
         });
     }
@@ -211,14 +218,16 @@ function addCloseButtonEventListener() {
     let closeButtonsList = document.querySelectorAll('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
-            button.addEventListener('click', function () {
+            const closeButtonAction = function () {
                 const itemDetailsPopupDiv = document.querySelector('#item-details-div');
                 if (itemDetailsPopupDiv) {
                     itemDetailsPopupDiv.innerHTML = '';
                     itemDetailsPopupDiv.classList.add('d-none');
                     showBodyScrollbars();
                 }
-            });
+            };
+            button.removeEventListener('click', closeButtonAction);
+            button.addEventListener('click', closeButtonAction);
         });
     }
 }
@@ -229,6 +238,7 @@ function addCloseButtonEventListener() {
 function addShowMapButtonEventListener() {
     let showMapButton = document.querySelector('#show-here-maps-button');
     if (showMapButton) {
+        showMapButton.removeEventListener('click', onShowMapButtonClicked);
         showMapButton.addEventListener('click', onShowMapButtonClicked);
     }
 }

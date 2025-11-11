@@ -699,7 +699,9 @@ async function initialSettingsPanelSetup(): Promise<void> {
     sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-ascending-button');
     sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-descending-button');
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.removeEventListener('click', sortVideosAscending);
         sortAscendingSettingsButton.addEventListener('click', sortVideosAscending);
+        sortDescendingSettingsButton.removeEventListener('click', sortVideosDescending);
         sortDescendingSettingsButton.addEventListener('click', sortVideosDescending);
     }
 
@@ -710,6 +712,7 @@ async function initialSettingsPanelSetup(): Promise<void> {
 
     const pageSaveSettingsButton = document.querySelector<HTMLButtonElement>('#page-save-settings-button');
     if (pageSaveSettingsButton !== null) {
+        pageSaveSettingsButton.removeEventListener('click', saveVideosPageSettings);
         pageSaveSettingsButton.addEventListener('click', saveVideosPageSettings);
     }
 
@@ -722,26 +725,31 @@ async function initialSettingsPanelSetup(): Promise<void> {
 function addPageNavigationEventListeners(): void {
     const pageNextButton = document.querySelector<HTMLButtonElement>('#next-page-button');
     if (pageNextButton !== null) {
+        pageNextButton.removeEventListener('click', loadNextPage);
         pageNextButton.addEventListener('click', loadNextPage);
     }
 
     const pagePreviousButton = document.querySelector<HTMLButtonElement>('#previous-page-button');
     if (pagePreviousButton !== null) {
+        pagePreviousButton.removeEventListener('click', loadPreviousPage);
         pagePreviousButton.addEventListener('click', loadPreviousPage);
     }
 
     const pageNextButtonBottom = document.querySelector<HTMLButtonElement>('#next-page-button-bottom');
     if (pageNextButtonBottom !== null) {
+        pageNextButtonBottom.removeEventListener('click', loadNextPage);
         pageNextButtonBottom.addEventListener('click', loadNextPage);
     }
 
     const pagePreviousButtonBottom = document.querySelector<HTMLButtonElement>('#previous-page-button-bottom');
     if (pagePreviousButtonBottom !== null) {
+        pagePreviousButtonBottom.removeEventListener('click', loadPreviousPage);
         pagePreviousButtonBottom.addEventListener('click', loadPreviousPage);
     }
 
     const resetTagFilterButton = document.querySelector<HTMLButtonElement>('#reset-tag-filter-button');
     if (resetTagFilterButton !== null) {
+        resetTagFilterButton.removeEventListener('click', resetActiveTagFilter);
         resetTagFilterButton.addEventListener('click', resetActiveTagFilter);
     }
 }
@@ -775,16 +783,17 @@ function refreshSelectPickers(): void {
 }
 
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            
             if (videosPageParameters !== null) {
                 videosPageParameters.progenies = getSelectedProgenies();
                 videosPageParameters = await getVideosList(videosPageParameters, false);
             }
         }
-    });
+    }
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 
 /** Initialization and setup when page is loaded */

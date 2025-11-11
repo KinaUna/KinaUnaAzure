@@ -59,11 +59,13 @@ export async function popupPictureDetails(pictureId: string): Promise<void> {
 async function addCommentEventListeners(): Promise<void> {
     const submitForm = document.getElementById('new-picture-comment-form') as HTMLFormElement;
     if (submitForm !== null) {
+        submitForm.removeEventListener('submit', onSubmitComment);
         submitForm.addEventListener('submit', onSubmitComment);
     }
 
     const newCommentTextArea = document.getElementById('new-picture-comment-text-area') as HTMLTextAreaElement;
     if (newCommentTextArea !== null) {
+        newCommentTextArea.removeEventListener('input', onCommentInput);
         newCommentTextArea.addEventListener('input', onCommentInput);
     }
 
@@ -135,17 +137,21 @@ async function submitComment(): Promise<void> {
 function addNavigationEventListeners(): void {
     let previousLink = document.querySelector<HTMLAnchorElement>('#previous-picture-link');
     if (previousLink) {
+        previousLink.removeEventListener('click', onPreviousPictureClicked);
         previousLink.addEventListener('click', onPreviousPictureClicked);
     }
     let nextLink = document.querySelector<HTMLAnchorElement>('#next-picture-link');
     if (nextLink) {
+        nextLink.removeEventListener('click', onNextPictureClicked);
         nextLink.addEventListener('click', onNextPictureClicked);
     }
 
     // Swipe navigation
     const photoDetailsDiv = document.querySelector<HTMLDivElement>('#photo-details-div');
     if (photoDetailsDiv) {
+        photoDetailsDiv.removeEventListener('touchstart', onTouchStart);
         photoDetailsDiv.addEventListener('touchstart', onTouchStart);
+        photoDetailsDiv.removeEventListener('touchend', onTouchEnd);
         photoDetailsDiv.addEventListener('touchend', onTouchEnd );
     }
 
@@ -155,6 +161,7 @@ function addNavigationEventListeners(): void {
     const imageElements = document.querySelectorAll<HTMLImageElement>('.picture-details-image');
     if (imageElements) {
         imageElements.forEach((imageElement) => {
+            imageElement.removeEventListener('click', onImageElementClicked);
             imageElement.addEventListener('click', onImageElementClicked);
         });
     }
@@ -246,14 +253,16 @@ function addCloseButtonEventListener(): void {
     let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
     if (closeButtonsList) {
         closeButtonsList.forEach((button) => {
-            button.addEventListener('click', function () {
+            const closeButtonAction = function () {
                 const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
                 if (itemDetailsPopupDiv) {
                     itemDetailsPopupDiv.innerHTML = '';
                     itemDetailsPopupDiv.classList.add('d-none');
                     showBodyScrollbars();
                 }
-            });
+            }
+            button.removeEventListener('click', closeButtonAction);
+            button.addEventListener('click', closeButtonAction);
         });
     }
 }
@@ -265,6 +274,7 @@ function addCloseButtonEventListener(): void {
 function addShowMapButtonEventListener(): void {
     let showMapButton = document.querySelector<HTMLButtonElement>('#show-here-maps-button');
     if (showMapButton) {
+        showMapButton.removeEventListener('click', onShowMapButtonClicked);
         showMapButton.addEventListener('click', onShowMapButtonClicked);
     }
 }

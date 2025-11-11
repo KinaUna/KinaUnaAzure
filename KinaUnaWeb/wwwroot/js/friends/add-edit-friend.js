@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemProgenyId } from '../data-tools-v9.js';
+import { getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 let zebraDatePickerTranslations;
@@ -25,26 +25,6 @@ async function setupDateTimePicker() {
         show_select_today: zebraDatePickerTranslations.todayString,
         select_other_months: true
     });
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
-/**
- * Sets up the Progeny select list and adds an event listener to update the context and tags auto suggest lists when the selected Progeny changes.
- */
-function setupProgenySelectList() {
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
-    }
-}
-async function onProgenySelectListChanged() {
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = parseInt(progenyIdSelect.value);
-        await setTagsAutoSuggestList([currentProgenyId], []);
-        await setContextAutoSuggestList([currentProgenyId], []);
-    }
     return new Promise(function (resolve, reject) {
         resolve();
     });

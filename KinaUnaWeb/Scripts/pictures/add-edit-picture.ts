@@ -109,7 +109,8 @@ function hideInputsWhenUploading(): void {
     const dropZone = document.getElementById('drop-files-div');
     if (dropZone !== null) {
         dropZone.classList.add('d-none');
-        dropZone.removeEventListener('drop', async function (event) { });
+        dropZone.removeEventListener('drop', onDropFilesDivDrop);
+        dropZone.removeEventListener('dragover', onDropFilesDivDragOver);
     }
 
     // Elements are gone, scroll up to upload-file-div to keep image previews in view.
@@ -140,6 +141,7 @@ function showLoadingSpinners(): void {
 function addOverrideSubmitEvent(): void {
     const submitForm = document.getElementById('add-pictures-form') as HTMLFormElement;
     if (submitForm !== null) {
+        submitForm.removeEventListener('submit', onSubmitAddPicturesForm);
         submitForm.addEventListener('submit', onSubmitAddPicturesForm);
     }
 }
@@ -247,7 +249,7 @@ async function uploadPicture(formData: FormData, pictureFile: File, itemNumber: 
 function addSelectPhotoButtonEventListener(): void {
     const selectPhotoButton = document.querySelector<HTMLButtonElement>('#select-photos-button');
     if (selectPhotoButton !== null) {
-        
+        selectPhotoButton.removeEventListener('click', selectFiles);
         selectPhotoButton.addEventListener('click', selectFiles);
     }
 }
@@ -360,7 +362,9 @@ function addDropEventListener(): void {
     if (dropZone === null) {
         return;
     }
+    dropZone.removeEventListener('dragover', onDropFilesDivDragOver);
     dropZone.addEventListener('dragover', onDropFilesDivDragOver);
+    dropZone.removeEventListener('drop', onDropFilesDivDrop);
     dropZone.addEventListener('drop', onDropFilesDivDrop);
 
 }
@@ -394,6 +398,7 @@ function addFileInputEventListener(): void {
         return;
     }
 
+    filesInput.removeEventListener('change', onFilesInputChanged);
     filesInput.addEventListener('change', onFilesInputChanged);
 
     filesInput.value = '';

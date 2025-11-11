@@ -120,66 +120,6 @@ async function setupDateTimePickers(): Promise<void> {
     });
 }
 
-/**
- * Sets up the Progeny select list and adds an event listener to update the context and location auto suggest lists when the selected Progeny changes.
- */
-function setupProgenySelectList(): void {
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        progenyIdSelect.removeEventListener('change', onProgenySelectListChanged);
-        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
-    }
-}
-
-async function onProgenySelectListChanged(): Promise<void> {
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = parseInt(progenyIdSelect.value);
-        await setContextAutoSuggestList([currentProgenyId], []);
-        await setLocationAutoSuggestList([currentProgenyId], []);
-        const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
-        if (familyIdSelect !== null) {
-            currentFamilyId = 0;
-            familyIdSelect.value = '0';
-            // Deselect all items in the selectpicker.
-            familyIdSelect.selectedIndex = -1;
-        }
-    }
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
-
-function setupFamilySelectList(): void {
-    const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
-    if (familyIdSelect !== null) {
-        familyIdSelect.removeEventListener('change', onFamilySelectListChanged);
-        familyIdSelect.addEventListener('change', onFamilySelectListChanged);
-    }
-}
-
-async function onFamilySelectListChanged(): Promise<void> {
-    const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
-    if (familyIdSelect === null) {
-        return new Promise<void>(function (resolve, reject) {
-            resolve();
-        });
-    }
-    currentFamilyId = parseInt(familyIdSelect.value);
-    await setContextAutoSuggestList([], [currentFamilyId]);
-    await setLocationAutoSuggestList([], [currentFamilyId]);
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = 0;
-        progenyIdSelect.value = '0';
-        // Deselect all items in the selectpicker.
-        progenyIdSelect.selectedIndex = -1;
-    }
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
-
 export async function initializeAddEditEvent(itemId: string): Promise<void> {
     currentProgenyId = getCurrentItemProgenyId();
     currentFamilyId = getCurrentItemFamilyId();

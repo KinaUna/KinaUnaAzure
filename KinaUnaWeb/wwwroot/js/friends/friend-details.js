@@ -10,6 +10,7 @@ export function addFriendItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-friend-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onFriendItemDivClicked);
             element.addEventListener('click', onFriendItemDivClicked);
         });
     }
@@ -63,11 +64,13 @@ async function displayFriendItem(friendId) {
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closePopupDiv = function () {
                             friendDetailsPopupDiv.innerHTML = '';
                             friendDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        };
+                        button.removeEventListener('click', closePopupDiv);
+                        button.addEventListener('click', closePopupDiv);
                     });
                 }
                 setEditItemButtonEventListeners();

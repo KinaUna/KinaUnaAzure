@@ -2,7 +2,7 @@ import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/i
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
 import * as pageModels from '../page-models-v9.js';
 import * as SettingsHelper from '../settings-tools-v9.js';
-import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v9.js';
 import { setUpMapClickToShowLocationListener } from './location-tools.js';
 const locationsPageSettingsStorageKey = 'locations_page_parameters';
 let locationsPageParameters = new pageModels.LocationsPageParameters();
@@ -122,14 +122,19 @@ async function getLocationElement(id) {
 async function initialSettingsPanelSetup() {
     const locationsPageSaveSettingsButton = document.querySelector('#locations-page-save-settings-button');
     if (locationsPageSaveSettingsButton !== null) {
+        locationsPageSaveSettingsButton.removeEventListener('click', saveLocationsPageSettings);
         locationsPageSaveSettingsButton.addEventListener('click', saveLocationsPageSettings);
     }
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.removeEventListener('click', sortLocationsAscending);
         sortAscendingSettingsButton.addEventListener('click', sortLocationsAscending);
+        sortDescendingSettingsButton.removeEventListener('click', sortLocationsDescending);
         sortDescendingSettingsButton.addEventListener('click', sortLocationsDescending);
     }
     if (sortByDateSettingsButton !== null && sortByNameSettingsButton !== null) {
+        sortByDateSettingsButton.removeEventListener('click', sortByDate);
         sortByDateSettingsButton.addEventListener('click', sortByDate);
+        sortByNameSettingsButton.removeEventListener('click', sortByName);
         sortByNameSettingsButton.addEventListener('click', sortByName);
     }
     return new Promise(function (resolve, reject) {
@@ -244,6 +249,7 @@ function updateTagsListDiv(tagsList, sortOrder) {
         });
         const tagButtons = document.querySelectorAll('[data-tag-link]');
         tagButtons.forEach((tagButton) => {
+            tagButton.removeEventListener('click', tagButtonClick);
             tagButton.addEventListener('click', tagButtonClick);
         });
     }
@@ -280,6 +286,7 @@ async function resetActiveTagFilter() {
 function addResetActiveTagFilterEventListener() {
     const resetTagFilterButton = document.querySelector('#reset-tag-filter-button');
     if (resetTagFilterButton !== null) {
+        resetTagFilterButton.removeEventListener('click', resetActiveTagFilter);
         resetTagFilterButton.addEventListener('click', resetActiveTagFilter);
     }
 }
@@ -310,14 +317,30 @@ function setUpMap() {
     setUpMapClickToShowLocationListener(map);
 }
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             locationsPageParameters.progenies = getSelectedProgenies();
+            locationsPageParameters.families = getSelectedFamilies();
             locationsPageParameters.currentPageNumber = 1;
             await getLocationsList();
         }
-    });
+    };
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
+}
+function addSelectedFamiliesChangedEventListener() {
+    const familiesChangedAction = async () => {
+        let selectedFamilies = localStorage.getItem('selectedFamilies');
+        if (selectedFamilies !== null) {
+            locationsPageParameters.progenies = getSelectedProgenies();
+            locationsPageParameters.families = getSelectedFamilies();
+            locationsPageParameters.currentPageNumber = 1;
+            await getLocationsList();
+        }
+    };
+    window.removeEventListener('familiesChanged', familiesChangedAction);
+    window.addEventListener('familiesChanged', familiesChangedAction);
 }
 /**
  * Initializes the page elements when it is loaded.
@@ -332,7 +355,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     await loadLocationsPageSettings();
     await showPopupAtLoad(pageModels.TimeLineType.Location);
     addSelectedProgeniesChangedEventListener();
+    addSelectedFamiliesChangedEventListener();
     locationsPageParameters.progenies = getSelectedProgenies();
+    locationsPageParameters.families = getSelectedFamilies();
     await getLocationsList();
     window.addEventListener('resize', () => map.getViewPort().resize());
     map.getViewPort().resize();

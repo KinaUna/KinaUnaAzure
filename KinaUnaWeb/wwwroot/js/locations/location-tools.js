@@ -5,6 +5,7 @@ import { popupLocationItem } from "./location-details.js";
 export function addCopyLocationButtonEventListener() {
     const copyLocationButton = document.querySelector('#copy-location-button');
     if (copyLocationButton !== null) {
+        copyLocationButton.removeEventListener('click', onCopyLocationButtonClicked);
         copyLocationButton.addEventListener('click', onCopyLocationButtonClicked);
     }
 }

@@ -275,13 +275,15 @@ function loadPhotoLocationsPageSettings() {
     }
 }
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             locationsPageParameters.progenies = getSelectedProgenies();
             await getPicturesLocationsList();
         }
-    });
+    };
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 document.addEventListener('DOMContentLoaded', async function () {
     photoLocationsProgenyId = getCurrentProgenyId();
@@ -293,19 +295,24 @@ document.addEventListener('DOMContentLoaded', async function () {
     setUpMap();
     const photoLocationsSaveSettingsButton = document.querySelector('#photo-locations-page-save-settings-button');
     if (photoLocationsSaveSettingsButton !== null) {
+        photoLocationsSaveSettingsButton.removeEventListener('click', savePhotoLocationsPageSettings);
         photoLocationsSaveSettingsButton.addEventListener('click', savePhotoLocationsPageSettings);
     }
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.removeEventListener('click', sortPicturesAscending);
         sortAscendingSettingsButton.addEventListener('click', sortPicturesAscending);
+        sortDescendingSettingsButton.removeEventListener('click', sortPicturesDescending);
         sortDescendingSettingsButton.addEventListener('click', sortPicturesDescending);
     }
     SettingsHelper.initPageSettings();
     await getPicturesLocationsList();
     const morePicturesButton = document.getElementById('more-pictures-button');
     if (morePicturesButton !== null) {
-        morePicturesButton.addEventListener('click', async function () {
+        const morePicturesAction = async function () {
             await processPicturesNearLocation();
-        });
+        };
+        morePicturesButton.removeEventListener('click', morePicturesAction);
+        morePicturesButton.addEventListener('click', morePicturesAction);
     }
     window.addEventListener('resize', () => map?.getViewPort().resize());
     map?.getViewPort().resize();

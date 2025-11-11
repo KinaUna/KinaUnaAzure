@@ -27,8 +27,6 @@ let sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#s
 let settingsStartDateTimePicker: any = $('#settings-start-date-datetimepicker');
 let startLabelDiv = document.querySelector<HTMLDivElement>('#start-label-div');
 
-
-
 /** Reads the initial page parameters from json serialized data in the pictures-page-parameters div elements data-pictures-page-parameters attribute.
  * If the page is navigated to without specific parameters, itemsPerPage, sort, and sortTags parameters are loaded from local storage.
  * @returns The PicturesPageParameters object with the initial page parameters.
@@ -703,7 +701,9 @@ async function initialSettingsPanelSetup(): Promise<void> {
     sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-ascending-button');
     sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-descending-button');
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.removeEventListener('click', sortPicturesAscending);
         sortAscendingSettingsButton.addEventListener('click', sortPicturesAscending);
+        sortDescendingSettingsButton.removeEventListener('click', sortPicturesDescending);
         sortDescendingSettingsButton.addEventListener('click', sortPicturesDescending);
     }
 
@@ -714,6 +714,7 @@ async function initialSettingsPanelSetup(): Promise<void> {
 
     const pageSaveSettingsButton = document.querySelector<HTMLButtonElement>('#page-save-settings-button');
     if (pageSaveSettingsButton !== null) {
+        pageSaveSettingsButton.removeEventListener('click', savePicturesPageSettings);
         pageSaveSettingsButton.addEventListener('click', savePicturesPageSettings);
     }
 
@@ -726,26 +727,31 @@ async function initialSettingsPanelSetup(): Promise<void> {
 function addPageNavigationEventListeners(): void {
     const pageNextButton = document.querySelector<HTMLButtonElement>('#next-page-button');
     if (pageNextButton !== null) {
+        pageNextButton.removeEventListener('click', loadNextPage);
         pageNextButton.addEventListener('click', loadNextPage);
     }
 
     const pagePreviousButton = document.querySelector<HTMLButtonElement>('#previous-page-button');
     if (pagePreviousButton !== null) {
+        pagePreviousButton.removeEventListener('click', loadPreviousPage);
         pagePreviousButton.addEventListener('click', loadPreviousPage);
     }
 
     const pageNextButtonBottom = document.querySelector<HTMLButtonElement>('#next-page-button-bottom');
     if (pageNextButtonBottom !== null) {
+        pageNextButtonBottom.removeEventListener('click', loadNextPage);
         pageNextButtonBottom.addEventListener('click', loadNextPage);
     }
 
     const pagePreviousButtonBottom = document.querySelector<HTMLButtonElement>('#previous-page-button-bottom');
     if (pagePreviousButtonBottom !== null) {
+        pagePreviousButtonBottom.removeEventListener('click', loadPreviousPage);
         pagePreviousButtonBottom.addEventListener('click', loadPreviousPage);
     }
 
     const resetTagFilterButton = document.querySelector<HTMLButtonElement>('#reset-tag-filter-button');
     if (resetTagFilterButton !== null) {
+        resetTagFilterButton.removeEventListener('click', resetActiveTagFilter);
         resetTagFilterButton.addEventListener('click', resetActiveTagFilter);
     }
 }
@@ -790,7 +796,7 @@ function getPopupPictureId() {
 }
 
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             if (picturesPageParameters !== null) {
@@ -798,10 +804,10 @@ function addSelectedProgeniesChangedEventListener() {
                 picturesPageParameters = await getPicturesList(picturesPageParameters, false);
             }
         }
-    });
+    }
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
-
-
 
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {

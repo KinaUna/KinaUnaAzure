@@ -10,6 +10,7 @@ export function addVocabularyItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-vocabulary-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onVocabularyItemDivClicked);
             element.addEventListener('click', onVocabularyItemDivClicked);
         });
     }
@@ -62,12 +63,14 @@ async function displayVocabularyItem(vocabularyId) {
                 vocabularyDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
+                    const closeButtonAction = function () {
+                        vocabularyDetailsPopupDiv.innerHTML = '';
+                        vocabularyDetailsPopupDiv.classList.add('d-none');
+                        showBodyScrollbars();
+                    };
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
-                            vocabularyDetailsPopupDiv.innerHTML = '';
-                            vocabularyDetailsPopupDiv.classList.add('d-none');
-                            showBodyScrollbars();
-                        });
+                        button.removeEventListener('click', closeButtonAction);
+                        button.addEventListener('click', closeButtonAction);
                     });
                 }
                 setEditItemButtonEventListeners();

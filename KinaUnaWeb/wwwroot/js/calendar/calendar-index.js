@@ -4,8 +4,6 @@ import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, st
 import { CalendarItemsRequest, TimeLineType } from '../page-models-v9.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v9.js';
 import { popupEventItem } from './calendar-details.js';
-let progeniesList = [];
-let familiesList = [];
 let selectedEventId = 0;
 let currentCulture = 'en';
 let calendarRequest = new CalendarItemsRequest();
@@ -14,7 +12,6 @@ let minDate = new Date();
 let maxDate = new Date();
 async function getCalendarItems() {
     startLoadingItemsSpinner('schedule');
-    calendarRequest.progenyIds = progeniesList;
     await fetch('/Calendar/GetCalendarList', {
         method: 'POST',
         headers: {
@@ -62,7 +59,6 @@ function onEventClick(args) {
     let scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
     let event = scheduleObj.getEventDetails(args.element);
     selectedEventId = event.eventId;
-    console.log(event.startTime);
     let startYear = event.startTime.getFullYear();
     let startMonth = event.startTime.getMonth() + 1;
     let startDay = event.startTime.getDate();
@@ -158,18 +154,33 @@ function addScheduleEventListeners() {
     });
 }
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            progeniesList = getSelectedProgenies();
+            calendarRequest.progenyIds = getSelectedProgenies();
+            calendarRequest.familyIds = getSelectedFamilies();
             await getCalendarItems();
         }
-    });
+    };
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
+}
+function addSelectedFamiliesChangedEventListener() {
+    const familiesChangedAction = async () => {
+        let selectedFamilies = localStorage.getItem('selectedFamilies');
+        if (selectedFamilies !== null) {
+            calendarRequest.progenyIds = getSelectedProgenies();
+            calendarRequest.familyIds = getSelectedFamilies();
+            await getCalendarItems();
+        }
+    };
+    window.removeEventListener('familiesChanged', familiesChangedAction);
+    window.addEventListener('familiesChanged', familiesChangedAction);
 }
 function initializeCalendarItemsRequest() {
     calendarRequest = new CalendarItemsRequest();
-    calendarRequest.progenyIds = progeniesList;
-    calendarRequest.familyIds = familiesList;
+    calendarRequest.progenyIds = getSelectedProgenies();
+    calendarRequest.familyIds = getSelectedFamilies();
     // Get current date and time
     // Default start date is 1 month before current date
     let startDate = new Date();
@@ -190,13 +201,11 @@ function initializeCalendarItemsRequest() {
  * Initializes page elements when it is loaded.
  */
 document.addEventListener('DOMContentLoaded', async function () {
+    startFullPageSpinner();
     await showPopupAtLoad(TimeLineType.Calendar);
     addScheduleEventListeners();
     await loadLocale();
     setLocale();
-    progeniesList = getSelectedProgenies();
-    familiesList = getSelectedFamilies();
-    startFullPageSpinner();
     initializeCalendarItemsRequest();
     await getCalendarItems();
     stopFullPageSpinner();

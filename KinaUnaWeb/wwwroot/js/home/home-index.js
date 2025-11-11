@@ -3,9 +3,11 @@ function addRandomPictureEventListener() {
     let randomPictureElement = document.querySelector('#random-picture-link');
     if (randomPictureElement) {
         const pictureId = randomPictureElement.getAttribute('data-random-picture-id') || '';
-        randomPictureElement.addEventListener('click', function () {
-            popupPictureDetails(pictureId);
-        });
+        const showRandomPicture = async function () {
+            await popupPictureDetails(pictureId);
+        };
+        randomPictureElement.removeEventListener('click', showRandomPicture);
+        randomPictureElement.addEventListener('click', showRandomPicture);
     }
 }
 document.addEventListener('DOMContentLoaded', async function () {

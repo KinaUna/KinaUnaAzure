@@ -11,6 +11,7 @@ export function addContactItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-contact-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onContactItemDivClicked);
             element.addEventListener('click', onContactItemDivClicked);
         });
     }
@@ -64,11 +65,13 @@ async function displayContactItem(contactId) {
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closePopupDiv = function () {
                             contactDetailsPopupDiv.innerHTML = '';
                             contactDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        };
+                        button.removeEventListener('click', closePopupDiv);
+                        button.addEventListener('click', closePopupDiv);
                     });
                 }
                 setEditItemButtonEventListeners();

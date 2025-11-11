@@ -34,29 +34,6 @@ async function setupDateTimePicker(): Promise<void> {
     });
 }
 
-/**
- * Sets up the Progeny select list and adds an event listener to update the context and tags auto suggest lists when the selected Progeny changes.
- */
-function setupProgenySelectList(): void {
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
-    }
-}
-
-async function onProgenySelectListChanged(): Promise<void> {
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = parseInt(progenyIdSelect.value);
-        await setTagsAutoSuggestList([currentProgenyId], []);
-        await setContextAutoSuggestList([currentProgenyId], []);
-    }
-
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
-
 export async function initializeAddEditFriend(itemId: string): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentItemProgenyId();

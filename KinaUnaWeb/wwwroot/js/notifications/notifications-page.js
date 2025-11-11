@@ -166,17 +166,21 @@ function removeNotificationDiv(id) {
 function addLoadMoreButtonEventListener() {
     moreNotificationsButton = document.querySelector('#load-more-web-notifications-button');
     if (moreNotificationsButton !== null) {
-        moreNotificationsButton.addEventListener('click', async () => {
+        const moreButtonClickedAction = async () => {
             getWebNotificationsList(webNotificationsParameters);
-        });
+        };
+        moreNotificationsButton.removeEventListener('click', moreButtonClickedAction);
+        moreNotificationsButton.addEventListener('click', moreButtonClickedAction);
     }
 }
 function addMarkAllAsReadButtonEventListener() {
     markAllAsReadButton = document.querySelector('#mark-all-notifications-as-read-button');
     if (markAllAsReadButton !== null) {
-        markAllAsReadButton.addEventListener('click', async () => {
+        const markAllAsReadAction = async () => {
             markAllNotificationsAsRead();
-        });
+        };
+        markAllAsReadButton.removeEventListener('click', markAllAsReadAction);
+        markAllAsReadButton.addEventListener('click', markAllAsReadAction);
     }
 }
 /**

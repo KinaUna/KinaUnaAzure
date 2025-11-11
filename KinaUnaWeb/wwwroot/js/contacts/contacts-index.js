@@ -3,7 +3,7 @@ import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/i
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
 import * as pageModels from '../page-models-v9.js';
 import * as SettingsHelper from '../settings-tools-v9.js';
-import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v9.js';
 const contactsPageSettingsStorageKey = 'contacts_page_parameters';
 let contactsPageParameters = new pageModels.ContactsPageParameters();
 const sortAscendingSettingsButton = document.querySelector('#settings-sort-ascending-button');
@@ -119,6 +119,7 @@ function setupFilterButtons() {
     });
     const resetTagFilterButton = document.querySelector('#reset-tag-filter-button');
     if (resetTagFilterButton !== null) {
+        resetTagFilterButton.removeEventListener('click', resetActiveTagFilter);
         resetTagFilterButton.addEventListener('click', resetActiveTagFilter);
     }
 }
@@ -128,22 +129,29 @@ function setupFilterButtons() {
 async function initialSettingsPanelSetup() {
     const contactsPageSaveSettingsButton = document.querySelector('#contacts-page-save-settings-button');
     if (contactsPageSaveSettingsButton !== null) {
+        contactsPageSaveSettingsButton.removeEventListener('click', saveContactsPageSettings);
         contactsPageSaveSettingsButton.addEventListener('click', saveContactsPageSettings);
     }
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        sortAscendingSettingsButton.removeEventListener('click', sortContactsAscending);
         sortAscendingSettingsButton.addEventListener('click', sortContactsAscending);
+        sortDescendingSettingsButton.removeEventListener('click', sortContactsDescending);
         sortDescendingSettingsButton.addEventListener('click', sortContactsDescending);
     }
     if (sortByContactAddedSettingsButton !== null) {
+        sortByContactAddedSettingsButton.removeEventListener('click', sortByContactAdded);
         sortByContactAddedSettingsButton.addEventListener('click', sortByContactAdded);
     }
     if (sortByDisplayNameSettingsButton !== null) {
+        sortByDisplayNameSettingsButton.removeEventListener('click', sortByDisplayName);
         sortByDisplayNameSettingsButton.addEventListener('click', sortByDisplayName);
     }
     if (sortByFirstNameSettingsButton !== null) {
+        sortByFirstNameSettingsButton.removeEventListener('click', sortByFirstName);
         sortByFirstNameSettingsButton.addEventListener('click', sortByFirstName);
     }
     if (sortByLastNameSettingsButton !== null) {
+        sortByLastNameSettingsButton.removeEventListener('click', sortByLastName);
         sortByLastNameSettingsButton.addEventListener('click', sortByLastName);
     }
     return new Promise(function (resolve, reject) {
@@ -357,14 +365,30 @@ function refreshSelectPickers() {
     }
 }
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             contactsPageParameters.progenies = getSelectedProgenies();
+            contactsPageParameters.families = getSelectedFamilies();
             contactsPageParameters.currentPageNumber = 1;
             await getContactsList();
         }
-    });
+    };
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
+}
+function addSelectedFamiliesChangedEventListener() {
+    const familiesChangedAction = async () => {
+        let selectedFamilies = localStorage.getItem('selectedFamilies');
+        if (selectedFamilies !== null) {
+            contactsPageParameters.progenies = getSelectedProgenies();
+            contactsPageParameters.families = getSelectedFamilies();
+            contactsPageParameters.currentPageNumber = 1;
+            await getContactsList();
+        }
+    };
+    window.removeEventListener('familiesChanged', familiesChangedAction);
+    window.addEventListener('familiesChanged', familiesChangedAction);
 }
 /**
  * Initializes the page elements when it is loaded.
@@ -379,7 +403,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     await loadContactsPageSettings();
     await showPopupAtLoad(pageModels.TimeLineType.Contact);
     addSelectedProgeniesChangedEventListener();
+    addSelectedFamiliesChangedEventListener();
     contactsPageParameters.progenies = getSelectedProgenies();
+    contactsPageParameters.families = getSelectedFamilies();
     await getContactsList();
     return new Promise(function (resolve, reject) {
         resolve();

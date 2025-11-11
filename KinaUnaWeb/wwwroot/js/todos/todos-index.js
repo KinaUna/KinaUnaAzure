@@ -1,7 +1,7 @@
 import { getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFormat, setContextAutoSuggestList, setLocationAutoSuggestList, setMomentLocale, setTagsAutoSuggestList, TimelineChangedEvent, validateDateValue } from '../data-tools-v9.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v9.js';
 import * as pageModels from '../page-models-v9.js';
-import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v9.js';
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
 import * as SettingsHelper from '../settings-tools-v9.js';
 import * as LocaleHelper from '../localization-v9.js';
@@ -415,20 +415,34 @@ function hideTodoItemMoreInfoDivs(todoItemId) {
  * This event is triggered when the selected progenies change.
  */
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
-        console.log('todos-index: progeniesChanged');
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             todosPageParameters.progenies = getSelectedProgenies();
+            todosPageParameters.families = getSelectedFamilies();
             todosPageParameters.currentPageNumber = 1;
             await getTodos();
         }
-    });
+    };
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
+}
+function addSelectedFamiliesChangedEventListener() {
+    const familiesChangedAction = async () => {
+        let selectedFamilies = localStorage.getItem('selectedFamilies');
+        if (selectedFamilies !== null) {
+            todosPageParameters.progenies = getSelectedProgenies();
+            todosPageParameters.families = getSelectedFamilies();
+            todosPageParameters.currentPageNumber = 1;
+            await getTodos();
+        }
+    };
+    window.removeEventListener('familiesChanged', familiesChangedAction);
+    window.addEventListener('familiesChanged', familiesChangedAction);
 }
 function addTimelineChangedEventListener() {
     // Subscribe to the timelineChanged event to refresh the todos list when a todo is added, updated, or deleted.
     window.addEventListener('timelineChanged', async (event) => {
-        console.log('todos-index: timelineChanged');
         let changedItem = event.TimelineItem;
         if (changedItem !== null && changedItem.itemType === 15) { // 15 is the item type for todos.
             if (changedItem.itemId !== '') {
@@ -600,9 +614,11 @@ function setEventListenersForItemsPerPage() {
     const decreaseItemsPerPageButton = document.querySelector('#decrease-todo-items-per-page-button');
     const increaseItemsPerPageButton = document.querySelector('#increase-todo-items-per-page-button');
     if (decreaseItemsPerPageButton !== null) {
+        decreaseItemsPerPageButton.removeEventListener('click', decreaseTodoItemsPerPage);
         decreaseItemsPerPageButton.addEventListener('click', decreaseTodoItemsPerPage);
     }
     if (increaseItemsPerPageButton !== null) {
+        increaseItemsPerPageButton.removeEventListener('click', increaseTodoItemsPerPage);
         increaseItemsPerPageButton.addEventListener('click', increaseTodoItemsPerPage);
     }
 }
@@ -1108,14 +1124,17 @@ async function onDomContentLoaded(event) {
     setTodosPageParametersFromPageData();
     loadTodosPageSettings();
     addSelectedProgeniesChangedEventListener();
+    addSelectedFamiliesChangedEventListener();
     addTimelineChangedEventListener();
     todosPageParameters.progenies = getSelectedProgenies();
+    todosPageParameters.families = getSelectedFamilies();
     moreTodoItemsButton = document.querySelector('#more-todo-items-button');
     if (moreTodoItemsButton !== null) {
-        moreTodoItemsButton.addEventListener('click', async () => {
-            console.log('moreTodoItemsButton');
+        const moreTodoItemsAction = async () => {
             await getTodos();
-        });
+        };
+        moreTodoItemsButton.removeEventListener('click', moreTodoItemsAction);
+        moreTodoItemsButton.addEventListener('click', moreTodoItemsAction);
     }
     document.removeEventListener('click', hideAllTodoIndexMenusAndModals);
     document.addEventListener('click', hideAllTodoIndexMenusAndModals);

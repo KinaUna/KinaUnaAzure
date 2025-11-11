@@ -9,8 +9,6 @@ import { popupEventItem } from './calendar-details.js';
 declare var syncfusionReference: any;
 declare var isCurrentUserProgenyAdmin: boolean;
 
-let progeniesList: number[] = [];
-let familiesList: number[] = [];
 let selectedEventId: number = 0;
 let currentCulture = 'en';
 let calendarRequest: CalendarItemsRequest = new CalendarItemsRequest();
@@ -20,7 +18,6 @@ let maxDate = new Date();
 
 async function getCalendarItems(): Promise<void> {
     startLoadingItemsSpinner('schedule');
-    calendarRequest.progenyIds = progeniesList;
 
     await fetch('/Calendar/GetCalendarList', {
         method: 'POST',
@@ -75,7 +72,6 @@ function onEventClick(args: any) {
     let scheduleObj = document.querySelector<any>('.e-schedule').ej2_instances[0];
     let event = scheduleObj.getEventDetails(args.element);
     selectedEventId = event.eventId;
-    console.log(event.startTime);
     let startYear = event.startTime.getFullYear();
     let startMonth = event.startTime.getMonth() + 1;
     let startDay = event.startTime.getDate();
@@ -191,21 +187,37 @@ function addScheduleEventListeners(): void {
 }
 
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
-            progeniesList = getSelectedProgenies();
+            calendarRequest.progenyIds = getSelectedProgenies();
+            calendarRequest.familyIds = getSelectedFamilies();
             await getCalendarItems();
         }
-    });
+    }
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
+}
+
+function addSelectedFamiliesChangedEventListener() {
+    const familiesChangedAction = async () => {
+        let selectedFamilies = localStorage.getItem('selectedFamilies');
+        if (selectedFamilies !== null) {
+            calendarRequest.progenyIds = getSelectedProgenies();
+            calendarRequest.familyIds = getSelectedFamilies();
+            await getCalendarItems();
+        }
+    }
+    window.removeEventListener('familiesChanged', familiesChangedAction);
+    window.addEventListener('familiesChanged', familiesChangedAction);
 }
 
 function initializeCalendarItemsRequest(): void {
     calendarRequest = new CalendarItemsRequest();
-    calendarRequest.progenyIds = progeniesList;
-    calendarRequest.familyIds = familiesList;
+    calendarRequest.progenyIds = getSelectedProgenies();
+    calendarRequest.familyIds = getSelectedFamilies();
+
     // Get current date and time
-    
     // Default start date is 1 month before current date
     let startDate = new Date();
     startDate.setMonth(currentDate.getMonth() - 2);
@@ -228,18 +240,19 @@ function initializeCalendarItemsRequest(): void {
  * Initializes page elements when it is loaded.
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    startFullPageSpinner();
+
     await showPopupAtLoad(TimeLineType.Calendar);
 
     addScheduleEventListeners();
     await loadLocale();
-    setLocale();
+    setLocale();        
     
-    progeniesList = getSelectedProgenies();
-    familiesList = getSelectedFamilies();
-    startFullPageSpinner();
     initializeCalendarItemsRequest();
     await getCalendarItems();
+
     stopFullPageSpinner();
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

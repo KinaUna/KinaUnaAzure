@@ -109,7 +109,7 @@ async function renderTimelineItem(timelineItem: TimelineItem): Promise<void> {
 }
 
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             timeLineParameters.progenies = getSelectedProgenies();
@@ -121,11 +121,13 @@ function addSelectedProgeniesChangedEventListener() {
             }
             await getTimelineList(timeLineParameters);
         }
-    });
+    }
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 
 function addSelectedFamiliesChangedEventListener() {
-    window.addEventListener('familiesChanged', async () => {
+    const familiesChangedAction = async () => {
         let selectedFamilies = localStorage.getItem('selectedFamilies');
         if (selectedFamilies !== null) {
             timeLineParameters.progenies = getSelectedProgenies();
@@ -137,7 +139,9 @@ function addSelectedFamiliesChangedEventListener() {
             }
             await getTimelineList(timeLineParameters);
         }
-    });
+    }
+    window.removeEventListener('familiesChanged', familiesChangedAction);
+    window.addEventListener('familiesChanged', familiesChangedAction);
 }
 
 /**

@@ -11,6 +11,7 @@ export function addSleepEventListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-sleep-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onSleepItemDivClicked);
             element.addEventListener('click', onSleepItemDivClicked);
         });
     }
@@ -65,11 +66,13 @@ async function displaySleepItem(sleepId: string): Promise<void> {
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closeButtonAction = function () {
                             sleepDetailsPopupDiv.innerHTML = '';
                             sleepDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        }
+                        button.removeEventListener('click', closeButtonAction);
+                        button.addEventListener('click', closeButtonAction);
                     });
                 }
                 setEditItemButtonEventListeners();

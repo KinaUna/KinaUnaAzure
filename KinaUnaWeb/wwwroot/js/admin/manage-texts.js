@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function () {
     editButtons.forEach(function (element) {
         const editButton = element;
         if (editButton !== null) {
-            editButton.addEventListener('click', () => {
+            const editClickedAction = () => {
                 const senderTextId = editButton.dataset.manageTextsEditTextId;
                 const senderLanguageId = editButton.dataset.manageTextsEditLanguageId;
                 if (senderTextId && senderLanguageId) {
@@ -189,18 +189,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     editTextTranslationCurrentTextItem.languageId = parseInt(senderLanguageId);
                     loadManageTextsEditTextModal(editTextTranslationCurrentTextItem);
                 }
-            });
+            };
+            editButton.removeEventListener('click', editClickedAction);
+            editButton.addEventListener('click', editClickedAction);
         }
     });
     const manageTextsEditForm = document.querySelector('#manage-texts-edit-form');
     if (manageTextsEditForm !== null) {
-        manageTextsEditForm.addEventListener('submit', async (submitEvent) => {
+        const manageTextsSubmitAction = async (submitEvent) => {
             submitEvent.preventDefault();
             await saveManageTextsContent();
-        });
+        };
+        manageTextsEditForm.removeEventListener('submit', manageTextsSubmitAction);
+        manageTextsEditForm.addEventListener('submit', manageTextsSubmitAction);
     }
-    window.addEventListener('languageChanged', () => {
+    const languageChangedAction = () => {
         editTextTranslationLanguageListChanged();
-    });
+    };
+    window.removeEventListener('languageChanged', languageChangedAction);
+    window.addEventListener('languageChanged', languageChangedAction);
 });
 //# sourceMappingURL=manage-texts.js.map

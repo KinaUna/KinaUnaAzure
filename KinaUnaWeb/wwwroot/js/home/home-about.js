@@ -60,6 +60,7 @@ function getAboutPageTextId() {
  */
 function addEditButtonEventListener() {
     const editAboutTextButton = document.querySelector('#edit-about-text-button');
+    editAboutTextButton?.removeEventListener('click', loadEditAboutModal);
     editAboutTextButton?.addEventListener('click', loadEditAboutModal);
 }
 /**

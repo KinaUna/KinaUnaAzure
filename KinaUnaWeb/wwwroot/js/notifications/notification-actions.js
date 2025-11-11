@@ -453,28 +453,34 @@ export function updateNoficationElementEvents(notificationButtonsList) {
             if (button === null) {
                 return;
             }
-            button.addEventListener('click', async function (event) {
+            const notificationClickedAction = async function (event) {
                 event.stopImmediatePropagation();
                 await notificationItemClick(button);
-            });
+            };
+            button.removeEventListener('click', notificationClickedAction);
+            button.addEventListener('click', notificationClickedAction);
             const markReadButton = button.getElementsByClassName('mark-notification-read-button');
             if (markReadButton !== null) {
                 Array.from(markReadButton).forEach((markReadElement) => {
                     let markReadSpan = markReadElement;
-                    markReadSpan.addEventListener('click', async function (event) {
+                    const markReadAction = async function (event) {
                         event.stopImmediatePropagation();
                         await markRead(markReadSpan);
-                    });
+                    };
+                    markReadSpan.removeEventListener('click', markReadAction);
+                    markReadSpan.addEventListener('click', markReadAction);
                 });
             }
             const deleteButton = button.getElementsByClassName('delete-notification-button');
             if (deleteButton !== null) {
                 Array.from(deleteButton).forEach((deleteElement) => {
                     let deleteSpan = deleteElement;
-                    deleteSpan.addEventListener('click', async function (event) {
+                    const deleteButtonAction = async function (event) {
                         event.stopImmediatePropagation();
                         await removeNotification(deleteSpan);
-                    });
+                    };
+                    deleteSpan.removeEventListener('click', deleteButtonAction);
+                    deleteSpan.addEventListener('click', deleteButtonAction);
                 });
             }
         });

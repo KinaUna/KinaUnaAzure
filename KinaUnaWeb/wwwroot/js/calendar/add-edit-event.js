@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v9.js';
-import { setContextAutoSuggestList, setLocationAutoSuggestList, getCurrentLanguageId, setMomentLocale, checkStartBeforeEndTime, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getCurrentItemFamilyId, getCurrentItemProgenyId } from '../data-tools-v9.js';
+import { getCurrentLanguageId, setMomentLocale, checkStartBeforeEndTime, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getCurrentItemFamilyId, getCurrentItemProgenyId } from '../data-tools-v9.js';
 import { setupRemindersSection } from '../reminders/reminders.js';
 import { setupRecurrenceSection } from './add-edit-recurrence.js';
 import { TimeLineType } from '../page-models-v9.js';
@@ -102,62 +102,6 @@ async function setupDateTimePickers() {
         endZebraPicker.addEventListener('focus', validateDatePickerStartEnd);
     }
     validateDatePickerStartEnd();
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
-/**
- * Sets up the Progeny select list and adds an event listener to update the context and location auto suggest lists when the selected Progeny changes.
- */
-function setupProgenySelectList() {
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        progenyIdSelect.removeEventListener('change', onProgenySelectListChanged);
-        progenyIdSelect.addEventListener('change', onProgenySelectListChanged);
-    }
-}
-async function onProgenySelectListChanged() {
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = parseInt(progenyIdSelect.value);
-        await setContextAutoSuggestList([currentProgenyId], []);
-        await setLocationAutoSuggestList([currentProgenyId], []);
-        const familyIdSelect = document.querySelector('#item-family-id-select');
-        if (familyIdSelect !== null) {
-            currentFamilyId = 0;
-            familyIdSelect.value = '0';
-            // Deselect all items in the selectpicker.
-            familyIdSelect.selectedIndex = -1;
-        }
-    }
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
-function setupFamilySelectList() {
-    const familyIdSelect = document.querySelector('#item-family-id-select');
-    if (familyIdSelect !== null) {
-        familyIdSelect.removeEventListener('change', onFamilySelectListChanged);
-        familyIdSelect.addEventListener('change', onFamilySelectListChanged);
-    }
-}
-async function onFamilySelectListChanged() {
-    const familyIdSelect = document.querySelector('#item-family-id-select');
-    if (familyIdSelect === null) {
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
-    }
-    currentFamilyId = parseInt(familyIdSelect.value);
-    await setContextAutoSuggestList([], [currentFamilyId]);
-    await setLocationAutoSuggestList([], [currentFamilyId]);
-    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
-    if (progenyIdSelect !== null) {
-        currentProgenyId = 0;
-        progenyIdSelect.value = '0';
-        // Deselect all items in the selectpicker.
-        progenyIdSelect.selectedIndex = -1;
-    }
     return new Promise(function (resolve, reject) {
         resolve();
     });

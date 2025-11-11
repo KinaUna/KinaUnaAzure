@@ -210,14 +210,16 @@ function sortNotesPageDescending() {
     notesPageParameters.sort = 1;
 }
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             notesPageParameters.progenies = getSelectedProgenies();
             notesPageParameters.currentPageNumber = 1;
             await getNotes();
         }
-    });
+    };
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 document.addEventListener('DOMContentLoaded', async function () {
     await showPopupAtLoad(pageModels.TimeLineType.Note);
@@ -244,14 +246,19 @@ document.addEventListener('DOMContentLoaded', async function () {
     notesPageParameters.progenies = getSelectedProgenies();
     getNotes();
     if (nextNotesItemsPageButton !== null && previousNotesItemsPageButton !== null) {
+        nextNotesItemsPageButton.removeEventListener('click', getNextNotesPage);
         nextNotesItemsPageButton.addEventListener('click', getNextNotesPage);
+        previousNotesItemsPageButton.removeEventListener('click', getPreviousNotesPage);
         previousNotesItemsPageButton.addEventListener('click', getPreviousNotesPage);
     }
     if (headerNextNotesItemsPageButton !== null && headerPreviousNotesItemsPageButton !== null) {
+        headerNextNotesItemsPageButton.removeEventListener('click', getNextNotesPage);
         headerNextNotesItemsPageButton.addEventListener('click', getNextNotesPage);
+        headerPreviousNotesItemsPageButton.removeEventListener('click', getPreviousNotesPage);
         headerPreviousNotesItemsPageButton.addEventListener('click', getPreviousNotesPage);
     }
     if (notesPageSettingsButton !== null) {
+        notesPageSettingsButton.removeEventListener('click', toggleShowNotesPageSettings);
         notesPageSettingsButton.addEventListener('click', toggleShowNotesPageSettings);
     }
     const decreaseNotesItemsPerPageButton = document.querySelector('#decrease-notes-items-per-page-button');
@@ -260,11 +267,17 @@ document.addEventListener('DOMContentLoaded', async function () {
     const closeNotesPageSettingsButton = document.querySelector('#close-notes-page-settings-button');
     if (decreaseNotesItemsPerPageButton !== null && increaseNotesItemsPerPageButton !== null &&
         notesSaveSettingsButton !== null && closeNotesPageSettingsButton !== null && sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
+        decreaseNotesItemsPerPageButton.removeEventListener('click', decreaseNotesItemsPerPage);
         decreaseNotesItemsPerPageButton.addEventListener('click', decreaseNotesItemsPerPage);
+        increaseNotesItemsPerPageButton.removeEventListener('click', increaseNotesItemsPerPage);
         increaseNotesItemsPerPageButton.addEventListener('click', increaseNotesItemsPerPage);
+        notesSaveSettingsButton.removeEventListener('click', saveNotesPageSettingsReload);
         notesSaveSettingsButton.addEventListener('click', saveNotesPageSettingsReload);
+        closeNotesPageSettingsButton.removeEventListener('click', toggleShowNotesPageSettings);
         closeNotesPageSettingsButton.addEventListener('click', toggleShowNotesPageSettings);
+        sortAscendingSettingsButton.removeEventListener('click', sortNotesPageAscending);
         sortAscendingSettingsButton.addEventListener('click', sortNotesPageAscending);
+        sortDescendingSettingsButton.removeEventListener('click', sortNotesPageDescending);
         sortDescendingSettingsButton.addEventListener('click', sortNotesPageDescending);
     }
     window.onpopstate = function (event) {

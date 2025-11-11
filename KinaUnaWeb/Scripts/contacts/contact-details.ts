@@ -12,6 +12,7 @@ export function addContactItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-contact-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onContactItemDivClicked);
             element.addEventListener('click', onContactItemDivClicked);
         });
     }
@@ -70,11 +71,13 @@ async function displayContactItem(contactId: string): Promise<void> {
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closePopupDiv = function () {
                             contactDetailsPopupDiv.innerHTML = '';
                             contactDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        };
+                        button.removeEventListener('click', closePopupDiv);
+                        button.addEventListener('click', closePopupDiv);
                     });
                 }
                 setEditItemButtonEventListeners();

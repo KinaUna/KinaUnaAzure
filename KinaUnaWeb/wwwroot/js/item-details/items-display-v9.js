@@ -99,7 +99,6 @@ function getItemIdFromPopupDiv(itemTypeString) {
             }
         }
     }
-    console.log('item-id: ' + itemId);
     return itemId;
 }
 /**
@@ -107,7 +106,6 @@ function getItemIdFromPopupDiv(itemTypeString) {
  */
 export async function showPopupAtLoad(itemType) {
     startFullPageSpinner();
-    console.log('showPopupAtLoad: itemType: ' + itemType);
     if (itemType === 1) {
         let itemId = getItemIdFromPopupDiv('picture');
         if (itemId !== 0) {

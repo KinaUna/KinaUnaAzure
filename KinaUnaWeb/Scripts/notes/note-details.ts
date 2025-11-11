@@ -11,9 +11,11 @@ export function addNoteEventListeners(itemId: string): void {
     const noteElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-note-id="' + itemId + '"]');
     if (noteElementsWithDataId) {
         noteElementsWithDataId.forEach((element) => {
-            element.addEventListener('click', async function () {
+            const noteClickedAction = async function () {
                 await displayNoteItem(itemId);
-            });
+            }
+            element.removeEventListener('click', noteClickedAction);
+            element.addEventListener('click', noteClickedAction);
         });
     }
 }
@@ -68,11 +70,13 @@ async function displayNoteItem(noteId: string): Promise<void> {
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closeButtonAction = function () {
                             noteDetailsPopupDiv.innerHTML = '';
                             noteDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        }
+                        button.removeEventListener('click', closeButtonAction);
+                        button.addEventListener('click', closeButtonAction);
                     });
                 }
 

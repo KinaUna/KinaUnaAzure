@@ -64,6 +64,7 @@ function getAboutPageTextId(): string {
  */
 function addEditButtonEventListener(): void {
     const editAboutTextButton = document.querySelector<HTMLButtonElement>('#edit-about-text-button');
+    editAboutTextButton?.removeEventListener('click', loadEditAboutModal);
     editAboutTextButton?.addEventListener('click', loadEditAboutModal);
 }
 

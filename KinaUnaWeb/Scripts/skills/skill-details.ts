@@ -11,6 +11,7 @@ export function addSkillItemListeners(itemId: string): void {
     const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-skill-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onSkillItemDivClicked);
             element.addEventListener('click', onSkillItemDivClicked);
         });
     }
@@ -69,11 +70,13 @@ async function displaySkillItem(skillId: string): Promise<void> {
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closeButtonAction = function () {
                             skillDetailsPopupDiv.innerHTML = '';
                             skillDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        }
+                        button.removeEventListener('click', closeButtonAction);
+                        button.addEventListener('click', closeButtonAction);
                     });
                 }
 

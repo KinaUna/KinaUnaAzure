@@ -113,14 +113,16 @@ async function renderYearAgoItem(timelineItem: TimelineItem) {
 function setYearAgoEventListeners(): void {
     moreYearAgoItemsButton = document.querySelector<HTMLButtonElement>('#more-year-ago-posts-button');
     if (moreYearAgoItemsButton !== null) {
-        moreYearAgoItemsButton.addEventListener('click', async () => {
+        const yearAgoButtonAction = async () => {
             getYearAgoList(yearAgoParameters);
-        });
+        }
+        moreYearAgoItemsButton.removeEventListener('click', yearAgoButtonAction);
+        moreYearAgoItemsButton.addEventListener('click', yearAgoButtonAction);
     }
 }
 
 function addSelectedProgeniesChangedEventListener() {
-    window.addEventListener('progeniesChanged', async () => {
+    const progeniesChangedAction = async () => {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             yearAgoParameters.progenies = getSelectedProgenies();
@@ -132,11 +134,13 @@ function addSelectedProgeniesChangedEventListener() {
             }
             await getYearAgoList(yearAgoParameters);
         }
-    });
+    }
+    window.removeEventListener('progeniesChanged', progeniesChangedAction);
+    window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 
 function addSelectedFamiliesChangedEventListener() {
-    window.addEventListener('familiesChanged', async () => {
+    const familiesChangedAction = async () => {
         let selectedFamilies = localStorage.getItem('selectedFamilies');
         if (selectedFamilies !== null) {
             yearAgoParameters.progenies = getSelectedProgenies();
@@ -148,7 +152,9 @@ function addSelectedFamiliesChangedEventListener() {
             }
             await getYearAgoList(yearAgoParameters);
         }
-    });
+    }
+    window.removeEventListener('familiesChanged', familiesChangedAction);
+    window.addEventListener('familiesChanged', familiesChangedAction);
 }
 
 /**

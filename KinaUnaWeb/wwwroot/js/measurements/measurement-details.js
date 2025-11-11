@@ -10,6 +10,7 @@ export function addMeasurementItemListeners(itemId) {
     const elementsWithDataId = document.querySelectorAll('[data-measurement-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onMeasurmentItemDivClicked);
             element.addEventListener('click', onMeasurmentItemDivClicked);
         });
     }
@@ -68,11 +69,13 @@ async function displayMeasurementItem(measurementId) {
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
+                        const closeButtonAction = function () {
                             measurementDetailsPopupDiv.innerHTML = '';
                             measurementDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
-                        });
+                        };
+                        button.removeEventListener('click', closeButtonAction);
+                        button.addEventListener('click', closeButtonAction);
                     });
                 }
                 setEditItemButtonEventListeners();
