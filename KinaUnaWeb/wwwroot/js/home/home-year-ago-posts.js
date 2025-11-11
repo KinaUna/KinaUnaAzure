@@ -2,7 +2,7 @@ import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v9.js'
 import { getCurrentProgenyId } from '../data-tools-v9.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v9.js';
-import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v9.js';
 let yearAgoItemsList = [];
 const yearAgoParameters = new TimelineParameters();
 let yearAgoProgenyId;
@@ -110,6 +110,22 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             yearAgoParameters.progenies = getSelectedProgenies();
+            yearAgoParameters.families = getSelectedFamilies();
+            yearAgoItemsList = [];
+            const yearAgoItemsDiv = document.querySelector('#year-ago-items-div');
+            if (yearAgoItemsDiv !== null) {
+                yearAgoItemsDiv.innerHTML = '';
+            }
+            await getYearAgoList(yearAgoParameters);
+        }
+    });
+}
+function addSelectedFamiliesChangedEventListener() {
+    window.addEventListener('familiesChanged', async () => {
+        let selectedFamilies = localStorage.getItem('selectedFamilies');
+        if (selectedFamilies !== null) {
+            yearAgoParameters.progenies = getSelectedProgenies();
+            yearAgoParameters.families = getSelectedFamilies();
             yearAgoItemsList = [];
             const yearAgoItemsDiv = document.querySelector('#year-ago-items-div');
             if (yearAgoItemsDiv !== null) {
@@ -128,7 +144,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     yearAgoParameters.skip = 0;
     yearAgoParameters.progenyId = yearAgoProgenyId;
     yearAgoParameters.progenies = getSelectedProgenies();
+    yearAgoParameters.families = getSelectedFamilies();
     addSelectedProgeniesChangedEventListener();
+    addSelectedFamiliesChangedEventListener();
     setYearAgoEventListeners();
     await getYearAgoList(yearAgoParameters);
     return new Promise(function (resolve, reject) {

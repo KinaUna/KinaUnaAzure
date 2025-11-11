@@ -11,6 +11,7 @@ export function addCalendarEventListeners(itemId) {
     const eventElementsWithDataId = document.querySelectorAll('[data-calendar-event-id="' + itemId + '"]');
     if (eventElementsWithDataId) {
         eventElementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onCalendarItemDivClicked);
             element.addEventListener('click', onCalendarItemDivClicked);
         });
     }

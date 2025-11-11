@@ -4,7 +4,7 @@ import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDat
 import * as SettingsHelper from '../settings-tools-v9.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v9.js';
-import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v9.js';
 
 const onThisDayPageSettingsStorageKey = 'on_this_day_page_parameters';
 const onThisDayParameters: OnThisDayRequest = new OnThisDayRequest();
@@ -529,6 +529,24 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             onThisDayParameters.progenies = getSelectedProgenies();
+            onThisDayParameters.families = getSelectedFamilies();
+            timelineItemsList = [];
+            const timelineDiv = document.querySelector<HTMLDivElement>('#on-this-day-items-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getOnThisDayData(onThisDayParameters);
+        }
+
+    });
+}
+
+function addSelectedFamiliesChangedEventListener() {
+    window.addEventListener('familiesChanged', async () => {
+        let selectedFamilies = localStorage.getItem('selectedFamilies');
+        if (selectedFamilies !== null) {
+            onThisDayParameters.progenies = getSelectedProgenies();
+            onThisDayParameters.families = getSelectedFamilies();
             timelineItemsList = [];
             const timelineDiv = document.querySelector<HTMLDivElement>('#on-this-day-items-div');
             if (timelineDiv !== null) {
@@ -557,7 +575,9 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     refreshSelectPickers();
 
     addSelectedProgeniesChangedEventListener();
+    addSelectedFamiliesChangedEventListener();
     onThisDayParameters.progenies = getSelectedProgenies();
+    onThisDayParameters.families = getSelectedFamilies();
 
     initialSettingsPanelSetup();
 

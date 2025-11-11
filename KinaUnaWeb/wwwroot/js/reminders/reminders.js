@@ -20,9 +20,12 @@ export function setupRemindersSection() {
         }
         deleteReminderElements.forEach((element) => {
             if (element.dataset.deleteReminderId) {
-                element.addEventListener('click', function () {
+                const deleteReminderClicked = function (event) {
+                    event.preventDefault();
                     deleteReminder(element.dataset.deleteReminderId);
-                });
+                };
+                element.removeEventListener('click', deleteReminderClicked);
+                element.addEventListener('click', deleteReminderClicked);
             }
         });
     }
@@ -32,6 +35,7 @@ export function setupRemindersSection() {
     }
     const addReminderButton = document.querySelector('#add-calendar-reminder-button');
     if (addReminderButton !== null) {
+        addReminderButton.removeEventListener('click', addReminder);
         addReminderButton.addEventListener('click', addReminder);
     }
 }
@@ -42,6 +46,7 @@ function refreshReminderSelectPicker() {
     const reminderOffsetSelectElement = document.querySelector('#reminder-offset-select');
     if (reminderOffsetSelectElement !== null) {
         $(".selectpicker").selectpicker('refresh');
+        reminderOffsetSelectElement.removeEventListener('change', reminderOffSetChanged);
         reminderOffsetSelectElement.addEventListener('change', reminderOffSetChanged);
     }
 }
@@ -178,6 +183,7 @@ async function saveReminder(reminder) {
                 remindersDiv.appendChild(addedReminderElement);
                 remindersSectionDiv.classList.remove('d-none');
                 remindersDiv.classList.remove('d-none');
+                setupRemindersSection();
             }
         }
         else {
@@ -216,6 +222,7 @@ async function deleteReminder(reminderId) {
             if (reminderElement) {
                 reminderElement.remove();
             }
+            setupRemindersSection();
         }
         else {
             console.error('Error deleting reminder. Status: ' + response.status + ', Message: ' + response.statusText);

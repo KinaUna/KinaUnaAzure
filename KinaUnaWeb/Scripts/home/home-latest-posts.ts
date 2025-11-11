@@ -2,7 +2,7 @@
 import { getCurrentProgenyId } from '../data-tools-v9.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v9.js';
-import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v9.js';
 
 let timelineItemsList: TimelineItem[] = []
 const timeLineParameters: TimelineParameters = new TimelineParameters();
@@ -113,6 +113,23 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             timeLineParameters.progenies = getSelectedProgenies();
+            timeLineParameters.families = getSelectedFamilies();
+            timelineItemsList = [];
+            const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
+            if (timelineDiv != null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getTimelineList(timeLineParameters);
+        }
+    });
+}
+
+function addSelectedFamiliesChangedEventListener() {
+    window.addEventListener('familiesChanged', async () => {
+        let selectedFamilies = localStorage.getItem('selectedFamilies');
+        if (selectedFamilies !== null) {
+            timeLineParameters.progenies = getSelectedProgenies();
+            timeLineParameters.families = getSelectedFamilies();
             timelineItemsList = [];
             const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
             if (timelineDiv != null) {
@@ -132,8 +149,10 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
     timeLineParameters.progenies = getSelectedProgenies();
+    timeLineParameters.families = getSelectedFamilies();
     timeLineParameters.year = -1;
     addSelectedProgeniesChangedEventListener();
+    addSelectedFamiliesChangedEventListener();
 
     moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#more-latest-posts-items-button');
     if (moreTimelineItemsButton !== null) {

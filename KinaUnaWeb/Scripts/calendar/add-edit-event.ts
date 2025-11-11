@@ -184,7 +184,7 @@ export async function initializeAddEditEvent(itemId: string): Promise<void> {
     currentProgenyId = getCurrentItemProgenyId();
     currentFamilyId = getCurrentItemFamilyId();
     languageId = getCurrentLanguageId();
-    
+
     setupDateTimePickers();
     setupRemindersSection();
     setupRecurrenceSection();

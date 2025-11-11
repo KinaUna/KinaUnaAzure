@@ -121,9 +121,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
             await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Calendar, calendarItemToAdd.EventId, calendarItemToAdd.ProgenyId, calendarItemToAdd.FamilyId, calendarItemToAdd.ItemPermissionsDtoList,
                 currentUserInfo);
+
             _ = await SetCalendarItemInCache(calendarItemToAdd.EventId);
-
-
+            
             return calendarItemToAdd;
         }
 
@@ -161,7 +161,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id, JsonConvert.SerializeObject(calendarItem), _cacheOptionsSliding);
 
-            List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == calendarItem.ProgenyId).ToListAsync();
+            List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == calendarItem.ProgenyId && c.FamilyId == calendarItem.FamilyId).ToListAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + calendarItem.ProgenyId + "_family_" + calendarItem.FamilyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
 
             return calendarItem;
@@ -178,7 +178,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
 
-            List<CalendarItem> calendarList = [.. _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId)];
+            List<CalendarItem> calendarList = [.. _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId && c.FamilyId == familyId)];
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
         }
 

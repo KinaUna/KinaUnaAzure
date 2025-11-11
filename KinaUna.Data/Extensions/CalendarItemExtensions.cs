@@ -101,6 +101,7 @@ namespace KinaUna.Data.Extensions
             {
                 ItemId = calendarItem.EventId.ToString(),
                 ProgenyId = calendarItem.ProgenyId,
+                FamilyId = calendarItem.FamilyId,
                 AccessLevel = calendarItem.AccessLevel,
                 ItemType = (int)KinaUnaTypes.TimeLineType.Calendar,
                 CreatedBy = calendarItem.Author,

@@ -4,7 +4,7 @@ import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDat
 import * as SettingsHelper from '../settings-tools-v9.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v9.js';
-import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v9.js';
 
 const timelinePageSettingsStorageKey = 'timeline_page_parameters';
 let timelineItemsList: TimelineItem[] = []
@@ -569,6 +569,24 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             timeLineParameters.progenies = getSelectedProgenies();
+            timeLineParameters.families = getSelectedFamilies();
+            timelineItemsList = [];
+            const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getTimelineList(timeLineParameters);
+        }
+
+    });
+}
+
+function addSelectedFamiliesChangedEventListener() {
+    window.addEventListener('familiesChanged', async () => {
+        let selectedFamilies = localStorage.getItem('selectedFamilies');
+        if (selectedFamilies !== null) {
+            timeLineParameters.progenies = getSelectedProgenies();
+            timeLineParameters.families = getSelectedFamilies();
             timelineItemsList = [];
             const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
             if (timelineDiv !== null) {
@@ -587,9 +605,12 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
 
     initialSettingsPanelSetup();
     addSelectedProgeniesChangedEventListener();
+    addSelectedFamiliesChangedEventListener();
+
     SettingsHelper.initPageSettings();
 
     timeLineParameters.progenies = getSelectedProgenies();
+    timeLineParameters.families = getSelectedFamilies();
 
     moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#more-timeline-items-button');
     if (moreTimelineItemsButton !== null) {

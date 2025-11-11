@@ -2,7 +2,7 @@ import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v9.js'
 import { getCurrentProgenyId } from '../data-tools-v9.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v9.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v9.js';
-import { getSelectedProgenies } from '../settings-tools-v9.js';
+import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v9.js';
 let upcomingEventsList = [];
 const upcomingEventsParameters = new TimelineParameters();
 let upcomingEventsProgenyId;
@@ -113,6 +113,22 @@ function addSelectedProgeniesChangedEventListener() {
         let selectedProgenies = localStorage.getItem('selectedProgenies');
         if (selectedProgenies !== null) {
             upcomingEventsParameters.progenies = getSelectedProgenies();
+            upcomingEventsParameters.families = getSelectedFamilies();
+            upcomingEventsList = [];
+            const timelineDiv = document.querySelector('#upcoming-events-div');
+            if (timelineDiv !== null) {
+                timelineDiv.innerHTML = '';
+            }
+            await getUpcomingEventsList(upcomingEventsParameters);
+        }
+    });
+}
+function addSelectedFamiliesChangedEventListener() {
+    window.addEventListener('familiesChanged', async () => {
+        let selectedFamilies = localStorage.getItem('selectedFamilies');
+        if (selectedFamilies !== null) {
+            upcomingEventsParameters.progenies = getSelectedProgenies();
+            upcomingEventsParameters.families = getSelectedFamilies();
             upcomingEventsList = [];
             const timelineDiv = document.querySelector('#upcoming-events-div');
             if (timelineDiv !== null) {
@@ -132,7 +148,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
     setUpcomingEventsEventListeners();
     addSelectedProgeniesChangedEventListener();
+    addSelectedFamiliesChangedEventListener();
     upcomingEventsParameters.progenies = getSelectedProgenies();
+    upcomingEventsParameters.families = getSelectedFamilies();
     await getUpcomingEventsList(upcomingEventsParameters);
     return new Promise(function (resolve, reject) {
         resolve();

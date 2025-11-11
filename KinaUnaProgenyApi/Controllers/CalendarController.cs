@@ -224,9 +224,18 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar, currentUserInfo);
-            if (timeLineItem == null || !timeLineItem.CopyCalendarItemPropertiesForUpdate(calendarItem)) return Ok(calendarItem);
-            
-            _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+            if (timeLineItem == null)
+            {
+                timeLineItem = calendarItem.ToNewTimeLineItem();
+                _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
+            }
+            else
+            {
+                if (timeLineItem.CopyCalendarItemPropertiesForUpdate(calendarItem))
+                {
+                    _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+                }
+            }
 
             calendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
 

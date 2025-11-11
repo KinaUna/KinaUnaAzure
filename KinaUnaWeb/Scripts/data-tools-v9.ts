@@ -524,7 +524,7 @@ export function checkStartBeforeEndTime(startElementId: string, endElementId: st
     let eTime: any = moment(endElement.value, pickerDateTimeFormatMoment);
     if (sTime.isValid() && eTime.isValid()) {
 
-        if (sTime < eTime) {
+        if (sTime <= eTime) {
 
             if (notificationDiv !== null) {
                 notificationDiv.textContent = '';

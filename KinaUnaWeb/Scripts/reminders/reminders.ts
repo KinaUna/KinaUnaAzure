@@ -25,9 +25,12 @@ export function setupRemindersSection(): void {
 
         deleteReminderElements.forEach((element) => {
             if (element.dataset.deleteReminderId) {
-                element.addEventListener('click', function () {
+                const deleteReminderClicked = function (event: Event) {
+                    event.preventDefault();
                     deleteReminder(element.dataset.deleteReminderId);
-                });
+                }
+                element.removeEventListener('click', deleteReminderClicked);
+                element.addEventListener('click', deleteReminderClicked);
             }
         });
     }
@@ -38,8 +41,8 @@ export function setupRemindersSection(): void {
 
     const addReminderButton = document.querySelector<HTMLButtonElement>('#add-calendar-reminder-button');
     if (addReminderButton !== null) {
+        addReminderButton.removeEventListener('click', addReminder);
         addReminderButton.addEventListener('click', addReminder);
-
     }
 }
 
@@ -50,6 +53,7 @@ function refreshReminderSelectPicker(): void {
     const reminderOffsetSelectElement = document.querySelector<HTMLSelectElement>('#reminder-offset-select');
     if (reminderOffsetSelectElement !== null) {
         ($(".selectpicker") as any).selectpicker('refresh');
+        reminderOffsetSelectElement.removeEventListener('change', reminderOffSetChanged);
         reminderOffsetSelectElement.addEventListener('change', reminderOffSetChanged);
     }
 }
@@ -210,6 +214,7 @@ async function saveReminder(reminder: CalendarReminderRequest): Promise<void> {
                 remindersDiv.appendChild(addedReminderElement);
                 remindersSectionDiv.classList.remove('d-none');
                 remindersDiv.classList.remove('d-none');
+                setupRemindersSection();
             }
         }
         else {
@@ -254,6 +259,7 @@ async function deleteReminder(reminderId: string | undefined) {
             if (reminderElement) {
                 reminderElement.remove();
             }
+            setupRemindersSection();
         }
         else {
             console.error('Error deleting reminder. Status: ' + response.status + ', Message: ' + response.statusText);
