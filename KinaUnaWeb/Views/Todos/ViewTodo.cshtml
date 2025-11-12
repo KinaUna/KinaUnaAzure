@@ -6,7 +6,17 @@
 @using KinaUnaWeb.Services
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Notes, Model.LanguageId);
+    string title = "";
+    if (Model.TodoItem.ProgenyId > 0)
+    {
+        title = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Notes, Model.LanguageId);
+    }
+    if (Model.TodoItem.FamilyId > 0)
+    {
+        title = Model.TodoItem.Family.Name + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Notes, Model.LanguageId);
+    }
+
+    ViewData["Title"] = title;
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="timeline-card-body bg-todos">

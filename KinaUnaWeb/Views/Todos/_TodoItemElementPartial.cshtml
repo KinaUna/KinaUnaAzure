@@ -21,7 +21,14 @@
         else
         {
             <div class="row m-0">
-                <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; z-index: 10;" />
+                @if (Model.TodoItem.ProgenyId > 0)
+                {
+                    <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; z-index: 10;" />
+                }
+                @if (Model.TodoItem.FamilyId > 0)
+                {
+                    <img src="@Model.TodoItem.Family.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; z-index: 10;" />
+                }
                 <div class="col p-0 card-compact-title text-left">
                     <div class="row m-0">
                         <div class="col-auto pl-1 pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">@Model.TodoItem.StatusIcon()</i> </div>
@@ -36,7 +43,7 @@
                         </div>
                     </div>
                 </div>
-                
+
             </div>
             <div id="todo-item-more-div-@Model.TodoItem.TodoItemId" class="row m-0 d-none todo-item-more-info" data-todo-item-more-id="@Model.TodoItem.TodoItemId">
                 <div class="col-12 p-0 card-compact-body">

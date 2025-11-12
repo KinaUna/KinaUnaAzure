@@ -4,7 +4,16 @@
 @model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Event", PageNames.Calendar, Model.LanguageId);
+    string title = "";
+    if (Model.CalendarItem.ProgenyId > 0)
+    {
+        title = Model.CalendarItem.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Event", PageNames.Calendar, Model.LanguageId);
+    }
+    if (Model.CalendarItem.FamilyId > 0)
+    {
+        title = Model.CalendarItem.Family.Name + " - " + await LocaleManager.GetTranslation("Event", PageNames.Calendar, Model.LanguageId);
+    }
+    
     string startDateString = DateTime.Now.ToString("dd-MMM-yyyy HH:mm");
     if (Model.CalendarItem.StartTime.HasValue)
     {
@@ -17,7 +26,7 @@
     }
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    <h2>@ViewData["Title"]</h2>
+    <h2>@title</h2>
     <div class="space-20"></div>
     <div class="card" style="clear: both;">
         <div class="card-body">

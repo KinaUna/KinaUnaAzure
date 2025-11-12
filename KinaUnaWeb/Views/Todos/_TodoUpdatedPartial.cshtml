@@ -14,7 +14,14 @@
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-todos-header">
-                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                @if (Model.TodoItem.ProgenyId > 0)
+                {
+                    <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                @if (Model.TodoItem.FamilyId > 0)
+                {
+                    <img src="@Model.TodoItem.Family.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>

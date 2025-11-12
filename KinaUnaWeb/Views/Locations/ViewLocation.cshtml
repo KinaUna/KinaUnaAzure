@@ -4,7 +4,17 @@
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Location:", PageNames.Locations, Model.LanguageId) + Model.LocationItem.Name;
+    string title = "";
+    if (Model.LocationItem.ProgenyId > 0)
+    {
+        title = Model.LocationItem.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Location:", PageNames.Locations, Model.LanguageId) + Model.LocationItem.Name;
+    }
+    if (Model.LocationItem.FamilyId > 0)
+    {
+        title = Model.LocationItem.Family.Name + " - " + await LocaleManager.GetTranslation("Location:", PageNames.Locations, Model.LanguageId) + Model.LocationItem.Name;
+    }
+
+    ViewData["Title"] = title;
     Model.LocationItem.Date ??= DateTime.MinValue;
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
@@ -74,7 +84,7 @@
                                         List<string> tagsList = Model.LocationItem.Tags.Split(',').ToList();
                                         foreach (string tagString in tagsList)
                                         {
-                                            <a asp-action="Index" asp-route-childId="@Model.LocationItem.ProgenyId" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
+                                            <a asp-action="Index" asp-route-childId="@Model.LocationItem.ProgenyId" asp-route-familyId="@Model.LocationItem.FamilyId" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
                                         }
                                     }
                                 }

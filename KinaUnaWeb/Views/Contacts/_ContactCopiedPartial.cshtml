@@ -5,7 +5,15 @@
 @model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Contact copied", PageNames.Contacts, Model.LanguageId);
+    string title = "";
+    if (Model.ContactItem.ProgenyId > 0)
+    {
+        title = Model.ContactItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Contact copied", PageNames.Contacts, Model.LanguageId);
+    }
+    if (Model.ContactItem.FamilyId > 0)
+    {
+        title = Model.ContactItem.Family.Name + " : " + await LocaleManager.GetTranslation("Contact copied", PageNames.Contacts, Model.LanguageId);
+    }
     string websiteLink = Model.ContactItem.Website;
     if (!string.IsNullOrEmpty(Model.ContactItem.Website) && !Model.ContactItem.Website.StartsWith("https://"))
     {
@@ -18,7 +26,14 @@
     <div class="timeline-card-body bg-contact item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-contact-header">
-                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                @if (Model.ContactItem.ProgenyId > 0)
+                {
+                    <img src="@Model.ContactItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                @if (Model.ContactItem.FamilyId > 0)
+                {
+                    <img src="@Model.ContactItem.Family.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>

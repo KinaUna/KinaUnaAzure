@@ -6,14 +6,29 @@
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
-    string title = Model.LocationItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Locations", PageNames.Locations, Model.LanguageId);
+    string title = "";
+    if (Model.LocationItem.ProgenyId > 0)
+    {
+        title = Model.LocationItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Locations", PageNames.Locations, Model.LanguageId);
+    }
+    if (Model.LocationItem.FamilyId > 0)
+    {
+        title = Model.LocationItem.Family.Name + " : " + await LocaleManager.GetTranslation("Locations", PageNames.Locations, Model.LanguageId);
+    }
     Model.LocationItem.Date ??= DateTime.MinValue;
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-location item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-location-header">
-                <img src="@Model.LocationItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
+                @if (Model.LocationItem.ProgenyId > 0)
+                {
+                    <img src="@Model.LocationItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                @if (Model.LocationItem.FamilyId > 0)
+                {
+                    <img src="@Model.LocationItem.Family.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -91,7 +106,7 @@
                                     List<string> tagsList = Model.LocationItem.Tags.Split(',').ToList();
                                     foreach (string tagString in tagsList)
                                     {
-                                        <a asp-action="Index" asp-route-childId="@Model.LocationItem.ProgenyId" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
+                                        <a asp-action="Index" asp-route-childId="@Model.LocationItem.ProgenyId" asp-route-familyId="@Model.LocationItem.FamilyId" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
                                     }
                                 }
                             }

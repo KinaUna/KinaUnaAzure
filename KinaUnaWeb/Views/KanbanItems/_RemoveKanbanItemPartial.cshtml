@@ -11,7 +11,14 @@
     <div class="timeline-card-body modal-content item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-add-item-header">
-                <img src="@Model.KanbanItem.TodoItem.Progeny.PictureLink" class="item-details-title-picture"/>
+                @if (Model.KanbanItem.TodoItem.ProgenyId > 0)
+                {
+                    <img src="@Model.KanbanItem.TodoItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                @if (Model.KanbanItem.TodoItem.FamilyId > 0)
+                {
+                    <img src="@Model.KanbanItem.TodoItem.Family.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link modal-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.KanbanItem.TodoItem.TodoItemId"><span>×</span></button>
             </div>
