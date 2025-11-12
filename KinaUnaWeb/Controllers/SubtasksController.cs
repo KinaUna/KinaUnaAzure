@@ -1,7 +1,6 @@
 ﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
-using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Models.TypeScriptModels.TodoItems;
@@ -143,108 +142,7 @@ namespace KinaUnaWeb.Controllers
             
             return PartialView("_SubtaskElementPartial", todoItemResponse);
         }
-
-        [AllowAnonymous]
-        public async Task<IActionResult> ViewSubtask(int todoId, bool partialView = false)
-        {
-            TodoItem subtask = await subtasksHttpClient.GetSubtask(todoId);
-            if (subtask == null || subtask.TodoItemId == 0)
-            {
-                return NotFound();
-            }
-
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), subtask.ProgenyId, subtask.FamilyId, false);
-            TodoViewModel model = new(baseModel)
-            {
-                TodoItem = subtask
-            };
-
-            if (model.TodoItem.ProgenyId > 0)
-            {
-                model.TodoItem.Progeny = model.CurrentProgeny;
-                model.TodoItem.Progeny.PictureLink = model.TodoItem.Progeny.GetProfilePictureUrl();
-            }
-
-            if (model.TodoItem.FamilyId > 0)
-            {
-                model.TodoItem.Family = model.CurrentFamily;
-                model.TodoItem.Family.PictureLink = model.TodoItem.Family.GetProfilePictureUrl();
-            }
-            
-            UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.TodoItem.CreatedBy);
-            model.TodoItem.CreatedBy = todoUserInfo.FullName();
-            model.SetStatusList(model.TodoItem.Status);
-
-            if (subtask.CompletedDate.HasValue)
-            {
-                subtask.CompletedDate = TimeZoneInfo.ConvertTimeFromUtc(subtask.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-            if (subtask.StartDate.HasValue)
-            {
-                subtask.StartDate = TimeZoneInfo.ConvertTimeFromUtc(subtask.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-            if (subtask.DueDate.HasValue)
-            {
-                subtask.DueDate = TimeZoneInfo.ConvertTimeFromUtc(subtask.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-
-            if (partialView)
-            {
-                return PartialView("_SubtaskDetailsPartial", model);
-            }
-
-            return View(model);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> AddSubtask()
-        {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
-            TodoViewModel model = new(baseModel);
-            if (model.CurrentUser == null)
-            {
-                return PartialView("_NotFoundPartial");
-            }
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
-            model.SetProgenyList();
-            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
-            model.SetFamilyList();
-
-            model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-
-            return PartialView("_AddSubtaskPartial", model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddSubtask(TodoViewModel model)
-        {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId, model.TodoItem.FamilyId, false);
-            model.SetBaseProperties(baseModel);
-            
-            TodoItem subtask = model.CreateTodoItem();
-
-            model.TodoItem = await subtasksHttpClient.AddSubtask(subtask);
-
-            model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            if (model.TodoItem.CompletedDate.HasValue)
-            {
-                model.TodoItem.CompletedDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-
-            if (model.TodoItem.StartDate.HasValue)
-            {
-                model.TodoItem.StartDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-
-            if (model.TodoItem.DueDate.HasValue)
-            {
-                model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-            return PartialView("_SubtaskAddedPartial", model);
-        }
-
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddSubtaskInline(TodoItem todoItem)
@@ -426,83 +324,7 @@ namespace KinaUnaWeb.Controllers
             
             return Json(model.TodoItem);
         }
-
-        [HttpGet]
-        public async Task<IActionResult> CopySubtask(int itemId)
-        {
-            TodoItem subtask = await subtasksHttpClient.GetSubtask(itemId);
-            if (subtask == null || subtask.TodoItemId == 0)
-            {
-                return NotFound();
-            }
-
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), subtask.ProgenyId, subtask.FamilyId, false);
-            TodoViewModel model = new(baseModel);
-            
-            model.SetPropertiesFromTodoItem(subtask);
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
-            model.SetProgenyList();
-            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
-            model.SetFamilyList();
-
-            model.SetStatusList(model.TodoItem.Status);
-
-            return PartialView("_CopySubtaskPartial", model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CopySubtask(TodoViewModel model)
-        {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId, model.TodoItem.FamilyId, false);
-            model.SetBaseProperties(baseModel);
-            bool canUserAdd = false;
-            if (model.TodoItem.ProgenyId > 0)
-            {
-                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
-                if (progenies.Exists(p => p.Id == model.TodoItem.ProgenyId))
-                {
-                    canUserAdd = true;
-                }
-            }
-
-            if (model.TodoItem.FamilyId > 0)
-            {
-                List<Family> families = await familiesHttpClient.GetFamiliesUserCanAccess(PermissionLevel.Add);
-                if (families.Exists(f => f.FamilyId == model.TodoItem.FamilyId))
-                {
-                    canUserAdd = true;
-                }
-            }
-
-            if (!canUserAdd)
-            {
-                // Todo: Show that no family or family members are available to add note for.
-                return PartialView("_AccessDeniedPartial");
-            }
-
-            TodoItem copiedSubtask = model.CreateTodoItem();
-
-            model.TodoItem = await subtasksHttpClient.AddSubtask(copiedSubtask);
-            model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            model.SetStatusList(model.TodoItem.Status);
-            if (model.TodoItem.CompletedDate.HasValue)
-            {
-                model.TodoItem.CompletedDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CompletedDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-            if (model.TodoItem.StartDate.HasValue)
-            {
-                model.TodoItem.StartDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-            if (model.TodoItem.DueDate.HasValue)
-            {
-                model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-            
-            return PartialView("_SubtaskCopiedPartial", model);
-        }
-
+        
         public async Task<IActionResult> AddSubtaskToKanbanBoard(int subtaskId)
         {
             TodoItem subtask = await subtasksHttpClient.GetSubtask(subtaskId);
