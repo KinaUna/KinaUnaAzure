@@ -206,13 +206,11 @@ namespace KinaUnaWeb.Controllers
             if (model.TodoItem.ProgenyId > 0)
             {
                 model.TodoItem.Progeny = model.CurrentProgeny;
-                model.TodoItem.Progeny.PictureLink = model.TodoItem.Progeny.GetProfilePictureUrl();
             }
 
             if (model.TodoItem.FamilyId > 0)
             {
                 model.TodoItem.Family = model.CurrentFamily;
-                model.TodoItem.Family.PictureLink = model.TodoItem.Family.GetProfilePictureUrl();
             }
 
             UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.TodoItem.CreatedBy);
@@ -252,7 +250,7 @@ namespace KinaUnaWeb.Controllers
             };
             KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetKanbanBoardsList(kanbanBoardsRequest);
             model.KanbanBoards = kanbanBoardsResponse.KanbanBoards;
-            model.KanbanBoardsList = new List<SelectListItem>();
+            model.KanbanBoardsList = [];
             foreach (KanbanBoard kanbanBoard in model.KanbanBoards)
             {
                 // If there is a KanbanItem with the KanbanBoardId for this TodoItem already, don't include it.
@@ -493,12 +491,7 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId, model.TodoItem.FamilyId, false);
             model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
+            
             TodoItem editedTodoItem = model.CreateTodoItem();
 
             model.TodoItem = await todoItemsHttpClient.UpdateTodoItem(editedTodoItem);
@@ -547,13 +540,11 @@ namespace KinaUnaWeb.Controllers
             if (model.TodoItem.ProgenyId > 0)
             {
                 model.TodoItem.Progeny = model.CurrentProgeny;
-                model.TodoItem.Progeny.PictureLink = model.TodoItem.Progeny.GetProfilePictureUrl();
             }
 
             if (model.TodoItem.FamilyId > 0)
             {
                 model.TodoItem.Family = model.CurrentFamily;
-                model.TodoItem.Family.PictureLink = model.TodoItem.Family.GetProfilePictureUrl();
             }
 
             return PartialView("_DeleteTodoPartial", model);

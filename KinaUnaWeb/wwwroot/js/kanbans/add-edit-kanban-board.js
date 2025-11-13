@@ -83,18 +83,18 @@ function validateInputs() {
                 titleRequiredDiv.classList.add('d-none');
             }
         }
-        const selectEitherProgenyOrFamilyDiv = document.querySelector('select-either-progeny-or-family-div');
-        if ((currentFamilyId > 0 && currentProgenyId > 0) || (currentFamilyId === 0 && currentProgenyId === 0)) {
-            isValid = false;
-            if (selectEitherProgenyOrFamilyDiv) {
-                selectEitherProgenyOrFamilyDiv.classList.remove('d-none');
-            }
-        }
-        else {
-            if (selectEitherProgenyOrFamilyDiv) {
-                selectEitherProgenyOrFamilyDiv.classList.add('d-none');
-            }
-        }
+        //const selectEitherProgenyOrFamilyDiv = document.querySelector<HTMLDivElement>('select-either-progeny-or-family-div');
+        //if ((currentFamilyId > 0 && currentProgenyId > 0) || (currentFamilyId === 0 && currentProgenyId === 0)) {
+        //    isValid = false;
+        //    if (selectEitherProgenyOrFamilyDiv) {
+        //        selectEitherProgenyOrFamilyDiv.classList.remove('d-none');
+        //    }
+        //}
+        //else {
+        //    if (selectEitherProgenyOrFamilyDiv) {
+        //        selectEitherProgenyOrFamilyDiv.classList.add('d-none');
+        //    }
+        //}
         if (isValid) {
             saveButton.removeAttribute('disabled');
         }

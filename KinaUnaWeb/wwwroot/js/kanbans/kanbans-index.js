@@ -63,7 +63,12 @@ async function getKanbanBoards() {
         resolve();
     });
 }
+let isRefreshing = false; // Flag to prevent multiple simultaneous refreshes.
 async function refreshKanbanBoards(changedKanbanBoardId) {
+    if (isRefreshing) {
+        return;
+    }
+    isRefreshing = true;
     let tempPageNumber = kanbanBoardsPageParameters.currentPageNumber;
     kanbanBoardsPageParameters.currentPageNumber = 1;
     clearKanbanBoardElements();
@@ -77,6 +82,7 @@ async function refreshKanbanBoards(changedKanbanBoardId) {
             kanbanBoardElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
+    isRefreshing = false;
 }
 async function getKanbanBoardElement(id) {
     const getKanbanBoardElementParameters = new KanbanBoardElementParameters();

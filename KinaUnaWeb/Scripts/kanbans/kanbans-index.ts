@@ -77,7 +77,14 @@ async function getKanbanBoards(): Promise<void> {
     });
 }
 
+let isRefreshing: boolean = false; // Flag to prevent multiple simultaneous refreshes.
 async function refreshKanbanBoards(changedKanbanBoardId: string) {
+    if (isRefreshing) {
+        return;
+    }
+
+    isRefreshing = true;
+
     let tempPageNumber = kanbanBoardsPageParameters.currentPageNumber;
     kanbanBoardsPageParameters.currentPageNumber = 1;
     clearKanbanBoardElements();
@@ -92,6 +99,7 @@ async function refreshKanbanBoards(changedKanbanBoardId: string) {
             kanbanBoardElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
+    isRefreshing = false;
 }
 
 
