@@ -12,36 +12,39 @@
         }
         else
         {
-            <div class="row m-0">
+            <div class="row m-2">
                 <div class="col">
-                    <span class="h4">@Model.Family.Name</span>
-                    <div class="space-20"></div>
+                    <span class="h3">@Model.Family.Name</span>
                 </div>
             </div>
             <div class="row m-0">
                 @foreach (FamilyMember familyMember in Model.Family.FamilyMembers)
                 {
                     <div class="col-12">
+                        <div class="space-20"></div>
                         <div class="row m-2">
-                            <div class="col-auto">
-                                <span>@familyMember.Email</span>
+                            <div class="col-12">
                                 @if (familyMember.ProgenyId != 0 && familyMember.Progeny != null)
                                 {
-                                    <span class="h5">@familyMember.Progeny.NickName</span>
-                                    <img src="@familyMember.Progeny.GetProfilePictureUrl()" class="profile-picture-small"/>
+                                    <img src="@familyMember.Progeny.GetProfilePictureUrl()" class="profile-picture-small" />
+                                    <span class="h4">@familyMember.Progeny.NickName</span>
                                 }
+                            </div>
+                            <div class="col-12 ml-4">
+                                <div class="space-10"></div>
+                                <span>Email:</span> <span>@familyMember.Email</span>
                             </div>
                             @if (!string.IsNullOrWhiteSpace(familyMember.UserId) && familyMember.UserInfo != null)
                             {
-                            <div class="col-auto">
-                                <span>@await LocaleManager.GetTranslation("User Info", PageNames.Account, Model.LanguageId)</span>
-                                <span>@familyMember.UserInfo.FullName()</span>
-                                <img src="@familyMember.UserInfo.GetProfilePictureUrl()" class="profile-picture-small"/>
-                            </div>
+                                <div class="col-auto ml-4">
+                                    <span>@await LocaleManager.GetTranslation("User Info", PageNames.Account, Model.LanguageId):</span>
+                                    <span>@familyMember.UserInfo.FullName()</span>
+                                    <img src="@familyMember.UserInfo.GetProfilePictureUrl()" class="profile-picture-small"/>
+                                </div>
                             }
                         </div>
                     </div>
-                    <div class="space-10"></div>
+                    
                 }
             </div>
         }

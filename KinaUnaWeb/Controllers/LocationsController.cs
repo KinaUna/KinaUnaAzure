@@ -342,6 +342,16 @@ namespace KinaUnaWeb.Controllers
                 model.LocationItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
 
+            if (model.LocationItem.ProgenyId > 0)
+            {
+                model.LocationItem.Progeny = model.CurrentProgeny;
+            }
+
+            if (model.LocationItem.FamilyId > 0)
+            {
+                model.LocationItem.Family = model.CurrentFamily;
+            }
+
             return PartialView("_LocationAddedPartial", model);
         }
 
@@ -413,6 +423,16 @@ namespace KinaUnaWeb.Controllers
                 model.LocationItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
 
+            if (model.LocationItem.ProgenyId > 0)
+            {
+                model.LocationItem.Progeny = model.CurrentProgeny;
+            }
+
+            if (model.LocationItem.FamilyId > 0)
+            {
+                model.LocationItem.Family = model.CurrentFamily;
+            }
+
             return PartialView("_LocationUpdatedPartial", model);
         }
 
@@ -439,7 +459,17 @@ namespace KinaUnaWeb.Controllers
                 LocationItem = location,
                 HereMapsApiKey = _hereMapsApiKey
             };
-            
+
+            if (model.LocationItem.ProgenyId > 0)
+            {
+                model.LocationItem.Progeny = model.CurrentProgeny;
+            }
+
+            if (model.LocationItem.FamilyId > 0)
+            {
+                model.LocationItem.Family = model.CurrentFamily;
+            }
+
             return View(model);
         }
 
@@ -548,6 +578,16 @@ namespace KinaUnaWeb.Controllers
             if (model.LocationItem.DateAdded.HasValue)
             {
                 model.LocationItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            if (model.LocationItem.ProgenyId > 0)
+            {
+                model.LocationItem.Progeny = model.CurrentProgeny;
+            }
+
+            if (model.LocationItem.FamilyId > 0)
+            {
+                model.LocationItem.Family = model.CurrentFamily;
             }
 
             return PartialView("_LocationCopiedPartial", model);

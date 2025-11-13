@@ -57,7 +57,8 @@ namespace KinaUnaProgenyApi.Controllers
                 NickName = value.NickName,
                 BirthDay = value.BirthDay,
                 TimeZone = value.TimeZone,
-                Admins = value.Admins
+                Admins = value.Admins,
+                Email = value.Email
             };
             if (string.IsNullOrEmpty(value.PictureLink))
             {
@@ -106,6 +107,7 @@ namespace KinaUnaProgenyApi.Controllers
             progeny.NickName = value.NickName;
             progeny.TimeZone = value.TimeZone;
             progeny.PictureLink = value.PictureLink;
+            progeny.Email = value.Email;
             progeny.ModifiedBy = currentUserInfo.UserId;
             
             progeny = await progenyService.UpdateProgeny(progeny, currentUserInfo);

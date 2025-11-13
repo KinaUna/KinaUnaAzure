@@ -564,7 +564,6 @@ namespace KinaUnaProgenyApi.Services
             return progenyInfoToUpdate;
         }
 
-        // Todo: Add unit tests.
         /// <summary>
         /// Deletes a ProgenyInfo entity from the database.
         /// </summary>

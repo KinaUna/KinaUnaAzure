@@ -180,9 +180,17 @@ function setFamilyMemberDetailsEventListeners(familyMemberId: number): void {
 
 export async function RenderAllFamilies(): Promise<void> {
     for (const family of familiesList) {
+        clearFamilyMembersDiv(family);
         await RenderFamilyMembers(family);
     }
     return Promise.resolve();
+}
+
+function clearFamilyMembersDiv(family: Family) {
+    const familyMembersDiv = document.querySelector<HTMLDivElement>('#family-members-list-div-' + family.familyId);
+    if (familyMembersDiv) {
+        familyMembersDiv.innerHTML = '';
+    }
 }
 
 export async function displayAddFamilyMemberModal(familyId: string): Promise<void> {
@@ -577,7 +585,6 @@ export async function initializeAddEditFamilyMember(familyMemberId: string): Pro
 
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     languageId = getCurrentLanguageId();
-    console.log('DOMContentLoaded in family-members.ts');
     addAddFamilyMemberButtonEventListeners();
 
     await GetFamiliesList();

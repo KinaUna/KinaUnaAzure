@@ -241,7 +241,8 @@ namespace KinaUnaWeb.Controllers
             }
 
             familyMember.MemberType = model.MemberType;
-            
+            familyMember.Email = progeny.Email;
+
             FamilyMember updatedFamilyMember = await familiesHttpClient.UpdateFamilyMember(familyMember);
             
             return Json(updatedFamilyMember);

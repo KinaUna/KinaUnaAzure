@@ -168,9 +168,16 @@ function setFamilyMemberDetailsEventListeners(familyMemberId) {
 }
 export async function RenderAllFamilies() {
     for (const family of familiesList) {
+        clearFamilyMembersDiv(family);
         await RenderFamilyMembers(family);
     }
     return Promise.resolve();
+}
+function clearFamilyMembersDiv(family) {
+    const familyMembersDiv = document.querySelector('#family-members-list-div-' + family.familyId);
+    if (familyMembersDiv) {
+        familyMembersDiv.innerHTML = '';
+    }
 }
 export async function displayAddFamilyMemberModal(familyId) {
     startFullPageSpinner();
@@ -526,7 +533,6 @@ export async function initializeAddEditFamilyMember(familyMemberId) {
 }
 document.addEventListener('DOMContentLoaded', async function () {
     languageId = getCurrentLanguageId();
-    console.log('DOMContentLoaded in family-members.ts');
     addAddFamilyMemberButtonEventListeners();
     await GetFamiliesList();
     await RenderAllFamilies();
