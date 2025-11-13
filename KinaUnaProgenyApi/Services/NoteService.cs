@@ -141,6 +141,7 @@ namespace KinaUnaProgenyApi.Services
             _ = await _context.SaveChangesAsync();
 
             await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Note, noteToUpdate.NoteId, noteToUpdate.ProgenyId, 0, noteToUpdate.ItemPermissionsDtoList, currentUserInfo);
+            
             _ = await SetNoteInCache(noteToUpdate.NoteId);
 
             return noteToUpdate;
@@ -168,7 +169,14 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.NotesDb.Remove(noteToDelete);
             _ = await _context.SaveChangesAsync();
-            // Todo: Remove permissions.
+
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, noteToDelete.NoteId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
             await RemoveNoteFromCache(note.NoteId, note.ProgenyId);
 
             return note;

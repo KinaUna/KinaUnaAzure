@@ -203,7 +203,13 @@ namespace KinaUnaProgenyApi.Services
                 await _imageStore.DeleteImage(contactToDelete.PictureLink, BlobContainers.Contacts);
             }
 
-            // Todo: Remove permissions.
+            // Revoke all permissions associated with this contact.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, contactToDelete.ContactId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
             return contact;
         }
 

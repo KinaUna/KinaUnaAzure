@@ -70,8 +70,97 @@ namespace KinaUnaProgenyApi.Services.TodosServices
 
             _ = progenyDbContext.TodoItemsDb.Add(todoItemToAdd);
             _ = await progenyDbContext.SaveChangesAsync();
-            
+
+            await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, todoItemToAdd.TodoItemId, todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, todoItemToAdd.ItemPermissionsDtoList,
+                currentUserInfo);
+
             return todoItemToAdd;
+        }
+
+        /// <summary>
+        /// Updates an existing to-do item with new values.
+        /// </summary>
+        /// <remarks>This method retrieves the existing to-do item from the database, updates its
+        /// properties with the values from the provided <paramref name="todoItem"/>,  and saves the changes. If no
+        /// matching item is found, the method returns <see langword="null"/> without making any changes.</remarks>
+        /// <param name="todoItem">The to-do item containing the updated values. The <see cref="TodoItem.TodoItemId"/> property must match an
+        ///     existing item.</param>
+        /// <param name="currentUserInfo"></param>
+        /// <returns>The updated <see cref="TodoItem"/> if the operation is successful; otherwise, <see langword="null"/> if no
+        /// matching item is found.</returns>
+        public async Task<TodoItem> UpdateTodoItem(TodoItem todoItem, UserInfo currentUserInfo)
+        {
+            if (currentUserInfo == null)
+            {
+                return null;
+            }
+
+            if (todoItem.ProgenyId > 0 && todoItem.FamilyId > 0)
+            {
+                return null;
+            }
+
+            if (todoItem.ProgenyId == 0 && todoItem.FamilyId == 0)
+            {
+                return null;
+            }
+
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
+            TodoItem currentTodoItem = await progenyDbContext.TodoItemsDb
+                .SingleOrDefaultAsync(t => t.TodoItemId == todoItem.TodoItemId);
+            if (currentTodoItem == null)
+            {
+                return null; // Item not found
+            }
+
+            // Check if the status has changed and update the completed date accordingly
+            if (todoItem.Status != currentTodoItem.Status)
+            {
+                if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
+                {
+                    todoItem.CompletedDate = DateTime.UtcNow;
+                }
+                else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted)
+                {
+                    todoItem.CompletedDate = null; // Reset completed date if not started
+                }
+                else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.InProgress)
+                {
+                    todoItem.StartDate = DateTime.UtcNow; // Set start date if not already set
+                    todoItem.CompletedDate = null; // Reset completed date if in progress
+                }
+                else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled)
+                {
+                    todoItem.CompletedDate = null; // Reset completed date if cancelled
+                }
+                else
+                {
+                    todoItem.CompletedDate = currentTodoItem.CompletedDate; // Keep the existing completed date for other statuses
+                }
+            }
+
+            // Update properties.
+            currentTodoItem.CopyPropertiesForUpdate(todoItem);
+            progenyDbContext.TodoItemsDb.Update(currentTodoItem);
+            _ = await progenyDbContext.SaveChangesAsync();
+
+            // Update permissions.
+            await accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, currentTodoItem.TodoItemId,
+                currentTodoItem.ProgenyId, currentTodoItem.FamilyId, currentTodoItem.ItemPermissionsDtoList, currentUserInfo);
+
+            // Update permissions for subtasks.
+            List<TodoItem> subTasks = await progenyDbContext.TodoItemsDb.AsNoTracking().Where(t => t.ParentTodoItemId == currentTodoItem.TodoItemId).ToListAsync();
+            foreach (TodoItem subTask in subTasks)
+            {
+                await accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, subTask.TodoItemId,
+                    subTask.ProgenyId, subTask.FamilyId, currentTodoItem.ItemPermissionsDtoList, currentUserInfo);
+            }
+
+            return currentTodoItem;
         }
 
         /// <summary>
@@ -119,8 +208,15 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 todoItemToDelete.ModifiedBy = todoItem.ModifiedBy;
                 progenyDbContext.TodoItemsDb.Update(todoItemToDelete);
             }
-
+            
             _ = await progenyDbContext.SaveChangesAsync();
+
+            List<TimelineItemPermission> timelineItemPermissionsList = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.TodoItem, todoItemToDelete.TodoItemId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
             return true;
         }
 
@@ -712,82 +808,6 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             }
 
             return accessibleTodoItems;
-        }
-
-        /// <summary>
-        /// Updates an existing to-do item with new values.
-        /// </summary>
-        /// <remarks>This method retrieves the existing to-do item from the database, updates its
-        /// properties with the values from the provided <paramref name="todoItem"/>,  and saves the changes. If no
-        /// matching item is found, the method returns <see langword="null"/> without making any changes.</remarks>
-        /// <param name="todoItem">The to-do item containing the updated values. The <see cref="TodoItem.TodoItemId"/> property must match an
-        ///     existing item.</param>
-        /// <param name="currentUserInfo"></param>
-        /// <returns>The updated <see cref="TodoItem"/> if the operation is successful; otherwise, <see langword="null"/> if no
-        /// matching item is found.</returns>
-        public async Task<TodoItem> UpdateTodoItem(TodoItem todoItem, UserInfo currentUserInfo)
-        {
-            if (currentUserInfo == null)
-            {
-                return null;
-            }
-
-            if (todoItem.ProgenyId > 0 && todoItem.FamilyId > 0)
-            {
-                return null;
-            }
-
-            if (todoItem.ProgenyId == 0 && todoItem.FamilyId == 0)
-            {
-                return null;
-            }
-
-            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUserInfo, PermissionLevel.Edit))
-            {
-                return null;
-            }
-
-            TodoItem currentTodoItem = await progenyDbContext.TodoItemsDb
-                .SingleOrDefaultAsync(t => t.TodoItemId == todoItem.TodoItemId);
-            if (currentTodoItem == null)
-            {
-                return null; // Item not found
-            }
-
-            // Check if the status has changed and update the completed date accordingly
-            if (todoItem.Status != currentTodoItem.Status)
-            {
-                if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
-                {
-                    todoItem.CompletedDate = DateTime.UtcNow;
-                }
-                else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted)
-                {
-                    todoItem.CompletedDate = null; // Reset completed date if not started
-                }
-                else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.InProgress)
-                {
-                    todoItem.StartDate = DateTime.UtcNow; // Set start date if not already set
-                    todoItem.CompletedDate = null; // Reset completed date if in progress
-                }
-                else if (todoItem.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled)
-                {
-                    todoItem.CompletedDate = null; // Reset completed date if cancelled
-                }
-                else
-                {
-                    todoItem.CompletedDate = currentTodoItem.CompletedDate; // Keep the existing completed date for other statuses
-                }
-            }
-
-            // Update properties
-            currentTodoItem.CopyPropertiesForUpdate(todoItem);
-            progenyDbContext.TodoItemsDb.Update(currentTodoItem);
-            _ = await progenyDbContext.SaveChangesAsync();
-
-            // Todo: Update permissions for child subtasks if parent task access level or family/progeny id has changed
-            
-            return currentTodoItem;
         }
     }
 }

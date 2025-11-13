@@ -182,7 +182,13 @@ namespace KinaUnaProgenyApi.Services
                 _ = _imageStore.DeleteImage(friend.PictureLink, BlobContainers.Friends);
             }
 
-            // Todo: Remove all associated permissions.
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, friendToDelete.FriendId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
             return friend;
         }
 

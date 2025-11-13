@@ -164,9 +164,15 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.VaccinationsDb.Remove(vaccinationToDelete);
             _ = await _context.SaveChangesAsync();
+
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, vaccinationToDelete.VaccinationId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
             await RemoveVaccinationFromCache(vaccination.VaccinationId, vaccination.ProgenyId);
-            
-            // Todo: Remove permissions.
             
             return vaccinationToDelete;
         }

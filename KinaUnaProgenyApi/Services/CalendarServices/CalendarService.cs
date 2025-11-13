@@ -316,7 +316,11 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             _ = _context.CalendarDb.Remove(calendarItemToDelete);
             _ = await _context.SaveChangesAsync();
 
-            // Todo: Remove permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Calendar, calendarItemToDelete.EventId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            { 
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
 
             await RemoveCalendarItemFromCache(item.EventId, item.ProgenyId, item.FamilyId);
 

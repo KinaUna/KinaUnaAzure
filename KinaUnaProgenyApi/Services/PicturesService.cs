@@ -620,7 +620,13 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _imageStore.DeleteImage(picture.PictureLink1200);
             }
 
-            // Todo: Remove permission entries for this picture.
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, picture.PictureId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
             return pictureToDelete;
         }

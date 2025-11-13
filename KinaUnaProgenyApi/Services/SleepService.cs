@@ -168,7 +168,12 @@ namespace KinaUnaProgenyApi.Services
 
             await RemoveSleep(sleepToDelete.SleepId, sleepToDelete.ProgenyId);
 
-            // Todo: Remove permissions.
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, sleepToDelete.SleepId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
 
             return sleep;
         }

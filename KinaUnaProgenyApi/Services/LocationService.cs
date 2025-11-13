@@ -203,7 +203,13 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.LocationsDb.Remove(locationToDelete);
             _ = await _context.SaveChangesAsync();
 
-            // Todo: Remove permissions for item.
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, locationToDelete.LocationId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
             await RemoveLocationFromCache(location.LocationId, location.ProgenyId, location.FamilyId);
 
             return location;

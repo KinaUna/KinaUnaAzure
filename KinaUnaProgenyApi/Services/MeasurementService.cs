@@ -165,10 +165,15 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.MeasurementsDb.Remove(measurementToDelete);
             _ = await _context.SaveChangesAsync();
 
-            // Todo: Remove all permissions for this item.
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, measurementToDelete.MeasurementId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
             await RemoveMeasurementFromCache(measurement.MeasurementId, measurement.ProgenyId);
-
-
+            
             return measurement;
         }
 

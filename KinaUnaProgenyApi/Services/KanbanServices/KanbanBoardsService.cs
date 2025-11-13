@@ -196,7 +196,12 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
 
             _ = await progenyDbContext.SaveChangesAsync();
 
-            // Todo: Remove permissions.
+            // Revoke all permissions associated with the Kanban board.
+            List<TimelineItemPermission> timelineItemPermissionsList = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoardToDelete.KanbanBoardId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
 
             return kanbanBoardToDelete;
         }

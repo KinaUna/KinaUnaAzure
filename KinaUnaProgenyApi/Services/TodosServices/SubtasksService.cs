@@ -71,7 +71,144 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             _ = progenyDbContext.TodoItemsDb.Add(subtaskToAdd);
             _ = await progenyDbContext.SaveChangesAsync();
 
+            // Copy permissions from parent TodoItem
+            List<TimelineItemPermission> parentTodoItemPermissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.TodoItem, subtaskToAdd.ParentTodoItemId, currentUserInfo);
+            foreach (TimelineItemPermission permission in parentTodoItemPermissions)
+            {
+                permission.TimelineItemPermissionId = 0;
+                permission.ItemId = subtaskToAdd.TodoItemId;
+                _ = await accessManagementService.GrantItemPermission(permission, currentUserInfo);
+            }
+
             return subtaskToAdd;
+        }
+
+        /// <summary>
+        /// Updates an existing subtask with the specified values and adjusts its status-related dates as needed.
+        /// </summary>
+        /// <remarks>This method updates the subtask's properties and adjusts its status-related dates
+        /// based on the provided status.  - If the status is set to <see
+        /// cref="KinaUnaTypes.TodoStatusType.Completed"/>, the <see cref="TodoItem.CompletedDate"/> is set to the
+        /// current UTC time. - If the status is set to <see cref="KinaUnaTypes.TodoStatusType.NotStarted"/>, both the
+        /// <see cref="TodoItem.CompletedDate"/> and <see cref="TodoItem.StartDate"/> are reset to <see
+        /// langword="null"/>. - If the status is set to <see cref="KinaUnaTypes.TodoStatusType.InProgress"/>, the <see
+        /// cref="TodoItem.StartDate"/> is set to the current UTC time if not already set. - If the status is set to
+        /// <see cref="KinaUnaTypes.TodoStatusType.Cancelled"/>, the <see cref="TodoItem.CompletedDate"/> is reset to
+        /// <see langword="null"/>. - For other statuses, the existing <see cref="TodoItem.CompletedDate"/> is
+        /// preserved.</remarks>
+        /// <param name="value">The <see cref="TodoItem"/> containing the updated values for the subtask. The <see
+        ///     cref="TodoItem.TodoItemId"/> property must match an existing subtask.</param>
+        /// <param name="currentUserInfo"></param>
+        /// <returns>The updated <see cref="TodoItem"/> if the subtask is found and successfully updated; otherwise, <see
+        /// langword="null"/> if no subtask with the specified <see cref="TodoItem.TodoItemId"/> exists.</returns>
+        public async Task<TodoItem> UpdateSubtask(TodoItem value, UserInfo currentUserInfo)
+        {
+            if (currentUserInfo == null)
+            {
+                return null;
+            }
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, value.TodoItemId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
+            TodoItem currentSubtask = await progenyDbContext.TodoItemsDb
+                .SingleOrDefaultAsync(t => t.TodoItemId == value.TodoItemId);
+            if (currentSubtask == null)
+            {
+                return null; // Item not found
+            }
+
+            // Check if the status has changed and update the completed date accordingly
+            if (value.Status != currentSubtask.Status)
+            {
+                if (value.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
+                {
+                    value.CompletedDate = DateTime.UtcNow;
+                }
+                else if (value.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted)
+                {
+                    value.CompletedDate = null; // Reset completed date if not started
+                }
+                else if (value.Status == (int)KinaUnaTypes.TodoStatusType.InProgress)
+                {
+                    value.StartDate = DateTime.UtcNow; // Set start date if not already set
+                    value.CompletedDate = null; // Reset completed date if in progress
+                }
+                else if (value.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled)
+                {
+                    value.CompletedDate = null; // Reset completed date if cancelled
+                }
+                else
+                {
+                    value.CompletedDate = currentSubtask.CompletedDate; // Keep the existing completed date for other statuses
+                }
+            }
+
+            // Update properties
+            currentSubtask.CopyPropertiesForUpdate(value);
+            progenyDbContext.TodoItemsDb.Update(currentSubtask);
+            _ = await progenyDbContext.SaveChangesAsync();
+
+            // Permissions are not changed for subtasks, as they get copied from the parent TodoItem on creation.
+            // To change subtasks permissions, the user needs to change permissions for the parent TodoItem.
+            return currentSubtask;
+        }
+
+        /// <summary>
+        /// Deletes the specified subtask from the database, either by marking it as deleted or by permanently removing
+        /// it.
+        /// </summary>
+        /// <remarks>When <paramref name="hardDelete"/> is <see langword="false"/>, the subtask is marked
+        /// as deleted by setting its  <c>IsDeleted</c> property to <see langword="true"/> and updating its modification
+        /// metadata.</remarks>
+        /// <param name="subtask">The subtask to delete. The <see cref="TodoItem.TodoItemId"/> property must match an existing subtask in the
+        ///     database.</param>
+        /// <param name="currentUserInfo"></param>
+        /// <param name="hardDelete">A boolean value indicating whether the subtask should be permanently removed.  If <see langword="true"/>,
+        ///     the subtask is permanently deleted; otherwise, it is marked as deleted.</param>
+        /// <returns><see langword="true"/> if the subtask was successfully deleted or marked as deleted;  otherwise, <see
+        /// langword="false"/> if the subtask does not exist.</returns>
+        public async Task<bool> DeleteSubtask(TodoItem subtask, UserInfo currentUserInfo, bool hardDelete = false)
+        {
+            if (currentUserInfo == null)
+            {
+                return false;
+            }
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, subtask.TodoItemId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return false;
+            }
+
+            TodoItem subtaskToDelete = await progenyDbContext.TodoItemsDb
+                .SingleOrDefaultAsync(t => t.TodoItemId == subtask.TodoItemId);
+
+            if (subtaskToDelete == null)
+            {
+                return false;
+            }
+
+            if (hardDelete)
+            {
+                progenyDbContext.TodoItemsDb.Remove(subtaskToDelete);
+            }
+            else
+            {
+                subtaskToDelete.IsDeleted = true;
+                subtaskToDelete.ModifiedTime = DateTime.UtcNow;
+                subtaskToDelete.ModifiedBy = subtask.ModifiedBy;
+                progenyDbContext.TodoItemsDb.Update(subtaskToDelete);
+            }
+
+            _ = await progenyDbContext.SaveChangesAsync();
+
+            // Remove permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.TodoItem, subtaskToDelete.TodoItemId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+            return true;
         }
 
         /// <summary>
@@ -199,56 +336,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
 
             return response;
         }
-
-        /// <summary>
-        /// Deletes the specified subtask from the database, either by marking it as deleted or by permanently removing
-        /// it.
-        /// </summary>
-        /// <remarks>When <paramref name="hardDelete"/> is <see langword="false"/>, the subtask is marked
-        /// as deleted by setting its  <c>IsDeleted</c> property to <see langword="true"/> and updating its modification
-        /// metadata.</remarks>
-        /// <param name="subtask">The subtask to delete. The <see cref="TodoItem.TodoItemId"/> property must match an existing subtask in the
-        ///     database.</param>
-        /// <param name="currentUserInfo"></param>
-        /// <param name="hardDelete">A boolean value indicating whether the subtask should be permanently removed.  If <see langword="true"/>,
-        ///     the subtask is permanently deleted; otherwise, it is marked as deleted.</param>
-        /// <returns><see langword="true"/> if the subtask was successfully deleted or marked as deleted;  otherwise, <see
-        /// langword="false"/> if the subtask does not exist.</returns>
-        public async Task<bool> DeleteSubtask(TodoItem subtask, UserInfo currentUserInfo, bool hardDelete = false)
-        {
-            if (currentUserInfo == null)
-            {
-                return false;
-            }
-            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, subtask.TodoItemId, currentUserInfo, PermissionLevel.Admin))
-            {
-                return false;
-            }
-
-            TodoItem subtaskToDelete = await progenyDbContext.TodoItemsDb
-                .SingleOrDefaultAsync(t => t.TodoItemId == subtask.TodoItemId);
-
-            if (subtaskToDelete == null)
-            {
-                return false;
-            }
-
-            if (hardDelete)
-            {
-                progenyDbContext.TodoItemsDb.Remove(subtaskToDelete);
-            }
-            else
-            {
-                subtaskToDelete.IsDeleted = true;
-                subtaskToDelete.ModifiedTime = DateTime.UtcNow;
-                subtaskToDelete.ModifiedBy = subtask.ModifiedBy;
-                progenyDbContext.TodoItemsDb.Update(subtaskToDelete);
-            }
-
-            _ = await progenyDbContext.SaveChangesAsync();
-            return true;
-        }
-
+        
         /// <summary>
         /// Retrieves a subtask with the specified identifier.
         /// </summary>
@@ -302,76 +390,6 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             return subtasksWithAccess;
         }
 
-        /// <summary>
-        /// Updates an existing subtask with the specified values and adjusts its status-related dates as needed.
-        /// </summary>
-        /// <remarks>This method updates the subtask's properties and adjusts its status-related dates
-        /// based on the provided status.  - If the status is set to <see
-        /// cref="KinaUnaTypes.TodoStatusType.Completed"/>, the <see cref="TodoItem.CompletedDate"/> is set to the
-        /// current UTC time. - If the status is set to <see cref="KinaUnaTypes.TodoStatusType.NotStarted"/>, both the
-        /// <see cref="TodoItem.CompletedDate"/> and <see cref="TodoItem.StartDate"/> are reset to <see
-        /// langword="null"/>. - If the status is set to <see cref="KinaUnaTypes.TodoStatusType.InProgress"/>, the <see
-        /// cref="TodoItem.StartDate"/> is set to the current UTC time if not already set. - If the status is set to
-        /// <see cref="KinaUnaTypes.TodoStatusType.Cancelled"/>, the <see cref="TodoItem.CompletedDate"/> is reset to
-        /// <see langword="null"/>. - For other statuses, the existing <see cref="TodoItem.CompletedDate"/> is
-        /// preserved.</remarks>
-        /// <param name="value">The <see cref="TodoItem"/> containing the updated values for the subtask. The <see
-        ///     cref="TodoItem.TodoItemId"/> property must match an existing subtask.</param>
-        /// <param name="currentUserInfo"></param>
-        /// <returns>The updated <see cref="TodoItem"/> if the subtask is found and successfully updated; otherwise, <see
-        /// langword="null"/> if no subtask with the specified <see cref="TodoItem.TodoItemId"/> exists.</returns>
-        public async Task<TodoItem> UpdateSubtask(TodoItem value, UserInfo currentUserInfo)
-        {
-            if (currentUserInfo == null)
-            {
-                return null;
-            }
-            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, value.TodoItemId, currentUserInfo, PermissionLevel.Edit))
-            {
-                return null;
-            }
-
-            TodoItem currentSubtask = await progenyDbContext.TodoItemsDb
-                .SingleOrDefaultAsync(t => t.TodoItemId == value.TodoItemId);
-            if (currentSubtask == null)
-            {
-                return null; // Item not found
-            }
-
-            // Check if the status has changed and update the completed date accordingly
-            if (value.Status != currentSubtask.Status)
-            {
-                if (value.Status == (int)KinaUnaTypes.TodoStatusType.Completed)
-                {
-                    value.CompletedDate = DateTime.UtcNow;
-                }
-                else if (value.Status == (int)KinaUnaTypes.TodoStatusType.NotStarted)
-                {
-                    value.CompletedDate = null; // Reset completed date if not started
-                }
-                else if (value.Status == (int)KinaUnaTypes.TodoStatusType.InProgress)
-                {
-                    value.StartDate = DateTime.UtcNow; // Set start date if not already set
-                    value.CompletedDate = null; // Reset completed date if in progress
-                }
-                else if (value.Status == (int)KinaUnaTypes.TodoStatusType.Cancelled)
-                {
-                    value.CompletedDate = null; // Reset completed date if cancelled
-                }
-                else
-                {
-                    value.CompletedDate = currentSubtask.CompletedDate; // Keep the existing completed date for other statuses
-                }
-            }
-
-            // Update properties
-            currentSubtask.CopyPropertiesForUpdate(value);
-            progenyDbContext.TodoItemsDb.Update(currentSubtask);
-            _ = await progenyDbContext.SaveChangesAsync();
-
-            await accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, currentSubtask.TodoItemId, currentSubtask.ProgenyId, currentSubtask.FamilyId, currentSubtask.ItemPermissionsDtoList,
-                currentUserInfo);
-            return currentSubtask;
-        }
+        
     }
 }

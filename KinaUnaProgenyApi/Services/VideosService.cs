@@ -218,8 +218,16 @@ namespace KinaUnaProgenyApi.Services
 
             _mediaContext.VideoDb.Remove(videoToDelete);
             _ = await _mediaContext.SaveChangesAsync();
+
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, videoToDelete.VideoId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
             await RemoveVideoFromCache(videoToDelete.VideoId, videoToDelete.ProgenyId);
-            // Todo: Remove permissions.
+            
             return video;
         }
 

@@ -169,8 +169,16 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.VocabularyDb.Remove(vocabularyItemToDelete);
             _ = await _context.SaveChangesAsync();
+
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, vocabularyItemToDelete.WordId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
             await RemoveVocabularyItemFromCache(vocabularyItem.WordId, vocabularyItem.ProgenyId);
-            // Todo: Remove permissions.
+            
             return vocabularyItem;
         }
 

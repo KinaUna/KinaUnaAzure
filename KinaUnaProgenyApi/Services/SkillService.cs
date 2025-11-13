@@ -165,7 +165,12 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.SkillsDb.Remove(skillToDelete);
             _ = await _context.SaveChangesAsync();
 
-            // Todo: Remove associated permissions.\
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, skillToDelete.SkillId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
 
             await RemoveSkillFromCache(skill.SkillId, skill.ProgenyId);
 
