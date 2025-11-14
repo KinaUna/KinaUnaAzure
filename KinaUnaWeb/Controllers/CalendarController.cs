@@ -485,7 +485,7 @@ namespace KinaUnaWeb.Controllers
 
             upcomingCalendarItems = [.. upcomingCalendarItems.Where(c => c.EndTime > DateTime.UtcNow)];
             upcomingCalendarItems = [.. upcomingCalendarItems.OrderBy(c => c.StartTime)];
-            
+
             TodoItemsRequest todoItemsRequest = new()
             {
                 ProgenyIds = parameters.Progenies,
@@ -493,7 +493,8 @@ namespace KinaUnaWeb.Controllers
                 StartDate = DateTime.UtcNow.Date,
                 EndDate = DateTime.UtcNow.Date.AddYears(10), // ToDo: Make this configurable
                 SortBy = 0,
-                GroupBy = 0
+                GroupBy = 0,
+                NumberOfItems = 0
             };
 
             TodoItemsResponse upcomingTodoItemsResponse = await todoItemsHttpClient.GetProgeniesTodoItemsList(todoItemsRequest);

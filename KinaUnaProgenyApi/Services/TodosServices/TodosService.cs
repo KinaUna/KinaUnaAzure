@@ -361,6 +361,11 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// such as total items, total pages, and extracted tags and contexts.</returns>
         public TodoItemsResponse CreateTodoItemsResponseForTodoPage(List<TodoItem> todoItemsForProgenies, TodoItemsRequest request)
         {
+            if(request.NumberOfItems == 0)
+            {
+                request.NumberOfItems = 1000000;
+            }
+
             TodoItemsResponse response = new()
             {
                 TotalItems = todoItemsForProgenies.Count,
