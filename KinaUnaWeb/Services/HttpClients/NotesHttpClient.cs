@@ -3,11 +3,11 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -61,7 +61,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!noteResponse.IsSuccessStatusCode) return noteItem;
 
             string noteAsString = await noteResponse.Content.ReadAsStringAsync();
-            noteItem = JsonConvert.DeserializeObject<Note>(noteAsString);
+            noteItem = JsonSerializer.Deserialize<Note>(noteAsString, JsonSerializerOptions.Web);
 
             return noteItem;
         }
@@ -78,11 +78,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string notesApiPath = "/api/Notes/";
-            HttpResponseMessage notesResponse = await _httpClient.PostAsync(notesApiPath, new StringContent(JsonConvert.SerializeObject(note), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage notesResponse = await _httpClient.PostAsync(notesApiPath, new StringContent(JsonSerializer.Serialize(note, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!notesResponse.IsSuccessStatusCode) return new Note();
 
             string notesAsString = await notesResponse.Content.ReadAsStringAsync();
-            note = JsonConvert.DeserializeObject<Note>(notesAsString);
+            note = JsonSerializer.Deserialize<Note>(notesAsString, JsonSerializerOptions.Web);
             return note;
 
         }
@@ -99,11 +99,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateApiPath = "/api/Notes/" + note.NoteId;
-            HttpResponseMessage noteResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(note), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage noteResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonSerializer.Serialize(note, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!noteResponse.IsSuccessStatusCode) return new Note();
 
             string noteAsString = await noteResponse.Content.ReadAsStringAsync();
-            note = JsonConvert.DeserializeObject<Note>(noteAsString);
+            note = JsonSerializer.Deserialize<Note>(noteAsString, JsonSerializerOptions.Web);
             return note;
 
         }
@@ -141,7 +141,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!notesResponse.IsSuccessStatusCode) return progenyNotesList;
 
             string notesAsString = await notesResponse.Content.ReadAsStringAsync();
-            progenyNotesList = JsonConvert.DeserializeObject<List<Note>>(notesAsString);
+            progenyNotesList = JsonSerializer.Deserialize<List<Note>>(notesAsString, JsonSerializerOptions.Web);
 
             return progenyNotesList;
         }

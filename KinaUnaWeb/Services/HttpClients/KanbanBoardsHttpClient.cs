@@ -4,10 +4,10 @@ using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -51,7 +51,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
 
             string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanBoard = JsonConvert.DeserializeObject<KanbanBoard>(kanbanBoardAsString);
+            kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;
         }
@@ -67,7 +67,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
 
             string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanBoard = JsonConvert.DeserializeObject<KanbanBoard>(kanbanBoardAsString);
+            kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;
         }
@@ -84,7 +84,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
 
             string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanBoard = JsonConvert.DeserializeObject<KanbanBoard>(kanbanBoardAsString);
+            kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;
         }
@@ -101,7 +101,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!kanbanBoardsListResponse.IsSuccessStatusCode) return kanbanBoardsResponse;
             
             string kanbanBoardsListAsString = await kanbanBoardsListResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanBoardsResponse = JsonConvert.DeserializeObject<KanbanBoardsResponse>(kanbanBoardsListAsString);
+            kanbanBoardsResponse = JsonSerializer.Deserialize<KanbanBoardsResponse>(kanbanBoardsListAsString, JsonSerializerOptions.Web);
 
             return kanbanBoardsResponse;
         }
@@ -117,7 +117,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
             
             string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanBoard = JsonConvert.DeserializeObject<KanbanBoard>(kanbanBoardAsString);
+            kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;
         }

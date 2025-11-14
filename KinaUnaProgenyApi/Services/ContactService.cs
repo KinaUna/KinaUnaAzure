@@ -6,10 +6,10 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
@@ -114,7 +114,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedContact = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id);
             if (!string.IsNullOrEmpty(cachedContact))
             {
-                contact = JsonConvert.DeserializeObject<Contact>(cachedContact);
+                contact = JsonSerializer.Deserialize<Contact>(cachedContact, JsonSerializerOptions.Web);
             }
 
             return contact;
@@ -131,7 +131,7 @@ namespace KinaUnaProgenyApi.Services
             Contact contact = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
             if (contact == null) return null;
             
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id, JsonConvert.SerializeObject(contact), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id, JsonSerializer.Serialize(contact, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             _ = await SetContactsListInCache(contact.ProgenyId, contact.FamilyId);
 
@@ -268,7 +268,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedContactsList))
             {
-                contactsList = JsonConvert.DeserializeObject<List<Contact>>(cachedContactsList);
+                contactsList = JsonSerializer.Deserialize<List<Contact>>(cachedContactsList, JsonSerializerOptions.Web);
             }
 
             return contactsList;
@@ -286,7 +286,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<List<Contact>> SetContactsListInCache(int progenyId, int familyId)
         {
             List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId && c.FamilyId == familyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId + "_family_" + familyId, JsonSerializer.Serialize(contactsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return contactsList;
         }

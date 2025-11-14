@@ -5,10 +5,10 @@ using KinaUnaWeb.Models;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services
@@ -57,7 +57,7 @@ namespace KinaUnaWeb.Services
             string cachedBaseViewModel = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedBaseViewModel))
             {
-                viewModel = JsonConvert.DeserializeObject<BaseItemsViewModel>(cachedBaseViewModel);
+                viewModel = JsonSerializer.Deserialize<BaseItemsViewModel>(cachedBaseViewModel, JsonSerializerOptions.Web);
                 return viewModel;
             }
 
@@ -87,7 +87,8 @@ namespace KinaUnaWeb.Services
                 }
             }
             
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(viewModel), _cacheOptions);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId + "_family_" + familyId,
+                JsonSerializer.Serialize(viewModel, JsonSerializerOptions.Web), _cacheOptions);
            
             return viewModel;
         }

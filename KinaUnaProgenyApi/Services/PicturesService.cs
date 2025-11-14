@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ImageMagick;
 using KinaUna.Data;
@@ -16,7 +17,6 @@ using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using Location = KinaUna.Data.Models.Location;
 
 namespace KinaUnaProgenyApi.Services
@@ -88,7 +88,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
             
-            Picture picture = JsonConvert.DeserializeObject<Picture>(cachedPicture);
+            Picture picture = JsonSerializer.Deserialize<Picture>(cachedPicture, JsonSerializerOptions.Web);
             return picture;
         }
 
@@ -520,7 +520,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
             
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id, JsonConvert.SerializeObject(picture), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id, JsonSerializer.Serialize(picture, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             _ = await SetPicturesListInCache(picture.ProgenyId);
 
@@ -908,7 +908,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedPicturesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedPicturesList))
             {
-                picturesList = JsonConvert.DeserializeObject<List<Picture>>(cachedPicturesList);
+                picturesList = JsonSerializer.Deserialize<List<Picture>>(cachedPicturesList, JsonSerializerOptions.Web);
             }
 
             return picturesList;
@@ -922,7 +922,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Picture>> SetPicturesListInCache(int progenyId)
         {
             List<Picture> picturesList = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId, JsonConvert.SerializeObject(picturesList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId, JsonSerializer.Serialize(picturesList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return picturesList;
         }

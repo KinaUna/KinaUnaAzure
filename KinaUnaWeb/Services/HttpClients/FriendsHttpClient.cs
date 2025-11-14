@@ -3,12 +3,12 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -63,7 +63,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string friendAsString = await friendResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            friendItem = JsonConvert.DeserializeObject<Friend>(friendAsString);
+            friendItem = JsonSerializer.Deserialize<Friend>(friendAsString, JsonSerializerOptions.Web);
 
             return friendItem;
         }
@@ -80,11 +80,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string friendsApiPath = "/api/Friends/";
-            HttpResponseMessage friendResponse = await _httpClient.PostAsync(friendsApiPath, new StringContent(JsonConvert.SerializeObject(friend), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage friendResponse = await _httpClient.PostAsync(friendsApiPath, new StringContent(JsonSerializer.Serialize(friend, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!friendResponse.IsSuccessStatusCode) return new Friend();
 
             string friendAsString = await friendResponse.Content.ReadAsStringAsync();
-            friend = JsonConvert.DeserializeObject<Friend>(friendAsString);
+            friend = JsonSerializer.Deserialize<Friend>(friendAsString, JsonSerializerOptions.Web);
             return friend;
 
         }
@@ -101,11 +101,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateFriendApiPath = "/api/Friends/" + friend.FriendId;
-            HttpResponseMessage friendResponse = await _httpClient.PutAsync(updateFriendApiPath, new StringContent(JsonConvert.SerializeObject(friend), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage friendResponse = await _httpClient.PutAsync(updateFriendApiPath, new StringContent(JsonSerializer.Serialize(friend, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!friendResponse.IsSuccessStatusCode) return new Friend();
 
             string friendAsString = await friendResponse.Content.ReadAsStringAsync();
-            friend = JsonConvert.DeserializeObject<Friend>(friendAsString);
+            friend = JsonSerializer.Deserialize<Friend>(friendAsString, JsonSerializerOptions.Web);
             return friend;
 
         }
@@ -145,7 +145,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string friendsAsString = await friendsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            progenyFriendsList = JsonConvert.DeserializeObject<List<Friend>>(friendsAsString);
+            progenyFriendsList = JsonSerializer.Deserialize<List<Friend>>(friendsAsString, JsonSerializerOptions.Web);
 
             if (!string.IsNullOrEmpty(tagFilter))
             {

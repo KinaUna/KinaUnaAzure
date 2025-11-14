@@ -1,10 +1,10 @@
 ﻿using KinaUna.Data.Models;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using WebPush;
+using System.Text.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -34,7 +34,7 @@ namespace KinaUnaProgenyApi.Services
                 Link = link,
                 Tag = tag
             };
-            string payload = JsonConvert.SerializeObject(notification);
+            string payload = JsonSerializer.Serialize(notification, JsonSerializerOptions.Web);
             string vapidPublicKey = configuration["VapidPublicKey"];
             string vapidPrivateKey = configuration["VapidPrivateKey"];
 

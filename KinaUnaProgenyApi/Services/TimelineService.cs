@@ -10,10 +10,10 @@ using KinaUnaProgenyApi.Services.AccessManagementService;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
@@ -125,7 +125,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            TimeLineItem timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(cachedTimeLineItem);
+            TimeLineItem timeLineItem = JsonSerializer.Deserialize<TimeLineItem>(cachedTimeLineItem, JsonSerializerOptions.Web);
             return timeLineItem;
         }
 
@@ -139,7 +139,7 @@ namespace KinaUnaProgenyApi.Services
             TimeLineItem timeLineItem = await _context.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(t => t.TimeLineId == id);
             if (timeLineItem == null) return null;
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id, JsonSerializer.Serialize(timeLineItem, JsonSerializerOptions.Web), _cacheOptionsSliding);
             _ = await SetTimeLineItemByItemIdInCache(timeLineItem.ItemId, timeLineItem.ItemType);
             _ = await SetTimeLineListInCache(timeLineItem.ProgenyId, timeLineItem.FamilyId);
 
@@ -290,7 +290,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            TimeLineItem timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(cachedTimeLineItem);
+            TimeLineItem timeLineItem = JsonSerializer.Deserialize<TimeLineItem>(cachedTimeLineItem, JsonSerializerOptions.Web);
             return timeLineItem;
         }
 
@@ -303,7 +303,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<TimeLineItem> SetTimeLineItemByItemIdInCache(string itemId, int itemType)
         {
             TimeLineItem timeLineItem = await _context.TimeLineDb.SingleOrDefaultAsync(t => t.ItemId == itemId && t.ItemType == itemType);
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + itemId + "type" + itemType, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + itemId + "type" + itemType, JsonSerializer.Serialize(timeLineItem, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return timeLineItem;
         }
@@ -537,7 +537,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedTimeLineList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedTimeLineList))
             {
-                timeLineList = JsonConvert.DeserializeObject<List<TimeLineItem>>(cachedTimeLineList);
+                timeLineList = JsonSerializer.Deserialize<List<TimeLineItem>>(cachedTimeLineList, JsonSerializerOptions.Web);
             }
 
             return timeLineList;
@@ -552,7 +552,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<List<TimeLineItem>> SetTimeLineListInCache(int progenyId, int familyId)
         {
             List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == progenyId && t.FamilyId == familyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId + "_family_" + familyId, JsonSerializer.Serialize(timeLineList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return timeLineList;
         }

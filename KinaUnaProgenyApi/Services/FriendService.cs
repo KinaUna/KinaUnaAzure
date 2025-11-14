@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -10,7 +11,7 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
+
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -70,7 +71,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            Friend friend = JsonConvert.DeserializeObject<Friend>(cachedFriend);
+            Friend friend = JsonSerializer.Deserialize<Friend>(cachedFriend, JsonSerializerOptions.Web);
             return friend;
         }
         
@@ -84,7 +85,7 @@ namespace KinaUnaProgenyApi.Services
             Friend friend = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
             if (friend == null) return null;
             
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id, JsonConvert.SerializeObject(friend), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id, JsonSerializer.Serialize(friend, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             _ = await SetFriendsListInCache(friend.ProgenyId);
 
@@ -246,7 +247,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedFriendsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedFriendsList))
             {
-                friendsList = JsonConvert.DeserializeObject<List<Friend>>(cachedFriendsList);
+                friendsList = JsonSerializer.Deserialize<List<Friend>>(cachedFriendsList, JsonSerializerOptions.Web);
             }
 
             return friendsList;
@@ -260,7 +261,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<List<Friend>> SetFriendsListInCache(int progenyId)
         {
             List<Friend> friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId, JsonSerializer.Serialize(friendsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return friendsList;
         }

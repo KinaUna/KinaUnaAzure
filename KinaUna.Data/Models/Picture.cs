@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
 using KinaUna.Data.Models.ItemInterfaces;
-using Newtonsoft.Json;
 
 namespace KinaUna.Data.Models
 {
@@ -75,7 +74,7 @@ namespace KinaUna.Data.Models
         /// </summary>
         public DateTime ModifiedTime { get; set; }
 
-        [NotMapped] [JsonIgnore]
+        [NotMapped]
         public Progeny Progeny { get; set; }
         
         [NotMapped]

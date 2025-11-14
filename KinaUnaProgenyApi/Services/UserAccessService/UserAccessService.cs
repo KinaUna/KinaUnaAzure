@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -11,7 +12,6 @@ using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services.UserAccessService
 {
@@ -61,7 +61,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
             string cachedProgenyList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenywhereadmin" + email);
             if (!string.IsNullOrEmpty(cachedProgenyList))
             {
-                progenyList = JsonConvert.DeserializeObject<List<Progeny>>(cachedProgenyList);
+                progenyList = JsonSerializer.Deserialize<List<Progeny>>(cachedProgenyList, JsonSerializerOptions.Web);
             }
 
             return progenyList;
@@ -75,7 +75,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         private async Task<List<Progeny>> SetProgenyUserIsAdminInCache(string email)
         {
             List<Progeny> progenyList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Admins.Contains(email)).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenywhereadmin" + email, JsonConvert.SerializeObject(progenyList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenywhereadmin" + email, JsonSerializer.Serialize(progenyList, JsonSerializerOptions.Web), _cacheOptionsSliding);
             return progenyList;
         }
 
@@ -116,7 +116,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
             string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "accessList" + progenyId);
             if (!string.IsNullOrEmpty(cachedAccessList))
             {
-                accessList = JsonConvert.DeserializeObject<List<UserAccess>>(cachedAccessList);
+                accessList = JsonSerializer.Deserialize<List<UserAccess>>(cachedAccessList, JsonSerializerOptions.Web);
             }
 
             return accessList;
@@ -130,7 +130,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         private async Task<List<UserAccess>> SetProgenyUserAccessListInCache(int progenyId)
         {
             List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "accessList" + progenyId, JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "accessList" + progenyId, JsonSerializer.Serialize(accessList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return accessList;
         }
@@ -177,7 +177,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
             string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "usersaccesslist" + email.ToUpper());
             if (!string.IsNullOrEmpty(cachedAccessList))
             {
-                accessList = JsonConvert.DeserializeObject<List<UserAccess>>(cachedAccessList);
+                accessList = JsonSerializer.Deserialize<List<UserAccess>>(cachedAccessList, JsonSerializerOptions.Web);
             }
 
             return accessList;
@@ -192,7 +192,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         private async Task<List<UserAccess>> SetUsersUserAccessListInCache(string email)
         {
             List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == email.ToUpper()).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "usersaccesslist" + email.ToUpper(), JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "usersaccesslist" + email.ToUpper(), JsonSerializer.Serialize(accessList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return accessList;
         }
@@ -227,7 +227,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                 return null;
             }
 
-            UserAccess userAccess = JsonConvert.DeserializeObject<UserAccess>(cachedUserAccess);
+            UserAccess userAccess = JsonSerializer.Deserialize<UserAccess>(cachedUserAccess, JsonSerializerOptions.Web);
             return userAccess;
         }
 
@@ -242,8 +242,8 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
             UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.AccessId == id);
             if (userAccess != null)
             {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + userAccess.ProgenyId + userAccess.UserId, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id, JsonSerializer.Serialize(userAccess, JsonSerializerOptions.Web), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + userAccess.ProgenyId + userAccess.UserId, JsonSerializer.Serialize(userAccess, JsonSerializerOptions.Web), _cacheOptionsSliding);
             }
             else
             {
@@ -421,7 +421,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                 return null;
             }
 
-            UserAccess userAccess = JsonConvert.DeserializeObject<UserAccess>(cachedUserAccess);
+            UserAccess userAccess = JsonSerializer.Deserialize<UserAccess>(cachedUserAccess, JsonSerializerOptions.Web);
             return userAccess;
         }
 
@@ -435,7 +435,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         private async Task<UserAccess> SetProgenyUserAccessForUserInCache(int progenyId, string userEmail)
         {
             UserAccess userAccess = await _context.UserAccessDb.SingleOrDefaultAsync(u => u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userEmail.ToUpper(), JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userEmail.ToUpper(), JsonSerializer.Serialize(userAccess, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return userAccess;
         }
@@ -466,7 +466,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
         /// <returns></returns>
         private async Task SetProgenyInCache(Progeny progeny)
         {
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + progeny.Id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + progeny.Id, JsonSerializer.Serialize(progeny, JsonSerializerOptions.Web), _cacheOptionsSliding);
         }
 
         /// <summary>

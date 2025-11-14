@@ -3,13 +3,13 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using KinaUnaProgenyApi.Services.FamiliesServices;
+using System.Text.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -126,7 +126,7 @@ namespace KinaUnaProgenyApi.Services
                 
             }
 
-            UserInfo userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+            UserInfo userinfo = JsonSerializer.Deserialize<UserInfo>(cachedUserInfo, JsonSerializerOptions.Web);
             return userinfo;
         }
 
@@ -142,7 +142,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + id);
             if (!string.IsNullOrEmpty(cachedUserInfo))
             {
-                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+                userinfo = JsonSerializer.Deserialize<UserInfo>(cachedUserInfo, JsonSerializerOptions.Web);
             }
 
             return userinfo;
@@ -161,7 +161,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            UserInfo userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+            UserInfo userinfo = JsonSerializer.Deserialize<UserInfo>(cachedUserInfo, JsonSerializerOptions.Web);
             return userinfo;
         }
 
@@ -177,9 +177,9 @@ namespace KinaUnaProgenyApi.Services
             UserInfo userinfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
             if (userinfo == null) return null;
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userinfo.UserId, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfo.Id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper(), JsonSerializer.Serialize(userinfo, JsonSerializerOptions.Web), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userinfo.UserId, JsonSerializer.Serialize(userinfo, JsonSerializerOptions.Web), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfo.Id, JsonSerializer.Serialize(userinfo, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return userinfo;
         }
@@ -363,7 +363,7 @@ namespace KinaUnaProgenyApi.Services
                 userInfoToAddToDelete.Deleted = false;
                 userInfoToAddToDelete.DeletedTime = DateTime.UtcNow;
                 userInfoToAddToDelete.UpdatedTime = DateTime.UtcNow;
-                userInfoToAddToDelete.ProfilePicture = JsonConvert.SerializeObject(userInfo);
+                userInfoToAddToDelete.ProfilePicture = JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web);
                 _ = _context.DeletedUsers.Update(userInfoToAddToDelete);
             }
             else
@@ -376,7 +376,7 @@ namespace KinaUnaProgenyApi.Services
                     Deleted = false,
                     DeletedTime = DateTime.UtcNow,
                     UpdatedTime = DateTime.UtcNow,
-                    ProfilePicture = JsonConvert.SerializeObject(userInfo)
+                    ProfilePicture = JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web)
                 };
                 _ = _context.DeletedUsers.Add(userInfoToAddToDelete);
             }

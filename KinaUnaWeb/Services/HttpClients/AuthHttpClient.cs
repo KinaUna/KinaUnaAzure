@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Duende.IdentityModel.Client;
 using KinaUna.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -53,11 +53,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
             const string deleteAccountPath = "/Account/CheckDeleteKinaUnaAccount/";
 
-            HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!deleteResponse.IsSuccessStatusCode) return new UserInfo();
 
             string deleteResponseAsString = await deleteResponse.Content.ReadAsStringAsync();
-            UserInfo resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseAsString);
+            UserInfo resultUserInfo = JsonSerializer.Deserialize<UserInfo>(deleteResponseAsString, JsonSerializerOptions.Web);
             if (resultUserInfo != null && resultUserInfo.UserId == userInfo.UserId)
             {
                 return resultUserInfo;
@@ -78,11 +78,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
             const string deleteAccountPath = "/Account/RemoveDeleteKinaUnaAccount/";
 
-            HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!deleteResponse.IsSuccessStatusCode) return new UserInfo();
 
             string deleteResponseAsString = await deleteResponse.Content.ReadAsStringAsync();
-            UserInfo resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseAsString);
+            UserInfo resultUserInfo = JsonSerializer.Deserialize<UserInfo>(deleteResponseAsString, JsonSerializerOptions.Web);
             if (resultUserInfo != null && resultUserInfo.UserId == userInfo.UserId)
             {
                 return resultUserInfo;
@@ -107,11 +107,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            HttpResponseMessage checkResponse = await _httpClient.PostAsync(checkAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage checkResponse = await _httpClient.PostAsync(checkAccountPath, new StringContent(JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!checkResponse.IsSuccessStatusCode) return false;
 
             string checkResponseAsString = await checkResponse.Content.ReadAsStringAsync();
-            UserInfo resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(checkResponseAsString);
+            UserInfo resultUserInfo = JsonSerializer.Deserialize<UserInfo>(checkResponseAsString, JsonSerializerOptions.Web);
             return resultUserInfo != null && resultUserInfo.UserId == userInfo.UserId;
         }
     }

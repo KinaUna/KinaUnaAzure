@@ -251,13 +251,24 @@ namespace KinaUnaWeb
                     .RequireAuthenticatedUser()
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
-            }).AddNewtonsoftJson().AddViewLocalization();
+            }).AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            }).AddViewLocalization();
             
             services.AddExceptionHandler<AuthenticationExceptionHandler>();
             services.AddExceptionHandler<GlobalExceptionHandler>();
             services.AddProblemDetails();
 
-            services.AddSignalR().AddMessagePackProtocol().AddNewtonsoftJsonProtocol();
+            services.AddSignalR().AddMessagePackProtocol().AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.PayloadSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.PayloadSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            }
+            );
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddApplicationInsightsTelemetry();
         }

@@ -6,10 +6,10 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services.CalendarServices
@@ -138,7 +138,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             string cachedCalendarItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
             if (!string.IsNullOrEmpty(cachedCalendarItem))
             {
-                calendarItem = JsonConvert.DeserializeObject<CalendarItem>(cachedCalendarItem);
+                calendarItem = JsonSerializer.Deserialize<CalendarItem>(cachedCalendarItem, JsonSerializerOptions.Web);
             }
 
             return calendarItem;
@@ -159,10 +159,12 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 calendarItem.RecurrenceRule = await _context.RecurrenceRulesDb.AsNoTracking().SingleOrDefaultAsync(r => r.RecurrenceRuleId == calendarItem.RecurrenceRuleId);
             }
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id, JsonConvert.SerializeObject(calendarItem), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id, 
+                JsonSerializer.Serialize(calendarItem, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == calendarItem.ProgenyId && c.FamilyId == calendarItem.FamilyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + calendarItem.ProgenyId + "_family_" + calendarItem.FamilyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + calendarItem.ProgenyId + "_family_" + calendarItem.FamilyId,
+                JsonSerializer.Serialize(calendarList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return calendarItem;
         }
@@ -179,7 +181,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
 
             List<CalendarItem> calendarList = [.. _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId && c.FamilyId == familyId)];
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId + "_family_" + familyId, JsonSerializer.Serialize(calendarList, JsonSerializerOptions.Web), _cacheOptionsSliding);
         }
 
         /// <summary>
@@ -382,7 +384,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             string cachedCalendar = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedCalendar))
             {
-                calendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(cachedCalendar);
+                calendarList = JsonSerializer.Deserialize<List<CalendarItem>>(cachedCalendar, JsonSerializerOptions.Web);
             }
 
             return calendarList;
@@ -397,7 +399,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         private async Task<List<CalendarItem>> SetCalendarListInCache(int progenyId, int familyId)
         {
             List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId && c.FamilyId == familyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId + "_family_" + familyId, JsonSerializer.Serialize(calendarList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return calendarList;
         }

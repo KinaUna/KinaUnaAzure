@@ -3,13 +3,13 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using KinaUna.Data.Models.AccessManagement;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -72,7 +72,7 @@ namespace KinaUnaWeb.Services.HttpClients
                 if (progenyResponse.IsSuccessStatusCode)
                 {
                     string progenyAsString = await progenyResponse.Content.ReadAsStringAsync();
-                    progeny = JsonConvert.DeserializeObject<Progeny>(progenyAsString);
+                    progeny = JsonSerializer.Deserialize<Progeny>(progenyAsString, JsonSerializerOptions.Web);
                 }
                 else
                 {
@@ -152,12 +152,12 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string newProgenyApiPath = "/api/Progeny/";
-            HttpResponseMessage progenyResponse = await _httpClient.PostAsync(newProgenyApiPath, new StringContent(JsonConvert.SerializeObject(progeny), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage progenyResponse = await _httpClient.PostAsync(newProgenyApiPath, new StringContent(JsonSerializer.Serialize(progeny, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!progenyResponse.IsSuccessStatusCode) return new Progeny();
 
             string newProgeny = await progenyResponse.Content.ReadAsStringAsync();
 
-            return JsonConvert.DeserializeObject<Progeny>(newProgeny);
+            return JsonSerializer.Deserialize<Progeny>(newProgeny, JsonSerializerOptions.Web);
 
         }
 
@@ -173,11 +173,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateProgenyApiPath = "/api/Progeny/" + progeny.Id;
-            HttpResponseMessage progenyResponse = await _httpClient.PutAsync(updateProgenyApiPath, new StringContent(JsonConvert.SerializeObject(progeny), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage progenyResponse = await _httpClient.PutAsync(updateProgenyApiPath, new StringContent(JsonSerializer.Serialize(progeny, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!progenyResponse.IsSuccessStatusCode) return new Progeny();
 
             string updateProgenyResponseString = await progenyResponse.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<Progeny>(updateProgenyResponseString);
+            return JsonSerializer.Deserialize<Progeny>(updateProgenyResponseString, JsonSerializerOptions.Web);
 
         }
 
@@ -216,7 +216,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!progenyInfoResponse.IsSuccessStatusCode) return progenyInfo;
 
             string progenyInfoAsString = await progenyInfoResponse.Content.ReadAsStringAsync();
-            progenyInfo = JsonConvert.DeserializeObject<ProgenyInfo>(progenyInfoAsString);
+            progenyInfo = JsonSerializer.Deserialize<ProgenyInfo>(progenyInfoAsString, JsonSerializerOptions.Web);
 
             return progenyInfo;
 
@@ -234,11 +234,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateProgenyInfoApiPath = "/api/Progeny/UpdateProgenyInfo/" + progenyInfo.ProgenyId;
-            HttpResponseMessage progenyInfoResponse = await _httpClient.PutAsync(updateProgenyInfoApiPath, new StringContent(JsonConvert.SerializeObject(progenyInfo), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage progenyInfoResponse = await _httpClient.PutAsync(updateProgenyInfoApiPath, new StringContent(JsonSerializer.Serialize(progenyInfo, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!progenyInfoResponse.IsSuccessStatusCode) return new ProgenyInfo();
 
             string updateProgenyInfoResponseString = await progenyInfoResponse.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<ProgenyInfo>(updateProgenyInfoResponseString);
+            return JsonSerializer.Deserialize<ProgenyInfo>(updateProgenyInfoResponseString, JsonSerializerOptions.Web);
 
         }
 
@@ -255,11 +255,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
             const string accessApiPath = "/api/Access/AdminListByUserPost/";
             List<Progeny> accessList = [];
-            HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(email), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonSerializer.Serialize(email, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!accessResponse.IsSuccessStatusCode) return accessList;
 
             string accessResponseString = await accessResponse.Content.ReadAsStringAsync();
-            accessList = JsonConvert.DeserializeObject<List<Progeny>>(accessResponseString);
+            accessList = JsonSerializer.Deserialize<List<Progeny>>(accessResponseString, JsonSerializerOptions.Web);
 
             return accessList;
         }
@@ -304,12 +304,12 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string accessApiPath = "/api/AccessManagement/AddProgenyPermission/";
-            HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(progenyPermission), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonSerializer.Serialize(progenyPermission, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!accessResponse.IsSuccessStatusCode) return new ProgenyPermission();
             
             string accessResponseString = await accessResponse.Content.ReadAsStringAsync();
             
-            return JsonConvert.DeserializeObject<ProgenyPermission>(accessResponseString);
+            return JsonSerializer.Deserialize<ProgenyPermission>(accessResponseString, JsonSerializerOptions.Web);
         }
 
         /// <summary>
@@ -328,10 +328,10 @@ namespace KinaUnaWeb.Services.HttpClients
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
             string updateProgenyPermissionApiPath = "/api/AccessManagement/UpdateProgenyPermission/" + progenyPermission.ProgenyPermissionId;
-            HttpResponseMessage accessResponse = await _httpClient.PutAsync(updateProgenyPermissionApiPath, new StringContent(JsonConvert.SerializeObject(progenyPermission), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage accessResponse = await _httpClient.PutAsync(updateProgenyPermissionApiPath, new StringContent(JsonSerializer.Serialize(progenyPermission, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!accessResponse.IsSuccessStatusCode) return new ProgenyPermission();
             string updateProgenyPermissionResponseString = await accessResponse.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<ProgenyPermission>(updateProgenyPermissionResponseString);
+            return JsonSerializer.Deserialize<ProgenyPermission>(updateProgenyPermissionResponseString, JsonSerializerOptions.Web);
         }
 
         /// <summary>

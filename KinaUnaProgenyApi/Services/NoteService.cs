@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -10,7 +11,6 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -70,7 +70,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            Note note = JsonConvert.DeserializeObject<Note>(cachedNote);
+            Note note = JsonSerializer.Deserialize<Note>(cachedNote, JsonSerializerOptions.Web);
             return note;
         }
 
@@ -85,7 +85,7 @@ namespace KinaUnaProgenyApi.Services
             Note note = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
             if (note == null) return null;
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id, JsonConvert.SerializeObject(note), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id, JsonSerializer.Serialize(note, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             _ = await SetNotesListInCache(note.ProgenyId);
 
@@ -234,7 +234,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedNotesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedNotesList))
             {
-                notesList = JsonConvert.DeserializeObject<List<Note>>(cachedNotesList);
+                notesList = JsonSerializer.Deserialize<List<Note>>(cachedNotesList, JsonSerializerOptions.Web);
             }
 
             return notesList;
@@ -248,7 +248,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<List<Note>> SetNotesListInCache(int progenyId)
         {
             List<Note> notesList = await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId, JsonSerializer.Serialize(notesList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return notesList;
         }

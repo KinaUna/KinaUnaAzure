@@ -3,12 +3,12 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -62,7 +62,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string contactAsString = await contactResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            contactItem = JsonConvert.DeserializeObject<Contact>(contactAsString);
+            contactItem = JsonSerializer.Deserialize<Contact>(contactAsString, JsonSerializerOptions.Web);
 
             return contactItem;
         }
@@ -79,11 +79,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string contactsApiPath = "/api/Contacts/";
-            HttpResponseMessage contactResponse = await _httpClient.PostAsync(contactsApiPath, new StringContent(JsonConvert.SerializeObject(contact), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage contactResponse = await _httpClient.PostAsync(contactsApiPath, new StringContent(JsonSerializer.Serialize(contact, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!contactResponse.IsSuccessStatusCode) return new Contact();
 
             string contactAsString = await contactResponse.Content.ReadAsStringAsync();
-            contact = JsonConvert.DeserializeObject<Contact>(contactAsString);
+            contact = JsonSerializer.Deserialize<Contact>(contactAsString, JsonSerializerOptions.Web);
             return contact;
 
         }
@@ -100,9 +100,9 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateContactApiPath = "/api/Contacts/" + contact.ContactId;
-            HttpResponseMessage updateContactResponseString = await _httpClient.PutAsync(updateContactApiPath, new StringContent(JsonConvert.SerializeObject(contact), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage updateContactResponseString = await _httpClient.PutAsync(updateContactApiPath, new StringContent(JsonSerializer.Serialize(contact, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             string returnString = await updateContactResponseString.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<Contact>(returnString);
+            return JsonSerializer.Deserialize<Contact>(returnString, JsonSerializerOptions.Web);
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!contactsResponse.IsSuccessStatusCode) return progenyContactsList;
 
             string contactsAsString = await contactsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            progenyContactsList = JsonConvert.DeserializeObject<List<Contact>>(contactsAsString);
+            progenyContactsList = JsonSerializer.Deserialize<List<Contact>>(contactsAsString, JsonSerializerOptions.Web);
 
             if (!string.IsNullOrEmpty(tagFilter))
             {

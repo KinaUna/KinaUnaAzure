@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -9,7 +10,6 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -98,7 +98,7 @@ namespace KinaUnaProgenyApi.Services
                 
             }
             
-            Sleep sleep = JsonConvert.DeserializeObject<Sleep>(cachedSleep);
+            Sleep sleep = JsonSerializer.Deserialize<Sleep>(cachedSleep, JsonSerializerOptions.Web);
             return sleep;
         }
 
@@ -112,7 +112,7 @@ namespace KinaUnaProgenyApi.Services
             Sleep sleep = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
             if (sleep == null) return null;
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id, JsonConvert.SerializeObject(sleep), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id, JsonSerializer.Serialize(sleep, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             _ = await SetSleepListInCache(sleep.ProgenyId);
 
@@ -230,7 +230,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedSleepList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId);
             if (!string.IsNullOrEmpty(cachedSleepList))
             {
-                sleepList = JsonConvert.DeserializeObject<List<Sleep>>(cachedSleepList);
+                sleepList = JsonSerializer.Deserialize<List<Sleep>>(cachedSleepList, JsonSerializerOptions.Web);
             }
 
             return sleepList;
@@ -244,7 +244,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<List<Sleep>> SetSleepListInCache(int progenyId)
         {
             List<Sleep> sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId, JsonSerializer.Serialize(sleepList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return sleepList;
         }

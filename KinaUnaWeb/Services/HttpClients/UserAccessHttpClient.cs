@@ -4,11 +4,11 @@ using KinaUna.Data.Models.AccessManagement;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -67,7 +67,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!accessManagementResponse.IsSuccessStatusCode) return new List<TimelineItemPermission>();
 
             string permissionListAsString = await accessManagementResponse.Content.ReadAsStringAsync();
-            List<TimelineItemPermission> timelineItemPermissions = JsonConvert.DeserializeObject<List<TimelineItemPermission>>(permissionListAsString);
+            List<TimelineItemPermission> timelineItemPermissions = JsonSerializer.Deserialize<List<TimelineItemPermission>>(permissionListAsString, JsonSerializerOptions.Web);
             return timelineItemPermissions;
         }
 

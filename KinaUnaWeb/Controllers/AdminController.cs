@@ -1,6 +1,5 @@
 ﻿using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using KinaUnaWeb.Services.HttpClients;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -566,7 +566,7 @@ namespace KinaUnaWeb.Controllers
                 notification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
                     TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
                 notification.DateTimeString = notification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                await hubContext.Clients.All.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
+                await hubContext.Clients.All.SendAsync("ReceiveMessage", JsonSerializer.Serialize(notification, JsonSerializerOptions.Web));
             }
             else
             {
@@ -585,7 +585,7 @@ namespace KinaUnaWeb.Controllers
 
                 notification = await webNotificationsService.SaveNotification(notification);
 
-                await hubContext.Clients.User(userinfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
+                await hubContext.Clients.User(userinfo.UserId).SendAsync("ReceiveMessage", JsonSerializer.Serialize(notification, JsonSerializerOptions.Web));
 
                 WebNotification webNotification = new()
                 {
@@ -598,7 +598,7 @@ namespace KinaUnaWeb.Controllers
                 webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
                     TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                 webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                await hubContext.Clients.User(userInfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
+                await hubContext.Clients.User(userInfo.UserId).SendAsync("ReceiveMessage", JsonSerializer.Serialize(webNotification, JsonSerializerOptions.Web));
             }
 
             notification.Title = "Notification Added";

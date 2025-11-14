@@ -4,8 +4,8 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.OpenIddict.Models.HomeViewModels;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace KinaUna.OpenIddict.Services
 {
@@ -79,7 +79,7 @@ namespace KinaUna.OpenIddict.Services
             string cachedTranslationsList = await _cache.GetStringAsync("PageTranslations" + page + "&Lang" + languageId) ?? string.Empty;
             if (!updateCache && !string.IsNullOrEmpty(cachedTranslationsList))
             {
-                translationsList = JsonConvert.DeserializeObject<List<TextTranslation>>(cachedTranslationsList);
+                translationsList = JsonSerializer.Deserialize<List<TextTranslation>>(cachedTranslationsList, JsonSerializerOptions.Web);
                 if (translationsList != null && translationsList.Count != 0)
                 {
                     TextTranslation? textTranslation = translationsList.FirstOrDefault(t => t.Word == word && t.Page == page && t.LanguageId == languageId);
@@ -99,11 +99,11 @@ namespace KinaUna.OpenIddict.Services
                 if (translationResponse.IsSuccessStatusCode)
                 {
                     string translationsListAsString = await translationResponse.Content.ReadAsStringAsync();
-                    translationsList = JsonConvert.DeserializeObject<List<TextTranslation>>(translationsListAsString);
+                    translationsList = JsonSerializer.Deserialize<List<TextTranslation>>(translationsListAsString, JsonSerializerOptions.Web);
 
                     if (translationsList != null && translationsList.Count != 0)
                     {
-                        await _cache.SetStringAsync("PageTranslations" + page + "&Lang" + languageId, JsonConvert.SerializeObject(translationsList), _cacheExpirationLong);
+                        await _cache.SetStringAsync("PageTranslations" + page + "&Lang" + languageId, JsonSerializer.Serialize(translationsList, JsonSerializerOptions.Web), _cacheExpirationLong);
                         TextTranslation? textTranslation = translationsList.FirstOrDefault(t => t.Word == word && t.Page == page && t.LanguageId == languageId);
                         if (textTranslation != null)
                         {
@@ -140,7 +140,7 @@ namespace KinaUna.OpenIddict.Services
             string cachedLanguagesString = await _cache.GetStringAsync("AllLanguages") ?? string.Empty;
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguagesString))
             {
-                languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(cachedLanguagesString);
+                languageList = JsonSerializer.Deserialize<List<KinaUnaLanguage>>(cachedLanguagesString, JsonSerializerOptions.Web);
                 return languageList;
             }
 
@@ -152,12 +152,12 @@ namespace KinaUna.OpenIddict.Services
             if (admininfoResponse.IsSuccessStatusCode)
             {
                 string languageListAsString = await admininfoResponse.Content.ReadAsStringAsync();
-                languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(languageListAsString);
+                languageList = JsonSerializer.Deserialize<List<KinaUnaLanguage>>(languageListAsString, JsonSerializerOptions.Web);
             }
 
             if (languageList != null && languageList.Count != 0)
             {
-                await _cache.SetStringAsync("AllLanguages", JsonConvert.SerializeObject(languageList));
+                await _cache.SetStringAsync("AllLanguages", JsonSerializer.Serialize(languageList, JsonSerializerOptions.Web));
             }
 
             return languageList;
@@ -174,11 +174,11 @@ namespace KinaUna.OpenIddict.Services
             const string addTranslationApiPath = "/api/Translations/";
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync();
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            HttpResponseMessage addResponse = await _httpClient.PostAsync(addTranslationApiPath, new StringContent(JsonConvert.SerializeObject(translation), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage addResponse = await _httpClient.PostAsync(addTranslationApiPath, new StringContent(JsonSerializer.Serialize(translation, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!addResponse.IsSuccessStatusCode) return addedTranslation;
 
             string addResponseString = await addResponse.Content.ReadAsStringAsync();
-            addedTranslation = JsonConvert.DeserializeObject<TextTranslation>(addResponseString);
+            addedTranslation = JsonSerializer.Deserialize<TextTranslation>(addResponseString, JsonSerializerOptions.Web);
 
             List<KinaUnaLanguage>? languages = await GetAllLanguages();
             if (languages == null) return addedTranslation;
@@ -208,7 +208,7 @@ namespace KinaUna.OpenIddict.Services
             if (!pageTextsResponse.IsSuccessStatusCode) return text;
 
             string kinaUnaTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
-            text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
+            text = JsonSerializer.Deserialize<KinaUnaText>(kinaUnaTextAsString, JsonSerializerOptions.Web);
 
             return text;
         }

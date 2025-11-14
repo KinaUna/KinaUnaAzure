@@ -3,12 +3,12 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -62,7 +62,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!locationResponse.IsSuccessStatusCode) return locationItem;
 
             string locationAsString = await locationResponse.Content.ReadAsStringAsync();
-            locationItem = JsonConvert.DeserializeObject<Location>(locationAsString);
+            locationItem = JsonSerializer.Deserialize<Location>(locationAsString, JsonSerializerOptions.Web);
 
             return locationItem;
         }
@@ -79,10 +79,10 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string locationsApiPath = "/api/Locations/";
-            HttpResponseMessage locationsResponse = await _httpClient.PostAsync(locationsApiPath, new StringContent(JsonConvert.SerializeObject(location), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage locationsResponse = await _httpClient.PostAsync(locationsApiPath, new StringContent(JsonSerializer.Serialize(location, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!locationsResponse.IsSuccessStatusCode) return new Location();
             string locationsAsString = await locationsResponse.Content.ReadAsStringAsync();
-            location = JsonConvert.DeserializeObject<Location>(locationsAsString);
+            location = JsonSerializer.Deserialize<Location>(locationsAsString, JsonSerializerOptions.Web);
             return location;
 
         }
@@ -99,11 +99,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateApiPath = "/api/Locations/" + location.LocationId;
-            HttpResponseMessage locationResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(location), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage locationResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonSerializer.Serialize(location, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!locationResponse.IsSuccessStatusCode) return new Location();
 
             string locationAsString = await locationResponse.Content.ReadAsStringAsync();
-            location = JsonConvert.DeserializeObject<Location>(locationAsString);
+            location = JsonSerializer.Deserialize<Location>(locationAsString, JsonSerializerOptions.Web);
             return location;
 
         }
@@ -143,7 +143,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string locationsAsString = await locationsResponse.Content.ReadAsStringAsync();
 
-            progenyLocations = JsonConvert.DeserializeObject<List<Location>>(locationsAsString);
+            progenyLocations = JsonSerializer.Deserialize<List<Location>>(locationsAsString, JsonSerializerOptions.Web);
 
             return progenyLocations;
         }
@@ -173,7 +173,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string locationsAsString = await locationsResponse.Content.ReadAsStringAsync();
 
-            progenyLocationsList = JsonConvert.DeserializeObject<List<Location>>(locationsAsString);
+            progenyLocationsList = JsonSerializer.Deserialize<List<Location>>(locationsAsString, JsonSerializerOptions.Web);
             if (!string.IsNullOrEmpty(tagFilter))
             {
                 progenyLocationsList = [.. progenyLocationsList.Where(l => l.Tags != null && l.Tags.Contains(tagFilter))];
@@ -202,7 +202,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string addressAsString = await addressResponse.Content.ReadAsStringAsync();
 
-            addressItem = JsonConvert.DeserializeObject<Address>(addressAsString);
+            addressItem = JsonSerializer.Deserialize<Address>(addressAsString, JsonSerializerOptions.Web);
 
             return addressItem;
         }
@@ -219,11 +219,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string addressApiPath = "/api/Addresses/";
-            HttpResponseMessage addressResponse = await _httpClient.PostAsync(addressApiPath, new StringContent(JsonConvert.SerializeObject(address), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage addressResponse = await _httpClient.PostAsync(addressApiPath, new StringContent(JsonSerializer.Serialize(address, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!addressResponse.IsSuccessStatusCode) return new Address();
 
             string addressAsString = await addressResponse.Content.ReadAsStringAsync();
-            Address addressResult = JsonConvert.DeserializeObject<Address>(addressAsString);
+            Address addressResult = JsonSerializer.Deserialize<Address>(addressAsString, JsonSerializerOptions.Web);
             return addressResult;
 
         }
@@ -240,11 +240,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateAddressApiPath = "/api/Addresses/" + address.AddressId;
-            HttpResponseMessage addressResponse = await _httpClient.PutAsync(updateAddressApiPath, new StringContent(JsonConvert.SerializeObject(address), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage addressResponse = await _httpClient.PutAsync(updateAddressApiPath, new StringContent(JsonSerializer.Serialize(address, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!addressResponse.IsSuccessStatusCode) return new Address();
 
             string addressAsString = await addressResponse.Content.ReadAsStringAsync();
-            Address resultAddress = JsonConvert.DeserializeObject<Address>(addressAsString);
+            Address resultAddress = JsonSerializer.Deserialize<Address>(addressAsString, JsonSerializerOptions.Web);
             return resultAddress;
 
         }

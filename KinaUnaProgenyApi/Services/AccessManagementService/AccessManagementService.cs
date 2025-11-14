@@ -7,10 +7,10 @@ using KinaUna.Data.Models.DTOs;
 using KinaUna.Data.Models.Family;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
@@ -67,12 +67,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 DistributedCacheEntryOptions cacheOptionsSlidingView = new();
                 cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(0, 1, 0, 0));
                 await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "hasItemPermissionPermission" + (int)itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId + "_level_" + (int)requiredLevel
-                    , JsonConvert.SerializeObject(itemPermission), cacheOptionsSlidingView);
+                    , JsonSerializer.Serialize(itemPermission, JsonSerializerOptions.Web), cacheOptionsSlidingView);
                 
             }
             else
             {
-                itemPermission = JsonConvert.DeserializeObject<TimelineItemPermission>(cachedItemPermission);
+                itemPermission = JsonSerializer.Deserialize<TimelineItemPermission>(cachedItemPermission, JsonSerializerOptions.Web);
             }
             
             return itemPermission.PermissionLevel >= requiredLevel;
@@ -2213,7 +2213,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                                                                      "allUsersItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type);
             if (!string.IsNullOrEmpty(cachedItemPermissions))
             {
-                return JsonConvert.DeserializeObject<Dictionary<int, PermissionLevel>>(cachedItemPermissions);
+                return JsonSerializer.Deserialize<Dictionary<int, PermissionLevel>>(cachedItemPermissions, JsonSerializerOptions.Web);
             }
 
             // Get user specific permissions.
@@ -2267,7 +2267,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             DistributedCacheEntryOptions cacheOptionsSliding = new();
             cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0));
             await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "allUsersItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type
-                , JsonConvert.SerializeObject(allPermissions), cacheOptionsSliding);
+                , JsonSerializer.Serialize(allPermissions, JsonSerializerOptions.Web), cacheOptionsSliding);
 
             return allPermissions;
         }
@@ -2278,7 +2278,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                                                                      "allUsersTimelineItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type);
             if (!string.IsNullOrEmpty(cachedItemPermissions))
             {
-                return JsonConvert.DeserializeObject<List<TimelineItemPermission>>(cachedItemPermissions);
+                return JsonSerializer.Deserialize<List<TimelineItemPermission>>(cachedItemPermissions, JsonSerializerOptions.Web);
             }
 
             // Get user specific permissions.
@@ -2310,7 +2310,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             DistributedCacheEntryOptions cacheOptionsSliding = new();
             cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0));
             await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "allUsersTimelineItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type
-                , JsonConvert.SerializeObject(timelineItemPermissions), cacheOptionsSliding);
+                , JsonSerializer.Serialize(timelineItemPermissions, JsonSerializerOptions.Web), cacheOptionsSliding);
 
             return timelineItemPermissions;
         }

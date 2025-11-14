@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -59,7 +59,7 @@ namespace KinaUnaWeb.Services.HttpClients
             string cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguagesString))
             {
-                languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(cachedLanguagesString);
+                languageList = JsonSerializer.Deserialize<List<KinaUnaLanguage>>(cachedLanguagesString, JsonSerializerOptions.Web);
                 return languageList;
             }
 
@@ -72,10 +72,10 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!admininfoResponse.IsSuccessStatusCode) return languageList;
 
             string languageListAsString = await admininfoResponse.Content.ReadAsStringAsync();
-            languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(languageListAsString);
+            languageList = JsonSerializer.Deserialize<List<KinaUnaLanguage>>(languageListAsString, JsonSerializerOptions.Web);
             if (languageList != null && languageList.Count != 0)
             {
-                await _cache.SetStringAsync("AllLanguages", JsonConvert.SerializeObject(languageList));
+                await _cache.SetStringAsync("AllLanguages", JsonSerializer.Serialize(languageList, JsonSerializerOptions.Web));
             }
 
             return languageList;
@@ -93,7 +93,7 @@ namespace KinaUnaWeb.Services.HttpClients
             string cachedLanguageString = await _cache.GetStringAsync("Language" + languageId);
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguageString))
             {
-                language = JsonConvert.DeserializeObject<KinaUnaLanguage>(cachedLanguageString);
+                language = JsonSerializer.Deserialize<KinaUnaLanguage>(cachedLanguageString, JsonSerializerOptions.Web);
                 return language;
             }
 
@@ -106,8 +106,8 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!admininfoResponse.IsSuccessStatusCode) return language;
 
             string languageAsString = await admininfoResponse.Content.ReadAsStringAsync();
-            language = JsonConvert.DeserializeObject<KinaUnaLanguage>(languageAsString);
-            await _cache.SetStringAsync("Language" + languageId, JsonConvert.SerializeObject(language), _cacheExpirationLong);
+            language = JsonSerializer.Deserialize<KinaUnaLanguage>(languageAsString, JsonSerializerOptions.Web);
+            await _cache.SetStringAsync("Language" + languageId, JsonSerializer.Serialize(language, JsonSerializerOptions.Web), _cacheExpirationLong);
 
             return language;
         }
@@ -126,11 +126,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string addApiPath = "/api/Languages/AddLanguage/";
-            HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(language), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonSerializer.Serialize(language, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!addResponse.IsSuccessStatusCode) return addedLanguage;
 
             string addResponseString = await addResponse.Content.ReadAsStringAsync();
-            addedLanguage = JsonConvert.DeserializeObject<KinaUnaLanguage>(addResponseString);
+            addedLanguage = JsonSerializer.Deserialize<KinaUnaLanguage>(addResponseString, JsonSerializerOptions.Web);
 
             return addedLanguage;
         }
@@ -149,11 +149,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateApiPath = "/api/Languages/UpdateLanguage/" + language.Id;
-            HttpResponseMessage updateResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(language), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage updateResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonSerializer.Serialize(language, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!updateResponse.IsSuccessStatusCode) return updatedLanguage;
 
             string updateResponseString = await updateResponse.Content.ReadAsStringAsync();
-            updatedLanguage = JsonConvert.DeserializeObject<KinaUnaLanguage>(updateResponseString);
+            updatedLanguage = JsonSerializer.Deserialize<KinaUnaLanguage>(updateResponseString, JsonSerializerOptions.Web);
 
             return updatedLanguage;
         }
@@ -177,7 +177,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!deleteResponse.IsSuccessStatusCode) return deletedLanguage;
 
             string deletedResponseString = await deleteResponse.Content.ReadAsStringAsync();
-            deletedLanguage = JsonConvert.DeserializeObject<KinaUnaLanguage>(deletedResponseString);
+            deletedLanguage = JsonSerializer.Deserialize<KinaUnaLanguage>(deletedResponseString, JsonSerializerOptions.Web);
             await _cache.RemoveAsync("Language" + language.Id);
             await _cache.RemoveAsync("AllLanguages");
 

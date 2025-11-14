@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -197,10 +197,10 @@ namespace KinaUnaProgenyApi.Services
         {
             WebNotification notification = await progenyDbContext.WebNotificationsDb.AsNoTracking().SingleOrDefaultAsync(n => n.Id == id);
             if (notification == null) return null;
-            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotification" + notification.Id, JsonConvert.SerializeObject(notification), GetCacheEntryOptions());
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotification" + notification.Id, JsonSerializer.Serialize(notification, JsonSerializerOptions.Web), GetCacheEntryOptions());
 
             List<WebNotification> notificationsList = await progenyDbContext.WebNotificationsDb.AsNoTracking().Where(n => n.To == notification.To).ToListAsync();
-            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotifications" + notification.To, JsonConvert.SerializeObject(notificationsList), GetCacheEntryOptions());
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotifications" + notification.To, JsonSerializer.Serialize(notificationsList, JsonSerializerOptions.Web), GetCacheEntryOptions());
 
             return notification;
         }
@@ -216,7 +216,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedNotification = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotification" + id);
             if (!string.IsNullOrEmpty(cachedNotification))
             {
-                notification = JsonConvert.DeserializeObject<WebNotification>(cachedNotification);
+                notification = JsonSerializer.Deserialize<WebNotification>(cachedNotification, JsonSerializerOptions.Web);
             }
 
             return notification;
@@ -233,7 +233,7 @@ namespace KinaUnaProgenyApi.Services
             await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "webnotification" + id);
 
             List<WebNotification> notificationsList = await progenyDbContext.WebNotificationsDb.AsNoTracking().Where(n => n.To == userId).ToListAsync();
-            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotifications" + userId, JsonConvert.SerializeObject(notificationsList), GetCacheEntryOptions());
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotifications" + userId, JsonSerializer.Serialize(notificationsList, JsonSerializerOptions.Web), GetCacheEntryOptions());
         }
 
         /// <summary>
@@ -321,7 +321,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedNotifications = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotifications" + userId);
             if (!string.IsNullOrEmpty(cachedNotifications))
             {
-                notificationsList = JsonConvert.DeserializeObject<List<WebNotification>>(cachedNotifications);
+                notificationsList = JsonSerializer.Deserialize<List<WebNotification>>(cachedNotifications, JsonSerializerOptions.Web);
             }
 
             return notificationsList;
@@ -335,7 +335,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<List<WebNotification>> SetUsersWebNotificationsInCache(string userId)
         {
             List<WebNotification> notificationsList = await progenyDbContext.WebNotificationsDb.AsNoTracking().Where(n => n.To == userId).ToListAsync();
-            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotifications" + userId, JsonConvert.SerializeObject(notificationsList), GetCacheEntryOptions());
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotifications" + userId, JsonSerializer.Serialize(notificationsList, JsonSerializerOptions.Web), GetCacheEntryOptions());
 
             return notificationsList;
         }

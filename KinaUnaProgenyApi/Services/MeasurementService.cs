@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -9,7 +10,6 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -71,7 +71,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            Measurement measurement = JsonConvert.DeserializeObject<Measurement>(cachedMeasurement);
+            Measurement measurement = JsonSerializer.Deserialize<Measurement>(cachedMeasurement, JsonSerializerOptions.Web);
             return measurement;
         }
 
@@ -85,7 +85,7 @@ namespace KinaUnaProgenyApi.Services
             Measurement measurement = await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
             if (measurement == null) return null;
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id, JsonConvert.SerializeObject(measurement), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id, JsonSerializer.Serialize(measurement, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             _ = await SetMeasurementsListInCache(measurement.ProgenyId);
 
@@ -229,7 +229,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedMeasurementsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedMeasurementsList))
             {
-                measurementsList = JsonConvert.DeserializeObject<List<Measurement>>(cachedMeasurementsList);
+                measurementsList = JsonSerializer.Deserialize<List<Measurement>>(cachedMeasurementsList, JsonSerializerOptions.Web);
             }
 
             return measurementsList;
@@ -243,7 +243,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<List<Measurement>> SetMeasurementsListInCache(int progenyId)
         {
             List<Measurement> measurementsList = await _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId, JsonConvert.SerializeObject(measurementsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId, JsonSerializer.Serialize(measurementsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
             return measurementsList;
         }
     }

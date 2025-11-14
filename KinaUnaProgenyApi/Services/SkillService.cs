@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -10,7 +11,6 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -97,7 +97,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            Skill skill = JsonConvert.DeserializeObject<Skill>(cachedSkill);
+            Skill skill = JsonSerializer.Deserialize<Skill>(cachedSkill, JsonSerializerOptions.Web);
             return skill;
         }
 
@@ -112,7 +112,7 @@ namespace KinaUnaProgenyApi.Services
             Skill skill = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
             if (skill == null) return null;
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + id, JsonConvert.SerializeObject(skill), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + id, JsonSerializer.Serialize(skill, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             _ = await SetSkillsListInCache(skill.ProgenyId);
 
@@ -244,7 +244,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedSkillsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedSkillsList))
             {
-                skillsList = JsonConvert.DeserializeObject<List<Skill>>(cachedSkillsList);
+                skillsList = JsonSerializer.Deserialize<List<Skill>>(cachedSkillsList, JsonSerializerOptions.Web);
             }
 
             return skillsList;
@@ -258,7 +258,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<List<Skill>> SetSkillsListInCache(int progenyId)
         {
             List<Skill> skillsList = await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId, JsonConvert.SerializeObject(skillsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId, JsonSerializer.Serialize(skillsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return skillsList;
         }

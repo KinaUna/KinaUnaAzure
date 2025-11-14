@@ -6,10 +6,10 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
@@ -93,7 +93,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            Video video = JsonConvert.DeserializeObject<Video>(cachedVideo);
+            Video video = JsonSerializer.Deserialize<Video>(cachedVideo, JsonSerializerOptions.Web);
             return video;
         }
 
@@ -113,7 +113,7 @@ namespace KinaUnaProgenyApi.Services
                 video = await UpdateVideoAsSystem(video);
             }
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonSerializer.Serialize(video, JsonSerializerOptions.Web), _cacheOptionsSliding);
             
             await SetVideosListInCache(video.ProgenyId);
 
@@ -303,7 +303,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedVideosList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVideosList))
             {
-                videosList = JsonConvert.DeserializeObject<List<Video>>(cachedVideosList);
+                videosList = JsonSerializer.Deserialize<List<Video>>(cachedVideosList, JsonSerializerOptions.Web);
             }
 
             return videosList;
@@ -317,7 +317,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Video>> SetVideosListInCache(int progenyId)
         {
             List<Video> videosList = await _mediaContext.VideoDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId, JsonConvert.SerializeObject(videosList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId, JsonSerializer.Serialize(videosList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return videosList;
         }

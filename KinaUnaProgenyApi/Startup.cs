@@ -105,9 +105,14 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IPermissionAuditLogsService, PermissionAuditLogsService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
-            services.AddControllers().AddNewtonsoftJson();
-            
-            
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            });
+
+
             // Register the OpenIddict services and configure them.
             string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
             

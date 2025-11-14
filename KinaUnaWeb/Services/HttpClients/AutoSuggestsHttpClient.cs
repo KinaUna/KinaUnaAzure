@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,6 +8,7 @@ using Duende.IdentityModel.Client;
 using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -65,7 +65,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string tagsListAsString = await tagsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            resultTagsList = JsonConvert.DeserializeObject<List<string>>(tagsListAsString);
+            resultTagsList = JsonSerializer.Deserialize<List<string>>(tagsListAsString, JsonSerializerOptions.Web);
 
             return resultTagsList;
         }
@@ -91,7 +91,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string contextsListAsString = await contextsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            resultContextsList = JsonConvert.DeserializeObject<List<string>>(contextsListAsString);
+            resultContextsList = JsonSerializer.Deserialize<List<string>>(contextsListAsString, JsonSerializerOptions.Web);
 
             return resultContextsList;
         }
@@ -117,7 +117,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string locationsListAsString = await locationsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            resultLocationsList = JsonConvert.DeserializeObject<List<string>>(locationsListAsString);
+            resultLocationsList = JsonSerializer.Deserialize<List<string>>(locationsListAsString, JsonSerializerOptions.Web);
 
             return resultLocationsList;
         }
@@ -142,7 +142,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string categoriesListAsString = await categoriesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            resultCategoriesList = JsonConvert.DeserializeObject<List<string>>(categoriesListAsString);
+            resultCategoriesList = JsonSerializer.Deserialize<List<string>>(categoriesListAsString, JsonSerializerOptions.Web);
 
             return resultCategoriesList;
         }
@@ -167,7 +167,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string languagesListAsString = await languagesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            resultLanguagesList = JsonConvert.DeserializeObject<List<string>>(languagesListAsString);
+            resultLanguagesList = JsonSerializer.Deserialize<List<string>>(languagesListAsString, JsonSerializerOptions.Web);
 
             return resultLanguagesList;
         }

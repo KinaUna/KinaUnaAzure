@@ -5,11 +5,11 @@ using KinaUna.Data.Models.Family;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -357,12 +357,12 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string accessApiPath = "/api/AccessManagement/AddFamilyPermission/";
-            HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(familyPermission), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonSerializer.Serialize(familyPermission, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!accessResponse.IsSuccessStatusCode) return new FamilyPermission();
 
             string accessResponseString = await accessResponse.Content.ReadAsStringAsync();
 
-            return JsonConvert.DeserializeObject<FamilyPermission>(accessResponseString);
+            return JsonSerializer.Deserialize<FamilyPermission>(accessResponseString, JsonSerializerOptions.Web);
         }
 
         /// <summary>
@@ -380,10 +380,10 @@ namespace KinaUnaWeb.Services.HttpClients
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
             const string accessApiPath = "/api/AccessManagement/UpdateFamilyPermission/";
-            HttpResponseMessage accessResponse = await _httpClient.PutAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(familyPermission), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage accessResponse = await _httpClient.PutAsync(accessApiPath, new StringContent(JsonSerializer.Serialize(familyPermission, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!accessResponse.IsSuccessStatusCode) return new FamilyPermission();
             string accessResponseString = await accessResponse.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<FamilyPermission>(accessResponseString) ?? new FamilyPermission();
+            return JsonSerializer.Deserialize<FamilyPermission>(accessResponseString, JsonSerializerOptions.Web) ?? new FamilyPermission();
         }
 
         /// <summary>

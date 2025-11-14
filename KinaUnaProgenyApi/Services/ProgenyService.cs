@@ -12,7 +12,7 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -312,7 +312,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            Progeny progeny = JsonConvert.DeserializeObject<Progeny>(cachedProgeny);
+            Progeny progeny = JsonSerializer.Deserialize<Progeny>(cachedProgeny, JsonSerializerOptions.Web);
             return progeny;
         }
 
@@ -331,7 +331,7 @@ namespace KinaUnaProgenyApi.Services
                     progeny.PictureLink = Constants.ProfilePictureUrl;
                 }
 
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id, JsonSerializer.Serialize(progeny, JsonSerializerOptions.Web), _cacheOptionsSliding);
             }
             else
             {

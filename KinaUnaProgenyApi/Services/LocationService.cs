@@ -6,10 +6,10 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Location = KinaUna.Data.Models.Location;
 
@@ -73,7 +73,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            Location location = JsonConvert.DeserializeObject<Location>(cachedLocation);
+            Location location = JsonSerializer.Deserialize<Location>(cachedLocation, JsonSerializerOptions.Web);
             return location;
         }
 
@@ -87,7 +87,7 @@ namespace KinaUnaProgenyApi.Services
             Location location = await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == id);
             if (location == null) return null;
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "location" + id, JsonConvert.SerializeObject(location), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "location" + id, JsonSerializer.Serialize(location, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             _ = await SetLocationsListInCache(location.ProgenyId, location.FamilyId);
 
@@ -269,7 +269,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedLocationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedLocationsList))
             {
-                locationsList = JsonConvert.DeserializeObject<List<Location>>(cachedLocationsList);
+                locationsList = JsonSerializer.Deserialize<List<Location>>(cachedLocationsList, JsonSerializerOptions.Web);
             }
 
             return locationsList;
@@ -284,7 +284,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<List<Location>> SetLocationsListInCache(int progenyId, int familyId)
         {
             List<Location> locationsList = await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == progenyId && l.FamilyId == familyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId + "_family_" + familyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId + "_family_" + familyId, JsonSerializer.Serialize(locationsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return locationsList;
         }
@@ -320,7 +320,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            Address address = JsonConvert.DeserializeObject<Address>(cachedAddress);
+            Address address = JsonSerializer.Deserialize<Address>(cachedAddress, JsonSerializerOptions.Web);
             return address;
         }
 
@@ -332,7 +332,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<Address> SetAddressItemInCache(int id)
         {
             Address addressItem = await _context.AddressDb.AsNoTracking().SingleOrDefaultAsync(a => a.AddressId == id);
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "address" + id, JsonConvert.SerializeObject(addressItem), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "address" + id, JsonSerializer.Serialize(addressItem, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return addressItem;
         }

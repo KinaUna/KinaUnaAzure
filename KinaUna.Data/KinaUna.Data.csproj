@@ -1,25 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <UserSecretsId>cb969c65-4bf0-4471-ad2f-1b994199a635</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Core" Version="1.49.0" />
+    <PackageReference Include="Azure.Core" Version="1.50.0" />
     <PackageReference Include="Azure.Extensions.AspNetCore.DataProtection.Blobs" Version="1.5.1" />
     <PackageReference Include="Duende.IdentityModel" Version="7.1.0" />
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.9.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.0" />
     <PackageReference Include="Microsoft.Azure.NotificationHubs" Version="4.2.0" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
-    <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.1.0" />
-    <PackageReference Include="System.Memory.Data" Version="9.0.10" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="9.0.10" />
+    <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.2.0" />
+    <PackageReference Include="System.Memory.Data" Version="10.0.0" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="10.0.0" />
     <PackageReference Include="xunit.analyzers" Version="1.25.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -4,10 +4,10 @@ using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -53,7 +53,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string todoItemAsString = await todosResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            todoItem = JsonConvert.DeserializeObject<TodoItem>(todoItemAsString);
+            todoItem = JsonSerializer.Deserialize<TodoItem>(todoItemAsString, JsonSerializerOptions.Web);
 
             return todoItem;
         }
@@ -73,12 +73,12 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string todosApiPath = "/api/Todos/GetProgeniesTodoItemsList/";
             HttpResponseMessage todosResponse =
-                await _httpClient.PostAsync(todosApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                await _httpClient.PostAsync(todosApiPath, new StringContent(JsonSerializer.Serialize(request, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
             if (!todosResponse.IsSuccessStatusCode) return progenyTodoItemsResponse;
 
             string todosResponseAsString = await todosResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            progenyTodoItemsResponse = JsonConvert.DeserializeObject<TodoItemsResponse>(todosResponseAsString);
+            progenyTodoItemsResponse = JsonSerializer.Deserialize<TodoItemsResponse>(todosResponseAsString, JsonSerializerOptions.Web);
 
             return progenyTodoItemsResponse;
         }
@@ -90,11 +90,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string todosApiPath = "/api/Todos/";
-            HttpResponseMessage todosResponse = await _httpClient.PostAsync(todosApiPath, new StringContent(JsonConvert.SerializeObject(todoItem), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage todosResponse = await _httpClient.PostAsync(todosApiPath, new StringContent(JsonSerializer.Serialize(todoItem, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!todosResponse.IsSuccessStatusCode) return new TodoItem();
 
             string todoAsString = await todosResponse.Content.ReadAsStringAsync();
-            todoItem = JsonConvert.DeserializeObject<TodoItem>(todoAsString);
+            todoItem = JsonSerializer.Deserialize<TodoItem>(todoAsString, JsonSerializerOptions.Web);
             return todoItem;
         }
 
@@ -105,11 +105,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateApiPath = "/api/Todos/" + todoItem.TodoItemId;
-            HttpResponseMessage todoResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(todoItem), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage todoResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonSerializer.Serialize(todoItem), System.Text.Encoding.UTF8, "application/json"));
             if (!todoResponse.IsSuccessStatusCode) return new TodoItem();
 
             string todoAsString = await todoResponse.Content.ReadAsStringAsync();
-            todoItem = JsonConvert.DeserializeObject<TodoItem>(todoAsString);
+            todoItem = JsonSerializer.Deserialize<TodoItem>(todoAsString, JsonSerializerOptions.Web);
             return todoItem;
         }
 
