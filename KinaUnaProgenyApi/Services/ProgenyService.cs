@@ -48,22 +48,23 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The Progeny with the given Id. Null if the Progeny doesn't exist.</returns>
         public async Task<Progeny> GetProgeny(int id, UserInfo currentUserInfo)
         {
-            if (id != Constants.DefaultChildId && !await _accessManagementService.HasProgenyPermission(id, currentUserInfo, PermissionLevel.View))
-            {
-                // User doesn't have permissions to view this Progeny.
-                return null;
-            }
-
             Progeny progeny = await GetProgenyFromCache(id);
             if (progeny == null || progeny.Id == 0)
             {
                 progeny = await SetProgenyInCache(id);
             }
 
-            if (progeny != null)
+            if (id != Constants.DefaultChildId && !await _accessManagementService.HasProgenyPermission(id, currentUserInfo, PermissionLevel.View) && !progeny.IsInAdminList(currentUserInfo.UserEmail))
+            {
+                // User doesn't have permissions to view this Progeny.
+                return null;
+            }
+
+            if (progeny != null && progeny.Id != 0)
             {
                 progeny.ProgenyPerMission = await _accessManagementService.GetProgenyPermissionForUser(id, currentUserInfo);
             }
+
             return progeny;
         }
 
@@ -96,13 +97,16 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetProgenyInCache(progeny.Id);
 
-            UserGroup adminGroup = new UserGroup() { 
+            UserGroup adminGroup = new() { 
                 Name = "Admins - " + progeny.NickName, 
                 CreatedBy = progeny.CreatedBy, 
                 CreatedTime = DateTime.UtcNow, 
                 ModifiedBy = progeny.CreatedBy, 
                 ModifiedTime = DateTime.UtcNow,
-                PermissionLevel = PermissionLevel.Admin
+                PermissionLevel = PermissionLevel.Admin,
+                ProgenyId = progeny.Id,
+                FamilyId = 0, 
+                Description = $"Administrators group for {progeny.NickName} created automatically."
             };
             adminGroup = await _userGroupsService.AddUserGroup(adminGroup, currentUserInfo);
             

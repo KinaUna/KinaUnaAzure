@@ -300,6 +300,8 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            model.UserGroupMember.UserGroupId = userGroup.UserGroupId;
+
             UserGroupMember newMember = await userGroupsHttpClient.AddUserGroupMember(model.UserGroupMember);
             return Json(newMember);
         }

@@ -4,14 +4,14 @@
 @model KinaUnaWeb.Models.FamiliesViewModels.FamilyMemberDetailsViewModel
 @inject ILocaleManager LocaleManager
 <div class="col-auto">
-    <div id="family-member-element-@Model.FamilyMember.FamilyMemberId" class="card-compact bg-todos todo-item m-1" data-family-member-id="@Model.FamilyMember.FamilyMemberId" align="left">
+    <div id="family-member-element-@Model.FamilyMember.FamilyMemberId" class="card-compact bg-todos todo-item m-1" data-family-member-id="@Model.FamilyMember.FamilyMemberId" data-family-member-family-id="@Model.FamilyMember.FamilyId" align="left">
         @if (Model.FamilyMember.FamilyMemberId == 0)
         {
             <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
         }
         else
         {
-            <div class="row m-0 p-3">
+            <button class="row m-0 p-3">
                 <div class="col-12">
                     @if (Model.FamilyMember.ProgenyId > 0 && Model.FamilyMember.Progeny != null)
                     {
@@ -29,7 +29,7 @@
                     <span>@Model.FamilyMember.Email</span>
                     
                 </div>
-            </div>
+            </button>
         }
     </div>
     <div class="space-10"></div>

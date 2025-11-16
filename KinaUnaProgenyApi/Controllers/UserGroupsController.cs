@@ -129,7 +129,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
             UserGroupMember newUserGroupMember = await userGroupsService.AddUserGroupMember(userGroupMember, currentUserInfo);
-            if (newUserGroupMember.UserGroupMemberId == 0)
+            if (newUserGroupMember == null || newUserGroupMember.UserGroupMemberId == 0)
             {
                 return Unauthorized();
             }

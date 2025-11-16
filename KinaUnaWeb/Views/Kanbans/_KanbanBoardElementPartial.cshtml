@@ -3,7 +3,7 @@
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.TypeScriptModels.Kanbans.KanbanBoardElementResponse
 @inject ILocaleManager LocaleManager
-<button class="col-12 card text-white bg-todos kanban-board-item" data-kanban-board-id="@Model.KanbanBoardId" align="left" style="min-width: 49%;">
+<button class="col-12 card text-white bg-todos kanban-board-item item-element-button" data-kanban-board-id="@Model.KanbanBoardId" align="left" style="min-width: 49%;">
     @if (Model.KanbanBoard.KanbanBoardId == 0)
     {
         <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>

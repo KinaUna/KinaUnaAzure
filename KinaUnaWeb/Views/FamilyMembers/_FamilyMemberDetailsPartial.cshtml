@@ -11,7 +11,7 @@
                 @if (Model.FamilyMember.ProgenyId > 0 && Model.FamilyMember.Progeny != null)
                 {
                     <img src="@Model.FamilyMember.Progeny.GetProfilePictureUrl()" class="profile-picture-small"/>
-                    <span>@Model.FamilyMember.Progeny.NickName</span>
+                    <span class="h4">@Model.FamilyMember.Progeny.NickName</span>
                 }
                 else
                 {
@@ -32,14 +32,17 @@
         <div class="row m-0">
             <div class="col-12">
                 Email: <span>@Model.FamilyMember.Email</span>
+                <div class="space-10"></div>
             </div>
             <div class="col-12">
                 @await LocaleManager.GetTranslation("Family member type", PageNames.Family, Model.LanguageId): <span>@await LocaleManager.GetTranslation(Model.FamilyMember.MemberType.ToString(), PageNames.Family, Model.LanguageId)</span>
+                <div class="space-10"></div>
             </div>
             @if (Model.FamilyMember.Progeny != null)
             {
                 <div class="col-12">
                     @Model.FamilyMember.Progeny.Name
+                    <div class="space-10"></div>
                 </div>
                 @if (Model.FamilyMember.Progeny.BirthDay.HasValue)
                 {
@@ -59,6 +62,7 @@
             else
             {
                 <div class="col-12">
+                    <div class="space-20"></div>
                     @if (Model.FamilyMember.PermissionLevel >= PermissionLevel.Edit)
                     {
                         <button id="edit-family-member-button-@Model.FamilyMember.FamilyMemberId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></button>

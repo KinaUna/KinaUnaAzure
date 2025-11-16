@@ -1,6 +1,8 @@
 ﻿import { getCurrentLanguageId } from "../data-tools-v9.js";
 import { hideBodyScrollbars } from "../item-details/items-display-v9.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
 import { Progeny } from "../page-models-v9.js";
+import { popupProgenyDetails } from "./progeny-details.js";
 
 let progeniesList = new Array<Progeny>();
 let languageId = 1; // Default to English
@@ -53,6 +55,17 @@ async function renderOtherPeopleElement(progenyId: number): Promise<void> {
 }
 
 function addOtherPeopleElementEventListeners(progenyId: number): void {
+    const progenyDetailsButton = document.querySelector<HTMLButtonElement>('#progeny-details-button-' + progenyId);
+    if (progenyDetailsButton) {
+        const progenyDetailsButtonClickedAction = async function (event: MouseEvent): Promise<void> {
+            event.preventDefault();
+            await popupProgenyDetails(progenyId.toString());
+        };
+        // Clear existing event listeners.
+        progenyDetailsButton.removeEventListener('click', progenyDetailsButtonClickedAction);
+        progenyDetailsButton.addEventListener('click', progenyDetailsButtonClickedAction);
+    }
+
     const addToFamilyButton = document.querySelector<HTMLButtonElement>('#add-to-family-button-' + progenyId);
     if (addToFamilyButton) {
         const addToFamilyButtonClickedAction = async function (event: MouseEvent): Promise<void> {
@@ -110,6 +123,7 @@ function addAddToFamilyDivEventListeners() {
     if (addToFamilyForm) {
         const addToFamilyFormSubmitAction = async function (event: Event): Promise<void> {
             event.preventDefault();
+            startFullPageSpinner();
             const formData = new FormData(addToFamilyForm);
             const response = await fetch('/Progeny/AddOtherPersonToFamily', {
                 method: 'POST',
@@ -123,8 +137,10 @@ function addAddToFamilyDivEventListeners() {
                     addToFamilyDiv.innerHTML = '';
                     addToFamilyDiv.classList.add('d-none');
                 }
+                stopFullPageSpinner();
                 return Promise.resolve();
             } else {
+                stopFullPageSpinner();
                 console.error('Failed to submit add to family form:', response.statusText);
                 return Promise.reject('Failed to submit add to family form: ' + response.statusText);
             }

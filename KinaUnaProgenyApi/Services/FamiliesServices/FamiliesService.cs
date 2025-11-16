@@ -174,6 +174,7 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
             UserGroup adminGroup = new()
             {
                 FamilyId = family.FamilyId,
+                ProgenyId = 0,
                 Name = "Administrators - " + family.Name,
                 CreatedBy = currentUserInfo.UserEmail,
                 CreatedTime = System.DateTime.UtcNow,

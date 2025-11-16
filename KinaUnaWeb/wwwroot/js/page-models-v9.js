@@ -475,6 +475,8 @@ export var TimeLineType;
     TimeLineType[TimeLineType["KanbanBoard"] = 16] = "KanbanBoard";
     TimeLineType[TimeLineType["KanbanItem"] = 17] = "KanbanItem";
     TimeLineType[TimeLineType["Child"] = 100] = "Child";
+    TimeLineType[TimeLineType["Family"] = 101] = "Family";
+    TimeLineType[TimeLineType["FamilyMember"] = 102] = "FamilyMember";
 })(TimeLineType || (TimeLineType = {}));
 export var TodoStatusType;
 (function (TodoStatusType) {

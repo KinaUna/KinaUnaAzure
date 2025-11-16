@@ -1,10 +1,17 @@
 ﻿import { Family } from "../page-models-v9.js";
-import { getCurrentLanguageId } from "../data-tools-v9.js";
+import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v9.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
 import { hideBodyScrollbars } from "../item-details/items-display-v9.js";
+import { displayAddFamilyMemberModal, displayFamilyMemberDetails } from "./family-members.js";
 
 let familiesList = new Array<Family>();
 let languageId = 1; // Default to English
+
+declare global {
+    interface WindowEventMap {
+        'timelineChanged': TimelineChangedEvent;
+    }
+}
 
 async function getFamiliesList(): Promise<void> {
     const familiesListDiv = document.querySelector<HTMLDivElement>('#families-list-div');
@@ -54,16 +61,15 @@ async function renderFamilyElement(familyId: number): Promise<void> {
 }
 
 function addFamilyElementEventListeners(familyId: number): void {
-    const familyElementDiv = document.querySelector<HTMLDivElement>('#family-element-' + familyId);
-    if (familyElementDiv) {
-        const familyElementClickedAction = async function (event: MouseEvent): Promise<void> {
+    const familyInfoButton = document.querySelector<HTMLButtonElement>('#family-info-button-' + familyId);
+    if (familyInfoButton) {
+        const familyInfoButtonClickedAction = async function (event: MouseEvent): Promise<void> {
             event.preventDefault();
             event.stopPropagation();
             await displayFamilyDetails(familyId);
         };
-
-        familyElementDiv.removeEventListener('click', familyElementClickedAction);
-        familyElementDiv.addEventListener('click', familyElementClickedAction);
+        familyInfoButton.removeEventListener('click', familyInfoButtonClickedAction);
+        familyInfoButton.addEventListener('click', familyInfoButtonClickedAction);
     }
 
     const familyEditButton = document.querySelector<HTMLButtonElement>('#edit-family-button-' + familyId);
@@ -76,6 +82,39 @@ function addFamilyElementEventListeners(familyId: number): void {
         familyEditButton.removeEventListener('click', familyEditButtonClickedAction);
         familyEditButton.addEventListener('click', familyEditButtonClickedAction);
     }
+
+    const addFamilyMemberButtons = document.querySelectorAll<HTMLButtonElement>('.add-new-family-member-button');
+    addFamilyMemberButtons.forEach((button) => {
+        const addFamilyMemberButtonClickedAction = async function (event: MouseEvent): Promise<void> {
+            event.preventDefault();
+            const familyId = button.getAttribute('data-family-id');
+            if (familyId) {
+                // Show add family member modal
+                await displayAddFamilyMemberModal(familyId);
+            }
+            return Promise.resolve();
+        };
+        button.removeEventListener('click', addFamilyMemberButtonClickedAction);
+        button.addEventListener('click', addFamilyMemberButtonClickedAction);
+    });
+
+    const familyMemberDivs = document.querySelectorAll<HTMLDivElement>('[data-family-member-family-id]');
+    familyMemberDivs.forEach((div) => {
+        // Check if the div's family ID matches the current familyId
+        const divFamilyId = div.getAttribute('data-family-member-family-id');
+        if (divFamilyId && parseInt(divFamilyId) === familyId) {
+            const familyMemberDivClickedAction = async function (event: MouseEvent): Promise<void> {
+                event.preventDefault();
+                const familyMemberId = div.getAttribute('data-family-member-id');
+                if (familyMemberId) {
+                    // Show family member details modal
+                    await displayFamilyMemberDetails(parseInt(familyMemberId));
+                }
+            }
+            div.removeEventListener('click', familyMemberDivClickedAction);
+            div.addEventListener('click', familyMemberDivClickedAction);
+        }
+    });
 }
 
 async function displayFamilyDetails(familyId: number): Promise<void> {
@@ -494,6 +533,22 @@ function validateInputs(): void {
     }
 }
 
+function addFamiliesChangedEventListener() {
+    // Subscribe to the timelineChanged event to refresh the KanbanBoards list when a KanbanBoard is added, updated, or deleted.
+    const familiesIndexFamiliesChangedAction = async (event: TimelineChangedEvent) => {
+        let changedItem = event.TimelineItem;
+        if (changedItem !== null) {
+            if (changedItem.itemType === 101 || changedItem.itemType === 102) { // 101 is the item type for Families, 102 is the item type for FamilyMembers.
+                if (changedItem.itemId !== '') {
+                    await getFamiliesList();;
+                }
+            }
+        }
+    }
+    window.removeEventListener('timelineChanged', familiesIndexFamiliesChangedAction);
+    window.addEventListener('timelineChanged', familiesIndexFamiliesChangedAction);
+}
+
 export async function initializeAddEditFamily(familyId: number): Promise<void> {
     languageId = getCurrentLanguageId();
     setupRichTextEditor();
@@ -514,6 +569,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     languageId = getCurrentLanguageId();
 
     addNewFamilyButtonEventListener();
+    addFamiliesChangedEventListener();
+
     await getFamiliesList();
     
     return Promise.resolve();

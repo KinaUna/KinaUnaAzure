@@ -1,5 +1,6 @@
-import { getCurrentLanguageId, getZebraDateTimeFormat, setMomentLocale } from '../data-tools-v9.js';
+import { getCurrentLanguageId, getZebraDateTimeFormat, setMomentLocale, TimelineChangedEvent } from '../data-tools-v9.js';
 import { getTranslation } from '../localization-v9.js';
+import { TimelineItem } from '../page-models-v9.js';
 import * as LocaleHelper from '../localization-v9.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v9.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v9.js';
@@ -63,7 +64,7 @@ async function getFamilyMemberElement(familyMember) {
         return Promise.reject('Failed to fetch family member element: ' + memberDivResponse.statusText);
     }
 }
-function addFamilyMemberElementEventListeners(familyMemberId) {
+export function addFamilyMemberElementEventListeners(familyMemberId) {
     const familyMemberElementDiv = document.querySelector('#family-member-element-' + familyMemberId);
     if (familyMemberElementDiv) {
         const familyMemberElementClickedAction = async function (event) {
@@ -167,9 +168,12 @@ function setFamilyMemberDetailsEventListeners(familyMemberId) {
     }
 }
 export async function RenderAllFamilies() {
-    for (const family of familiesList) {
-        clearFamilyMembersDiv(family);
-        await RenderFamilyMembers(family);
+    const familyDetailsDiv = document.getElementById('family-details-div');
+    if (familyDetailsDiv) {
+        for (const family of familiesList) {
+            clearFamilyMembersDiv(family);
+            await RenderFamilyMembers(family);
+        }
     }
     return Promise.resolve();
 }
@@ -246,6 +250,11 @@ function addAddFamilyMemberModalEventListeners() {
                     popup.innerHTML = '';
                     popup.classList.add('d-none');
                     document.body.style.overflow = 'auto';
+                    const timelineItem = new TimelineItem();
+                    timelineItem.itemType = 102; // FamilyMember type
+                    timelineItem.itemId = '0';
+                    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+                    window.dispatchEvent(timelineItemChangedEvent);
                     // Refresh the families list on the main page.
                     await RenderAllFamilies();
                 }
@@ -328,6 +337,11 @@ function addEditFamilyMemberModalEventListeners() {
                     familyDetailsDiv.innerHTML = '';
                     familyDetailsDiv.classList.add('d-none');
                     document.body.style.overflow = 'auto';
+                    const timelineItem = new TimelineItem();
+                    timelineItem.itemType = 102; // FamilyMember type
+                    timelineItem.itemId = '0';
+                    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+                    window.dispatchEvent(timelineItemChangedEvent);
                     // Refresh the families list on the main page.
                     await RenderAllFamilies();
                 }
@@ -405,16 +419,22 @@ function addDeleteFamilyMemberModalEventListeners() {
                 body: formData
             });
             if (response.ok) {
-                const familyDetailsDiv = document.querySelector('#family-details-div');
+                const familyDetailsDiv = document.getElementById('item-details-div');
                 if (familyDetailsDiv) {
                     familyDetailsDiv.innerHTML = '';
                     familyDetailsDiv.classList.add('d-none');
                     document.body.style.overflow = 'auto';
+                    const timelineItem = new TimelineItem();
+                    timelineItem.itemType = 102; // FamilyMember type
+                    timelineItem.itemId = '0';
+                    const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+                    window.dispatchEvent(timelineItemChangedEvent);
                     // Refresh the families list on the main page.
                     await RenderAllFamilies();
                 }
             }
             else {
+                stopFullPageSpinner();
                 console.error('Failed to delete family member:', response.statusText);
                 return Promise.reject('Failed to delete family member: ' + response.statusText);
             }

@@ -6,6 +6,10 @@ namespace KinaUnaWeb.Models.ProgeniesViewModels
 {
     public class AddProgenyToFamilyViewModel: BaseItemsViewModel
     {
+        public AddProgenyToFamilyViewModel()
+        {
+            
+        }
         public AddProgenyToFamilyViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);

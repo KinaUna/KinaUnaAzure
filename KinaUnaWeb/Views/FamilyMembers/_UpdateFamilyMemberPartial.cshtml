@@ -85,7 +85,7 @@
                             <div class="form-group">
                                 <label asp-for="CurrentProgeny.Admins" class="col-auto control-label">@await LocaleManager.GetTranslation("Administrators", PageNames.Progeny, Model.LanguageId)</label>
                                 <div class="col-auto">
-                                    <input id="family-member-admins-input" asp-for="CurrentProgeny.Admins" value="@Model.CurrentUser.UserEmail" class="form-control" />
+                                    <input id="family-member-admins-input" asp-for="CurrentProgeny.Admins" value="@Model.CurrentProgeny.Admins" class="form-control" />
                                 </div>
                             </div>
                         </div>

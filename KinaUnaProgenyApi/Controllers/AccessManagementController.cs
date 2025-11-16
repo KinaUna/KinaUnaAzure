@@ -57,9 +57,19 @@ namespace KinaUnaProgenyApi.Controllers
             foreach (int progenyId in progenyIds)
             {
                 Progeny progeny = await progenyService.GetProgeny(progenyId, currentUserInfo);
-                if (progeny != null)
+                if (progeny != null && progeny.Id != Constants.DefaultChildId)
                 {
                     progenies.Add(progeny);
+                }
+                else
+                {
+                    if (progeny?.Id != Constants.DefaultChildId)
+                    {
+                        if (progeny.IsInAdminList(currentUserInfo.UserEmail))
+                        {
+                            progenies.Add(progeny);
+                        }
+                    }
                 }
             }
 

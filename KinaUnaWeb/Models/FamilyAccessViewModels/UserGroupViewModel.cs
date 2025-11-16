@@ -8,6 +8,11 @@ namespace KinaUnaWeb.Models.FamilyAccessViewModels
 {
     public class UserGroupViewModel: BaseItemsViewModel
     {
+        public UserGroupViewModel()
+        {
+            UserGroup = new UserGroup();
+        }
+
         public UserGroupViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);

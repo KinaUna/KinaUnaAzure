@@ -227,6 +227,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             userGroup.CreatedTime = DateTime.UtcNow;
             userGroup.ModifiedTime = DateTime.UtcNow;
+            userGroup.CreatedBy = currentUserInfo.UserId;
+            userGroup.ModifiedBy = currentUserInfo.UserId;
 
             progenyDbContext.UserGroupsDb.Add(userGroup);
             await progenyDbContext.SaveChangesAsync();
@@ -307,7 +309,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             group.Description = userGroup.Description;
             group.ProgenyId = userGroup.ProgenyId;
             group.FamilyId = userGroup.FamilyId;
-            group.ModifiedBy = userGroup.ModifiedBy;
+            group.ModifiedBy = currentUserInfo.UserId;
             group.ModifiedTime = DateTime.UtcNow;
             
             await progenyDbContext.SaveChangesAsync();
@@ -498,6 +500,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             userGroupMember.CreatedTime = DateTime.UtcNow;
             userGroupMember.ModifiedTime = DateTime.UtcNow;
+            userGroupMember.CreatedBy = currentUserInfo.UserId;
+            userGroupMember.ModifiedBy = currentUserInfo.UserId;
 
             progenyDbContext.UserGroupMembersDb.Add(userGroupMember);
             await progenyDbContext.SaveChangesAsync();
@@ -561,9 +565,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             member.UserGroupId = userGroupMember.UserGroupId;
             member.UserOwnerUserId = userGroupMember.UserOwnerUserId;
             member.FamilyOwnerId = userGroupMember.FamilyOwnerId;
-            member.ModifiedBy = userGroupMember.ModifiedBy;
+            member.ModifiedBy = currentUserInfo.UserId;
             member.ModifiedTime = DateTime.UtcNow;
-            
+
+            progenyDbContext.UserGroupMembersDb.Update(member);
+
             await progenyDbContext.SaveChangesAsync();
 
             logEntry.EntityAfter = System.Text.Json.JsonSerializer.Serialize(member);

@@ -1,5 +1,7 @@
 import { getCurrentLanguageId } from "../data-tools-v9.js";
 import { hideBodyScrollbars } from "../item-details/items-display-v9.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
+import { popupProgenyDetails } from "./progeny-details.js";
 let progeniesList = new Array();
 let languageId = 1; // Default to English
 export async function getOtherPeopleList() {
@@ -49,6 +51,16 @@ async function renderOtherPeopleElement(progenyId) {
     }
 }
 function addOtherPeopleElementEventListeners(progenyId) {
+    const progenyDetailsButton = document.querySelector('#progeny-details-button-' + progenyId);
+    if (progenyDetailsButton) {
+        const progenyDetailsButtonClickedAction = async function (event) {
+            event.preventDefault();
+            await popupProgenyDetails(progenyId.toString());
+        };
+        // Clear existing event listeners.
+        progenyDetailsButton.removeEventListener('click', progenyDetailsButtonClickedAction);
+        progenyDetailsButton.addEventListener('click', progenyDetailsButtonClickedAction);
+    }
     const addToFamilyButton = document.querySelector('#add-to-family-button-' + progenyId);
     if (addToFamilyButton) {
         const addToFamilyButtonClickedAction = async function (event) {
@@ -106,6 +118,7 @@ function addAddToFamilyDivEventListeners() {
     if (addToFamilyForm) {
         const addToFamilyFormSubmitAction = async function (event) {
             event.preventDefault();
+            startFullPageSpinner();
             const formData = new FormData(addToFamilyForm);
             const response = await fetch('/Progeny/AddOtherPersonToFamily', {
                 method: 'POST',
@@ -119,9 +132,11 @@ function addAddToFamilyDivEventListeners() {
                     addToFamilyDiv.innerHTML = '';
                     addToFamilyDiv.classList.add('d-none');
                 }
+                stopFullPageSpinner();
                 return Promise.resolve();
             }
             else {
+                stopFullPageSpinner();
                 console.error('Failed to submit add to family form:', response.statusText);
                 return Promise.reject('Failed to submit add to family form: ' + response.statusText);
             }

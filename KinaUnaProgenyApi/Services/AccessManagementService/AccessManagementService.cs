@@ -1156,7 +1156,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.TimelineItemPermissionsDb.Remove(existingPermission);
             await progenyDbContext.SaveChangesAsync();
 
-            logEntry.ItemAfter = System.Text.Json.JsonSerializer.Serialize(existingPermission);
+            logEntry.ItemAfter = JsonSerializer.Serialize(existingPermission);
             await permissionAuditLogService.UpdatePermissionAuditLogEntry(logEntry);
 
             await RemoveCachedAllUserPermissions(existingPermission);
@@ -1252,7 +1252,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.TimelineItemPermissionsDb.Update(existingPermission);
             await progenyDbContext.SaveChangesAsync();
 
-            logEntry.ItemAfter = System.Text.Json.JsonSerializer.Serialize(existingPermission);
+            logEntry.ItemAfter = JsonSerializer.Serialize(existingPermission);
             await permissionAuditLogService.UpdatePermissionAuditLogEntry(logEntry);
 
             await RemoveCachedAllUserPermissions(existingPermission);
@@ -1479,7 +1479,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.ProgenyPermissionsDb.Remove(existingPermission);
             await progenyDbContext.SaveChangesAsync();
             
-            logEntry.ItemAfter = System.Text.Json.JsonSerializer.Serialize(existingPermission);
+            logEntry.ItemAfter = JsonSerializer.Serialize(existingPermission);
             await permissionAuditLogService.UpdatePermissionAuditLogEntry(logEntry);
             
             return true; // Todo: Use result object instead.
@@ -1539,7 +1539,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.ProgenyPermissionsDb.Update(existingPermission);
             await progenyDbContext.SaveChangesAsync();
 
-            logEntry.ItemAfter = System.Text.Json.JsonSerializer.Serialize(existingPermission);
+            logEntry.ItemAfter = JsonSerializer.Serialize(existingPermission);
             await permissionAuditLogService.UpdatePermissionAuditLogEntry(logEntry);
 
             return existingPermission; // Todo: Use result object instead.
@@ -1818,7 +1818,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.FamilyPermissionsDb.Remove(existingPermission);
             await progenyDbContext.SaveChangesAsync();
 
-            logEntry.ItemAfter = System.Text.Json.JsonSerializer.Serialize(existingPermission);
+            logEntry.ItemAfter = JsonSerializer.Serialize(existingPermission);
             await permissionAuditLogService.UpdatePermissionAuditLogEntry(logEntry);
 
             return true; // Todo: Use result object instead.
@@ -1877,7 +1877,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.FamilyPermissionsDb.Update(existingPermission);
             await progenyDbContext.SaveChangesAsync();
             
-            logEntry.ItemAfter = System.Text.Json.JsonSerializer.Serialize(existingPermission);
+            logEntry.ItemAfter = JsonSerializer.Serialize(existingPermission);
             await permissionAuditLogService.UpdatePermissionAuditLogEntry(logEntry);
 
             return existingPermission; // Todo: Use result object instead.
@@ -1980,9 +1980,14 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 PermissionLevel = PermissionLevel.None
             };
 
-            if (progenyId == Constants.DefaultChildId)
+            if (progenyId == Constants.DefaultChildId && userInfo.UserId != Constants.DefaultUserId)
             {
-
+                ProgenyPermission defaultChildPermission = new()
+                {
+                    PermissionLevel = PermissionLevel.View,
+                    ProgenyId = Constants.DefaultChildId
+                };
+                return defaultChildPermission;
             }
             
             // Check group permissions.
@@ -1997,6 +2002,63 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
                 highestPermission = permission.PermissionLevel;
                 resultPermission = permission;
+            }
+
+            if (resultPermission.ProgenyPermissionId == 0)
+            {
+                Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == progenyId);
+                if (progeny != null)
+                {
+                    if (progeny.IsInAdminList(userInfo.UserEmail))
+                    {
+                        // There is no explicit permission set, but the user is in the admin list, so give them admin permissions.
+                        List<UserGroup> progenyGroups = await progenyDbContext.UserGroupsDb.AsNoTracking()
+                            .Where(ug => ug.ProgenyId == progenyId).ToListAsync();
+                        if (progenyGroups.Count == 0)
+                        {
+                            UserGroup adminGroup = new()
+                            {
+                                IsFamily = false,
+                                Name = $"{progeny.Name} Admins",
+                                Description = $"Administrators group for {progeny.NickName} created automatically.",
+                                ProgenyId = progenyId,
+                                FamilyId = 0,
+                                CreatedBy = "System",
+                                CreatedTime = DateTime.UtcNow,
+                                ModifiedBy = "System",
+                                ModifiedTime = DateTime.UtcNow
+                            };
+
+                            progenyDbContext.UserGroupsDb.Add(adminGroup);
+                            await progenyDbContext.SaveChangesAsync();
+
+                            UserGroupMember adminMember = new()
+                            {
+                                UserId = userInfo.UserId,
+                                Email = userInfo.UserEmail,
+                                UserGroupId = adminGroup.UserGroupId,
+                                CreatedBy = "System",
+                                CreatedTime = DateTime.UtcNow,
+                                ModifiedBy = "System",
+                                ModifiedTime = DateTime.UtcNow
+                            };
+                            progenyDbContext.UserGroupMembersDb.Add(adminMember);
+                            await progenyDbContext.SaveChangesAsync();
+
+                            ProgenyPermission adminPermission = new()
+                            {
+                                ProgenyId = progenyId,
+                                GroupId = adminGroup.UserGroupId,
+                                PermissionLevel = PermissionLevel.Admin,
+                                CreatedBy = "System",
+                                CreatedTime = DateTime.UtcNow,
+                                ModifiedBy = "System",
+                                ModifiedTime = DateTime.UtcNow
+                            };
+                            resultPermission = await GrantProgenyPermission(adminPermission, userInfo);
+                        }
+                    }
+                }
             }
 
             return resultPermission;
@@ -2165,6 +2227,15 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     {
                         progenies.Add(permission.ProgenyId);
                     }
+                }
+            }
+
+            List<Progeny> adminProgenies = await progenyDbContext.ProgenyDb.AsNoTracking().Where(p => p.Admins.ToLower().Contains(userInfo.UserEmail.ToLower())).ToListAsync();
+            foreach (Progeny progeny in adminProgenies)
+            {
+                if (progeny.IsInAdminList(userInfo.UserEmail))
+                {
+                    progenies.Add(progeny.Id);
                 }
             }
 

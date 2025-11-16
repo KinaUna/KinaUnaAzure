@@ -1,5 +1,6 @@
 ﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.BaseItemsViewModel
 @inject ILocaleManager LocaleManager
@@ -14,9 +15,16 @@
             <div class="row m-0">
                 <div class="col-12">
                     <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="profile-picture-small"/>
-                    <span>@Model.CurrentProgeny.NickName</span>
-                    <span>@Model.CurrentProgeny.Email</span>
-                    <button class="btn btn-success float-right" id="add-to-family-button-@Model.CurrentProgeny.Id" data-other-people-id="@Model.CurrentProgeny.Id">Add to family</button>
+                    <span class="h4">@Model.CurrentProgeny.NickName</span>
+                    @if (Model.CurrentProgeny.ProgenyPerMission.PermissionLevel >= PermissionLevel.Edit)
+                    {
+                        <button id="progeny-details-button-@Model.CurrentProgeny.Id" class="btn btn-link float-right pr-0"><i class="material-icons sidebar-icon">info</i></button>
+                    }
+                    <div>@Model.CurrentProgeny.Email</div>
+
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-success btn-sm float-right" id="add-to-family-button-@Model.CurrentProgeny.Id" data-other-people-id="@Model.CurrentProgeny.Id">Add to family</button>
                 </div>
             </div>
         }
