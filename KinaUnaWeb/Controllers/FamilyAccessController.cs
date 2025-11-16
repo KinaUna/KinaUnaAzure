@@ -34,9 +34,9 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
             PermissionsListViewModel model = new(baseModel)
             {
-                Families = await familiesHttpClient.GetMyFamilies()
+                Families = await familiesHttpClient.GetFamiliesUserCanAccess(PermissionLevel.Edit)
             };
-            model.Progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Admin);
+            model.Progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Edit);
 
             foreach (Family family in model.Families)
             {

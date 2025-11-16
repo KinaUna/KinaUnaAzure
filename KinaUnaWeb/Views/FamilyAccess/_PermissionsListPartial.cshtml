@@ -9,7 +9,7 @@
 @{
     // Todo: Translations for PermissionLevel enum values.
     string groupPermissionsString = await LocaleManager.GetTranslation("Group permissions", PageNames.AccessManagement, Model.LanguageId);
-    string addgroupString = await LocaleManager.GetTranslation("Add new group", PageNames.AccessManagement, Model.LanguageId);
+    string addGroupString = await LocaleManager.GetTranslation("Add new group", PageNames.AccessManagement, Model.LanguageId);
     string familyAccessString = await LocaleManager.GetTranslation("Family access", PageNames.AccessManagement, Model.LanguageId);
     string groupNameString = await LocaleManager.GetTranslation("Group name", PageNames.AccessManagement, Model.LanguageId);
     string permissionString = await LocaleManager.GetTranslation("Permission", PageNames.AccessManagement, Model.LanguageId);
@@ -37,9 +37,12 @@
                 <div class="space-20"></div>
                 <div class="row">
                     <div class="col-12 h4">@groupPermissionsString</div>
-                    <div class="col-12">
-                        <button class="btn btn-success btn-sm add-group-button" data-family-id="@family.FamilyId" data-progeny-id="0">@addgroupString</button>
-                    </div>
+                    @if (family.FamilyPermission.PermissionLevel >= PermissionLevel.Edit)
+                    {
+                        <div class="col-12">
+                            <button class="btn btn-success btn-sm add-group-button" data-family-id="@family.FamilyId" data-progeny-id="0">@addGroupString</button>
+                        </div>
+                    }
                 </div>
                 <div class="space-20"></div>
                 <div class="w-50 horizontal-bar-thin"></div>
@@ -91,73 +94,84 @@
     </div>
     <div class="space-50"></div>
 }
-
-<div class="row m-0">
-    <div class="col-12 h4">
-        @individualAccessString
-    </div>
-    <div class="space-20"></div>
-    @foreach (Progeny progeny in Model.Progenies)
-    {
-        <div class="col-12 mb-2" style="border: 1px solid;">
-            <div class="row bg-dark">
-                <div class="col-12 mt-3 mb-2 h4">
-                    <i class="material-icons kinauna-icon-medium" style="font-size: 32px">badge</i> @progeny.NickName
-                </div>
-            </div>
-            <div class="space-20"></div>
-            <div class="row">
-                <div class="col-12 h4">@groupPermissionsString</div>
-                <div class="col-12">
-                    <button class="btn btn-success btn-sm add-group-button" data-progeny-id="@progeny.Id" data-family-id="0">@addgroupString</button>
-                </div>
-            </div>
-            <div class="space-20"></div>
-            <div class="w-50 horizontal-bar-thin"></div>
-            <div class="space-20"></div>
-            @foreach (UserGroup userGroup in Model.UserGroups)
-            {
-                @if (userGroup.ProgenyId == progeny.Id)
-                {
-                    <div class="row m-3">
-                        <div class="col-12">
-                            <span>@groupNameString: </span><span class="h5 mr-4">@userGroup.Name</span>
-                            <div>@permissionString: @userGroup.PermissionLevel.ToString()</div>
-                            <button class="btn btn-info btn-sm edit-group-button" data-edit-group-id="@userGroup.UserGroupId">@editString</button>
-                            <button class="btn btn-danger btn-sm delete-group-button" data-delete-group-id="@userGroup.UserGroupId">@deleteString</button>
-                        </div>
-                        <div class="col-12">
-                            <div class="space-20"></div>
-                            @membersString:
-                            <div>
-                                <button class="btn btn-success btn-sm add-group-member-button" data-group-id="@userGroup.UserGroupId">@addMemberString</button>
-                            </div>
-                            <div class="space-20"></div>
-                            <div></div>
-                            <div class="row m-3">
-                                <div class="ml-3 w-25 horizontal-bar-thin"></div>
-                                @foreach (UserGroupMember userGroupMember in userGroup.Members)
-                                {
-                                    <div class="col-12 ml-3 mt-2 mb-2">
-                                        @if (userGroupMember.UserInfo != null)
-                                        {
-                                            <div class="">@userGroupMember.UserInfo.FullName()</div>
-                                        }
-                                        <div>Email: @userGroupMember.Email</div>
-                                        <button class="btn btn-info btn-sm edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">@editString</button>
-                                        <button class="btn btn-danger btn-sm delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">@deleteString</button>
-                                    </div>
-                                    <div class="ml-3 w-25 horizontal-bar-thin"></div>
-                                    <div class="space-20"></div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                    <div class="w-50 horizontal-bar-thin"></div>
-                    <div class="space-20"></div>
-                }
-            }
+@if (Model.Progenies.Count > 0)
+{
+    <div class="row m-0">
+        <div class="col-12 h4">
+            @individualAccessString
         </div>
-        <div class="space-50"></div>
-    }
-</div>
+        <div class="space-20"></div>
+        @foreach (Progeny progeny in Model.Progenies)
+        {
+            <div class="col-12 mb-2" style="border: 1px solid;">
+                <div class="row bg-dark">
+                    <div class="col-12 mt-3 mb-2 h4">
+                        <i class="material-icons kinauna-icon-medium" style="font-size: 32px">badge</i> @progeny.NickName
+                    </div>
+                </div>
+                <div class="space-20"></div>
+                <div class="row">
+                    <div class="col-12 h4">@groupPermissionsString</div>
+                    <div class="col-12">
+                        <button class="btn btn-success btn-sm add-group-button" data-progeny-id="@progeny.Id" data-family-id="0">@addGroupString</button>
+                    </div>
+                </div>
+                <div class="space-20"></div>
+                <div class="w-50 horizontal-bar-thin"></div>
+                <div class="space-20"></div>
+                @foreach (UserGroup userGroup in Model.UserGroups)
+                {
+                    @if (userGroup.ProgenyId == progeny.Id)
+                    {
+                        <div class="row m-3">
+                            <div class="col-12">
+                                <span>@groupNameString: </span><span class="h5 mr-4">@userGroup.Name</span>
+                                <div>@permissionString: @userGroup.PermissionLevel.ToString()</div>
+                                <button class="btn btn-info btn-sm edit-group-button" data-edit-group-id="@userGroup.UserGroupId">@editString</button>
+                                <button class="btn btn-danger btn-sm delete-group-button" data-delete-group-id="@userGroup.UserGroupId">@deleteString</button>
+                            </div>
+                            <div class="col-12">
+                                <div class="space-20"></div>
+                                @membersString:
+                                <div>
+                                    <button class="btn btn-success btn-sm add-group-member-button" data-group-id="@userGroup.UserGroupId">@addMemberString</button>
+                                </div>
+                                <div class="space-20"></div>
+                                <div></div>
+                                <div class="row m-3">
+                                    <div class="ml-3 w-25 horizontal-bar-thin"></div>
+                                    @foreach (UserGroupMember userGroupMember in userGroup.Members)
+                                    {
+                                        <div class="col-12 ml-3 mt-2 mb-2">
+                                            @if (userGroupMember.UserInfo != null)
+                                            {
+                                                <div class="">@userGroupMember.UserInfo.FullName()</div>
+                                            }
+                                            <div>Email: @userGroupMember.Email</div>
+                                            <button class="btn btn-info btn-sm edit-user-group-member-button" data-edit-user-group-member-id="@userGroupMember.UserGroupMemberId">@editString</button>
+                                            <button class="btn btn-danger btn-sm delete-user-group-member-button" data-delete-user-group-member-id="@userGroupMember.UserGroupMemberId">@deleteString</button>
+                                        </div>
+                                        <div class="ml-3 w-25 horizontal-bar-thin"></div>
+                                        <div class="space-20"></div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-50 horizontal-bar-thin"></div>
+                        <div class="space-20"></div>
+                    }
+                }
+            </div>
+            <div class="space-50"></div>
+        }
+    </div>
+}
+@if (Model.Families.Count == 0 && Model.Progenies.Count == 0)
+{
+    <div class="row m-0">
+        <div class="col-12 h4">
+            @await LocaleManager.GetTranslation("You don't have access to any permissions.", PageNames.AccessManagement, Model.LanguageId)
+        </div>
+        <div class="space-20"></div>
+    </div>
+}
