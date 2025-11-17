@@ -53,5 +53,19 @@ namespace KinaUna.Data.Extensions
 
             return currentAddress.AddressLine1 + currentAddress.AddressLine2 + currentAddress.City + currentAddress.Country + currentAddress.PostalCode + currentAddress.State != "";
         }
+
+        public static bool PropertiesChanged(this Address address, Address otherAddress)
+        {
+            if (address == null || otherAddress == null)
+            {
+                return false;
+            }
+            return address.AddressLine1 != otherAddress.AddressLine1 ||
+                   address.AddressLine2 != otherAddress.AddressLine2 ||
+                   address.City != otherAddress.City ||
+                   address.State != otherAddress.State ||
+                   address.PostalCode != otherAddress.PostalCode ||
+                   address.Country != otherAddress.Country;
+        }
     }
 }

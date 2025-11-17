@@ -5,7 +5,7 @@
 @model ProgenyViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = @Model.Name + " - " + await LocaleManager.GetTranslation("Edit family member", PageNames.Progeny, Model.LanguageId);
+    ViewData["Title"] = @Model.Name + " - " + await LocaleManager.GetTranslation("Edit individual", PageNames.Progeny, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
@@ -31,6 +31,12 @@
                 <label asp-for="NickName" class="col-auto">@await LocaleManager.GetTranslation("Display name", PageNames.Progeny, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input asp-for="NickName" class="form-control" value="@Model.NickName" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="col-auto control-label">@await LocaleManager.GetTranslation("KinaUna account email", PageNames.Progeny, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="family-member-email-input" asp-for="Email" type="email" value="@Model.Email" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
@@ -79,7 +85,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label asp-for="ProgenyInfo.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.Contacts, Model.LanguageId)</label>
+                <label asp-for="ProgenyInfo.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Contact email", PageNames.Progeny, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input asp-for="ProgenyInfo.Email" class="form-control" value="@Model.ProgenyInfo.Email" />
                 </div>

@@ -13,7 +13,7 @@
     {
         websiteLink = "https://" + Model.ProgenyInfo.Website;
     }
-    string emailString = await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId);
+    string emailString = await LocaleManager.GetTranslation("Contact email", PageNames.Progeny, Model.LanguageId);
     string emailCopiedString = await LocaleManager.GetTranslation("Email copied to clipboard", PageNames.Contacts, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
@@ -49,19 +49,29 @@
                     @if (!string.IsNullOrEmpty(Model.CurrentProgeny.Name))
                     {
                         <div class="col-12">
-                            <div><strong>@await LocaleManager.GetTranslation("Name:", PageNames.Progeny, Model.LanguageId)</strong> @Model.CurrentProgeny.Name</div>
+                            <div class="space-20"></div>
+                            <div><strong>@await LocaleManager.GetTranslation("Name", PageNames.Progeny, Model.LanguageId):</strong> @Model.CurrentProgeny.Name</div>
                         </div>
                     }
                     @if (Model.CurrentProgeny.BirthDay.HasValue)
                     {
                         <div class="col-12">
-                            <div><strong>@await LocaleManager.GetTranslation("Birthday:", PageNames.Progeny, Model.LanguageId)</strong> @Model.CurrentProgeny.BirthDay.Value.ToString(longDateTimeFormat)</div>
+                            <div class="space-20"></div>
+                            <div><strong>@await LocaleManager.GetTranslation("Birthday", PageNames.Progeny, Model.LanguageId):</strong> @Model.CurrentProgeny.BirthDay.Value.ToString(longDateTimeFormat)</div>
                         </div>
                     }
                     @if (!string.IsNullOrEmpty(Model.CurrentProgeny.TimeZone))
                     {
                         <div class="col-12">
-                            <div><strong>@await LocaleManager.GetTranslation("Time zone", PageNames.Progeny, Model.LanguageId)</strong> @Model.CurrentProgeny.TimeZone</div>
+                            <div class="space-20"></div>
+                            <div><strong>@await LocaleManager.GetTranslation("Time zone", PageNames.Progeny, Model.LanguageId):</strong> @Model.CurrentProgeny.TimeZone</div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.CurrentProgeny.Email))
+                    {
+                        <div class="col-12">
+                            <div class="space-20"></div>
+                            <div><strong>@await LocaleManager.GetTranslation("KinaUna account email", PageNames.Progeny, Model.LanguageId):</strong> @Model.CurrentProgeny.Email</div>
                         </div>
                     }
                 </div>
@@ -72,7 +82,7 @@
                         <div class="col-12">
                             <div class="row">
                                 <div class="col-auto">
-                                    <strong>@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId)</strong>
+                                    <strong>@await LocaleManager.GetTranslation("Mobile", PageNames.Contacts, Model.LanguageId):</strong>
                                 </div>
                                 <div class="col-auto">
                                     <div class="row">

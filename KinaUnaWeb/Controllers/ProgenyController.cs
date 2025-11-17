@@ -134,7 +134,8 @@ namespace KinaUnaWeb.Controllers
                 Name = model.Name,
                 NickName = model.NickName,
                 PictureLink = model.PictureLink,
-                TimeZone = model.TimeZone
+                TimeZone = model.TimeZone,
+                Email = model.Email
             };
             
             if (model.File != null)
@@ -182,7 +183,8 @@ namespace KinaUnaWeb.Controllers
             model.TimeZone = progeny.TimeZone;
             model.Admins = progeny.Admins.ToUpper();
             model.PictureLink = progeny.GetProfilePictureUrl();
-            
+            model.Email = progeny.Email;
+
             model.ProgenyInfo = await progenyHttpClient.GetProgenyInfo(progenyId);
 
             return PartialView("_EditProgenyPartial", model);
@@ -209,7 +211,8 @@ namespace KinaUnaWeb.Controllers
             progeny.Name = model.Name;
             progeny.NickName = model.NickName;
             progeny.TimeZone = model.TimeZone;
-            
+            progeny.Email = model.Email;
+
             if (model.File != null && model.File.Name != string.Empty)
             {
                 await using Stream stream = model.File.OpenReadStream();

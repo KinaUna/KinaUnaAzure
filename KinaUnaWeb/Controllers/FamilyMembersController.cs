@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
@@ -10,6 +8,10 @@ using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using KinaUna.Data;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -17,7 +19,8 @@ namespace KinaUnaWeb.Controllers
     public class FamilyMembersController(
         IFamiliesHttpClient familiesHttpClient,
         IProgenyHttpClient progenyHttpClient,
-        IViewModelSetupService viewModelSetupService) : Controller
+        IViewModelSetupService viewModelSetupService,
+        ImageStore imageStore) : Controller
     {
         public async Task<IActionResult> Index()
         {
@@ -114,12 +117,16 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            model.ProgenyList = [];
-            model.ProgenyList.Add(new SelectListItem()
-            {
-                Text = "New family member",
-                Value = "0"
-            });
+            model.ProgenyList =
+            [
+                new SelectListItem()
+                {
+                    Text = "New family member",
+                    Value = "0"
+                }
+
+            ];
+
             foreach (Progeny progeny in progeniesNotInFamily)
             {
                 SelectListItem item = new()
@@ -141,6 +148,16 @@ namespace KinaUnaWeb.Controllers
             Progeny progeny;
             if (model.CurrentProgenyId == 0)
             {
+                if (model.File != null)
+                {
+                    await using Stream stream = model.File.OpenReadStream();
+                    string fileFormat = Path.GetExtension(model.File.FileName);
+                    model.CurrentProgeny.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny, fileFormat);
+                }
+                else
+                {
+                    model.CurrentProgeny.PictureLink = Constants.WebAppUrl + "/photodb/childcareicon.jpg"; // Todo: Find better image
+                }
                 progeny = await progenyHttpClient.AddProgeny(model.CurrentProgeny);
                 model.CurrentProgenyId = progeny.Id;
             }
@@ -221,22 +238,35 @@ namespace KinaUnaWeb.Controllers
 
             if (familyMember.Progeny.ProgenyPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
-                if (progeny.NickName != model.CurrentProgeny.NickName
-                    || progeny.Name != model.CurrentProgeny.Name
-                    || progeny.Email != model.CurrentProgeny.Email
-                    || progeny.BirthDay != model.CurrentProgeny.BirthDay
-                    || progeny.Admins != model.CurrentProgeny.Admins
-                    || progeny.TimeZone != model.CurrentProgeny.TimeZone)
+                if (model.File != null && model.File.Name != string.Empty)
                 {
-                    progeny.NickName = model.CurrentProgeny.NickName;
-                    progeny.Name = model.CurrentProgeny.Name;
-                    progeny.Email = model.CurrentProgeny.Email;
-                    progeny.BirthDay = model.CurrentProgeny.BirthDay;
-                    progeny.Admins = model.CurrentProgeny.Admins;
-                    progeny.TimeZone = model.CurrentProgeny.TimeZone;
-                    // Todo: Profile picture.
+                    await using Stream stream = model.File.OpenReadStream();
+                    string fileFormat = Path.GetExtension(model.File.FileName);
+                    model.CurrentProgeny.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny, fileFormat);
+                }
+                else
+                {
+                    // If no new image is uploaded, keep the existing picture link.
+                    model.CurrentProgeny.PictureLink = progeny.PictureLink;
+                }
+
+                if (progeny.PropertiesChanged(model.CurrentProgeny))
+                {
+                    progeny.CopyPropertiesForUpdate(model.CurrentProgeny);
                     await progenyHttpClient.UpdateProgeny(progeny);
 
+                }
+
+                if (familyMember.ProgenyInfo != null)
+                {
+                    ProgenyInfo progenyInfo = await progenyHttpClient.GetProgenyInfo(familyMember.ProgenyId);
+                    if (progenyInfo.PropertiesChanged(familyMember.ProgenyInfo))
+                    {
+                        progenyInfo.CopyPropertiesForUpdate(familyMember.ProgenyInfo);
+                        progenyInfo.Address.CopyPropertiesForUpdate(familyMember.ProgenyInfo.Address);
+
+                        await progenyHttpClient.UpdateProgenyInfo(progenyInfo);
+                    }
                 }
             }
 

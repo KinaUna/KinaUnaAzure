@@ -83,7 +83,13 @@ namespace KinaUna.Data.Models.Family
         /// Gets or sets the associated progeny for the current entity.
         /// </summary>
         [NotMapped]
-        public Progeny Progeny { get; set; } = new Progeny();
+        public Progeny Progeny { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the progeny information associated with this family member.
+        /// </summary>
+        [NotMapped]
+        public ProgenyInfo ProgenyInfo { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the user information associated with this entity.

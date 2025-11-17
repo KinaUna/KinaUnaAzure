@@ -1,5 +1,6 @@
 ﻿@using System.Globalization
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.FamiliesViewModels.FamilyMemberDetailsViewModel
 @inject ILocaleManager LocaleManager
@@ -32,12 +33,13 @@
             </div>
             <button type="button" class="btn btn-link modal-close-button add-family-member-close-button"><span>×</span></button>
         </div>
-        <div class="space-50"></div>
         <div class="row m-0">
             <div class="col-12">
                 <div class="row m-0">
                     <div class="col-12">
+                        <div class="space-50"></div>
                         <div class="h5">@await LocaleManager.GetTranslation("Family", PageNames.Family, Model.LanguageId): @Model.CurrentFamily.Name</div>
+                        <div class="space-20"></div>
                     </div>
                 </div>
             </div>
@@ -47,6 +49,12 @@
                         <label asp-for="CurrentProgenyId" class="col-auto control-label">@await LocaleManager.GetTranslation("Select a person or pet", PageNames.Family, Model.LanguageId):</label>
                         <div class="col-auto">
                             <select id="add-to-family-progeny-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="CurrentProgenyId" asp-items="@Model.ProgenyList"></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="MemberType" class="col-auto control-label">@await LocaleManager.GetTranslation("Select family member type", PageNames.Family, Model.LanguageId):</label>
+                        <div class="col-auto">
+                            <select id="family-member-type-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.MemberTypeList.Count" asp-for="MemberType" asp-items="@Model.MemberTypeList"></select>
                         </div>
                     </div>
                     <div id="new-progeny-data-div">
@@ -63,7 +71,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label asp-for="CurrentProgeny.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.Progeny, Model.LanguageId)</label>
+                            <label asp-for="CurrentProgeny.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Account email", PageNames.Progeny, Model.LanguageId)</label>
                             <div class="col-auto">
                                 <input id="family-member-email-input" asp-for="CurrentProgeny.Email" type="email" class="form-control"/>
                             </div>
@@ -88,11 +96,88 @@
                                 <input id="family-member-admins-input" asp-for="CurrentProgeny.Admins" value="@Model.CurrentUser.UserEmail" class="form-control" />
                             </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="MemberType" class="col-auto control-label">@await LocaleManager.GetTranslation("Select family member type", PageNames.Family, Model.LanguageId):</label>
-                        <div class="col-auto">
-                            <select id="family-member-type-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.MemberTypeList.Count" asp-for="MemberType" asp-items="@Model.MemberTypeList"></select>
+                        <div class="form-group">
+                            <label asp-for="File" class="col-auto control-label">@await LocaleManager.GetTranslation("Profile picture", PageNames.Progeny, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <div class="fileinput fileinput-new text-center" data-provides="fileinput">
+                                    <div class="fileinput-new thumbnail img-raised">
+                                        <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" alt="...">
+                                    </div>
+                                    <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
+                                    <div>
+                                        <div class="btn btn-primary btn-round btn-file ">
+                                            <span data-trigger="fileinput" class="fileinput-new">@await LocaleManager.GetTranslation("New picture", PageNames.Progeny, Model.LanguageId)</span>
+                                            <span class="fileinput-exists">@await LocaleManager.GetTranslation("Change picture", PageNames.Progeny, Model.LanguageId)</span>
+                                            <input type="file" asp-for="File" accept="image/*" />
+                                        </div>
+                                        <br />
+                                        <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
+                                            <i class="fa fa-times"></i> @await LocaleManager.GetTranslation("Remove picture", PageNames.Progeny, Model.LanguageId)
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-20"></div>
+                        <div class="form-group">
+                            <label asp-for="FamilyMember.ProgenyInfo.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Contact email", PageNames.Progeny, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <input asp-for="FamilyMember.Email" class="form-control" value="@Model.FamilyMember.ProgenyInfo.Email" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="FamilyMember.ProgenyInfo.MobileNumber" class="col-auto control-label">@await LocaleManager.GetTranslation("Mobile number", PageNames.Contacts, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <input asp-for="FamilyMember.ProgenyInfo.MobileNumber" class="form-control" value="@Model.FamilyMember.ProgenyInfo.MobileNumber" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="FamilyMember.ProgenyInfo.Website" class="col-auto control-label">@await LocaleManager.GetTranslation("Website", PageNames.Contacts, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <input asp-for="FamilyMember.ProgenyInfo.Website" class="form-control" value="@Model.FamilyMember.ProgenyInfo.Website" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="FamilyMember.ProgenyInfo.Address.AddressLine1" class="col-auto control-label">@await LocaleManager.GetTranslation("Address line 1", PageNames.Contacts, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <input asp-for="FamilyMember.ProgenyInfo.Address.AddressLine1" class="form-control" value="@Model.FamilyMember.ProgenyInfo.Address.AddressLine1" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="FamilyMember.ProgenyInfo.Address.AddressLine2" class="col-auto control-label">@await LocaleManager.GetTranslation("Address line 2", PageNames.Contacts, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <input asp-for="FamilyMember.ProgenyInfo.Address.AddressLine2" class="form-control" value="@Model.FamilyMember.ProgenyInfo.Address.AddressLine2" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="FamilyMember.ProgenyInfo.Address.City" class="col-auto control-label">@await LocaleManager.GetTranslation("City", PageNames.Contacts, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <input asp-for="FamilyMember.ProgenyInfo.Address.City" class="form-control" value="@Model.FamilyMember.ProgenyInfo.Address.City" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="FamilyMember.ProgenyInfo.Address.State" class="col-auto control-label">@await LocaleManager.GetTranslation("State/region", PageNames.Contacts, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <input asp-for="FamilyMember.ProgenyInfo.Address.State" class="form-control" value="@Model.FamilyMember.ProgenyInfo.Address.State" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="FamilyMember.ProgenyInfo.Address.PostalCode" class="col-auto control-label">@await LocaleManager.GetTranslation("Postal code", PageNames.Contacts, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <input asp-for="FamilyMember.ProgenyInfo.Address.PostalCode" class="form-control" value="@Model.FamilyMember.ProgenyInfo.Address.PostalCode" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="FamilyMember.ProgenyInfo.Address.Country" class="col-auto control-label">@await LocaleManager.GetTranslation("Country", PageNames.Contacts, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <input asp-for="FamilyMember.ProgenyInfo.Address.Country" class="form-control" value="@Model.FamilyMember.ProgenyInfo.Address.Country" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="FamilyMember.ProgenyInfo.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Contacts, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <textarea asp-for="FamilyMember.ProgenyInfo.Notes" class="form-control" rows="4" value="@Model.FamilyMember.ProgenyInfo.Notes"></textarea>
+                            </div>
                         </div>
                     </div>
                     <div class="space-20"></div>

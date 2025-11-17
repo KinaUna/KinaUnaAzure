@@ -18,6 +18,7 @@ namespace KinaUnaWeb.Models.ProgeniesViewModels
         public string TimeZone { get; set; }
         public string PictureLink { get; set; }
         public string Admins { get; set; } // Comma separated list of emails.
+        public string Email { get; set; } = string.Empty;
         public IFormFile File { get; init; }
         public SelectListItem[] TimezoneList { get; init; }
 

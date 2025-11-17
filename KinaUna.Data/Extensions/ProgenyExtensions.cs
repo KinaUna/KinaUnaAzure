@@ -170,5 +170,37 @@ namespace KinaUna.Data.Extensions
 
             return contentType;
         }
+
+        public static void CopyPropertiesForUpdate(this Progeny progeny, Progeny otherProgeny)
+        {
+            if (progeny == null || otherProgeny == null)
+            {
+                return;
+            }
+
+            progeny.Name = otherProgeny.Name;
+            progeny.NickName = otherProgeny.NickName;
+            progeny.Email = otherProgeny.Email;
+            progeny.BirthDay = otherProgeny.BirthDay;
+            progeny.TimeZone = otherProgeny.TimeZone;
+            progeny.Admins = otherProgeny.Admins;
+            progeny.PictureLink = otherProgeny.PictureLink;
+        }
+
+        public static bool PropertiesChanged(this Progeny progeny, Progeny otherProgeny)
+        {
+            if (progeny == null || otherProgeny == null)
+            {
+                return false;
+            }
+
+            return progeny.Name != otherProgeny.Name ||
+                   progeny.NickName != otherProgeny.NickName ||
+                   progeny.BirthDay != otherProgeny.BirthDay ||
+                   progeny.TimeZone != otherProgeny.TimeZone ||
+                   progeny.Email != otherProgeny.Email ||
+                   progeny.Admins != otherProgeny.Admins ||
+                   progeny.PictureLink != otherProgeny.PictureLink;
+        }
     }
 }

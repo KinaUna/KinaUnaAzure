@@ -4,6 +4,18 @@
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.FamiliesViewModels.FamilyMemberDetailsViewModel
 @inject ILocaleManager LocaleManager
+@{
+    string websiteLink = Model.FamilyMember.ProgenyInfo?.Website ?? "";
+    if (Model.FamilyMember.ProgenyInfo != null)
+    {
+        if (!string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Website) && !Model.FamilyMember.ProgenyInfo.Website.StartsWith("https://"))
+        {
+            websiteLink = "https://" + Model.FamilyMember.ProgenyInfo.Website;
+        }
+    }
+    string emailString = await LocaleManager.GetTranslation("Contact email", PageNames.Progeny, Model.LanguageId);
+    string emailCopiedString = await LocaleManager.GetTranslation("Email copied to clipboard", PageNames.Contacts, Model.LanguageId);
+}
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row sticky-top m-0 item-details-header">
@@ -31,26 +43,163 @@
         <div class="space-10"></div>
         <div class="row m-0">
             <div class="col-12">
-                Email: <span>@Model.FamilyMember.Email</span>
+                <strong>@await LocaleManager.GetTranslation("KinaUna account email", PageNames.Progeny, Model.LanguageId):</strong>
+            </div>
+            <div class="col-12">
+                <span class="ml-4">@Model.FamilyMember.Email</span>
                 <div class="space-10"></div>
             </div>
             <div class="col-12">
-                @await LocaleManager.GetTranslation("Family member type", PageNames.Family, Model.LanguageId): <span>@await LocaleManager.GetTranslation(Model.FamilyMember.MemberType.ToString(), PageNames.Family, Model.LanguageId)</span>
+                <strong>@await LocaleManager.GetTranslation("Family member type", PageNames.Family, Model.LanguageId):</strong>
+            </div>
+            <div class="col-12">
+                <span class="ml-4">@await LocaleManager.GetTranslation(Model.FamilyMember.MemberType.ToString(), PageNames.Family, Model.LanguageId)</span>
                 <div class="space-10"></div>
             </div>
             @if (Model.FamilyMember.Progeny != null)
             {
                 <div class="col-12">
-                    @Model.FamilyMember.Progeny.Name
-                    <div class="space-10"></div>
+                    <div class="space-20"></div>
+                    <h4>@Model.FamilyMember.Progeny.Name</h4>
                 </div>
                 @if (Model.FamilyMember.Progeny.BirthDay.HasValue)
                 {
                     <div class="col-12">
-                        @await LocaleManager.GetTranslation("Birthday", PageNames.Progeny, Model.LanguageId) @Model.FamilyMember.Progeny.BirthDay.Value.ToString("dd-MMM-yyyy")
+                        <div class="space-20"></div>
+                        <strong>@await LocaleManager.GetTranslation("Birthday", PageNames.Progeny, Model.LanguageId):</strong>
+                    </div>
+                    <div class="col-12">
+                        <span class="ml-4">@Model.FamilyMember.Progeny.BirthDay.Value.ToString("dd-MMM-yyyy HH:mm")</span>
                     </div>
                 }
-                
+                @if (!string.IsNullOrEmpty(Model.FamilyMember.Progeny.TimeZone))
+                {
+                    <div class="col-12">
+                        <div class="space-20"></div>
+                        <strong>@await LocaleManager.GetTranslation("Time zone", PageNames.Progeny, Model.LanguageId):</strong>
+                    </div>
+                    <div class="col-12">
+                        <span class="ml-4">@Model.FamilyMember.Progeny.TimeZone</span>
+                    </div>
+                }
+                @if (Model.FamilyMember.ProgenyInfo != null && !string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.MobileNumber))
+                {
+                    <div class="col-12">
+                        <div class="space-20"></div>
+                        <div class="row">
+                            <div class="col-12">
+                                <strong>@await LocaleManager.GetTranslation("Mobile", PageNames.Contacts, Model.LanguageId):</strong>
+                            </div>
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <span id="contact-mobile-number-@Model.FamilyMember.ProgenyInfo.ProgenyId" class="ml-4">@Model.FamilyMember.ProgenyInfo.MobileNumber</span>
+                                        <button class="btn btn-link copy-content-button text-white-50" data-copy-content-id="contact-mobile-number-@Model.FamilyMember.ProgenyInfo.ProgenyId">
+                                            <i class="material-icons kinauna-icon-medium">content_copy</i>
+                                            <span class="toast-notification d-none">@await LocaleManager.GetTranslation("Mobile number copied to clipboard", PageNames.Contacts, Model.LanguageId)</span>
+                                        </button>
+                                    </div>
+                                    <div class="col-auto">
+                                        <a class="btn btn-link text-white-50" href="tel:@Model.FamilyMember.ProgenyInfo.MobileNumber"><i class="material-icons kinauna-icon-medium">call</i></a>
+                                        <a class="btn btn-link text-white-50" href="sms:@Model.FamilyMember.ProgenyInfo.MobileNumber"><i class="material-icons kinauna-icon-medium">sms</i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (Model.FamilyMember.ProgenyInfo != null && !string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Email))
+                {
+                    <div class="col-12">
+                        <div class="space-20"></div>
+                        <div class="row">
+                            <div class="col-12">
+                                <strong>@emailString:</strong>
+                            </div>
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <span id="contact-email1-@Model.FamilyMember.ProgenyInfo.ProgenyId" class="ml-4">@Model.FamilyMember.ProgenyInfo.Email</span>
+                                        <button class="btn btn-link copy-content-button text-white-50" data-copy-content-id="contact-email1-@Model.FamilyMember.ProgenyInfo.ProgenyId">
+                                            <i class="material-icons">content_copy</i>
+                                            <span class="toast-notification d-none">@emailCopiedString</span>
+                                        </button>
+                                    </div>
+                                    <div class="col-auto">
+                                        <a class="btn btn-link text-white-50" href="mailto:@Model.FamilyMember.ProgenyInfo.Email"><i class="material-icons kinauna-icon-medium">outgoing_mail</i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-20"></div>
+                    </div>
+                }
+
+                @if (Model.FamilyMember.ProgenyInfo != null && 
+                            !string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Address?.AddressLine1 + Model.FamilyMember.ProgenyInfo.Address?.AddressLine2
+                            + Model.FamilyMember.ProgenyInfo.Address?.City + Model.FamilyMember.ProgenyInfo.Address?.State + Model.FamilyMember.ProgenyInfo.Address?.PostalCode
+                            + Model.FamilyMember.ProgenyInfo.Address?.Country))
+                {
+                    <div class="col-12">
+                        <div class="space-20"></div>
+                        <strong>@await LocaleManager.GetTranslation("Address:", PageNames.Contacts, Model.LanguageId)</strong>
+                        <div class="space-10"></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="row ml-4">
+                            <div class="col-12">
+                                @if (!string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Address?.AddressLine1))
+                                {
+                                    @Model.FamilyMember.ProgenyInfo.Address.AddressLine1
+                                    <div class="space-10"></div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Address?.AddressLine2))
+                                {
+                                    @Model.FamilyMember.ProgenyInfo.Address.AddressLine2
+                                    <div class="space-10"></div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Address?.City))
+                                {
+                                    @Model.FamilyMember.ProgenyInfo.Address.City
+                                    <div class="space-10"></div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Address.State))
+                                {
+                                    @Model.FamilyMember.ProgenyInfo.Address.State
+                                    <div class="space-10"></div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Address.PostalCode))
+                                {
+                                    @Model.FamilyMember.ProgenyInfo.Address.PostalCode
+                                    <div class="space-10"></div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Address.Country))
+                                {
+                                    @Model.FamilyMember.ProgenyInfo.Address.Country
+                                    <div class="space-10"></div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (Model.FamilyMember.ProgenyInfo != null && !string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Website + Model.FamilyMember.ProgenyInfo.Notes))
+                {
+
+                    @if (!string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Website))
+                    {
+                        <div class="space-20"></div>
+                        <div class="col-12">
+                            <strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@websiteLink">@Model.FamilyMember.ProgenyInfo.Website</a>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Notes))
+                    {
+                        <div class="col-12">
+                            <div class="space-20"></div>
+                            <strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Contacts, Model.LanguageId)</strong> @Model.FamilyMember.ProgenyInfo.Notes
+                        </div>
+                    }
+                }
             }
             <div class="space-20"></div>
         </div>

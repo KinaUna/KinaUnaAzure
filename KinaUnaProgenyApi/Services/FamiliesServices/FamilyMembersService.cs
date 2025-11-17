@@ -57,6 +57,9 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                 
                 familyMember.Progeny = progeny;
 
+                ProgenyInfo progenyInfo = await progenyService.GetProgenyInfo(familyMember.ProgenyId, currentUserInfo);
+                familyMember.ProgenyInfo = progenyInfo;
+
             }
 
             if (!string.IsNullOrWhiteSpace(familyMember.UserId))

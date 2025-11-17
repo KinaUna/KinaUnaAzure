@@ -1,10 +1,11 @@
-﻿using System;
+﻿using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUnaWeb.Models.FamiliesViewModels
 {
@@ -40,6 +41,7 @@ namespace KinaUnaWeb.Models.FamiliesViewModels
         public List<SelectListItem> MemberTypeList = [];
         public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
         public SelectListItem[] TimezoneList { get; init; }
+        public IFormFile File { get; init; }
 
         public void SetMemberTypeList()
         {
