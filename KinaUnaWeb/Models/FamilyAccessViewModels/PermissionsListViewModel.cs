@@ -6,6 +6,14 @@ namespace KinaUnaWeb.Models.FamilyAccessViewModels
 {
     public class PermissionsListViewModel: BaseItemsViewModel
     {
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
+        public PermissionsListViewModel()
+        {
+
+        }
+
         public PermissionsListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);

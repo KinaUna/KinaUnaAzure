@@ -9,7 +9,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
     public class SkillViewModel: BaseItemsViewModel
     {
         public Skill SkillItem { get; set; } = new Skill();
-        
+
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public SkillViewModel()
         {
             ProgenyList = [];

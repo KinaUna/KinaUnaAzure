@@ -6,10 +6,14 @@ namespace KinaUnaWeb.Models.ProgeniesViewModels
 {
     public class AddProgenyToFamilyViewModel: BaseItemsViewModel
     {
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public AddProgenyToFamilyViewModel()
         {
             
         }
+
         public AddProgenyToFamilyViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);

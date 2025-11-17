@@ -16,6 +16,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<KanbanBoard> KanbanBoards { get; set; } = [];
         public List<SelectListItem> KanbanBoardsList { get; set; } = [];
         public int AddToKanbanBoardId { get; set; } = 0;
+
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public TodoViewModel()
         {
             ProgenyList = [];

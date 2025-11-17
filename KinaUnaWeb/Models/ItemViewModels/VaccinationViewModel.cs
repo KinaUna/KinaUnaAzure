@@ -10,6 +10,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public Vaccination VaccinationItem { get; set; } = new();
 
         public int VaccinationId { get; set; }
+
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public VaccinationViewModel()
         {
             ProgenyList = [];

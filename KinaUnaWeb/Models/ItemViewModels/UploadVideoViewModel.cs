@@ -18,6 +18,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> LocationsList { get; set; } = [];
         public List<Location> ProgenyLocations { get; set; } = [];
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public UploadVideoViewModel()
         {
             ProgenyList = [];

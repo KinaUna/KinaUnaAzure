@@ -31,6 +31,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string HereMapsApiKey { get; init; } = "";
         public int VideoNumber { get; internal set; }
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public VideoItemViewModel()
         {
             ProgenyList = [];

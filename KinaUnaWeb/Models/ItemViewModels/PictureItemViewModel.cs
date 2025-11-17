@@ -30,6 +30,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public bool PartialView { get; set; }
         public string HereMapsApiKey { get; init; } = "";
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public PictureItemViewModel()
         {
             ProgenyList = [];

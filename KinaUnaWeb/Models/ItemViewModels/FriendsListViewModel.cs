@@ -10,6 +10,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public FriendsPageParameters FriendsPageParameters { get; set; }
         public int FriendId { get; set; }
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public FriendsListViewModel()
         {
             FriendViewModelsList = [];

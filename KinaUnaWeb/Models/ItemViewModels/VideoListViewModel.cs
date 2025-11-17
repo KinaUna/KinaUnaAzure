@@ -22,6 +22,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public VideosPageParameters VideosPageParameters { get; set; }
         public int VideoId { get; set; }
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public VideoListViewModel()
         {
             
