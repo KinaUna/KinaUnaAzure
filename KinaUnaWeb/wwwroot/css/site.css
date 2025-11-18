@@ -1551,6 +1551,10 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     opacity: 0.75;
 }
 
+.text-opacity-50 {
+    opacity: 0.5;
+}
+
 .bg-primary {
     background: linear-gradient(60deg, #ab47bc, #7b1fa2);
 }

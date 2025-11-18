@@ -4,7 +4,7 @@
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.BaseItemsViewModel
 @inject ILocaleManager LocaleManager
-<div class="col-12 col-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
+<div class="col-12 col-sm-10 col-md-6 col-lg-5 col-xl-4 col-xxl-4">
     <div id="other-people-element-@Model.CurrentProgeny.Id" class="card-compact bg-todos todo-item m-1 p-2" data-other-people-id="@Model.CurrentProgeny.Id" align="left">
         @if (Model.CurrentProgeny.Id == 0)
         {
@@ -16,7 +16,7 @@
                 <div class="col-12">
                     <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="profile-picture-small"/>
                     <span class="h4">@Model.CurrentProgeny.NickName</span>
-                    @if (Model.CurrentProgeny.ProgenyPerMission.PermissionLevel >= PermissionLevel.Edit)
+                    @if (Model.CurrentProgeny.ProgenyPerMission.PermissionLevel >= PermissionLevel.View)
                     {
                         <button id="progeny-details-button-@Model.CurrentProgeny.Id" class="btn btn-link float-right pr-0"><i class="material-icons sidebar-icon">info</i></button>
                     }

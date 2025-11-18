@@ -48,18 +48,19 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Details(int progenyId)
         {
             ProgenyInfo progenyInfo = await progenyHttpClient.GetProgenyInfo(progenyId);
-            if (progenyInfo == null || progenyInfo.ProgenyId == 0)
-            {
-                return PartialView("_NotFoundPartial");
-            }
-
+            
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, 0, false);
             
             ProgenyDetailsViewModel model = new(baseModel)
             {
                 ProgenyInfo = progenyInfo
             };
-            
+
+            if (model.CurrentProgeny.Id == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
             return PartialView("_ProgenyDetailsPartial", model);
         }
 

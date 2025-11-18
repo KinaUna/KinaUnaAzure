@@ -105,12 +105,12 @@
         <div class="space-20"></div>
         <div class="row">
             <div class="col-auto">
-                <a id="enable-push-button" class="btn btn-info leave-page" style="display: none;" asp-action="EnablePush">@await LocaleManager.GetTranslation("Enable Push Notifications", PageNames.Account, Model.LanguageId)</a>
-                <a id="disable-push-button" class="btn btn-warning leave-page" style="display: none;" asp-action="DisablePush">@await LocaleManager.GetTranslation("Disable Push Notifications", PageNames.Account, Model.LanguageId)</a>
+                <a id="enable-push-button" class="btn btn-info leave-page" style="display: none;" asp-action="EnablePush"><i class="material-icons">notifications_active</i> @await LocaleManager.GetTranslation("Enable Push Notifications", PageNames.Account, Model.LanguageId)</a>
+                <a id="disable-push-button" class="btn btn-warning leave-page" style="display: none;" asp-action="DisablePush"><i class="material-icons">notifications_paused</i> @await LocaleManager.GetTranslation("Disable Push Notifications", PageNames.Account, Model.LanguageId)</a>
             </div>
             <div class="col-auto">
                 <form id="login-form" action="@Model.ChangeLink" method="get" target="loginFrame">
-                    <button id="change-password-button" type="submit" class="btn btn-info" data-toggle="modal" data-target="#loginModal" style="float: right;"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Change Password", PageNames.Account, Model.LanguageId) </button>
+                    <button id="change-password-button" type="submit" class="btn btn-info" data-toggle="modal" data-target="#loginModal" style="float: right;"><span class="fas fa-sign-in-alt"></span> @await LocaleManager.GetTranslation("Change Password", PageNames.Account, Model.LanguageId) </button>
                 </form>
             </div>
         </div>
@@ -118,7 +118,7 @@
         <div class="row">
             <div class="col-12">
                 <form id="delete-account-form" asp-action="DeleteAccount" method="get">
-                    <button id="deleteAccountButton" type="submit" class="btn btn-secondary"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Delete account", PageNames.Account, Model.LanguageId)</button>
+                    <button id="deleteAccountButton" type="submit" class="btn btn-secondary"><i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete account", PageNames.Account, Model.LanguageId)</button>
                 </form>
             </div>
         </div>

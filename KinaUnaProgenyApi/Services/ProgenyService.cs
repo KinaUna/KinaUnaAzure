@@ -448,6 +448,10 @@ namespace KinaUnaProgenyApi.Services
                     ProgenyId = progenyId
                 };
                 progenyInfo = await AddProgenyInfo(progenyInfo, currentUserInfo);
+                if (progenyInfo == null)
+                {
+                    return null;
+                }
             }
 
             if (progenyInfo.AddressIdNumber != 0)

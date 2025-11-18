@@ -50,6 +50,30 @@
             <div class="col-12">
                 @group.Name: @await LocaleManager.GetTranslation(permissionLevel.ToString(), PageNames.AccessManagement, Model.LanguageId)
             </div>
+            <div class="col-12">
+                <div class="row ml-1 ml-sm-3 ml-md-5 text-opacity-50 small">
+                    <div>@groupMembersString:</div>
+                    <div>
+                        @foreach (UserGroupMember member in group.Members)
+                        {
+                            UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
+                            if (user != null)
+                            {
+                                <div class="ml-2">
+                                    @user.UserEmail (@user.FullName())
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="ml-2">
+                                    @member.Email (@noUserAccountString)
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="space-10"></div>
+                </div>
+            </div>
         </div>
     }
 </div>
@@ -59,10 +83,7 @@
             @await LocaleManager.GetTranslation("Custom Permissions", PageNames.AccessManagement, Model.LanguageId):
         </div>
     </div>
-    <div class="row m-3">
-        <div class="col-12">
-            @await LocaleManager.GetTranslation("Group permissions", PageNames.AccessManagement, Model.LanguageId):
-        </div>
+    <div class="row m-0">
         <div id="item-permissions-groups-div" class="col-12">
             @if (Model.ItemId == 0 || familyChanged || Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
             {
@@ -78,7 +99,7 @@
                             <div class="permission-group-div" data-family-permission-id="@permission.FamilyPermissionId" data-permission-level="@permissionLevelValue">
                                 @group.Name <select class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-family-permission-id="@permission.FamilyPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue, isAdmin)"></select>
                             </div>
-                            <div class="row m-0 d-none">
+                            <div class="row ml-1 ml-sm-3 ml-md-5 text-opacity-50 small">
                                 <div>@groupMembersString:</div>
                                 <div class="col-12">
                                     @foreach (UserGroupMember member in group.Members)
@@ -86,19 +107,19 @@
                                         UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
                                         if (user != null)
                                         {
-                                            <div class="ml-4">
+                                            <div class="ml-2">
                                                 @user.UserEmail (@user.FullName())
                                             </div>
                                         }
                                         else
                                         {
-                                            <div class="ml-4">
+                                            <div class="ml-2">
                                                 @member.Email (@noUserAccountString)
                                             </div>
                                         }
                                     }
+                                    <div class="space-10"></div>
                                 </div>
-
                             </div>
                         }
                     }
@@ -118,7 +139,7 @@
                             <div class="permission-group-div" data-item-permission-id="@permission.TimelineItemPermissionId" data-permission-level="@permissionLevelValue">
                                 @group.Name <select class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-item-permission-id="@permission.TimelineItemPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue, isAdmin)"></select>
                             </div>
-                            <div class="d-none">
+                            <div class="row ml-1 ml-sm-3 ml-md-5 text-opacity-50 small">
                                 <div>@groupMembersString:</div>
                                 <div>
                                     @foreach (UserGroupMember member in group.Members)
@@ -126,19 +147,19 @@
                                         UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
                                         if (user != null)
                                         {
-                                            <div class="ml-4">
+                                            <div class="ml-2">
                                                 @user.UserEmail (@user.FullName())
                                             </div>
                                         }
                                         else
                                         {
-                                            <div class="ml-4">
+                                            <div class="ml-2">
                                                 @member.Email (@noUserAccountString)
                                             </div>
                                         }
                                     }
+                                    <div class="space-10"></div>
                                 </div>
-
                             </div>
                         }
                     }

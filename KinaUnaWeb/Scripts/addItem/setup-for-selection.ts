@@ -1,5 +1,6 @@
 ﻿import { setTagsAutoSuggestList, setContextAutoSuggestList, setLocationAutoSuggestList, setCategoriesAutoSuggestList, setVocabularyLanguagesAutoSuggestList } from "../data-tools-v9.js";
 import { renderItemPermissionsEditor } from "../item-permissions.js";
+import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v9.js";
 import { TimelineItem, TimeLineType } from "../page-models-v9.js";
 
 let currentProgenyId: number;
@@ -117,6 +118,7 @@ async function onFamilyButtonClicked(): Promise<void> {
  * Sets up the Progeny select list and adds an event listener to update the tags and categories auto suggest lists when the selected Progeny changes.
  */
 async function setupProgenySelectList(): Promise<void> {
+    startFullPageSpinner();
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         progenyIdSelect.removeEventListener('change', onProgenySelectListChanged);
@@ -135,9 +137,11 @@ async function setupProgenySelectList(): Promise<void> {
             await renderItemPermissionsEditor(permissionsEditorTimelineItem);
         }
     }
+    stopFullPageSpinner();
 }
 
 async function onProgenySelectListChanged(): Promise<void> {
+    startFullPageSpinner();
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect === null) {
         return new Promise<void>(function (resolve, reject) {
@@ -162,12 +166,14 @@ async function onProgenySelectListChanged(): Promise<void> {
     permissionsEditorTimelineItem.familyId = currentFamilyId;
     await renderItemPermissionsEditor(permissionsEditorTimelineItem);
 
+    stopFullPageSpinner();
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
 async function setupFamilySelectList(): Promise<void> {
+    startFullPageSpinner();
     const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
     if (familyIdSelect !== null) {
         familyIdSelect.removeEventListener('change', onFamilySelectListChanged);
@@ -184,9 +190,11 @@ async function setupFamilySelectList(): Promise<void> {
             await renderItemPermissionsEditor(permissionsEditorTimelineItem);
         }
     }
+    stopFullPageSpinner();
 }
 
 async function onFamilySelectListChanged(): Promise<void> {
+    startFullPageSpinner();
     const familyIdSelect = document.querySelector<HTMLSelectElement>('#item-family-id-select');
     if (familyIdSelect === null) {
         return new Promise<void>(function (resolve, reject) {
@@ -210,6 +218,7 @@ async function onFamilySelectListChanged(): Promise<void> {
     permissionsEditorTimelineItem.progenyId = currentProgenyId;
     permissionsEditorTimelineItem.familyId = currentFamilyId;
     await renderItemPermissionsEditor(permissionsEditorTimelineItem);
+    stopFullPageSpinner();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
