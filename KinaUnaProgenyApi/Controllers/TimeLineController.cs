@@ -192,6 +192,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 TimelineItems = await timelineService.GetFilteredTimeLineList(request, currentUserInfo)
             };
+
+            request.Skip += request.Count;
+            
             List<TimeLineItem> moreTimeLineItems = await timelineService.GetFilteredTimeLineList(request, currentUserInfo);
             if (moreTimeLineItems.Count > 0)
             {

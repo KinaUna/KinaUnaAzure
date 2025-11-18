@@ -7,8 +7,8 @@ namespace KinaUna.Data.Models.DTOs
     {
         public int ProgenyId { get; set; } = 0;
         public int FamilyId { get; set; } = 0;
-        public List<int> Progenies = [];
-        public List<int> Families = [];
+        public List<int> Progenies { get; set; } = [];
+        public List<int> Families { get; set; } = [];
         public DateTime ThisDayDateTime
         {
             get

@@ -435,14 +435,16 @@ namespace KinaUnaProgenyApi.Services
                     if (skipped < request.Skip)
                     {
                         skipped++;
-                        continue;
                     }
-                    if (added >= request.Count)
+                    else if (added < request.Count)
+                    {
+                        added++;
+                        filteredTimeLineList.Add(timeLineItem);
+                    }
+                    else
                     {
                         break;
                     }
-                    added++;
-                    filteredTimeLineList.Add(timeLineItem);
                 }
             }
 

@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Hosting;
@@ -22,6 +24,7 @@ namespace KinaUnaWeb.Controllers
         IMediaHttpClient mediaHttpClient,
         IWebHostEnvironment env,
         IUserInfosHttpClient userInfosHttpClient,
+        IProgenyHttpClient progenyHttpClient,
         ILanguagesHttpClient languagesHttpClient,
         IViewModelSetupService viewModelSetupService,
         IDistributedCache cache)
@@ -36,7 +39,28 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int familyId = 0)
         {
-            
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                childId = Constants.DefaultChildId;
+            }
+            else
+            {
+                if (childId == 0)
+                {
+                    List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.View);
+                    // Select a random Progeny if none is selected.
+                    if (progenies.Count > 0)
+                    {
+                        Random rand = new();
+                        childId = progenies[rand.Next(progenies.Count)].Id;
+                    }
+                    else
+                    {
+                        childId = Constants.DefaultChildId;
+                    }
+                }
+            }
+
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
             HomeFeedViewModel model = new(baseModel);
             
@@ -44,12 +68,7 @@ namespace KinaUnaWeb.Controllers
             //{
             //    return RedirectToAction("LogOut", "Account");
             //}
-
-            if (model.CurrentProgenyId == 0 && model.CurrentFamilyId == 0)
-            {
-                baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), Constants.DefaultChildId, familyId, false);
-                model = new(baseModel);
-            }
+            
             model.SetBirthTimeData();
 
             model.DisplayPicture = await mediaHttpClient.GetRandomPicture(model.CurrentProgeny.Id, model.CurrentUser.Timezone);

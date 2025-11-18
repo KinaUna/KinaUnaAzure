@@ -6,7 +6,7 @@ namespace KinaUna.Data.Models.Timeline
     {
         public List<int> Families { get; set; } = [];
         public List<int> Progenies { get; set; } = [];
-        public int SortOrder = 0;
+        public int SortOrder { get; set; } = 0;
         public int Skip { get; set; } = 0;
         public int Count { get; set; } = 5;
         public int Year { get; set; } = 0;
