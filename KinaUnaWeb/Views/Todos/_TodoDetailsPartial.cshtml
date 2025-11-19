@@ -11,7 +11,18 @@
     {
         titleType = await LocaleManager.GetTranslation("Subtask", PageNames.Todos, Model.LanguageId);
     }
-    string title = Model.TodoItem.Progeny.NickName + " : " + titleType;
+
+    string title = string.Empty;
+    if (Model.TodoItem.ProgenyId > 0)
+    {
+        title = Model.TodoItem.Progeny.NickName + " : " + titleType;
+    }
+
+    if (Model.TodoItem.FamilyId > 0)
+    {
+        title = Model.TodoItem.Family.Name + " : " + titleType;
+    }
+
     string setAsNotStartedString = await LocaleManager.GetTranslation("Set as not started", PageNames.Todos, Model.LanguageId);
     string setAsInProgressString = await LocaleManager.GetTranslation("Set as in progress", PageNames.Todos, Model.LanguageId);
     string setAsCompletedString = await LocaleManager.GetTranslation("Set as completed", PageNames.Todos, Model.LanguageId);
@@ -62,7 +73,7 @@
             </div>
             <div class="col">
                 <div class="row text-white">
-                    <div class="col-auto">
+                    <div class="col-12">
                         <span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId):</span> @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)
                         <i class="material-icons-small">@Model.TodoItem.StatusIcon()</i>
                     </div>
@@ -167,6 +178,12 @@
                                     <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
                                 </button>
                             }
+                        </div>
+                        <div class="col-12">
+                            <button id="assign-todo-item-to-button-@Model.TodoItem.TodoItemId" class="btn btn-link p-3 text-white-75" data-todo-item-id="@Model.TodoItem.TodoItemId">
+                                <span class="material-icons-small">assignment_ind</span>
+                                @await LocaleManager.GetTranslation("Assign to ..", PageNames.Todos, Model.LanguageId)
+                            </button>
                         </div>
                     </div>
                 </div>

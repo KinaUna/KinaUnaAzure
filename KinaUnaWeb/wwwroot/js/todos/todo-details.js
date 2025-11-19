@@ -239,6 +239,7 @@ async function setTodoDetailsEventListeners(itemId, todoDetailsPopupDiv) {
         });
     }
     setAssignStatusButtonsEventListeners(itemId);
+    setAssignToButtonEventListener(itemId, true);
     const addSubtaskForm = document.querySelector('#add-subtask-inline-form');
     if (addSubtaskForm) {
         const subtaskFormPreventDefaultAction = function (event) {
@@ -357,6 +358,81 @@ export function setAssignStatusButtonsEventListeners(itemId) {
             element.removeEventListener('click', onSetAsNotStartedButtonClicked);
             element.addEventListener('click', onSetAsNotStartedButtonClicked);
         });
+    }
+}
+function setAssignToButtonEventListener(itemId, detailsShown) {
+    const assignToButton = document.getElementById('assign-todo-item-to-button-' + itemId);
+    if (assignToButton) {
+        const assignToButtonClickedAction = async function (event) {
+            event.preventDefault();
+            assignTo(itemId, detailsShown);
+        };
+        assignToButton.removeEventListener('click', assignToButtonClickedAction);
+        assignToButton.addEventListener('click', assignToButtonClickedAction);
+    }
+}
+async function assignTo(todoItemId, detailsShown) {
+    // Get form html from server.
+    let url = '/Todos/AssignTodoItemTo?todoItemId=' + todoItemId;
+    const response = await fetch(url);
+    if (response.ok) {
+        const formHtml = await response.text();
+        const modalDiv = document.querySelector('#item-details-div');
+        if (modalDiv) {
+            modalDiv.innerHTML = '';
+            const fullScreenOverlay = document.createElement('div');
+            fullScreenOverlay.classList.add('full-screen-bg');
+            fullScreenOverlay.innerHTML = formHtml;
+            modalDiv.appendChild(fullScreenOverlay);
+            modalDiv.classList.remove('d-none');
+            const cancelButton = modalDiv.querySelector('.assign-todo-item-to-cancel-button');
+            if (cancelButton) {
+                const closeButtonFunction = function () {
+                    modalDiv.innerHTML = '';
+                    modalDiv.classList.add('d-none');
+                };
+                cancelButton.removeEventListener('click', closeButtonFunction);
+                cancelButton.addEventListener('click', closeButtonFunction);
+                const closeButton = modalDiv.querySelector('.modal-close-button');
+                if (closeButton) {
+                    closeButton.removeEventListener('click', closeButtonFunction);
+                    closeButton.addEventListener('click', closeButtonFunction);
+                }
+            }
+            $(".selectpicker").selectpicker('refresh');
+            const assignForm = modalDiv.querySelector('#assign-todo-item-to-form');
+            if (assignForm) {
+                const assignTodoItemToFormFunction = async function (event) {
+                    event.preventDefault();
+                    startFullPageSpinner();
+                    const formData = new FormData(assignForm);
+                    const url = '/Todos/AssignTodoItemTo';
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(async function (response) {
+                        if (response.ok) {
+                            // Successfully assigned the KanbanItem. Close the modal.
+                            modalDiv.innerHTML = '';
+                            modalDiv.classList.add('d-none');
+                            // Dispatch event to update Kanban board
+                            dispatchTimelineItemChangedEvent(todoItemId);
+                            if (detailsShown) {
+                                await displayTodoItem(todoItemId);
+                            }
+                        }
+                        else {
+                            console.error('Error assigning person to kanban item. Status: ' + response.status);
+                        }
+                    }).catch(function (error) {
+                        console.error('Error assigning person to kanban item: ' + error);
+                    });
+                    stopFullPageSpinner();
+                };
+                assignForm.removeEventListener('submit', assignTodoItemToFormFunction);
+                assignForm.addEventListener('submit', assignTodoItemToFormFunction);
+            }
+        }
     }
 }
 /**

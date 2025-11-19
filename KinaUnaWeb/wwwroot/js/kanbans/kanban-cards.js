@@ -55,12 +55,19 @@ export function createKanbanItemCardHTML(kanbanItem) {
     if (kanbanItem.todoItem.subtaskCount > 0) {
         subtasksCountSpanClass = 'text-appendage-light ml-2';
     }
+    let pictureLink = '';
+    if (kanbanItem.todoItem.progenyId > 0) {
+        pictureLink = kanbanItem.todoItem.progeny.pictureLink;
+    }
+    if (kanbanItem.todoItem.familyId > 0) {
+        pictureLink = kanbanItem.todoItem.family.pictureLink;
+    }
     cardDiv.classList.add('kanban-card');
     cardDiv.setAttribute('data-kanban-item-id', kanbanItem.kanbanItemId.toString());
     cardDiv.setAttribute('data-column-id', kanbanItem.columnId.toString());
     cardDiv.innerHTML = `<div class="kanban-card-header">
                                 <div>
-                                    <img src="${kanbanItem.todoItem.progeny.pictureLink}" class="kanban-card-profile-picture float-right" />
+                                    <img src="${pictureLink}" class="kanban-card-profile-picture float-right" />
 
                                     <i class="material-icons float-left">${getStatusIconForTodoItems(kanbanItem.todoItem.status)}</i>
                                 </div>
@@ -658,8 +665,8 @@ async function moveCardRight(kanbanItemId) {
                 });
                 setKanbanItems(kanbanItems);
                 // Save the updated KanbanItems to the server.
-                await updateKanbanItemsInColumn(kanbanItem.columnId);
                 await updateKanbanItemsInColumn(previousColumnId);
+                await updateKanbanItemsInColumn(kanbanItem.columnId);
             }
         }
     }

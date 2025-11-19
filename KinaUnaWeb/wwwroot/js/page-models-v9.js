@@ -647,6 +647,7 @@ export class TodoItem {
         this.modifiedTime = new Date();
         this.isDeleted = false;
         this.progeny = new Progeny();
+        this.family = new Family();
         this.subtaskCount = 0;
         this.completedSubtaskCount = 0;
     }
@@ -744,6 +745,7 @@ export class Family {
         this.familyId = 0;
         this.name = '';
         this.description = '';
+        this.pictureLink = '';
         this.familyMembers = [];
     }
 }

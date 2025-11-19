@@ -33,7 +33,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 return new KanbanItem();
             }
 
-            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanItem, kanbanItemId, currentUserInfo, PermissionLevel.View))
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, kanbanItem.TodoItemId, currentUserInfo, PermissionLevel.View))
             {
                 return new KanbanItem();
             }

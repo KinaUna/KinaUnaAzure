@@ -51,9 +51,9 @@
                 @group.Name: @await LocaleManager.GetTranslation(permissionLevel.ToString(), PageNames.AccessManagement, Model.LanguageId)
             </div>
             <div class="col-12">
-                <div class="row ml-1 ml-sm-3 ml-md-5 text-opacity-50 small">
-                    <div>@groupMembersString:</div>
-                    <div>
+                <div class="row ml-1 text-opacity-50 small">
+                    <div class="col-12">@groupMembersString:</div>
+                    <div class="col-12">
                         @foreach (UserGroupMember member in group.Members)
                         {
                             UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
@@ -99,8 +99,8 @@
                             <div class="permission-group-div" data-family-permission-id="@permission.FamilyPermissionId" data-permission-level="@permissionLevelValue">
                                 @group.Name <select class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-family-permission-id="@permission.FamilyPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue, isAdmin)"></select>
                             </div>
-                            <div class="row ml-1 ml-sm-3 ml-md-5 text-opacity-50 small">
-                                <div>@groupMembersString:</div>
+                            <div class="row ml-1 text-opacity-50 small">
+                                <div class="col-12">@groupMembersString:</div>
                                 <div class="col-12">
                                     @foreach (UserGroupMember member in group.Members)
                                     {
@@ -139,9 +139,9 @@
                             <div class="permission-group-div" data-item-permission-id="@permission.TimelineItemPermissionId" data-permission-level="@permissionLevelValue">
                                 @group.Name <select class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-item-permission-id="@permission.TimelineItemPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue, isAdmin)"></select>
                             </div>
-                            <div class="row ml-1 ml-sm-3 ml-md-5 text-opacity-50 small">
-                                <div>@groupMembersString:</div>
-                                <div>
+                            <div class="row ml-1 text-opacity-50 small">
+                                <div class="col-12">@groupMembersString:</div>
+                                <div class="col-12">
                                     @foreach (UserGroupMember member in group.Members)
                                     {
                                         UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);

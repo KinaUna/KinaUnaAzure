@@ -71,7 +71,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             _ = progenyDbContext.TodoItemsDb.Add(todoItemToAdd);
             _ = await progenyDbContext.SaveChangesAsync();
 
-            await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, todoItemToAdd.TodoItemId, todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, todoItemToAdd.ItemPermissionsDtoList,
+            await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, todoItemToAdd.TodoItemId, todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, value.ItemPermissionsDtoList,
                 currentUserInfo);
 
             return todoItemToAdd;

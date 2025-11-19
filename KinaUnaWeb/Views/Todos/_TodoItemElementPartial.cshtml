@@ -1,5 +1,6 @@
 ﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.TypeScriptModels.TodoItems.TodoItemResponse
 @inject ILocaleManager LocaleManager
@@ -119,7 +120,7 @@
             <button class="kanban-card-menu-item-button" data-show-details-todo-item-id="@Model.TodoItem.TodoItemId">
                 <i class="material-icons kanban-menu-material-icons">fact_check</i> @showDetailsString
             </button>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add)
             {
                 <div class="item-menu-divider"></div>
                 @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
@@ -166,7 +167,7 @@
         </div>
     </div>
 </div>
-@if (Model.IsCurrentUserProgenyAdmin)
+@if (Model.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add)
 {
     <div id="add-todo-item-to-kanban-board-modal-@Model.TodoItem.TodoItemId" class="d-none settings-modal" tabindex="-1" role="dialog"></div>
 }

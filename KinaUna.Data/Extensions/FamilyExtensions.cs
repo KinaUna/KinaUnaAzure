@@ -132,7 +132,7 @@ namespace KinaUna.Data.Extensions
                 return Constants.ProfilePictureUrl;
             }
 
-            if (family.PictureLink.StartsWith("http:", StringComparison.CurrentCultureIgnoreCase))
+            if (family.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
             {
                 return family.PictureLink;
             }

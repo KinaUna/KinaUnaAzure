@@ -590,6 +590,7 @@ export class TodoItem {
     modifiedTime: Date = new Date();
     isDeleted: boolean = false;
     progeny: Progeny = new Progeny();
+    family: Family = new Family();
     subtaskCount: number = 0;
     completedSubtaskCount = 0;
 }
@@ -680,6 +681,7 @@ export class Family {
     familyId: number = 0;
     name: string = '';
     description: string = '';
+    pictureLink: string = '';
     familyMembers: FamilyMember[] = [];
 }
 

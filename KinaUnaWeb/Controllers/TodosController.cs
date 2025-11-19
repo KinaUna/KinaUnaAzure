@@ -171,7 +171,17 @@ namespace KinaUnaWeb.Controllers
                 {
                     return PartialView("_NotFoundPartial");
                 }
-                todoItemResponse.TodoItem.Progeny = await progenyHttpClient.GetProgeny(todoItemResponse.TodoItem.ProgenyId);
+
+                if (todoItemResponse.TodoItem.ProgenyId > 0)
+                {
+                    todoItemResponse.TodoItem.Progeny = await progenyHttpClient.GetProgeny(todoItemResponse.TodoItem.ProgenyId);
+                }
+
+                if (todoItemResponse.TodoItem.FamilyId > 0)
+                {
+                    todoItemResponse.TodoItem.Family = await familiesHttpClient.GetFamily(todoItemResponse.TodoItem.FamilyId);
+                }
+
                 todoItemResponse.TodoItemId = todoItemResponse.TodoItem.TodoItemId;
 
                 UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(todoItemResponse.TodoItem.CreatedBy);
@@ -992,10 +1002,18 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
-            model.SetProgenyList();
             model.FamilyList = await viewModelSetupService.GetFamilySelectList();
-            model.SetFamilyList();
-
+            // model.SetFamilyList();
+            if (model.FamilyList.Count > 0)
+            {
+                foreach (SelectListItem familySelectListItem in model.FamilyList)
+                {
+                    familySelectListItem.Value = "-" + familySelectListItem.Value;
+                    model.ProgenyList.Add(familySelectListItem);
+                }
+            }
+            model.SetProgenyList();
+            
             model.SetStatusList(model.TodoItem.Status);
             
             return PartialView("_AssignTodoItemToPartial", model);
@@ -1020,7 +1038,13 @@ namespace KinaUnaWeb.Controllers
                 return Unauthorized();
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
+            if (model.TodoItem.ProgenyId < 0)
+            {
+                model.TodoItem.FamilyId = Math.Abs(model.TodoItem.ProgenyId);
+                model.TodoItem.ProgenyId = 0;
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId, model.TodoItem.FamilyId, false);
             model.SetBaseProperties(baseModel);
             
             // Check if user is allowed to assign to the new progeny/family id.

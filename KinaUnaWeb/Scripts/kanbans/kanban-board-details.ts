@@ -1,6 +1,7 @@
 ﻿import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item.js";
 import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v9.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v9.js";
+import { setPermissions } from "../item-permissions.js";
 import { getTranslation } from "../localization-v9.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
 import { KanbanBoard, KanbanBoardColumn, KanbanItem, TimelineItem, TimeLineType, TodoStatusType } from "../page-models-v9.js";
@@ -310,6 +311,10 @@ function addCardButtonsEventListners(): void {
                         const addKanbanItemFormFunction = async function (event: Event) {
                             event.preventDefault();
                             startFullPageSpinner();
+                            const permissionsEditorDiv = document.querySelector<HTMLDivElement>('#item-permissions-editor-div');
+                            if (permissionsEditorDiv) {
+                                setPermissions();
+                            }
                             const formData = new FormData(addKanbanItemForm);
                             const url = '/KanbanItems/AddKanbanItem';
                             await fetch(url, {

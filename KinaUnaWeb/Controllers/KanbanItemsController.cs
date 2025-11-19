@@ -540,8 +540,9 @@ namespace KinaUnaWeb.Controllers
             KanbanItem kanbanItem = new();
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.KanbanBoard.ProgenyId, model.KanbanBoard.FamilyId, false);
             model.SetBaseProperties(baseModel);
-            
-            TodoItem todoItem = await todoItemsHttpClient.AddTodoItem(model.KanbanItem.TodoItem);
+
+            TodoItem todoItemToAdd = model.CreateTodoItem();
+            TodoItem todoItem = await todoItemsHttpClient.AddTodoItem(todoItemToAdd);
             if (todoItem == null || todoItem.TodoItemId == 0) return Json(kanbanItem);
 
             model.KanbanItem.TodoItemId = todoItem.TodoItemId;
@@ -556,7 +557,7 @@ namespace KinaUnaWeb.Controllers
                 model.KanbanItem.ColumnId = kanbanBoardColumn.Id;
                 break;
             }
-
+            
             KanbanItem addedKanbanItem = await kanbanItemsHttpClient.AddKanbanItem(model.KanbanItem);
             if (addedKanbanItem == null || addedKanbanItem.KanbanItemId == 0) return Json(kanbanItem);
             addedKanbanItem.TodoItem = todoItem;
