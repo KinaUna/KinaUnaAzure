@@ -1,22 +1,25 @@
-﻿using KinaUnaWeb.Models;
+﻿using KinaUna.Data;
+using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
+using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.HomeViewModels;
+using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using KinaUna.Data;
-using KinaUna.Data.Extensions;
-using KinaUna.Data.Models.AccessManagement;
-using KinaUnaWeb.Models.TypeScriptModels;
-using KinaUnaWeb.Services.HttpClients;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Hosting;
+using KinaUna.Data.Models.DTOs;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -39,36 +42,52 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int familyId = 0)
         {
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
+            HomeFeedViewModel model = new(baseModel);
+
+            return View(model);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> ProgenyTrivia([FromBody] TimelineRequest request)
+        {
             if (User.Identity == null || !User.Identity.IsAuthenticated)
             {
-                childId = Constants.DefaultChildId;
+                request.ProgenyId = Constants.DefaultChildId;
             }
             else
             {
-                if (childId == 0)
+                if (request.ProgenyId == 0)
                 {
-                    List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.View);
                     // Select a random Progeny if none is selected.
-                    if (progenies.Count > 0)
+                    if (request.Progenies.Count > 0)
                     {
                         Random rand = new();
-                        childId = progenies[rand.Next(progenies.Count)].Id;
+                        request.ProgenyId = request.Progenies[rand.Next(request.Progenies.Count)];
                     }
                     else
                     {
-                        childId = Constants.DefaultChildId;
+                        request.ProgenyId = Constants.DefaultChildId;
                     }
                 }
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), request.ProgenyId, 0, false);
             HomeFeedViewModel model = new(baseModel);
-            
-            //if (model.CurrentProgeny.Name == "401")
-            //{
-            //    return RedirectToAction("LogOut", "Account");
-            //}
-            
+            model.ProgenyList = [];
+            if (request.Progenies.Count > 0)
+            {
+                foreach (int requestProgenyId in request.Progenies)
+                {
+                    Progeny progeny = await progenyHttpClient.GetProgeny(requestProgenyId);
+                    if (progeny != null && progeny.Id > 0)
+                    {
+                        model.TriviaProgenies.Add(progeny);
+                    }
+                }
+            }
             model.SetBirthTimeData();
 
             model.DisplayPicture = await mediaHttpClient.GetRandomPicture(model.CurrentProgeny.Id, model.CurrentUser.Timezone);
@@ -90,10 +109,10 @@ namespace KinaUnaWeb.Controllers
 
             model.DisplayPicture.PictureLink600 = model.DisplayPicture.GetPictureUrl(600);
             model.SetDisplayPictureData();
-            
+
             model.SetPictureTimeData();
-            
-            return View(model);
+
+            return PartialView("_ProgenyTriviaPartial", model);
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using KinaUna.Data;
 
 namespace KinaUnaWeb.Models.HomeViewModels
@@ -35,6 +36,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
         
         public PictureTime PictureTime { get; set; }
         public Picture DisplayPicture { get; set; }
+        public List<Progeny> TriviaProgenies { get; set; } = [];
 
         public HomeFeedViewModel()
         {

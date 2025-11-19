@@ -4561,3 +4561,36 @@ noUi-handle:after, .noUi-handle:before {
     max-width: 40px;
     border-radius: 10px;
 }
+
+.select-trivia-progeny-link {
+    display: inline-block;
+    text-decoration: none;
+    color: #ffffff;
+    margin: 6px;
+    padding: 4px;
+    cursor: pointer;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+    border-radius: 5px;
+}
+.select-trivia-progeny-link:hover {
+    text-decoration: none;
+    color: #ffef2f;
+}
+
+.select-trivia-progeny-link:focus {
+    text-decoration: none;
+    color: #ffef2f;
+}
+
+    .select-trivia-progeny-link.active {
+        border-top: 1px solid #fbd10d;
+        border-bottom: 1px solid #fbd10d;
+    }
+
+.select-trivia-progeny-picture {
+    border-radius: 10px;
+    height: 42px;
+    max-width: 42px;
+    object-fit: contain;
+}
