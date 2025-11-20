@@ -14,6 +14,7 @@ let kanbanBoard;
 let kanbanItems = [];
 const defaultColumnTitle = 'To do';
 let userCanEdit = false;
+let userCanEditItems = false;
 let renameString = '';
 let setLimitString = '';
 let changeStatusString = '';
@@ -202,8 +203,12 @@ async function renderKanbanBoard(reloadKanbanItems) {
     if (kanbanBoardMainDiv) {
         const kanbanBoardId = kanbanBoardMainDiv.dataset.viewKanbanBoardId;
         const userCanEditData = kanbanBoardMainDiv.dataset.userCanEdit;
+        const userCanEditItemsData = kanbanBoardMainDiv.dataset.userCanEditItems;
         if (userCanEditData && userCanEditData === 'True') {
             userCanEdit = true;
+        }
+        if (userCanEditItemsData && userCanEditItemsData === 'True') {
+            userCanEditItems = true;
         }
         if (kanbanBoardId) {
             const kanbanBoard = await loadKanbanBoard(parseInt(kanbanBoardId));
@@ -349,7 +354,7 @@ function renderKanbanItemsInColumn(columnId) {
         }
     }
     kanbanItemsInColumn.forEach((item) => {
-        addCardEventListeners(item.kanbanItemId, userCanEdit);
+        addCardEventListeners(item.kanbanItemId, item.canUserEdit);
     });
     updateCardCountersInColumn(columnId);
 }
@@ -485,7 +490,7 @@ async function createKanbanBoardContainer(kanbanBoard) {
                                 <!-- Cards will be dynamically added here -->
                             </div>
                             <div class="kanban-column-footer">`;
-        if (userCanEdit) {
+        if (userCanEditItems) {
             kanbanBoardHtml += `
                                 <button class="btn btn-outline-info btn-sm add-card-button ml-auto mr-auto" data-column-id="${column.id}">Add Card</button>
                             </div>

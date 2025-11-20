@@ -71,9 +71,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             _ = progenyDbContext.TodoItemsDb.Add(todoItemToAdd);
             _ = await progenyDbContext.SaveChangesAsync();
 
-            await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, todoItemToAdd.TodoItemId, todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, value.ItemPermissionsDtoList,
-                currentUserInfo);
-
+            if (value.ItemPermissionsListToCopy != null && value.ItemPermissionsListToCopy.Count > 0)
+            {
+                await accessManagementService.CopyItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, todoItemToAdd.TodoItemId,
+                    todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, value.ItemPermissionsListToCopy, currentUserInfo);
+            }
+            else
+            {
+                await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, todoItemToAdd.TodoItemId,
+                    todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, value.ItemPermissionsDtoList, currentUserInfo);
+            }
+            
             return todoItemToAdd;
         }
 
@@ -104,17 +112,23 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             {
                 return null;
             }
-
-            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUserInfo, PermissionLevel.Edit))
-            {
-                return null;
-            }
-
+            
             TodoItem currentTodoItem = await progenyDbContext.TodoItemsDb
                 .SingleOrDefaultAsync(t => t.TodoItemId == todoItem.TodoItemId);
             if (currentTodoItem == null)
             {
                 return null; // Item not found
+            }
+            
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUserInfo, PermissionLevel.Edit))
+            {
+                // Allow updates if the current user is assigned to the TodoItem.
+                currentTodoItem.Progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == currentTodoItem.ProgenyId);
+                if (currentTodoItem.Progeny.UserId != currentUserInfo.UserId)
+                {
+                    return null;
+                }
+
             }
 
             // Check if the status has changed and update the completed date accordingly
@@ -160,7 +174,9 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                     subTask.ProgenyId, subTask.FamilyId, currentTodoItem.ItemPermissionsDtoList, currentUserInfo);
             }
 
-            return currentTodoItem;
+            TodoItem result = await GetTodoItem(currentTodoItem.TodoItemId, currentUserInfo);
+
+            return result;
         }
 
         /// <summary>
@@ -245,7 +261,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             todoItem.CompletedSubtaskCount = subtasks.FindAll(s => s.Status >= (int)KinaUnaTypes.TodoStatusType.Completed).Count;
 
             todoItem.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, todoItem.ProgenyId, todoItem.FamilyId, currentUserInfo);
-
+            
             return todoItem;
         }
 

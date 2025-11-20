@@ -665,6 +665,7 @@ export class KanbanItem {
     modifiedTime: Date = new Date();
     isDeleted: boolean = false;
     todoItem?: TodoItem;
+    canUserEdit: boolean = false;
 }
 
 export class Progeny {

@@ -144,7 +144,7 @@
                 </div>
             </div>
         </div>
-        @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
+        @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit || Model.TodoItem.Progeny?.UserId == User.GetUserId())
         {
             <div class="row m-0">
                 <div class="col-auto d-none d-md-block">
@@ -206,6 +206,11 @@
                                     {
                                         <span class="text-appendage-light ml-2"> [@Model.TodoItem.CompletedSubtaskCount / @Model.TodoItem.SubtaskCount]</span>
                                     }
+                                    else
+                                    {
+                                        <div class="space-10"></div>
+                                        <span class="text-appendage-light">@await LocaleManager.GetTranslation("There are no subtasks for this item", PageNames.Todos, Model.LanguageId) </span>
+                                    }
                                 </div>
                             </div>
                             <div class="space-10"></div>
@@ -219,7 +224,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
+                            @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Add || Model.TodoItem.Progeny?.UserId == User.GetUserId())
                             {
                                 <div class="row text-white">
                                     <div class="col-12">
@@ -269,7 +274,7 @@
                                         </div>
                                     </div>
                                 }
-                                @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
+                                @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit || Model.TodoItem.Progeny?.UserId == User.GetUserId())
                                 {
                                     <div class="space-10"></div>
                                     <div class="row">

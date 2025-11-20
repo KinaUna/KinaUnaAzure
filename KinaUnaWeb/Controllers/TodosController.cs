@@ -263,6 +263,10 @@ namespace KinaUnaWeb.Controllers
             model.KanbanBoardsList = [];
             foreach (KanbanBoard kanbanBoard in model.KanbanBoards)
             {
+                if (kanbanBoard.ItemPerMission.PermissionLevel < PermissionLevel.Add)
+                {
+                    continue;
+                }
                 // If there is a KanbanItem with the KanbanBoardId for this TodoItem already, don't include it.
                 if (model.KanbanItems.Exists(k => k.KanbanBoardId == kanbanBoard.KanbanBoardId))
                 {
@@ -710,11 +714,11 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetTodoAsNotStarted(int todoId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
-            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
             {
                 return Json(new TodoItem());
             }
-            
+
             todoItem.CompletedDate = null;
             todoItem.Status = (int)KinaUnaTypes.TodoStatusType.NotStarted;
             TodoItem result = await todoItemsHttpClient.UpdateTodoItem(todoItem);
@@ -738,7 +742,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetTodoAsInProgress(int todoId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
-            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
             {
                 return Json(new TodoItem());
             }
@@ -767,7 +771,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetTodoAsCompleted(int todoId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
-            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
             {
                 return Json(new TodoItem());
             }
@@ -796,7 +800,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetTodoAsCancelled(int todoId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
-            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
             {
                 return Json(new TodoItem());
             }
@@ -981,7 +985,7 @@ namespace KinaUnaWeb.Controllers
                 return NotFound();
             }
 
-            if (todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            if (todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
             {
                 return Unauthorized();
             }
@@ -1033,7 +1037,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return NotFound();
             }
-            if (todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            if (todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
             {
                 return Unauthorized();
             }

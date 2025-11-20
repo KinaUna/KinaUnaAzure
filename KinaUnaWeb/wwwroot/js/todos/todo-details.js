@@ -387,9 +387,12 @@ async function assignTo(todoItemId, detailsShown) {
             modalDiv.classList.remove('d-none');
             const cancelButton = modalDiv.querySelector('.assign-todo-item-to-cancel-button');
             if (cancelButton) {
-                const closeButtonFunction = function () {
+                const closeButtonFunction = async function () {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
+                    if (detailsShown) {
+                        await displayTodoItem(todoItemId);
+                    }
                 };
                 cancelButton.removeEventListener('click', closeButtonFunction);
                 cancelButton.addEventListener('click', closeButtonFunction);

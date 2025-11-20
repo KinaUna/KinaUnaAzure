@@ -140,6 +140,11 @@ namespace KinaUna.Data.Models
         /// </summary>
         [NotMapped]
         public List<ItemPermissionDto> ItemPermissionsDtoList { get; set; } = [];
+
+        /// <summary>
+        /// Gets or sets the list of permissions to be copied when creating a deep copy of the item.
+        /// </summary>
+        [NotMapped] public List<TimelineItemPermission> ItemPermissionsListToCopy { get; set; } = [];
         public string GetLocationString()
         {
             return Location;

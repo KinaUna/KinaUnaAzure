@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -31,6 +32,7 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class TodosController(
         IProgenyService progenyService,
+        IFamiliesService familiesService,
         ITodosService todosService,
         IUserInfoService userInfoService,
         ITimelineService timelineService,
@@ -85,7 +87,16 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             TodoItem result = await todosService.GetTodoItem(id, currentUserInfo);
             if (result == null) return NotFound();
-            
+
+            if (result.ProgenyId > 0)
+            {
+                result.Progeny = await progenyService.GetProgeny(result.ProgenyId, currentUserInfo);
+            }
+
+            if (result.FamilyId > 0)
+            {
+                result.Family = await familiesService.GetFamilyById(result.FamilyId, currentUserInfo);
+            }
             return Ok(result);
         }
 
@@ -224,9 +235,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (timeLineItem == null || !timeLineItem.CopyTodoItemPropertiesForUpdate(todoItem)) return Ok(todoItem);
 
             _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
-
-            todoItem = await todosService.GetTodoItem(todoItem.TodoItemId, currentUserInfo);
-
+            
             return Ok(todoItem);
         }
 

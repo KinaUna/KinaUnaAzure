@@ -21,7 +21,8 @@ namespace KinaUnaWeb.Controllers
         IProgenyHttpClient progenyHttpClient,
         IFamiliesHttpClient familiesHttpClient,
         IUserInfosHttpClient userInfosHttpClient,
-        ISubtasksHttpClient subtasksHttpClient) : Controller
+        ISubtasksHttpClient subtasksHttpClient,
+        IUserAccessHttpClient userAccessHttpClient) : Controller
     {
         [HttpGet]
         public async Task<IActionResult> GetKanbanItem(int kanbanItemId)
@@ -30,6 +31,11 @@ namespace KinaUnaWeb.Controllers
             if (kanbanItem == null)
             {
                 return NotFound();
+            }
+
+            if (kanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || kanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
+            {
+                kanbanItem.CanUserEdit = true;
             }
 
             return Json(kanbanItem);
@@ -116,6 +122,10 @@ namespace KinaUnaWeb.Controllers
 
                     UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(kanbanItem.TodoItem.CreatedBy);
                     kanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
+                    if (kanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || kanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
+                    {
+                        kanbanItem.CanUserEdit = true;
+                    }
                 }
             }
 
@@ -177,6 +187,10 @@ namespace KinaUnaWeb.Controllers
 
             UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(addedKanbanItem.TodoItem.CreatedBy);
             addedKanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
+            if (addedKanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || addedKanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
+            {
+                addedKanbanItem.CanUserEdit = true;
+            }
 
             return Json(addedKanbanItem);
         }
@@ -302,11 +316,15 @@ namespace KinaUnaWeb.Controllers
             if (model.TodoItemReference == 1)
             {
                 // Create a new TodoItem based on the existing one.
+                model.KanbanItem.TodoItem.CopyPropertiesForAdd(existingTodoItem);
                 model.KanbanItem.TodoItem.TodoItemId = 0;
                 model.KanbanItem.TodoItem.CreatedBy = model.CurrentUser.UserEmail;
                 model.KanbanItem.TodoItem.CreatedTime = System.DateTime.UtcNow;
                 model.KanbanItem.TodoItem.ModifiedBy = model.CurrentUser.UserEmail;
                 model.KanbanItem.TodoItem.ModifiedTime = System.DateTime.UtcNow;
+                // Copy permissions from the existing TodoItem.
+                model.KanbanItem.TodoItem.ItemPermissionsListToCopy = await userAccessHttpClient.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.TodoItem, existingTodoItem.TodoItemId);
+                
                 TodoItem newTodoItem = await todoItemsHttpClient.AddTodoItem(model.KanbanItem.TodoItem);
                 kanbanItem.TodoItem = newTodoItem;
                 kanbanItem.TodoItemId = newTodoItem.TodoItemId;
@@ -357,7 +375,12 @@ namespace KinaUnaWeb.Controllers
             };
 
             KanbanItem addedKanbanItem = await kanbanItemsHttpClient.AddKanbanItem(newKanbanItem);
-            
+
+            if (addedKanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || addedKanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
+            {
+                addedKanbanItem.CanUserEdit = true;
+            }
+
             return Json(addedKanbanItem);
         }
 
@@ -484,7 +507,12 @@ namespace KinaUnaWeb.Controllers
             }
 
             KanbanItem movedKanbanItem = await kanbanItemsHttpClient.UpdateKanbanItem(kanbanItem);
-            
+
+            if (movedKanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || movedKanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
+            {
+                movedKanbanItem.CanUserEdit = true;
+            }
+
             return Json(movedKanbanItem);
         }
 
@@ -551,11 +579,14 @@ namespace KinaUnaWeb.Controllers
             // If the there is a column with a set status matching the TodoItem status, set the ColumnId to that column.
             
             kanbanBoard.SetColumnsListFromColumns();
-            foreach (KanbanBoardColumn kanbanBoardColumn in kanbanBoard.ColumnsList)
+            if (model.KanbanItem.ColumnId == 0)
             {
-                if (model.KanbanItem.TodoItem.Status != kanbanBoardColumn.SetStatus) continue;
-                model.KanbanItem.ColumnId = kanbanBoardColumn.Id;
-                break;
+                foreach (KanbanBoardColumn kanbanBoardColumn in kanbanBoard.ColumnsList)
+                {
+                    if (model.KanbanItem.TodoItem.Status != kanbanBoardColumn.SetStatus) continue;
+                    model.KanbanItem.ColumnId = kanbanBoardColumn.Id;
+                    break;
+                }
             }
             
             KanbanItem addedKanbanItem = await kanbanItemsHttpClient.AddKanbanItem(model.KanbanItem);
@@ -581,7 +612,12 @@ namespace KinaUnaWeb.Controllers
 
             UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(addedKanbanItem.TodoItem.CreatedBy);
             addedKanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
-            
+
+            if (addedKanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || addedKanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
+            {
+                addedKanbanItem.CanUserEdit = true;
+            }
+
             return Json(addedKanbanItem);
         }
 
@@ -643,6 +679,11 @@ namespace KinaUnaWeb.Controllers
 
             UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(updatedKanbanItem.TodoItem.CreatedBy);
             updatedKanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
+
+            if (updatedKanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || updatedKanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
+            {
+                updatedKanbanItem.CanUserEdit = true;
+            }
 
             return Json(updatedKanbanItem);
         }
@@ -725,6 +766,11 @@ namespace KinaUnaWeb.Controllers
             }
 
             updatedKanbanItem.TodoItem = updatedTodoItem;
+
+            if (updatedKanbanItem.TodoItem?.ItemPerMission.PermissionLevel > PermissionLevel.Add || updatedKanbanItem.TodoItem?.Progeny?.UserId == User.GetUserId())
+            {
+                updatedKanbanItem.CanUserEdit = true;
+            }
 
             return Json(updatedKanbanItem);
         }

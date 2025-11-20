@@ -86,7 +86,8 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 return new KanbanItem();
             }
 
-            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo, PermissionLevel.Add))
+            kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, currentUserInfo);
+            if (kanbanBoard.ItemPerMission.PermissionLevel < PermissionLevel.Add)
             {
                 return null;
             }
@@ -122,10 +123,19 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// Does not include the associated TodoItem.</returns>
         public async Task<KanbanItem> UpdateKanbanItem(KanbanItem kanbanItem, UserInfo currentUserInfo)
         {
-            
+            TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == kanbanItem.TodoItemId);
+            if (todoItem == null) {
+                return null;
+            }
+
             if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, kanbanItem.TodoItemId, currentUserInfo, PermissionLevel.Edit))
             {
-                return null;
+                // Allow if the user is the owner the progeny assigned.
+                todoItem.Progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == todoItem.ProgenyId);
+                if (todoItem.Progeny.UserId != currentUserInfo.UserId)
+                {
+                    return null;
+                }
             }
 
             KanbanItem existingKanbanItem = await progenyDbContext.KanbanItemsDb.SingleOrDefaultAsync(k => k.KanbanItemId == kanbanItem.KanbanItemId);
@@ -134,7 +144,9 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 return null;
             }
 
-            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, existingKanbanItem.KanbanBoardId, currentUserInfo, PermissionLevel.Edit))
+            // Allow update only if the user has at least add permissions on the linked Kanban board or the assignee.
+            TimelineItemPermission kanbanBoardPermission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, existingKanbanItem.KanbanBoardId, todoItem.ProgenyId, todoItem.FamilyId, currentUserInfo);
+            if (kanbanBoardPermission.PermissionLevel < PermissionLevel.Add)
             {
                 return null;
             }
@@ -179,10 +191,22 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// not exist in the database. Does not include the associated TodoItem.</returns>
         public async Task<KanbanItem> DeleteKanbanItem(KanbanItem kanbanItem, UserInfo currentUserInfo, bool hardDelete = false)
         {
-            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, kanbanItem.TodoItemId, currentUserInfo, PermissionLevel.Admin))
+            TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == kanbanItem.TodoItemId);
+            if (todoItem == null)
             {
                 return null;
             }
+
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, kanbanItem.TodoItemId, currentUserInfo, PermissionLevel.Admin))
+            {
+                // Allow if the user is the owner the progeny assigned.
+                todoItem.Progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == todoItem.ProgenyId);
+                if (todoItem.Progeny.UserId != currentUserInfo.UserId)
+                {
+                    return null;
+                }
+            }
+            
             KanbanItem existingKanbanItem = await progenyDbContext.KanbanItemsDb.SingleOrDefaultAsync(k => k.KanbanItemId == kanbanItem.KanbanItemId);
             if (existingKanbanItem == null)
             {

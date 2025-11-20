@@ -139,7 +139,7 @@
                     </div>
                 </div>
             </div>
-            @if (Model.KanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add)
+            @if (Model.KanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || Model.KanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
             {
                 <div class="col-12">
                     <div class="space-20"></div>
@@ -173,6 +173,10 @@
                     </div>
                 </div>
             }
+            <div class="col-12">
+                <div class="space-10">
+                </div>
+            </div>
             <div class="col-auto">
                 <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
             </div>
@@ -187,18 +191,23 @@
                             {
                                 <span class="text-appendage-light ml-2"> [@Model.KanbanItem.TodoItem.CompletedSubtaskCount / @Model.KanbanItem.TodoItem.SubtaskCount]</span>
                             }
+                            else
+                            {
+                                <div class="space-10"></div>
+                                <span class="text-appendage-light">@await LocaleManager.GetTranslation("There are no subtasks for this item", PageNames.Todos, Model.LanguageId) </span>
+                            }
                         </div>
                     </div>
                     <div class="space-10"></div>
-                    @if (Model.KanbanItem.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
+                    @if (Model.KanbanItem.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Add || Model.KanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
                     {
                         <div class="row text-white">
                             <div class="col-12">
                                 <form id="add-subtask-inline-form" asp-controller="Subtasks" asp-action="AddSubtaskInline">
-                                    <div class="form-group">
+                                    <div class="input-group">
                                         <input id="todo-details-add-subtask-title-input" name="Title" type="text" class="form-control"
                                                style="height: auto; background: #00000010;" placeholder="@await LocaleManager.GetTranslation("Title...", PageNames.Todos, Model.LanguageId)" />
-                                        <button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button>
+                                        <div class="input-group-append"><button id="todo-details-add-subtask-button" type="submit" class="btn btn-success btn-sm">@await LocaleManager.GetTranslation("Add subtask", PageNames.Todos, Model.LanguageId)</button></div>
                                     </div>
                                     <input name="ParentTodoItemId" type="hidden" value="@Model.KanbanItem.TodoItem.TodoItemId" />
                                     <input name="Status" type="hidden" value="0" />

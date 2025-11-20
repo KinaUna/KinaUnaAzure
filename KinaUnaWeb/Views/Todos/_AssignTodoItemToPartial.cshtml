@@ -1,5 +1,6 @@
 ﻿@model KinaUnaWeb.Models.ItemViewModels.TodoViewModel;
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @inject ILocaleManager LocaleManager
@@ -38,7 +39,7 @@
                     </div>
                 </div>
                 <div class="space-20"></div>
-                @if (Model.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add)
+                @if (Model.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || Model.TodoItem.Progeny?.UserId == User.GetUserId())
                 {
                     <form id="assign-todo-item-to-form" asp-action="AssignTodoItemTo" asp-controller="Todos" role="form" method="post">
                         <div class="form-group">

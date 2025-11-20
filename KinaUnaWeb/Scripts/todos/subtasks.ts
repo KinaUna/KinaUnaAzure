@@ -1,5 +1,5 @@
 ﻿import { onDeleteItemButtonClicked, onEditItemButtonClicked } from "../addItem/add-item.js";
-import { getCurrentLanguageId } from "../data-tools-v9.js";
+import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v9.js";
 import { addTimelineItemEventListener } from "../item-details/items-display-v9.js";
 import { dispatchKanbanBoardChangedEvent } from "../kanbans/kanban-board-details.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v9.js";
@@ -134,6 +134,11 @@ export async function addSubtask(subtask: TodoItem | null, containerElementId: s
         if (addSubtaskElementResponse.ok) {
             const addedSubtask: TodoItem = await addSubtaskElementResponse.json() as TodoItem;
             await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
+            const timelineItem = new TimelineItem();
+            timelineItem.itemType = TimeLineType.TodoItem;
+            timelineItem.itemId = addedSubtask.parentTodoItemId.toString();
+            const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+            window.dispatchEvent(timelineItemChangedEvent);
         }
         else {
             console.log('Error adding subtask. Status: ' + addSubtaskElementResponse.status + ', Message: ' + addSubtaskElementResponse.statusText);

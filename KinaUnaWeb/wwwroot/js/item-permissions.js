@@ -144,8 +144,6 @@ export function setPermissions() {
         const progenyPermissionsSelectInputs = document.querySelectorAll('select[data-progeny-permission-id]');
         const familyPermissionsSelectInputs = document.querySelectorAll('select[data-family-permission-id]');
         const itemPermissionsSelectInputs = document.querySelectorAll('select[data-item-permission-id]');
-        console.log('itemPermissionsSelectInputs:');
-        console.log(itemPermissionsSelectInputs);
         progenyPermissionsSelectInputs.forEach((selectInput) => {
             const permissionId = selectInput.getAttribute('data-progeny-permission-id');
             if (permissionId !== null) {

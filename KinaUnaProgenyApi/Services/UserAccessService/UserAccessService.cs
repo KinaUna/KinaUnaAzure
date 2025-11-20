@@ -708,36 +708,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     };
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
                 }
-
-
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == picture.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == picture.PictureId && tp.TimelineType == KinaUnaTypes.TimeLineType.Photo && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Photo,
-                            ItemId = picture.PictureId,
-                            ProgenyId = picture.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
-                }
-
+                
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
                 picture.AccessLevel = 99;
                 _ = _mediaContext.PicturesDb.Update(picture);
@@ -807,35 +778,7 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     };
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
                 }
-
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == video.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == video.VideoId && tp.TimelineType == KinaUnaTypes.TimeLineType.Video && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Video,
-                            ItemId = video.VideoId,
-                            ProgenyId = video.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
-                }
-
+                
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
                 video.AccessLevel = 99;
                 _ = _mediaContext.VideoDb.Update(video);
@@ -904,34 +847,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         ModifiedTime = DateTime.UtcNow
                     };
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                }
-
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == calendarItem.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == calendarItem.EventId && tp.TimelineType == KinaUnaTypes.TimeLineType.Calendar && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Calendar,
-                            ItemId = calendarItem.EventId,
-                            ProgenyId = calendarItem.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
                 }
 
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
@@ -1004,34 +919,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
                 }
 
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == vocabularyItem.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == vocabularyItem.WordId && tp.TimelineType == KinaUnaTypes.TimeLineType.Vocabulary && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Vocabulary,
-                            ItemId = vocabularyItem.WordId,
-                            ProgenyId = vocabularyItem.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
-                }
-
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
                 vocabularyItem.AccessLevel = 99;
                 _ = _context.VocabularyDb.Update(vocabularyItem);
@@ -1100,34 +987,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         ModifiedTime = DateTime.UtcNow
                     };
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                }
-
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == skill.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == skill.SkillId && tp.TimelineType == KinaUnaTypes.TimeLineType.Skill && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Skill,
-                            ItemId = skill.SkillId,
-                            ProgenyId = skill.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
                 }
 
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
@@ -1200,34 +1059,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
                 }
 
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == friend.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == friend.FriendId && tp.TimelineType == KinaUnaTypes.TimeLineType.Friend && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Friend,
-                            ItemId = friend.FriendId,
-                            ProgenyId = friend.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
-                }
-
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
                 friend.AccessLevel = 99;
                 _ = _context.FriendsDb.Update(friend);
@@ -1298,33 +1129,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
                 }
 
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == measurement.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == measurement.MeasurementId && tp.TimelineType == KinaUnaTypes.TimeLineType.Measurement && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Measurement,
-                            ItemId = measurement.MeasurementId,
-                            ProgenyId = measurement.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
-                }
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
                 measurement.AccessLevel = 99;
                 _ = _context.MeasurementsDb.Update(measurement);
@@ -1394,34 +1198,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         ModifiedTime = DateTime.UtcNow
                     };
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                }
-
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == sleep.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == sleep.SleepId && tp.TimelineType == KinaUnaTypes.TimeLineType.Sleep && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Sleep,
-                            ItemId = sleep.SleepId,
-                            ProgenyId = sleep.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
                 }
 
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
@@ -1496,34 +1272,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
                 }
 
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == note.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == note.NoteId && tp.TimelineType == KinaUnaTypes.TimeLineType.Note && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Note,
-                            ItemId = note.NoteId,
-                            ProgenyId = note.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
-                }
-
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
                 note.AccessLevel = 99;
                 _ = _context.NotesDb.Update(note);
@@ -1594,33 +1342,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
                 }
 
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == contact.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == contact.ContactId && tp.TimelineType == KinaUnaTypes.TimeLineType.Contact && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Contact,
-                            ItemId = contact.ContactId,
-                            ProgenyId = contact.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
-                }
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
                 contact.AccessLevel = 99;
                 _ = _context.ContactsDb.Update(contact);
@@ -1689,34 +1410,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         ModifiedTime = DateTime.UtcNow
                     };
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                }
-
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == vaccination.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == vaccination.VaccinationId && tp.TimelineType == KinaUnaTypes.TimeLineType.Vaccination && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Vaccination,
-                            ItemId = vaccination.VaccinationId,
-                            ProgenyId = vaccination.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
                 }
 
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
@@ -1789,34 +1482,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
                 }
 
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == location.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == location.LocationId && tp.TimelineType == KinaUnaTypes.TimeLineType.Location && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.Location,
-                            ItemId = location.LocationId,
-                            ProgenyId = location.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
-                }
-
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
                 location.AccessLevel = 99;
                 _ = _context.LocationsDb.Update(location);
@@ -1887,34 +1552,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
                 }
 
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == todoItem.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == todoItem.TodoItemId && tp.TimelineType == KinaUnaTypes.TimeLineType.TodoItem && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.TodoItem,
-                            ItemId = todoItem.TodoItemId,
-                            ProgenyId = todoItem.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
-                }
-
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.
                 todoItem.AccessLevel = 99;
                 _ = _context.TodoItemsDb.Update(todoItem);
@@ -1983,34 +1620,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         ModifiedTime = DateTime.UtcNow
                     };
                     _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                }
-
-                // For admins, create explicit user ItemPermissions, if they don't already exist.
-                Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == kanbanBoard.ProgenyId);
-                List<string> adminList = progeny.GetAdminsList();
-                foreach (string adminEmail in adminList)
-                {
-                    UserInfo adminUserInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == adminEmail.ToUpper());
-                    TimelineItemPermission existingAdminPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tp => tp.ProgenyId == progeny.Id && tp.ItemId == kanbanBoard.KanbanBoardId && tp.TimelineType == KinaUnaTypes.TimeLineType.KanbanBoard && tp.Email.ToUpper() == adminEmail.ToUpper());
-                    if (existingAdminPermission == null)
-                    {
-                        TimelineItemPermission timelineItemPermission = new()
-                        {
-                            TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
-                            ItemId = kanbanBoard.KanbanBoardId,
-                            ProgenyId = kanbanBoard.ProgenyId,
-                            Email = adminEmail,
-                            UserId = adminUserInfo?.UserId ?? string.Empty,
-                            InheritPermissions = false,
-                            PermissionLevel = PermissionLevel.Admin,
-                            CreatedBy = "system",
-                            CreatedTime = DateTime.UtcNow,
-                            ModifiedBy = "system",
-                            ModifiedTime = DateTime.UtcNow
-                        };
-                        _ = _context.TimelineItemPermissionsDb.Add(timelineItemPermission);
-                    }
                 }
 
                 // Set the AccessLevel to 99 (Custom) to indicate that the item now has custom permissions.

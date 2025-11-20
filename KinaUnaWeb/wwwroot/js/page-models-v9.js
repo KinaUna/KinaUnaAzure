@@ -727,6 +727,7 @@ export class KanbanItem {
         this.createdTime = new Date();
         this.modifiedTime = new Date();
         this.isDeleted = false;
+        this.canUserEdit = false;
     }
 }
 export class Progeny {

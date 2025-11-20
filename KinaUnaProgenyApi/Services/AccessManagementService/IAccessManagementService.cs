@@ -323,6 +323,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <returns></returns>
         Task AddItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo);
 
+        Task CopyItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId,
+            List<TimelineItemPermission> itemPermissionsList, UserInfo currentUserInfo);
+
         /// <summary>
         /// Updates the permissions for a specific timeline item based on the provided parameters.
         /// </summary>

@@ -87,5 +87,7 @@ namespace KinaUna.Data.Models
         /// </summary>
         [NotMapped]
         public KanbanBoard KanbanBoard { get; set; } = new();
+
+        [NotMapped] public bool CanUserEdit { get; set; } = false;
     }
 }

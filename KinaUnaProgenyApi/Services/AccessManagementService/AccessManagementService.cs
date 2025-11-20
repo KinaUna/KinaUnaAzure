@@ -63,7 +63,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 {
                     itemPermission.PermissionLevel = value;
                 }
-
+                
                 DistributedCacheEntryOptions cacheOptionsSlidingView = new();
                 cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(0, 1, 0, 0));
                 await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "hasItemPermissionPermission" + (int)itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId + "_level_" + (int)requiredLevel
@@ -524,7 +524,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             return true;
         }
-
+        
         /// <summary>
         /// Adds permissions to a timeline item for specified users or groups.
         /// </summary>
@@ -585,6 +585,45 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     InheritPermissions = permissionDto.InheritPermissions
                 };
                 _ = await GrantItemPermission(timelineItemPermission, currentUserInfo);
+            }
+        }
+
+        /// <summary>
+        /// Copies the specified permissions to a timeline item for a given progeny and family.
+        /// </summary>
+        /// <remarks>If the permissions list is null or empty, no permissions are copied and the method
+        /// returns immediately.</remarks>
+        /// <param name="itemType">The type of timeline item to which permissions will be applied.</param>
+        /// <param name="itemId">The unique identifier of the timeline item to receive the permissions.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the timeline item.</param>
+        /// <param name="familyId">The identifier of the family associated with the timeline item.</param>
+        /// <param name="itemPermissionsList">A list of permissions to copy to the specified timeline item. The list must not be null or empty.</param>
+        /// <param name="currentUserInfo">Information about the user performing the permission copy operation.</param>
+        /// <returns>A task that represents the asynchronous copy operation. The task completes when all permissions have been
+        /// processed.</returns>
+        public async Task CopyItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId,
+            List<TimelineItemPermission> itemPermissionsList, UserInfo currentUserInfo)
+        {
+            if (itemPermissionsList == null || itemPermissionsList.Count == 0)
+            {
+                return;
+            }
+
+            foreach (TimelineItemPermission permission in itemPermissionsList)
+            {
+                TimelineItemPermission newPermission = new()
+                {
+                    ItemId = itemId,
+                    TimelineType = itemType,
+                    ProgenyId = progenyId,
+                    FamilyId = familyId,
+                    UserId = permission.UserId,
+                    Email = permission.Email,
+                    GroupId = permission.GroupId,
+                    PermissionLevel = permission.PermissionLevel,
+                    InheritPermissions = permission.InheritPermissions
+                };
+                _ = await GrantItemPermission(newPermission, currentUserInfo);
             }
         }
 
@@ -1305,12 +1344,44 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                         {
                             accessibleItemPermissions.Add(permission);
                         }
+                        else
+                        {
+                            // Special case for TodoItems, when adding a subtask users are allowed to copy the original's permissions.
+                            if (itemType == KinaUnaTypes.TimeLineType.TodoItem)
+                            {
+                                TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == itemId);
+                                if (todoItem != null)
+                                {
+                                    TimelineItemPermission timelineItemPermission = await GetItemPermissionForUser(itemType, itemId, permission.ProgenyId, 0, currentUserInfo);
+                                    if (timelineItemPermission != null && timelineItemPermission.PermissionLevel > PermissionLevel.View)
+                                    {
+                                        accessibleItemPermissions.Add(permission);
+                                    }
+                                }
+                            }
+                        }
                     }
                     else
                     {
                         if (await IsUserAccessManager(currentUserInfo, PermissionType.Family, permission.FamilyId))
                         {
                             accessibleItemPermissions.Add(permission);
+                        }
+                        else
+                        {
+                            // Special case for TodoItems, when adding a subtask users are allowed to copy the original's permissions.
+                            if (itemType == KinaUnaTypes.TimeLineType.TodoItem)
+                            {
+                                TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == itemId);
+                                if (todoItem != null)
+                                {
+                                    TimelineItemPermission timelineItemPermission = await GetItemPermissionForUser(itemType, itemId, 0, permission.FamilyId, currentUserInfo);
+                                    if (timelineItemPermission != null && timelineItemPermission.PermissionLevel > PermissionLevel.View)
+                                    {
+                                        accessibleItemPermissions.Add(permission);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
