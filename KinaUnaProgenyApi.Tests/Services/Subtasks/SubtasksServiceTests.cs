@@ -837,7 +837,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             };
 
             // Act
-            SubtasksResponse response = _service.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse response = await _service.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser);
 
             // Assert
             Assert.NotNull(response);
@@ -855,7 +855,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             List<TodoItem> subtasks = [];
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => _service.CreateSubtaskResponseForTodoItem(subtasks, null));
+            Assert.Throws<ArgumentException>(() => _service.CreateSubtaskResponseForTodoItem(subtasks, null, _testUser).Result);
         }
 
         [Fact]
@@ -877,7 +877,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             };
 
             // Act
-            SubtasksResponse response = _service.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse response = await _service.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser);
 
             // Assert
             Assert.NotNull(response);
@@ -903,7 +903,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             };
 
             // Act
-            SubtasksResponse response = _service.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse response = await _service.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser);
 
             // Assert
             Assert.NotNull(response);
@@ -927,7 +927,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             };
 
             // Act
-            SubtasksResponse response = _service.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse response = await _service.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser);
 
             // Assert
             Assert.NotNull(response);
@@ -951,7 +951,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             };
 
             // Act
-            SubtasksResponse response = _service.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse response = await _service.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser);
 
             // Assert
             Assert.NotNull(response);
@@ -975,7 +975,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             };
 
             // Act
-            SubtasksResponse response = _service.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse response = await _service.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser);
 
             // Assert
             Assert.NotNull(response);
@@ -999,7 +999,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             };
 
             // Act
-            SubtasksResponse response = _service.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse response = await _service.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser);
 
             // Assert
             Assert.NotNull(response);
@@ -1023,7 +1023,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             };
 
             // Act
-            SubtasksResponse response = _service.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse response = await _service.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser);
 
             // Assert
             Assert.NotNull(response);
@@ -1049,7 +1049,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             };
 
             // Act
-            SubtasksResponse response = _service.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse response = await _service.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser);
 
             // Assert
             Assert.NotNull(response);
@@ -1073,7 +1073,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             };
 
             // Act
-            SubtasksResponse response = _service.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse response = await _service.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser);
 
             // Assert
             Assert.NotNull(response);
@@ -1096,7 +1096,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             };
 
             // Act
-            SubtasksResponse response = _service.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse response = await _service.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser);
 
             // Assert
             Assert.NotNull(response);

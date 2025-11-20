@@ -75,7 +75,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            SubtasksResponse subtasksResponse = subtasksService.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse subtasksResponse = await subtasksService.CreateSubtaskResponseForTodoItem(subtasks, request, currentUserInfo);
 
             // Return the list of subtasks
             return Ok(subtasksResponse);

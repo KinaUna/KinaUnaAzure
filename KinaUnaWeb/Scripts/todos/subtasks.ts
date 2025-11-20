@@ -156,6 +156,11 @@ export async function addSubtask(subtask: TodoItem | null, containerElementId: s
         if (addSubtaskElementResponse.ok) {
             const addedSubtask: TodoItem = await addSubtaskElementResponse.json() as TodoItem;
             await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
+            const timelineItem = new TimelineItem();
+            timelineItem.itemType = TimeLineType.TodoItem;
+            timelineItem.itemId = addedSubtask.parentTodoItemId.toString();
+            const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+            window.dispatchEvent(timelineItemChangedEvent);
         }
         else {
             console.log('Error adding subtask. Status: ' + addSubtaskElementResponse.status + ', Message: ' + addSubtaskElementResponse.statusText);
@@ -408,6 +413,11 @@ async function assignSubtaskTo(todoItemId: string) {
                             const updatedTodoItem = await response.json() as TodoItem;
                             if (updatedTodoItem) {
                                 await getSubtasks(lastSubTaskPageParameters, containerElementId, true);
+                                const timelineItem = new TimelineItem();
+                                timelineItem.itemType = TimeLineType.TodoItem;
+                                timelineItem.itemId = updatedTodoItem.todoItemId.toString();
+                                const timelineItemChangedEvent = new TimelineChangedEvent(timelineItem);
+                                window.dispatchEvent(timelineItemChangedEvent);
                             }
 
                         } else {

@@ -208,8 +208,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testProgeny);
             _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
                 .ReturnsAsync(_testFamily);
-            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request))
-                .Returns(expectedResponse);
+            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             IActionResult result = await _controller.GetSubtasksForTodoItem(request);
@@ -267,8 +267,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testProgeny);
             _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
                 .ReturnsAsync(_testFamily);
-            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, It.IsAny<SubtasksRequest>()))
-                .Returns(expectedResponse);
+            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, It.IsAny<SubtasksRequest>(), _testUser))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             IActionResult result = await _controller.GetSubtasksForTodoItem(request);
@@ -299,8 +299,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(subtasks);
             _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
                 .ReturnsAsync(_testFamily);
-            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request))
-                .Returns(expectedResponse);
+            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             IActionResult result = await _controller.GetSubtasksForTodoItem(request);
@@ -332,8 +332,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(subtasks);
             _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
                 .ReturnsAsync(_testProgeny);
-            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request))
-                .Returns(expectedResponse);
+            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             IActionResult result = await _controller.GetSubtasksForTodoItem(request);

@@ -67,7 +67,7 @@
             <button class="kanban-card-menu-item-button" data-show-details-subtask-id="@Model.TodoItem.TodoItemId">
                 <i class="material-icons kanban-menu-material-icons">fact_check</i> @showDetailsString
             </button>
-            @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
+            @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit || Model.TodoItem.Progeny?.UserId == User.GetUserId())
             {
                 <div class="item-menu-divider"></div>
                 @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted) 
@@ -101,11 +101,14 @@
                 <div class="item-menu-divider"></div>
                 <button class="kanban-card-menu-item-button" data-subtask-add-to-kanban-id="@Model.TodoItem.TodoItemId">
                     <i class="material-icons kanban-menu-material-icons">view_kanban</i> @addToKanbanBoardString
-                </button> 
-                <div class="item-menu-divider"></div> 
-                <button class="kanban-card-menu-item-button edit-item-button" data-edit-item-type="subtask" data-edit-item-item-id="@Model.TodoItem.TodoItemId">
-                    <i class="material-icons kanban-menu-material-icons">edit</i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                 </button>
+                @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
+                {
+                    <div class="item-menu-divider"></div> 
+                    <button class="kanban-card-menu-item-button edit-item-button" data-edit-item-type="subtask" data-edit-item-item-id="@Model.TodoItem.TodoItemId">
+                        <i class="material-icons kanban-menu-material-icons">edit</i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
+                    </button>
+                }
                 @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
                 {
                     <button class="kanban-card-menu-item-button delete-item-button" data-delete-item-type="subtask" data-delete-item-item-id="@Model.TodoItem.TodoItemId">

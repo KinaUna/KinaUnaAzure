@@ -225,10 +225,11 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// parameters.</param>
         /// <param name="request">The request object containing filtering, sorting, and pagination criteria. This parameter cannot be <see
         /// langword="null"/>.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>A <see cref="SubtasksResponse"/> object containing the processed list of subtasks, along with metadata such
         /// as pagination details.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="request"/> is <see langword="null"/>.</exception>
-        public SubtasksResponse CreateSubtaskResponseForTodoItem(List<TodoItem> subtasks, SubtasksRequest request)
+        public async Task<SubtasksResponse> CreateSubtaskResponseForTodoItem(List<TodoItem> subtasks, SubtasksRequest request, UserInfo currentUserInfo)
         {
             if (request == null)
             {
@@ -313,21 +314,29 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 ];
             }
 
-            int totalSubtasksCount = subtasks.Count;
+            List<TodoItem> accessibleSubtasks = [];
+            foreach (TodoItem subtaskItem in subtasks)
+            {
+                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, subtaskItem.TodoItemId, currentUserInfo, PermissionLevel.View))
+                {
+                    accessibleSubtasks.Add(subtaskItem);
+                }
+            }
+            int totalSubtasksCount = accessibleSubtasks.Count;
             if (request.Skip > 0)
             {
-                subtasks = [.. subtasks.Skip(request.Skip)];
+                accessibleSubtasks = [.. accessibleSubtasks.Skip(request.Skip)];
             }
 
             if (request.NumberOfItems > 0)
             {
-                subtasks = [.. subtasks.Take(request.NumberOfItems)];
+                accessibleSubtasks = [.. accessibleSubtasks.Take(request.NumberOfItems)];
             }
             // Create the response object
             SubtasksResponse response = new()
             {
                 ParentTodoItemId = request.ParentTodoItemId,
-                Subtasks = subtasks,
+                Subtasks = accessibleSubtasks,
                 SubtasksRequest = request,
                 PageNumber = request.NumberOfItems > 0 && request.Skip > 0 ? (request.Skip / request.NumberOfItems) + 1 : 1,
                 TotalPages = (int)Math.Ceiling((double)totalSubtasksCount / (request.NumberOfItems > 0 ? request.NumberOfItems : 1)),

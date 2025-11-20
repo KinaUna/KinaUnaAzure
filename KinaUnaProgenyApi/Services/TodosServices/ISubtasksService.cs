@@ -23,7 +23,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// <returns>A task that represents the asynchronous operation. The task result contains the added subtask as a <see
         /// cref="TodoItem"/>.</returns>
         Task<TodoItem> AddSubtask(TodoItem value, UserInfo currentUserInfo);
-        
+
         /// <summary>
         /// Creates a response containing details about the subtasks of a to-do item.
         /// </summary>
@@ -34,8 +34,9 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// null.</param>
         /// <param name="request">The <see cref="SubtasksRequest"/> object containing the request details, such as filters or additional
         /// parameters. Cannot be null.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>A <see cref="SubtasksResponse"/> object containing the processed subtasks and any relevant metadata.</returns>
-        SubtasksResponse CreateSubtaskResponseForTodoItem(List<TodoItem> subtasks, SubtasksRequest request);
+        Task<SubtasksResponse> CreateSubtaskResponseForTodoItem(List<TodoItem> subtasks, SubtasksRequest request, UserInfo currentUserInfo);
 
         /// <summary>
         /// Deletes the specified subtask from the to-do list.
