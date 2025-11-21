@@ -176,7 +176,7 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.LocationsDb.Update(locationToUpdate);
             _ = await _context.SaveChangesAsync();
 
-            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Location, locationToUpdate.LocationId, locationToUpdate.ProgenyId, locationToUpdate.FamilyId, location.ItemPermissionsDtoList,
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Location, locationToUpdate.LocationId, locationToUpdate.ProgenyId, locationToUpdate.FamilyId, locationToUpdate.ItemPermissionsDtoList,
                 currentUserInfo);
             _ = await SetLocationInCache(locationToUpdate.LocationId);
 

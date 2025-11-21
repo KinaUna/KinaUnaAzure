@@ -167,7 +167,7 @@ namespace KinaUnaProgenyApi.Services
             _ = _mediaContext.VideoDb.Update(videoToUpdate);
             _ = await _mediaContext.SaveChangesAsync();
 
-            _ = await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, video.ItemPermissionsDtoList, currentUserInfo);
+            _ = await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Video, videoToUpdate.VideoId, videoToUpdate.ProgenyId, 0, videoToUpdate.ItemPermissionsDtoList, currentUserInfo);
 
             _ = await SetVideoInCache(videoToUpdate.VideoId);
 

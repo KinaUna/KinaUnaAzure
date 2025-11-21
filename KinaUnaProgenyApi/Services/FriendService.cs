@@ -111,7 +111,7 @@ namespace KinaUnaProgenyApi.Services
             _ = _context.FriendsDb.Add(friendToAdd);
             _ = await _context.SaveChangesAsync();
 
-            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, friend.ProgenyId, 0, friend.ItemPermissionsDtoList, currentUserInfo);
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, friend.ProgenyId, 0, friendToAdd.ItemPermissionsDtoList, currentUserInfo);
             
             _ = await SetFriendInCache(friendToAdd.FriendId);
 
@@ -150,7 +150,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, friend.ProgenyId, 0, friend.ItemPermissionsDtoList, currentUserInfo);
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Friend, friend.FriendId, friend.ProgenyId, 0, friendToUpdate.ItemPermissionsDtoList, currentUserInfo);
 
             _ = await SetFriendInCache(friend.FriendId);
 
