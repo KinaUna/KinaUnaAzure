@@ -230,6 +230,7 @@ namespace KinaUnaWeb.Controllers
                 
             model.NoteItem = await notesHttpClient.AddNote(noteItem);
             model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.NoteItem.Progeny = await progenyHttpClient.GetProgeny(model.NoteItem.ProgenyId);
 
             return PartialView("_NoteAddedPartial", model);
         }
@@ -291,6 +292,7 @@ namespace KinaUnaWeb.Controllers
 
             model.NoteItem = await notesHttpClient.UpdateNote(editedNote);
             model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.NoteItem.Progeny = await progenyHttpClient.GetProgeny(model.NoteItem.ProgenyId);
 
             return PartialView("_NoteUpdatedPartial", model);
         }
@@ -345,6 +347,7 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
             
             _ = await notesHttpClient.DeleteNote(note.NoteId);
+
             return RedirectToAction("Index", "Notes");
         }
 
@@ -404,6 +407,7 @@ namespace KinaUnaWeb.Controllers
 
             model.NoteItem = await notesHttpClient.AddNote(editedNote);
             model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.NoteItem.Progeny = await progenyHttpClient.GetProgeny(model.NoteItem.ProgenyId);
 
             return PartialView("_NoteCopiedPartial", model);
         }

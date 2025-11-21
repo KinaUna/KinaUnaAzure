@@ -79,7 +79,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             else
             {
                 await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, todoItemToAdd.TodoItemId,
-                    todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, value.ItemPermissionsDtoList, currentUserInfo);
+                    todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, todoItemToAdd.ItemPermissionsDtoList, currentUserInfo);
             }
             
             return todoItemToAdd;
@@ -227,10 +227,18 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             
             _ = await progenyDbContext.SaveChangesAsync();
 
+            // Revoke all permissions.
             List<TimelineItemPermission> timelineItemPermissionsList = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.TodoItem, todoItemToDelete.TodoItemId, currentUserInfo);
             foreach (TimelineItemPermission permission in timelineItemPermissionsList)
             {
                 await accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
+            // Delete subtasks recursively.
+            List<TodoItem> subtasks = await progenyDbContext.TodoItemsDb.AsNoTracking().Where(s => s.ParentTodoItemId == todoItemToDelete.TodoItemId).ToListAsync();
+            foreach (TodoItem subtask in subtasks)
+            {
+                await DeleteTodoItem(subtask, currentUserInfo, hardDelete);
             }
 
             return true;

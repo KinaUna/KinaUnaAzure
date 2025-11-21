@@ -833,11 +833,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 if (!await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, timelineItemPermission.ProgenyId))
                 {
-                    if(timelineItemPermission.PermissionLevel == PermissionLevel.CreatorOnly){
+                    // Current user is not admin for the progeny, check further.
+                    if (timelineItemPermission.PermissionLevel == PermissionLevel.CreatorOnly){
                         canGrantAccess = true;
                     }
-
-                    if(timelineItemPermission.InheritPermissions)
+                    else if(timelineItemPermission.InheritPermissions)
                     {
                         ProgenyPermission progenyPermission = await GetProgenyPermissionForUser(timelineItemPermission.ProgenyId, currentUserInfo);
                         if (progenyPermission.PermissionLevel >= PermissionLevel.Add)
@@ -845,21 +845,38 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                             canGrantAccess = true;
                         }
                     }
-
-                    // If the user is not an access manager, they can only grant access for admins and view access for themselves.
-                    if (timelineItemPermission.UserId == currentUserInfo.UserId)
+                    else if (!string.IsNullOrEmpty(timelineItemPermission.UserId) && timelineItemPermission.UserId == currentUserInfo.UserId)
                     {
+                        // If the user is not an access manager, they can only grant access for admins and view access for themselves.
                         canGrantAccess = true;
                         timelineItemPermission.PermissionLevel = PermissionLevel.View;
                     }
                     else
                     {
-                        // If the user being assigned to is admin, add the permission.
-                        UserInfo assigneeUserInfo = await progenyDbContext.UserInfoDb.SingleOrDefaultAsync(ui => ui.UserId == timelineItemPermission.UserId);
-                        if (assigneeUserInfo != null && await IsUserAccessManager(assigneeUserInfo, PermissionType.Progeny, timelineItemPermission.ProgenyId))
+                        if (!string.IsNullOrEmpty(timelineItemPermission.UserId))
                         {
-                            canGrantAccess = true;
-                            timelineItemPermission.PermissionLevel = PermissionLevel.Admin;
+                            // If the user being assigned to is admin, add the permission.
+                            UserInfo assigneeUserInfo = await progenyDbContext.UserInfoDb.SingleOrDefaultAsync(ui => ui.UserId == timelineItemPermission.UserId);
+                            if (assigneeUserInfo != null && await IsUserAccessManager(assigneeUserInfo, PermissionType.Progeny, timelineItemPermission.ProgenyId))
+                            {
+                                canGrantAccess = true;
+                                timelineItemPermission.PermissionLevel = PermissionLevel.Admin;
+                            }
+                        }
+
+                        if (timelineItemPermission.GroupId > 0)
+                        {
+                            // If the group being assigned to is admin, add the permission.
+                            UserGroup assigneeGroup = await progenyDbContext.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.UserGroupId == timelineItemPermission.GroupId);
+                            if (assigneeGroup != null)
+                            {
+                                ProgenyPermission groupProgenyPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.GroupId == assigneeGroup.UserGroupId && pp.ProgenyId == timelineItemPermission.ProgenyId);
+                                if (groupProgenyPermission != null && groupProgenyPermission.PermissionLevel == PermissionLevel.Admin)
+                                {
+                                    timelineItemPermission.PermissionLevel = PermissionLevel.Admin;
+                                    canGrantAccess = true;
+                                }
+                            }
                         }
                     }
                 }
@@ -876,8 +893,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     {
                         canGrantAccess = true;
                     }
-
-                    if (timelineItemPermission.InheritPermissions)
+                    else if (timelineItemPermission.InheritPermissions)
                     {
                         FamilyPermission familyPermission = await GetFamilyPermissionForUser(timelineItemPermission.FamilyId, currentUserInfo);
                         if (familyPermission.PermissionLevel >= PermissionLevel.Add)
@@ -885,21 +901,38 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                             canGrantAccess = true;
                         }
                     }
-                    
-                    // If the user is not an access manager, they can only grant access for admins and view access for themselves.
-                    if (timelineItemPermission.UserId == currentUserInfo.UserId)
+                    else if (!string.IsNullOrEmpty(timelineItemPermission.UserId) &&timelineItemPermission.UserId == currentUserInfo.UserId)
                     {
+                        // If the user is not an access manager, they can only grant access for admins and view access for themselves.
                         canGrantAccess = true;
                         timelineItemPermission.PermissionLevel = PermissionLevel.View;
                     }
                     else
                     {
-                        // If the user being assigned to is admin, add the permission.
-                        UserInfo assigneeUserInfo = await progenyDbContext.UserInfoDb.SingleOrDefaultAsync(ui => ui.UserId == timelineItemPermission.UserId);
-                        if (assigneeUserInfo != null && await IsUserAccessManager(assigneeUserInfo, PermissionType.Family, timelineItemPermission.FamilyId))
+                        if (!string.IsNullOrEmpty(timelineItemPermission.UserId))
                         {
-                            canGrantAccess = true;
-                            timelineItemPermission.PermissionLevel = PermissionLevel.Admin;
+                            // If the user being assigned to is admin, add the permission.
+                            UserInfo assigneeUserInfo = await progenyDbContext.UserInfoDb.SingleOrDefaultAsync(ui => ui.UserId == timelineItemPermission.UserId);
+                            if (assigneeUserInfo != null && await IsUserAccessManager(assigneeUserInfo, PermissionType.Family, timelineItemPermission.FamilyId))
+                            {
+                                canGrantAccess = true;
+                                timelineItemPermission.PermissionLevel = PermissionLevel.Admin;
+                            }
+                        }
+
+                        if (timelineItemPermission.GroupId > 0)
+                        {
+                            // If the group being assigned to is admin, add the permission.
+                            UserGroup assigneeGroup = await progenyDbContext.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.UserGroupId == timelineItemPermission.GroupId);
+                            if (assigneeGroup != null)
+                            {
+                                FamilyPermission groupFamilyPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(fp => fp.GroupId == assigneeGroup.UserGroupId && fp.FamilyId == timelineItemPermission.FamilyId);
+                                if (groupFamilyPermission != null && groupFamilyPermission.PermissionLevel == PermissionLevel.Admin)
+                                {
+                                    canGrantAccess = true;
+                                    timelineItemPermission.PermissionLevel = PermissionLevel.Admin;
+                                }
+                            }
                         }
                     }
                 }

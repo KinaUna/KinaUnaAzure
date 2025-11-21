@@ -47,6 +47,7 @@ namespace KinaUna.Data.Extensions
             currentNote.ProgenyId = otherNote.ProgenyId;
             currentNote.Title = otherNote.Title;
             currentNote.CreatedDate = otherNote.CreatedDate;
+            currentNote.ItemPermissionsDtoList = otherNote.ItemPermissionsDtoList;
         }
     }
 }

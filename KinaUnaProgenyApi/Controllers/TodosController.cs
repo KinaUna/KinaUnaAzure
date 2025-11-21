@@ -282,8 +282,6 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
-            
 
             todoItem.ModifiedBy = User.GetUserId();
             bool isDeleted = await todosService.DeleteTodoItem(todoItem, currentUserInfo);
@@ -291,7 +289,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return BadRequest();
             }
-
+            
             // Check if the TodoItem has a TimeLineItem and delete it
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(todoItem.TodoItemId.ToString(), (int)KinaUnaTypes.TimeLineType.TodoItem, currentUserInfo);
             if (timeLineItem != null)
