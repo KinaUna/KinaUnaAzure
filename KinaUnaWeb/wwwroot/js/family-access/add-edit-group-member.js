@@ -33,8 +33,8 @@ export async function displayAddGroupMemberModal(groupId) {
     }
 }
 function addAddGroupMemberModalEventListeners() {
-    const closeButton = document.querySelector('#close-add-group-member-modal-button');
-    if (closeButton) {
+    const closeButtons = document.querySelectorAll('.close-add-group-member-modal-button');
+    closeButtons.forEach((closeButton) => {
         const closeButtonClickedAction = function (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -47,7 +47,7 @@ function addAddGroupMemberModalEventListeners() {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
-    }
+    });
     const emailInput = document.getElementById('group-member-email-input');
     if (emailInput) {
         emailInput.addEventListener('input', validateInputs);
@@ -116,8 +116,8 @@ export async function displayEditGroupMemberModal(groupMemberId) {
     }
 }
 function addEditGroupMemberModalEventListeners() {
-    const closeButton = document.querySelector('#close-edit-group-member-modal-button');
-    if (closeButton) {
+    const closeButtons = document.querySelectorAll('.close-edit-group-member-modal-button');
+    closeButtons.forEach((closeButton) => {
         const closeButtonClickedAction = function (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -130,7 +130,7 @@ function addEditGroupMemberModalEventListeners() {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
-    }
+    });
     const emailInput = document.getElementById('group-member-email-input');
     if (emailInput) {
         emailInput.addEventListener('input', validateInputs);
@@ -198,8 +198,8 @@ export async function displayDeleteGroupMemberModal(groupMemberId) {
     }
 }
 function addDeleteGroupMemberModalEventListeners() {
-    const closeButton = document.querySelector('#close-delete-group-member-modal-button');
-    if (closeButton) {
+    const closeButtons = document.querySelectorAll('.close-delete-group-member-modal-button');
+    closeButtons.forEach((closeButton) => {
         const closeButtonClickedAction = function (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -212,7 +212,7 @@ function addDeleteGroupMemberModalEventListeners() {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
-    }
+    });
     const deleteGroupMemberForm = document.querySelector('#delete-group-member-form');
     if (deleteGroupMemberForm) {
         const deleteGroupMemberFormSubmitAction = async function (event) {

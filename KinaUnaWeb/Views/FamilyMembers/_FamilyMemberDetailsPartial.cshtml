@@ -189,7 +189,7 @@
                     {
                         <div class="space-20"></div>
                         <div class="col-12">
-                            <strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@websiteLink">@Model.FamilyMember.ProgenyInfo.Website</a>
+                            <strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@websiteLink" class="text-white-50">@Model.FamilyMember.ProgenyInfo.Website</a>
                         </div>
                     }
                     @if (!string.IsNullOrEmpty(Model.FamilyMember.ProgenyInfo.Notes))

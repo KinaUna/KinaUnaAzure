@@ -45,36 +45,55 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             string cachedItemPermission = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion +
                                                                      "hasItemPermissionPermission" + (int)itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId + "_level_" + (int)requiredLevel);
-            if (string.IsNullOrEmpty(cachedItemPermission))
+            if (!string.IsNullOrEmpty(cachedItemPermission))
             {
-                // Special cases, Creator only and Private.
-                if (requiredLevel == PermissionLevel.CreatorOnly)
+                HasItemPermissionCacheEntry cacheEntry = JsonSerializer.Deserialize<HasItemPermissionCacheEntry>(cachedItemPermission, JsonSerializerOptions.Web);
+                // Check if user data has been modified since the cache was created.
+                string userCacheEntryString = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userInfo.UserId);
+                if (!string.IsNullOrEmpty(userCacheEntryString))
                 {
-                    return await HasCreatorOnlyPermission(itemType, itemId, userInfo);
+                    UserUpdatedCacheEntry userCacheEntry = JsonSerializer.Deserialize<UserUpdatedCacheEntry>(userCacheEntryString, JsonSerializerOptions.Web);
+                    if (userCacheEntry != null)
+                    {
+                        if (userCacheEntry.UpdateTime < cacheEntry.UpdateTime)
+                        {
+                            return cacheEntry.TimelineItemPermission.PermissionLevel >= requiredLevel;
+                        }
+                    }
                 }
+                else
+                {
+                    return cacheEntry.TimelineItemPermission.PermissionLevel >= requiredLevel;
+                }
+            }
 
-                if (requiredLevel == PermissionLevel.Private)
-                {
-                    return await HasPrivatePermission(itemType, itemId, userInfo);
-                }
-                
-                Dictionary<int, PermissionLevel> allUsersPermissionsForType = await AllUsersItemPermissionsDictionary(userInfo, itemType);
-                if (allUsersPermissionsForType.TryGetValue(itemId, out PermissionLevel value))
-                {
-                    itemPermission.PermissionLevel = value;
-                }
-                
-                DistributedCacheEntryOptions cacheOptionsSlidingView = new();
-                cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(0, 1, 0, 0));
-                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "hasItemPermissionPermission" + (int)itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId + "_level_" + (int)requiredLevel
-                    , JsonSerializer.Serialize(itemPermission, JsonSerializerOptions.Web), cacheOptionsSlidingView);
-                
-            }
-            else
+            // Special cases, Creator only and Private.
+            if (requiredLevel == PermissionLevel.CreatorOnly)
             {
-                itemPermission = JsonSerializer.Deserialize<TimelineItemPermission>(cachedItemPermission, JsonSerializerOptions.Web);
+                return await HasCreatorOnlyPermission(itemType, itemId, userInfo);
             }
-            
+
+            if (requiredLevel == PermissionLevel.Private)
+            {
+                return await HasPrivatePermission(itemType, itemId, userInfo);
+            }
+
+            Dictionary<int, PermissionLevel> allUsersPermissionsForType = await AllUsersItemPermissionsDictionary(userInfo, itemType);
+            if (allUsersPermissionsForType.TryGetValue(itemId, out PermissionLevel value))
+            {
+                itemPermission.PermissionLevel = value;
+            }
+            HasItemPermissionCacheEntry newCacheEntry = new()
+            {
+                TimelineItemPermission = itemPermission,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(0, 1, 0, 0));
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "hasItemPermissionPermission" + (int)itemType + "_itemId_" + itemId + "_userId_" + userInfo.UserId + "_level_" + (int)requiredLevel
+                , JsonSerializer.Serialize(newCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+
             return itemPermission.PermissionLevel >= requiredLevel;
         }
 
@@ -2439,7 +2458,28 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                                                                      "allUsersItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type);
             if (!string.IsNullOrEmpty(cachedItemPermissions))
             {
-                return JsonSerializer.Deserialize<Dictionary<int, PermissionLevel>>(cachedItemPermissions, JsonSerializerOptions.Web);
+                ItemPermissionDictionaryCacheEntry cachedPermissions = JsonSerializer.Deserialize<ItemPermissionDictionaryCacheEntry>(cachedItemPermissions, JsonSerializerOptions.Web);
+
+                // Check if user data has been modified since the cache was created.
+                string userCacheEntryString = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userInfo.UserId);
+                if (!string.IsNullOrEmpty(userCacheEntryString))
+                {
+                    UserUpdatedCacheEntry userCacheEntry = JsonSerializer.Deserialize<UserUpdatedCacheEntry>(userCacheEntryString, JsonSerializerOptions.Web);
+                    if (userCacheEntry != null)
+                    {
+                        // If the user cache entry is found, check if the time stamp is newer than the cache for item permissions.
+                        if (userCacheEntry.UpdateTime < cachedPermissions.UpdateTime)
+                        {
+                            return cachedPermissions.ItemPermissionDictionary;
+                        }
+                    }
+                }
+                else
+                {
+                    // No user cache entry found, return cached permissions.
+                    return cachedPermissions.ItemPermissionDictionary;
+                }
+                
             }
 
             // Get user specific permissions.
@@ -2490,10 +2530,16 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 allPermissions[timelineItemPermission.ItemId] = timelineItemPermission.PermissionLevel;
             }
 
+            ItemPermissionDictionaryCacheEntry cacheEntry = new()
+            {
+                ItemPermissionDictionary = allPermissions,
+                UpdateTime = DateTime.UtcNow
+            };
+
             DistributedCacheEntryOptions cacheOptionsSliding = new();
             cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0));
             await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "allUsersItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type
-                , JsonSerializer.Serialize(allPermissions, JsonSerializerOptions.Web), cacheOptionsSliding);
+                , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSliding);
 
             return allPermissions;
         }
@@ -2504,7 +2550,27 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                                                                      "allUsersTimelineItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type);
             if (!string.IsNullOrEmpty(cachedItemPermissions))
             {
-                return JsonSerializer.Deserialize<List<TimelineItemPermission>>(cachedItemPermissions, JsonSerializerOptions.Web);
+                ItemPermissionListCacheEntry cachedPermissions = JsonSerializer.Deserialize<ItemPermissionListCacheEntry>(cachedItemPermissions, JsonSerializerOptions.Web);
+                // Check if user data has been modified since the cache was created.
+                string userCacheEntryString = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userInfo.UserId);
+                if (!string.IsNullOrEmpty(userCacheEntryString))
+                {
+                    UserUpdatedCacheEntry userCacheEntry = JsonSerializer.Deserialize<UserUpdatedCacheEntry>(userCacheEntryString, JsonSerializerOptions.Web);
+                    if (userCacheEntry != null)
+                    {
+                        // If the user cache entry is found, check if the time stamp is newer than the cache for item permissions.
+                        if (userCacheEntry.UpdateTime < cachedPermissions.UpdateTime)
+                        {
+                            return cachedPermissions.TimelineItemPermissions;
+                        }
+                    }
+                }
+                else
+                {
+                    // No user cache entry found, return cached permissions.
+                    return cachedPermissions.TimelineItemPermissions;
+                    
+                }
             }
 
             // Get user specific permissions.
@@ -2533,10 +2599,16 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 timelineItemPermissions.AddRange(inheritedPermissions);
             }
 
+            ItemPermissionListCacheEntry cacheEntry = new()
+            {
+                TimelineItemPermissions = timelineItemPermissions,
+                UpdateTime = DateTime.UtcNow
+            };
+
             DistributedCacheEntryOptions cacheOptionsSliding = new();
             cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0));
             await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "allUsersTimelineItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type
-                , JsonSerializer.Serialize(timelineItemPermissions, JsonSerializerOptions.Web), cacheOptionsSliding);
+                , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSliding);
 
             return timelineItemPermissions;
         }

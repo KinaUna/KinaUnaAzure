@@ -119,6 +119,8 @@ namespace KinaUnaWeb.Controllers
 
             model.VaccinationItem.VaccinationDate = TimeZoneInfo.ConvertTimeFromUtc(model.VaccinationItem.VaccinationDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
+            model.VaccinationItem.Progeny = await progenyHttpClient.GetProgeny(model.VaccinationItem.ProgenyId);
+
             return PartialView("_VaccinationAddedPartial", model);
         }
 
@@ -179,6 +181,8 @@ namespace KinaUnaWeb.Controllers
             
             model.VaccinationItem.VaccinationDate = TimeZoneInfo.ConvertTimeFromUtc(model.VaccinationItem.VaccinationDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
+            model.VaccinationItem.Progeny = await progenyHttpClient.GetProgeny(model.VaccinationItem.ProgenyId);
+
             return PartialView("_VaccinationUpdatedPartial", model);
         }
 
@@ -204,6 +208,8 @@ namespace KinaUnaWeb.Controllers
             VaccinationViewModel model = new(baseModel);
             
             model.VaccinationItem = vaccination;
+
+            model.VaccinationItem.Progeny = await progenyHttpClient.GetProgeny(model.VaccinationItem.ProgenyId);
 
             return View(model);
         }
@@ -287,6 +293,8 @@ namespace KinaUnaWeb.Controllers
 
             model.VaccinationItem = await vaccinationsHttpClient.AddVaccination(model.VaccinationItem);
             model.VaccinationItem.VaccinationDate = TimeZoneInfo.ConvertTimeFromUtc(model.VaccinationItem.VaccinationDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.VaccinationItem.Progeny = await progenyHttpClient.GetProgeny(model.VaccinationItem.ProgenyId);
 
             return PartialView("_VaccinationCopiedPartial", model);
         }

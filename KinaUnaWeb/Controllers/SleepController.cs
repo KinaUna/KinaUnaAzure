@@ -1,5 +1,6 @@
 ﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
@@ -144,6 +146,7 @@ namespace KinaUnaWeb.Controllers
             model.SleepItem = await sleepHttpClient.AddSleep(sleepToAdd);
             model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.Progeny = await progenyHttpClient.GetProgeny(model.SleepItem.ProgenyId);
 
             return PartialView("_SleepAddedPartial", model);
         }
@@ -207,10 +210,14 @@ namespace KinaUnaWeb.Controllers
             {
                 model.SleepItem.SleepRating = 3;
             }
-                
+
+            model.SleepItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
+
+
             model.SleepItem = await sleepHttpClient.UpdateSleep(model.SleepItem);
             model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.Progeny = await progenyHttpClient.GetProgeny(model.SleepItem.ProgenyId);
 
             return PartialView("_SleepUpdatedPartial", model);
         }
@@ -237,6 +244,7 @@ namespace KinaUnaWeb.Controllers
             SleepViewModel model = new(baseModel);
             
             model.SleepItem = sleep;
+            model.SleepItem.Progeny = await progenyHttpClient.GetProgeny(model.SleepItem.ProgenyId);
 
             return View(model);
         }
@@ -327,6 +335,7 @@ namespace KinaUnaWeb.Controllers
             model.SleepItem = await sleepHttpClient.UpdateSleep(model.SleepItem);
             model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.Progeny = await progenyHttpClient.GetProgeny(model.SleepItem.ProgenyId);
 
             return PartialView("_SleepCopiedPartial", model);
         }

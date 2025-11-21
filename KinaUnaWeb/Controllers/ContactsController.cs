@@ -108,14 +108,12 @@ namespace KinaUnaWeb.Controllers
             model.ContactItem.PictureLink = model.ContactItem.GetProfilePictureUrl();
             if (model.ContactItem.ProgenyId > 0)
             {
-                model.ContactItem.Progeny = model.CurrentProgeny;
-                model.ContactItem.Progeny.PictureLink = model.ContactItem.Progeny.GetProfilePictureUrl();
+                model.ContactItem.Progeny = await progenyHttpClient.GetProgeny(model.ContactItem.ProgenyId);
             }
 
             if (model.ContactItem.FamilyId > 0)
             {
                 model.ContactItem.Family = await familiesHttpClient.GetFamily(model.ContactItem.FamilyId);
-                model.ContactItem.Family.PictureLink = model.ContactItem.Family.GetProfilePictureUrl();
             }
 
             if (partialView)
@@ -371,6 +369,16 @@ namespace KinaUnaWeb.Controllers
                 model.ContactItem.Address = await locationsHttpClient.GetAddress(model.ContactItem.AddressIdNumber.Value);
             }
 
+            if (model.ContactItem.ProgenyId > 0)
+            {
+                model.ContactItem.Progeny = await progenyHttpClient.GetProgeny(model.ContactItem.ProgenyId);
+            }
+
+            if (model.ContactItem.FamilyId > 0)
+            {
+                model.ContactItem.Family = await familiesHttpClient.GetFamily(model.ContactItem.FamilyId);
+            }
+
             return PartialView("_ContactAddedPartial", model);
         }
 
@@ -461,6 +469,16 @@ namespace KinaUnaWeb.Controllers
                 model.ContactItem.Address = await locationsHttpClient.GetAddress(model.ContactItem.AddressIdNumber.Value);
             }
 
+            if (model.ContactItem.ProgenyId > 0)
+            {
+                model.ContactItem.Progeny = await progenyHttpClient.GetProgeny(model.ContactItem.ProgenyId);
+            }
+
+            if (model.ContactItem.FamilyId > 0)
+            {
+                model.ContactItem.Family = await familiesHttpClient.GetFamily(model.ContactItem.FamilyId);
+            }
+
             return PartialView("_ContactUpdatedPartial", model);
         }
 
@@ -484,6 +502,15 @@ namespace KinaUnaWeb.Controllers
             
             model.ContactItem = contact;
             model.ContactItem.PictureLink = model.ContactItem.GetProfilePictureUrl();
+            if (model.ContactItem.ProgenyId > 0)
+            {
+                model.ContactItem.Progeny = await progenyHttpClient.GetProgeny(model.ContactItem.ProgenyId);
+            }
+
+            if (model.ContactItem.FamilyId > 0)
+            {
+                model.ContactItem.Family = await familiesHttpClient.GetFamily(model.ContactItem.FamilyId);
+            }
 
             return View(model);
         }
@@ -541,7 +568,16 @@ namespace KinaUnaWeb.Controllers
             model.SetPropertiesFromContact(contact);
 
             model.ContactItem.PictureLink = model.ContactItem.GetProfilePictureUrl();
-            
+            if (model.ContactItem.ProgenyId > 0)
+            {
+                model.ContactItem.Progeny = await progenyHttpClient.GetProgeny(model.ContactItem.ProgenyId);
+            }
+
+            if (model.ContactItem.FamilyId > 0)
+            {
+                model.ContactItem.Family = await familiesHttpClient.GetFamily(model.ContactItem.FamilyId);
+            }
+
             return PartialView("_CopyContactPartial", model);
         }
 
@@ -614,6 +650,16 @@ namespace KinaUnaWeb.Controllers
             if (model.ContactItem.AddressIdNumber.HasValue)
             {
                 model.ContactItem.Address = await locationsHttpClient.GetAddress(model.ContactItem.AddressIdNumber.Value);
+            }
+
+            if (model.ContactItem.ProgenyId > 0)
+            {
+                model.ContactItem.Progeny = await progenyHttpClient.GetProgeny(model.ContactItem.ProgenyId);
+            }
+
+            if (model.ContactItem.FamilyId > 0)
+            {
+                model.ContactItem.Family = await familiesHttpClient.GetFamily(model.ContactItem.FamilyId);
             }
 
             return PartialView("_ContactCopiedPartial", model);

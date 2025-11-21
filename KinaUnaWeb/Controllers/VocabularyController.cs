@@ -1,4 +1,5 @@
 ﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models;
@@ -153,6 +154,8 @@ namespace KinaUnaWeb.Controllers
             VocabularyItemViewModel model = new(baseModel);
             
             model.SetPropertiesFromVocabularyItem(vocab);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(vocab.ProgenyId);
+            model.SetProgenyList();
 
             return PartialView("_EditVocabularyPartial", model);
         }

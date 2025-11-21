@@ -151,6 +151,8 @@ namespace KinaUnaWeb.Controllers
                 model.SkillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillFirstObservation.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
 
+            model.SkillItem.Progeny = await progenyHttpClient.GetProgeny(model.SkillItem.ProgenyId);
+
             return PartialView("_SkillAddedPartial", model);
         }
 
@@ -216,6 +218,8 @@ namespace KinaUnaWeb.Controllers
             {
                 model.SkillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillFirstObservation.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
+
+            model.SkillItem.Progeny = await progenyHttpClient.GetProgeny(model.SkillItem.ProgenyId);
 
             return PartialView("_SkillUpdatedPartial", model);
         }
@@ -342,6 +346,8 @@ namespace KinaUnaWeb.Controllers
                 model.SkillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillFirstObservation.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
 
+            model.SkillItem.Progeny = await progenyHttpClient.GetProgeny(model.SkillItem.ProgenyId);
+            
             return PartialView("_SkillCopiedPartial", model);
         }
     }

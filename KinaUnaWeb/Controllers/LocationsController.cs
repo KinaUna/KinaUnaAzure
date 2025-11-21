@@ -344,12 +344,12 @@ namespace KinaUnaWeb.Controllers
 
             if (model.LocationItem.ProgenyId > 0)
             {
-                model.LocationItem.Progeny = model.CurrentProgeny;
+                model.LocationItem.Progeny = await progenyHttpClient.GetProgeny(model.LocationItem.ProgenyId);
             }
 
             if (model.LocationItem.FamilyId > 0)
             {
-                model.LocationItem.Family = model.CurrentFamily;
+                model.LocationItem.Family = await familiesHttpClient.GetFamily(model.LocationItem.FamilyId);
             }
 
             return PartialView("_LocationAddedPartial", model);
@@ -425,12 +425,12 @@ namespace KinaUnaWeb.Controllers
 
             if (model.LocationItem.ProgenyId > 0)
             {
-                model.LocationItem.Progeny = model.CurrentProgeny;
+                model.LocationItem.Progeny = await progenyHttpClient.GetProgeny(model.LocationItem.ProgenyId);
             }
 
             if (model.LocationItem.FamilyId > 0)
             {
-                model.LocationItem.Family = model.CurrentFamily;
+                model.LocationItem.Family = await familiesHttpClient.GetFamily(model.LocationItem.FamilyId);
             }
 
             return PartialView("_LocationUpdatedPartial", model);
@@ -462,12 +462,12 @@ namespace KinaUnaWeb.Controllers
 
             if (model.LocationItem.ProgenyId > 0)
             {
-                model.LocationItem.Progeny = model.CurrentProgeny;
+                model.LocationItem.Progeny = await progenyHttpClient.GetProgeny(model.LocationItem.ProgenyId);
             }
 
             if (model.LocationItem.FamilyId > 0)
             {
-                model.LocationItem.Family = model.CurrentFamily;
+                model.LocationItem.Family = await familiesHttpClient.GetFamily(model.LocationItem.FamilyId);
             }
 
             return View(model);
@@ -582,12 +582,12 @@ namespace KinaUnaWeb.Controllers
 
             if (model.LocationItem.ProgenyId > 0)
             {
-                model.LocationItem.Progeny = model.CurrentProgeny;
+                model.LocationItem.Progeny = await progenyHttpClient.GetProgeny(model.LocationItem.ProgenyId);
             }
 
             if (model.LocationItem.FamilyId > 0)
             {
-                model.LocationItem.Family = model.CurrentFamily;
+                model.LocationItem.Family = await familiesHttpClient.GetFamily(model.LocationItem.FamilyId);
             }
 
             return PartialView("_LocationCopiedPartial", model);

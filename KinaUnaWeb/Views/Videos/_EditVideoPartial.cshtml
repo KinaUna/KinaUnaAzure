@@ -71,16 +71,16 @@
                     <div class="form-group">
                         <div class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Duration", PageNames.Videos, Model.LanguageId)</div>
                         <div class="col-md-10">
-                            @{
-                                int hours = 0;
-                                int minutes = 0;
-                                int seconds = 0;
-                                if (Model.Video.DurationHours + Model.Video.DurationMinutes + Model.Video.DurationSeconds != string.Empty)
-                                {
-                                    int.TryParse(Model.Video.DurationHours, out hours);
-                                    int.TryParse(Model.Video.DurationMinutes, out minutes);
-                                    int.TryParse(Model.Video.DurationSeconds, out seconds);
-                                }
+                                @{
+                                    int hours = 0;
+                                    int minutes = 0;
+                                    int seconds = 0;
+                                    if (Model.Video.Duration.HasValue)
+                                    {
+                                        hours = Model.Video.Duration.Value.Hours;
+                                        minutes = Model.Video.Duration.Value.Minutes;
+                                        seconds = Model.Video.Duration.Value.Seconds;
+                                    }
                             }
                             <div class="form-row">
                                 <div class="col">

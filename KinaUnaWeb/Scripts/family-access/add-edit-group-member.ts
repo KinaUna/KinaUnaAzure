@@ -35,8 +35,8 @@ export async function displayAddGroupMemberModal(groupId: string) {
 }
 
 function addAddGroupMemberModalEventListeners(): void {
-    const closeButton = document.querySelector<HTMLButtonElement>('#close-add-group-member-modal-button');
-    if (closeButton) {
+    const closeButtons = document.querySelectorAll<HTMLButtonElement>('.close-add-group-member-modal-button');
+    closeButtons.forEach((closeButton) => {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
@@ -49,7 +49,7 @@ function addAddGroupMemberModalEventListeners(): void {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
-    }
+    });
 
     const emailInput = document.getElementById('group-member-email-input') as HTMLInputElement;
     if (emailInput) {
@@ -58,7 +58,7 @@ function addAddGroupMemberModalEventListeners(): void {
 
     const addGroupMemberForm = document.querySelector<HTMLFormElement>('#add-group-member-form');
     if (addGroupMemberForm) {
-        const addGroupMemberFormSubmitAction = async function (event: Event): Promise<void> {
+        const addGroupMemberFormSubmitAction = async function (event: SubmitEvent): Promise<void> {
             event.preventDefault();
             event.stopPropagation();
             startFullPageSpinner();
@@ -122,8 +122,8 @@ export async function displayEditGroupMemberModal(groupMemberId: string) {
 }
 
 function addEditGroupMemberModalEventListeners(): void {
-    const closeButton = document.querySelector<HTMLButtonElement>('#close-edit-group-member-modal-button');
-    if (closeButton) {
+    const closeButtons = document.querySelectorAll<HTMLButtonElement>('.close-edit-group-member-modal-button');
+    closeButtons.forEach((closeButton) => {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
@@ -136,7 +136,8 @@ function addEditGroupMemberModalEventListeners(): void {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
-    }
+    });
+    
 
     const emailInput = document.getElementById('group-member-email-input') as HTMLInputElement;
     if (emailInput) {
@@ -145,7 +146,7 @@ function addEditGroupMemberModalEventListeners(): void {
 
     const editGroupMemberForm = document.querySelector<HTMLFormElement>('#edit-group-member-form');
     if (editGroupMemberForm) {
-        const editGroupMemberFormSubmitAction = async function (event: Event): Promise<void> {
+        const editGroupMemberFormSubmitAction = async function (event: SubmitEvent): Promise<void> {
             event.preventDefault();
             event.stopPropagation();
             startFullPageSpinner();
@@ -209,8 +210,8 @@ export async function displayDeleteGroupMemberModal(groupMemberId: string) {
 }
 
 function addDeleteGroupMemberModalEventListeners(): void {
-    const closeButton = document.querySelector<HTMLButtonElement>('#close-delete-group-member-modal-button');
-    if (closeButton) {
+    const closeButtons = document.querySelectorAll<HTMLButtonElement>('.close-delete-group-member-modal-button');
+    closeButtons.forEach((closeButton) => {
         const closeButtonClickedAction = function (event: MouseEvent): void {
             event.preventDefault();
             event.stopPropagation();
@@ -223,10 +224,10 @@ function addDeleteGroupMemberModalEventListeners(): void {
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
         closeButton.addEventListener('click', closeButtonClickedAction);
-    }
+    });
     const deleteGroupMemberForm = document.querySelector<HTMLFormElement>('#delete-group-member-form');
     if (deleteGroupMemberForm) {
-        const deleteGroupMemberFormSubmitAction = async function (event: Event): Promise<void> {
+        const deleteGroupMemberFormSubmitAction = async function (event: SubmitEvent): Promise<void> {
             event.preventDefault();
             event.stopPropagation();
             startFullPageSpinner();

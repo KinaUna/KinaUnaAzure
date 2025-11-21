@@ -271,7 +271,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             Video videoToAdd = model.CreateVideo(true);
-
+            
             model.Video = await mediaHttpClient.AddVideo(videoToAdd);
             
             return PartialView(model);
@@ -334,7 +334,7 @@ namespace KinaUnaWeb.Controllers
             {
                 videoToUpdate.VideoTime = TimeZoneInfo.ConvertTimeToUtc(model.Video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
-            
+            videoToUpdate.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
             _ = await mediaHttpClient.UpdateVideo(videoToUpdate);
 
             if (model.PartialView)

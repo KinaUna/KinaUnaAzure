@@ -1,11 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
@@ -14,7 +18,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     /// </summary>
     /// <param name="progenyDbContext"></param>
     /// <param name="accessManagementService"></param>
-    public class UserGroupsService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IUserGroupAuditLogsService userGroupAuditLogService): IUserGroupsService
+    public class UserGroupsService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IUserGroupAuditLogsService userGroupAuditLogService, IDistributedCache cache) : IUserGroupsService
     {
         /// <summary>
         /// Gets a user group by its unique identifier, including its members, if the current user has the necessary permissions.
@@ -495,6 +499,15 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (user != null)
                 {
                     userGroupMember.UserId = user.UserId;
+                    UserUpdatedCacheEntry cacheEntry = new()
+                    {
+                        UserId = user.UserId,
+                        UpdateTime = DateTime.UtcNow
+                    };
+
+                    DistributedCacheEntryOptions cacheOptionsSliding = new();
+                    cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(2, 0, 0, 0));
+                    await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + user.UserId, JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web));
                 }
             }
 
@@ -557,6 +570,15 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (user != null)
                 {
                     userGroupMember.UserId = user.UserId;
+                    UserUpdatedCacheEntry cacheEntry = new()
+                    {
+                        UserId = user.UserId,
+                        UpdateTime = DateTime.UtcNow
+                    };
+
+                    DistributedCacheEntryOptions cacheOptionsSliding = new();
+                    cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(2, 0, 0, 0));
+                    await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + user.UserId, JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web));
                 }
             }
             
@@ -572,7 +594,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             await progenyDbContext.SaveChangesAsync();
 
-            logEntry.EntityAfter = System.Text.Json.JsonSerializer.Serialize(member);
+            logEntry.EntityAfter = JsonSerializer.Serialize(member);
             await userGroupAuditLogService.UpdateUserGroupAuditLogEntry(logEntry);
 
             return member;
@@ -613,7 +635,20 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 return false;
             }
-            
+
+            if (!string.IsNullOrEmpty(member.UserId))
+            {
+                UserUpdatedCacheEntry cacheEntry = new()
+                {
+                    UserId = member.UserId,
+                    UpdateTime = DateTime.UtcNow
+                };
+
+                DistributedCacheEntryOptions cacheOptionsSliding = new();
+                cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(2, 0, 0, 0));
+                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + member.UserId, JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web));
+            }
+
             progenyDbContext.UserGroupMembersDb.Remove(member);
             await progenyDbContext.SaveChangesAsync();
 

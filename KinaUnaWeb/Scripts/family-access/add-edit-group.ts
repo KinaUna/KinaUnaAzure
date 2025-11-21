@@ -61,7 +61,7 @@ function addAddGroupModalEventListeners(): void {
 
     const addGroupForm = document.querySelector<HTMLFormElement>('#add-group-form');
     if (addGroupForm) {
-        const addGroupFormSubmitAction = async function (event: Event): Promise<void> {
+        const addGroupFormSubmitAction = async function (event: SubmitEvent): Promise<void> {
             event.preventDefault();
             event.stopPropagation();
             startFullPageSpinner();
@@ -149,7 +149,7 @@ function addEditGroupModalEventListeners(): void {
 
     const editGroupForm = document.querySelector<HTMLFormElement>('#edit-group-form');
     if (editGroupForm) {
-        const editGroupFormSubmitAction = async function (event: Event): Promise<void> {
+        const editGroupFormSubmitAction = async function (event: SubmitEvent): Promise<void> {
             event.preventDefault();
             event.stopPropagation();
             startFullPageSpinner();
@@ -229,7 +229,7 @@ function addDeleteGroupModalEventListeners(): void {
     }
     const deleteGroupForm = document.querySelector<HTMLFormElement>('#delete-group-form');
     if (deleteGroupForm) {
-        const deleteGroupFormSubmitAction = async function (event: Event): Promise<void> {
+        const deleteGroupFormSubmitAction = async function (event: SubmitEvent): Promise<void> {
             event.preventDefault();
             event.stopPropagation();
             startFullPageSpinner();

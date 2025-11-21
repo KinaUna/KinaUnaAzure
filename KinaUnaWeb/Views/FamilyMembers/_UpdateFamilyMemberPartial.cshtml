@@ -34,11 +34,11 @@
             </div>
             <button type="button" class="btn btn-link modal-close-button add-family-member-close-button"><span>×</span></button>
         </div>
-        <div class="space-50"></div>
         <div class="row m-0">
             <div class="col-12">
                 <div class="row m-0">
                     <div class="col-12">
+                        <div class="space-50"></div>
                         <div class="h5">@await LocaleManager.GetTranslation("Family", PageNames.Family, Model.LanguageId): @Model.CurrentFamily.Name</div>
                     </div>
                 </div>
@@ -121,7 +121,7 @@
                             <div class="form-group">
                                 <label asp-for="FamilyMember.ProgenyInfo.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Contact email", PageNames.Progeny, Model.LanguageId)</label>
                                 <div class="col-auto">
-                                    <input asp-for="FamilyMember.Email" class="form-control" value="@Model.FamilyMember.ProgenyInfo.Email" />
+                                    <input asp-for="FamilyMember.ProgenyInfo.Email" class="form-control" value="@Model.FamilyMember.ProgenyInfo.Email" />
                                 </div>
                             </div>
                             <div class="form-group">

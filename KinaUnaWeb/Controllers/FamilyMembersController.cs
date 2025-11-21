@@ -260,10 +260,10 @@ namespace KinaUnaWeb.Controllers
                 if (familyMember.ProgenyInfo != null)
                 {
                     ProgenyInfo progenyInfo = await progenyHttpClient.GetProgenyInfo(familyMember.ProgenyId);
-                    if (progenyInfo.PropertiesChanged(familyMember.ProgenyInfo))
+                    if (progenyInfo.PropertiesChanged(model.FamilyMember.ProgenyInfo))
                     {
-                        progenyInfo.CopyPropertiesForUpdate(familyMember.ProgenyInfo);
-                        progenyInfo.Address.CopyPropertiesForUpdate(familyMember.ProgenyInfo.Address);
+                        progenyInfo.CopyPropertiesForUpdate(model.FamilyMember.ProgenyInfo);
+                        progenyInfo.Address.CopyPropertiesForUpdate(model.FamilyMember.ProgenyInfo.Address);
 
                         await progenyHttpClient.UpdateProgenyInfo(progenyInfo);
                     }

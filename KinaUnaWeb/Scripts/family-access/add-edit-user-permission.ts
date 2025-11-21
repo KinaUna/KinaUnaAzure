@@ -58,7 +58,7 @@ function addAddUserPermissionModalEventListeners(): void {
 
     const addPermissionForm = document.querySelector<HTMLFormElement>('#add-permission-form');
     if (addPermissionForm) {
-        const addPermissionFormSubmitAction = async function (event: Event): Promise<void> {
+        const addPermissionFormSubmitAction = async function (event: SubmitEvent): Promise<void> {
             event.preventDefault();
             event.stopPropagation();
             startFullPageSpinner();

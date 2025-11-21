@@ -1,7 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -77,7 +79,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Notes = FriendItem.Notes,
                 Author = FriendItem.Author,
                 FriendAddedDate = FriendItem.FriendAddedDate,
-                ItemPermissionsDtoList = FriendItem.ItemPermissionsDtoList
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
 
             FriendItem.FriendSince ??= DateTime.UtcNow;
