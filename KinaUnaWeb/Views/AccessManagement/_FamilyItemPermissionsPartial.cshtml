@@ -28,8 +28,13 @@
 
     string noUserAccountString = await LocaleManager.GetTranslation("No user account", PageNames.AccessManagement, Model.LanguageId);
     string groupMembersString = await LocaleManager.GetTranslation("Group members", PageNames.AccessManagement, Model.LanguageId);
+    string hideElements = string.Empty;
+    if (Model.PermissionTypeSelectListItems.Count < 2)
+    {
+        hideElements = "d-none"; // If there's only one option, no need to show the element.
+    }
 }
-<div class="form-group">
+<div class="form-group @hideElements">
     <label class="col-auto control-label" for="permission-type-select">
         @await LocaleManager.GetTranslation("Permission type", PageNames.AccessManagement, Model.LanguageId):
     </label>
@@ -37,7 +42,7 @@
         <select id="permission-type-select" class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" asp-items="@Model.PermissionTypeSelectListItems"></select>
     </div>
 </div>
-<div class="space-20"></div>
+<div class="space-20  @hideElements"></div>
 <div class="col-12 d-none" id="inherit-permissions-div">
     @foreach (UserGroup group in Model.UserGroupsList)
     {

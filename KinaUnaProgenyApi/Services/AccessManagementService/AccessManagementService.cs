@@ -664,15 +664,42 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             TimelineItemPermission inheritedPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp => tp.InheritPermissions && tp.TimelineType == itemType && tp.ItemId == itemId);
             TimelineItemPermission usersPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
                 .SingleOrDefaultAsync(tp => tp.UserId == currentUserInfo.UserId && tp.TimelineType == itemType && tp.ItemId == itemId);
+            List<TimelineItemPermission> existingItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.TimelineType == itemType && tp.ItemId == itemId).ToListAsync();
             if (itemPermissionsDtoList.Count == 1)
             {
                 ItemPermissionDto itemPermissionDto = itemPermissionsDtoList.First();
                 if (itemPermissionDto.InheritPermissions)
                 {
+                    if (progenyId > 0)
+                    {
+                        if (!await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, progenyId))
+                        {
+                            return changedItemPermissions;
+                        }
+                    }
+
+                    if (familyId > 0)
+                    {
+                        if (!await IsUserAccessManager(currentUserInfo, PermissionType.Family, familyId))
+                        {
+                            return changedItemPermissions;
+                        }
+                    }
+
                     isNowInheriting = true;
                     if (inheritedPermission != null)
                     {
                         // Nothing has changed, return.
+
+                        // Remove all other permissions.
+                        foreach (TimelineItemPermission existingPermission in existingItemPermissions)
+                        {
+                            if (!existingPermission.InheritPermissions)
+                            {
+                                await RevokeItemPermission(existingPermission, currentUserInfo);
+                            }
+                        }
+
                         return changedItemPermissions;
                     }
                 }
@@ -729,11 +756,27 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     wasPreviouslyInheriting = true;
                 }
             }
-
-            List<TimelineItemPermission> existingItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.TimelineType == itemType && tp.ItemId == itemId).ToListAsync();
-
+            
             if (!wasPreviouslyInheriting && !wasPreviouslyCreatorOnly && !wasPreviouslyPrivate && !isNowInheriting)
             {
+                // Check if user is allow to make the changes.
+                if (progenyId > 0)
+                {
+                    if (!await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, progenyId))
+                    {
+                        // Not an access manager for the progeny, cannot make changes.
+                        return changedItemPermissions;
+                    }
+                }
+                if (familyId > 0)
+                {
+                    if (!await IsUserAccessManager(currentUserInfo, PermissionType.Family, familyId))
+                    {
+                        // Not an access manager for the family, cannot make changes.
+                        return changedItemPermissions;
+                    }
+                }
+
                 // Simplest case, update the permission levels for existing items if needed.
                 foreach (TimelineItemPermission existingPermission in existingItemPermissions)
                 {
@@ -795,6 +838,14 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
                 inheritPermission = await GrantItemPermission(inheritPermission, currentUserInfo);
                 changedItemPermissions.Add(inheritPermission);
+                // Remove all other permissions.
+                foreach (TimelineItemPermission existingPermission in existingItemPermissions)
+                {
+                    if (!existingPermission.InheritPermissions)
+                    {
+                        await RevokeItemPermission(existingPermission, currentUserInfo);
+                    }
+                }
             }
             else
             {

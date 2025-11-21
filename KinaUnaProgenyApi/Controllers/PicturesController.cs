@@ -493,7 +493,7 @@ namespace KinaUnaProgenyApi.Controllers
             await webNotificationsService.SendPictureNotification(model, currentUserInfo, notificationTitle);
             
             model = await picturesService.GetPicture(model.PictureId, currentUserInfo);
-            model.Comments = await commentsService.SetCommentsList(model.CommentThreadNumber);
+            model?.Comments = await commentsService.SetCommentsList(model.CommentThreadNumber);
 
             return Ok(model);
         }

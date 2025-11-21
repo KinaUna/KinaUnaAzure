@@ -4,6 +4,7 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation
 import { PictureViewModel, TimeLineType } from '../page-models-v9.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
 import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
+import { setPermissions } from '../item-permissions.js';
 import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
@@ -134,6 +135,11 @@ async function onSubmitAddPicturesForm(event) {
     const filesInput = document.querySelector('#select-photos-button');
     if (filesInput !== null) {
         filesInput.value = '';
+    }
+    // If there is an item permissions editor div, set the permissions for the item before saving.
+    const permissionsEditorDiv = document.querySelector('#item-permissions-editor-div');
+    if (permissionsEditorDiv) {
+        setPermissions();
     }
     const submitForm = document.getElementById('add-pictures-form');
     const formData = new FormData(submitForm);

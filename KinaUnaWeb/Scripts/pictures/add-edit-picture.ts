@@ -4,7 +4,7 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation
 import { Picture, PictureViewModel, TimelineItem, TimeLineType } from '../page-models-v9.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
 import { setAddItemButtonEventListeners } from '../addItem/add-item.js';
-import { renderItemPermissionsEditor } from '../item-permissions.js';
+import { renderItemPermissionsEditor, setPermissions } from '../item-permissions.js';
 import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection.js';
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
@@ -105,7 +105,8 @@ function hideInputsWhenUploading(): void {
     const removeFileButtonDivs = document.querySelectorAll<HTMLButtonElement>('remove-button-parent-div');
     removeFileButtonDivs.forEach((buttonDiv) => {
         buttonDiv.classList.add('d-none');
-        });
+    });
+
     const dropZone = document.getElementById('drop-files-div');
     if (dropZone !== null) {
         dropZone.classList.add('d-none');
@@ -155,6 +156,12 @@ async function onSubmitAddPicturesForm(event: SubmitEvent): Promise<void> {
     const filesInput = document.querySelector<HTMLInputElement>('#select-photos-button');
     if (filesInput !== null) {
         filesInput.value = '';
+    }
+
+    // If there is an item permissions editor div, set the permissions for the item before saving.
+    const permissionsEditorDiv = document.querySelector<HTMLDivElement>('#item-permissions-editor-div');
+    if (permissionsEditorDiv) {
+        setPermissions();
     }
 
     const submitForm = document.getElementById('add-pictures-form') as HTMLFormElement;

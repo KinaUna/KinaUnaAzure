@@ -20,7 +20,7 @@ export async function renderItemPermissionsEditor(timelineItem: TimelineItem) {
                 if (permissionsDiv !== null) {
 
                     permissionsDiv.innerHTML = data;
-                    // Show the modal
+                    // Show the element
                     permissionsDiv.classList.remove('d-none');
                     addPermissionTypeChangeListener();
                     setAdminPermissionsAsReadonly();
