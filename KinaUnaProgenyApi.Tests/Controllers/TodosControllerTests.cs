@@ -20,7 +20,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
     {
         private readonly ProgenyDbContext _progenyDbContext;
         private readonly Mock<IProgenyService> _mockProgenyService;
-        private readonly Mock<IFamiliesService> _mockFamilyService;
         private readonly Mock<ITodosService> _mockTodosService;
         private readonly Mock<IUserInfoService> _mockUserInfoService;
         private readonly Mock<ITimelineService> _mockTimelineService;
@@ -93,7 +92,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Setup mocks
             _mockProgenyService = new Mock<IProgenyService>();
-            _mockFamilyService = new Mock<IFamiliesService>();
+            Mock<IFamiliesService> mockFamilyService = new();
             _mockTodosService = new Mock<ITodosService>();
             _mockUserInfoService = new Mock<IUserInfoService>();
             _mockTimelineService = new Mock<ITimelineService>();
@@ -102,7 +101,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             _controller = new TodosController(
                 _mockProgenyService.Object,
-                _mockFamilyService.Object,
+                mockFamilyService.Object,
                 _mockTodosService.Object,
                 _mockUserInfoService.Object,
                 _mockTimelineService.Object,

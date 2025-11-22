@@ -1,5 +1,4 @@
 ﻿using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaWeb.Models;

@@ -15,6 +15,20 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     public interface IAccessManagementService
     {
         /// <summary>
+        /// Sets the user updated cache entry for the specified user.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user.</param>
+        void SetUserUpdatedCache(string userId);
+
+        /// <summary>
+        /// Retrieves the cached user update entry for the specified user identifier.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <returns>A <see cref="UserUpdatedCacheEntry"/> object containing the cached update information for the user, or <see
+        /// langword="null"/> if no cache entry exists for the specified user.</returns>
+        UserUpdatedCacheEntry GetUserUpdatedCache(string userId);
+
+        /// <summary>
         /// Determines whether a user has the specified access level for a given timeline item (e.g., Note, TodoItem, Sleep, etc.).
         /// </summary>
         /// <param name="itemType">KinaUnaTypes.TimeLineType of the item whose access to is being checked.</param>

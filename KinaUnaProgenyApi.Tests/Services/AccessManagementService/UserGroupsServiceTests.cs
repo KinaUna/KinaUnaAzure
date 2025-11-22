@@ -3,9 +3,6 @@ using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using Moq;
 
 namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
@@ -29,13 +26,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             using ProgenyDbContext context = new(_options);
             SeedDatabase(context);
         }
-
-        private static IDistributedCache GetMemoryCache()
-        {
-            IOptions<MemoryDistributedCacheOptions> options = Options.Create(new MemoryDistributedCacheOptions());
-            return new MemoryDistributedCache(options);
-        }
-
+        
         private static void SeedDatabase(ProgenyDbContext context)
         {
             // Add test user groups
@@ -157,7 +148,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(true);
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Act
             UserGroup? result = await service.GetUserGroup(1, userInfo);
@@ -180,7 +171,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(false);
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Act
             UserGroup? result = await service.GetUserGroup(1, userInfo);
@@ -206,7 +197,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(new ProgenyPermission { PermissionLevel = PermissionLevel.Edit });
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Act
             List<UserGroup>? result = await service.GetUserGroupsForProgeny(1, userInfo);
@@ -235,7 +226,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(new FamilyPermission { PermissionLevel = PermissionLevel.Admin });
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Act
             List<UserGroup>? result = await service.GetUserGroupsForFamily(1, userInfo);
@@ -264,7 +255,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(true);
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Act
             List<UserGroup>? result = await service.GetUsersUserGroupsByUserId("user1", userInfo);
@@ -289,7 +280,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(true);
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Act
             List<UserGroup>? result = await service.GetUsersUserGroupsByEmail("user1@test.com", userInfo);
@@ -329,7 +320,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(new UserGroupAuditLog());
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Act
             UserGroup? result = await service.AddUserGroup(newGroup, userInfo);
@@ -383,7 +374,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(new UserGroupAuditLog());
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Act
             UserGroup? result = await service.UpdateUserGroup(updateGroup, userInfo);
@@ -423,7 +414,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(new UserGroupAuditLog());
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Ensure the group exists before deletion
             bool groupExists = await context.UserGroupsDb.AnyAsync(g => g.UserGroupId == 1);
@@ -455,7 +446,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(true);
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Act
             UserGroupMember? result = await service.GetUserGroupMember(1, userInfo);
@@ -490,7 +481,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(new UserGroupAuditLog());
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Act
             UserGroupMember? result = await service.AddUserGroupMember(newMember, userInfo);
@@ -534,7 +525,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(new UserGroupAuditLog());
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Act
             UserGroupMember? result = await service.UpdateUserGroupMember(updateMember, userInfo);
@@ -564,7 +555,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 .ReturnsAsync(new UserGroupAuditLog());
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Ensure the member exists before deletion
             bool memberExists = await context.UserGroupMembersDb.AnyAsync(m => m.UserGroupMemberId == 1);
@@ -589,7 +580,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             string newEmail = "user1-new@test.com";
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Verify initial state
             List<UserGroupMember> members = await context.UserGroupMembersDb.Where(m => m.UserId == "user1").ToListAsync();
@@ -612,7 +603,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             UserInfo userInfo = new() { UserId = "newuser", UserEmail = "newuser@test.com" };
 
             await using ProgenyDbContext context = new(_options);
-            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, GetMemoryCache());
+            UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object);
 
             // Verify initial state
             List<UserGroupMember> members = await context.UserGroupMembersDb.Where(m => m.Email.ToLower() == "newuser@test.com").ToListAsync();

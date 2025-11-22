@@ -1,7 +1,5 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
-using KinaUna.Data.Models.AccessManagement;
-using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.HomeViewModels;
 using KinaUnaWeb.Models.TypeScriptModels;
@@ -15,11 +13,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using KinaUna.Data.Models.DTOs;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Controllers
 {
