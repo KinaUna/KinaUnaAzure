@@ -154,7 +154,7 @@ namespace KinaUnaProgenyApi.Services
                 }
                 else
                 {
-                    UserGroup familyGroup = new UserGroup()
+                    UserGroup familyGroup = new()
                     {
                         Name = "Family - " + progeny.NickName,
                         CreatedBy = progeny.CreatedBy,

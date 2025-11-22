@@ -2310,8 +2310,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     UserGroup adminGroup = new()
                     {
                         IsFamily = false,
-                        Name = $"{progeny.Name} Admins",
-                        Description = $"Administrators group for {progeny.NickName} created automatically.",
+                        Name = $"Admins - {progeny.NickName}",
+                        Description = $"Administrators group for {progeny.Name} created automatically.",
                         ProgenyId = progenyId,
                         FamilyId = 0,
                         CreatedBy = "System",
