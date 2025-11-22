@@ -203,19 +203,19 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
 
                 await userGroupsService.AddUserGroupMember(groupMember, currentUserInfo);
 
-                // Also add as family member.
-                FamilyMember familyMember = new()
-                {
-                    FamilyId = family.FamilyId,
-                    MemberType = FamilyMemberType.Unknown,
-                    UserId = userInfo?.UserId ?? string.Empty,
-                    Email = adminEmail,
-                    CreatedBy = currentUserInfo.UserEmail,
-                    CreatedTime = System.DateTime.UtcNow,
-                    ModifiedBy = currentUserInfo.UserEmail,
-                    ModifiedTime = System.DateTime.UtcNow
-                };
-                await familyMembersService.AddFamilyMember(familyMember, currentUserInfo);
+                //// Also add as family member.
+                //FamilyMember familyMember = new()
+                //{
+                //    FamilyId = family.FamilyId,
+                //    MemberType = FamilyMemberType.Unknown,
+                //    UserId = userInfo?.UserId ?? string.Empty,
+                //    Email = adminEmail,
+                //    CreatedBy = currentUserInfo.UserEmail,
+                //    CreatedTime = System.DateTime.UtcNow,
+                //    ModifiedBy = currentUserInfo.UserEmail,
+                //    ModifiedTime = System.DateTime.UtcNow
+                //};
+                //await familyMembersService.AddFamilyMember(familyMember, currentUserInfo);
             }
             
             return family;

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
@@ -12,6 +7,11 @@ using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services.UserAccessService
 {
@@ -514,19 +514,6 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    UserGroup userGroup = await _context.UserGroupsDb.SingleOrDefaultAsync(ug => ug.ProgenyId == progeny.Id && ug.Name == accessLevel.Text);
-                    if (userGroup == null)
-                    {
-                        userGroup = new()
-                        {
-                            ProgenyId = progeny.Id,
-                            Name = accessLevel.Text,
-                            Description = $"Auto-generated group for access level {accessLevel.Text} for {progeny.NickName}",
-                        };
-                        _ = _context.UserGroupsDb.Add(userGroup);
-                        _ = await _context.SaveChangesAsync();
-                    }
-
                     // Ensure there is a ProgenyPermission entry for the group.
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
@@ -535,13 +522,37 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         _ => PermissionLevel.View,
                     };
 
-                    ProgenyPermission progenyPermission = await _context.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progeny.Id && pp.GroupId == userGroup.UserGroupId);
+                    int groupId = 0;
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == progeny.Id).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == progeny.Id && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+                    
+                    if (groupId == 0)
+                    {
+                        UserGroup userGroup = new()
+                        {
+                            ProgenyId = progeny.Id,
+                            Name = accessLevel.Text,
+                            Description = $"Auto-generated group for access level {accessLevel.Text} for {progeny.NickName}",
+                        };
+                        _ = _context.UserGroupsDb.Add(userGroup);
+                        _ = await _context.SaveChangesAsync();
+                        groupId = userGroup.UserGroupId;
+                    }
+
+                    ProgenyPermission progenyPermission = await _context.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progeny.Id && pp.GroupId == groupId);
                     if (progenyPermission == null)
                     {
                         progenyPermission = new()
                         {
                             ProgenyId = progeny.Id,
-                            GroupId = userGroup.UserGroupId,
+                            GroupId = groupId,
                             CreatedBy = "system",
                             CreatedTime = DateTime.UtcNow,
                             ModifiedBy = "system",
@@ -557,12 +568,12 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                     foreach (UserAccess userAccess in userAccessList)
                     {
                         UserInfo userInfo = await _context.UserInfoDb.SingleOrDefaultAsync(ui => ui.UserEmail.ToUpper() == userAccess.UserId.ToUpper());
-                        UserGroupMember existingGroupMember = await _context.UserGroupMembersDb.SingleOrDefaultAsync(ugm => ugm.UserGroupId == userGroup.UserGroupId && ugm.Email.ToUpper() == userAccess.UserId.ToUpper());
+                        UserGroupMember existingGroupMember = await _context.UserGroupMembersDb.SingleOrDefaultAsync(ugm => ugm.UserGroupId == groupId && ugm.Email.ToUpper() == userAccess.UserId.ToUpper());
                         if (existingGroupMember == null)
                         {
                             UserGroupMember userGroupMember = new()
                             {
-                                UserGroupId = userGroup.UserGroupId,
+                                UserGroupId = groupId,
                                 Email = userAccess.UserId,
                                 UserId = userInfo?.UserId ?? string.Empty,
                                 CreatedBy = "system",
@@ -575,6 +586,21 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         }
                     }
                 }
+            }
+
+            // Finally, update the user cache entries for all users.
+            List<UserInfo> allUserInfos = await _context.UserInfoDb.ToListAsync();
+            foreach (UserInfo userInfo in allUserInfos)
+            {
+                UserUpdatedCacheEntry userCacheEntry = new()
+                {
+                    UserId = userInfo.UserId,
+                    UpdateTime = DateTime.UtcNow
+                };
+                DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+                cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userInfo.UserId
+                    , JsonSerializer.Serialize(userCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
             }
         }
 
@@ -673,32 +699,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == picture.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == picture.PictureId && tip.ProgenyId == picture.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
 
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == picture.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == picture.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == picture.PictureId && tip.ProgenyId == picture.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
+                    
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Photo,
                         ItemId = picture.PictureId,
                         ProgenyId = picture.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -743,32 +776,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == video.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Video && tip.ItemId == video.VideoId && tip.ProgenyId == video.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
 
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == video.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == video.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Video && tip.ItemId == video.VideoId && tip.ProgenyId == video.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
+                    
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Video,
                         ItemId = video.VideoId,
                         ProgenyId = video.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -813,32 +853,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == calendarItem.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Calendar && tip.ItemId == calendarItem.EventId && tip.ProgenyId == calendarItem.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
+
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == calendarItem.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == calendarItem.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Calendar && tip.ItemId == calendarItem.EventId && tip.ProgenyId == calendarItem.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
 
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Calendar,
                         ItemId = calendarItem.EventId,
                         ProgenyId = calendarItem.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -882,33 +929,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == vocabularyItem.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Vocabulary && tip.ItemId == vocabularyItem.WordId && tip.ProgenyId == vocabularyItem.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
 
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == vocabularyItem.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == vocabularyItem.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Vocabulary && tip.ItemId == vocabularyItem.WordId && tip.ProgenyId == vocabularyItem.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
+                    
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Vocabulary,
                         ItemId = vocabularyItem.WordId,
                         ProgenyId = vocabularyItem.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -952,33 +1005,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == skill.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Skill && tip.ItemId == skill.SkillId && tip.ProgenyId == skill.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
 
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == skill.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == skill.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Skill && tip.ItemId == skill.SkillId && tip.ProgenyId == skill.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
+                    
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Skill,
                         ItemId = skill.SkillId,
                         ProgenyId = skill.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -1022,33 +1081,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == friend.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Friend && tip.ItemId == friend.FriendId && tip.ProgenyId == friend.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
 
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == friend.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == friend.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Friend && tip.ItemId == friend.FriendId && tip.ProgenyId == friend.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
+                    
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Friend,
                         ItemId = friend.FriendId,
                         ProgenyId = friend.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -1092,33 +1157,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == measurement.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Measurement && tip.ItemId == measurement.MeasurementId && tip.ProgenyId == measurement.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
 
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == measurement.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == measurement.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Measurement && tip.ItemId == measurement.MeasurementId && tip.ProgenyId == measurement.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
+                    
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Measurement,
                         ItemId = measurement.MeasurementId,
                         ProgenyId = measurement.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -1163,33 +1234,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == sleep.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Sleep && tip.ItemId == sleep.SleepId && tip.ProgenyId == sleep.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
+
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == sleep.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == sleep.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Sleep && tip.ItemId == sleep.SleepId && tip.ProgenyId == sleep.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
 
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Sleep,
                         ItemId = sleep.SleepId,
                         ProgenyId = sleep.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -1235,33 +1312,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == note.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Note && tip.ItemId == note.NoteId && tip.ProgenyId == note.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
+
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == note.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == note.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Note && tip.ItemId == note.NoteId && tip.ProgenyId == note.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
                     
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Note,
                         ItemId = note.NoteId,
                         ProgenyId = note.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -1305,33 +1388,40 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == contact.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Contact && tip.ItemId == contact.ContactId && tip.ProgenyId == contact.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
 
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == contact.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == contact.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Contact && tip.ItemId == contact.ContactId && tip.ProgenyId == contact.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
+
+                    
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Contact,
                         ItemId = contact.ContactId,
                         ProgenyId = contact.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -1375,33 +1465,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == vaccination.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Vaccination && tip.ItemId == vaccination.VaccinationId && tip.ProgenyId == vaccination.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
+
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == vaccination.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == vaccination.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Vaccination && tip.ItemId == vaccination.VaccinationId && tip.ProgenyId == vaccination.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
 
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Vaccination,
                         ItemId = vaccination.VaccinationId,
                         ProgenyId = vaccination.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -1445,33 +1541,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == location.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Location && tip.ItemId == location.LocationId && tip.ProgenyId == location.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
+
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == location.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == location.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Location && tip.ItemId == location.LocationId && tip.ProgenyId == location.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
 
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.Location,
                         ItemId = location.LocationId,
                         ProgenyId = location.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -1515,33 +1617,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == todoItem.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.TodoItem && tip.ItemId == todoItem.TodoItemId && tip.ProgenyId == todoItem.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
+
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == todoItem.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == todoItem.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.TodoItem && tip.ItemId == todoItem.TodoItemId && tip.ProgenyId == todoItem.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
 
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.TodoItem,
                         ItemId = todoItem.TodoItemId,
                         ProgenyId = todoItem.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",
@@ -1585,33 +1693,39 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         continue;
                     }
 
-                    string groupName = accessLevel.Text;
-                    UserGroup userGroup = await _context.UserGroupsDb.AsNoTracking().SingleOrDefaultAsync(ug => ug.ProgenyId == kanbanBoard.ProgenyId && ug.Name == groupName);
-                    if (userGroup == null)
-                    {
-                        continue;
-                    }
-
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.KanbanBoard && tip.ItemId == kanbanBoard.KanbanBoardId && tip.ProgenyId == kanbanBoard.ProgenyId && tip.GroupId == userGroup.UserGroupId);
-
-                    if (existingPermission != null)
-                    {
-                        continue;
-                    }
-
                     PermissionLevel permissionLevel = accessLevelValue switch
                     {
                         0 => PermissionLevel.Admin,
+                        1 => PermissionLevel.Add,
                         _ => PermissionLevel.View,
                     };
 
+                    int groupId = 0;
+
+                    List<UserGroup> progenyGroups = await _context.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == kanbanBoard.ProgenyId).ToListAsync();
+                    foreach (UserGroup pg in progenyGroups)
+                    {
+                        ProgenyPermission groupProgenyPermission = await _context.ProgenyPermissionsDb.AsNoTracking().SingleOrDefaultAsync(pp => pp.ProgenyId == kanbanBoard.ProgenyId && pp.GroupId == pg.UserGroupId);
+                        if (groupProgenyPermission.PermissionLevel == permissionLevel)
+                        {
+                            groupId = pg.UserGroupId;
+                        }
+                    }
+
+                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.KanbanBoard && tip.ItemId == kanbanBoard.KanbanBoardId && tip.ProgenyId == kanbanBoard.ProgenyId && tip.GroupId == groupId);
+
+                    if (existingPermission != null || groupId == 0)
+                    {
+                        continue;
+                    }
+                    
                     TimelineItemPermission timelineItemPermission = new()
                     {
                         TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
                         ItemId = kanbanBoard.KanbanBoardId,
                         ProgenyId = kanbanBoard.ProgenyId,
-                        GroupId = userGroup.UserGroupId,
+                        GroupId = groupId,
                         InheritPermissions = false,
                         PermissionLevel = permissionLevel,
                         CreatedBy = "system",

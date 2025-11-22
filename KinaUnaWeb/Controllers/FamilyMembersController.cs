@@ -76,7 +76,8 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_NotFoundPartial");
             }
 
-            model.FamilyMember.PermissionLevel = model.FamilyMember.Progeny.ProgenyPerMission.PermissionLevel;
+            model.FamilyMember.PermissionLevel = model.Family.FamilyPermission.PermissionLevel;
+            
 
             return PartialView("_FamilyMemberDetailsPartial", model);
         }
@@ -204,7 +205,7 @@ namespace KinaUnaWeb.Controllers
                 FamilyMember = familyMember,
                 Family = family
             };
-            model.FamilyMember.PermissionLevel = model.FamilyMember.Progeny.ProgenyPerMission.PermissionLevel;
+            model.FamilyMember.PermissionLevel = model.Family.FamilyPermission.PermissionLevel;
 
             model.MemberType = model.FamilyMember.MemberType;
             model.SetMemberTypeList();

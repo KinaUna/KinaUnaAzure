@@ -108,6 +108,7 @@ namespace KinaUnaProgenyApi.Services
                 FamilyId = 0, 
                 Description = $"Administrators group for {progeny.NickName} created automatically."
             };
+            
             adminGroup = await _userGroupsService.AddUserGroup(adminGroup, currentUserInfo);
             
             // Add permissions the admins and the progeny (if email is provided).

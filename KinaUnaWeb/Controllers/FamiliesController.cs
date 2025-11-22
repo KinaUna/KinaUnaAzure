@@ -184,7 +184,7 @@ namespace KinaUnaWeb.Controllers
             
             await familiesHttpClient.DeleteFamily(model.Family.FamilyId);
 
-            return Json(model.Family);
+            return RedirectToAction("Index");
         }
 
         /// <summary>

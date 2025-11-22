@@ -86,6 +86,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             
             TimelineItemPermission itemPermission = new()
             {
+                ItemId = itemId,
                 PermissionLevel = PermissionLevel.None
             };
 
@@ -94,17 +95,20 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             if (!string.IsNullOrEmpty(cachedItemPermission))
             {
                 HasItemPermissionCacheEntry cacheEntry = JsonSerializer.Deserialize<HasItemPermissionCacheEntry>(cachedItemPermission, JsonSerializerOptions.Web);
-                UserUpdatedCacheEntry userCacheEntry = GetUserUpdatedCache(userInfo.UserId);
-                if (userCacheEntry != null)
+                if (cacheEntry != null && cacheEntry.TimelineItemPermission != null && cacheEntry.TimelineItemPermission.ItemId != 0)
                 {
-                    if (userCacheEntry.UpdateTime < cacheEntry.UpdateTime)
+                    UserUpdatedCacheEntry userCacheEntry = GetUserUpdatedCache(userInfo.UserId);
+                    if (userCacheEntry != null)
+                    {
+                        if (userCacheEntry.UpdateTime < cacheEntry.UpdateTime)
+                        {
+                            return cacheEntry.TimelineItemPermission.PermissionLevel >= requiredLevel;
+                        }
+                    }
+                    else
                     {
                         return cacheEntry.TimelineItemPermission.PermissionLevel >= requiredLevel;
                     }
-                }
-                else
-                {
-                    return cacheEntry.TimelineItemPermission.PermissionLevel >= requiredLevel;
                 }
             }
 
@@ -2261,63 +2265,92 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 resultPermission = permission;
             }
 
-            if (resultPermission.ProgenyPermissionId == 0)
+            Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == progenyId);
+            if (progeny.IsInAdminList(userInfo.UserEmail) && resultPermission.PermissionLevel < PermissionLevel.Admin)
             {
-                Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == progenyId);
-                if (progeny != null)
+                // There is no explicit permission set, but the user is in the admin list, so give them admin permissions.
+                List<UserGroup> progenyGroups = await progenyDbContext.UserGroupsDb.AsNoTracking()
+                    .Where(ug => ug.ProgenyId == progenyId).ToListAsync();
+                
+                bool adminGroupExists = false;
+
+                if (progenyGroups.Count > 0)
                 {
-                    if (progeny.IsInAdminList(userInfo.UserEmail))
+                    foreach (UserGroup progenyGroup in progenyGroups)
                     {
-                        // There is no explicit permission set, but the user is in the admin list, so give them admin permissions.
-                        List<UserGroup> progenyGroups = await progenyDbContext.UserGroupsDb.AsNoTracking()
-                            .Where(ug => ug.ProgenyId == progenyId).ToListAsync();
-                        if (progenyGroups.Count == 0)
+                        ProgenyPermission progenyGroupPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
+                            .SingleOrDefaultAsync(pp => pp.ProgenyId == progenyId && pp.GroupId == progenyGroup.UserGroupId);
+                        if (progenyGroupPermission != null && progenyGroupPermission.PermissionLevel == PermissionLevel.Admin)
                         {
-                            UserGroup adminGroup = new()
+                            adminGroupExists = true;
+                            // Add the user to the admin group if not already a member.
+                            bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == progenyGroup.UserGroupId);
+                            if(!isMember)
                             {
-                                IsFamily = false,
-                                Name = $"{progeny.Name} Admins",
-                                Description = $"Administrators group for {progeny.NickName} created automatically.",
-                                ProgenyId = progenyId,
-                                FamilyId = 0,
-                                CreatedBy = "System",
-                                CreatedTime = DateTime.UtcNow,
-                                ModifiedBy = "System",
-                                ModifiedTime = DateTime.UtcNow
-                            };
-
-                            progenyDbContext.UserGroupsDb.Add(adminGroup);
-                            await progenyDbContext.SaveChangesAsync();
-
-                            UserGroupMember adminMember = new()
-                            {
-                                UserId = userInfo.UserId,
-                                Email = userInfo.UserEmail,
-                                UserGroupId = adminGroup.UserGroupId,
-                                CreatedBy = "System",
-                                CreatedTime = DateTime.UtcNow,
-                                ModifiedBy = "System",
-                                ModifiedTime = DateTime.UtcNow
-                            };
-                            progenyDbContext.UserGroupMembersDb.Add(adminMember);
-                            await progenyDbContext.SaveChangesAsync();
-
-                            ProgenyPermission adminPermission = new()
-                            {
-                                ProgenyId = progenyId,
-                                GroupId = adminGroup.UserGroupId,
-                                PermissionLevel = PermissionLevel.Admin,
-                                CreatedBy = "System",
-                                CreatedTime = DateTime.UtcNow,
-                                ModifiedBy = "System",
-                                ModifiedTime = DateTime.UtcNow
-                            };
-                            resultPermission = await GrantProgenyPermission(adminPermission, userInfo);
+                                UserGroupMember newMember = new()
+                                {
+                                    UserId = userInfo.UserId,
+                                    Email = userInfo.UserEmail,
+                                    UserGroupId = progenyGroup.UserGroupId,
+                                    CreatedBy = "System",
+                                    CreatedTime = DateTime.UtcNow,
+                                    ModifiedBy = "System",
+                                    ModifiedTime = DateTime.UtcNow
+                                };
+                                progenyDbContext.UserGroupMembersDb.Add(newMember);
+                            }
+                            SetUserUpdatedCache(userInfo.UserId);
+                            resultPermission = progenyGroupPermission;
+                            break;
                         }
                     }
                 }
-            }
+                if (progenyGroups.Count == 0 || !adminGroupExists)
+                {
+                    UserGroup adminGroup = new()
+                    {
+                        IsFamily = false,
+                        Name = $"{progeny.Name} Admins",
+                        Description = $"Administrators group for {progeny.NickName} created automatically.",
+                        ProgenyId = progenyId,
+                        FamilyId = 0,
+                        CreatedBy = "System",
+                        CreatedTime = DateTime.UtcNow,
+                        ModifiedBy = "System",
+                        ModifiedTime = DateTime.UtcNow
+                    };
 
+                    progenyDbContext.UserGroupsDb.Add(adminGroup);
+                    await progenyDbContext.SaveChangesAsync();
+
+                    UserGroupMember adminMember = new()
+                    {
+                        UserId = userInfo.UserId,
+                        Email = userInfo.UserEmail,
+                        UserGroupId = adminGroup.UserGroupId,
+                        CreatedBy = "System",
+                        CreatedTime = DateTime.UtcNow,
+                        ModifiedBy = "System",
+                        ModifiedTime = DateTime.UtcNow
+                    };
+                    progenyDbContext.UserGroupMembersDb.Add(adminMember);
+                    await progenyDbContext.SaveChangesAsync();
+
+                    ProgenyPermission adminPermission = new()
+                    {
+                        ProgenyId = progenyId,
+                        GroupId = adminGroup.UserGroupId,
+                        PermissionLevel = PermissionLevel.Admin,
+                        CreatedBy = "System",
+                        CreatedTime = DateTime.UtcNow,
+                        ModifiedBy = "System",
+                        ModifiedTime = DateTime.UtcNow
+                    };
+                    resultPermission = await GrantProgenyPermission(adminPermission, userInfo);
+                }
+                
+            }
+            
             return resultPermission;
         }
 

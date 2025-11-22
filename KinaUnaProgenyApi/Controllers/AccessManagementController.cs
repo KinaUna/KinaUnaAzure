@@ -87,7 +87,7 @@ namespace KinaUnaProgenyApi.Controllers
             foreach (int familyId in familyIds)
             {
                 Family family = await familiesService.GetFamilyById(familyId, currentUserInfo);
-                if (family != null)
+                if (family != null && family.FamilyId != 0)
                 {
                     families.Add(family);
                 }

@@ -135,17 +135,20 @@ namespace KinaUnaWeb.Services
 
             foreach (Family family in familiesWithAddPermission)
             {
-                SelectListItem selItem = new()
+                if (family.FamilyId > 0)
                 {
-                    Text = familiesWithAddPermission.Single(p => p.FamilyId == family.FamilyId).Name,
-                    Value = family.FamilyId.ToString()
-                };
-                if (family.FamilyId == selectedFamilyId)
-                {
-                    selItem.Selected = true;
-                }
+                    SelectListItem selItem = new()
+                    {
+                        Text = familiesWithAddPermission.Single(p => p.FamilyId == family.FamilyId).Name,
+                        Value = family.FamilyId.ToString()
+                    };
+                    if (family.FamilyId == selectedFamilyId)
+                    {
+                        selItem.Selected = true;
+                    }
 
-                familyList.Add(selItem);
+                    familyList.Add(selItem);
+                }
             }
 
             return familyList;
