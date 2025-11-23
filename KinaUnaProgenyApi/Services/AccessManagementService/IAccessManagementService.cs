@@ -28,6 +28,16 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// langword="null"/> if no cache entry exists for the specified user.</returns>
         UserUpdatedCacheEntry GetUserUpdatedCache(string userId);
 
+        void SetProgenyUpdatedCache(int progenyId);
+
+        /// <summary>
+        /// Retrieves the cached user update entry for the specified progeny identifier.
+        /// </summary>
+        /// <param name="progenyId">The unique identifier of the progeny whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <returns>A <see cref="ProgenyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
+        /// langword="null"/> if no cache entry exists for the specified progeny.</returns>
+        ProgenyUpdatedCacheEntry GetProgenyUpdatedCache(int progenyId);
+
         /// <summary>
         /// Determines whether a user has the specified access level for a given timeline item (e.g., Note, TodoItem, Sleep, etc.).
         /// </summary>

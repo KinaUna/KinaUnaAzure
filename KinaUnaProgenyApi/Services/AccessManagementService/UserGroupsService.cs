@@ -1,6 +1,8 @@
 ﻿using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -211,13 +213,29 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             bool hasAccess = false;
             if (userGroup.FamilyId != 0)
             {
-                hasAccess = await accessManagementService.HasFamilyPermission(userGroup.FamilyId, currentUserInfo, PermissionLevel.Edit);
+                Family family = await progenyDbContext.FamiliesDb.AsNoTracking().SingleOrDefaultAsync(f => f.FamilyId == userGroup.FamilyId);
+                if (family != null && family.IsInAdminList(currentUserInfo.UserEmail))
+                {
+                    hasAccess = true;
+                }
+                else
+                {
+                    hasAccess = await accessManagementService.HasFamilyPermission(userGroup.FamilyId, currentUserInfo, PermissionLevel.Edit);
+                }
             }
             else
             {
                 if (userGroup.ProgenyId != 0)
                 {
-                    hasAccess = await accessManagementService.HasProgenyPermission(userGroup.ProgenyId, currentUserInfo, PermissionLevel.Edit);
+                    Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == userGroup.ProgenyId);
+                    if (progeny != null && progeny.IsInAdminList(currentUserInfo.UserEmail))
+                    {
+                        hasAccess = true;
+                    }
+                    else
+                    {
+                        hasAccess = await accessManagementService.HasProgenyPermission(userGroup.ProgenyId, currentUserInfo, PermissionLevel.Edit);
+                    }
                 }
             }
 
@@ -475,13 +493,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             bool hasAccess = false;
             if (group.FamilyId != 0)
             {
-                hasAccess = await accessManagementService.HasFamilyPermission(group.FamilyId, currentUserInfo, PermissionLevel.Edit);
+                hasAccess = await accessManagementService.HasFamilyPermission(group.FamilyId, currentUserInfo, PermissionLevel.Admin);
             }
             else
             {
                 if (group.ProgenyId != 0)
                 {
-                    hasAccess = await accessManagementService.HasProgenyPermission(group.ProgenyId, currentUserInfo, PermissionLevel.Edit);
+                    hasAccess = await accessManagementService.HasProgenyPermission(group.ProgenyId, currentUserInfo, PermissionLevel.Admin);
                 }
             }
             if (!hasAccess)
@@ -535,13 +553,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             bool hasAccess = false;
             if (group.FamilyId != 0)
             {
-                hasAccess = await accessManagementService.HasFamilyPermission(group.FamilyId, currentUserInfo, PermissionLevel.Edit);
+                hasAccess = await accessManagementService.HasFamilyPermission(group.FamilyId, currentUserInfo, PermissionLevel.Admin);
             }
             else
             {
                 if (group.ProgenyId != 0)
                 {
-                    hasAccess = await accessManagementService.HasProgenyPermission(group.ProgenyId, currentUserInfo, PermissionLevel.Edit);
+                    hasAccess = await accessManagementService.HasProgenyPermission(group.ProgenyId, currentUserInfo, PermissionLevel.Admin);
                 }
             }
             if (!hasAccess)
@@ -603,13 +621,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             bool hasAccess = false;
             if (group.FamilyId != 0)
             {
-                hasAccess = await accessManagementService.HasFamilyPermission(group.FamilyId, currentUserInfo, PermissionLevel.Edit);
+                hasAccess = await accessManagementService.HasFamilyPermission(group.FamilyId, currentUserInfo, PermissionLevel.Admin);
             }
             else
             {
                 if (group.ProgenyId != 0)
                 {
-                    hasAccess = await accessManagementService.HasProgenyPermission(group.ProgenyId, currentUserInfo, PermissionLevel.Edit);
+                    hasAccess = await accessManagementService.HasProgenyPermission(group.ProgenyId, currentUserInfo, PermissionLevel.Admin);
                 }
             }
             if (!hasAccess)
@@ -617,17 +635,49 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return false;
             }
 
+            // If the member is in the admin list, remove the email address from the entity's admins.
+            if (group.FamilyId > 0)
+            {
+                Family family = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == group.FamilyId);
+                if (family != null)
+                {
+                    if (family.IsInAdminList(member.Email))
+                    {
+                        family.RemoveFromAdminList(member.Email);
+                        progenyDbContext.Update(family);
+                    }
+                }
+            }
+
+            bool progenyChanged = false;
+            if (group.ProgenyId > 0)
+            {
+                Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == group.ProgenyId);
+                if (progeny != null)
+                {
+                    if (progeny.IsInAdminList(member.Email))
+                    {
+                        progeny.RemoveFromAdminList(member.Email);
+                        progenyDbContext.Update(progeny);
+                        progenyChanged = true;
+                    }
+                }
+            }
+            
+            progenyDbContext.UserGroupMembersDb.Remove(member);
+            await progenyDbContext.SaveChangesAsync();
+
+            await userGroupAuditLogService.AddUserGroupMemberDeletedAuditLogEntry(member, currentUserInfo);
+            
             if (!string.IsNullOrEmpty(member.UserId))
             {
                 accessManagementService.SetUserUpdatedCache(member.UserId);
             }
 
-            progenyDbContext.UserGroupMembersDb.Remove(member);
-            await progenyDbContext.SaveChangesAsync();
-
-            await userGroupAuditLogService.AddUserGroupMemberDeletedAuditLogEntry(member, currentUserInfo);
-            // Todo: Update cache for user?
-
+            if (progenyChanged)
+            {
+                accessManagementService.SetProgenyUpdatedCache(group.ProgenyId);
+            }
             return true;
         }
 
@@ -652,6 +702,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.UpdateRange(members);
 
             await progenyDbContext.SaveChangesAsync();
+            accessManagementService.SetUserUpdatedCache(userInfo.UserId);
         }
 
         /// <summary>
@@ -670,10 +721,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 member.UserId = userInfo.UserId;
             }
-
+            
             progenyDbContext.UpdateRange(members);
 
             await progenyDbContext.SaveChangesAsync();
+            accessManagementService.SetUserUpdatedCache(userInfo.UserId);
         }
     }
 }

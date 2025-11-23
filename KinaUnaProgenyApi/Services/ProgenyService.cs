@@ -1,18 +1,19 @@
-﻿using System.Collections.Generic;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using ImageMagick;
+﻿using ImageMagick;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -179,6 +180,8 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
+            _accessManagementService.SetProgenyUpdatedCache(progeny.Id);
+
             return progeny;
         }
 
@@ -255,7 +258,8 @@ namespace KinaUnaProgenyApi.Services
             }
 
             _ = await SetProgenyInCache(progeny.Id);
-            
+            _accessManagementService.SetProgenyUpdatedCache(progeny.Id);
+
             return progenyToUpdate;
         }
 
@@ -301,6 +305,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _accessManagementService.RevokeProgenyPermission(progenyPermission, currentUserInfo);
             }
 
+            _accessManagementService.SetProgenyUpdatedCache(progeny.Id);
             return progenyToDelete;
         }
 
@@ -316,9 +321,20 @@ namespace KinaUnaProgenyApi.Services
             {
                 return null;
             }
+            ProgenyUpdatedCacheEntry progenyUpdated = _accessManagementService.GetProgenyUpdatedCache(id);
 
-            Progeny progeny = JsonSerializer.Deserialize<Progeny>(cachedProgeny, JsonSerializerOptions.Web);
-            return progeny;
+            ProgenyCacheEntry progenyCacheEntry = JsonSerializer.Deserialize<ProgenyCacheEntry>(cachedProgeny, JsonSerializerOptions.Web);
+            
+            if (progenyUpdated != null && progenyCacheEntry != null)
+            {
+                if (progenyCacheEntry.UpdateTime > progenyUpdated.UpdateTime)
+                {
+                    // Cached entry is newer than the last updated time, return it.
+                    return progenyCacheEntry.Progeny;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -326,7 +342,7 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="id">The Id of the Progeny to get and set.</param>
         /// <returns>The Progeny with the given Id. Null if the Progeny doesn't exist.</returns>
-        private async Task<Progeny> SetProgenyInCache(int id)
+        public async Task<Progeny> SetProgenyInCache(int id)
         {
             Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
             if (progeny != null)
@@ -335,8 +351,10 @@ namespace KinaUnaProgenyApi.Services
                 {
                     progeny.PictureLink = Constants.ProfilePictureUrl;
                 }
+                
+                ProgenyCacheEntry progenyCacheEntry = new() { Progeny = progeny, UpdateTime = DateTime.UtcNow };
 
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id, JsonSerializer.Serialize(progeny, JsonSerializerOptions.Web), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id, JsonSerializer.Serialize(progenyCacheEntry, JsonSerializerOptions.Web), _cacheOptionsSliding);
             }
             else
             {
@@ -581,6 +599,11 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The deleted ProgenyInfo object.</returns>
         public async Task<ProgenyInfo> DeleteProgenyInfo(ProgenyInfo progenyInfo, UserInfo currentUserInfo)
         {
+            if (progenyInfo == null || progenyInfo.ProgenyInfoId == 0 || progenyInfo.ProgenyId == 0)
+            {
+                return null;
+            }
+
             bool hasPermission = await _accessManagementService.HasProgenyPermission(progenyInfo.ProgenyId, currentUserInfo, PermissionLevel.Admin);
             if (!hasPermission)
             {

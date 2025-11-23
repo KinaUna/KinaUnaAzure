@@ -208,6 +208,7 @@ export async function initializeAddEditKanbanItem(containerElementId, itemId) {
     setupRichTextEditor(containerElementId);
     const titleInput = document.getElementById('todo-title-input');
     if (titleInput) {
+        titleInput.removeEventListener('input', validateInputs);
         titleInput.addEventListener('input', validateInputs);
     }
     await setupForIndividualOrFamilyButtons(itemId, TimeLineType.KanbanItem, currentProgenyId, currentFamilyId);

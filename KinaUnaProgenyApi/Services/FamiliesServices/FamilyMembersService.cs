@@ -210,8 +210,8 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                 return null;
             }
 
-            familyMember.Email = familyMember.Email.Trim();
-            if (familyMember.Email.ToUpper() != existingFamilyMember.Email.ToUpper())
+            familyMember.Email = familyMember.Email?.Trim() ?? string.Empty;
+            if (!familyMember.Email.Equals(existingFamilyMember.Email, StringComparison.CurrentCultureIgnoreCase))
             {
                 // Email has changed, update UserId accordingly.
                 if (!string.IsNullOrWhiteSpace(familyMember.Email))

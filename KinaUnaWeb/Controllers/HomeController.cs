@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using KinaUna.Data.Models.DTOs;
@@ -49,6 +50,21 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> ProgenyTrivia([FromBody] TimelineRequest request)
         {
+            List<int> allowedProgenies = [];
+            if (request.Progenies.Count > 0)
+            {
+                foreach (int progenyId in request.Progenies)
+                {
+                    Progeny progeny = await progenyHttpClient.GetProgeny(progenyId);
+                    if (progeny != null && progeny.Id > 0)
+                    {
+                        allowedProgenies.Add(progeny.Id);
+                    }
+                }
+
+                request.Progenies = allowedProgenies;
+            }
+
             if (User.Identity == null || !User.Identity.IsAuthenticated)
             {
                 request.ProgenyId = Constants.DefaultChildId;

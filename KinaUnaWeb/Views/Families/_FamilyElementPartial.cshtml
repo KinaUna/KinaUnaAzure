@@ -32,10 +32,13 @@
                                 }
                                 <span>[@await LocaleManager.GetTranslation(familyMember.MemberType.ToString(), PageNames.Family, Model.LanguageId)]</span>
                             </div>
-                            <div class="col-12 ml-4">
-                                <div class="space-10"></div>
-                                <span>Email:</span> <span>@familyMember.Email</span>
-                            </div>
+                            @if (!string.IsNullOrEmpty(familyMember.Email))
+                            {
+                                <div class="col-12 ml-4">
+                                    <div class="space-10"></div>
+                                    <span>Email:</span> <span>@familyMember.Email</span>
+                                </div>
+                            }
                             @if (!string.IsNullOrWhiteSpace(familyMember.UserId) && familyMember.UserInfo != null)
                             {
                                 <div class="col-auto ml-4">
@@ -55,5 +58,6 @@
             </div>
         }
     </div>
+    <div class="space-20"></div>
 </div>
 

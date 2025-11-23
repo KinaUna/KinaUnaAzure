@@ -167,7 +167,7 @@ namespace KinaUnaWeb.Controllers
                 progeny = await progenyHttpClient.GetProgeny(model.CurrentProgenyId);
             } 
 
-            FamilyMember familyMember = new FamilyMember()
+            FamilyMember familyMember = new()
             {
                 FamilyId = model.CurrentFamilyId,
                 ProgenyId = model.CurrentProgenyId,
@@ -269,10 +269,11 @@ namespace KinaUnaWeb.Controllers
                         await progenyHttpClient.UpdateProgenyInfo(progenyInfo);
                     }
                 }
+                familyMember.Email = progeny.Email;
             }
 
             familyMember.MemberType = model.MemberType;
-            familyMember.Email = progeny.Email;
+            
 
             FamilyMember updatedFamilyMember = await familiesHttpClient.UpdateFamilyMember(familyMember);
             

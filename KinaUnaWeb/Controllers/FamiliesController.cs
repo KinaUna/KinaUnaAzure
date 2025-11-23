@@ -56,12 +56,9 @@ namespace KinaUnaWeb.Controllers
                 {
                     familyMember.Progeny = await progenyHttpClient.GetProgeny(familyMember.ProgenyId);
                 }
-                else
+                if (!string.IsNullOrWhiteSpace(familyMember.UserId))
                 {
-                    if (!string.IsNullOrWhiteSpace(familyMember.UserId))
-                    {
-                        familyMember.UserInfo = await userInfosHttpClient.GetUserInfoByUserId(familyMember.UserId);
-                    }
+                    familyMember.UserInfo = await userInfosHttpClient.GetUserInfoByUserId(familyMember.UserId);
                 }
             }
 

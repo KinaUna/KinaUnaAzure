@@ -543,7 +543,8 @@ function validateInputs(): void {
     if (nameInput && nickNameInput) {
         const nameValid = nameInput.value.trim().length > 0;
         const nickNameValid = nickNameInput.value.trim().length > 0;
-
+        console.log('nameValid: ' + nameValid);
+        console.log('nickNameValid: ' + nickNameValid);
         if (progenySelectedId === '0') {
             if (newProgenyDataDiv) {
                 newProgenyDataDiv.classList.remove('d-none');
@@ -615,9 +616,9 @@ export async function initializeAddEditFamilyMember(familyMemberId: string): Pro
     }
 
     const nickNameInput = document.getElementById('family-member-nick-name-input') as HTMLInputElement;
-    if (nameInput) {
-        nameInput.removeEventListener('input', validateInputs);
-        nameInput.addEventListener('input', validateInputs);
+    if (nickNameInput) {
+        nickNameInput.removeEventListener('input', validateInputs);
+        nickNameInput.addEventListener('input', validateInputs);
     }
 
     const selectProgenySelect = document.getElementById('add-to-family-progeny-select') as HTMLSelectElement;

@@ -47,6 +47,11 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The TimeLineItem with the given TimeLineId. Null if the TimeLineItem doesn't exist.</returns>
         public async Task<TimeLineItem> GetTimeLineItem(int id, UserInfo currentUserInfo)
         {
+            if (id == 0)
+            {
+                return null;
+            }
+
             TimeLineItem timeLineItem = await GetTimeLineItemFromCache(id);
             if (timeLineItem == null || timeLineItem.TimeLineId == 0)
             {
@@ -213,7 +218,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The deleted TimeLineItem. Null if a TimeLineItem with the TimeLineId doesn't exist.</returns>
         public async Task<TimeLineItem> DeleteTimeLineItem(TimeLineItem item, UserInfo currentUserInfo)
         {
-            
+            if (item == null || item.ItemId == "0") return null;
+
             TimeLineItem timeLineItemToDelete = await _context.TimeLineDb.SingleOrDefaultAsync(ti => ti.TimeLineId == item.TimeLineId);
             KinaUnaTypes.TimeLineType itemTypeAsTimelineType = (KinaUnaTypes.TimeLineType)item.ItemType;
             _ = int.TryParse(item.ItemId, out int itemIdAsInt);

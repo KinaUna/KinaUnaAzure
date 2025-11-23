@@ -234,6 +234,7 @@ export async function initializeAddEditKanbanItem(containerElementId: string, it
 
     const titleInput = document.getElementById('todo-title-input') as HTMLInputElement;
     if (titleInput) {
+        titleInput.removeEventListener('input', validateInputs);
         titleInput.addEventListener('input', validateInputs);
     }
 

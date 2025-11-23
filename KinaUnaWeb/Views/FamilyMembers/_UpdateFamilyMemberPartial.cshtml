@@ -41,6 +41,10 @@
                         <div class="space-50"></div>
                         <div class="h5">@await LocaleManager.GetTranslation("Family", PageNames.Family, Model.LanguageId): @Model.CurrentFamily.Name</div>
                     </div>
+                    <div class="col-12">
+                        <div class="h5">@await LocaleManager.GetTranslation("Member", PageNames.Family, Model.LanguageId): @Model.CurrentProgeny.NickName</div>
+                        <div class="space-20"></div>
+                    </div>
                 </div>
             </div>
             <div class="col-12">
@@ -180,6 +184,15 @@
                                 <div class="col-auto">
                                     <textarea asp-for="FamilyMember.ProgenyInfo.Notes" class="form-control" rows="4" value="@Model.FamilyMember.ProgenyInfo.Notes"></textarea>
                                 </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group">
+                            <label asp-for="FamilyMember.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("KinaUna account email", PageNames.Progeny, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <input id="family-member-email-input" asp-for="FamilyMember.Email" type="email" value="@Model.FamilyMember.Email" class="form-control"/>
                             </div>
                         </div>
                     }

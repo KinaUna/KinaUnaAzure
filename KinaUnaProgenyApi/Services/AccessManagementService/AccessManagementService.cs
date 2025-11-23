@@ -54,7 +54,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
             return null;
         }
-
+        
         public async Task SetUserUpdatedCacheForGroup(int groupId)
         {
             IEnumerable<UserGroupMember> groupMembers = await progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ug => ug.UserGroupId == groupId).ToListAsync();
@@ -65,6 +65,36 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     SetUserUpdatedCache(member.UserId);
                 }
             }
+        }
+
+        public void SetProgenyUpdatedCache(int progenyId)
+        {
+            ProgenyUpdatedCacheEntry progenyCacheEntry = new()
+            {
+                ProgenyId = progenyId,
+                UpdateTime = DateTime.UtcNow
+            };
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyCacheEntry_" + progenyId
+                , JsonSerializer.Serialize(progenyCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached user update entry for the specified progeny identifier.
+        /// </summary>
+        /// <param name="progenyId">The unique identifier of the progeny whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <returns>A <see cref="ProgenyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
+        /// langword="null"/> if no cache entry exists for the specified progeny.</returns>
+        public ProgenyUpdatedCacheEntry GetProgenyUpdatedCache(int progenyId)
+        {
+            string cachedUserEntry = cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyCacheEntry_" + progenyId).Result;
+            if (!string.IsNullOrEmpty(cachedUserEntry))
+            {
+                ProgenyUpdatedCacheEntry progenyCacheEntry = JsonSerializer.Deserialize<ProgenyUpdatedCacheEntry>(cachedUserEntry, JsonSerializerOptions.Web);
+                return progenyCacheEntry;
+            }
+            return null;
         }
 
         /// <summary>
@@ -1574,6 +1604,15 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 }
             }
 
+            if (requiredLevel == PermissionLevel.Admin)
+            {
+                Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == progenyId);
+                if (progeny != null && progeny.IsInAdminList(userInfo.UserEmail))
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -1910,18 +1949,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 return false;
             }
-
-            Family family = await progenyDbContext.FamiliesDb.AsNoTracking().SingleOrDefaultAsync(f => f.FamilyId == familyId);
-            if (family == null)
-            {
-                return false;
-            }
-
-            if (family.IsInAdminList(userInfo.UserEmail))
-            {
-                return true;
-            }
-
+            
             List<FamilyPermission> groupPermissions = await progenyDbContext.FamilyPermissionsDb
                 .AsNoTracking()
                 .Where(fp => fp.GroupId > 0 && fp.FamilyId== familyId)
@@ -1933,6 +1961,16 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (isMember && permission.PermissionLevel > highestGroupPermission)
                 {
                     highestGroupPermission = permission.PermissionLevel;
+                }
+            }
+
+            if (requiredLevel == PermissionLevel.Admin)
+            {
+                Family family = await progenyDbContext.FamiliesDb.AsNoTracking().SingleOrDefaultAsync(f => f.FamilyId == familyId);
+                
+                if (family != null &&family.IsInAdminList(userInfo.UserEmail))
+                {
+                    return true;
                 }
             }
 

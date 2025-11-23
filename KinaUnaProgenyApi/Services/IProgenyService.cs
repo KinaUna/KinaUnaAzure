@@ -13,7 +13,7 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="currentUserInfo">Optional UserInfo object for the current user, to check permissions.</param>
         /// <returns>The Progeny with the given Id. Null if the Progeny doesn't exist.</returns>
         Task<Progeny> GetProgeny(int id, UserInfo currentUserInfo);
-
+        
         /// <summary>
         /// Adds a new Progeny to the database and the cache.
         /// </summary>
