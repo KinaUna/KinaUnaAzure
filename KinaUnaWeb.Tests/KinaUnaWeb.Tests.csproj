@@ -9,6 +9,10 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DisableMSBuildAssemblyCopyCheck>false</DisableMSBuildAssemblyCopyCheck>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.50.0" />
     <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.8.0" />
@@ -25,22 +29,25 @@
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.0" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.0" />
     <PackageReference Include="Microsoft.Bcl.Cryptography" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Build" Version="18.0.2" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="18.0.2" />
+    <PackageReference Include="Microsoft.Build" Version="18.0.2" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="18.0.2" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="18.0.2" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="18.0.2" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.14.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="5.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.79.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Abstractions" Version="8.14.0" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.14.0" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.79.2" />
+    <PackageReference Include="Microsoft.IdentityModel.Abstractions" Version="8.15.0" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.15.0" />
+    <PackageReference Include="Microsoft.NET.StringTools" Version="18.0.2" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="7.0.4" />
     <PackageReference Include="Moq" Version="4.20.72" />
