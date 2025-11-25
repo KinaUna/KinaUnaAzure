@@ -1,4 +1,4 @@
-import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v10.js';
+import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v11.js';
 import { getCurrentProgenyId } from '../data-tools-v10.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v10.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v10.js';

@@ -3,7 +3,7 @@ import { setAddItemButtonEventListeners } from './addItem/add-item-v10.js';
 import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v10.js';
 import { addFamilyItemEventListenersForAllFamilies } from './families/family-details-v10.js';
 import { startFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v10.js';
-import { SetProgenyRequest } from './page-models-v10.js';
+import { SetProgenyRequest } from './page-models-v11.js';
 import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-details-v10.js';
 import { getSelectedFamilies, getSelectedProgenies } from './settings-tools-v10.js';
 import { initSidebar } from './sidebar-v10.js';

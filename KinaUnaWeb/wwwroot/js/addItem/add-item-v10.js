@@ -17,12 +17,12 @@ import { popupVideoDetails } from "../videos/video-details-v10.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary-v10.js";
 import { initializeAddEditTodo } from "../todos/add-edit-todo-v10.js";
 import { TimelineChangedEvent } from "../data-tools-v10.js";
-import { TimelineItem, TimeLineType } from "../page-models-v10.js";
+import { TimelineItem, TimeLineType } from "../page-models-v11.js";
 import { popupTodoItem } from "../todos/todo-details-v10.js";
 import { initializeAddEditKanbanBoard } from "../kanbans/add-edit-kanban-board-v10.js";
 import { dispatchKanbanBoardChangedEvent, popupKanbanBoard } from "../kanbans/kanban-board-details-v10.js";
 import { editKanbanItemFunction, removeKanbanItemFunction } from "../kanbans/kanban-items-v10.js";
-import { setPermissions } from "../item-permissions-v10.js";
+import { setPermissions } from "../item-permissions-v11.js";
 /**
  * Adds event listeners to all elements with the data-add-item-type attribute.
  */

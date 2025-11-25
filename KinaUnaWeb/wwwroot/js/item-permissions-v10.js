@@ -152,6 +152,10 @@ export function setPermissions() {
                 itemPermission.progenyPermissionId = parseInt(permissionId);
                 itemPermission.permissionLevel = parseInt(selectedPermission);
                 itemPermission.inheritPermissions = false;
+                const groupId = selectInput.getAttribute('data-permission-group-id');
+                if (groupId !== null) {
+                    itemPermission.groupId = parseInt(groupId);
+                }
                 timelineItemPermissionsList.push(itemPermission);
             }
         });
@@ -163,6 +167,10 @@ export function setPermissions() {
                 itemPermission.familyPermissionId = parseInt(permissionId);
                 itemPermission.permissionLevel = parseInt(selectedPermission);
                 itemPermission.inheritPermissions = false;
+                const groupId = selectInput.getAttribute('data-permission-group-id');
+                if (groupId !== null) {
+                    itemPermission.groupId = parseInt(groupId);
+                }
                 timelineItemPermissionsList.push(itemPermission);
             }
         });
@@ -174,6 +182,10 @@ export function setPermissions() {
                 itemPermission.itemPermissionId = parseInt(permissionId);
                 itemPermission.permissionLevel = parseInt(selectedPermission);
                 itemPermission.inheritPermissions = false;
+                const groupId = selectInput.getAttribute('data-permission-group-id');
+                if (groupId !== null) {
+                    itemPermission.groupId = parseInt(groupId);
+                }
                 timelineItemPermissionsList.push(itemPermission);
             }
         });

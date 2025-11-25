@@ -1,4 +1,4 @@
-import * as pageModels from '../page-models-v10.js';
+import * as pageModels from '../page-models-v11.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v10.js';
 let currentPageTranslationItem = new pageModels.TextTranslation();
 let currentPageTranslations = new pageModels.TextTranslationPageListModel();

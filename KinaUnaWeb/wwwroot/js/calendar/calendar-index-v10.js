@@ -1,7 +1,7 @@
 import { showPopupAtLoad } from '../item-details/items-display-v10.js';
 import * as LocaleHelper from '../localization-v10.js';
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v10.js';
-import { CalendarItemsRequest, TimeLineType } from '../page-models-v10.js';
+import { CalendarItemsRequest, TimeLineType } from '../page-models-v11.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v10.js';
 import { popupEventItem } from './calendar-details-v10.js';
 let selectedEventId = 0;

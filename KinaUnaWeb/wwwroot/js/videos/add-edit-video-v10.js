@@ -2,7 +2,7 @@ import * as LocaleHelper from '../localization-v10.js';
 import { getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getCurrentItemProgenyId } from '../data-tools-v10.js';
 import { setAddItemButtonEventListeners } from '../addItem/add-item-v10.js';
 import { addCopyLocationButtonEventListener } from '../locations/location-tools-v10.js';
-import { TimeLineType } from '../page-models-v10.js';
+import { TimeLineType } from '../page-models-v11.js';
 import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection-v10.js';
 let zebraDatePickerTranslations;
 let languageId = 1;

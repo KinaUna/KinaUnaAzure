@@ -1,5 +1,5 @@
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v10.js';
-import * as pageModels from '../page-models-v10.js';
+import * as pageModels from '../page-models-v11.js';
 import { getSelectedProgenies } from '../settings-tools-v10.js';
 const notesPageSettingsStorageKey = 'notes_page_parameters';
 let notesPageParameters = new pageModels.NotesPageParameters();

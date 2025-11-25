@@ -1,10 +1,10 @@
 import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from "../addItem/add-item-v10.js";
 import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v10.js";
 import { hideBodyScrollbars, showBodyScrollbars } from "../item-details/items-display-v10.js";
-import { setPermissions } from "../item-permissions-v10.js";
+import { setPermissions } from "../item-permissions-v11.js";
 import { getTranslation } from "../localization-v10.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v10.js";
-import { KanbanBoardColumn, TimelineItem, TimeLineType, TodoStatusType } from "../page-models-v10.js";
+import { KanbanBoardColumn, TimelineItem, TimeLineType, TodoStatusType } from "../page-models-v11.js";
 import { getStatusIconForTodoItems } from "../todos/todo-details-v10.js";
 import { initializeAddEditKanbanItem } from "./add-edit-kanban-item-v10.js";
 import { addCardDividerEventListeners, addCardEventListeners, createKanbanItemCardHTML, loadKanbanItemsTranslations } from "./kanban-cards-v10.js";

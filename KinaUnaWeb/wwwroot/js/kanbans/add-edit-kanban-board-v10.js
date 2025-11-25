@@ -1,6 +1,6 @@
 import { setupForIndividualOrFamilyButtons } from '../addItem/setup-for-selection-v10.js';
 import { getCurrentLanguageId, getCurrentItemProgenyId, getCurrentItemFamilyId } from '../data-tools-v10.js';
-import { TimeLineType } from '../page-models-v10.js';
+import { TimeLineType } from '../page-models-v11.js';
 let currentProgenyId;
 let currentFamilyId;
 let languageId = 1;

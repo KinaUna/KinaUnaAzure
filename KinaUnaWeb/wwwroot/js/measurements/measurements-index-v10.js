@@ -1,7 +1,7 @@
 import { setEditItemButtonEventListeners } from "../addItem/add-item-v10.js";
 import { setMomentLocale } from "../data-tools-v10.js";
 import { showPopupAtLoad } from "../item-details/items-display-v10.js";
-import { TimeLineType } from "../page-models-v10.js";
+import { TimeLineType } from "../page-models-v11.js";
 function setupDataTable() {
     setMomentLocale();
     $.fn.dataTable.moment('DD-MMMM-YYYY HH:mm');

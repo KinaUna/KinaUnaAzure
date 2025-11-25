@@ -2,7 +2,7 @@ import { onDeleteItemButtonClicked, onEditItemButtonClicked } from "../addItem/a
 import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v10.js";
 import { dispatchKanbanBoardChangedEvent } from "../kanbans/kanban-board-details-v10.js";
 import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v10.js";
-import { TimelineItem, TimeLineType, TodoItemParameters } from "../page-models-v10.js";
+import { TimelineItem, TimeLineType, TodoItemParameters } from "../page-models-v11.js";
 import { popupTodoItem } from "./todo-details-v10.js";
 let lastSubTaskPageParameters;
 let containerElementId = '';

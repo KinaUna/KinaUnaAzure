@@ -1,4 +1,4 @@
-import { AutoSuggestList } from './page-models-v10.js';
+import { AutoSuggestList } from './page-models-v11.js';
 let currentMomentLocale = 'en';
 /** Gets the Id of the current Progeny from the progeny-id-div's data-progeny-id attribute's value.
   * @returns The Progeny's Id number.

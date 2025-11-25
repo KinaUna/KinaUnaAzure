@@ -1,4 +1,4 @@
-import { WebNotification, WebNotificationViewModel, WebNotficationsParameters } from '../page-models-v10.js';
+import { WebNotification, WebNotificationViewModel, WebNotficationsParameters } from '../page-models-v11.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v10.js';
 import { updateNoficationElementEvents } from './notification-actions-v10.js';
 let webNotificationsList = [];

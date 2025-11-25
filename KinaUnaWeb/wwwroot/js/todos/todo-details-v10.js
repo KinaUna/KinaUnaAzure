@@ -2,7 +2,7 @@ import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } fr
 import { TimelineChangedEvent } from '../data-tools-v10.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v10.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v10.js';
-import { KanbanItem, SubtasksPageParameters, TimelineItem } from '../page-models-v10.js';
+import { KanbanItem, SubtasksPageParameters, TimelineItem } from '../page-models-v11.js';
 import { addSubtask, getSubtasks, hideSubtaskMenus, hideSubtaskMoreInfoDivs, refreshSubtasks } from './subtasks-v10.js';
 let subtaskPageParameters = new SubtasksPageParameters();
 const subtasksListDivId = 'todo-details-sub-tasks-list-div';

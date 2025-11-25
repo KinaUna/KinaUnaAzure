@@ -1,4 +1,4 @@
-import { TextTranslation } from './page-models-v10.js';
+import { TextTranslation } from './page-models-v11.js';
 /**
  * Fetches and loads the cldr-data files for the specified culture for Syncfusion components, used for translations and formatting of data related to dates and numbers.
  * @param currentCulture The locale code for the culture to get.

@@ -791,6 +791,7 @@ export class ItemPermissionDto {
         this.familyPermissionId = 0;
         this.inheritPermissions = true;
         this.permissionLevel = PermissionLevel.None;
+        this.groupId = 0;
     }
 }
 //# sourceMappingURL=page-models-v10.js.map

@@ -1,7 +1,7 @@
 import { setTagsAutoSuggestList, setContextAutoSuggestList, setLocationAutoSuggestList, setCategoriesAutoSuggestList, setVocabularyLanguagesAutoSuggestList } from "../data-tools-v10.js";
-import { renderItemPermissionsEditor } from "../item-permissions-v10.js";
+import { renderItemPermissionsEditor } from "../item-permissions-v11.js";
 import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v10.js";
-import { TimelineItem } from "../page-models-v10.js";
+import { TimelineItem } from "../page-models-v11.js";
 let currentProgenyId;
 let currentFamilyId;
 let permissionsEditorTimelineItem = new TimelineItem();

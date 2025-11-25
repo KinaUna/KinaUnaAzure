@@ -3,7 +3,7 @@ import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v10.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v10.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools-v10.js';
-import { VideosPageParameters, VideoViewModelRequest } from '../page-models-v10.js';
+import { VideosPageParameters, VideoViewModelRequest } from '../page-models-v11.js';
 import { setEditItemButtonEventListeners } from '../addItem/add-item-v10.js';
 import { getSelectedProgenies } from '../settings-tools-v10.js';
 let videoDetailsTouchStartX = 0;

@@ -883,6 +883,28 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     }
                 }
 
+                // Add new permissions for any groups that didn't exist before the item update.
+                foreach (ItemPermissionDto itemPermissionDto in itemPermissionsDtoList)
+                {
+                    if (itemPermissionDto.ItemPermissionId == 0 && itemPermissionDto.GroupId > 0)
+                    {
+                        TimelineItemPermission newPermission = new()
+                        {
+                            ItemId = itemId,
+                            TimelineType = itemType,
+                            ProgenyId = progenyId,
+                            FamilyId = familyId,
+                            UserId = string.Empty,
+                            Email = string.Empty,
+                            GroupId = itemPermissionDto.GroupId,
+                            PermissionLevel = itemPermissionDto.PermissionLevel,
+                            InheritPermissions = itemPermissionDto.InheritPermissions
+                        };
+                        newPermission =  await GrantItemPermission(newPermission, currentUserInfo);
+                        changedItemPermissions.Add(newPermission);
+                    }
+                }
+
                 return changedItemPermissions;
             }
 

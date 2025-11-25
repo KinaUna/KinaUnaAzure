@@ -169,8 +169,40 @@
                         }
                     }
                 }
-            }
 
+                foreach (UserGroup otherGroup in Model.UserGroupsList)
+                {
+                    if (!Model.ItemPermissionsList.Exists(ip => ip.GroupId == otherGroup.UserGroupId))
+                    {
+                        int permissionLevelValue = (int)PermissionLevel.None;
+                        <div class="permission-group-div" data-item-permission-id="0" data-permission-group-id="@otherGroup.UserGroupId" data-permission-level="@permissionLevelValue">
+                            @otherGroup.Name <select class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-item-permission-id="0" data-permission-group-id="@otherGroup.UserGroupId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue, false)"></select>
+                        </div>
+                        <div class="row ml-1 text-opacity-50 small">
+                            <div class="col-12">@groupMembersString:</div>
+                            <div class="col-12">
+                                @foreach (UserGroupMember member in otherGroup.Members)
+                                {
+                                    UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
+                                    if (user != null)
+                                    {
+                                        <div class="ml-2">
+                                            @user.UserEmail (@user.FullName())
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="ml-2">
+                                            @member.Email (@noUserAccountString)
+                                        </div>
+                                    }
+                                }
+                                <div class="space-10"></div>
+                            </div>
+                        </div>
+                    }
+                }
+            }
         </div>
     </div>
 </div>

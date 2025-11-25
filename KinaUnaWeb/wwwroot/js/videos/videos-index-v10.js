@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization-v10.js';
-import { VideoViewModel, VideosPageParameters, TimelineItem, TimeLineType } from '../page-models-v10.js';
+import { VideoViewModel, VideosPageParameters, TimelineItem, TimeLineType } from '../page-models-v11.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v10.js';
 import * as SettingsHelper from '../settings-tools-v10.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v10.js';

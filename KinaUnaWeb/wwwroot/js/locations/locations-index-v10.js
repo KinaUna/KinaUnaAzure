@@ -1,6 +1,6 @@
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v10.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v10.js';
-import * as pageModels from '../page-models-v10.js';
+import * as pageModels from '../page-models-v11.js';
 import * as SettingsHelper from '../settings-tools-v10.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v10.js';
 import { setUpMapClickToShowLocationListener } from './location-tools-v10.js';
