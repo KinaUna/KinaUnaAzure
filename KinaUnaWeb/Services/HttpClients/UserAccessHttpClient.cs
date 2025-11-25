@@ -42,7 +42,7 @@ namespace KinaUnaWeb.Services.HttpClients
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
-            httpClient.Timeout = TimeSpan.FromMinutes(15);
+            httpClient.Timeout = TimeSpan.FromMinutes(60);
         }
         
         /// <summary>

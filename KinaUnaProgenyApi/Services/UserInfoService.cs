@@ -123,7 +123,6 @@ namespace KinaUnaProgenyApi.Services
             if (string.IsNullOrEmpty(cachedUserInfo))
             {
                 return null;
-                
             }
 
             UserInfo userinfo = JsonSerializer.Deserialize<UserInfo>(cachedUserInfo, JsonSerializerOptions.Web);

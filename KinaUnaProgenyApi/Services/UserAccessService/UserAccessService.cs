@@ -718,10 +718,10 @@ namespace KinaUnaProgenyApi.Services.UserAccessService
                         }
                     }
 
-                    TimelineItemPermission existingPermission = await _context.TimelineItemPermissionsDb.AsNoTracking()
-                        .SingleOrDefaultAsync(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == picture.PictureId && tip.ProgenyId == picture.ProgenyId && tip.GroupId == groupId);
+                    List<TimelineItemPermission> existingPermissions = await _context.TimelineItemPermissionsDb.AsNoTracking()
+                        .Where(tip => tip.TimelineType == KinaUnaTypes.TimeLineType.Photo && tip.ItemId == picture.PictureId && tip.ProgenyId == picture.ProgenyId && tip.GroupId == groupId).ToListAsync();
 
-                    if (existingPermission != null || groupId == 0)
+                    if (existingPermissions.Count > 0 || groupId == 0)
                     {
                         continue;
                     }

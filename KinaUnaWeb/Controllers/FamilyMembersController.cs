@@ -159,6 +159,11 @@ namespace KinaUnaWeb.Controllers
                 {
                     model.CurrentProgeny.PictureLink = Constants.WebAppUrl + "/photodb/childcareicon.jpg"; // Todo: Find better image
                 }
+
+                if (!model.CurrentProgeny.IsInAdminList(User.GetEmail()))
+                {
+                    model.CurrentProgeny.AddToAdminList(User.GetEmail());
+                }
                 progeny = await progenyHttpClient.AddProgeny(model.CurrentProgeny);
                 model.CurrentProgenyId = progeny.Id;
             }

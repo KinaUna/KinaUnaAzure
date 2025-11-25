@@ -1,8 +1,10 @@
 ﻿@model List<KinaUnaLanguage>
 @{
     ViewData["Title"] = "Manage Languages";
-    List<object> toolbarItems = new List<object>();
-    toolbarItems.Add(new { text = "Add Language", tooltipText = "Add a new language", prefixIcon = "e-expand", id = "addLanguage" });
+    List<object> toolbarItems =
+    [
+        new { text = "Add Language", tooltipText = "Add a new language", prefixIcon = "e-expand", id = "addLanguage" }
+    ];
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="space-20"></div>

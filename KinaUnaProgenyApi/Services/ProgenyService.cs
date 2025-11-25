@@ -93,6 +93,12 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
+            // Ensure the current user is in the admin list.
+            if (!progeny.IsInAdminList(currentUserInfo.UserEmail))
+            {
+                progeny.AddToAdminList(currentUserInfo.UserEmail);
+            }
+
             _ = _context.ProgenyDb.Add(progeny);
             _ = await _context.SaveChangesAsync();
 

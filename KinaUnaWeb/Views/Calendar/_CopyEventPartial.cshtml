@@ -27,13 +27,13 @@
         monthSelectItem.Text = await LocaleManager.GetTranslation(monthSelectItem.Text, PageNames.CalendarTools, Model.LanguageId);
     }
 
-    char mondayAbreviation = (await LocaleManager.GetTranslation("Monday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char tuesdayAbreviation = (await LocaleManager.GetTranslation("Tuesday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char wednesdayAbreviation = (await LocaleManager.GetTranslation("Wednesday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char thursdayAbreviation = (await LocaleManager.GetTranslation("Thursday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char fridayAbreviation = (await LocaleManager.GetTranslation("Friday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char saturdayAbreviation = (await LocaleManager.GetTranslation("Saturday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char sundayAbreviation = (await LocaleManager.GetTranslation("Sunday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char mondayAbbreviation = (await LocaleManager.GetTranslation("Monday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char tuesdayAbbreviation = (await LocaleManager.GetTranslation("Tuesday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char wednesdayAbbreviation = (await LocaleManager.GetTranslation("Wednesday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char thursdayAbbreviation = (await LocaleManager.GetTranslation("Thursday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char fridayAbbreviation = (await LocaleManager.GetTranslation("Friday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char saturdayAbbreviation = (await LocaleManager.GetTranslation("Saturday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char sundayAbbreviation = (await LocaleManager.GetTranslation("Sunday", PageNames.CalendarTools, Model.LanguageId))[0];
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="longDateTimeFormatDiv" class="d-none" data-long-date-time-format="@longDateTimeFormat"></div>
@@ -143,13 +143,13 @@
                 </div>
                 <div id="event-repeat-weekly-div" class="form-group col-12 d-none">
                     <label class="control-label col-auto w-100">Repeat on days:</label>
-                    <button class="weekday-icon selected" data-weekday="MO" type="button">@mondayAbreviation</button>
-                    <button class="weekday-icon selected" data-weekday="TU" type="button">@tuesdayAbreviation</button>
-                    <button class="weekday-icon selected" data-weekday="WE" type="button">@wednesdayAbreviation</button>
-                    <button class="weekday-icon selected" data-weekday="TH" type="button">@thursdayAbreviation</button>
-                    <button class="weekday-icon selected" data-weekday="FR" type="button">@fridayAbreviation</button>
-                    <button class="weekday-icon selected" data-weekday="SA" type="button">@saturdayAbreviation</button>
-                    <button class="weekday-icon selected" data-weekday="SU" type="button">@sundayAbreviation</button>
+                    <button class="weekday-icon selected" data-weekday="MO" type="button">@mondayAbbreviation</button>
+                    <button class="weekday-icon selected" data-weekday="TU" type="button">@tuesdayAbbreviation</button>
+                    <button class="weekday-icon selected" data-weekday="WE" type="button">@wednesdayAbbreviation</button>
+                    <button class="weekday-icon selected" data-weekday="TH" type="button">@thursdayAbbreviation</button>
+                    <button class="weekday-icon selected" data-weekday="FR" type="button">@fridayAbbreviation</button>
+                    <button class="weekday-icon selected" data-weekday="SA" type="button">@saturdayAbbreviation</button>
+                    <button class="weekday-icon selected" data-weekday="SU" type="button">@sundayAbbreviation</button>
                     <input id="event-repeat-weekly-days-input" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden" />
                 </div>
                 <div id="event-repeat-monthly-div" class="col-12 d-none">
@@ -215,13 +215,13 @@
                         </div>
                         <div class="col-auto">
                             <div class="row m-3">
-                                <button class="monthday-icon" data-weekday="MO" type="button">@mondayAbreviation</button>
-                                <button class="monthday-icon" data-weekday="TU" type="button">@tuesdayAbreviation</button>
-                                <button class="monthday-icon" data-weekday="WE" type="button">@wednesdayAbreviation</button>
-                                <button class="monthday-icon" data-weekday="TH" type="button">@thursdayAbreviation</button>
-                                <button class="monthday-icon" data-weekday="FR" type="button">@fridayAbreviation</button>
-                                <button class="monthday-icon" data-weekday="SA" type="button">@saturdayAbreviation</button>
-                                <button class="monthday-icon" data-weekday="SU" type="button">@sundayAbreviation</button>
+                                <button class="monthday-icon" data-weekday="MO" type="button">@mondayAbbreviation</button>
+                                <button class="monthday-icon" data-weekday="TU" type="button">@tuesdayAbbreviation</button>
+                                <button class="monthday-icon" data-weekday="WE" type="button">@wednesdayAbbreviation</button>
+                                <button class="monthday-icon" data-weekday="TH" type="button">@thursdayAbbreviation</button>
+                                <button class="monthday-icon" data-weekday="FR" type="button">@fridayAbbreviation</button>
+                                <button class="monthday-icon" data-weekday="SA" type="button">@saturdayAbbreviation</button>
+                                <button class="monthday-icon" data-weekday="SU" type="button">@sundayAbbreviation</button>
                             </div>
 
                         </div>
@@ -297,13 +297,13 @@
                         </div>
                         <div class="col-auto">
                             <div class="row m-3">
-                                <button class="yearly-monthday-icon" data-weekday="MO" type="button">@mondayAbreviation</button>
-                                <button class="yearly-monthday-icon" data-weekday="TU" type="button">@tuesdayAbreviation</button>
-                                <button class="yearly-monthday-icon" data-weekday="WE" type="button">@wednesdayAbreviation</button>
-                                <button class="yearly-monthday-icon" data-weekday="TH" type="button">@thursdayAbreviation</button>
-                                <button class="yearly-monthday-icon" data-weekday="FR" type="button">@fridayAbreviation</button>
-                                <button class="yearly-monthday-icon" data-weekday="SA" type="button">@saturdayAbreviation</button>
-                                <button class="yearly-monthday-icon" data-weekday="SU" type="button">@sundayAbreviation</button>
+                                <button class="yearly-monthday-icon" data-weekday="MO" type="button">@mondayAbbreviation</button>
+                                <button class="yearly-monthday-icon" data-weekday="TU" type="button">@tuesdayAbbreviation</button>
+                                <button class="yearly-monthday-icon" data-weekday="WE" type="button">@wednesdayAbbreviation</button>
+                                <button class="yearly-monthday-icon" data-weekday="TH" type="button">@thursdayAbbreviation</button>
+                                <button class="yearly-monthday-icon" data-weekday="FR" type="button">@fridayAbbreviation</button>
+                                <button class="yearly-monthday-icon" data-weekday="SA" type="button">@saturdayAbbreviation</button>
+                                <button class="yearly-monthday-icon" data-weekday="SU" type="button">@sundayAbbreviation</button>
                             </div>
 
                         </div>
