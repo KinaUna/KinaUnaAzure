@@ -1,5 +1,8 @@
 import { popupPictureDetails } from '../pictures/picture-details-v11.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v11.js';
+import { initializeLatestPosts } from './home-latest-posts-v11.js';
+import { initializeUpcomingEvents } from './home-upcoming-events-v11.js';
+import { initializeYearAgo } from './home-year-ago-posts-v11.js';
 function addRandomPictureEventListener() {
     let randomPictureElement = document.querySelector('#random-picture-link');
     if (randomPictureElement) {
@@ -74,5 +77,8 @@ async function getProgenyTrivia(progenyId, familyId) {
 }
 document.addEventListener('DOMContentLoaded', async function () {
     await getProgenyTrivia(0, 0);
+    await initializeUpcomingEvents();
+    await initializeLatestPosts();
+    await initializeYearAgo();
 });
 //# sourceMappingURL=home-index-v11.js.map

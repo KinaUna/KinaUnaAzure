@@ -144,12 +144,9 @@ function addSelectedFamiliesChangedEventListener() {
     window.addEventListener('familiesChanged', familiesChangedAction);
 }
 
-/**
- * Initializes page settings and sets up event listeners when page is first loaded.
- */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+export async function initializeLatestPosts() {
     latestPostsProgenyId = getCurrentProgenyId();
-    timeLineParameters.count = 10;
+    timeLineParameters.count = 5;
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
     timeLineParameters.progenies = getSelectedProgenies();
@@ -166,8 +163,4 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     }
 
     await getTimelineList(timeLineParameters);
-
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-});
+}

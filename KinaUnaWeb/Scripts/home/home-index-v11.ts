@@ -1,6 +1,9 @@
 ﻿import { TimelineParameters, TimelineRequest } from '../page-models-v11.js';
 import { popupPictureDetails } from '../pictures/picture-details-v11.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v11.js';
+import { initializeLatestPosts } from './home-latest-posts-v11.js';
+import { initializeUpcomingEvents } from './home-upcoming-events-v11.js';
+import { initializeYearAgo } from './home-year-ago-posts-v11.js';
 
 function addRandomPictureEventListener(): void {
     let randomPictureElement = document.querySelector<HTMLDivElement>('#random-picture-link');
@@ -80,4 +83,10 @@ async function getProgenyTrivia(progenyId: number, familyId: number) {
 
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     await getProgenyTrivia(0, 0);
+
+    await initializeUpcomingEvents();
+
+    await initializeLatestPosts();
+
+    await initializeYearAgo();
 });

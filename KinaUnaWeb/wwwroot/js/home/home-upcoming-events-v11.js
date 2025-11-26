@@ -144,12 +144,9 @@ function addSelectedFamiliesChangedEventListener() {
     window.removeEventListener('familiesChanged', familiesChangedAction);
     window.addEventListener('familiesChanged', familiesChangedAction);
 }
-/**
- * Initialization when the page is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function () {
+export async function initializeUpcomingEvents() {
     upcomingEventsProgenyId = getCurrentProgenyId();
-    upcomingEventsParameters.count = 10;
+    upcomingEventsParameters.count = 8;
     upcomingEventsParameters.skip = 0;
     upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
     setUpcomingEventsEventListeners();
@@ -158,8 +155,5 @@ document.addEventListener('DOMContentLoaded', async function () {
     upcomingEventsParameters.progenies = getSelectedProgenies();
     upcomingEventsParameters.families = getSelectedFamilies();
     await getUpcomingEventsList(upcomingEventsParameters);
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-});
+}
 //# sourceMappingURL=home-upcoming-events-v11.js.map

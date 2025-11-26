@@ -160,12 +160,9 @@ function addSelectedFamiliesChangedEventListener() {
     window.addEventListener('familiesChanged', familiesChangedAction);
 }
 
-/**
- * Initialization when the page is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+export async function initializeUpcomingEvents() {
     upcomingEventsProgenyId = getCurrentProgenyId();
-    upcomingEventsParameters.count = 10;
+    upcomingEventsParameters.count = 8;
     upcomingEventsParameters.skip = 0;
     upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
     setUpcomingEventsEventListeners();
@@ -175,8 +172,4 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     upcomingEventsParameters.families = getSelectedFamilies();
 
     await getUpcomingEventsList(upcomingEventsParameters);
-
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-});
+}

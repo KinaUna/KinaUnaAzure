@@ -141,12 +141,9 @@ function addSelectedFamiliesChangedEventListener() {
     window.removeEventListener('familiesChanged', familiesChangedAction);
     window.addEventListener('familiesChanged', familiesChangedAction);
 }
-/**
- * Initialization when the page is loaded.
- */
-document.addEventListener('DOMContentLoaded', async function () {
+export async function initializeYearAgo() {
     yearAgoProgenyId = getCurrentProgenyId();
-    yearAgoParameters.count = 10;
+    yearAgoParameters.count = 5;
     yearAgoParameters.skip = 0;
     yearAgoParameters.progenyId = yearAgoProgenyId;
     yearAgoParameters.progenies = getSelectedProgenies();
@@ -155,8 +152,5 @@ document.addEventListener('DOMContentLoaded', async function () {
     addSelectedFamiliesChangedEventListener();
     setYearAgoEventListeners();
     await getYearAgoList(yearAgoParameters);
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-});
+}
 //# sourceMappingURL=home-year-ago-posts-v11.js.map
