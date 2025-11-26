@@ -5,7 +5,7 @@ import {
     getFormattedDateString, setCategoriesAutoSuggestList, setContextAutoSuggestList, setTagsAutoSuggestList
 } from '../data-tools-v11.js';
 import * as SettingsHelper from '../settings-tools-v11.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
+import { startFullPageSpinner, startFullPageSpinner2, startLoadingItemsSpinner, stopFullPageSpinner, stopFullPageSpinner2, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v11.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v11.js';
 
@@ -612,6 +612,7 @@ function addSelectedFamiliesChangedEventListener() {
 
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    startLoadingSpinner();
     languageId = getCurrentLanguageId();
     timeLineProgenyId = getCurrentProgenyId();
 
@@ -638,7 +639,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     getParametersFromPageProperties();
     await loadTimelinePageSettings();
     refreshSelectPickers();
-
+    
     await getTimelineList(timeLineParameters);
     if (firstRun) { // getTimelineList updated the parameters and exited early to reload with the new values.
         await getTimelineList(timeLineParameters);

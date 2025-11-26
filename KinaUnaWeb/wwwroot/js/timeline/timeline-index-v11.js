@@ -535,6 +535,7 @@ function addSelectedFamiliesChangedEventListener() {
 }
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function () {
+    startLoadingSpinner();
     languageId = getCurrentLanguageId();
     timeLineProgenyId = getCurrentProgenyId();
     initialSettingsPanelSetup();

@@ -1,3 +1,4 @@
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
 import { popupPictureDetails } from '../pictures/picture-details-v11.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v11.js';
 import { initializeLatestPosts } from './home-latest-posts-v11.js';
@@ -41,39 +42,43 @@ function setActiveProgenyTriviaButton(progenyId) {
     });
 }
 async function getProgenyTrivia(progenyId, familyId) {
-    const triviaRequest = {
-        progenyId: progenyId,
-        progenies: await getSelectedProgenies(),
-        familyId: familyId,
-        families: await getSelectedFamilies(),
-        skip: 0,
-        count: 1,
-        sortBy: 0,
-        year: 0,
-        month: 0,
-        day: 0,
-        firstItemYear: 0,
-        tagFilter: ''
-    };
-    await fetch('/Home/ProgenyTrivia', {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(triviaRequest)
-    }).then(async function (getTriviaContent) {
-        if (getTriviaContent != null) {
-            const triviaHtml = await getTriviaContent.text();
-            const triviaDiv = document.querySelector('#progeny-trivia-div');
-            if (triviaDiv) {
-                triviaDiv.innerHTML = triviaHtml;
+    setActiveProgenyTriviaButton(progenyId);
+    const triviaDiv = document.querySelector('#progeny-trivia-div');
+    if (triviaDiv) {
+        startLoadingItemsSpinner('progeny-trivia-div');
+        const triviaRequest = {
+            progenyId: progenyId,
+            progenies: await getSelectedProgenies(),
+            familyId: familyId,
+            families: await getSelectedFamilies(),
+            skip: 0,
+            count: 1,
+            sortBy: 0,
+            year: 0,
+            month: 0,
+            day: 0,
+            firstItemYear: 0,
+            tagFilter: ''
+        };
+        await fetch('/Home/ProgenyTrivia', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(triviaRequest)
+        }).then(async function (getTriviaContent) {
+            if (getTriviaContent != null) {
+                const triviaHtml = await getTriviaContent.text();
+                if (triviaDiv) {
+                    triviaDiv.innerHTML = triviaHtml;
+                }
+                addRandomPictureEventListener();
+                addSelectTriviaProgenyEventListeners();
             }
-            addRandomPictureEventListener();
-            addSelectTriviaProgenyEventListeners();
-            setActiveProgenyTriviaButton(progenyId);
-        }
-    });
+        });
+        stopLoadingItemsSpinner('progeny-trivia-div');
+    }
 }
 document.addEventListener('DOMContentLoaded', async function () {
     await getProgenyTrivia(0, 0);
