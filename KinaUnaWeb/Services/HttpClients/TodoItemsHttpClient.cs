@@ -105,7 +105,7 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateApiPath = "/api/Todos/" + todoItem.TodoItemId;
-            HttpResponseMessage todoResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonSerializer.Serialize(todoItem), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage todoResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonSerializer.Serialize(todoItem, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!todoResponse.IsSuccessStatusCode) return new TodoItem();
 
             string todoAsString = await todoResponse.Content.ReadAsStringAsync();

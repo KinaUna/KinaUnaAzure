@@ -15,7 +15,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// </summary>
     /// <param name="userInfoService"></param>
     /// <param name="textTranslationService"></param>
-    [Authorize(Policy = "Client")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -26,6 +25,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="languageId">The LanguageId of the language to get translations for.</param>
         /// <returns>List of all TextTranslation entities for the language.</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet("[action]/{languageId:int}")]
         public async Task<IActionResult> GetAllTranslations(int languageId)
         {
@@ -39,6 +39,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The Id of the TextTranslation item to get.</param>
         /// <returns>TextTranslation object with the given Id.</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetTranslationById(int id)
         {
@@ -54,6 +55,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="page">The page the Word appears on.</param>
         /// <param name="languageId">The LanguageId to translate the Word into.</param>
         /// <returns>The TextTranslation.</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet("[action]/{word}/{page}/{languageId:int}")]
         public async Task<IActionResult> GetTranslationByWord(string word, string page, int languageId)
         {
@@ -79,6 +81,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="languageId">The LanguageId of the language to get translations for.</param>
         /// <param name="page">The page to get translations for.</param>
         /// <returns>List of TextTranslations.</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet]
         [Route("[action]/{languageId:int}/{page}")]
         public async Task<IActionResult> PageTranslations(int languageId, string page)

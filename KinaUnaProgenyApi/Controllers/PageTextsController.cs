@@ -13,7 +13,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// </summary>
     /// <param name="userInfoService"></param>
     /// <param name="kinaUnaTextService"></param>
-    [Authorize(Policy = "Client")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -26,6 +25,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="page">The page where the text appears.</param>
         /// <param name="languageId">The LanguageId of the KinaUnaText to get.</param>
         /// <returns>KinaUnaText object with the provided title, page, and languageId properties.</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet("[action]/{title}/{page}/{languageId:int}")]
         public async Task<IActionResult> ByTitle(string title, string page, int languageId)
         {
@@ -38,6 +38,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The id property of the KinaUnaText entity to get.</param>
         /// <returns>The KinaUnaText object with the provided id.</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetTextById(int id)
         {
@@ -52,6 +53,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="textId">The TextId of the KinaUnaText to retrieve.</param>
         /// <param name="languageId"> The LanguageId of the KinaUnaText to retrieve.</param>
         /// <returns>The KinaUnaText with the provided TextId and LanguageId.</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet("[action]/{textId:int}/{languageId:int}")]
         public async Task<IActionResult> GetTextByTextId(int textId, int languageId)
         {
@@ -66,6 +68,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="page">The page to retrieve KinaUnaText entities for.</param>
         /// <param name="languageId">The LanguageId of the KinaUnaTexts.</param>
         /// <returns>List of KinaUnaText objects that belong to the page.</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet]
         [Route("[action]/{page}/{languageId:int}")]
         public async Task<IActionResult> PageTexts(string page, int languageId)
@@ -82,6 +85,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="languageId">The LanguageId to retrieve KinaUnaTexts for.</param>
         /// <returns>A list with all the KinaUnaTexts in the provided language.</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet]
         [Route("[action]/{languageId:int}")]
         public async Task<IActionResult> GetAllTexts(int languageId)
@@ -96,6 +100,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// If a text is missing in a language, it will be added with a copy of the first translation found.
         /// </summary>
         /// <returns>Ok</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> CheckLanguages()

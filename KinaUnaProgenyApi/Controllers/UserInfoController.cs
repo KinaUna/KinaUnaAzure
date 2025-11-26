@@ -19,7 +19,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for UserInfo.
     /// </summary>
-    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -38,6 +37,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The email address of the user.</param>
         /// <returns>UserInfo</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> UserInfoByEmail([FromBody] string id)
@@ -199,6 +199,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="id">The Id of the UserInfo entity.</param>
         /// <returns>UserInfo object for the user with the given UserId.</returns>
         // GET api/userinfo/id
+        [Authorize(Policy = "UserOrClient")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetInfo(int id)
         {
@@ -262,6 +263,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The user's UserId.</param>
         /// <returns>UserInfo object for the user.</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpPost("[action]")]
         public async Task<IActionResult> ByUserIdPost([FromBody] string id)
         {
@@ -332,6 +334,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Only KinaUnaAdmins are allowed to get all UserInfo objects.
         /// </summary>
         /// <returns>List of all UserInfo entities.</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpGet("[action]/")]
         public async Task<IActionResult> GetAll()
         {
@@ -350,6 +353,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Checks if the current user's account is active.
         /// </summary>
         /// <returns>If the account hasn't been deleted returns the UserInfo entity, else Unauthorized.</returns>
+        [Authorize(Policy = "UserOrClient")]
         [HttpPost("[action]/")]
         public async Task<IActionResult> CheckCurrentUser()
         {
@@ -369,6 +373,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="value">The UserInfo object to add.</param>
         /// <returns>The added UserInfo object.</returns>
         // POST api/userinfo
+        [Authorize(Policy = "UserOrClient")]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] UserInfo value)
         {
@@ -443,6 +448,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="value">UserInfo object with the updated properties.</param>
         /// <returns>The updated UserInfo object.</returns>
         // PUT api/userinfo/5
+        [Authorize(Policy = "UserOrClient")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] UserInfo value)
         {
@@ -533,6 +539,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="id">The UserInfo.Id</param>
         /// <returns>NoContentResult</returns>
         // DELETE api/progeny/5
+        [Authorize(Policy = "UserOrClient")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {

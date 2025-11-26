@@ -16,7 +16,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="progenyService"></param>
     /// <param name="userInfoService"></param>
     /// <param name="userAccessService"></param>
-    [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -72,6 +71,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok();
         }
 
+        [Authorize(Policy = "UserOrClient")]
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> ConvertUserAccessesToUserGroups()
@@ -83,6 +83,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok();
         }
 
+        [Authorize(Policy = "UserOrClient")]
         [HttpGet]
         [Route("[action]/{itemType:int}")]
         public async Task<IActionResult> ConvertItemAccessLevelToItemPermissions(int itemType)
