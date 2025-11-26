@@ -1,5 +1,5 @@
 import { WebNotification, WebNotificationViewModel, WebNotficationsParameters } from '../page-models-v11.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
+import { startLoadingItemsSpinner, startTopMenuSpinner, stopLoadingItemsSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import { updateNoficationElementEvents } from './notification-actions-v11.js';
 let webNotificationsList = [];
 const webNotificationsParameters = new WebNotficationsParameters();
@@ -187,6 +187,7 @@ function addMarkAllAsReadButtonEventListener() {
  * Initializes the elements on the page when it is first loaded.
  */
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
     webNotificationsParameters.count = 10;
     webNotificationsParameters.skip = 0;
     webNotificationsDiv = document.querySelector('#notifications-page-recent-web-notifications-div');
@@ -200,6 +201,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     addLoadMoreButtonEventListener();
     addMarkAllAsReadButtonEventListener();
     await getWebNotificationsList(webNotificationsParameters);
+    stopTopMenuSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });

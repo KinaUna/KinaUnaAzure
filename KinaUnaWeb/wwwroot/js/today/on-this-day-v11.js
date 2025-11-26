@@ -2,7 +2,7 @@ import * as LocaleHelper from '../localization-v11.js';
 import { TimeLineItemViewModel, OnThisDayRequest } from '../page-models-v11.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString, setTagsAutoSuggestList, setCategoriesAutoSuggestList, setContextAutoSuggestList } from '../data-tools-v11.js';
 import * as SettingsHelper from '../settings-tools-v11.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
+import { startLoadingItemsSpinner, startTopMenuSpinner, stopLoadingItemsSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v11.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v11.js';
 const onThisDayPageSettingsStorageKey = 'on_this_day_page_parameters';
@@ -505,6 +505,7 @@ function addSelectedFamiliesChangedEventListener() {
 }
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
     languageId = getCurrentLanguageId();
     onThisDayProgenyId = getCurrentProgenyId();
     moreOnThisDayItemsButton = document.querySelector('#more-on-this-day-items-button');
@@ -526,6 +527,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (firstRun) { // getOnThisDayData updated the parameters and exited early to reload with the new values.
         await getOnThisDayData(onThisDayParameters);
     }
+    stopTopMenuSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });

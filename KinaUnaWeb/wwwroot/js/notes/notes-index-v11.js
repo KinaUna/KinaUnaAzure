@@ -1,4 +1,5 @@
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v11.js';
+import { startTopMenuSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import * as pageModels from '../page-models-v11.js';
 import { getSelectedProgenies } from '../settings-tools-v11.js';
 const notesPageSettingsStorageKey = 'notes_page_parameters';
@@ -222,6 +223,7 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
     await showPopupAtLoad(pageModels.TimeLineType.Note);
     const notesPageSettingsContentDiv = document.querySelector('#page-settings-content-div');
     if (notesPageSettingsContentDiv !== null) {
@@ -283,6 +285,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     window.onpopstate = function (event) {
         getNotesPageFromHistory();
     };
+    stopTopMenuSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });

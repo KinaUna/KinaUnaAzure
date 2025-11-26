@@ -1,5 +1,5 @@
 import { getCurrentLanguageId } from "../data-tools-v11.js";
-import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v11.js";
+import { startFullPageSpinner, startTopMenuSpinner, stopFullPageSpinner, stopTopMenuSpinner } from "../navigation-tools-v11.js";
 import { hideBodyScrollbars } from "../item-details/items-display-v11.js";
 import { displayAddFamilyMemberModal, displayFamilyMemberDetails } from "./family-members-v11.js";
 let familiesList = new Array();
@@ -511,10 +511,12 @@ export async function initializeAddEditFamily(familyId) {
     });
 }
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
     languageId = getCurrentLanguageId();
     addNewFamilyButtonEventListener();
     addFamiliesChangedEventListener();
     await getFamiliesList();
+    stopTopMenuSpinner();
     return Promise.resolve();
 });
 //# sourceMappingURL=families-index-v11.js.map

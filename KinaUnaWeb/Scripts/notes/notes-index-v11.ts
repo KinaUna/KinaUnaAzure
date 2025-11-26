@@ -1,5 +1,6 @@
 ﻿import { getCurrentProgenyId } from '../data-tools-v11.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v11.js';
+import { startTopMenuSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import * as pageModels from '../page-models-v11.js';
 import { getSelectedProgenies } from '../settings-tools-v11.js';
 
@@ -256,6 +257,7 @@ function addSelectedProgeniesChangedEventListener() {
 }
 
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    startTopMenuSpinner();
     await showPopupAtLoad(pageModels.TimeLineType.Note);
 
     const notesPageSettingsContentDiv = document.querySelector<HTMLDivElement>('#page-settings-content-div');
@@ -328,6 +330,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     window.onpopstate = function (event) {
         getNotesPageFromHistory();
     };
+
+    stopTopMenuSpinner();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

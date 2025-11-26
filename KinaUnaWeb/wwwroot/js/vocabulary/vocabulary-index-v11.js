@@ -1,6 +1,7 @@
 import { setEditItemButtonEventListeners } from '../addItem/add-item-v11.js';
 import { setMomentLocale } from '../data-tools-v11.js';
 import { showPopupAtLoad } from '../item-details/items-display-v11.js';
+import { startTopMenuSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import { TimeLineType } from '../page-models-v11.js';
 /**
  * Sets up the Vocabulary chart.
@@ -62,10 +63,12 @@ function setupVocabularyDataTable() {
     });
 }
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
     setupVocabularyChart();
     setupVocabularyDataTable();
     await showPopupAtLoad(TimeLineType.Vocabulary);
     setEditItemButtonEventListeners();
+    stopTopMenuSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });

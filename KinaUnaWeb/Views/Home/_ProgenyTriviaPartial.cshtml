@@ -15,7 +15,7 @@
         @await LocaleManager.GetTranslation("Displaying data for KinaUna.com instead.", PageNames.Home, Model.LanguageId)<br/>
     </div>
 }
-<div class="col-12">
+<div id="progeny-trivia-select-wrapper" class="col-12">
     @foreach (Progeny progeny in Model.TriviaProgenies)
     {
         <a id="progeny-trivia-select-@progeny.Id" class="select-trivia-progeny-link" data-progeny-id="@progeny.Id">
@@ -23,5 +23,8 @@
         </a>
     }
     <div class="space-10"></div>
+    
+</div>
+<div id="progeny-trivia-content" class="col-12">
     @await Html.PartialAsync("_RandomPicturePartial", Model)
 </div>

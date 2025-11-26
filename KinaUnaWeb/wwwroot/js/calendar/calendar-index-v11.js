@@ -1,6 +1,6 @@
 import { showPopupAtLoad } from '../item-details/items-display-v11.js';
 import * as LocaleHelper from '../localization-v11.js';
-import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
+import { startFullPageSpinner, startLoadingItemsSpinner, startTopMenuSpinner, stopFullPageSpinner, stopLoadingItemsSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import { CalendarItemsRequest, TimeLineType } from '../page-models-v11.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v11.js';
 import { popupEventItem } from './calendar-details-v11.js';
@@ -202,6 +202,7 @@ function initializeCalendarItemsRequest() {
  */
 document.addEventListener('DOMContentLoaded', async function () {
     startFullPageSpinner();
+    startTopMenuSpinner();
     await showPopupAtLoad(TimeLineType.Calendar);
     addScheduleEventListeners();
     await loadLocale();
@@ -209,6 +210,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     initializeCalendarItemsRequest();
     await getCalendarItems();
     stopFullPageSpinner();
+    stopTopMenuSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });

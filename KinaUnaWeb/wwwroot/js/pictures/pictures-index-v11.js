@@ -2,7 +2,7 @@ import * as LocaleHelper from '../localization-v11.js';
 import { PictureViewModel, PicturesPageParameters, TimeLineType, TimelineItem } from '../page-models-v11.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v11.js';
 import * as SettingsHelper from '../settings-tools-v11.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
+import { startLoadingItemsSpinner, startTopMenuSpinner, stopLoadingItemsSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v11.js';
 import { getSelectedProgenies } from '../settings-tools-v11.js';
 let picturesPageParameters = new PicturesPageParameters();
@@ -721,6 +721,7 @@ function addSelectedProgeniesChangedEventListener() {
 }
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
     getPopupPictureId();
     await showPopupAtLoad(TimeLineType.Photo);
     picturesPageProgenyId = getCurrentProgenyId();
@@ -740,6 +741,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             picturesPageParameters = await getPicturesList(picturesPageParameters, false);
         }
     }
+    stopTopMenuSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });

@@ -1,6 +1,6 @@
 ﻿import { Family } from "../page-models-v11.js";
 import { getCurrentLanguageId, TimelineChangedEvent } from "../data-tools-v11.js";
-import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v11.js";
+import { startFullPageSpinner, startTopMenuSpinner, stopFullPageSpinner, stopTopMenuSpinner } from "../navigation-tools-v11.js";
 import { hideBodyScrollbars } from "../item-details/items-display-v11.js";
 import { displayAddFamilyMemberModal, displayFamilyMemberDetails } from "./family-members-v11.js";
 
@@ -566,12 +566,14 @@ export async function initializeAddEditFamily(familyId: number): Promise<void> {
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
     languageId = getCurrentLanguageId();
 
     addNewFamilyButtonEventListener();
     addFamiliesChangedEventListener();
 
     await getFamiliesList();
-    
+
+    stopTopMenuSpinner();
     return Promise.resolve();
 });

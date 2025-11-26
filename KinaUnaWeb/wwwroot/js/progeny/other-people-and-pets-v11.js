@@ -1,6 +1,6 @@
 import { getCurrentLanguageId } from "../data-tools-v11.js";
 import { hideBodyScrollbars } from "../item-details/items-display-v11.js";
-import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v11.js";
+import { startFullPageSpinner, startTopMenuSpinner, stopFullPageSpinner, stopTopMenuSpinner } from "../navigation-tools-v11.js";
 import { popupProgenyDetails } from "./progeny-details-v11.js";
 let progeniesList = new Array();
 let languageId = 1; // Default to English
@@ -147,8 +147,10 @@ function addAddToFamilyDivEventListeners() {
     }
 }
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
     languageId = getCurrentLanguageId();
     await getOtherPeopleList();
+    stopTopMenuSpinner();
     return Promise.resolve();
 });
 //# sourceMappingURL=other-people-and-pets-v11.js.map

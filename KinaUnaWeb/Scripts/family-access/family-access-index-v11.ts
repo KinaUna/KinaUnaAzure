@@ -1,4 +1,5 @@
 ﻿import { getCurrentLanguageId } from "../data-tools-v11.js";
+import { startTopMenuSpinner, stopTopMenuSpinner } from "../navigation-tools-v11.js";
 import { displayAddGroupMemberModal, displayEditGroupMemberModal, displayDeleteGroupMemberModal } from "./add-edit-group-member-v11.js";
 import { displayAddGroupModal, displayEditGroupModal, displayDeleteGroupModal } from "./add-edit-group-v11.js";
 import { displayAddUserPermissionModal, displayEditFamilyPermissionModal, displayDeleteFamilyPermissionModal, displayEditProgenyPermissionModal, displayDeleteProgenyPermissionModal } from "./add-edit-user-permission-v11.js";
@@ -228,9 +229,12 @@ function addPermissionsListEventListeners() {
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
+
     languageId = getCurrentLanguageId();
 
     await loadPermissionsList();
 
+    stopTopMenuSpinner();
     return Promise.resolve();
 });

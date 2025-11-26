@@ -2,7 +2,7 @@ import { getFormattedDateString, getLongDateTimeFormatMoment, getZebraDateTimeFo
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v11.js';
 import * as pageModels from '../page-models-v11.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v11.js';
-import { startFullPageSpinner, startLoadingItemsSpinner, stopFullPageSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
+import { startFullPageSpinner, startLoadingItemsSpinner, startTopMenuSpinner, stopFullPageSpinner, stopLoadingItemsSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import * as SettingsHelper from '../settings-tools-v11.js';
 import * as LocaleHelper from '../localization-v11.js';
 import { popupTodoItem, setAssignStatusButtonsEventListeners } from './todo-details-v11.js';
@@ -1119,6 +1119,7 @@ function dispatchTodoItemChangedEvent(todoItemId) {
  * This function is called when the DOM content is fully loaded.
  */
 async function onDomContentLoaded(event) {
+    startTopMenuSpinner();
     startLoadingItemsSpinner('loading-todo-items-div');
     await showPopupAtLoad(TimeLineType.TodoItem);
     setTodosPageParametersFromPageData();
@@ -1142,6 +1143,7 @@ async function onDomContentLoaded(event) {
     await initialSettingsPanelSetup();
     stopLoadingItemsSpinner('loading-todo-items-div');
     await getTodos();
+    stopTopMenuSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });

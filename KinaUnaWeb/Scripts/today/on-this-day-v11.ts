@@ -5,7 +5,7 @@ import {
     getFormattedDateString, setTagsAutoSuggestList, setCategoriesAutoSuggestList, setContextAutoSuggestList
 } from '../data-tools-v11.js';
 import * as SettingsHelper from '../settings-tools-v11.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
+import { startLoadingItemsSpinner, startTopMenuSpinner, stopLoadingItemsSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v11.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v11.js';
 
@@ -575,6 +575,7 @@ function addSelectedFamiliesChangedEventListener() {
 
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    startTopMenuSpinner();
     languageId = getCurrentLanguageId();
     onThisDayProgenyId = getCurrentProgenyId();
 
@@ -602,6 +603,8 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     if (firstRun) { // getOnThisDayData updated the parameters and exited early to reload with the new values.
         await getOnThisDayData(onThisDayParameters);
     }
+
+    stopTopMenuSpinner();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

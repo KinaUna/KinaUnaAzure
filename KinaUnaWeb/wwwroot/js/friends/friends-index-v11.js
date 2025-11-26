@@ -1,6 +1,6 @@
 import { updateFilterButtonDisplay } from '../data-tools-v11.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v11.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
+import { startLoadingItemsSpinner, startTopMenuSpinner, stopLoadingItemsSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import * as pageModels from '../page-models-v11.js';
 import * as SettingsHelper from '../settings-tools-v11.js';
 import { getSelectedProgenies } from '../settings-tools-v11.js';
@@ -335,6 +335,7 @@ function addSelectedProgeniesChangedEventListener() {
  * Initializes the page elements when it is loaded.
  */
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
     initialSettingsPanelSetup();
     SettingsHelper.initPageSettings();
     setupFilterButtons();
@@ -346,6 +347,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     addSelectedProgeniesChangedEventListener();
     friendsPageParameters.progenies = getSelectedProgenies();
     await getFriendsList();
+    stopTopMenuSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });

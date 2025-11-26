@@ -1,6 +1,6 @@
 import { getCurrentProgenyId } from '../data-tools-v11.js';
 import { addTimelineItemEventListener } from '../item-details/items-display-v11.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
+import { startLoadingItemsSpinner, startTopMenuSpinner, stopLoadingItemsSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import { LocationItem, LocationsPageParameters, NearByPhotosRequest, PicturesLocationsRequest, TimeLineItemViewModel, TimelineItem } from '../page-models-v11.js';
 import { setupHereMapsPhotoLocations } from './location-tools-v11.js';
 import * as SettingsHelper from '../settings-tools-v11.js';
@@ -286,6 +286,7 @@ function addSelectedProgeniesChangedEventListener() {
     window.addEventListener('progeniesChanged', progeniesChangedAction);
 }
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
     photoLocationsProgenyId = getCurrentProgenyId();
     getLocationsPageParameters();
     loadPhotoLocationsPageSettings();
@@ -316,6 +317,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
     window.addEventListener('resize', () => map?.getViewPort().resize());
     map?.getViewPort().resize();
+    stopTopMenuSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });

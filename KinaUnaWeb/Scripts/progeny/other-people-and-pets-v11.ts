@@ -1,6 +1,6 @@
 ﻿import { getCurrentLanguageId } from "../data-tools-v11.js";
 import { hideBodyScrollbars } from "../item-details/items-display-v11.js";
-import { startFullPageSpinner, stopFullPageSpinner } from "../navigation-tools-v11.js";
+import { startFullPageSpinner, startTopMenuSpinner, stopFullPageSpinner, stopTopMenuSpinner } from "../navigation-tools-v11.js";
 import { Progeny } from "../page-models-v11.js";
 import { popupProgenyDetails } from "./progeny-details-v11.js";
 
@@ -152,9 +152,11 @@ function addAddToFamilyDivEventListeners() {
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
+    startTopMenuSpinner();
+
     languageId = getCurrentLanguageId();
 
     await getOtherPeopleList();
-
+    stopTopMenuSpinner();
     return Promise.resolve();
 });

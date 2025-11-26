@@ -2,7 +2,7 @@
 import { Video, VideoViewModel, VideosList, VideosPageParameters, TimelineItem, TimeLineType } from '../page-models-v11.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v11.js';
 import * as SettingsHelper from '../settings-tools-v11.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
+import { startLoadingItemsSpinner, startTopMenuSpinner, stopLoadingItemsSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import { addTimelineItemEventListener, showPopupAtLoad } from '../item-details/items-display-v11.js';
 import { getSelectedProgenies } from '../settings-tools-v11.js';
 
@@ -798,6 +798,8 @@ function addSelectedProgeniesChangedEventListener() {
 
 /** Initialization and setup when page is loaded */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    startTopMenuSpinner();
+
     videosPageProgenyId = getCurrentProgenyId();
     languageId = getCurrentLanguageId();
 
@@ -828,6 +830,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
         }
     }
 
+    stopTopMenuSpinner();
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

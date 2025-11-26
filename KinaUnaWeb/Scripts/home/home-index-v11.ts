@@ -1,4 +1,4 @@
-﻿import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v11.js';
+﻿import { startLoadingItemsSpinner, startTopMenuSpinner, stopLoadingItemsSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
 import { TimelineParameters, TimelineRequest } from '../page-models-v11.js';
 import { popupPictureDetails } from '../pictures/picture-details-v11.js';
 import { getSelectedFamilies, getSelectedProgenies } from '../settings-tools-v11.js';
@@ -50,7 +50,8 @@ async function getProgenyTrivia(progenyId: number, familyId: number) {
     setActiveProgenyTriviaButton(progenyId);
     const triviaDiv = document.querySelector<HTMLDivElement>('#progeny-trivia-div');
     if (triviaDiv) {
-        startLoadingItemsSpinner('progeny-trivia-div');
+        startLoadingItemsSpinner('progeny-trivia-content');
+        startLoadingItemsSpinner('progeny-trivia-select-wrapper');
         const triviaRequest: TimelineParameters = {
             progenyId: progenyId,
             progenies: await getSelectedProgenies(),
@@ -81,13 +82,16 @@ async function getProgenyTrivia(progenyId: number, familyId: number) {
                 }
                 addRandomPictureEventListener();
                 addSelectTriviaProgenyEventListeners();
+                setActiveProgenyTriviaButton(progenyId);
             }
         });
-        stopLoadingItemsSpinner('progeny-trivia-div');
+        stopLoadingItemsSpinner('progeny-trivia-content');
+        stopLoadingItemsSpinner('progeny-trivia-select-wrapper');
     }    
 }
 
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    startTopMenuSpinner();
     await getProgenyTrivia(0, 0);
 
     await initializeUpcomingEvents();
@@ -95,4 +99,5 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     await initializeLatestPosts();
 
     await initializeYearAgo();
+    stopTopMenuSpinner();
 });

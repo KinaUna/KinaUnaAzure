@@ -1,7 +1,7 @@
 ﻿import { setAddItemButtonEventListeners } from "../addItem/add-item-v11.js";
 import { setContextAutoSuggestList, setTagsAutoSuggestList, TimelineChangedEvent } from "../data-tools-v11.js";
 import { addTimelineItemEventListener, showPopupAtLoad } from "../item-details/items-display-v11.js";
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from "../navigation-tools-v11.js";
+import { startLoadingItemsSpinner, startTopMenuSpinner, stopLoadingItemsSpinner, stopTopMenuSpinner } from "../navigation-tools-v11.js";
 import { KanbanBoardElementParameters, KanbanBoardsPageParameters, KanbanBoardsPageResponse, TimelineItem, TimeLineType } from "../page-models-v11.js";
 import { getSelectedFamilies, getSelectedProgenies } from "../settings-tools-v11.js";
 import * as SettingsHelper from '../settings-tools-v11.js';
@@ -385,6 +385,8 @@ async function saveKanbansPageSettings(): Promise<void> {
  * This function is called when the DOM content is fully loaded.
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    startTopMenuSpinner();
+
     await showPopupAtLoad(TimeLineType.KanbanBoard);
     setKabansPageParametersFromPageData();
     loadKanbansPageSettings();
@@ -404,9 +406,9 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     initialSettingsPanelSetup();
     setAddItemButtonEventListeners();
     
-
     await getKanbanBoards();
 
+    stopTopMenuSpinner();
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
