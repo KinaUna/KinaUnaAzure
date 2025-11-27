@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using KinaUnaProgenyApi.Services.CacheServices;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
@@ -17,7 +18,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     /// </summary>
     /// <param name="progenyDbContext"></param>
     /// <param name="accessManagementService"></param>
-    public class UserGroupsService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IUserGroupAuditLogsService userGroupAuditLogService) : IUserGroupsService
+    public class UserGroupsService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IUserGroupAuditLogsService userGroupAuditLogService, IKinaUnaCacheService kinaUnaCacheService) : IUserGroupsService
     {
         /// <summary>
         /// Gets a user group by its unique identifier, including its members, if the current user has the necessary permissions.
@@ -514,7 +515,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (user != null)
                 {
                     userGroupMember.UserId = user.UserId;
-                    accessManagementService.SetUserUpdatedCache(user.UserId);
+                    kinaUnaCacheService.SetUserUpdatedCache(user.UserId);
                 }
             }
 
@@ -577,7 +578,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (user != null)
                 {
                     userGroupMember.UserId = user.UserId;
-                    accessManagementService.SetUserUpdatedCache(user.UserId);
+                    kinaUnaCacheService.SetUserUpdatedCache(user.UserId);
                 }
             }
             
@@ -671,12 +672,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             
             if (!string.IsNullOrEmpty(member.UserId))
             {
-                accessManagementService.SetUserUpdatedCache(member.UserId);
+                kinaUnaCacheService.SetUserUpdatedCache(member.UserId);
             }
 
             if (progenyChanged)
             {
-                accessManagementService.SetProgenyUpdatedCache(group.ProgenyId);
+                kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(group.ProgenyId, 0);
             }
             return true;
         }
@@ -702,7 +703,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.UpdateRange(members);
 
             await progenyDbContext.SaveChangesAsync();
-            accessManagementService.SetUserUpdatedCache(userInfo.UserId);
+            kinaUnaCacheService.SetUserUpdatedCache(userInfo.UserId);
         }
 
         /// <summary>
@@ -725,7 +726,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.UpdateRange(members);
 
             await progenyDbContext.SaveChangesAsync();
-            accessManagementService.SetUserUpdatedCache(userInfo.UserId);
+            kinaUnaCacheService.SetUserUpdatedCache(userInfo.UserId);
         }
     }
 }

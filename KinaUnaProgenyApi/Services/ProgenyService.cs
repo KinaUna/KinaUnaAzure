@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using KinaUnaProgenyApi.Services.CacheServices;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -27,8 +28,10 @@ namespace KinaUnaProgenyApi.Services
         private readonly IImageStore _imageStore;
         private readonly IAccessManagementService _accessManagementService;
         private readonly IUserGroupsService _userGroupsService;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
 
-        public ProgenyService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, ILocationService locationService, IAccessManagementService accessManagementService, IUserGroupsService userGroupsService)
+        public ProgenyService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, ILocationService locationService,
+            IAccessManagementService accessManagementService, IUserGroupsService userGroupsService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _context = context;
             _locationService = locationService;
@@ -36,6 +39,7 @@ namespace KinaUnaProgenyApi.Services
             _accessManagementService = accessManagementService;
             _userGroupsService = userGroupsService;
             _cache = cache;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _ = _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _ = _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
@@ -186,7 +190,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _accessManagementService.SetProgenyUpdatedCache(progeny.Id);
+            _kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(progeny.Id, 0);
 
             return progeny;
         }
@@ -264,7 +268,7 @@ namespace KinaUnaProgenyApi.Services
             }
 
             _ = await SetProgenyInCache(progeny.Id);
-            _accessManagementService.SetProgenyUpdatedCache(progeny.Id);
+            _kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(progeny.Id, 0);
 
             return progenyToUpdate;
         }
@@ -311,7 +315,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _accessManagementService.RevokeProgenyPermission(progenyPermission, currentUserInfo);
             }
 
-            _accessManagementService.SetProgenyUpdatedCache(progeny.Id);
+            _kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(progeny.Id, 0);
             return progenyToDelete;
         }
 
@@ -327,7 +331,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 return null;
             }
-            ProgenyUpdatedCacheEntry progenyUpdated = _accessManagementService.GetProgenyUpdatedCache(id);
+            ProgenyUpdatedCacheEntry progenyUpdated = _kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(id, 0);
 
             ProgenyCacheEntry progenyCacheEntry = JsonSerializer.Deserialize<ProgenyCacheEntry>(cachedProgeny, JsonSerializerOptions.Web);
             

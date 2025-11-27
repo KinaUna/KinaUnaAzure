@@ -1,5 +1,5 @@
-﻿const bodyContentDiv: any = $('#body-content');
-const topMainMenuContainer: any = $('#top-main-menu-container');
+﻿const bodyContentDiv: any = $('body');
+const topMainMenuContainer: any = $('#menu-activity-indicator');
 
 /**
  * Displays the default cirle loading spinner in the middle of the page, and fades the rest of the page.
@@ -20,9 +20,7 @@ function startFullPageLoadingSpinner(): void {
         textPos: 'vertical',
         fontSize: '',
         onClose: function () { }
-    });
-
-    
+    });    
 }
 
 /**
@@ -58,7 +56,7 @@ export function startTopMenuSpinner() {
     topMainMenuContainer.waitMe({
         effect: 'pulse',
         text: '',
-        bg: 'rgba(125,125,125,0.1)',
+        bg: 'rgba(125,125,125, 0)',
         color: [
             '#aa90cc', '#bbaadd', '#ccbbee', '#ddccff', '#ccbbee', '#bbaadd', '#aa90cc', '#9a80bb',
             '#ccbbee', '#bbaadd', '#aa90cc', '#9a80bb', '#6a5081', '#7a6095', '#8a70aa', '#9a80bb',

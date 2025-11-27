@@ -17,6 +17,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using KinaUnaProgenyApi.Services.FamiliesServices;
 using KinaUnaProgenyApi.Services.KanbanServices;
 using KinaUnaProgenyApi.Services.TodosServices;
@@ -103,6 +104,7 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IFamilyMembersService, FamilyMembersService>();
             services.AddScoped<IFamilyAuditLogsService, FamilyAuditLogsService>();
             services.AddScoped<IPermissionAuditLogsService, PermissionAuditLogsService>();
+            services.AddScoped<IKinaUnaCacheService, KinaUnaInMemoryCacheService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddJsonOptions(options =>

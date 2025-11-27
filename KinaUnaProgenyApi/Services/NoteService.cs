@@ -107,8 +107,7 @@ namespace KinaUnaProgenyApi.Services
 
             Note noteToAdd = new();
             noteToAdd.CopyPropertiesForAdd(note);
-            noteToAdd.CreatedDate = DateTime.UtcNow;
-
+            
             _ = _context.NotesDb.Add(noteToAdd);
             _ = await _context.SaveChangesAsync();
 

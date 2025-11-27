@@ -2,6 +2,7 @@
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -43,13 +44,15 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             MediaDbContext mediaDbContext = new(mediaOptions);
 
             _mockPermissionAuditLogService = new Mock<IPermissionAuditLogsService>();
+            Mock<IKinaUnaCacheService> mockKinaUnaCacheService = new();
 
             // Initialize service with real in-memory contexts and mocked audit service
             _service = new KinaUnaProgenyApi.Services.AccessManagementService.AccessManagementService(
                 _progenyDbContext,
                 mediaDbContext,
                 _mockPermissionAuditLogService.Object,
-                GetMemoryCache());
+                GetMemoryCache(),
+                mockKinaUnaCacheService.Object);
         }
 
         private static IDistributedCache GetMemoryCache()
