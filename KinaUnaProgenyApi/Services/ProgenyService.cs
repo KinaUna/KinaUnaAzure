@@ -331,7 +331,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 return null;
             }
-            ProgenyUpdatedCacheEntry progenyUpdated = _kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(id, 0);
+            ProgenyOrFamilyUpdatedCacheEntry progenyUpdated = _kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(id, 0);
 
             ProgenyCacheEntry progenyCacheEntry = JsonSerializer.Deserialize<ProgenyCacheEntry>(cachedProgeny, JsonSerializerOptions.Web);
             

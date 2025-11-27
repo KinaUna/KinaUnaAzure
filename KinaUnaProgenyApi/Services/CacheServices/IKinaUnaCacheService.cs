@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
+using System.Collections.Generic;
+using static KinaUna.Data.Models.KinaUnaTypes;
 
 namespace KinaUnaProgenyApi.Services.CacheServices
 {
@@ -37,8 +40,87 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// </summary>
         /// <param name="progenyId">The unique identifier of the progeny whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
         /// <param name="familyId">The unique identifier of the family whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
-        /// <returns>A <see cref="ProgenyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
+        /// <returns>A <see cref="ProgenyOrFamilyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
         /// langword="null"/> if no cache entry exists for the specified progeny.</returns>
-        ProgenyUpdatedCacheEntry GetProgenyOrFamilyUpdatedCache(int progenyId, int familyId);
+        ProgenyOrFamilyUpdatedCacheEntry GetProgenyOrFamilyUpdatedCache(int progenyId, int familyId);
+
+        /// <summary>
+        /// Sets the timeline updated cache entry for the specified progeny or family.
+        /// </summary>
+        /// <param name="progenyId">The unique identifier of the progeny whose timeline update cache entry is to be set. Cannot be null or empty.</param>
+        /// <param name="familyId">The unique identifier of the family whose timeline update cache entry is to be set. Cannot be null or empty.</param>
+        /// <param name="timelineType">The type of timeline update to set. Cannot be null or empty.</param>
+        void SetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType);
+
+        /// <summary>
+        /// Retrieves the cached user update entry for the specified progeny identifier.
+        /// </summary>
+        /// <param name="progenyId">The unique identifier of the progeny whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="familyId">The unique identifier of the family whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="timelineType">The type of timeline update to retrieve. Cannot be null or empty.</param>
+        /// <returns>A <see cref="ProgenyOrFamilyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
+        /// langword="null"/> if no cache entry exists for the specified progeny.</returns>
+        TimelineUpdatedCacheEntry GetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType);
+
+        /// <summary>
+        /// Stores the specified item update information in the distributed cache with a sliding expiration of seven
+        /// days.
+        /// </summary>
+        /// <remarks>The cached entry will expire if not accessed within seven days. The cache key is
+        /// constructed using the application name, API version, item type, and item ID to ensure uniqueness.</remarks>
+        /// <param name="itemType">The type of timeline to which the item belongs. Determines the cache key used for storage.</param>
+        /// <param name="itemId">The unique identifier of the item whose update information is to be cached.</param>
+        void SetItemUpdatedCache(TimeLineType itemType, int itemId);
+
+        /// <summary>
+        /// Retrieves the cached update entry for a specific item and timeline type, if available.
+        /// </summary>
+        /// <param name="itemType">The type of timeline to which the item belongs. Determines the cache key used for retrieval.</param>
+        /// <param name="itemId">The unique identifier of the item whose update cache entry is to be retrieved.</param>
+        /// <returns>An ItemUpdatedCacheEntry object containing the cached update information for the specified item and timeline
+        /// type, or null if no cache entry exists.</returns>
+        ItemUpdatedCacheEntry GetItemUpdatedCache(TimeLineType itemType, int itemId);
+
+        /// <summary>
+        /// Stores the specified list of notes in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached notes list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the notes list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the notes list.</param>
+        /// <param name="notesList">The list of notes to cache. Cannot be null.</param>
+        void SetNotesListCache(string userId, int progenyId, List<Note> notesList);
+
+        /// <summary>
+        /// Retrieves the cached notes list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose notes list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the notes list cache entry is requested.</param>
+        /// <returns>A <see cref="NotesListCacheEntry"/> object containing the cached notes list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        NotesListCacheEntry GetNotesListCache(string userId, int progenyId);
+
+        /// <summary>
+        /// Stores the specified list of pictures in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached pictures list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the pictures list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the pictures list.</param>
+        /// <param name="picturesList">The list of pictures to cache. Cannot be null.</param>
+        void SetPicturesListCache(string userId, int progenyId, List<Picture> picturesList);
+
+        /// <summary>
+        /// Retrieves the cached pictures list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose pictures list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the pictures list cache entry is requested.</param>
+        /// <returns>A <see cref="PicturesListCacheEntry"/> object containing the cached pictures list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        PicturesListCacheEntry GetPicturesListCache(string userId, int progenyId);
     }
 }

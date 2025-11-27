@@ -1,22 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using ImageMagick;
+﻿using ImageMagick;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Extensions.ThirdPartyElements;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Location = KinaUna.Data.Models.Location;
 
 namespace KinaUnaProgenyApi.Services
@@ -26,16 +28,18 @@ namespace KinaUnaProgenyApi.Services
         private readonly MediaDbContext _mediaContext;
         private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
+        private readonly IKinaUnaCacheService _kinaunaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly IImageStore _imageStore;
 
-        public PicturesService(MediaDbContext mediaContext, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService)
+        public PicturesService(MediaDbContext mediaContext, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _mediaContext = mediaContext;
             _accessManagementService = accessManagementService;
             _imageStore = imageStore;
             _cache = cache;
+            _kinaunaCacheService = kinaUnaCacheService;
             _ = _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _ = _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
         }
@@ -553,6 +557,8 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetPictureInCache(pictureToUpdate.PictureId);
 
+            _kinaunaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+
             return pictureToUpdate;
 
         }
@@ -577,6 +583,8 @@ namespace KinaUnaProgenyApi.Services
             _ = _mediaContext.PicturesDb.Update(pictureToUpdate);
             _ = await _mediaContext.SaveChangesAsync();
             _ = await SetPictureInCache(pictureToUpdate.PictureId);
+
+            _kinaunaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
 
             return pictureToUpdate;
 
@@ -628,6 +636,8 @@ namespace KinaUnaProgenyApi.Services
             }
 
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
+            _kinaunaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+
             return pictureToDelete;
         }
 
@@ -666,6 +676,7 @@ namespace KinaUnaProgenyApi.Services
 
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
 
+            _kinaunaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
             // Todo: Remove permission entries for this picture?
             return pictureToDelete;
         }
@@ -691,6 +702,16 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Picture objects.</returns>
         public async Task<List<Picture>> GetPicturesList(int progenyId, UserInfo currentUserInfo)
         {
+            PicturesListCacheEntry cacheEntry = _kinaunaCacheService.GetPicturesListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaunaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    return cacheEntry.PicturesList;
+                }
+            }
+
             List<Picture> picturesList = await GetPicturesListFromCache(progenyId);
             if (picturesList.Count == 0)
             {
@@ -709,6 +730,8 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
             filteredList = filteredList.OrderByDescending(p => p.PictureTime).ToList();
+
+            _kinaunaCacheService.SetPicturesListCache(currentUserInfo.UserId, progenyId, filteredList);
 
             watch.Stop();
             Console.WriteLine("GetPicturesList for progeny: " + progenyId + " Time Taken: " + watch.Elapsed.Minutes + "m " + watch.Elapsed.Seconds + "s");
@@ -742,7 +765,7 @@ namespace KinaUnaProgenyApi.Services
                 return tempPicture;
             }
 
-            Picture randomPicture = new Picture();
+            Picture randomPicture = new();
             bool hasAccess = false;
             int maxTries = 1000;
             int tries = 0;

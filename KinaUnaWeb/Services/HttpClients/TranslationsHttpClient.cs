@@ -103,39 +103,24 @@ namespace KinaUnaWeb.Services.HttpClients
                 languageId = 1;
             }
             string translation = "";
-            IEnumerable<TextTranslation> translationsList;
-            string cachedTranslationsList = await _cache.GetStringAsync("PageTranslations" + page + "&Lang" + languageId);
-            if (!updateCache && !string.IsNullOrEmpty(cachedTranslationsList))
+            string cachedTranslation = await _cache.GetStringAsync("GetTranslation_" + word + "&page" + page + "&Lang" + languageId);
+            if (!updateCache && !string.IsNullOrEmpty(cachedTranslation))
             {
-                translationsList = JsonSerializer.Deserialize<IEnumerable<TextTranslation>>(cachedTranslationsList, JsonSerializerOptions.Web);
-                if (translationsList != null)
+                TextTranslation translationResult = JsonSerializer.Deserialize<TextTranslation>(cachedTranslation, JsonSerializerOptions.Web);
+                if (translationResult != null)
                 {
-                    translation = translationsList.FirstOrDefault(t => t.LanguageId == languageId && t.Word == word)?.Translation;
+                    translation = translationResult.Translation;
                 }
             }
             else
             {
-                TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(string.Empty);
-                _httpClient.SetBearerToken(tokenInfo.AccessToken);
+                IEnumerable<TextTranslation> textTranslations = await GetAllTranslations(languageId, updateCache);
 
-                string translationsApiPath = "/api/Translations/PageTranslations/" + languageId + "/" + page;
-                HttpResponseMessage translationResponse = await _httpClient.GetAsync(translationsApiPath);
-
-                if (translationResponse.IsSuccessStatusCode)
+                TextTranslation textTranslation = textTranslations.FirstOrDefault(t => t.Word == word && t.Page == page && t.LanguageId == languageId);
+                if (textTranslation != null)
                 {
-                    string translationsListAsString = await translationResponse.Content.ReadAsStringAsync();
-                    translationsList = JsonSerializer.Deserialize<IEnumerable<TextTranslation>>(translationsListAsString, JsonSerializerOptions.Web);
-
-                    if (translationsList != null)
-                    {
-                        IEnumerable<TextTranslation> textTranslations = translationsList.ToList();
-                        await _cache.SetStringAsync("PageTranslations" + page + "&Lang" + languageId, JsonSerializer.Serialize(textTranslations, JsonSerializerOptions.Web), _cacheExpirationLong);
-                        TextTranslation textTranslation = textTranslations.FirstOrDefault(t => t.Word == word && t.Page == page && t.LanguageId == languageId);
-                        if (textTranslation != null)
-                        {
-                            translation = textTranslation.Translation;
-                        }
-                    }
+                    translation = textTranslation.Translation;
+                    await _cache.SetStringAsync("GetTranslation_" + word + "&page" + page + "&Lang" + languageId, JsonSerializer.Serialize(textTranslation, JsonSerializerOptions.Web), _cacheExpirationLong);
                 }
             }
 

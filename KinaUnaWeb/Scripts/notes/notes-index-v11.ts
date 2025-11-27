@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     addSelectedProgeniesChangedEventListener();
     notesPageParameters.progenies = getSelectedProgenies();
 
-    getNotes();
+    await getNotes();
 
     if (nextNotesItemsPageButton !== null && previousNotesItemsPageButton !== null) {
         nextNotesItemsPageButton.removeEventListener('click', getNextNotesPage);

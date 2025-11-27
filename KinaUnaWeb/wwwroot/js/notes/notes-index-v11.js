@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
     addSelectedProgeniesChangedEventListener();
     notesPageParameters.progenies = getSelectedProgenies();
-    getNotes();
+    await getNotes();
     if (nextNotesItemsPageButton !== null && previousNotesItemsPageButton !== null) {
         nextNotesItemsPageButton.removeEventListener('click', getNextNotesPage);
         nextNotesItemsPageButton.addEventListener('click', getNextNotesPage);

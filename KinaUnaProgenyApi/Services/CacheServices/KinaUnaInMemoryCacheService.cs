@@ -1,9 +1,12 @@
-﻿using KinaUna.Data.Models.AccessManagement;
+﻿using KinaUna.Data;
+using KinaUna.Data.Models.AccessManagement;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using KinaUna.Data;
+using KinaUna.Data.Models;
+using KinaUna.Data.Models.CacheManagement;
+using static KinaUna.Data.Models.KinaUnaTypes;
 
 namespace KinaUnaProgenyApi.Services.CacheServices
 {
@@ -22,7 +25,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             };
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userId
+            cache.SetString(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userId
                 , JsonSerializer.Serialize(userCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -34,7 +37,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// langword="null"/> if no cache entry exists for the specified user.</returns>
         public UserUpdatedCacheEntry GetUserUpdatedCache(string userId)
         {
-            string cachedUserEntry = cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userId).Result;
+            string cachedUserEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userId);
             if (!string.IsNullOrEmpty(cachedUserEntry))
             {
                 UserUpdatedCacheEntry userCacheEntry = JsonSerializer.Deserialize<UserUpdatedCacheEntry>(cachedUserEntry, JsonSerializerOptions.Web);
@@ -65,15 +68,29 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="familyId">The unique identifier of the family.</param>
         public void SetProgenyOrFamilyUpdatedCache(int progenyId, int familyId)
         {
-            ProgenyUpdatedCacheEntry progenyCacheEntry = new()
+            ProgenyOrFamilyUpdatedCacheEntry progenyOrFamilyCacheEntry = new()
             {
                 ProgenyId = progenyId,
+                FamilyId = familyId,
                 UpdateTime = DateTime.UtcNow
             };
-            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
-            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyOrFamilyCacheEntry_p_" + progenyId + "_f_" + familyId
-                , JsonSerializer.Serialize(progenyCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+
+            if (progenyId > 0)
+            {
+                
+                DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+                cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+                cache.SetString(Constants.AppName + Constants.ApiVersion + "progenyCacheEntry_" + progenyId
+                    , JsonSerializer.Serialize(progenyOrFamilyCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+            }
+
+            if (familyId > 0)
+            {
+                DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+                cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+                cache.SetString(Constants.AppName + Constants.ApiVersion + "familyCacheEntry_" + familyId
+                    , JsonSerializer.Serialize(progenyOrFamilyCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+            }
         }
 
         /// <summary>
@@ -81,45 +98,225 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// </summary>
         /// <param name="progenyId">The unique identifier of the progeny whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
         /// <param name="familyId">The unique identifier of the family whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
-        /// <returns>A <see cref="ProgenyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
+        /// <returns>A <see cref="ProgenyOrFamilyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
         /// langword="null"/> if no cache entry exists for the specified progeny.</returns>
-        public ProgenyUpdatedCacheEntry GetProgenyOrFamilyUpdatedCache(int progenyId, int familyId)
+        public ProgenyOrFamilyUpdatedCacheEntry GetProgenyOrFamilyUpdatedCache(int progenyId, int familyId)
         {
-            string cachedUserEntry = cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyOrFamilyCacheEntry_p_" + progenyId + "_f_" + familyId).Result;
-            if (!string.IsNullOrEmpty(cachedUserEntry))
+            if (progenyId > 0)
             {
-                ProgenyUpdatedCacheEntry progenyCacheEntry = JsonSerializer.Deserialize<ProgenyUpdatedCacheEntry>(cachedUserEntry, JsonSerializerOptions.Web);
-                return progenyCacheEntry;
+                string cachedProgenyEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "progenyCacheEntry_" + progenyId);
+                if (!string.IsNullOrEmpty(cachedProgenyEntry))
+                {
+                    ProgenyOrFamilyUpdatedCacheEntry progenyCacheEntry = JsonSerializer.Deserialize<ProgenyOrFamilyUpdatedCacheEntry>(cachedProgenyEntry, JsonSerializerOptions.Web);
+                    return progenyCacheEntry;
+                }
             }
+
+            if (familyId > 0)
+            {
+                string cachedFamilyEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "familyCacheEntry_" + familyId);
+                if (!string.IsNullOrEmpty(cachedFamilyEntry))
+                {
+                    ProgenyOrFamilyUpdatedCacheEntry familyCacheEntry = JsonSerializer.Deserialize<ProgenyOrFamilyUpdatedCacheEntry>(cachedFamilyEntry, JsonSerializerOptions.Web);
+                    return familyCacheEntry;
+                }
+            }
+
             return null;
         }
 
-        public void SetProgenyTimelineUpdatedCache(int progenyId)
+        /// <summary>
+        /// Sets the timeline updated cache entry for the specified progeny or family.
+        /// </summary>
+        /// <param name="progenyId">The unique identifier of the progeny whose timeline update cache entry is to be set. Cannot be null or empty.</param>
+        /// <param name="familyId">The unique identifier of the family whose timeline update cache entry is to be set. Cannot be null or empty.</param>
+        /// <param name="timelineType">The type of timeline update to set. Cannot be null or empty.</param>
+        public void SetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType)
         {
-            ProgenyUpdatedCacheEntry progenyCacheEntry = new()
+            TimelineUpdatedCacheEntry timelineCacheEntry = new()
             {
                 ProgenyId = progenyId,
+                FamilyId = familyId,
+                TimeLineType = timelineType,
                 UpdateTime = DateTime.UtcNow
             };
-            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
-            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyCacheEntry_" + progenyId
-                , JsonSerializer.Serialize(progenyCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+
+            if (progenyId > 0)
+            {
+                
+                DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+                cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+                cache.SetString(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_p_" + progenyId + "_t_" + (int)timelineType
+                    , JsonSerializer.Serialize(timelineCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+            }
+
+            if (familyId > 0)
+            {
+                DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+                cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+                cache.SetString(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_f_" + familyId + "_t_" + (int)timelineType
+                    , JsonSerializer.Serialize(timelineCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+            }
         }
 
         /// <summary>
         /// Retrieves the cached user update entry for the specified progeny identifier.
         /// </summary>
         /// <param name="progenyId">The unique identifier of the progeny whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
-        /// <returns>A <see cref="ProgenyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
+        /// <param name="familyId">The unique identifier of the family whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="timelineType">The type of timeline update to retrieve. Cannot be null or empty.</param>
+        /// <returns>A <see cref="ProgenyOrFamilyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
         /// langword="null"/> if no cache entry exists for the specified progeny.</returns>
-        public ProgenyUpdatedCacheEntry GetProgenyTimlineUpdatedCache(int progenyId)
+        public TimelineUpdatedCacheEntry GetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType)
         {
-            string cachedUserEntry = cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyCacheEntry_" + progenyId).Result;
-            if (!string.IsNullOrEmpty(cachedUserEntry))
+            if (progenyId > 0)
             {
-                ProgenyUpdatedCacheEntry progenyCacheEntry = JsonSerializer.Deserialize<ProgenyUpdatedCacheEntry>(cachedUserEntry, JsonSerializerOptions.Web);
-                return progenyCacheEntry;
+                string cachedTimelineEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_p_" + progenyId + "_t_" + (int)timelineType);
+                if (!string.IsNullOrEmpty(cachedTimelineEntry))
+                {
+                    TimelineUpdatedCacheEntry timelineCacheEntry = JsonSerializer.Deserialize<TimelineUpdatedCacheEntry>(cachedTimelineEntry, JsonSerializerOptions.Web);
+                    return timelineCacheEntry;
+                }
+            }
+
+            if (familyId > 0)
+            {
+                string cachedTimelineEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_f_" + familyId + "_t_" + (int)timelineType);
+                if (!string.IsNullOrEmpty(cachedTimelineEntry))
+                {
+                    TimelineUpdatedCacheEntry timelineCacheEntry = JsonSerializer.Deserialize<TimelineUpdatedCacheEntry>(cachedTimelineEntry, JsonSerializerOptions.Web);
+                    return timelineCacheEntry;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Stores the specified item update information in the distributed cache with a sliding expiration of seven
+        /// days.
+        /// </summary>
+        /// <remarks>The cached entry will expire if not accessed within seven days. The cache key is
+        /// constructed using the application name, API version, item type, and item ID to ensure uniqueness.</remarks>
+        /// <param name="itemType">The type of timeline to which the item belongs. Determines the cache key used for storage.</param>
+        /// <param name="itemId">The unique identifier of the item whose update information is to be cached.</param>
+        public void SetItemUpdatedCache(TimeLineType itemType, int itemId)
+        {
+            ItemUpdatedCacheEntry itemCacheEntry = new()
+            {
+                ItemId = itemId,
+                ItemType = itemType,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            cache.SetString(Constants.AppName + Constants.ApiVersion + "itemUpdatedCacheEntry_t_" + (int)itemCacheEntry.ItemType + "_id_" + itemCacheEntry.ItemId
+                , JsonSerializer.Serialize(itemCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached update entry for a specific item and timeline type, if available.
+        /// </summary>
+        /// <param name="itemType">The type of timeline to which the item belongs. Determines the cache key used for retrieval.</param>
+        /// <param name="itemId">The unique identifier of the item whose update cache entry is to be retrieved.</param>
+        /// <returns>An ItemUpdatedCacheEntry object containing the cached update information for the specified item and timeline
+        /// type, or null if no cache entry exists.</returns>
+        public ItemUpdatedCacheEntry GetItemUpdatedCache(TimeLineType itemType, int itemId)
+        {
+            string cachedItemEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "itemUpdatedCacheEntry_t_" + (int)itemType + "_id_" + itemId);
+            if (!string.IsNullOrEmpty(cachedItemEntry))
+            {
+                ItemUpdatedCacheEntry itemCacheEntry = JsonSerializer.Deserialize<ItemUpdatedCacheEntry>(cachedItemEntry, JsonSerializerOptions.Web);
+                return itemCacheEntry;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Stores the specified list of notes in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached notes list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the notes list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the notes list.</param>
+        /// <param name="notesList">The list of notes to cache. Cannot be null.</param>
+        public void SetNotesListCache(string userId, int progenyId, List<Note> notesList)
+        {
+            NotesListCacheEntry notesListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                NotesList = notesList,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            cache.SetString(Constants.AppName + Constants.ApiVersion + "notesListCacheEntry_u_" + userId + "_p_" + progenyId
+                , JsonSerializer.Serialize(notesListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached notes list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose notes list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the notes list cache entry is requested.</param>
+        /// <returns>A <see cref="NotesListCacheEntry"/> object containing the cached notes list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public NotesListCacheEntry GetNotesListCache(string userId, int progenyId)
+        {
+            string cachedNotesListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "notesListCacheEntry_u_" + userId + "_p_" + progenyId);
+            if (!string.IsNullOrEmpty(cachedNotesListEntry))
+            {
+                NotesListCacheEntry notesListCacheEntry = JsonSerializer.Deserialize<NotesListCacheEntry>(cachedNotesListEntry, JsonSerializerOptions.Web);
+                return notesListCacheEntry;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Stores the specified list of pictures in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached pictures list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the pictures list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the pictures list.</param>
+        /// <param name="picturesList">The list of pictures to cache. Cannot be null.</param>
+        public void SetPicturesListCache(string userId, int progenyId, List<Picture> picturesList)
+        {
+            PicturesListCacheEntry picturesListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                PicturesList = picturesList,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            cache.SetString(Constants.AppName + Constants.ApiVersion + "picturesListCacheEntry_u_" + userId + "_p_" + progenyId
+                , JsonSerializer.Serialize(picturesListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached pictures list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose pictures list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the pictures list cache entry is requested.</param>
+        /// <returns>A <see cref="PicturesListCacheEntry"/> object containing the cached pictures list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public PicturesListCacheEntry GetPicturesListCache(string userId, int progenyId)
+        {
+            string cachedPicturesListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "picturesListCacheEntry_u_" + userId + "_p_" + progenyId);
+            if (!string.IsNullOrEmpty(cachedPicturesListEntry))
+            {
+                PicturesListCacheEntry picturesListCacheEntry = JsonSerializer.Deserialize<PicturesListCacheEntry>(cachedPicturesListEntry, JsonSerializerOptions.Web);
+                return picturesListCacheEntry;
             }
             return null;
         }
