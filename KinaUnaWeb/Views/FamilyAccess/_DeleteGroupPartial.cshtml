@@ -39,12 +39,6 @@
                 <label asp-for="UserGroup.Description" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Family, Model.LanguageId)</label>
                 <textarea class="form-control" rows="4" asp-for="UserGroup.Description" readonly="readonly">@Model.UserGroup.Description</textarea>
             </div>
-            <div class="form-group">
-                <label asp-for="PermissionLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Select group's permission", PageNames.AccessManagement, Model.LanguageId):</label>
-                <div class="col-auto">
-                    <select id="family-member-permission-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.PermissionLevelsList.Count" asp-for="PermissionLevel" asp-items="@Model.PermissionLevelsList"></select>
-                </div>
-            </div>
             <input type="hidden" asp-for="UserGroup.FamilyId" value="@Model.UserGroup.FamilyId" />
             <input type="hidden" asp-for="UserGroup.ProgenyId" value="@Model.UserGroup.ProgenyId" />
             <input type="hidden" asp-for="UserGroup.UserGroupId" value="@Model.UserGroup.UserGroupId" />
@@ -52,7 +46,7 @@
             <div class="form-group">
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">
-                    <button id="save-group-button" disabled="disabled" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)</button>
+                    <button id="save-group-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)</button>
                     <button class="btn btn-danger item-details-cancel-button close-delete-group-modal-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
                 </div>
             </div>

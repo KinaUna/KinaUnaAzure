@@ -71,7 +71,9 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+
             UserGroup newUserGroup = await userGroupsService.AddUserGroup(userGroup, currentUserInfo);
+
             if (newUserGroup.UserGroupId == 0)
             {
                 return Unauthorized();

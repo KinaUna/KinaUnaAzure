@@ -286,6 +286,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 await accessManagementService.GrantProgenyPermission(permission, currentUserInfo);
             }
 
+            if (userGroup.CopyPermissionsFromGroupId > 0)
+            {
+                // Run this as a background task
+                await accessManagementService.CopyGroupItemPermissions(userGroup.CopyPermissionsFromGroupId, userGroup.UserGroupId, currentUserInfo);
+            }
+
             return userGroup;
         }
 

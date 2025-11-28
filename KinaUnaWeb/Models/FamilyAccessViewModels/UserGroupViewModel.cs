@@ -31,6 +31,8 @@ namespace KinaUnaWeb.Models.FamilyAccessViewModels
 
         public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
         public List<SelectListItem> PermissionLevelsList { get; set; } = [];
+        
+        public List<SelectListItem> OtherGroups { get; set; } = [];
 
         public void SetPermissionsLevelsList()
         {
@@ -51,6 +53,21 @@ namespace KinaUnaWeb.Models.FamilyAccessViewModels
                     Selected = level == PermissionLevel
                 });
             }
+        }
+
+        public void SetCopyFromGroupList(List<UserGroup> otherGroups)
+        {
+            OtherGroups = otherGroups.Select(g => new SelectListItem
+            {
+                Text = g.Name,
+                Value = g.UserGroupId.ToString()
+            }).ToList();
+
+            OtherGroups.Insert(0, new SelectListItem
+            {
+                Text = "None",
+                Value = "0"
+            });
         }
     }
 }

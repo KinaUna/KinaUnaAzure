@@ -64,6 +64,8 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, familyId, false);
             UserGroupViewModel model = new(baseModel);
 
+            List<UserGroup> otherUserGroups = [];
+
             if (progenyId > 0)
             {
                 if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
@@ -75,6 +77,22 @@ namespace KinaUnaWeb.Controllers
                 {
                     ProgenyId = progenyId
                 };
+
+                 List<UserGroup> progenyOtherUserGroups = await userGroupsHttpClient.GetUserGroupsForProgeny(progenyId);
+                 List<ProgenyPermission> progenyPermissions = await progenyHttpClient.GetProgenyPermissionsList(progenyId);
+                 foreach (UserGroup group in progenyOtherUserGroups)
+                 {
+                     foreach (ProgenyPermission permission in progenyPermissions)
+                     {
+                         if (permission.GroupId == group.UserGroupId)
+                         {
+                             if (permission.PermissionLevel < PermissionLevel.Admin)
+                             {
+                                 otherUserGroups.Add(group);
+                             }
+                         }
+                     }
+                 }
             }
 
             if (familyId > 0)
@@ -88,7 +106,25 @@ namespace KinaUnaWeb.Controllers
                 {
                     FamilyId = familyId
                 };
+
+                List<UserGroup> familyOtherUserGroups = await userGroupsHttpClient.GetUserGroupsForFamily(familyId);
+                List<FamilyPermission> familyPermissions = await familiesHttpClient.GetFamilyPermissionsList(familyId);
+                foreach (UserGroup group in familyOtherUserGroups)
+                {
+                    foreach (FamilyPermission permission in familyPermissions)
+                    {
+                        if (permission.GroupId == group.UserGroupId)
+                        {
+                            if (permission.PermissionLevel < PermissionLevel.Admin)
+                            {
+                                otherUserGroups.Add(group);
+                            }
+                        }
+                    }
+                }
             }
+            
+            model.SetCopyFromGroupList(otherUserGroups);
 
             model.SetPermissionsLevelsList();
 
@@ -171,12 +207,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return NotFound();
             }
-
-            if (userGroup.PermissionLevel < PermissionLevel.Admin)
-            {
-                return Unauthorized();
-            }
-
+            
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userGroup.ProgenyId, userGroup.FamilyId, false);
             model.SetBaseProperties(baseModel);
             if (model.CurrentProgenyId > 0)
@@ -232,6 +263,38 @@ namespace KinaUnaWeb.Controllers
 
             model.PermissionLevel = model.UserGroup.PermissionLevel;
             return PartialView("_DeleteGroupPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteGroup(UserGroupViewModel model)
+        {
+            UserGroup userGroup = await userGroupsHttpClient.GetUserGroup(model.UserGroup.UserGroupId);
+            if (userGroup == null || userGroup.UserGroupId == 0)
+            {
+                return NotFound();
+            }
+            
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userGroup.ProgenyId, userGroup.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+            if (model.CurrentProgenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            if (model.CurrentFamilyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    return Forbid();
+                }
+            }
+
+            bool result = await userGroupsHttpClient.DeleteUserGroup(model.UserGroup.UserGroupId);
+            return Json(result);
         }
 
         [HttpGet]

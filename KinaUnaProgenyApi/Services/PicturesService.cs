@@ -26,20 +26,22 @@ namespace KinaUnaProgenyApi.Services
     public class PicturesService : IPicturesService
     {
         private readonly MediaDbContext _mediaContext;
+        private readonly ProgenyDbContext _progenyContext;
         private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
-        private readonly IKinaUnaCacheService _kinaunaCacheService;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly IImageStore _imageStore;
 
-        public PicturesService(MediaDbContext mediaContext, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
+        public PicturesService(MediaDbContext mediaContext, ProgenyDbContext progenyDbContext, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _mediaContext = mediaContext;
+            _progenyContext = progenyDbContext;
             _accessManagementService = accessManagementService;
             _imageStore = imageStore;
             _cache = cache;
-            _kinaunaCacheService = kinaUnaCacheService;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _ = _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _ = _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
         }
@@ -557,7 +559,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetPictureInCache(pictureToUpdate.PictureId);
 
-            _kinaunaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
 
             return pictureToUpdate;
 
@@ -584,7 +586,7 @@ namespace KinaUnaProgenyApi.Services
             _ = await _mediaContext.SaveChangesAsync();
             _ = await SetPictureInCache(pictureToUpdate.PictureId);
 
-            _kinaunaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
 
             return pictureToUpdate;
 
@@ -636,7 +638,7 @@ namespace KinaUnaProgenyApi.Services
             }
 
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
-            _kinaunaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
 
             return pictureToDelete;
         }
@@ -676,7 +678,7 @@ namespace KinaUnaProgenyApi.Services
 
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
 
-            _kinaunaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
             // Todo: Remove permission entries for this picture?
             return pictureToDelete;
         }
@@ -702,8 +704,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Picture objects.</returns>
         public async Task<List<Picture>> GetPicturesList(int progenyId, UserInfo currentUserInfo)
         {
-            PicturesListCacheEntry cacheEntry = _kinaunaCacheService.GetPicturesListCache(currentUserInfo.UserId, progenyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaunaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            PicturesListCacheEntry cacheEntry = _kinaUnaCacheService.GetPicturesListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Photo);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -731,7 +733,7 @@ namespace KinaUnaProgenyApi.Services
             }
             filteredList = filteredList.OrderByDescending(p => p.PictureTime).ToList();
 
-            _kinaunaCacheService.SetPicturesListCache(currentUserInfo.UserId, progenyId, filteredList);
+            _kinaUnaCacheService.SetPicturesListCache(currentUserInfo.UserId, progenyId, filteredList);
 
             watch.Stop();
             Console.WriteLine("GetPicturesList for progeny: " + progenyId + " Time Taken: " + watch.Elapsed.Minutes + "m " + watch.Elapsed.Seconds + "s");
@@ -984,6 +986,27 @@ namespace KinaUnaProgenyApi.Services
                 if (!picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !picture.PictureLink.Contains('.'))
                 {
                     _ = await UpdatePictureLinkWithExtension(picture);
+                }
+
+
+                List<TimelineItemPermission> permissions = await _progenyContext.TimelineItemPermissionsDb.AsNoTracking().Where(t => t.ItemId == picture.PictureId && t.TimelineType == KinaUnaTypes.TimeLineType.Photo).ToListAsync();
+                if (permissions.Count == 0)
+                {
+                    TimelineItemPermission timelineItemPermission = new()
+                    {
+                        TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                        ItemId = picture.PictureId,
+                        ProgenyId = picture.ProgenyId,
+                        GroupId = 0,
+                        InheritPermissions = true,
+                        PermissionLevel = PermissionLevel.None,
+                        CreatedBy = "system",
+                        CreatedTime = DateTime.UtcNow,
+                        ModifiedBy = "system",
+                        ModifiedTime = DateTime.UtcNow
+                    };
+                    _progenyContext.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    await _progenyContext.SaveChangesAsync();
                 }
             }
         }

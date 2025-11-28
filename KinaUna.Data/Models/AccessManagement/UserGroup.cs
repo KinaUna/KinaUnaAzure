@@ -83,5 +83,7 @@ namespace KinaUna.Data.Models.AccessManagement
         /// logic only.</remarks>
         [NotMapped]
         public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
+
+        [NotMapped] public int CopyPermissionsFromGroupId { get; set; } = 0;
     }
 }

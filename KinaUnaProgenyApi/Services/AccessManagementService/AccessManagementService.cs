@@ -1517,6 +1517,36 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             List<TimelineItemPermission> allPermissionsForItem = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
                 .Where(tp => tp.TimelineType == itemType && tp.ItemId == itemId).ToListAsync();
 
+            // Check for duplicate permissions and only return unique ones.
+            List<TimelineItemPermission> duplicates = [];
+            foreach (TimelineItemPermission permission in allPermissionsForItem)
+            {
+                if (allPermissionsForItem.Any(p => p.TimelineItemPermissionId != permission.TimelineItemPermissionId &&
+                                                   p.ProgenyId == permission.ProgenyId &&
+                                                   p.FamilyId == permission.FamilyId &&
+                                                   p.UserId == permission.UserId &&
+                                                   p.GroupId == permission.GroupId &&
+                                                   p.InheritPermissions == permission.InheritPermissions))
+                {
+                    if (!duplicates.Any(p => p.ProgenyId == permission.ProgenyId &&
+                                            p.FamilyId == permission.FamilyId &&
+                                            p.UserId == permission.UserId &&
+                                            p.GroupId == permission.GroupId &&
+                                            p.InheritPermissions == permission.InheritPermissions))
+                    {
+                        duplicates.Add(permission);
+                    }
+                }
+            }
+
+            // Remove duplicates from the list and revoke them.
+            foreach (TimelineItemPermission duplicate in duplicates)
+            {
+
+                allPermissionsForItem.Remove(duplicate);
+                _ = await RevokeItemPermission(duplicate, currentUserInfo);
+            }
+
             List<TimelineItemPermission> accessibleItemPermissions = [];
 
             foreach (TimelineItemPermission permission in allPermissionsForItem)
@@ -3235,6 +3265,48 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             await progenyDbContext.SaveChangesAsync();
             kinaUnaCacheService.SetUserUpdatedCache(userInfo.UserId);
+        }
+
+        /// <summary>
+        /// Copies all timeline item permissions from the specified origin group to the target group.
+        /// </summary>
+        /// <remarks>Existing permissions in the target group are not removed or modified; this method
+        /// only adds new permissions based on those in the origin group. The operation sets the current user as the
+        /// creator and modifier of the new permissions.</remarks>
+        /// <param name="originGroupId">The identifier of the group from which permissions will be copied.</param>
+        /// <param name="targetGroupId">The identifier of the group to which permissions will be added.</param>
+        /// <param name="currentUserInfo">Information about the user performing the operation. Used to set audit fields for the new permissions.
+        /// Cannot be null.</param>
+        /// <returns>A task that represents the asynchronous copy operation.</returns>
+        public async Task CopyGroupItemPermissions(int originGroupId, int targetGroupId, UserInfo currentUserInfo)
+        {
+            if (originGroupId == 0 || targetGroupId == 0)
+            {
+                return;
+            }
+
+            // Todo: This could be a large operation, consider using batch processing or background tasks for very large datasets.
+            List<TimelineItemPermission> originPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.GroupId == originGroupId).ToListAsync();
+            foreach (TimelineItemPermission permission in originPermissions)
+            {
+                TimelineItemPermission newPermission = new()
+                {
+                    TimelineType = permission.TimelineType,
+                    ItemId = permission.ItemId,
+                    ProgenyId = permission.ProgenyId,
+                    FamilyId = permission.FamilyId,
+                    UserId = string.Empty,
+                    Email = string.Empty,
+                    GroupId = targetGroupId,
+                    PermissionLevel = permission.PermissionLevel,
+                    InheritPermissions = permission.InheritPermissions,
+                    CreatedBy = currentUserInfo.UserId,
+                    CreatedTime = DateTime.UtcNow,
+                    ModifiedBy = currentUserInfo.UserId,
+                    ModifiedTime = DateTime.UtcNow
+                };
+                await GrantItemPermission(newPermission, currentUserInfo);
+            }
         }
     }
 }

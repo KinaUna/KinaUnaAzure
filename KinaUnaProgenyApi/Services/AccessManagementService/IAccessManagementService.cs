@@ -380,5 +380,18 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// specified family. If the user has no permissions, the returned object will have a <see
         /// cref="PermissionLevel"/> of <see cref="PermissionLevel.None"/>.</returns>
         Task<FamilyPermission> GetFamilyPermissionForUser(int familyId, UserInfo userInfo);
+
+        /// <summary>
+        /// Copies all timeline item permissions from the specified origin group to the target group.
+        /// </summary>
+        /// <remarks>Existing permissions in the target group are not removed or modified; this method
+        /// only adds new permissions based on those in the origin group. The operation sets the current user as the
+        /// creator and modifier of the new permissions.</remarks>
+        /// <param name="originGroupId">The identifier of the group from which permissions will be copied.</param>
+        /// <param name="targetGroupId">The identifier of the group to which permissions will be added.</param>
+        /// <param name="currentUserInfo">Information about the user performing the operation. Used to set audit fields for the new permissions.
+        /// Cannot be null.</param>
+        /// <returns>A task that represents the asynchronous copy operation.</returns>
+        Task CopyGroupItemPermissions(int originGroupId, int targetGroupId, UserInfo currentUserInfo);
     }
 }
