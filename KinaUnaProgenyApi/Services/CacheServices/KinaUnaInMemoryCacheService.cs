@@ -43,7 +43,13 @@ namespace KinaUnaProgenyApi.Services.CacheServices
                 UserUpdatedCacheEntry userCacheEntry = JsonSerializer.Deserialize<UserUpdatedCacheEntry>(cachedUserEntry, JsonSerializerOptions.Web);
                 return userCacheEntry;
             }
-            return null;
+
+            UserUpdatedCacheEntry emptyEntry = new()
+            {
+                UserId = userId,
+                UpdateTime = DateTime.MinValue
+            };
+            return emptyEntry;
         }
 
         /// <summary>
@@ -122,7 +128,13 @@ namespace KinaUnaProgenyApi.Services.CacheServices
                 }
             }
 
-            return null;
+            ProgenyOrFamilyUpdatedCacheEntry emptyEntry = new()
+            {
+                ProgenyId = progenyId,
+                FamilyId = familyId,
+                UpdateTime = DateTime.MinValue
+            };
+            return emptyEntry;
         }
 
         /// <summary>
@@ -188,8 +200,16 @@ namespace KinaUnaProgenyApi.Services.CacheServices
                     return timelineCacheEntry;
                 }
             }
+            
+            TimelineUpdatedCacheEntry emptyEntry = new()
+            {
+                ProgenyId = progenyId,
+                FamilyId = familyId,
+                TimeLineType = timelineType,
+                UpdateTime = DateTime.MinValue
+            };
 
-            return null;
+            return emptyEntry;
         }
 
         /// <summary>
@@ -230,7 +250,15 @@ namespace KinaUnaProgenyApi.Services.CacheServices
                 ItemUpdatedCacheEntry itemCacheEntry = JsonSerializer.Deserialize<ItemUpdatedCacheEntry>(cachedItemEntry, JsonSerializerOptions.Web);
                 return itemCacheEntry;
             }
-            return null;
+
+            ItemUpdatedCacheEntry emptyEntry = new()
+            {
+                ItemId = itemId,
+                ItemType = itemType,
+                UpdateTime = DateTime.MinValue
+            };
+
+            return emptyEntry;
         }
 
         /// <summary>
@@ -408,6 +436,97 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             {
                 FriendsListCacheEntry friendsListCacheEntry = JsonSerializer.Deserialize<FriendsListCacheEntry>(cachedFriendsListEntry, JsonSerializerOptions.Web);
                 return friendsListCacheEntry;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Stores the specified list of locations in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached locations list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the locations list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the locations list.</param>
+        /// <param name="familyId">The identifier of the family associated with the locations list.</param>
+        /// <param name="locationsList">The list of locations to cache. Cannot be null.</param>
+        public void SetLocationsListCache(string userId, int progenyId, int familyId, List<Location> locationsList)
+        {
+            LocationsListCacheEntry locationsListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                FamilyId = familyId,
+                LocationsList = locationsList,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            cache.SetString(Constants.AppName + Constants.ApiVersion + "locationsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
+                , JsonSerializer.Serialize(locationsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached locations list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose locations list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the locations list cache entry is requested.</param>
+        /// <param name="familyId">The identifier of the family for which the locations list cache entry is requested.</param>
+        /// <returns>A <see cref="LocationsListCacheEntry"/> object containing the cached locations list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public LocationsListCacheEntry GetLocationsListCache(string userId, int progenyId, int familyId)
+        {
+            string cachedLocationsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "locationsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
+            if (!string.IsNullOrEmpty(cachedLocationsListEntry))
+            {
+                LocationsListCacheEntry locationsListCacheEntry = JsonSerializer.Deserialize<LocationsListCacheEntry>(cachedLocationsListEntry, JsonSerializerOptions.Web);
+                return locationsListCacheEntry;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Stores the specified list of measurements in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached measurements list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the measurements list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the measurements list.</param>
+        /// <param name="measurementsList">The list of measurements to cache. Cannot be null.</param>
+        public void SetMeasurementsListCache(string userId, int progenyId, List<Measurement> measurementsList)
+        {
+            MeasurementsListCacheEntry measurementsListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                MeasurementsList = measurementsList,
+                UpdateTime = DateTime.UtcNow
+            };
+            
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            cache.SetString(Constants.AppName + Constants.ApiVersion + "measurementsListCacheEntry_u_" + userId + "_p_" + progenyId
+                , JsonSerializer.Serialize(measurementsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached measurements list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose measurements list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the measurements list cache entry is requested.</param>
+        /// <returns>A <see cref="MeasurementsListCacheEntry"/> object containing the cached measurements list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public MeasurementsListCacheEntry GetMeasurementsListCache(string userId, int progenyId)
+        {
+            string cachedMeasurementsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "measurementsListCacheEntry_u_" + userId + "_p_" + progenyId);
+            if (!string.IsNullOrEmpty(cachedMeasurementsListEntry))
+            {
+                MeasurementsListCacheEntry measurementsListCacheEntry = JsonSerializer.Deserialize<MeasurementsListCacheEntry>(cachedMeasurementsListEntry, JsonSerializerOptions.Web);
+                return measurementsListCacheEntry;
             }
             return null;
         }

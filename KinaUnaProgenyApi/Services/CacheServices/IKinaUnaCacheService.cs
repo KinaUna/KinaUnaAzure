@@ -166,5 +166,49 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <returns>A <see cref="FriendsListCacheEntry"/> object containing the cached friends list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
         FriendsListCacheEntry GetFriendsListCache(string userId, int progenyId);
+
+        /// <summary>
+        /// Stores the specified list of locations in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached locations list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the locations list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the locations list.</param>
+        /// <param name="familyId">The identifier of the family associated with the locations list.</param>
+        /// <param name="locationsList">The list of locations to cache. Cannot be null.</param>
+        void SetLocationsListCache(string userId, int progenyId, int familyId, List<Location> locationsList);
+
+        /// <summary>
+        /// Retrieves the cached locations list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose locations list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the locations list cache entry is requested.</param>
+        /// <param name="familyId">The identifier of the family for which the locations list cache entry is requested.</param>
+        /// <returns>A <see cref="LocationsListCacheEntry"/> object containing the cached locations list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        LocationsListCacheEntry GetLocationsListCache(string userId, int progenyId, int familyId);
+
+        /// <summary>
+        /// Stores the specified list of measurements in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached measurements list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the measurements list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the measurements list.</param>
+        /// <param name="measurementsList">The list of measurements to cache. Cannot be null.</param>
+        void SetMeasurementsListCache(string userId, int progenyId, List<Measurement> measurementsList);
+
+        /// <summary>
+        /// Retrieves the cached measurements list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose measurements list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the measurements list cache entry is requested.</param>
+        /// <returns>A <see cref="MeasurementsListCacheEntry"/> object containing the cached measurements list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        MeasurementsListCacheEntry GetMeasurementsListCache(string userId, int progenyId);
     }
 }

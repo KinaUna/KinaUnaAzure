@@ -3,7 +3,9 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
@@ -20,14 +22,16 @@ namespace KinaUnaProgenyApi.Services
         private readonly ProgenyDbContext _context;
         private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public LocationService(ProgenyDbContext context, IDistributedCache cache, IAccessManagementService accessManagementService)
+        public LocationService(ProgenyDbContext context, IDistributedCache cache, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _context = context;
             _accessManagementService = accessManagementService;
             _cache = cache;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
@@ -140,6 +144,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetLocationInCache(locationToAdd.LocationId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(locationToAdd.ProgenyId, locationToAdd.FamilyId, KinaUnaTypes.TimeLineType.Location);
 
             return locationToAdd;
         }
@@ -180,6 +185,8 @@ namespace KinaUnaProgenyApi.Services
                 currentUserInfo);
             _ = await SetLocationInCache(locationToUpdate.LocationId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(locationToUpdate.ProgenyId, locationToUpdate.FamilyId, KinaUnaTypes.TimeLineType.Location);
+
             return locationToUpdate;
         }
 
@@ -212,6 +219,7 @@ namespace KinaUnaProgenyApi.Services
 
             await RemoveLocationFromCache(location.LocationId, location.ProgenyId, location.FamilyId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(locationToDelete.ProgenyId, locationToDelete.FamilyId, KinaUnaTypes.TimeLineType.Location);
             return location;
         }
 
@@ -239,6 +247,16 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Locations.</returns>
         public async Task<List<Location>> GetLocationsList(int progenyId, int familyId, UserInfo currentUserInfo)
         {
+            LocationsListCacheEntry cacheEntry = _kinaUnaCacheService.GetLocationsListCache(currentUserInfo.UserId, progenyId, familyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.Location);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    return cacheEntry.LocationsList;
+                }
+            }
+
             List<Location> locationsList = await GetLocationsListFromCache(progenyId, familyId);
             if (locationsList.Count == 0)
             {
@@ -254,6 +272,9 @@ namespace KinaUnaProgenyApi.Services
                     accessibleLocations.Add(location);
                 }
             }
+
+            _kinaUnaCacheService.SetLocationsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleLocations);
+
             return accessibleLocations;
         }
 
