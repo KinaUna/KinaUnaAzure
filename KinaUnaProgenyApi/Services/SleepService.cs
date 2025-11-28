@@ -1,15 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -18,14 +20,16 @@ namespace KinaUnaProgenyApi.Services
         private readonly ProgenyDbContext _context;
         private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public SleepService(ProgenyDbContext context, IDistributedCache cache, IAccessManagementService accessManagementService)
+        public SleepService(ProgenyDbContext context, IDistributedCache cache, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _context = context;
             _accessManagementService = accessManagementService;
             _cache = cache;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
@@ -80,6 +84,8 @@ namespace KinaUnaProgenyApi.Services
             await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Sleep, sleepToAdd.SleepId, sleepToAdd.ProgenyId, 0, sleepToAdd.ItemPermissionsDtoList, currentUserInfo);
 
             _ = await SetSleepInCache(sleepToAdd.SleepId);
+
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(sleepToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
 
             return sleepToAdd;
         }
@@ -144,6 +150,8 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetSleepInCache(sleepToUpdate.SleepId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(sleepToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
+
             return sleepToUpdate;
         }
 
@@ -175,6 +183,8 @@ namespace KinaUnaProgenyApi.Services
                 await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
             }
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(sleepToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
+
             return sleep;
         }
 
@@ -200,6 +210,15 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Sleep objects.</returns>
         public async Task<List<Sleep>> GetSleepList(int progenyId, UserInfo currentUserInfo)
         {
+            SleepListCacheEntry cacheEntry = _kinaUnaCacheService.GetSleepListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    return cacheEntry.SleepList;
+                }
+            }
             List<Sleep> sleepList = await GetSleepListFromCache(progenyId);
             if (sleepList.Count == 0)
             {
@@ -215,6 +234,8 @@ namespace KinaUnaProgenyApi.Services
                     filteredList.Add(sleep);
                 }
             }
+
+            _kinaUnaCacheService.SetSleepListCache(currentUserInfo.UserId, progenyId, filteredList);
 
             return filteredList;
         }

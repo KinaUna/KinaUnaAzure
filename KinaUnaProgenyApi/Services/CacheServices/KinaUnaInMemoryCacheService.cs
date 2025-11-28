@@ -530,5 +530,93 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             }
             return null;
         }
+
+        /// <summary>
+        /// Stores the specified list of skills in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached skills list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the skills list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the skills list.</param>
+        /// <param name="skillsList">The list of skills to cache. Cannot be null.</param>
+        public void SetSkillsListCache(string userId, int progenyId, List<Skill> skillsList)
+        {
+            SkillsListCacheEntry skillsListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                SkillsList = skillsList,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            cache.SetString(Constants.AppName + Constants.ApiVersion + "skillsListCacheEntry_u_" + userId + "_p_" + progenyId
+                , JsonSerializer.Serialize(skillsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached skills list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose skills list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the skills list cache entry is requested.</param>
+        /// <returns>A <see cref="SkillsListCacheEntry"/> object containing the cached skills list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public SkillsListCacheEntry GetSkillsListCache(string userId, int progenyId)
+        {
+            string cachedSkillsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "skillsListCacheEntry_u_" + userId + "_p_" + progenyId);
+            if (!string.IsNullOrEmpty(cachedSkillsListEntry))
+            {
+                SkillsListCacheEntry skillsListCacheEntry = JsonSerializer.Deserialize<SkillsListCacheEntry>(cachedSkillsListEntry, JsonSerializerOptions.Web);
+                return skillsListCacheEntry;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Stores the specified list of sleep in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached sleep list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the sleep list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the sleep list.</param>
+        /// <param name="sleepList">The list of sleep to cache. Cannot be null.</param>
+        public void SetSleepListCache(string userId, int progenyId, List<Sleep> sleepList)
+        {
+            SleepListCacheEntry sleepListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                SleepList = sleepList,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            cache.SetString(Constants.AppName + Constants.ApiVersion + "sleepListCacheEntry_u_" + userId + "_p_" + progenyId
+                , JsonSerializer.Serialize(sleepListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached sleep list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose sleep list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the sleep list cache entry is requested.</param>
+        /// <returns>A <see cref="SleepListCacheEntry"/> object containing the cached sleep list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public SleepListCacheEntry GetSleepListCache(string userId, int progenyId)
+        {
+            string cachedSleepListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "sleepListCacheEntry_u_" + userId + "_p_" + progenyId);
+            if (!string.IsNullOrEmpty(cachedSleepListEntry))
+            {
+                SleepListCacheEntry sleepListCacheEntry = JsonSerializer.Deserialize<SleepListCacheEntry>(cachedSleepListEntry, JsonSerializerOptions.Web);
+                return sleepListCacheEntry;
+            }
+            return null;
+        }
     }
 }

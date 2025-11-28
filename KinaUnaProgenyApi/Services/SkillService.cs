@@ -1,16 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -19,14 +21,16 @@ namespace KinaUnaProgenyApi.Services
         private readonly ProgenyDbContext _context;
         private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public SkillService(ProgenyDbContext context, IDistributedCache cache, IAccessManagementService accessManagementService)
+        public SkillService(ProgenyDbContext context, IDistributedCache cache, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _context = context;
             _accessManagementService = accessManagementService;
             _cache = cache;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
@@ -80,7 +84,9 @@ namespace KinaUnaProgenyApi.Services
 
             await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Skill, skillToAdd.SkillId, skillToAdd.ProgenyId, 0, skillToAdd.ItemPermissionsDtoList, currentUserInfo);
             _ = await SetSkillInCache(skillToAdd.SkillId);
-            
+
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(skillToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Skill);
+
             return skillToAdd;
         }
 
@@ -143,6 +149,8 @@ namespace KinaUnaProgenyApi.Services
             await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Skill, skillToUpdate.SkillId, skillToUpdate.ProgenyId, 0, skill.ItemPermissionsDtoList, currentUserInfo);
             _ = await SetSkillInCache(skill.SkillId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(skillToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Skill);
+
             return skillToUpdate;
         }
 
@@ -174,6 +182,8 @@ namespace KinaUnaProgenyApi.Services
 
             await RemoveSkillFromCache(skill.SkillId, skill.ProgenyId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(skillToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Skill);
+
             return skillToDelete;
         }
 
@@ -199,6 +209,16 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Skill objects.</returns>
         public async Task<List<Skill>> GetSkillsList(int progenyId, UserInfo currentUserInfo)
         {
+            SkillsListCacheEntry cacheEntry = _kinaUnaCacheService.GetSkillsListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Skill);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    return cacheEntry.SkillsList;
+                }
+            }
+
             List<Skill> skillsList = await GetSkillsListFromCache(progenyId);
             if (skillsList.Count == 0)
             {
@@ -214,6 +234,8 @@ namespace KinaUnaProgenyApi.Services
                     filteredList.Add(skill);
                 }
             }
+
+            _kinaUnaCacheService.SetSkillsListCache(currentUserInfo.UserId, progenyId, filteredList);
 
             return filteredList;
         }

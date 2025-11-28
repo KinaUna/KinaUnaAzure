@@ -210,5 +210,50 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <returns>A <see cref="MeasurementsListCacheEntry"/> object containing the cached measurements list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
         MeasurementsListCacheEntry GetMeasurementsListCache(string userId, int progenyId);
+
+        /// <summary>
+        /// Stores the specified list of skills in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached skills list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the skills list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the skills list.</param>
+        /// <param name="skillsList">The list of skills to cache. Cannot be null.</param>
+        void SetSkillsListCache(string userId, int progenyId, List<Skill> skillsList);
+
+        /// <summary>
+        /// Retrieves the cached skills list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose skills list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the skills list cache entry is requested.</param>
+        /// <returns>A <see cref="SkillsListCacheEntry"/> object containing the cached skills list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        SkillsListCacheEntry GetSkillsListCache(string userId, int progenyId);
+
+        /// <summary>
+        /// Stores the specified list of sleep in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached sleep list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the sleep list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the sleep list.</param>
+        /// <param name="sleepList">The list of sleep to cache. Cannot be null.</param>
+        void SetSleepListCache(string userId, int progenyId, List<Sleep> sleepList);
+
+        /// <summary>
+        /// Retrieves the cached sleep list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose sleep list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the sleep list cache entry is requested.</param>
+        /// <returns>A <see cref="SleepListCacheEntry"/> object containing the cached sleep list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        SleepListCacheEntry GetSleepListCache(string userId, int progenyId);
+
+
+
     }
 }
