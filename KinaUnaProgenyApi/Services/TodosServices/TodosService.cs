@@ -2,15 +2,18 @@
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using KinaUna.Data.Models.CacheManagement;
-using KinaUnaProgenyApi.Services.CacheServices;
+using KinaUna.Data;
 
 namespace KinaUnaProgenyApi.Services.TodosServices
 {
@@ -21,7 +24,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
     /// also supports filtering and pagination for retrieving lists of to-do items based on various criteria such as
     /// access level, date range, tags, context, and status.</remarks>
     /// <param name="progenyDbContext"></param>
-    public class TodosService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService): ITodosService
+    public class TodosService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService, IDistributedCache cache) : ITodosService
     {
         public async Task<TodoItem> AddTodoItem(TodoItem value, UserInfo currentUserInfo)
         {
@@ -84,6 +87,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                     todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, todoItemToAdd.ItemPermissionsDtoList, currentUserInfo);
             }
 
+            _ = await SetTodoItemInCache(todoItemToAdd.TodoItemId);
             kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
 
             return todoItemToAdd;
@@ -178,8 +182,10 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                     subTask.ProgenyId, subTask.FamilyId, currentTodoItem.ItemPermissionsDtoList, currentUserInfo);
             }
 
+            _ = await SetTodoItemInCache(currentTodoItem.TodoItemId);
             TodoItem result = await GetTodoItem(currentTodoItem.TodoItemId, currentUserInfo);
 
+            
             kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(result.ProgenyId, result.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
 
             return result;
@@ -247,6 +253,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 await DeleteTodoItem(subtask, currentUserInfo, hardDelete);
             }
 
+            await RemoveTodoItemFromCache(todoItemToDelete.TodoItemId);
             kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(todoItemToDelete.ProgenyId, todoItemToDelete.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
             return true;
         }
@@ -265,10 +272,10 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 return null;
             }
 
-            TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == id);
+            TodoItem todoItem = await GetTodoItemFromCache(id);
             if (todoItem == null)
             {
-                return null;
+                todoItem = await SetTodoItemInCache(id);
             }
 
             List<TodoItem> subtasks = [.. progenyDbContext.TodoItemsDb.AsNoTracking().Where(t => t.ParentTodoItemId == id && !t.IsDeleted)];
@@ -286,6 +293,47 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             todoItem.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, todoItem.ProgenyId, todoItem.FamilyId, currentUserInfo);
             
             return todoItem;
+        }
+
+        /// <summary>
+        /// Gets the TodoItem entity with the specified TodoItemId from the cache.
+        /// </summary>
+        /// <param name="id">The TodoItemId of the TodoItem to get.</param>
+        /// <returns>The TodoItem with the given TodoItemId. Null if the TodoItem isn't in the cache.</returns>
+        private async Task<TodoItem> GetTodoItemFromCache(int id)
+        {
+            string cachedTodoItem = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "todoItem" + id);
+            if (string.IsNullOrEmpty(cachedTodoItem))
+            {
+                return null;
+            }
+
+            TodoItem todoItem = JsonSerializer.Deserialize<TodoItem>(cachedTodoItem, JsonSerializerOptions.Web);
+            return todoItem;
+        }
+
+        /// <summary>
+        /// Gets a TodoItem entity with the specified TodoItemId from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The TodoItemId of the TodoItem to get and set.</param>
+        /// <returns>The TodoItem object with the given TodoItemId. Null if the TodoItem doesn't exist.</returns>
+        private async Task<TodoItem> SetTodoItemInCache(int id)
+        {
+            TodoItem todoItem = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == id);
+            if (todoItem == null)
+            {
+                return null;
+            }
+            DistributedCacheEntryOptions cacheOptionsSliding = new();
+            cacheOptionsSliding.SetSlidingExpiration(new TimeSpan( 96, 0, 0));
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "todoItem" + id, JsonSerializer.Serialize(todoItem, JsonSerializerOptions.Web), cacheOptionsSliding);
+            
+            return todoItem;
+        }
+
+        private async Task RemoveTodoItemFromCache(int id)
+        {
+            await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "todoItem" + id);
         }
 
         /// <summary>

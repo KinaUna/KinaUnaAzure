@@ -7,10 +7,13 @@ using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services.AccessManagementService;
 using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using KinaUna.Data;
 
 namespace KinaUnaProgenyApi.Services.KanbanServices
 {
@@ -21,7 +24,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
     /// boards. It ensures that each Kanban board has a unique identifier and handles associated data, such as Kanban
     /// items, when deleting a board.</remarks>
     /// <param name="progenyDbContext">Service for accessing the Progeny database context.</param>
-    public class KanbanBoardsService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService): IKanbanBoardsService
+    public class KanbanBoardsService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService, IDistributedCache cache) : IKanbanBoardsService
     {
         /// <summary>
         /// Retrieves a Kanban board by its unique identifier.
@@ -39,14 +42,61 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             {
                 return new KanbanBoard();
             }
-            KanbanBoard kanbanBoard = await progenyDbContext.KanbanBoardsDb.AsNoTracking().SingleOrDefaultAsync(k => k.KanbanBoardId == kanbanBoardId);
+
+            KanbanBoard kanbanBoard = await GetKanbanBoardFromCache(kanbanBoardId);
             if (kanbanBoard == null)
             {
-                return new KanbanBoard();
+                kanbanBoard = await SetKanbanBoardInCache(kanbanBoardId);
+                if (kanbanBoard == null)
+                {
+                    return new KanbanBoard();
+                }
             }
+
             kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, currentUserInfo);
 
             return kanbanBoard;
+        }
+
+        /// <summary>
+        /// Gets the Kanban Board entity with the specified KanbanBoardId from the cache.
+        /// </summary>
+        /// <param name="id">The KanbanBoardId of the KanbanBoard to get.</param>
+        /// <returns>The KanbanBoard with the given KanbanBoardId. Null if the KanbanBoard isn't in the cache.</returns>
+        private async Task<KanbanBoard> GetKanbanBoardFromCache(int id)
+        {
+            string cachedKanbanBoard = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "kanbanBoard" + id);
+            if (string.IsNullOrEmpty(cachedKanbanBoard))
+            {
+                return null;
+            }
+
+            KanbanBoard kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(cachedKanbanBoard, JsonSerializerOptions.Web);
+            return kanbanBoard;
+        }
+
+        /// <summary>
+        /// Gets a Kanban Board entity with the specified KanbanBoardId from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The KanbanBoardId of the KanbanBoard to get and set.</param>
+        /// <returns>The KanbanBoard object with the given KanbanBoardId. Null if the KanbanBoard doesn't exist.</returns>
+        private async Task<KanbanBoard> SetKanbanBoardInCache(int id)
+        {
+            KanbanBoard kanbanBoard = await progenyDbContext.KanbanBoardsDb.AsNoTracking().SingleOrDefaultAsync(k => k.KanbanBoardId == id);
+            if (kanbanBoard == null)
+            {
+                return null;
+            }
+            DistributedCacheEntryOptions cacheOptionsSliding = new();
+            cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0));
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "kanbanBoard" + id, JsonSerializer.Serialize(kanbanBoard, JsonSerializerOptions.Web), cacheOptionsSliding);
+
+            return kanbanBoard;
+        }
+
+        private async Task RemoveKanbanBoardFromCache(int id)
+        {
+            await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "kanbanBoard" + id);
         }
 
         /// <summary>
@@ -92,6 +142,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, kanbanBoard.ItemPermissionsDtoList, currentUserInfo);
 
             kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(kanbanBoard.ProgenyId, kanbanBoard.FamilyId, KinaUnaTypes.TimeLineType.KanbanBoard);
+            _ = await SetKanbanBoardInCache(kanbanBoard.KanbanBoardId);
 
             return kanbanBoard;
         }
@@ -144,6 +195,8 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 existingKanbanBoard.ItemPermissionsDtoList, currentUserInfo);
 
             kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(existingKanbanBoard.ProgenyId, kanbanBoard.FamilyId, KinaUnaTypes.TimeLineType.KanbanBoard);
+            _ = await SetKanbanBoardInCache(existingKanbanBoard.KanbanBoardId);
+
             return existingKanbanBoard;
         }
 
@@ -209,6 +262,8 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             }
 
             kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(kanbanBoardToDelete.ProgenyId, kanbanBoardToDelete.FamilyId, KinaUnaTypes.TimeLineType.KanbanBoard);
+            await RemoveKanbanBoardFromCache(kanbanBoardToDelete.KanbanBoardId);
+
             return kanbanBoardToDelete;
         }
 
@@ -240,7 +295,6 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                     hasCachedData = true;
                 }
             }
-
             
             if (request.IncludeDeleted)
             {
@@ -375,6 +429,17 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         public async Task<List<KanbanBoard>> GetKanbanBoardsListForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo)
         {
             List<KanbanBoard> kanbanBoards = [];
+            KanbanBoardsListCacheEntry cacheEntry = kinaUnaCacheService.GetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.KanbanBoard);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    kanbanBoards = cacheEntry.KanbanBoardsList;
+                    return kanbanBoards;
+                }
+            }
+
             if (progenyId > 0)
             {
                 kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
@@ -391,11 +456,12 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             {
                 if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, currentUserInfo, PermissionLevel.View))
                 {
-                    //kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, currentUserInfo);
+                    kanbanBoard.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, currentUserInfo);
                     accessibleKanbanBoards.Add(kanbanBoard);
                 }
             }
-
+            kinaUnaCacheService.SetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleKanbanBoards);
+            
             return accessibleKanbanBoards;
         }
     }
