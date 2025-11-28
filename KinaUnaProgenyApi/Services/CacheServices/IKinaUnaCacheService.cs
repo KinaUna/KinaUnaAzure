@@ -122,5 +122,28 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <returns>A <see cref="PicturesListCacheEntry"/> object containing the cached pictures list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
         PicturesListCacheEntry GetPicturesListCache(string userId, int progenyId);
+
+        /// <summary>
+        /// Stores the specified list of contacts in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached contacts list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the contacts list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the contacts list.</param>
+        /// <param name="familyId">The identifier of the family associated with the contacts list.</param>
+        /// <param name="contactsList">The list of contacts to cache. Cannot be null.</param>
+        void SetContactsListCache(string userId, int progenyId, int familyId, List<Contact> contactsList);
+
+        /// <summary>
+        /// Retrieves the cached contacts list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose contacts list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the contacts list cache entry is requested.</param>
+        /// <param name="familyId">The identifier of the family for which the contacts list cache entry is requested.</param>
+        /// <returns>A <see cref="ContactsListCacheEntry"/> object containing the cached contacts list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        ContactsListCacheEntry GetContactsListCache(string userId, int progenyId, int familyId);
     }
 }

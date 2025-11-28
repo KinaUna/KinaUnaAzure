@@ -1,11 +1,11 @@
 ﻿using KinaUna.Data;
+using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using KinaUna.Data.Models;
-using KinaUna.Data.Models.CacheManagement;
 using static KinaUna.Data.Models.KinaUnaTypes;
 
 namespace KinaUnaProgenyApi.Services.CacheServices
@@ -317,6 +317,53 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             {
                 PicturesListCacheEntry picturesListCacheEntry = JsonSerializer.Deserialize<PicturesListCacheEntry>(cachedPicturesListEntry, JsonSerializerOptions.Web);
                 return picturesListCacheEntry;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Stores the specified list of contacts in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached contacts list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the contacts list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the contacts list.</param>
+        /// <param name="familyId">The identifier of the family associated with the contacts list.</param>
+        /// <param name="contactsList">The list of contacts to cache. Cannot be null.</param>
+        public void SetContactsListCache(string userId, int progenyId, int familyId, List<Contact> contactsList)
+        {
+            ContactsListCacheEntry contactsListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                FamilyId = familyId,
+                ContactsList = contactsList,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            cache.SetString(Constants.AppName + Constants.ApiVersion + "contactsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
+                , JsonSerializer.Serialize(contactsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached contacts list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose contacts list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the contacts list cache entry is requested.</param>
+        /// <param name="familyId">The identifier of the family for which the contacts list cache entry is requested.</param>
+        /// <returns>A <see cref="ContactsListCacheEntry"/> object containing the cached contacts list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public ContactsListCacheEntry GetContactsListCache(string userId, int progenyId, int familyId)
+        {
+            string cachedContactsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "contactsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
+            if (!string.IsNullOrEmpty(cachedContactsListEntry))
+            {
+                ContactsListCacheEntry contactsListCacheEntry = JsonSerializer.Deserialize<ContactsListCacheEntry>(cachedContactsListEntry, JsonSerializerOptions.Web);
+                return contactsListCacheEntry;
             }
             return null;
         }

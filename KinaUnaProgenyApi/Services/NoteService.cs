@@ -21,7 +21,7 @@ namespace KinaUnaProgenyApi.Services
         private readonly ProgenyDbContext _context;
         private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
-        private readonly IKinaUnaCacheService _kinaunaCacheService;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
@@ -30,7 +30,7 @@ namespace KinaUnaProgenyApi.Services
             _context = context;
             _accessManagementService = accessManagementService;
             _cache = cache;
-            _kinaunaCacheService = kinaUnaCacheService;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
@@ -119,7 +119,7 @@ namespace KinaUnaProgenyApi.Services
 
             await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Note, noteToAdd.NoteId, noteToAdd.ProgenyId, 0, noteToAdd.ItemPermissionsDtoList, currentUserInfo);
 
-            _kinaunaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(noteToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Note);
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(noteToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Note);
 
             _ = await SetNoteInCache(noteToAdd.NoteId);
             
@@ -149,7 +149,7 @@ namespace KinaUnaProgenyApi.Services
 
             await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Note, noteToUpdate.NoteId, noteToUpdate.ProgenyId, 0, noteToUpdate.ItemPermissionsDtoList, currentUserInfo);
 
-            _kinaunaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(noteToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Note);
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(noteToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Note);
 
             _ = await SetNoteInCache(noteToUpdate.NoteId);
 
@@ -186,7 +186,7 @@ namespace KinaUnaProgenyApi.Services
                 await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
             }
 
-            _kinaunaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(note.ProgenyId, 0, KinaUnaTypes.TimeLineType.Note);
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(note.ProgenyId, 0, KinaUnaTypes.TimeLineType.Note);
 
             await RemoveNoteFromCache(note.NoteId, note.ProgenyId);
 
@@ -215,8 +215,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Note objects.</returns>
         public async Task<List<Note>> GetNotesList(int progenyId, UserInfo currentUserInfo)
         {
-            NotesListCacheEntry cacheEntry = _kinaunaCacheService.GetNotesListCache(currentUserInfo.UserId, progenyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaunaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Note);
+            NotesListCacheEntry cacheEntry = _kinaUnaCacheService.GetNotesListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Note);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -240,7 +240,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaunaCacheService.SetNotesListCache(currentUserInfo.UserId, progenyId, accessibleNotes);
+            _kinaUnaCacheService.SetNotesListCache(currentUserInfo.UserId, progenyId, accessibleNotes);
 
             return accessibleNotes;
         }

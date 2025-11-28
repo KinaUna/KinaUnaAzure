@@ -3,7 +3,9 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
@@ -20,15 +22,17 @@ namespace KinaUnaProgenyApi.Services
         private readonly IAccessManagementService _accessManagementService;
         private readonly IImageStore _imageStore;
         private readonly IDistributedCache _cache;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
-        
-        public ContactService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService)
+
+        public ContactService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _context = context;
             _accessManagementService = accessManagementService;
             _imageStore = imageStore;
             _cache = cache;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
@@ -100,6 +104,8 @@ namespace KinaUnaProgenyApi.Services
             _ = await SetContactInCache(contactToAdd.ContactId);
 
             await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Contact, contactToAdd.ContactId, contactToAdd.ProgenyId, contactToAdd.FamilyId, contactToAdd.ItemPermissionsDtoList, currentUserInfo);
+
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(contactToAdd.ProgenyId, contactToAdd.FamilyId, KinaUnaTypes.TimeLineType.Contact);
             return contactToAdd;
         }
 
@@ -174,6 +180,9 @@ namespace KinaUnaProgenyApi.Services
 
             await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Contact, contactToUpdate.ContactId, contactToUpdate.ProgenyId, contactToUpdate.FamilyId, contactToUpdate.ItemPermissionsDtoList,
                 currentUserInfo);
+
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(contactToUpdate.ProgenyId, contactToUpdate.FamilyId, KinaUnaTypes.TimeLineType.Contact);
+
             return contact;
         }
 
@@ -210,6 +219,8 @@ namespace KinaUnaProgenyApi.Services
                 await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
             }
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(contactToDelete.ProgenyId, contactToDelete.FamilyId, KinaUnaTypes.TimeLineType.Contact);
+
             return contact;
         }
 
@@ -237,6 +248,16 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Contacts.</returns>
         public async Task<List<Contact>> GetContactsList(int progenyId, int familyId, UserInfo currentUserInfo)
         {
+            ContactsListCacheEntry cacheEntry = _kinaUnaCacheService.GetContactsListCache(currentUserInfo.UserId, progenyId, familyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.Contact);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    return cacheEntry.ContactsList;
+                }
+            }
+
             List<Contact> contactsList = await GetContactsListFromCache(progenyId, familyId);
             if (contactsList.Count == 0)
             {
@@ -252,6 +273,8 @@ namespace KinaUnaProgenyApi.Services
                     accessibleContacts.Add(contact);
                 }
             }
+
+            _kinaUnaCacheService.SetContactsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleContacts);
 
             return accessibleContacts;
         }
