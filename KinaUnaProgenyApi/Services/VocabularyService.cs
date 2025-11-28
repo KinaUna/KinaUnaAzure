@@ -222,6 +222,7 @@ namespace KinaUnaProgenyApi.Services
                     return cacheEntry.VocabularyList;
                 }
             }
+
             List<VocabularyItem> vocabularyList = await GetVocabularyListFromCache(progenyId);
             if (vocabularyList.Count == 0)
             {

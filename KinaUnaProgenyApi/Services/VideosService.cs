@@ -3,7 +3,9 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
@@ -19,14 +21,16 @@ namespace KinaUnaProgenyApi.Services
         private readonly MediaDbContext _mediaContext;
         private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public VideosService(MediaDbContext mediaContext, IDistributedCache cache, IAccessManagementService accessManagementService)
+        public VideosService(MediaDbContext mediaContext, IDistributedCache cache, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _mediaContext = mediaContext;
             _accessManagementService = accessManagementService;
             _cache = cache;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
         }
@@ -141,6 +145,9 @@ namespace KinaUnaProgenyApi.Services
             await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, video.ItemPermissionsDtoList, currentUserInfo);
 
             _ = await SetVideoInCache(video.VideoId);
+
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(video.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
+
             return video;
         }
 
@@ -171,6 +178,8 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetVideoInCache(videoToUpdate.VideoId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(videoToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
+
             return video;
         }
 
@@ -197,6 +206,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetVideoInCache(videoToUpdate.VideoId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(videoToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
             return video;
         }
 
@@ -227,7 +237,8 @@ namespace KinaUnaProgenyApi.Services
             }
 
             await RemoveVideoFromCache(videoToDelete.VideoId, videoToDelete.ProgenyId);
-            
+
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(videoToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
             return video;
         }
 
@@ -252,6 +263,16 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Video objects.</returns>
         public async Task<List<Video>> GetVideosList(int progenyId, UserInfo currentUserInfo)
         {
+            VideosListCacheEntry cacheEntry = _kinaUnaCacheService.GetVideosListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Video);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    return cacheEntry.VideosList;
+                }
+            }
+
             List<Video> videosList = await GetVideosListFromCache(progenyId);
             if (videosList.Count == 0)
             {
@@ -267,6 +288,8 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
             filteredList = filteredList.OrderByDescending(v => v.VideoTime).ToList();
+
+            _kinaUnaCacheService.SetVideoListCache(currentUserInfo.UserId, progenyId, filteredList);
 
             return filteredList;
         }

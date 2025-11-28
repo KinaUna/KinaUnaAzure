@@ -706,5 +706,49 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             }
             return null;
         }
+
+        /// <summary>
+        /// Stores the specified list of videos in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached videos list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the videos list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the videos list.</param>
+        /// <param name="videoList">The list of videos to cache. Cannot be null.</param>
+        public void SetVideoListCache(string userId, int progenyId, List<Video> videoList)
+        {
+            VideosListCacheEntry videosListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                VideosList = videoList,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            cache.SetString(Constants.AppName + Constants.ApiVersion + "videosListCacheEntry_u_" + userId + "_p_" + progenyId
+                , JsonSerializer.Serialize(videosListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached videos list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose videos list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the videos list cache entry is requested.</param>
+        /// <returns>A <see cref="VideosListCacheEntry"/> object containing the cached videos list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public VideosListCacheEntry GetVideosListCache(string userId, int progenyId)
+        {
+            string cachedVideosListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "videosListCacheEntry_u_" + userId + "_p_" + progenyId);
+            if (!string.IsNullOrEmpty(cachedVideosListEntry))
+            {
+                VideosListCacheEntry videosListCacheEntry = JsonSerializer.Deserialize<VideosListCacheEntry>(cachedVideosListEntry, JsonSerializerOptions.Web);
+                return videosListCacheEntry;
+            }
+            return null;
+        }
     }
 }
