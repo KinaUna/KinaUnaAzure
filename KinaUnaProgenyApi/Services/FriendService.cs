@@ -1,16 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using KinaUna.Data.Models.CacheManagement;
 
 
 namespace KinaUnaProgenyApi.Services
@@ -21,15 +23,17 @@ namespace KinaUnaProgenyApi.Services
         private readonly IAccessManagementService _accessManagementService;
         private readonly IImageStore _imageStore;
         private readonly IDistributedCache _cache;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         
-        public FriendService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService)
+        public FriendService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _context = context;
             _accessManagementService = accessManagementService;
             _imageStore = imageStore;
             _cache = cache;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
@@ -115,6 +119,7 @@ namespace KinaUnaProgenyApi.Services
             
             _ = await SetFriendInCache(friendToAdd.FriendId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(friendToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Friend);
             return friendToAdd;
         }
 
@@ -154,6 +159,8 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetFriendInCache(friend.FriendId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(friendToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Friend);
+
             return friend;
         }
 
@@ -190,6 +197,8 @@ namespace KinaUnaProgenyApi.Services
                 await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
             }
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(friendToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Friend);
+
             return friend;
         }
 
@@ -216,6 +225,16 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Friends.</returns>
         public async Task<List<Friend>> GetFriendsList(int progenyId, UserInfo currentUserInfo)
         {
+            FriendsListCacheEntry cacheEntry = _kinaUnaCacheService.GetFriendsListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Friend);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    return cacheEntry.FriendsList;
+                }
+            }
+
             List<Friend> friendsList = await GetFriendsListFromCache(progenyId);
 
             if (friendsList == null || friendsList.Count == 0)
@@ -232,6 +251,8 @@ namespace KinaUnaProgenyApi.Services
                     accessibleFriends.Add(friend);
                 }
             }
+
+            _kinaUnaCacheService.SetFriendsListCache(currentUserInfo.UserId, progenyId, accessibleFriends);
 
             return accessibleFriends;
         }

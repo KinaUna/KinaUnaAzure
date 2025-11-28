@@ -367,5 +367,49 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             }
             return null;
         }
+
+        /// <summary>
+        /// Stores the specified list of friends in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached friends list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the friends list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the friends list.</param>
+        /// <param name="friendsList">The list of friends to cache. Cannot be null.</param>
+        public void SetFriendsListCache(string userId, int progenyId, List<Friend> friendsList)
+        {
+            FriendsListCacheEntry friendsListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                FriendsList = friendsList,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            cache.SetString(Constants.AppName + Constants.ApiVersion + "friendsListCacheEntry_u_" + userId + "_p_" + progenyId
+                , JsonSerializer.Serialize(friendsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+        
+        /// <summary>
+        /// Retrieves the cached friends list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose friends list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the friends list cache entry is requested.</param>
+        /// <returns>A <see cref="FriendsListCacheEntry"/> object containing the cached friends list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public FriendsListCacheEntry GetFriendsListCache(string userId, int progenyId)
+        {
+            string cachedFriendsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "friendsListCacheEntry_u_" + userId + "_p_" + progenyId);
+            if (!string.IsNullOrEmpty(cachedFriendsListEntry))
+            {
+                FriendsListCacheEntry friendsListCacheEntry = JsonSerializer.Deserialize<FriendsListCacheEntry>(cachedFriendsListEntry, JsonSerializerOptions.Web);
+                return friendsListCacheEntry;
+            }
+            return null;
+        }
     }
 }
