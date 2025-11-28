@@ -1,15 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -19,15 +21,17 @@ namespace KinaUnaProgenyApi.Services
         private readonly IUserInfoService _userInfoService;
         private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public VocabularyService(ProgenyDbContext context, IDistributedCache cache, IUserInfoService userInfoService, IAccessManagementService accessManagementService)
+        public VocabularyService(ProgenyDbContext context, IDistributedCache cache, IUserInfoService userInfoService, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _context = context;
             _userInfoService = userInfoService;
             _accessManagementService = accessManagementService;
             _cache = cache;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
@@ -84,6 +88,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetVocabularyItemInCache(vocabularyItemToAdd.WordId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vocabularyItemToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
             return vocabularyItemToAdd;
         }
 
@@ -147,6 +152,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetVocabularyItemInCache(vocabularyItemToUpdate.WordId);
 
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vocabularyItemToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
 
             return vocabularyItemToUpdate;
         }
@@ -178,7 +184,9 @@ namespace KinaUnaProgenyApi.Services
             }
 
             await RemoveVocabularyItemFromCache(vocabularyItem.WordId, vocabularyItem.ProgenyId);
-            
+
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vocabularyItemToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
+
             return vocabularyItem;
         }
 
@@ -205,6 +213,15 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of VocabularyItem objects.</returns>
         public async Task<List<VocabularyItem>> GetVocabularyList(int progenyId, UserInfo currentUserInfo)
         {
+            VocabularyListCacheEntry cacheEntry = _kinaUnaCacheService.GetVocabularyItemsListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    return cacheEntry.VocabularyList;
+                }
+            }
             List<VocabularyItem> vocabularyList = await GetVocabularyListFromCache(progenyId);
             if (vocabularyList.Count == 0)
             {
@@ -220,6 +237,8 @@ namespace KinaUnaProgenyApi.Services
                     allowedVocabularyList.Add(vocabularyItem);
                 }
             }
+
+            _kinaUnaCacheService.SetVocabularyItemsListCache(currentUserInfo.UserId, progenyId, allowedVocabularyList);
 
             return allowedVocabularyList;
         }

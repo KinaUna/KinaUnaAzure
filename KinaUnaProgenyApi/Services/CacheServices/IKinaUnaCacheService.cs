@@ -274,5 +274,26 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// langword="null"/>.</returns>
         VaccinationsListCacheEntry GetVaccinationsListCache(string userId, int progenyId);
 
+        /// <summary>
+        /// Stores the specified list of vocabulary items in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached vocabulary items list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the vocabulary items list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the vocabulary items list.</param>
+        /// <param name="vocabularyItemsList">The list of vocabulary items to cache. Cannot be null.</param>
+        void SetVocabularyItemsListCache(string userId, int progenyId, List<VocabularyItem> vocabularyItemsList);
+
+        /// <summary>
+        /// Retrieves the cached vocabulary items list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose vocabulary items list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the vocabulary items list cache entry is requested.</param>
+        /// <returns>A <see cref="VocabularyListCacheEntry"/> object containing the cached vocabulary items list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        VocabularyListCacheEntry GetVocabularyItemsListCache(string userId, int progenyId);
+
     }
 }
