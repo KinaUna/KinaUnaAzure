@@ -535,6 +535,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             await userGroupAuditLogService.AddUserGroupMemberAddedAuditLogEntry(userGroupMember, currentUserInfo);
 
+            kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(group.ProgenyId, group.FamilyId);
+
             return userGroupMember;
         }
 
@@ -603,6 +605,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             logEntry.EntityAfter = JsonSerializer.Serialize(member);
             await userGroupAuditLogService.UpdateUserGroupAuditLogEntry(logEntry);
 
+            kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(group.ProgenyId, group.FamilyId);
+
             return member;
         }
 
@@ -656,7 +660,6 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 }
             }
 
-            bool progenyChanged = false;
             if (group.ProgenyId > 0)
             {
                 Progeny progeny = await progenyDbContext.ProgenyDb.SingleOrDefaultAsync(p => p.Id == group.ProgenyId);
@@ -666,7 +669,21 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     {
                         progeny.RemoveFromAdminList(member.Email);
                         progenyDbContext.Update(progeny);
-                        progenyChanged = true;
+                    }
+                }
+            }
+
+            if (group.FamilyId > 0)
+            {
+                Family family = await progenyDbContext.FamiliesDb.SingleOrDefaultAsync(f => f.FamilyId == group.FamilyId);
+                {
+                    if (family != null)
+                    {
+                        if (family.IsInAdminList(member.Email))
+                        {
+                            family.RemoveFromAdminList(member.Email);
+                            progenyDbContext.Update(family);
+                        }
                     }
                 }
             }
@@ -681,10 +698,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 kinaUnaCacheService.SetUserUpdatedCache(member.UserId);
             }
 
-            if (progenyChanged)
-            {
-                kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(group.ProgenyId, 0);
-            }
+            kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(group.ProgenyId, group.FamilyId);
+
             return true;
         }
 

@@ -1661,11 +1661,16 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     ProgenyOrFamilyUpdatedCacheEntry progenyUpdatedCacheEntry = kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(progenyId, 0);
                     if (progenyUpdatedCacheEntry == null || cachedHasProgenyPermission.UpdateTime > progenyUpdatedCacheEntry.UpdateTime)
                     {
-                        if (cachedHasProgenyPermission.HasPermission)
+                        UserUpdatedCacheEntry userUpdatedCacheEntry = kinaUnaCacheService.GetUserUpdatedCache(userInfo.UserId);
+                        if (userUpdatedCacheEntry == null || cachedHasProgenyPermission.UpdateTime > userUpdatedCacheEntry.UpdateTime)
                         {
-                            return true;
+                            if (cachedHasProgenyPermission.HasPermission)
+                            {
+                                return true;
+                            }
+
+                            return false;
                         }
-                        return false;
                     }
                 }
             }
@@ -1729,8 +1734,14 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     // If the family updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
                     if (progenyUpdatedCacheEntry.UpdateTime < cachedProgenyPermissionEntry.UpdateTime)
                     {
-
-                        return cachedProgenyPermissionEntry.ProgenyPermission;
+                        UserUpdatedCacheEntry userUpdatedCacheEntry = kinaUnaCacheService.GetUserUpdatedCache(currentUserInfo.UserId);
+                        if (userUpdatedCacheEntry != null)
+                        {
+                            if (userUpdatedCacheEntry.UpdateTime < cachedProgenyPermissionEntry.UpdateTime)
+                            {
+                                return cachedProgenyPermissionEntry.ProgenyPermission;
+                            }
+                        }
                     }
                 }
                 else
@@ -2128,11 +2139,15 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     ProgenyOrFamilyUpdatedCacheEntry familyUpdatedCacheEntry = kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(0, familyId);
                     if (familyUpdatedCacheEntry == null || cachedHasFamilyPermission.UpdateTime > familyUpdatedCacheEntry.UpdateTime)
                     {
-                        if (cachedHasFamilyPermission.HasPermission)
+                        UserUpdatedCacheEntry userUpdatedCacheEntry = kinaUnaCacheService.GetUserUpdatedCache(userInfo.UserId);
+                        if (userUpdatedCacheEntry == null || cachedHasFamilyPermission.UpdateTime > userUpdatedCacheEntry.UpdateTime)
                         {
-                            return true;
+                            if (cachedHasFamilyPermission.HasPermission)
+                            {
+                                return true;
+                            }
+                            return false;
                         }
-                        return false;
                     }
                 }
             }
@@ -2200,8 +2215,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     // If the family updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
                     if (familyUpdatedCacheEntry.UpdateTime < cachedFamilyPermissionEntry.UpdateTime)
                     {
-                        
-                        return cachedFamilyPermissionEntry.FamilyPermission;
+                        UserUpdatedCacheEntry userUpdatedCacheEntry = kinaUnaCacheService.GetUserUpdatedCache(currentUserInfo.UserId);
+                        if (userUpdatedCacheEntry == null || cachedFamilyPermissionEntry.UpdateTime > userUpdatedCacheEntry.UpdateTime)
+                        {
+                            return cachedFamilyPermissionEntry.FamilyPermission;
+                        }
                     }
                 }
                 else
