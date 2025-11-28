@@ -316,5 +316,51 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// langword="null"/>.</returns>
         VideosListCacheEntry GetVideosListCache(string userId, int progenyId);
 
+        /// <summary>
+        /// Stores the specified list of Kanban boards in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached Kanban boards list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the Kanban boards list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the Kanban boards list.</param>
+        /// <param name="familyId">The identifier of the family associated with the Kanban boards list.</param>
+        /// <param name="kanbanBoardsList">The list of Kanban boards to cache. Cannot be null.</param>
+        void SetKanbanBoardsListCache(string userId, int progenyId, int familyId, List<KanbanBoard> kanbanBoardsList);
+
+        /// <summary>
+        /// Retrieves the cached Kanban boards list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose Kanban boards list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the Kanban boards list cache entry is requested.</param>
+        /// <param name="familyId">The identifier of the family for which the Kanban boards list cache entry is requested.</param>
+        /// <returns>A <see cref="KanbanBoardsListCacheEntry"/> object containing the cached Kanban boards list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        KanbanBoardsListCacheEntry GetKanbanBoardsListCache(string userId, int progenyId, int familyId);
+
+        /// <summary>
+        /// Stores the specified list of TodoItems in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached TodoItems list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the TodoItems list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the TodoItems list.</param>
+        /// <param name="familyId">The identifier of the family associated with the TodoItems list.</param>
+        /// <param name="todoItemsList">The list of TodoItems to cache. Cannot be null.</param>
+        void SetTodoItemsListCache(string userId, int progenyId, int familyId, List<TodoItem> todoItemsList);
+
+        /// <summary>
+        /// Retrieves the cached TodoItems list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose TodoItems list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the TodoItems list cache entry is requested.</param>
+        /// <param name="familyId">The identifier of the family for which the TodoItems list cache entry is requested.</param>
+        /// <returns>A <see cref="TodosListCacheEntry"/> object containing the cached TodoItems list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        TodosListCacheEntry GetTodosListCache(string userId, int progenyId, int familyId);
+
     }
 }

@@ -68,16 +68,17 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         Task<TodoItem> UpdateTodoItem(TodoItem todoItem, UserInfo currentUserInfo);
 
         /// <summary>
-        /// Retrieves a list of to-do items for a specified progeny, filtered by access level.
+        /// Retrieves a list of to-do items for a specified progeny or family, filtered by access level.
         /// </summary>
         /// <remarks>To-do items marked as deleted are excluded from the results. The method uses a
         /// no-tracking query to improve performance  when the returned data does not need to be tracked by the database
         /// context.</remarks>
         /// <param name="progenyId">The unique identifier of the progeny for which to retrieve to-do items.</param>
+        /// <param name="familyId">The unique identifier of the family for which to retrieve to-do items.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="TodoItem"/>
         /// objects  that match the specified criteria. The list will be empty if no matching items are found.</returns>
-        Task<List<TodoItem>> GetTodosList(int progenyId, UserInfo currentUserInfo);
+        Task<List<TodoItem>> GetTodosList(int progenyId, int familyId, UserInfo currentUserInfo);
 
         /// <summary>
         /// Retrieves a paginated list of TodoItems for progenies based on the specified request parameters.

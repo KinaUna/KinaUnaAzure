@@ -94,7 +94,7 @@ namespace KinaUnaProgenyApi.Controllers
             List<Contact> allContacts = await contactService.GetContactsList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allContacts);
 
-            List<TodoItem> allTodos = await todosService.GetTodosList(progenyId, currentUserInfo);
+            List<TodoItem> allTodos = await todosService.GetTodosList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allTodos);
             
             List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsListForProgenyOrFamily(progenyId, familyId, currentUserInfo);
@@ -127,7 +127,7 @@ namespace KinaUnaProgenyApi.Controllers
             List<Location> allLocations = await locationService.GetLocationsList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToLocationsList(allLocations);
 
-            List<TodoItem> allTodoItems = await todosService.GetTodosList(progenyId, currentUserInfo);
+            List<TodoItem> allTodoItems = await todosService.GetTodosList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToLocationsList(allTodoItems);
 
             List<Picture> allPictures = await picturesService.GetPicturesList(progenyId, currentUserInfo);
@@ -166,7 +166,7 @@ namespace KinaUnaProgenyApi.Controllers
             List<Contact> allContacts = await contactService.GetContactsList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allContacts);
 
-            List<TodoItem> allTodoItems = await todosService.GetTodosList(progenyId, currentUserInfo);
+            List<TodoItem> allTodoItems = await todosService.GetTodosList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allTodoItems);
 
             List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsListForProgenyOrFamily(progenyId, familyId, currentUserInfo);

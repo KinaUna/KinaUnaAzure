@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.CacheManagement;
+using KinaUnaProgenyApi.Services.CacheServices;
 
 namespace KinaUnaProgenyApi.Services.TodosServices
 {
@@ -19,7 +21,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
     /// also supports filtering and pagination for retrieving lists of to-do items based on various criteria such as
     /// access level, date range, tags, context, and status.</remarks>
     /// <param name="progenyDbContext"></param>
-    public class TodosService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService): ITodosService
+    public class TodosService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService): ITodosService
     {
         public async Task<TodoItem> AddTodoItem(TodoItem value, UserInfo currentUserInfo)
         {
@@ -81,7 +83,9 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.TodoItem, todoItemToAdd.TodoItemId,
                     todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, todoItemToAdd.ItemPermissionsDtoList, currentUserInfo);
             }
-            
+
+            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
+
             return todoItemToAdd;
         }
 
@@ -176,6 +180,8 @@ namespace KinaUnaProgenyApi.Services.TodosServices
 
             TodoItem result = await GetTodoItem(currentTodoItem.TodoItemId, currentUserInfo);
 
+            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(result.ProgenyId, result.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
+
             return result;
         }
 
@@ -241,6 +247,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 await DeleteTodoItem(subtask, currentUserInfo, hardDelete);
             }
 
+            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(todoItemToDelete.ProgenyId, todoItemToDelete.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
             return true;
         }
 
@@ -300,11 +307,8 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// objects  that match the specified filters and pagination settings.</returns>
         public async Task<List<TodoItem>> GetTodosForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo, TodoItemsRequest request)
         {
-            List<TodoItem> todoItemsForProgenyOrFamily = await progenyDbContext.TodoItemsDb
-                .AsNoTracking()
-                .Where(t => t.ProgenyId == progenyId && t.FamilyId == familyId && t.ParentTodoItemId == 0 && !t.IsDeleted)
-                .ToListAsync();
-
+            List<TodoItem> todoItemsForProgenyOrFamily = await GetTodosList(progenyId, familyId, currentUserInfo);
+            
             if (request.StartDate.HasValue && request.EndDate.HasValue)
             {
                 todoItemsForProgenyOrFamily = [.. todoItemsForProgenyOrFamily.Where(t => t.DueDate == null || (t.DueDate >= request.StartDate.Value && t.DueDate <= request.EndDate.Value))];
@@ -363,19 +367,8 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 todoItemsForProgenyOrFamily = [.. todoItemsForProgenyOrFamily.Where( t =>
                     request.StatusFilter.Contains((KinaUnaTypes.TodoStatusType)t.Status))];
             }
-
-            // Filter by access level
-            List<TodoItem> accessibleTodoItemsForProgeny = [];
-            foreach (TodoItem todoItem in todoItemsForProgenyOrFamily)
-            {
-                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUserInfo, PermissionLevel.View))
-                {
-                    todoItem.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, todoItem.ProgenyId, todoItem.FamilyId, currentUserInfo);
-                    accessibleTodoItemsForProgeny.Add(todoItem);
-                }
-            }
-
-            return accessibleTodoItemsForProgeny;
+            
+            return todoItemsForProgenyOrFamily;
         }
 
         /// <summary>
@@ -820,31 +813,51 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         }
 
         /// <summary>
-        /// Retrieves a list of to-do items for a specified progeny, filtered by access level.
+        /// Retrieves a list of to-do items for a specified progeny or family, filtered by access level.
         /// </summary>
         /// <remarks>To-do items marked as deleted are excluded from the results. The method uses a
         /// no-tracking query to improve performance  when the returned data does not need to be tracked by the database
         /// context.</remarks>
         /// <param name="progenyId">The unique identifier of the progeny for which to retrieve to-do items.</param>
+        /// <param name="familyId">The unique identifier of the family for which to retrieve to-do items.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="TodoItem"/>
         /// objects  that match the specified criteria. The list will be empty if no matching items are found.</returns>
-        public async Task<List<TodoItem>> GetTodosList(int progenyId, UserInfo currentUserInfo)
+        public async Task<List<TodoItem>> GetTodosList(int progenyId, int familyId, UserInfo currentUserInfo)
         {
-            List<TodoItem> todoItems = await progenyDbContext.TodoItemsDb
-                .AsNoTracking()
-                .Where(t => t.ProgenyId == progenyId && !t.IsDeleted)
-                .ToListAsync();
-            List<TodoItem> accessibleTodoItems = [];
-            foreach (TodoItem todoItem in todoItems)
+            List<TodoItem> todoItemsForProgenyOrFamily = [];
+
+            TodosListCacheEntry cacheEntry = kinaUnaCacheService.GetTodosListCache(currentUserInfo.UserId, progenyId, familyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.TodoItem);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
-                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUserInfo, PermissionLevel.View))
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    accessibleTodoItems.Add(todoItem);
+                    todoItemsForProgenyOrFamily = cacheEntry.TodosList;
                 }
             }
+            else
+            {
+                todoItemsForProgenyOrFamily = await progenyDbContext.TodoItemsDb
+                    .AsNoTracking()
+                    .Where(t => t.ProgenyId == progenyId && t.FamilyId == familyId && t.ParentTodoItemId == 0 && !t.IsDeleted)
+                    .ToListAsync();
+                // Filter by access level
 
-            return accessibleTodoItems;
+                List<TodoItem> accessibleTodoItemsForProgeny = [];
+                foreach (TodoItem todoItem in todoItemsForProgenyOrFamily)
+                {
+                    if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUserInfo, PermissionLevel.View))
+                    {
+                        todoItem.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, todoItem.ProgenyId, todoItem.FamilyId, currentUserInfo);
+                        accessibleTodoItemsForProgeny.Add(todoItem);
+                    }
+                }
+                todoItemsForProgenyOrFamily = accessibleTodoItemsForProgeny;
+                kinaUnaCacheService.SetTodoItemsListCache(currentUserInfo.UserId, progenyId, familyId, todoItemsForProgenyOrFamily);
+            }
+            
+            return todoItemsForProgenyOrFamily;
         }
     }
 }
