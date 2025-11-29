@@ -209,7 +209,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
                 .ReturnsAsync(_testFamily);
             _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser))
-                .ReturnsAsync(expectedResponse);
+                .Returns(expectedResponse);
 
             // Act
             IActionResult result = await _controller.GetSubtasksForTodoItem(request);
@@ -268,7 +268,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
                 .ReturnsAsync(_testFamily);
             _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, It.IsAny<SubtasksRequest>(), _testUser))
-                .ReturnsAsync(expectedResponse);
+                .Returns(expectedResponse);
 
             // Act
             IActionResult result = await _controller.GetSubtasksForTodoItem(request);
@@ -300,7 +300,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
                 .ReturnsAsync(_testFamily);
             _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser))
-                .ReturnsAsync(expectedResponse);
+                .Returns(expectedResponse);
 
             // Act
             IActionResult result = await _controller.GetSubtasksForTodoItem(request);
@@ -333,7 +333,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
                 .ReturnsAsync(_testProgeny);
             _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser))
-                .ReturnsAsync(expectedResponse);
+                .Returns(expectedResponse);
 
             // Act
             IActionResult result = await _controller.GetSubtasksForTodoItem(request);

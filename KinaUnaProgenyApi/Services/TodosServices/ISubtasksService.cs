@@ -36,7 +36,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// parameters. Cannot be null.</param>
         /// <param name="currentUserInfo">The UserInfo object for the current user, to check permissions.</param>
         /// <returns>A <see cref="SubtasksResponse"/> object containing the processed subtasks and any relevant metadata.</returns>
-        Task<SubtasksResponse> CreateSubtaskResponseForTodoItem(List<TodoItem> subtasks, SubtasksRequest request, UserInfo currentUserInfo);
+        SubtasksResponse CreateSubtaskResponseForTodoItem(List<TodoItem> subtasks, SubtasksRequest request, UserInfo currentUserInfo);
 
         /// <summary>
         /// Deletes the specified subtask from the to-do list.

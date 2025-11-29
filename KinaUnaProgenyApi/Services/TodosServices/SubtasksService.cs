@@ -1,14 +1,18 @@
 ﻿using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using KinaUna.Data;
 
 namespace KinaUnaProgenyApi.Services.TodosServices
 {
@@ -19,7 +23,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
     /// generating filtered and paginated responses for subtasks. It is designed to work with a database context to
     /// persist changes.</remarks>
     /// <param name="progenyDbContext">Database context for accessing the Progeny database.</param>
-    public class SubtasksService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService) : ISubtasksService
+    public class SubtasksService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService, IDistributedCache cache) : ISubtasksService
     {
         /// <summary>
         /// Adds a new subtask to the database and initializes its properties.
@@ -79,6 +83,10 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 permission.ItemId = subtaskToAdd.TodoItemId;
                 _ = await accessManagementService.GrantItemPermission(permission, currentUserInfo);
             }
+
+            await SetSubtaskInCache(subtaskToAdd.TodoItemId);
+            await SetSubTasksForTodoItemCache(subtaskToAdd.ParentTodoItemId);
+            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(subtaskToAdd.ProgenyId, subtaskToAdd.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
 
             return subtaskToAdd;
         }
@@ -150,8 +158,13 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             progenyDbContext.TodoItemsDb.Update(currentSubtask);
             _ = await progenyDbContext.SaveChangesAsync();
 
+            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(currentSubtask.ProgenyId, currentSubtask.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
+            await SetSubtaskInCache(currentSubtask.TodoItemId);
+            await SetSubTasksForTodoItemCache(currentSubtask.ParentTodoItemId);
+
             // Permissions are not changed for subtasks, as they get copied from the parent TodoItem on creation.
             // To change subtasks permissions, the user needs to change permissions for the parent TodoItem.
+
             return currentSubtask;
         }
 
@@ -208,6 +221,11 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             {
                 await accessManagementService.RevokeItemPermission(permission, currentUserInfo);
             }
+
+            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(subtaskToDelete.ProgenyId, subtaskToDelete.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
+            await RemoveSubtaskFromCache(subtaskToDelete.TodoItemId);
+            await SetSubTasksForTodoItemCache(subtaskToDelete.ParentTodoItemId);
+
             return true;
         }
 
@@ -229,7 +247,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// <returns>A <see cref="SubtasksResponse"/> object containing the processed list of subtasks, along with metadata such
         /// as pagination details.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="request"/> is <see langword="null"/>.</exception>
-        public async Task<SubtasksResponse> CreateSubtaskResponseForTodoItem(List<TodoItem> subtasks, SubtasksRequest request, UserInfo currentUserInfo)
+        public SubtasksResponse CreateSubtaskResponseForTodoItem(List<TodoItem> subtasks, SubtasksRequest request, UserInfo currentUserInfo)
         {
             if (request == null)
             {
@@ -313,30 +331,22 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         .ThenBy(t => t.CreatedTime)
                 ];
             }
-
-            List<TodoItem> accessibleSubtasks = [];
-            foreach (TodoItem subtaskItem in subtasks)
-            {
-                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, subtaskItem.TodoItemId, currentUserInfo, PermissionLevel.View))
-                {
-                    accessibleSubtasks.Add(subtaskItem);
-                }
-            }
-            int totalSubtasksCount = accessibleSubtasks.Count;
+            
+            int totalSubtasksCount = subtasks.Count;
             if (request.Skip > 0)
             {
-                accessibleSubtasks = [.. accessibleSubtasks.Skip(request.Skip)];
+                subtasks = [.. subtasks.Skip(request.Skip)];
             }
 
             if (request.NumberOfItems > 0)
             {
-                accessibleSubtasks = [.. accessibleSubtasks.Take(request.NumberOfItems)];
+                subtasks = [.. subtasks.Take(request.NumberOfItems)];
             }
             // Create the response object
             SubtasksResponse response = new()
             {
                 ParentTodoItemId = request.ParentTodoItemId,
-                Subtasks = accessibleSubtasks,
+                Subtasks = subtasks,
                 SubtasksRequest = request,
                 PageNumber = request.NumberOfItems > 0 && request.Skip > 0 ? (request.Skip / request.NumberOfItems) + 1 : 1,
                 TotalPages = (int)Math.Ceiling((double)totalSubtasksCount / (request.NumberOfItems > 0 ? request.NumberOfItems : 1)),
@@ -355,18 +365,54 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// if no subtask with the given identifier exists.</returns>
         public async Task<TodoItem> GetSubtask(int id, UserInfo currentUserInfo)
         {
+            TodoItem subtask = await GetSubtaskFromCache(id);
+            if (subtask == null)
+            {
+                subtask = await SetSubtaskInCache(id);
+            }
+            if (subtask == null)
+            {
+                return null;
+            }
+
             if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, id, currentUserInfo, PermissionLevel.View))
             {
                 return null;
             }
 
-            TodoItem subtask = await progenyDbContext.TodoItemsDb.AsNoTracking().SingleOrDefaultAsync(t => t.TodoItemId == id);
-            if (subtask == null)
+            subtask.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, subtask.TodoItemId, subtask.ProgenyId, subtask.FamilyId, currentUserInfo);
+            return subtask;
+        }
+
+        private async Task<TodoItem> GetSubtaskFromCache(int id)
+        {
+            string cachedSubtask = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "subtask_" + id);
+            if (string.IsNullOrEmpty(cachedSubtask))
             {
                 return null;
             }
-            subtask.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, subtask.TodoItemId, subtask.ProgenyId, subtask.FamilyId, currentUserInfo);
+            TodoItem subtask = JsonSerializer.Deserialize<TodoItem>(cachedSubtask, JsonSerializerOptions.Web);
             return subtask;
+        }
+
+        private async Task<TodoItem> SetSubtaskInCache(int id)
+        {
+            TodoItem subtask = await progenyDbContext.TodoItemsDb
+                .AsNoTracking()
+                .SingleOrDefaultAsync(t => t.TodoItemId == id);
+            if (subtask != null)
+            {
+                string serializedSubtask = JsonSerializer.Serialize(subtask, JsonSerializerOptions.Web);
+                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "subtask_" + id, serializedSubtask);
+                return subtask;
+            }
+
+            return null;
+        }
+
+        private async Task RemoveSubtaskFromCache(int id)
+        {
+            await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "subtask_" + id);
         }
 
         /// <summary>
@@ -380,11 +426,11 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// representing the subtasks of the specified to-do item.  The list will be empty if no subtasks are found.</returns>
         public async Task<List<TodoItem>> GetSubtasksForTodoItem(int todoItemTodoItemId, UserInfo currentUserInfo)
         {
-
-            List<TodoItem> subtasks = await progenyDbContext.TodoItemsDb
-                .AsNoTracking()
-                .Where(t => t.ParentTodoItemId == todoItemTodoItemId && !t.IsDeleted)
-                .ToListAsync();
+            List<TodoItem> subtasks = await GetSubTasksForTodoItemFromCache(todoItemTodoItemId);
+            if (subtasks == null)
+            {
+                subtasks = await SetSubTasksForTodoItemCache(todoItemTodoItemId);
+            }
 
             List<TodoItem> subtasksWithAccess = [];
             foreach (TodoItem subtask in subtasks)
@@ -399,6 +445,29 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             return subtasksWithAccess;
         }
 
-        
+        private async Task<List<TodoItem>> GetSubTasksForTodoItemFromCache(int todoItemId)
+        {
+            string cachedSubTasks = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "subtasks_" + todoItemId);
+            if (string.IsNullOrEmpty(cachedSubTasks))
+            {
+                return null;
+            }
+
+            List<TodoItem> subTasks = JsonSerializer.Deserialize<List<TodoItem>>(cachedSubTasks, JsonSerializerOptions.Web);
+            return subTasks;
+        }
+
+        private async Task<List<TodoItem>> SetSubTasksForTodoItemCache(int todoItemId)
+        {
+            List<TodoItem> subtasks = await progenyDbContext.TodoItemsDb
+                .AsNoTracking()
+                .Where(t => t.ParentTodoItemId == todoItemId && !t.IsDeleted)
+                .ToListAsync();
+            
+            string serializedSubTasks = JsonSerializer.Serialize(subtasks, JsonSerializerOptions.Web);
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "subtasks_" + todoItemId, serializedSubTasks);
+
+            return subtasks;
+        }
     }
 }

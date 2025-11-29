@@ -24,7 +24,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
     /// also supports filtering and pagination for retrieving lists of to-do items based on various criteria such as
     /// access level, date range, tags, context, and status.</remarks>
     /// <param name="progenyDbContext"></param>
-    public class TodosService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService, IDistributedCache cache) : ITodosService
+    public class TodosService(ProgenyDbContext progenyDbContext, IAccessManagementService accessManagementService, ISubtasksService subtasksService, IKinaUnaCacheService kinaUnaCacheService, IDistributedCache cache) : ITodosService
     {
         public async Task<TodoItem> AddTodoItem(TodoItem value, UserInfo currentUserInfo)
         {
@@ -278,23 +278,16 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 todoItem = await SetTodoItemInCache(id);
             }
 
-            List<TodoItem> subtasks = [.. progenyDbContext.TodoItemsDb.AsNoTracking().Where(t => t.ParentTodoItemId == id && !t.IsDeleted)];
-            List<TodoItem> accessibleSubtasks = [];
-            foreach (TodoItem subtaskItem in subtasks)
-            {
-                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, subtaskItem.TodoItemId, currentUserInfo, PermissionLevel.View))
-                {
-                    accessibleSubtasks.Add(subtaskItem);
-                }
-            }
-            todoItem.SubtaskCount = accessibleSubtasks.Count;
-            todoItem.CompletedSubtaskCount = accessibleSubtasks.FindAll(s => s.Status >= (int)KinaUnaTypes.TodoStatusType.Completed).Count;
+            List<TodoItem> subtasks = await subtasksService.GetSubtasksForTodoItem(todoItem.TodoItemId, currentUserInfo);
+
+            todoItem.SubtaskCount = subtasks.Count;
+            todoItem.CompletedSubtaskCount = subtasks.FindAll(s => s.Status >= (int)KinaUnaTypes.TodoStatusType.Completed).Count;
 
             todoItem.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, todoItem.ProgenyId, todoItem.FamilyId, currentUserInfo);
             
             return todoItem;
         }
-
+        
         /// <summary>
         /// Gets the TodoItem entity with the specified TodoItemId from the cache.
         /// </summary>
