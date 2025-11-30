@@ -120,6 +120,7 @@ namespace KinaUnaProgenyApi.Services
             await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Photo, pictureToAdd.PictureId, pictureToAdd.ProgenyId, 0, pictureToAdd.ItemPermissionsDtoList, currentUserInfo);
 
             _ = await SetPictureInCache(pictureToAdd.PictureId);
+            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
 
             return pictureToAdd;
         }

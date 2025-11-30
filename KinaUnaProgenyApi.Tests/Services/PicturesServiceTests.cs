@@ -869,7 +869,7 @@
 //            {
 //                ProgenyId = 1,
 //                Progenies = new List<int> { 1 },
-//                LocationItem = new Location { Latitude = 40.7128, Longitude = -74.0060 },
+//                LocationItem = new Location { Latitude = 40.7128, Longtitude = -74.0060 },
 //                Distance = 10.0,
 //                SortOrder = 0
 //            };
@@ -915,7 +915,7 @@
 //            {
 //                ProgenyId = 1,
 //                Progenies = new List<int> { 1 },
-//                LocationItem = new Location { Latitude = 40.7128, Longitude = -74.0060 },
+//                LocationItem = new Location { Latitude = 40.7128, Longtitude = -74.0060 },
 //                Distance = 10.0,
 //                SortOrder = 1
 //            };

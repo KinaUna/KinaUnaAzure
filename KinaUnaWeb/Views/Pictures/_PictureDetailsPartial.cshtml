@@ -1,5 +1,4 @@
-﻿@using System.Globalization
-@using KinaUna.Data
+﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
 @using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
@@ -25,8 +24,8 @@
     string hereMapsLongitude = "";
     if (!string.IsNullOrEmpty(Model.Picture.Latitude) && !string.IsNullOrEmpty(Model.Picture.Longtitude))
     { 
-        hereMapsLatitude = Model.Picture.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')[..6];
-        hereMapsLongitude = Model.Picture.Longtitude.ToString(new CultureInfo("en-US")).Replace(',', '.')[..6];
+        hereMapsLatitude = Model.Picture.Latitude.Replace(',', '.')[..6];
+        hereMapsLongitude = Model.Picture.Longtitude.Replace(',', '.')[..6];
     }
 }
 <div class="d-none" id="item-progeny-id-div" data-progeny-id="@Model.Picture.ProgenyId"></div>

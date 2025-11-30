@@ -61,7 +61,7 @@
 //                FamilyId = 0,
 //                Name = "Test Location",
 //                Latitude = 40.7128,
-//                Longitude = -74.0060,
+//                Longtitude = -74.0060,
 //                City = "New York",
 //                Country = "USA",
 //                Tags = "Tag1, Tag2"

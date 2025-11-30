@@ -22,7 +22,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         public string TagsList { get; set; }
         public string TagFilter { get; set; }
         public string Location { get; set; }
-        public string Longitude { get; set; } // Todo: Fix typo in variable name.
+        public string Longtitude { get; set; } // Todo: Fix typo in variable name.
         public string Latitude { get; set; }
         public string Altitude { get; set; }
         public int PictureNumber { get; set; }
@@ -42,7 +42,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
             Tags = picture.Tags;
             Location = picture.Location;
             Latitude = picture.Latitude;
-            Longitude = picture.Longtitude;
+            Longtitude = picture.Longtitude;
             Altitude = picture.Altitude;
             CommentThreadNumber = picture.CommentThreadNumber;
             ItemPerMission = picture.ItemPerMission;
