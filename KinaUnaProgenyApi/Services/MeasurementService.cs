@@ -119,7 +119,7 @@ namespace KinaUnaProgenyApi.Services
                 currentUserInfo);
             _ = await SetMeasurementInCache(measurementToAdd.MeasurementId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(measurementToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Measurement);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(measurementToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Measurement);
 
             return measurementToAdd;
         }
@@ -149,7 +149,7 @@ namespace KinaUnaProgenyApi.Services
                 currentUserInfo);
             _ = await SetMeasurementInCache(measurement.MeasurementId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(measurementToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Measurement);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(measurementToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Measurement);
             return measurementToUpdate;
         }
 
@@ -181,7 +181,7 @@ namespace KinaUnaProgenyApi.Services
 
             await RemoveMeasurementFromCache(measurement.MeasurementId, measurement.ProgenyId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(measurementToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Measurement);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(measurementToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Measurement);
 
             return measurement;
         }
@@ -208,8 +208,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Measurements.</returns>
         public async Task<List<Measurement>> GetMeasurementsList(int progenyId, UserInfo currentUserInfo)
         {
-            MeasurementsListCacheEntry cacheEntry = _kinaUnaCacheService.GetMeasurementsListCache(currentUserInfo.UserId, progenyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Measurement);
+            MeasurementsListCacheEntry cacheEntry = await _kinaUnaCacheService.GetMeasurementsListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Measurement);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -234,7 +234,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetMeasurementsListCache(currentUserInfo.UserId, progenyId, accessibleMeasurements.ToArray());
+            await _kinaUnaCacheService.SetMeasurementsListCache(currentUserInfo.UserId, progenyId, accessibleMeasurements.ToArray());
             
             return accessibleMeasurements;
         }

@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
 
             await SetSubtaskInCache(subtaskToAdd.TodoItemId);
             await SetSubTasksForTodoItemCache(subtaskToAdd.ParentTodoItemId);
-            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(subtaskToAdd.ProgenyId, subtaskToAdd.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
+            await kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(subtaskToAdd.ProgenyId, subtaskToAdd.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
 
             return subtaskToAdd;
         }
@@ -158,7 +158,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             progenyDbContext.TodoItemsDb.Update(currentSubtask);
             _ = await progenyDbContext.SaveChangesAsync();
 
-            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(currentSubtask.ProgenyId, currentSubtask.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
+            await kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(currentSubtask.ProgenyId, currentSubtask.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
             await SetSubtaskInCache(currentSubtask.TodoItemId);
             await SetSubTasksForTodoItemCache(currentSubtask.ParentTodoItemId);
 
@@ -222,7 +222,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 await accessManagementService.RevokeItemPermission(permission, currentUserInfo);
             }
 
-            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(subtaskToDelete.ProgenyId, subtaskToDelete.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
+            await kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(subtaskToDelete.ProgenyId, subtaskToDelete.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
             await RemoveSubtaskFromCache(subtaskToDelete.TodoItemId);
             await SetSubTasksForTodoItemCache(subtaskToDelete.ParentTodoItemId);
 

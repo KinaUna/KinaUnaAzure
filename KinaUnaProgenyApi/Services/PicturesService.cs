@@ -120,7 +120,7 @@ namespace KinaUnaProgenyApi.Services
             await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Photo, pictureToAdd.PictureId, pictureToAdd.ProgenyId, 0, pictureToAdd.ItemPermissionsDtoList, currentUserInfo);
 
             _ = await SetPictureInCache(pictureToAdd.PictureId);
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
 
             return pictureToAdd;
         }
@@ -560,7 +560,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetPictureInCache(pictureToUpdate.PictureId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
 
             return pictureToUpdate;
 
@@ -587,7 +587,7 @@ namespace KinaUnaProgenyApi.Services
             _ = await _mediaContext.SaveChangesAsync();
             _ = await SetPictureInCache(pictureToUpdate.PictureId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
 
             return pictureToUpdate;
 
@@ -639,7 +639,7 @@ namespace KinaUnaProgenyApi.Services
             }
 
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
 
             return pictureToDelete;
         }
@@ -679,7 +679,7 @@ namespace KinaUnaProgenyApi.Services
 
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
             // Todo: Remove permission entries for this picture?
             return pictureToDelete;
         }
@@ -705,8 +705,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Picture objects.</returns>
         public async Task<List<Picture>> GetPicturesList(int progenyId, UserInfo currentUserInfo)
         {
-            PicturesListCacheEntry cacheEntry = _kinaUnaCacheService.GetPicturesListCache(currentUserInfo.UserId, progenyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            PicturesListCacheEntry cacheEntry = await _kinaUnaCacheService.GetPicturesListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Photo);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -724,7 +724,7 @@ namespace KinaUnaProgenyApi.Services
             Stopwatch watch = Stopwatch.StartNew();
             
             List<Picture> filteredList = [];
-            foreach (Picture picture in picturesList.ToList())
+            foreach (Picture picture in picturesList)
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
                 {
@@ -734,7 +734,7 @@ namespace KinaUnaProgenyApi.Services
             }
             filteredList = filteredList.OrderByDescending(p => p.PictureTime).ToList();
 
-            _kinaUnaCacheService.SetPicturesListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
+            await _kinaUnaCacheService.SetPicturesListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
 
             watch.Stop();
             Console.WriteLine("GetPicturesList for progeny: " + progenyId + " Time Taken: " + watch.Elapsed.Minutes + "m " + watch.Elapsed.Seconds + "s");

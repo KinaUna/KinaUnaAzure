@@ -88,7 +88,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetVocabularyItemInCache(vocabularyItemToAdd.WordId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vocabularyItemToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vocabularyItemToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
             return vocabularyItemToAdd;
         }
 
@@ -152,7 +152,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetVocabularyItemInCache(vocabularyItemToUpdate.WordId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vocabularyItemToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vocabularyItemToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
 
             return vocabularyItemToUpdate;
         }
@@ -185,7 +185,7 @@ namespace KinaUnaProgenyApi.Services
 
             await RemoveVocabularyItemFromCache(vocabularyItem.WordId, vocabularyItem.ProgenyId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vocabularyItemToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vocabularyItemToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
 
             return vocabularyItem;
         }
@@ -213,8 +213,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of VocabularyItem objects.</returns>
         public async Task<List<VocabularyItem>> GetVocabularyList(int progenyId, UserInfo currentUserInfo)
         {
-            VocabularyListCacheEntry cacheEntry = _kinaUnaCacheService.GetVocabularyItemsListCache(currentUserInfo.UserId, progenyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
+            VocabularyListCacheEntry cacheEntry = await _kinaUnaCacheService.GetVocabularyItemsListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Vocabulary);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -239,7 +239,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetVocabularyItemsListCache(currentUserInfo.UserId, progenyId, allowedVocabularyList.ToArray());
+            await _kinaUnaCacheService.SetVocabularyItemsListCache(currentUserInfo.UserId, progenyId, allowedVocabularyList.ToArray());
 
             return allowedVocabularyList;
         }

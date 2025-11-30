@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 using static KinaUna.Data.Models.KinaUnaTypes;
 
 namespace KinaUnaProgenyApi.Services.CacheServices
@@ -16,7 +17,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// Sets the user updated cache entry for the specified user.
         /// </summary>
         /// <param name="userId">The unique identifier of the user.</param>
-        public void SetUserUpdatedCache(string userId)
+        public async Task SetUserUpdatedCache(string userId)
         {
             UserUpdatedCacheEntry userCacheEntry = new()
             {
@@ -25,7 +26,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             };
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userId
                 , JsonSerializer.Serialize(userCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -35,9 +36,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
         /// <returns>A <see cref="UserUpdatedCacheEntry"/> object containing the cached update information for the user, or <see
         /// langword="null"/> if no cache entry exists for the specified user.</returns>
-        public UserUpdatedCacheEntry GetUserUpdatedCache(string userId)
+        public async Task<UserUpdatedCacheEntry> GetUserUpdatedCache(string userId)
         {
-            string cachedUserEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userId);
+            string cachedUserEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userCacheEntry_" + userId);
             if (!string.IsNullOrEmpty(cachedUserEntry))
             {
                 UserUpdatedCacheEntry userCacheEntry = JsonSerializer.Deserialize<UserUpdatedCacheEntry>(cachedUserEntry, JsonSerializerOptions.Web);
@@ -56,13 +57,13 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// Sets the user updated cache entries for all members of the specified group.
         /// </summary>
         /// <param name="groupMembers">The collection of group members whose user updated cache entries are to be set.</param>
-        public void SetUserUpdatedCacheForGroup(IEnumerable<UserGroupMember> groupMembers)
+        public async Task SetUserUpdatedCacheForGroup(IEnumerable<UserGroupMember> groupMembers)
         {
             foreach (UserGroupMember member in groupMembers)
             {
                 if (!string.IsNullOrEmpty(member.UserId))
                 {
-                    SetUserUpdatedCache(member.UserId);
+                    await SetUserUpdatedCache(member.UserId);
                 }
             }
         }
@@ -72,7 +73,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// </summary>
         /// <param name="progenyId">The unique identifier of the progeny.</param>
         /// <param name="familyId">The unique identifier of the family.</param>
-        public void SetProgenyOrFamilyUpdatedCache(int progenyId, int familyId)
+        public async Task SetProgenyOrFamilyUpdatedCache(int progenyId, int familyId)
         {
             ProgenyOrFamilyUpdatedCacheEntry progenyOrFamilyCacheEntry = new()
             {
@@ -86,7 +87,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
                 
                 DistributedCacheEntryOptions cacheOptionsSlidingView = new();
                 cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-                cache.SetString(Constants.AppName + Constants.ApiVersion + "progenyCacheEntry_" + progenyId
+                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyCacheEntry_" + progenyId
                     , JsonSerializer.Serialize(progenyOrFamilyCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
             }
 
@@ -94,7 +95,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             {
                 DistributedCacheEntryOptions cacheOptionsSlidingView = new();
                 cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-                cache.SetString(Constants.AppName + Constants.ApiVersion + "familyCacheEntry_" + familyId
+                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "familyCacheEntry_" + familyId
                     , JsonSerializer.Serialize(progenyOrFamilyCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
             }
         }
@@ -106,11 +107,11 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="familyId">The unique identifier of the family whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
         /// <returns>A <see cref="ProgenyOrFamilyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
         /// langword="null"/> if no cache entry exists for the specified progeny.</returns>
-        public ProgenyOrFamilyUpdatedCacheEntry GetProgenyOrFamilyUpdatedCache(int progenyId, int familyId)
+        public async Task<ProgenyOrFamilyUpdatedCacheEntry> GetProgenyOrFamilyUpdatedCache(int progenyId, int familyId)
         {
             if (progenyId > 0)
             {
-                string cachedProgenyEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "progenyCacheEntry_" + progenyId);
+                string cachedProgenyEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyCacheEntry_" + progenyId);
                 if (!string.IsNullOrEmpty(cachedProgenyEntry))
                 {
                     ProgenyOrFamilyUpdatedCacheEntry progenyCacheEntry = JsonSerializer.Deserialize<ProgenyOrFamilyUpdatedCacheEntry>(cachedProgenyEntry, JsonSerializerOptions.Web);
@@ -120,7 +121,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             if (familyId > 0)
             {
-                string cachedFamilyEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "familyCacheEntry_" + familyId);
+                string cachedFamilyEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "familyCacheEntry_" + familyId);
                 if (!string.IsNullOrEmpty(cachedFamilyEntry))
                 {
                     ProgenyOrFamilyUpdatedCacheEntry familyCacheEntry = JsonSerializer.Deserialize<ProgenyOrFamilyUpdatedCacheEntry>(cachedFamilyEntry, JsonSerializerOptions.Web);
@@ -143,7 +144,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The unique identifier of the progeny whose timeline update cache entry is to be set. Cannot be null or empty.</param>
         /// <param name="familyId">The unique identifier of the family whose timeline update cache entry is to be set. Cannot be null or empty.</param>
         /// <param name="timelineType">The type of timeline update to set. Cannot be null or empty.</param>
-        public void SetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType)
+        public async Task SetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType)
         {
             TimelineUpdatedCacheEntry timelineCacheEntry = new()
             {
@@ -158,7 +159,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
                 
                 DistributedCacheEntryOptions cacheOptionsSlidingView = new();
                 cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-                cache.SetString(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_p_" + progenyId + "_t_" + (int)timelineType
+                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_p_" + progenyId + "_t_" + (int)timelineType
                     , JsonSerializer.Serialize(timelineCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
             }
 
@@ -166,7 +167,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             {
                 DistributedCacheEntryOptions cacheOptionsSlidingView = new();
                 cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-                cache.SetString(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_f_" + familyId + "_t_" + (int)timelineType
+                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_f_" + familyId + "_t_" + (int)timelineType
                     , JsonSerializer.Serialize(timelineCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
             }
         }
@@ -179,11 +180,11 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="timelineType">The type of timeline update to retrieve. Cannot be null or empty.</param>
         /// <returns>A <see cref="ProgenyOrFamilyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
         /// langword="null"/> if no cache entry exists for the specified progeny.</returns>
-        public TimelineUpdatedCacheEntry GetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType)
+        public async Task<TimelineUpdatedCacheEntry> GetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType)
         {
             if (progenyId > 0)
             {
-                string cachedTimelineEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_p_" + progenyId + "_t_" + (int)timelineType);
+                string cachedTimelineEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_p_" + progenyId + "_t_" + (int)timelineType);
                 if (!string.IsNullOrEmpty(cachedTimelineEntry))
                 {
                     TimelineUpdatedCacheEntry timelineCacheEntry = JsonSerializer.Deserialize<TimelineUpdatedCacheEntry>(cachedTimelineEntry, JsonSerializerOptions.Web);
@@ -193,7 +194,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             if (familyId > 0)
             {
-                string cachedTimelineEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_f_" + familyId + "_t_" + (int)timelineType);
+                string cachedTimelineEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineCacheEntry_f_" + familyId + "_t_" + (int)timelineType);
                 if (!string.IsNullOrEmpty(cachedTimelineEntry))
                 {
                     TimelineUpdatedCacheEntry timelineCacheEntry = JsonSerializer.Deserialize<TimelineUpdatedCacheEntry>(cachedTimelineEntry, JsonSerializerOptions.Web);
@@ -220,7 +221,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// constructed using the application name, API version, item type, and item ID to ensure uniqueness.</remarks>
         /// <param name="itemType">The type of timeline to which the item belongs. Determines the cache key used for storage.</param>
         /// <param name="itemId">The unique identifier of the item whose update information is to be cached.</param>
-        public void SetItemUpdatedCache(TimeLineType itemType, int itemId)
+        public async Task SetItemUpdatedCache(TimeLineType itemType, int itemId)
         {
             ItemUpdatedCacheEntry itemCacheEntry = new()
             {
@@ -231,7 +232,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "itemUpdatedCacheEntry_t_" + (int)itemCacheEntry.ItemType + "_id_" + itemCacheEntry.ItemId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "itemUpdatedCacheEntry_t_" + (int)itemCacheEntry.ItemType + "_id_" + itemCacheEntry.ItemId
                 , JsonSerializer.Serialize(itemCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -242,9 +243,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="itemId">The unique identifier of the item whose update cache entry is to be retrieved.</param>
         /// <returns>An ItemUpdatedCacheEntry object containing the cached update information for the specified item and timeline
         /// type, or null if no cache entry exists.</returns>
-        public ItemUpdatedCacheEntry GetItemUpdatedCache(TimeLineType itemType, int itemId)
+        public async Task<ItemUpdatedCacheEntry> GetItemUpdatedCache(TimeLineType itemType, int itemId)
         {
-            string cachedItemEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "itemUpdatedCacheEntry_t_" + (int)itemType + "_id_" + itemId);
+            string cachedItemEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "itemUpdatedCacheEntry_t_" + (int)itemType + "_id_" + itemId);
             if (!string.IsNullOrEmpty(cachedItemEntry))
             {
                 ItemUpdatedCacheEntry itemCacheEntry = JsonSerializer.Deserialize<ItemUpdatedCacheEntry>(cachedItemEntry, JsonSerializerOptions.Web);
@@ -269,7 +270,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the notes list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the notes list.</param>
         /// <param name="notesList">The list of notes to cache. Cannot be null.</param>
-        public void SetNotesListCache(string userId, int progenyId, Note[] notesList)
+        public async Task SetNotesListCache(string userId, int progenyId, Note[] notesList)
         {
             NotesListCacheEntry notesListCacheEntry = new()
             {
@@ -281,7 +282,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "notesListCacheEntry_u_" + userId + "_p_" + progenyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "notesListCacheEntry_u_" + userId + "_p_" + progenyId
                 , JsonSerializer.Serialize(notesListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -294,9 +295,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the notes list cache entry is requested.</param>
         /// <returns>A <see cref="NotesListCacheEntry"/> object containing the cached notes list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public NotesListCacheEntry GetNotesListCache(string userId, int progenyId)
+        public async Task<NotesListCacheEntry> GetNotesListCache(string userId, int progenyId)
         {
-            string cachedNotesListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "notesListCacheEntry_u_" + userId + "_p_" + progenyId);
+            string cachedNotesListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "notesListCacheEntry_u_" + userId + "_p_" + progenyId);
             if (!string.IsNullOrEmpty(cachedNotesListEntry))
             {
                 NotesListCacheEntry notesListCacheEntry = JsonSerializer.Deserialize<NotesListCacheEntry>(cachedNotesListEntry, JsonSerializerOptions.Web);
@@ -313,7 +314,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the pictures list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the pictures list.</param>
         /// <param name="picturesList">The list of pictures to cache. Cannot be null.</param>
-        public void SetPicturesListCache(string userId, int progenyId, Picture[] picturesList)
+        public async Task SetPicturesListCache(string userId, int progenyId, Picture[] picturesList)
         {
             PicturesListCacheEntry picturesListCacheEntry = new()
             {
@@ -325,7 +326,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "picturesListCacheEntry_u_" + userId + "_p_" + progenyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picturesListCacheEntry_u_" + userId + "_p_" + progenyId
                 , JsonSerializer.Serialize(picturesListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -338,9 +339,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the pictures list cache entry is requested.</param>
         /// <returns>A <see cref="PicturesListCacheEntry"/> object containing the cached pictures list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public PicturesListCacheEntry GetPicturesListCache(string userId, int progenyId)
+        public async Task<PicturesListCacheEntry> GetPicturesListCache(string userId, int progenyId)
         {
-            string cachedPicturesListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "picturesListCacheEntry_u_" + userId + "_p_" + progenyId);
+            string cachedPicturesListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "picturesListCacheEntry_u_" + userId + "_p_" + progenyId);
             if (!string.IsNullOrEmpty(cachedPicturesListEntry))
             {
                 PicturesListCacheEntry picturesListCacheEntry = JsonSerializer.Deserialize<PicturesListCacheEntry>(cachedPicturesListEntry, JsonSerializerOptions.Web);
@@ -358,7 +359,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the contacts list.</param>
         /// <param name="familyId">The identifier of the family associated with the contacts list.</param>
         /// <param name="contactsList">The list of contacts to cache. Cannot be null.</param>
-        public void SetContactsListCache(string userId, int progenyId, int familyId, Contact[] contactsList)
+        public async Task SetContactsListCache(string userId, int progenyId, int familyId, Contact[] contactsList)
         {
             ContactsListCacheEntry contactsListCacheEntry = new()
             {
@@ -371,7 +372,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "contactsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
                 , JsonSerializer.Serialize(contactsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -385,9 +386,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="familyId">The identifier of the family for which the contacts list cache entry is requested.</param>
         /// <returns>A <see cref="ContactsListCacheEntry"/> object containing the cached contacts list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public ContactsListCacheEntry GetContactsListCache(string userId, int progenyId, int familyId)
+        public async Task<ContactsListCacheEntry> GetContactsListCache(string userId, int progenyId, int familyId)
         {
-            string cachedContactsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "contactsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
+            string cachedContactsListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contactsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
             if (!string.IsNullOrEmpty(cachedContactsListEntry))
             {
                 ContactsListCacheEntry contactsListCacheEntry = JsonSerializer.Deserialize<ContactsListCacheEntry>(cachedContactsListEntry, JsonSerializerOptions.Web);
@@ -404,7 +405,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the friends list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the friends list.</param>
         /// <param name="friendsList">The list of friends to cache. Cannot be null.</param>
-        public void SetFriendsListCache(string userId, int progenyId, Friend[] friendsList)
+        public async Task SetFriendsListCache(string userId, int progenyId, Friend[] friendsList)
         {
             FriendsListCacheEntry friendsListCacheEntry = new()
             {
@@ -416,7 +417,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "friendsListCacheEntry_u_" + userId + "_p_" + progenyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendsListCacheEntry_u_" + userId + "_p_" + progenyId
                 , JsonSerializer.Serialize(friendsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
         
@@ -429,9 +430,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the friends list cache entry is requested.</param>
         /// <returns>A <see cref="FriendsListCacheEntry"/> object containing the cached friends list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public FriendsListCacheEntry GetFriendsListCache(string userId, int progenyId)
+        public async Task<FriendsListCacheEntry> GetFriendsListCache(string userId, int progenyId)
         {
-            string cachedFriendsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "friendsListCacheEntry_u_" + userId + "_p_" + progenyId);
+            string cachedFriendsListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friendsListCacheEntry_u_" + userId + "_p_" + progenyId);
             if (!string.IsNullOrEmpty(cachedFriendsListEntry))
             {
                 FriendsListCacheEntry friendsListCacheEntry = JsonSerializer.Deserialize<FriendsListCacheEntry>(cachedFriendsListEntry, JsonSerializerOptions.Web);
@@ -449,7 +450,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the locations list.</param>
         /// <param name="familyId">The identifier of the family associated with the locations list.</param>
         /// <param name="locationsList">The list of locations to cache. Cannot be null.</param>
-        public void SetLocationsListCache(string userId, int progenyId, int familyId, Location[] locationsList)
+        public async Task SetLocationsListCache(string userId, int progenyId, int familyId, Location[] locationsList)
         {
             LocationsListCacheEntry locationsListCacheEntry = new()
             {
@@ -462,7 +463,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "locationsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "locationsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
                 , JsonSerializer.Serialize(locationsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -476,9 +477,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="familyId">The identifier of the family for which the locations list cache entry is requested.</param>
         /// <returns>A <see cref="LocationsListCacheEntry"/> object containing the cached locations list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public LocationsListCacheEntry GetLocationsListCache(string userId, int progenyId, int familyId)
+        public async Task<LocationsListCacheEntry> GetLocationsListCache(string userId, int progenyId, int familyId)
         {
-            string cachedLocationsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "locationsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
+            string cachedLocationsListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "locationsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
             if (!string.IsNullOrEmpty(cachedLocationsListEntry))
             {
                 LocationsListCacheEntry locationsListCacheEntry = JsonSerializer.Deserialize<LocationsListCacheEntry>(cachedLocationsListEntry, JsonSerializerOptions.Web);
@@ -495,7 +496,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the measurements list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the measurements list.</param>
         /// <param name="measurementsList">The list of measurements to cache. Cannot be null.</param>
-        public void SetMeasurementsListCache(string userId, int progenyId, Measurement[] measurementsList)
+        public async Task SetMeasurementsListCache(string userId, int progenyId, Measurement[] measurementsList)
         {
             MeasurementsListCacheEntry measurementsListCacheEntry = new()
             {
@@ -507,7 +508,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "measurementsListCacheEntry_u_" + userId + "_p_" + progenyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementsListCacheEntry_u_" + userId + "_p_" + progenyId
                 , JsonSerializer.Serialize(measurementsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -520,9 +521,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the measurements list cache entry is requested.</param>
         /// <returns>A <see cref="MeasurementsListCacheEntry"/> object containing the cached measurements list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public MeasurementsListCacheEntry GetMeasurementsListCache(string userId, int progenyId)
+        public async Task<MeasurementsListCacheEntry> GetMeasurementsListCache(string userId, int progenyId)
         {
-            string cachedMeasurementsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "measurementsListCacheEntry_u_" + userId + "_p_" + progenyId);
+            string cachedMeasurementsListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementsListCacheEntry_u_" + userId + "_p_" + progenyId);
             if (!string.IsNullOrEmpty(cachedMeasurementsListEntry))
             {
                 MeasurementsListCacheEntry measurementsListCacheEntry = JsonSerializer.Deserialize<MeasurementsListCacheEntry>(cachedMeasurementsListEntry, JsonSerializerOptions.Web);
@@ -539,7 +540,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the skills list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the skills list.</param>
         /// <param name="skillsList">The list of skills to cache. Cannot be null.</param>
-        public void SetSkillsListCache(string userId, int progenyId, Skill[] skillsList)
+        public async Task SetSkillsListCache(string userId, int progenyId, Skill[] skillsList)
         {
             SkillsListCacheEntry skillsListCacheEntry = new()
             {
@@ -551,7 +552,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "skillsListCacheEntry_u_" + userId + "_p_" + progenyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skillsListCacheEntry_u_" + userId + "_p_" + progenyId
                 , JsonSerializer.Serialize(skillsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -564,9 +565,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the skills list cache entry is requested.</param>
         /// <returns>A <see cref="SkillsListCacheEntry"/> object containing the cached skills list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public SkillsListCacheEntry GetSkillsListCache(string userId, int progenyId)
+        public async Task<SkillsListCacheEntry> GetSkillsListCache(string userId, int progenyId)
         {
-            string cachedSkillsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "skillsListCacheEntry_u_" + userId + "_p_" + progenyId);
+            string cachedSkillsListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skillsListCacheEntry_u_" + userId + "_p_" + progenyId);
             if (!string.IsNullOrEmpty(cachedSkillsListEntry))
             {
                 SkillsListCacheEntry skillsListCacheEntry = JsonSerializer.Deserialize<SkillsListCacheEntry>(cachedSkillsListEntry, JsonSerializerOptions.Web);
@@ -583,7 +584,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the sleep list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the sleep list.</param>
         /// <param name="sleepList">The list of sleep to cache. Cannot be null.</param>
-        public void SetSleepListCache(string userId, int progenyId, Sleep[] sleepList)
+        public async Task SetSleepListCache(string userId, int progenyId, Sleep[] sleepList)
         {
             SleepListCacheEntry sleepListCacheEntry = new()
             {
@@ -595,7 +596,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "sleepListCacheEntry_u_" + userId + "_p_" + progenyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleepListCacheEntry_u_" + userId + "_p_" + progenyId
                 , JsonSerializer.Serialize(sleepListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -608,9 +609,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the sleep list cache entry is requested.</param>
         /// <returns>A <see cref="SleepListCacheEntry"/> object containing the cached sleep list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public SleepListCacheEntry GetSleepListCache(string userId, int progenyId)
+        public async Task<SleepListCacheEntry> GetSleepListCache(string userId, int progenyId)
         {
-            string cachedSleepListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "sleepListCacheEntry_u_" + userId + "_p_" + progenyId);
+            string cachedSleepListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleepListCacheEntry_u_" + userId + "_p_" + progenyId);
             if (!string.IsNullOrEmpty(cachedSleepListEntry))
             {
                 SleepListCacheEntry sleepListCacheEntry = JsonSerializer.Deserialize<SleepListCacheEntry>(cachedSleepListEntry, JsonSerializerOptions.Web);
@@ -627,7 +628,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the vaccinations list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the vaccinations list.</param>
         /// <param name="vaccinationsList">The list of vaccinations to cache. Cannot be null.</param>
-        public void SetVaccinationsListCache(string userId, int progenyId, Vaccination[] vaccinationsList)
+        public async Task SetVaccinationsListCache(string userId, int progenyId, Vaccination[] vaccinationsList)
         {
             VaccinationsListCacheEntry vaccinationsListCacheEntry = new()
             {
@@ -639,7 +640,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "vaccinationsListCacheEntry_u_" + userId + "_p_" + progenyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationsListCacheEntry_u_" + userId + "_p_" + progenyId
                 , JsonSerializer.Serialize(vaccinationsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -652,9 +653,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the vaccinations list cache entry is requested.</param>
         /// <returns>A <see cref="VaccinationsListCacheEntry"/> object containing the cached vaccinations list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public VaccinationsListCacheEntry GetVaccinationsListCache(string userId, int progenyId)
+        public async Task<VaccinationsListCacheEntry> GetVaccinationsListCache(string userId, int progenyId)
         {
-            string cachedVaccinationsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "vaccinationsListCacheEntry_u_" + userId + "_p_" + progenyId);
+            string cachedVaccinationsListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationsListCacheEntry_u_" + userId + "_p_" + progenyId);
             if (!string.IsNullOrEmpty(cachedVaccinationsListEntry))
             {
                 VaccinationsListCacheEntry vaccinationsListCacheEntry = JsonSerializer.Deserialize<VaccinationsListCacheEntry>(cachedVaccinationsListEntry, JsonSerializerOptions.Web);
@@ -671,7 +672,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the vocabulary items list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the vocabulary items list.</param>
         /// <param name="vocabularyItemsList">The list of vocabulary items to cache. Cannot be null.</param>
-        public void SetVocabularyItemsListCache(string userId, int progenyId, VocabularyItem[] vocabularyItemsList)
+        public async Task SetVocabularyItemsListCache(string userId, int progenyId, VocabularyItem[] vocabularyItemsList)
         {
             VocabularyListCacheEntry vocabularyListCacheEntry = new()
             {
@@ -683,7 +684,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "vocabularyListCacheEntry_u_" + userId + "_p_" + progenyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyListCacheEntry_u_" + userId + "_p_" + progenyId
                 , JsonSerializer.Serialize(vocabularyListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -696,9 +697,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the vocabulary items list cache entry is requested.</param>
         /// <returns>A <see cref="VocabularyListCacheEntry"/> object containing the cached vocabulary items list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public VocabularyListCacheEntry GetVocabularyItemsListCache(string userId, int progenyId)
+        public async Task<VocabularyListCacheEntry> GetVocabularyItemsListCache(string userId, int progenyId)
         {
-            string cachedVocabularyItemsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "vocabularyListCacheEntry_u_" + userId + "_p_" + progenyId);
+            string cachedVocabularyItemsListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyListCacheEntry_u_" + userId + "_p_" + progenyId);
             if (!string.IsNullOrEmpty(cachedVocabularyItemsListEntry))
             {
                 VocabularyListCacheEntry vocabularyListCacheEntry = JsonSerializer.Deserialize<VocabularyListCacheEntry>(cachedVocabularyItemsListEntry, JsonSerializerOptions.Web);
@@ -715,7 +716,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the videos list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the videos list.</param>
         /// <param name="videoList">The list of videos to cache. Cannot be null.</param>
-        public void SetVideoListCache(string userId, int progenyId, Video[] videoList)
+        public async Task SetVideoListCache(string userId, int progenyId, Video[] videoList)
         {
             VideosListCacheEntry videosListCacheEntry = new()
             {
@@ -727,7 +728,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "videosListCacheEntry_u_" + userId + "_p_" + progenyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "videosListCacheEntry_u_" + userId + "_p_" + progenyId
                 , JsonSerializer.Serialize(videosListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -740,9 +741,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the videos list cache entry is requested.</param>
         /// <returns>A <see cref="VideosListCacheEntry"/> object containing the cached videos list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public VideosListCacheEntry GetVideosListCache(string userId, int progenyId)
+        public async Task<VideosListCacheEntry> GetVideosListCache(string userId, int progenyId)
         {
-            string cachedVideosListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "videosListCacheEntry_u_" + userId + "_p_" + progenyId);
+            string cachedVideosListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "videosListCacheEntry_u_" + userId + "_p_" + progenyId);
             if (!string.IsNullOrEmpty(cachedVideosListEntry))
             {
                 VideosListCacheEntry videosListCacheEntry = JsonSerializer.Deserialize<VideosListCacheEntry>(cachedVideosListEntry, JsonSerializerOptions.Web);
@@ -760,7 +761,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the Kanban boards list.</param>
         /// <param name="familyId">The identifier of the family associated with the Kanban boards list.</param>
         /// <param name="kanbanBoardsList">The list of Kanban boards to cache. Cannot be null.</param>
-        public void SetKanbanBoardsListCache(string userId, int progenyId, int familyId, KanbanBoard[] kanbanBoardsList)
+        public async Task SetKanbanBoardsListCache(string userId, int progenyId, int familyId, KanbanBoard[] kanbanBoardsList)
         {
             KanbanBoardsListCacheEntry kanbanBoardsListCacheEntry = new()
             {
@@ -773,7 +774,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "kanbanBoardsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "kanbanBoardsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
                 , JsonSerializer.Serialize(kanbanBoardsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -787,9 +788,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="familyId">The identifier of the family for which the Kanban boards list cache entry is requested.</param>
         /// <returns>A <see cref="KanbanBoardsListCacheEntry"/> object containing the cached Kanban boards list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public KanbanBoardsListCacheEntry GetKanbanBoardsListCache(string userId, int progenyId, int familyId)
+        public async Task<KanbanBoardsListCacheEntry> GetKanbanBoardsListCache(string userId, int progenyId, int familyId)
         {
-            string cachedKanbanBoardsListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "kanbanBoardsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
+            string cachedKanbanBoardsListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "kanbanBoardsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
             if (!string.IsNullOrEmpty(cachedKanbanBoardsListEntry))
             {
                 KanbanBoardsListCacheEntry kanbanBoardsListCacheEntry = JsonSerializer.Deserialize<KanbanBoardsListCacheEntry>(cachedKanbanBoardsListEntry, JsonSerializerOptions.Web);
@@ -807,7 +808,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the TodoItems list.</param>
         /// <param name="familyId">The identifier of the family associated with the TodoItems list.</param>
         /// <param name="todoItemsList">The list of TodoItems to cache. Cannot be null.</param>
-        public void SetTodoItemsListCache(string userId, int progenyId, int familyId, TodoItem[] todoItemsList)
+        public async Task SetTodoItemsListCache(string userId, int progenyId, int familyId, TodoItem[] todoItemsList)
         {
             TodosListCacheEntry todoItemsListCacheEntry = new()
             {
@@ -820,7 +821,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
 
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            cache.SetString(Constants.AppName + Constants.ApiVersion + "todosListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "todosListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
                 , JsonSerializer.Serialize(todoItemsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
         }
 
@@ -834,9 +835,9 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="familyId">The identifier of the family for which the TodoItems list cache entry is requested.</param>
         /// <returns>A <see cref="TodosListCacheEntry"/> object containing the cached TodoItems list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public TodosListCacheEntry GetTodosListCache(string userId, int progenyId, int familyId)
+        public async Task<TodosListCacheEntry> GetTodosListCache(string userId, int progenyId, int familyId)
         {
-            string cachedTodosListEntry = cache.GetString(Constants.AppName + Constants.ApiVersion + "todosListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
+            string cachedTodosListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "todosListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
             if (!string.IsNullOrEmpty(cachedTodosListEntry))
             {
                 TodosListCacheEntry todosListCacheEntry = JsonSerializer.Deserialize<TodosListCacheEntry>(cachedTodosListEntry, JsonSerializerOptions.Web);

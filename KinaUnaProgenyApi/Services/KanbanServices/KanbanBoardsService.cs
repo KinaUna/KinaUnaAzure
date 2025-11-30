@@ -141,7 +141,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
 
             await accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, kanbanBoard.KanbanBoardId, kanbanBoard.ProgenyId, kanbanBoard.FamilyId, kanbanBoard.ItemPermissionsDtoList, currentUserInfo);
 
-            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(kanbanBoard.ProgenyId, kanbanBoard.FamilyId, KinaUnaTypes.TimeLineType.KanbanBoard);
+            await kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(kanbanBoard.ProgenyId, kanbanBoard.FamilyId, KinaUnaTypes.TimeLineType.KanbanBoard);
             _ = await SetKanbanBoardInCache(kanbanBoard.KanbanBoardId);
 
             return kanbanBoard;
@@ -194,7 +194,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             _ = await accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, existingKanbanBoard.KanbanBoardId, existingKanbanBoard.ProgenyId, existingKanbanBoard.FamilyId,
                 existingKanbanBoard.ItemPermissionsDtoList, currentUserInfo);
 
-            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(existingKanbanBoard.ProgenyId, kanbanBoard.FamilyId, KinaUnaTypes.TimeLineType.KanbanBoard);
+            await kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(existingKanbanBoard.ProgenyId, kanbanBoard.FamilyId, KinaUnaTypes.TimeLineType.KanbanBoard);
             _ = await SetKanbanBoardInCache(existingKanbanBoard.KanbanBoardId);
 
             return existingKanbanBoard;
@@ -261,7 +261,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 await accessManagementService.RevokeItemPermission(permission, currentUserInfo);
             }
 
-            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(kanbanBoardToDelete.ProgenyId, kanbanBoardToDelete.FamilyId, KinaUnaTypes.TimeLineType.KanbanBoard);
+            await kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(kanbanBoardToDelete.ProgenyId, kanbanBoardToDelete.FamilyId, KinaUnaTypes.TimeLineType.KanbanBoard);
             await RemoveKanbanBoardFromCache(kanbanBoardToDelete.KanbanBoardId);
 
             return kanbanBoardToDelete;
@@ -285,8 +285,8 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         {
             bool hasCachedData = false;
             KanbanBoard[] allKanbanBoardsForProgenyOrFamily = [];
-            KanbanBoardsListCacheEntry cacheEntry = kinaUnaCacheService.GetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.KanbanBoard);
+            KanbanBoardsListCacheEntry cacheEntry = await kinaUnaCacheService.GetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.KanbanBoard);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -343,7 +343,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                     accessibleKanbanBoards.Add(kanbanBoard);
                 }
 
-                kinaUnaCacheService.SetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleKanbanBoards.ToArray());
+                await kinaUnaCacheService.SetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleKanbanBoards.ToArray());
             }
             
 
@@ -429,8 +429,8 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         public async Task<List<KanbanBoard>> GetKanbanBoardsListForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo)
         {
             KanbanBoard[] kanbanBoards = [];
-            KanbanBoardsListCacheEntry cacheEntry = kinaUnaCacheService.GetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.KanbanBoard);
+            KanbanBoardsListCacheEntry cacheEntry = await kinaUnaCacheService.GetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.KanbanBoard);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -459,7 +459,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                     accessibleKanbanBoards.Add(kanbanBoard);
                 }
             }
-            kinaUnaCacheService.SetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleKanbanBoards.ToArray());
+            await kinaUnaCacheService.SetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleKanbanBoards.ToArray());
             
             return accessibleKanbanBoards;
         }

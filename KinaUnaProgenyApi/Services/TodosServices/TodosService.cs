@@ -88,7 +88,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             }
 
             _ = await SetTodoItemInCache(todoItemToAdd.TodoItemId);
-            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
+            await kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(todoItemToAdd.ProgenyId, todoItemToAdd.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
 
             return todoItemToAdd;
         }
@@ -185,8 +185,8 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             _ = await SetTodoItemInCache(currentTodoItem.TodoItemId);
             TodoItem result = await GetTodoItem(currentTodoItem.TodoItemId, currentUserInfo);
 
-            
-            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(result.ProgenyId, result.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
+
+            await kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(result.ProgenyId, result.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
 
             return result;
         }
@@ -254,7 +254,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             }
 
             await RemoveTodoItemFromCache(todoItemToDelete.TodoItemId);
-            kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(todoItemToDelete.ProgenyId, todoItemToDelete.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
+            await kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(todoItemToDelete.ProgenyId, todoItemToDelete.FamilyId, KinaUnaTypes.TimeLineType.TodoItem);
             return true;
         }
 
@@ -868,8 +868,8 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         {
             TodoItem[] todoItemsForProgenyOrFamily = [];
 
-            TodosListCacheEntry cacheEntry = kinaUnaCacheService.GetTodosListCache(currentUserInfo.UserId, progenyId, familyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.TodoItem);
+            TodosListCacheEntry cacheEntry = await kinaUnaCacheService.GetTodosListCache(currentUserInfo.UserId, progenyId, familyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.TodoItem);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -895,7 +895,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                     }
                 }
                 todoItemsForProgenyOrFamily = accessibleTodoItemsForProgeny.ToArray();
-                kinaUnaCacheService.SetTodoItemsListCache(currentUserInfo.UserId, progenyId, familyId, todoItemsForProgenyOrFamily);
+                await kinaUnaCacheService.SetTodoItemsListCache(currentUserInfo.UserId, progenyId, familyId, todoItemsForProgenyOrFamily);
             }
             
             return todoItemsForProgenyOrFamily.ToList();

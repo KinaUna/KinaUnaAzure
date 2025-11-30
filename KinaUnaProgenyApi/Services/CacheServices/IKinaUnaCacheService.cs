@@ -2,6 +2,7 @@
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.CacheManagement;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using static KinaUna.Data.Models.KinaUnaTypes;
 
 namespace KinaUnaProgenyApi.Services.CacheServices
@@ -12,7 +13,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// Sets the user updated cache entry for the specified user.
         /// </summary>
         /// <param name="userId">The unique identifier of the user.</param>
-        void SetUserUpdatedCache(string userId);
+        Task SetUserUpdatedCache(string userId);
 
         /// <summary>
         /// Retrieves the cached user update entry for the specified user identifier.
@@ -20,20 +21,20 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
         /// <returns>A <see cref="UserUpdatedCacheEntry"/> object containing the cached update information for the user, or <see
         /// langword="null"/> if no cache entry exists for the specified user.</returns>
-        UserUpdatedCacheEntry GetUserUpdatedCache(string userId);
+        Task<UserUpdatedCacheEntry> GetUserUpdatedCache(string userId);
 
         /// <summary>
         /// Sets the user updated cache entries for all members of the specified group.
         /// </summary>
         /// <param name="userGroupMembers">The collection of group members whose user updated cache entries are to be set.</param>
-        void SetUserUpdatedCacheForGroup(IEnumerable<UserGroupMember> userGroupMembers);
+        Task SetUserUpdatedCacheForGroup(IEnumerable<UserGroupMember> userGroupMembers);
 
         /// <summary>
         /// Sets the progeny or family updated cache entry for the specified progeny identifier.
         /// </summary>
         /// <param name="progenyId">The unique identifier of the progeny.</param>
         /// <param name="familyId">The unique identifier of the family.</param>
-        void SetProgenyOrFamilyUpdatedCache(int progenyId, int familyId);
+        Task SetProgenyOrFamilyUpdatedCache(int progenyId, int familyId);
 
         /// <summary>
         /// Retrieves the cached user update entry for the specified progeny identifier.
@@ -42,7 +43,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="familyId">The unique identifier of the family whose updated cache entry is to be retrieved. Cannot be null or empty.</param>
         /// <returns>A <see cref="ProgenyOrFamilyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
         /// langword="null"/> if no cache entry exists for the specified progeny.</returns>
-        ProgenyOrFamilyUpdatedCacheEntry GetProgenyOrFamilyUpdatedCache(int progenyId, int familyId);
+        Task<ProgenyOrFamilyUpdatedCacheEntry> GetProgenyOrFamilyUpdatedCache(int progenyId, int familyId);
 
         /// <summary>
         /// Sets the timeline updated cache entry for the specified progeny or family.
@@ -50,7 +51,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The unique identifier of the progeny whose timeline update cache entry is to be set. Cannot be null or empty.</param>
         /// <param name="familyId">The unique identifier of the family whose timeline update cache entry is to be set. Cannot be null or empty.</param>
         /// <param name="timelineType">The type of timeline update to set. Cannot be null or empty.</param>
-        void SetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType);
+        Task SetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType);
 
         /// <summary>
         /// Retrieves the cached user update entry for the specified progeny identifier.
@@ -60,7 +61,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="timelineType">The type of timeline update to retrieve. Cannot be null or empty.</param>
         /// <returns>A <see cref="ProgenyOrFamilyUpdatedCacheEntry"/> object containing the cached update information for the progeny, or <see
         /// langword="null"/> if no cache entry exists for the specified progeny.</returns>
-        TimelineUpdatedCacheEntry GetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType);
+        Task<TimelineUpdatedCacheEntry> GetProgenyOrFamilyTimelineUpdatedCache(int progenyId, int familyId, TimeLineType timelineType);
 
         /// <summary>
         /// Stores the specified item update information in the distributed cache with a sliding expiration of seven
@@ -70,7 +71,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// constructed using the application name, API version, item type, and item ID to ensure uniqueness.</remarks>
         /// <param name="itemType">The type of timeline to which the item belongs. Determines the cache key used for storage.</param>
         /// <param name="itemId">The unique identifier of the item whose update information is to be cached.</param>
-        void SetItemUpdatedCache(TimeLineType itemType, int itemId);
+        Task SetItemUpdatedCache(TimeLineType itemType, int itemId);
 
         /// <summary>
         /// Retrieves the cached update entry for a specific item and timeline type, if available.
@@ -79,7 +80,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="itemId">The unique identifier of the item whose update cache entry is to be retrieved.</param>
         /// <returns>An ItemUpdatedCacheEntry object containing the cached update information for the specified item and timeline
         /// type, or null if no cache entry exists.</returns>
-        ItemUpdatedCacheEntry GetItemUpdatedCache(TimeLineType itemType, int itemId);
+        Task<ItemUpdatedCacheEntry> GetItemUpdatedCache(TimeLineType itemType, int itemId);
 
         /// <summary>
         /// Stores the specified list of notes in the distributed cache for the given user and progeny identifiers.
@@ -89,7 +90,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the notes list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the notes list.</param>
         /// <param name="notesList">The list of notes to cache. Cannot be null.</param>
-        void SetNotesListCache(string userId, int progenyId, Note[] notesList);
+        Task SetNotesListCache(string userId, int progenyId, Note[] notesList);
 
         /// <summary>
         /// Retrieves the cached notes list entry for the specified user and progeny identifiers.
@@ -100,7 +101,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the notes list cache entry is requested.</param>
         /// <returns>A <see cref="NotesListCacheEntry"/> object containing the cached notes list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        NotesListCacheEntry GetNotesListCache(string userId, int progenyId);
+        Task<NotesListCacheEntry> GetNotesListCache(string userId, int progenyId);
 
         /// <summary>
         /// Stores the specified list of pictures in the distributed cache for the given user and progeny identifiers.
@@ -110,7 +111,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the pictures list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the pictures list.</param>
         /// <param name="picturesList">The list of pictures to cache. Cannot be null.</param>
-        void SetPicturesListCache(string userId, int progenyId, Picture[] picturesList);
+        Task SetPicturesListCache(string userId, int progenyId, Picture[] picturesList);
 
         /// <summary>
         /// Retrieves the cached pictures list entry for the specified user and progeny identifiers.
@@ -121,7 +122,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the pictures list cache entry is requested.</param>
         /// <returns>A <see cref="PicturesListCacheEntry"/> object containing the cached pictures list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        PicturesListCacheEntry GetPicturesListCache(string userId, int progenyId);
+        Task<PicturesListCacheEntry> GetPicturesListCache(string userId, int progenyId);
 
         /// <summary>
         /// Stores the specified list of contacts in the distributed cache for the given user and progeny identifiers.
@@ -132,7 +133,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the contacts list.</param>
         /// <param name="familyId">The identifier of the family associated with the contacts list.</param>
         /// <param name="contactsList">The list of contacts to cache. Cannot be null.</param>
-        void SetContactsListCache(string userId, int progenyId, int familyId, Contact[] contactsList);
+        Task SetContactsListCache(string userId, int progenyId, int familyId, Contact[] contactsList);
 
         /// <summary>
         /// Retrieves the cached contacts list entry for the specified user and progeny identifiers.
@@ -144,7 +145,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="familyId">The identifier of the family for which the contacts list cache entry is requested.</param>
         /// <returns>A <see cref="ContactsListCacheEntry"/> object containing the cached contacts list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        ContactsListCacheEntry GetContactsListCache(string userId, int progenyId, int familyId);
+        Task<ContactsListCacheEntry> GetContactsListCache(string userId, int progenyId, int familyId);
 
         /// <summary>
         /// Stores the specified list of friends in the distributed cache for the given user and progeny identifiers.
@@ -154,7 +155,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the friends list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the friends list.</param>
         /// <param name="friendsList">The list of friends to cache. Cannot be null.</param>
-        void SetFriendsListCache(string userId, int progenyId, Friend[] friendsList);
+        Task SetFriendsListCache(string userId, int progenyId, Friend[] friendsList);
 
         /// <summary>
         /// Retrieves the cached friends list entry for the specified user and progeny identifiers.
@@ -165,7 +166,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the friends list cache entry is requested.</param>
         /// <returns>A <see cref="FriendsListCacheEntry"/> object containing the cached friends list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        FriendsListCacheEntry GetFriendsListCache(string userId, int progenyId);
+        Task<FriendsListCacheEntry> GetFriendsListCache(string userId, int progenyId);
 
         /// <summary>
         /// Stores the specified list of locations in the distributed cache for the given user and progeny identifiers.
@@ -176,7 +177,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the locations list.</param>
         /// <param name="familyId">The identifier of the family associated with the locations list.</param>
         /// <param name="locationsList">The list of locations to cache. Cannot be null.</param>
-        void SetLocationsListCache(string userId, int progenyId, int familyId, Location[] locationsList);
+        Task SetLocationsListCache(string userId, int progenyId, int familyId, Location[] locationsList);
 
         /// <summary>
         /// Retrieves the cached locations list entry for the specified user and progeny identifiers.
@@ -188,7 +189,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="familyId">The identifier of the family for which the locations list cache entry is requested.</param>
         /// <returns>A <see cref="LocationsListCacheEntry"/> object containing the cached locations list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        LocationsListCacheEntry GetLocationsListCache(string userId, int progenyId, int familyId);
+        Task<LocationsListCacheEntry> GetLocationsListCache(string userId, int progenyId, int familyId);
 
         /// <summary>
         /// Stores the specified list of measurements in the distributed cache for the given user and progeny identifiers.
@@ -198,7 +199,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the measurements list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the measurements list.</param>
         /// <param name="measurementsList">The list of measurements to cache. Cannot be null.</param>
-        void SetMeasurementsListCache(string userId, int progenyId, Measurement[] measurementsList);
+        Task SetMeasurementsListCache(string userId, int progenyId, Measurement[] measurementsList);
 
         /// <summary>
         /// Retrieves the cached measurements list entry for the specified user and progeny identifiers.
@@ -209,7 +210,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the measurements list cache entry is requested.</param>
         /// <returns>A <see cref="MeasurementsListCacheEntry"/> object containing the cached measurements list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        MeasurementsListCacheEntry GetMeasurementsListCache(string userId, int progenyId);
+        Task<MeasurementsListCacheEntry> GetMeasurementsListCache(string userId, int progenyId);
 
         /// <summary>
         /// Stores the specified list of skills in the distributed cache for the given user and progeny identifiers.
@@ -219,7 +220,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the skills list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the skills list.</param>
         /// <param name="skillsList">The list of skills to cache. Cannot be null.</param>
-        void SetSkillsListCache(string userId, int progenyId, Skill[] skillsList);
+        Task SetSkillsListCache(string userId, int progenyId, Skill[] skillsList);
 
         /// <summary>
         /// Retrieves the cached skills list entry for the specified user and progeny identifiers.
@@ -230,7 +231,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the skills list cache entry is requested.</param>
         /// <returns>A <see cref="SkillsListCacheEntry"/> object containing the cached skills list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        SkillsListCacheEntry GetSkillsListCache(string userId, int progenyId);
+        Task<SkillsListCacheEntry> GetSkillsListCache(string userId, int progenyId);
 
         /// <summary>
         /// Stores the specified list of sleep in the distributed cache for the given user and progeny identifiers.
@@ -240,7 +241,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the sleep list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the sleep list.</param>
         /// <param name="sleepList">The list of sleep to cache. Cannot be null.</param>
-        void SetSleepListCache(string userId, int progenyId, Sleep[] sleepList);
+        Task SetSleepListCache(string userId, int progenyId, Sleep[] sleepList);
 
         /// <summary>
         /// Retrieves the cached sleep list entry for the specified user and progeny identifiers.
@@ -251,7 +252,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the sleep list cache entry is requested.</param>
         /// <returns>A <see cref="SleepListCacheEntry"/> object containing the cached sleep list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        SleepListCacheEntry GetSleepListCache(string userId, int progenyId);
+        Task<SleepListCacheEntry> GetSleepListCache(string userId, int progenyId);
 
         /// <summary>
         /// Stores the specified list of vaccinations in the distributed cache for the given user and progeny identifiers.
@@ -261,7 +262,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the vaccinations list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the vaccinations list.</param>
         /// <param name="vaccinationsList">The list of vaccinations to cache. Cannot be null.</param>
-        void SetVaccinationsListCache(string userId, int progenyId, Vaccination[] vaccinationsList);
+        Task SetVaccinationsListCache(string userId, int progenyId, Vaccination[] vaccinationsList);
 
         /// <summary>
         /// Retrieves the cached vaccinations list entry for the specified user and progeny identifiers.
@@ -272,7 +273,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the vaccinations list cache entry is requested.</param>
         /// <returns>A <see cref="VaccinationsListCacheEntry"/> object containing the cached vaccinations list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        VaccinationsListCacheEntry GetVaccinationsListCache(string userId, int progenyId);
+        Task<VaccinationsListCacheEntry> GetVaccinationsListCache(string userId, int progenyId);
 
         /// <summary>
         /// Stores the specified list of vocabulary items in the distributed cache for the given user and progeny identifiers.
@@ -282,7 +283,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the vocabulary items list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the vocabulary items list.</param>
         /// <param name="vocabularyItemsList">The list of vocabulary items to cache. Cannot be null.</param>
-        void SetVocabularyItemsListCache(string userId, int progenyId, VocabularyItem[] vocabularyItemsList);
+        Task SetVocabularyItemsListCache(string userId, int progenyId, VocabularyItem[] vocabularyItemsList);
 
         /// <summary>
         /// Retrieves the cached vocabulary items list entry for the specified user and progeny identifiers.
@@ -293,7 +294,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the vocabulary items list cache entry is requested.</param>
         /// <returns>A <see cref="VocabularyListCacheEntry"/> object containing the cached vocabulary items list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        VocabularyListCacheEntry GetVocabularyItemsListCache(string userId, int progenyId);
+        Task<VocabularyListCacheEntry> GetVocabularyItemsListCache(string userId, int progenyId);
 
         /// <summary>
         /// Stores the specified list of videos in the distributed cache for the given user and progeny identifiers.
@@ -303,7 +304,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the videos list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the videos list.</param>
         /// <param name="videoList">The list of videos to cache. Cannot be null.</param>
-        void SetVideoListCache(string userId, int progenyId, Video[] videoList);
+        Task SetVideoListCache(string userId, int progenyId, Video[] videoList);
 
         /// <summary>
         /// Retrieves the cached videos list entry for the specified user and progeny identifiers.
@@ -314,7 +315,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny for which the videos list cache entry is requested.</param>
         /// <returns>A <see cref="VideosListCacheEntry"/> object containing the cached videos list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        VideosListCacheEntry GetVideosListCache(string userId, int progenyId);
+        Task<VideosListCacheEntry> GetVideosListCache(string userId, int progenyId);
 
         /// <summary>
         /// Stores the specified list of Kanban boards in the distributed cache for the given user and progeny identifiers.
@@ -325,7 +326,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the Kanban boards list.</param>
         /// <param name="familyId">The identifier of the family associated with the Kanban boards list.</param>
         /// <param name="kanbanBoardsList">The list of Kanban boards to cache. Cannot be null.</param>
-        void SetKanbanBoardsListCache(string userId, int progenyId, int familyId, KanbanBoard[] kanbanBoardsList);
+        Task SetKanbanBoardsListCache(string userId, int progenyId, int familyId, KanbanBoard[] kanbanBoardsList);
 
         /// <summary>
         /// Retrieves the cached Kanban boards list entry for the specified user and progeny identifiers.
@@ -337,7 +338,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="familyId">The identifier of the family for which the Kanban boards list cache entry is requested.</param>
         /// <returns>A <see cref="KanbanBoardsListCacheEntry"/> object containing the cached Kanban boards list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        KanbanBoardsListCacheEntry GetKanbanBoardsListCache(string userId, int progenyId, int familyId);
+        Task<KanbanBoardsListCacheEntry> GetKanbanBoardsListCache(string userId, int progenyId, int familyId);
 
         /// <summary>
         /// Stores the specified list of TodoItems in the distributed cache for the given user and progeny identifiers.
@@ -348,7 +349,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the TodoItems list.</param>
         /// <param name="familyId">The identifier of the family associated with the TodoItems list.</param>
         /// <param name="todoItemsList">The list of TodoItems to cache. Cannot be null.</param>
-        void SetTodoItemsListCache(string userId, int progenyId, int familyId, TodoItem[] todoItemsList);
+        Task SetTodoItemsListCache(string userId, int progenyId, int familyId, TodoItem[] todoItemsList);
 
         /// <summary>
         /// Retrieves the cached TodoItems list entry for the specified user and progeny identifiers.
@@ -360,7 +361,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="familyId">The identifier of the family for which the TodoItems list cache entry is requested.</param>
         /// <returns>A <see cref="TodosListCacheEntry"/> object containing the cached TodoItems list entry if found; otherwise, <see
         /// langword="null"/>.</returns>
-        TodosListCacheEntry GetTodosListCache(string userId, int progenyId, int familyId);
+        Task<TodosListCacheEntry> GetTodosListCache(string userId, int progenyId, int familyId);
 
     }
 }

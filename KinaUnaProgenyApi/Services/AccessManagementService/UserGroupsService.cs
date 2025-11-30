@@ -521,7 +521,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (user != null)
                 {
                     userGroupMember.UserId = user.UserId;
-                    kinaUnaCacheService.SetUserUpdatedCache(user.UserId);
+                    await kinaUnaCacheService.SetUserUpdatedCache(user.UserId);
                 }
             }
 
@@ -535,7 +535,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             await userGroupAuditLogService.AddUserGroupMemberAddedAuditLogEntry(userGroupMember, currentUserInfo);
 
-            kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(group.ProgenyId, group.FamilyId);
+            await kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(group.ProgenyId, group.FamilyId);
 
             return userGroupMember;
         }
@@ -586,7 +586,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (user != null)
                 {
                     userGroupMember.UserId = user.UserId;
-                    kinaUnaCacheService.SetUserUpdatedCache(user.UserId);
+                    await kinaUnaCacheService.SetUserUpdatedCache(user.UserId);
                 }
             }
             
@@ -605,7 +605,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             logEntry.EntityAfter = JsonSerializer.Serialize(member);
             await userGroupAuditLogService.UpdateUserGroupAuditLogEntry(logEntry);
 
-            kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(group.ProgenyId, group.FamilyId);
+            await kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(group.ProgenyId, group.FamilyId);
 
             return member;
         }
@@ -695,10 +695,10 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             
             if (!string.IsNullOrEmpty(member.UserId))
             {
-                kinaUnaCacheService.SetUserUpdatedCache(member.UserId);
+                await kinaUnaCacheService.SetUserUpdatedCache(member.UserId);
             }
 
-            kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(group.ProgenyId, group.FamilyId);
+            await kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(group.ProgenyId, group.FamilyId);
 
             return true;
         }
@@ -724,7 +724,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.UpdateRange(members);
 
             await progenyDbContext.SaveChangesAsync();
-            kinaUnaCacheService.SetUserUpdatedCache(userInfo.UserId);
+            await kinaUnaCacheService.SetUserUpdatedCache(userInfo.UserId);
         }
 
         /// <summary>
@@ -747,7 +747,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             progenyDbContext.UpdateRange(members);
 
             await progenyDbContext.SaveChangesAsync();
-            kinaUnaCacheService.SetUserUpdatedCache(userInfo.UserId);
+            await kinaUnaCacheService.SetUserUpdatedCache(userInfo.UserId);
         }
     }
 }

@@ -119,7 +119,7 @@ namespace KinaUnaProgenyApi.Services
             
             _ = await SetFriendInCache(friendToAdd.FriendId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(friendToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Friend);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(friendToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Friend);
             return friendToAdd;
         }
 
@@ -159,7 +159,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetFriendInCache(friend.FriendId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(friendToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Friend);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(friendToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Friend);
 
             return friend;
         }
@@ -197,7 +197,7 @@ namespace KinaUnaProgenyApi.Services
                 await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
             }
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(friendToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Friend);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(friendToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Friend);
 
             return friend;
         }
@@ -225,8 +225,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Friends.</returns>
         public async Task<List<Friend>> GetFriendsList(int progenyId, UserInfo currentUserInfo)
         {
-            FriendsListCacheEntry cacheEntry = _kinaUnaCacheService.GetFriendsListCache(currentUserInfo.UserId, progenyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Friend);
+            FriendsListCacheEntry cacheEntry = await _kinaUnaCacheService.GetFriendsListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Friend);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -252,7 +252,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetFriendsListCache(currentUserInfo.UserId, progenyId, accessibleFriends.ToArray());
+            await _kinaUnaCacheService.SetFriendsListCache(currentUserInfo.UserId, progenyId, accessibleFriends.ToArray());
 
             return accessibleFriends;
         }

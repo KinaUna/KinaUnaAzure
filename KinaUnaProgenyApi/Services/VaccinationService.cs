@@ -84,7 +84,7 @@ namespace KinaUnaProgenyApi.Services
                 currentUserInfo);
             _ = await SetVaccinationInCache(vaccinationToAdd.VaccinationId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vaccinationToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vaccinationToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
 
             return vaccinationToAdd;
         }
@@ -149,7 +149,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetVaccinationInCache(vaccination.VaccinationId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vaccinationToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vaccinationToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
 
             return vaccinationToUpdate;
         }
@@ -182,7 +182,7 @@ namespace KinaUnaProgenyApi.Services
 
             await RemoveVaccinationFromCache(vaccination.VaccinationId, vaccination.ProgenyId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vaccinationToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vaccinationToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
             return vaccinationToDelete;
         }
 
@@ -209,8 +209,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Vaccination objects.</returns>
         public async Task<List<Vaccination>> GetVaccinationsList(int progenyId, UserInfo currentUserInfo)
         {
-            VaccinationsListCacheEntry cacheEntry = _kinaUnaCacheService.GetVaccinationsListCache(currentUserInfo.UserId, progenyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
+            VaccinationsListCacheEntry cacheEntry = await _kinaUnaCacheService.GetVaccinationsListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -235,7 +235,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetVaccinationsListCache(currentUserInfo.UserId, progenyId, accessibleVaccinationsList.ToArray());
+            await _kinaUnaCacheService.SetVaccinationsListCache(currentUserInfo.UserId, progenyId, accessibleVaccinationsList.ToArray());
 
             return accessibleVaccinationsList;
         }

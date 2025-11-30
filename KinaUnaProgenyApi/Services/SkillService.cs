@@ -85,7 +85,7 @@ namespace KinaUnaProgenyApi.Services
             await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Skill, skillToAdd.SkillId, skillToAdd.ProgenyId, 0, skillToAdd.ItemPermissionsDtoList, currentUserInfo);
             _ = await SetSkillInCache(skillToAdd.SkillId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(skillToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Skill);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(skillToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Skill);
 
             return skillToAdd;
         }
@@ -149,7 +149,7 @@ namespace KinaUnaProgenyApi.Services
             await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Skill, skillToUpdate.SkillId, skillToUpdate.ProgenyId, 0, skill.ItemPermissionsDtoList, currentUserInfo);
             _ = await SetSkillInCache(skill.SkillId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(skillToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Skill);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(skillToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Skill);
 
             return skillToUpdate;
         }
@@ -182,7 +182,7 @@ namespace KinaUnaProgenyApi.Services
 
             await RemoveSkillFromCache(skill.SkillId, skill.ProgenyId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(skillToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Skill);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(skillToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Skill);
 
             return skillToDelete;
         }
@@ -209,8 +209,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Skill objects.</returns>
         public async Task<List<Skill>> GetSkillsList(int progenyId, UserInfo currentUserInfo)
         {
-            SkillsListCacheEntry cacheEntry = _kinaUnaCacheService.GetSkillsListCache(currentUserInfo.UserId, progenyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Skill);
+            SkillsListCacheEntry cacheEntry = await _kinaUnaCacheService.GetSkillsListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Skill);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -235,7 +235,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetSkillsListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
+            await _kinaUnaCacheService.SetSkillsListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
 
             return filteredList;
         }

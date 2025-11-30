@@ -85,7 +85,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetSleepInCache(sleepToAdd.SleepId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(sleepToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(sleepToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
 
             return sleepToAdd;
         }
@@ -150,7 +150,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetSleepInCache(sleepToUpdate.SleepId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(sleepToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(sleepToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
 
             return sleepToUpdate;
         }
@@ -183,7 +183,7 @@ namespace KinaUnaProgenyApi.Services
                 await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
             }
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(sleepToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(sleepToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
 
             return sleep;
         }
@@ -210,8 +210,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Sleep objects.</returns>
         public async Task<List<Sleep>> GetSleepList(int progenyId, UserInfo currentUserInfo)
         {
-            SleepListCacheEntry cacheEntry = _kinaUnaCacheService.GetSleepListCache(currentUserInfo.UserId, progenyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
+            SleepListCacheEntry cacheEntry = await _kinaUnaCacheService.GetSleepListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Sleep);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -235,7 +235,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetSleepListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
+            await _kinaUnaCacheService.SetSleepListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
 
             return filteredList;
         }

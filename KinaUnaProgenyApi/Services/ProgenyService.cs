@@ -190,7 +190,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(progeny.Id, 0);
+            await _kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(progeny.Id, 0);
 
             return progeny;
         }
@@ -268,7 +268,7 @@ namespace KinaUnaProgenyApi.Services
             }
 
             _ = await SetProgenyInCache(progeny.Id);
-            _kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(progeny.Id, 0);
+            await _kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(progeny.Id, 0);
 
             return progenyToUpdate;
         }
@@ -315,7 +315,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _accessManagementService.RevokeProgenyPermission(progenyPermission, currentUserInfo);
             }
 
-            _kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(progeny.Id, 0);
+            await _kinaUnaCacheService.SetProgenyOrFamilyUpdatedCache(progeny.Id, 0);
             return progenyToDelete;
         }
 
@@ -331,7 +331,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 return null;
             }
-            ProgenyOrFamilyUpdatedCacheEntry progenyUpdated = _kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(id, 0);
+            ProgenyOrFamilyUpdatedCacheEntry progenyUpdated = await _kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(id, 0);
 
             ProgenyCacheEntry progenyCacheEntry = JsonSerializer.Deserialize<ProgenyCacheEntry>(cachedProgeny, JsonSerializerOptions.Web);
             

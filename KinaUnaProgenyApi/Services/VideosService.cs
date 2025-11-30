@@ -146,7 +146,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetVideoInCache(video.VideoId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(video.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(video.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
 
             return video;
         }
@@ -178,7 +178,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetVideoInCache(videoToUpdate.VideoId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(videoToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(videoToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
 
             return video;
         }
@@ -206,7 +206,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = await SetVideoInCache(videoToUpdate.VideoId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(videoToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(videoToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
             return video;
         }
 
@@ -238,7 +238,7 @@ namespace KinaUnaProgenyApi.Services
 
             await RemoveVideoFromCache(videoToDelete.VideoId, videoToDelete.ProgenyId);
 
-            _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(videoToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(videoToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Video);
             return video;
         }
 
@@ -263,8 +263,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>List of Video objects.</returns>
         public async Task<List<Video>> GetVideosList(int progenyId, UserInfo currentUserInfo)
         {
-            VideosListCacheEntry cacheEntry = _kinaUnaCacheService.GetVideosListCache(currentUserInfo.UserId, progenyId);
-            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Video);
+            VideosListCacheEntry cacheEntry = await _kinaUnaCacheService.GetVideosListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Video);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
@@ -289,7 +289,7 @@ namespace KinaUnaProgenyApi.Services
             }
             filteredList = filteredList.OrderByDescending(v => v.VideoTime).ToList();
 
-            _kinaUnaCacheService.SetVideoListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
+            await _kinaUnaCacheService.SetVideoListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
 
             return filteredList;
         }
