@@ -216,11 +216,11 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    return cacheEntry.SleepList;
+                    return cacheEntry.SleepList.ToList();
                 }
             }
-            List<Sleep> sleepList = await GetSleepListFromCache(progenyId);
-            if (sleepList.Count == 0)
+            Sleep[] sleepList = await GetSleepListFromCache(progenyId);
+            if (sleepList.Length == 0)
             {
                 sleepList = await SetSleepListInCache(progenyId);
             }
@@ -235,7 +235,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetSleepListCache(currentUserInfo.UserId, progenyId, filteredList);
+            _kinaUnaCacheService.SetSleepListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
 
             return filteredList;
         }
@@ -245,13 +245,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Sleep items for.</param>
         /// <returns>List of Sleep objects.</returns>
-        private async Task<List<Sleep>> GetSleepListFromCache(int progenyId)
+        private async Task<Sleep[]> GetSleepListFromCache(int progenyId)
         {
-            List<Sleep> sleepList = [];
+            Sleep[] sleepList = [];
             string cachedSleepList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId);
             if (!string.IsNullOrEmpty(cachedSleepList))
             {
-                sleepList = JsonSerializer.Deserialize<List<Sleep>>(cachedSleepList, JsonSerializerOptions.Web);
+                sleepList = JsonSerializer.Deserialize<Sleep[]>(cachedSleepList, JsonSerializerOptions.Web);
             }
 
             return sleepList;
@@ -262,9 +262,9 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set Sleep items for.</param>
         /// <returns>List of Sleep objects.</returns>
-        private async Task<List<Sleep>> SetSleepListInCache(int progenyId)
+        private async Task<Sleep[]> SetSleepListInCache(int progenyId)
         {
-            List<Sleep> sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
+            Sleep[] sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToArrayAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId, JsonSerializer.Serialize(sleepList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return sleepList;

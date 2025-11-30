@@ -221,12 +221,12 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    return cacheEntry.NotesList;
+                    return cacheEntry.NotesList.ToList();
                 }
             }
 
-            List<Note> notesList = await GetNotesListFromCache(progenyId);
-            if (notesList.Count == 0)
+            Note[] notesList = await GetNotesListFromCache(progenyId);
+            if (notesList.Length == 0)
             {
                 notesList = await SetNotesListInCache(progenyId);
             }
@@ -240,7 +240,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetNotesListCache(currentUserInfo.UserId, progenyId, accessibleNotes);
+            _kinaUnaCacheService.SetNotesListCache(currentUserInfo.UserId, progenyId, accessibleNotes.ToArray());
 
             return accessibleNotes;
         }
@@ -250,13 +250,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Notes for.</param>
         /// <returns>List of Note objects.</returns>
-        private async Task<List<Note>> GetNotesListFromCache(int progenyId)
+        private async Task<Note[]> GetNotesListFromCache(int progenyId)
         {
-            List<Note> notesList = [];
+            Note[] notesList = [];
             string cachedNotesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedNotesList))
             {
-                notesList = JsonSerializer.Deserialize<List<Note>>(cachedNotesList, JsonSerializerOptions.Web);
+                notesList = JsonSerializer.Deserialize<Note[]>(cachedNotesList, JsonSerializerOptions.Web);
             }
 
             return notesList;
@@ -267,9 +267,9 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set the List of Notes for.</param>
         /// <returns>List of Notes objects.</returns>
-        private async Task<List<Note>> SetNotesListInCache(int progenyId)
+        private async Task<Note[]> SetNotesListInCache(int progenyId)
         {
-            List<Note> notesList = await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == progenyId).ToListAsync();
+            Note[] notesList = await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == progenyId).ToArrayAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId, JsonSerializer.Serialize(notesList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return notesList;

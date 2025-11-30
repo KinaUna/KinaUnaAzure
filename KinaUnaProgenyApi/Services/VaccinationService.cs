@@ -215,12 +215,12 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    return cacheEntry.VaccinationsList;
+                    return cacheEntry.VaccinationsList.ToList();
                 }
             }
 
-            List<Vaccination> vaccinationsList = await GetVaccinationListFromCache(progenyId);
-            if (vaccinationsList.Count == 0)
+            Vaccination[] vaccinationsList = await GetVaccinationListFromCache(progenyId);
+            if (vaccinationsList.Length == 0)
             {
                 vaccinationsList = await SetVaccinationListInCache(progenyId);
             }
@@ -235,7 +235,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetVaccinationsListCache(currentUserInfo.UserId, progenyId, accessibleVaccinationsList);
+            _kinaUnaCacheService.SetVaccinationsListCache(currentUserInfo.UserId, progenyId, accessibleVaccinationsList.ToArray());
 
             return accessibleVaccinationsList;
         }
@@ -245,13 +245,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Vaccinations for.</param>
         /// <returns>List of Vaccination objects.</returns>
-        private async Task<List<Vaccination>> GetVaccinationListFromCache(int progenyId)
+        private async Task<Vaccination[]> GetVaccinationListFromCache(int progenyId)
         {
-            List<Vaccination> vaccinationsList = [];
+            Vaccination[] vaccinationsList = [];
             string cachedVaccinationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVaccinationsList))
             {
-                vaccinationsList = JsonSerializer.Deserialize<List<Vaccination>>(cachedVaccinationsList, JsonSerializerOptions.Web);
+                vaccinationsList = JsonSerializer.Deserialize<Vaccination[]>(cachedVaccinationsList, JsonSerializerOptions.Web);
             }
 
             return vaccinationsList;
@@ -262,9 +262,9 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set the list of Vaccinations for.</param>
         /// <returns>List of Vaccination objects.</returns>
-        private async Task<List<Vaccination>> SetVaccinationListInCache(int progenyId)
+        private async Task<Vaccination[]> SetVaccinationListInCache(int progenyId)
         {
-            List<Vaccination> vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
+            Vaccination[] vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToArrayAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId, JsonSerializer.Serialize(vaccinationsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return vaccinationsList;

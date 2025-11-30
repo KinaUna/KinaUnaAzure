@@ -215,12 +215,12 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    return cacheEntry.SkillsList;
+                    return cacheEntry.SkillsList.ToList();
                 }
             }
 
-            List<Skill> skillsList = await GetSkillsListFromCache(progenyId);
-            if (skillsList.Count == 0)
+            Skill[] skillsList = await GetSkillsListFromCache(progenyId);
+            if (skillsList.Length == 0)
             {
                 skillsList = await SetSkillsListInCache(progenyId);
             }
@@ -235,7 +235,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetSkillsListCache(currentUserInfo.UserId, progenyId, filteredList);
+            _kinaUnaCacheService.SetSkillsListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
 
             return filteredList;
         }
@@ -260,13 +260,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Skills for.</param>
         /// <returns>List of Skill objects.</returns>
-        private async Task<List<Skill>> GetSkillsListFromCache(int progenyId)
+        private async Task<Skill[]> GetSkillsListFromCache(int progenyId)
         {
-            List<Skill> skillsList = [];
+            Skill[] skillsList = [];
             string cachedSkillsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedSkillsList))
             {
-                skillsList = JsonSerializer.Deserialize<List<Skill>>(cachedSkillsList, JsonSerializerOptions.Web);
+                skillsList = JsonSerializer.Deserialize<Skill[]>(cachedSkillsList, JsonSerializerOptions.Web);
             }
 
             return skillsList;
@@ -277,9 +277,9 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Skills for.</param>
         /// <returns>List of SKill objects.</returns>
-        private async Task<List<Skill>> SetSkillsListInCache(int progenyId)
+        private async Task<Skill[]> SetSkillsListInCache(int progenyId)
         {
-            List<Skill> skillsList = await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
+            Skill[] skillsList = await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToArrayAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId, JsonSerializer.Serialize(skillsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return skillsList;

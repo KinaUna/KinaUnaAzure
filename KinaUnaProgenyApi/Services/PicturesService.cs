@@ -711,20 +711,20 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    return cacheEntry.PicturesList;
+                    return cacheEntry.PicturesList.ToList();
                 }
             }
 
-            List<Picture> picturesList = await GetPicturesListFromCache(progenyId);
-            if (picturesList.Count == 0)
+            Picture[] picturesList = await GetPicturesListFromCache(progenyId);
+            if (picturesList.Length == 0)
             {
                 picturesList = await SetPicturesListInCache(progenyId);
             }
-            Console.WriteLine("GetPicturesList for Progeny: " + progenyId + " pictures list count: " + picturesList.Count);
+            Console.WriteLine("GetPicturesList for Progeny: " + progenyId + " pictures list count: " + picturesList.Length);
             Stopwatch watch = Stopwatch.StartNew();
             
             List<Picture> filteredList = [];
-            foreach (Picture picture in picturesList)
+            foreach (Picture picture in picturesList.ToList())
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
                 {
@@ -734,7 +734,7 @@ namespace KinaUnaProgenyApi.Services
             }
             filteredList = filteredList.OrderByDescending(p => p.PictureTime).ToList();
 
-            _kinaUnaCacheService.SetPicturesListCache(currentUserInfo.UserId, progenyId, filteredList);
+            _kinaUnaCacheService.SetPicturesListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
 
             watch.Stop();
             Console.WriteLine("GetPicturesList for progeny: " + progenyId + " Time Taken: " + watch.Elapsed.Minutes + "m " + watch.Elapsed.Seconds + "s");
@@ -755,13 +755,13 @@ namespace KinaUnaProgenyApi.Services
         /// pictures are available or accessible, a placeholder picture is returned.</returns>
         public async Task<Picture> RandomPicture(int progenyId, UserInfo currentUserInfo)
         {
-            List<Picture> picturesList = await GetPicturesListFromCache(progenyId);
-            if (picturesList.Count == 0)
+            Picture[] picturesList = await GetPicturesListFromCache(progenyId);
+            if (picturesList.Length == 0)
             {
                 picturesList = await SetPicturesListInCache(progenyId);
             }
-            
-            if (picturesList.Count == 0)
+
+            if (picturesList.Length == 0)
             {
                 Picture tempPicture = new();
                 tempPicture.ApplyPlaceholderProperties();
@@ -770,14 +770,14 @@ namespace KinaUnaProgenyApi.Services
 
             Picture randomPicture = new();
             bool hasAccess = false;
-            int maxTries = 1000;
+            const int maxTries = 1000;
             int tries = 0;
             while (!hasAccess)
             {
                 tries++;
                 Random r = new();
-                int pictureNumber = r.Next(0, picturesList.Count);
-                Picture picture = picturesList[pictureNumber];
+                int pictureNumber = r.Next(0,  picturesList.Length);
+                Picture picture =  picturesList[pictureNumber];
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
                 {
                     randomPicture = picture;
@@ -928,13 +928,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Pictures for.</param>
         /// <returns>List of Picture objects.</returns>
-        private async Task<List<Picture>> GetPicturesListFromCache(int progenyId)
+        private async Task<Picture[]> GetPicturesListFromCache(int progenyId)
         {
-            List<Picture> picturesList = [];
+            Picture[] picturesList = Array.Empty<Picture>();
             string cachedPicturesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedPicturesList))
             {
-                picturesList = JsonSerializer.Deserialize<List<Picture>>(cachedPicturesList, JsonSerializerOptions.Web);
+                picturesList = JsonSerializer.Deserialize<Picture[]>(cachedPicturesList, JsonSerializerOptions.Web);
             }
 
             return picturesList;
@@ -945,9 +945,9 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set all Pictures for.</param>
         /// <returns>List of Picture objects.</returns>
-        public async Task<List<Picture>> SetPicturesListInCache(int progenyId)
+        public async Task<Picture[]> SetPicturesListInCache(int progenyId)
         {
-            List<Picture> picturesList = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId).ToListAsync();
+            Picture[] picturesList = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId).ToArrayAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId, JsonSerializer.Serialize(picturesList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return picturesList;

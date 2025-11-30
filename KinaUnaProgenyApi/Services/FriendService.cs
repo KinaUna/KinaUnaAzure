@@ -231,13 +231,13 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    return cacheEntry.FriendsList;
+                    return cacheEntry.FriendsList.ToList();
                 }
             }
 
-            List<Friend> friendsList = await GetFriendsListFromCache(progenyId);
+            Friend[] friendsList = await GetFriendsListFromCache(progenyId);
 
-            if (friendsList == null || friendsList.Count == 0)
+            if (friendsList == null || friendsList.Length == 0)
             {
                 friendsList = await SetFriendsListInCache(progenyId);
             }
@@ -252,7 +252,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetFriendsListCache(currentUserInfo.UserId, progenyId, accessibleFriends);
+            _kinaUnaCacheService.SetFriendsListCache(currentUserInfo.UserId, progenyId, accessibleFriends.ToArray());
 
             return accessibleFriends;
         }
@@ -262,13 +262,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Friends for.</param>
         /// <returns>List of Friends.</returns>
-        private async Task<List<Friend>> GetFriendsListFromCache(int progenyId)
+        private async Task<Friend[]> GetFriendsListFromCache(int progenyId)
         {
-            List<Friend> friendsList = [];
+            Friend[] friendsList = [];
             string cachedFriendsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedFriendsList))
             {
-                friendsList = JsonSerializer.Deserialize<List<Friend>>(cachedFriendsList, JsonSerializerOptions.Web);
+                friendsList = JsonSerializer.Deserialize<Friend[]>(cachedFriendsList, JsonSerializerOptions.Web);
             }
 
             return friendsList;
@@ -279,9 +279,9 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set the list ofFriends for.</param>
         /// <returns>List of Friends.</returns>
-        private async Task<List<Friend>> SetFriendsListInCache(int progenyId)
+        private async Task<Friend[]> SetFriendsListInCache(int progenyId)
         {
-            List<Friend> friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == progenyId).ToListAsync();
+            Friend[] friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == progenyId).ToArrayAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId, JsonSerializer.Serialize(friendsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return friendsList;

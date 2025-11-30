@@ -866,7 +866,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// objects  that match the specified criteria. The list will be empty if no matching items are found.</returns>
         public async Task<List<TodoItem>> GetTodosList(int progenyId, int familyId, UserInfo currentUserInfo)
         {
-            List<TodoItem> todoItemsForProgenyOrFamily = [];
+            TodoItem[] todoItemsForProgenyOrFamily = [];
 
             TodosListCacheEntry cacheEntry = kinaUnaCacheService.GetTodosListCache(currentUserInfo.UserId, progenyId, familyId);
             TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.TodoItem);
@@ -882,7 +882,7 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 todoItemsForProgenyOrFamily = await progenyDbContext.TodoItemsDb
                     .AsNoTracking()
                     .Where(t => t.ProgenyId == progenyId && t.FamilyId == familyId && t.ParentTodoItemId == 0 && !t.IsDeleted)
-                    .ToListAsync();
+                    .ToArrayAsync();
                 // Filter by access level
 
                 List<TodoItem> accessibleTodoItemsForProgeny = [];
@@ -894,11 +894,11 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                         accessibleTodoItemsForProgeny.Add(todoItem);
                     }
                 }
-                todoItemsForProgenyOrFamily = accessibleTodoItemsForProgeny;
+                todoItemsForProgenyOrFamily = accessibleTodoItemsForProgeny.ToArray();
                 kinaUnaCacheService.SetTodoItemsListCache(currentUserInfo.UserId, progenyId, familyId, todoItemsForProgenyOrFamily);
             }
             
-            return todoItemsForProgenyOrFamily;
+            return todoItemsForProgenyOrFamily.ToList();
         }
     }
 }

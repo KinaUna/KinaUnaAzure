@@ -89,7 +89,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the notes list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the notes list.</param>
         /// <param name="notesList">The list of notes to cache. Cannot be null.</param>
-        void SetNotesListCache(string userId, int progenyId, List<Note> notesList);
+        void SetNotesListCache(string userId, int progenyId, Note[] notesList);
 
         /// <summary>
         /// Retrieves the cached notes list entry for the specified user and progeny identifiers.
@@ -110,7 +110,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the pictures list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the pictures list.</param>
         /// <param name="picturesList">The list of pictures to cache. Cannot be null.</param>
-        void SetPicturesListCache(string userId, int progenyId, List<Picture> picturesList);
+        void SetPicturesListCache(string userId, int progenyId, Picture[] picturesList);
 
         /// <summary>
         /// Retrieves the cached pictures list entry for the specified user and progeny identifiers.
@@ -132,7 +132,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the contacts list.</param>
         /// <param name="familyId">The identifier of the family associated with the contacts list.</param>
         /// <param name="contactsList">The list of contacts to cache. Cannot be null.</param>
-        void SetContactsListCache(string userId, int progenyId, int familyId, List<Contact> contactsList);
+        void SetContactsListCache(string userId, int progenyId, int familyId, Contact[] contactsList);
 
         /// <summary>
         /// Retrieves the cached contacts list entry for the specified user and progeny identifiers.
@@ -154,7 +154,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the friends list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the friends list.</param>
         /// <param name="friendsList">The list of friends to cache. Cannot be null.</param>
-        void SetFriendsListCache(string userId, int progenyId, List<Friend> friendsList);
+        void SetFriendsListCache(string userId, int progenyId, Friend[] friendsList);
 
         /// <summary>
         /// Retrieves the cached friends list entry for the specified user and progeny identifiers.
@@ -176,7 +176,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the locations list.</param>
         /// <param name="familyId">The identifier of the family associated with the locations list.</param>
         /// <param name="locationsList">The list of locations to cache. Cannot be null.</param>
-        void SetLocationsListCache(string userId, int progenyId, int familyId, List<Location> locationsList);
+        void SetLocationsListCache(string userId, int progenyId, int familyId, Location[] locationsList);
 
         /// <summary>
         /// Retrieves the cached locations list entry for the specified user and progeny identifiers.
@@ -198,7 +198,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the measurements list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the measurements list.</param>
         /// <param name="measurementsList">The list of measurements to cache. Cannot be null.</param>
-        void SetMeasurementsListCache(string userId, int progenyId, List<Measurement> measurementsList);
+        void SetMeasurementsListCache(string userId, int progenyId, Measurement[] measurementsList);
 
         /// <summary>
         /// Retrieves the cached measurements list entry for the specified user and progeny identifiers.
@@ -219,7 +219,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the skills list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the skills list.</param>
         /// <param name="skillsList">The list of skills to cache. Cannot be null.</param>
-        void SetSkillsListCache(string userId, int progenyId, List<Skill> skillsList);
+        void SetSkillsListCache(string userId, int progenyId, Skill[] skillsList);
 
         /// <summary>
         /// Retrieves the cached skills list entry for the specified user and progeny identifiers.
@@ -240,7 +240,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the sleep list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the sleep list.</param>
         /// <param name="sleepList">The list of sleep to cache. Cannot be null.</param>
-        void SetSleepListCache(string userId, int progenyId, List<Sleep> sleepList);
+        void SetSleepListCache(string userId, int progenyId, Sleep[] sleepList);
 
         /// <summary>
         /// Retrieves the cached sleep list entry for the specified user and progeny identifiers.
@@ -261,7 +261,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the vaccinations list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the vaccinations list.</param>
         /// <param name="vaccinationsList">The list of vaccinations to cache. Cannot be null.</param>
-        void SetVaccinationsListCache(string userId, int progenyId, List<Vaccination> vaccinationsList);
+        void SetVaccinationsListCache(string userId, int progenyId, Vaccination[] vaccinationsList);
 
         /// <summary>
         /// Retrieves the cached vaccinations list entry for the specified user and progeny identifiers.
@@ -282,7 +282,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the vocabulary items list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the vocabulary items list.</param>
         /// <param name="vocabularyItemsList">The list of vocabulary items to cache. Cannot be null.</param>
-        void SetVocabularyItemsListCache(string userId, int progenyId, List<VocabularyItem> vocabularyItemsList);
+        void SetVocabularyItemsListCache(string userId, int progenyId, VocabularyItem[] vocabularyItemsList);
 
         /// <summary>
         /// Retrieves the cached vocabulary items list entry for the specified user and progeny identifiers.
@@ -303,7 +303,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="userId">The unique identifier of the user for whom the videos list is being cached. Cannot be null.</param>
         /// <param name="progenyId">The identifier of the progeny associated with the videos list.</param>
         /// <param name="videoList">The list of videos to cache. Cannot be null.</param>
-        void SetVideoListCache(string userId, int progenyId, List<Video> videoList);
+        void SetVideoListCache(string userId, int progenyId, Video[] videoList);
 
         /// <summary>
         /// Retrieves the cached videos list entry for the specified user and progeny identifiers.
@@ -325,7 +325,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the Kanban boards list.</param>
         /// <param name="familyId">The identifier of the family associated with the Kanban boards list.</param>
         /// <param name="kanbanBoardsList">The list of Kanban boards to cache. Cannot be null.</param>
-        void SetKanbanBoardsListCache(string userId, int progenyId, int familyId, List<KanbanBoard> kanbanBoardsList);
+        void SetKanbanBoardsListCache(string userId, int progenyId, int familyId, KanbanBoard[] kanbanBoardsList);
 
         /// <summary>
         /// Retrieves the cached Kanban boards list entry for the specified user and progeny identifiers.
@@ -348,7 +348,7 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// <param name="progenyId">The identifier of the progeny associated with the TodoItems list.</param>
         /// <param name="familyId">The identifier of the family associated with the TodoItems list.</param>
         /// <param name="todoItemsList">The list of TodoItems to cache. Cannot be null.</param>
-        void SetTodoItemsListCache(string userId, int progenyId, int familyId, List<TodoItem> todoItemsList);
+        void SetTodoItemsListCache(string userId, int progenyId, int familyId, TodoItem[] todoItemsList);
 
         /// <summary>
         /// Retrieves the cached TodoItems list entry for the specified user and progeny identifiers.

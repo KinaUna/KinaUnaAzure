@@ -254,12 +254,12 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    return cacheEntry.ContactsList;
+                    return cacheEntry.ContactsList.ToList();
                 }
             }
 
-            List<Contact> contactsList = await GetContactsListFromCache(progenyId, familyId);
-            if (contactsList.Count == 0)
+            Contact[] contactsList = await GetContactsListFromCache(progenyId, familyId);
+            if (contactsList.Length == 0)
             {
                 contactsList = await SetContactsListInCache(progenyId, familyId);
             }
@@ -274,7 +274,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetContactsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleContacts);
+            _kinaUnaCacheService.SetContactsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleContacts.ToArray());
 
             return accessibleContacts;
         }
@@ -285,13 +285,13 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
         /// <param name="familyId"></param>
         /// <returns>List of Contacts.</returns>
-        private async Task<List<Contact>> GetContactsListFromCache(int progenyId, int familyId)
+        private async Task<Contact[]> GetContactsListFromCache(int progenyId, int familyId)
         {
-            List<Contact> contactsList = [];
+            Contact[] contactsList = [];
             string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedContactsList))
             {
-                contactsList = JsonSerializer.Deserialize<List<Contact>>(cachedContactsList, JsonSerializerOptions.Web);
+                contactsList = JsonSerializer.Deserialize<Contact[]>(cachedContactsList, JsonSerializerOptions.Web);
             }
 
             return contactsList;
@@ -306,9 +306,9 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="familyId"></param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the list of contacts associated
         /// with the specified progeny.</returns>
-        private async Task<List<Contact>> SetContactsListInCache(int progenyId, int familyId)
+        private async Task<Contact[]> SetContactsListInCache(int progenyId, int familyId)
         {
-            List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId && c.FamilyId == familyId).ToListAsync();
+            Contact[] contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId && c.FamilyId == familyId).ToArrayAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId + "_family_" + familyId, JsonSerializer.Serialize(contactsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return contactsList;

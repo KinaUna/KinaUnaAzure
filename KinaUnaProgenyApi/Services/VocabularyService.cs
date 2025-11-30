@@ -219,12 +219,12 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    return cacheEntry.VocabularyList;
+                    return cacheEntry.VocabularyList.ToList();
                 }
             }
 
-            List<VocabularyItem> vocabularyList = await GetVocabularyListFromCache(progenyId);
-            if (vocabularyList.Count == 0)
+            VocabularyItem[] vocabularyList = await GetVocabularyListFromCache(progenyId);
+            if (vocabularyList.Length == 0)
             {
                 vocabularyList = await SetVocabularyListInCache(progenyId);
             }
@@ -239,7 +239,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetVocabularyItemsListCache(currentUserInfo.UserId, progenyId, allowedVocabularyList);
+            _kinaUnaCacheService.SetVocabularyItemsListCache(currentUserInfo.UserId, progenyId, allowedVocabularyList.ToArray());
 
             return allowedVocabularyList;
         }
@@ -249,13 +249,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
         /// <returns>List of VocabularyItem objects.</returns>
-        private async Task<List<VocabularyItem>> GetVocabularyListFromCache(int progenyId)
+        private async Task<VocabularyItem[]> GetVocabularyListFromCache(int progenyId)
         {
-            List<VocabularyItem> vocabularyList = [];
+            VocabularyItem[] vocabularyList = [];
             string cachedVocabularyList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVocabularyList))
             {
-                vocabularyList = JsonSerializer.Deserialize<List<VocabularyItem>>(cachedVocabularyList, JsonSerializerOptions.Web);
+                vocabularyList = JsonSerializer.Deserialize<VocabularyItem[]>(cachedVocabularyList, JsonSerializerOptions.Web);
             }
 
             return vocabularyList;
@@ -266,9 +266,9 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set the list for.</param>
         /// <returns>List of VocabularyItem objects.</returns>
-        private async Task<List<VocabularyItem>> SetVocabularyListInCache(int progenyId)
+        private async Task<VocabularyItem[]> SetVocabularyListInCache(int progenyId)
         {
-            List<VocabularyItem> vocabularyList = await _context.VocabularyDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
+            VocabularyItem[] vocabularyList = await _context.VocabularyDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToArrayAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + progenyId, JsonSerializer.Serialize(vocabularyList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return vocabularyList;

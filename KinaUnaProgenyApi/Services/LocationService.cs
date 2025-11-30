@@ -253,12 +253,12 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    return cacheEntry.LocationsList;
+                    return cacheEntry.LocationsList.ToList();
                 }
             }
 
-            List<Location> locationsList = await GetLocationsListFromCache(progenyId, familyId);
-            if (locationsList.Count == 0)
+            Location[] locationsList = await GetLocationsListFromCache(progenyId, familyId);
+            if (locationsList.Length == 0)
             {
                 locationsList = await SetLocationsListInCache(progenyId, familyId);
             }
@@ -273,7 +273,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
-            _kinaUnaCacheService.SetLocationsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleLocations);
+            _kinaUnaCacheService.SetLocationsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleLocations.ToArray());
 
             return accessibleLocations;
         }
@@ -284,13 +284,13 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Location entities for.</param>
         /// <param name="familyId"></param>
         /// <returns>List of Locations.</returns>
-        private async Task<List<Location>> GetLocationsListFromCache(int progenyId, int familyId)
+        private async Task<Location[]> GetLocationsListFromCache(int progenyId, int familyId)
         {
-            List<Location> locationsList = [];
+            Location[] locationsList = [];
             string cachedLocationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId + "_family_" + familyId);
             if (!string.IsNullOrEmpty(cachedLocationsList))
             {
-                locationsList = JsonSerializer.Deserialize<List<Location>>(cachedLocationsList, JsonSerializerOptions.Web);
+                locationsList = JsonSerializer.Deserialize<Location[]>(cachedLocationsList, JsonSerializerOptions.Web);
             }
 
             return locationsList;
@@ -302,9 +302,9 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Location entities for.</param>
         /// <param name="familyId"></param>
         /// <returns>List of Locations.</returns>
-        private async Task<List<Location>> SetLocationsListInCache(int progenyId, int familyId)
+        private async Task<Location[]> SetLocationsListInCache(int progenyId, int familyId)
         {
-            List<Location> locationsList = await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == progenyId && l.FamilyId == familyId).ToListAsync();
+            Location[] locationsList = await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == progenyId && l.FamilyId == familyId).ToArrayAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId + "_family_" + familyId, JsonSerializer.Serialize(locationsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return locationsList;

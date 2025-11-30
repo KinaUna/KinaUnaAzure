@@ -284,7 +284,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         public async Task<List<KanbanBoard>> GetKanbanBoardsForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo, KanbanBoardsRequest request)
         {
             bool hasCachedData = false;
-            List<KanbanBoard> allKanbanBoardsForProgenyOrFamily = [];
+            KanbanBoard[] allKanbanBoardsForProgenyOrFamily = [];
             KanbanBoardsListCacheEntry cacheEntry = kinaUnaCacheService.GetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId);
             TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.KanbanBoard);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
@@ -301,13 +301,13 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 if (progenyId > 0)
                 {
                     allKanbanBoardsForProgenyOrFamily = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
-                        .Where(k => k.ProgenyId == progenyId).ToListAsync();
+                        .Where(k => k.ProgenyId == progenyId).ToArrayAsync();
                 }
 
                 if (familyId > 0)
                 {
                     allKanbanBoardsForProgenyOrFamily = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
-                        .Where(k => k.FamilyId == familyId).ToListAsync();
+                        .Where(k => k.FamilyId == familyId).ToArrayAsync();
                 }
             }
             else
@@ -315,24 +315,24 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                 if (progenyId > 0 && !hasCachedData)
                 {
                     allKanbanBoardsForProgenyOrFamily = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
-                        .Where(k => k.ProgenyId == progenyId && !k.IsDeleted).ToListAsync();
+                        .Where(k => k.ProgenyId == progenyId && !k.IsDeleted).ToArrayAsync();
                 }
 
                 if (familyId > 0 && !hasCachedData)
                 {
                     allKanbanBoardsForProgenyOrFamily = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
-                        .Where(k => k.FamilyId == familyId && !k.IsDeleted).ToListAsync();
+                        .Where(k => k.FamilyId == familyId && !k.IsDeleted).ToArrayAsync();
                 }
             }
-            if (allKanbanBoardsForProgenyOrFamily.Count == 0)
+            if (allKanbanBoardsForProgenyOrFamily.Length == 0)
             {
-                return allKanbanBoardsForProgenyOrFamily;
+                return allKanbanBoardsForProgenyOrFamily.ToList();
             }
 
             List<KanbanBoard> accessibleKanbanBoards = [];
             if (hasCachedData)
             {
-                accessibleKanbanBoards = allKanbanBoardsForProgenyOrFamily;
+                accessibleKanbanBoards = allKanbanBoardsForProgenyOrFamily.ToList();
             }
             else
             {
@@ -343,7 +343,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                     accessibleKanbanBoards.Add(kanbanBoard);
                 }
 
-                kinaUnaCacheService.SetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleKanbanBoards);
+                kinaUnaCacheService.SetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleKanbanBoards.ToArray());
             }
             
 
@@ -428,27 +428,26 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
         /// empty if no boards are found.</returns>
         public async Task<List<KanbanBoard>> GetKanbanBoardsListForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo)
         {
-            List<KanbanBoard> kanbanBoards = [];
+            KanbanBoard[] kanbanBoards = [];
             KanbanBoardsListCacheEntry cacheEntry = kinaUnaCacheService.GetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId);
             TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.KanbanBoard);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    kanbanBoards = cacheEntry.KanbanBoardsList;
-                    return kanbanBoards;
+                    return cacheEntry.KanbanBoardsList.ToList();
                 }
             }
 
             if (progenyId > 0)
             {
                 kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
-                    .Where(k => k.ProgenyId == progenyId && !k.IsDeleted).ToListAsync();
+                    .Where(k => k.ProgenyId == progenyId && !k.IsDeleted).ToArrayAsync();
             }
             if (familyId > 0)
             {
                 kanbanBoards = await progenyDbContext.KanbanBoardsDb.AsNoTracking()
-                    .Where(k => k.FamilyId == familyId && !k.IsDeleted).ToListAsync();
+                    .Where(k => k.FamilyId == familyId && !k.IsDeleted).ToArrayAsync();
             }
             
             List<KanbanBoard> accessibleKanbanBoards = [];
@@ -460,7 +459,7 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
                     accessibleKanbanBoards.Add(kanbanBoard);
                 }
             }
-            kinaUnaCacheService.SetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleKanbanBoards);
+            kinaUnaCacheService.SetKanbanBoardsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleKanbanBoards.ToArray());
             
             return accessibleKanbanBoards;
         }

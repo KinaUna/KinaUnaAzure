@@ -114,7 +114,7 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set all Pictures for.</param>
         /// <returns>List of Picture objects.</returns>
-        Task<List<Picture>> SetPicturesListInCache(int progenyId);
+        Task<Picture[]> SetPicturesListInCache(int progenyId);
 
         /// <summary>
         /// Gets a list of all Pictures containing a specific tag for a Progeny.

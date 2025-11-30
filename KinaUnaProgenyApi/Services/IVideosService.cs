@@ -89,6 +89,6 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set Videos for.</param>
         /// <returns>List of Video objects.</returns>
-        Task<List<Video>> SetVideosListInCache(int progenyId);
+        Task<Video[]> SetVideosListInCache(int progenyId);
     }
 }

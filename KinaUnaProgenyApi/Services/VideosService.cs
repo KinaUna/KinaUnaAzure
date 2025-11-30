@@ -119,7 +119,7 @@ namespace KinaUnaProgenyApi.Services
 
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonSerializer.Serialize(video, JsonSerializerOptions.Web), _cacheOptionsSliding);
             
-            await SetVideosListInCache(video.ProgenyId);
+            _ = await SetVideosListInCache(video.ProgenyId);
 
             return video;
         }
@@ -269,12 +269,12 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    return cacheEntry.VideosList;
+                    return cacheEntry.VideosList.ToList();
                 }
             }
 
-            List<Video> videosList = await GetVideosListFromCache(progenyId);
-            if (videosList.Count == 0)
+            Video[] videosList = await GetVideosListFromCache(progenyId);
+            if (videosList.Length == 0)
             {
                 videosList = await SetVideosListInCache(progenyId);
             }
@@ -289,7 +289,7 @@ namespace KinaUnaProgenyApi.Services
             }
             filteredList = filteredList.OrderByDescending(v => v.VideoTime).ToList();
 
-            _kinaUnaCacheService.SetVideoListCache(currentUserInfo.UserId, progenyId, filteredList);
+            _kinaUnaCacheService.SetVideoListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
 
             return filteredList;
         }
@@ -320,13 +320,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Videos for.</param>
         /// <returns>List of Video objects.</returns>
-        private async Task<List<Video>> GetVideosListFromCache(int progenyId)
+        private async Task<Video[]> GetVideosListFromCache(int progenyId)
         {
-            List<Video> videosList = [];
+            Video[] videosList = [];
             string cachedVideosList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVideosList))
             {
-                videosList = JsonSerializer.Deserialize<List<Video>>(cachedVideosList, JsonSerializerOptions.Web);
+                videosList = JsonSerializer.Deserialize<Video[]>(cachedVideosList, JsonSerializerOptions.Web);
             }
 
             return videosList;
@@ -337,9 +337,9 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set Videos for.</param>
         /// <returns>List of Video objects.</returns>
-        public async Task<List<Video>> SetVideosListInCache(int progenyId)
+        public async Task<Video[]> SetVideosListInCache(int progenyId)
         {
-            List<Video> videosList = await _mediaContext.VideoDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
+            Video[] videosList = await _mediaContext.VideoDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToArrayAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId, JsonSerializer.Serialize(videosList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return videosList;
