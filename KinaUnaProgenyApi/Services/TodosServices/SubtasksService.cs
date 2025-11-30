@@ -403,7 +403,9 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             if (subtask != null)
             {
                 string serializedSubtask = JsonSerializer.Serialize(subtask, JsonSerializerOptions.Web);
-                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "subtask_" + id, serializedSubtask);
+                DistributedCacheEntryOptions cacheOptionsSliding = new();
+                cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0));
+                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "subtask_" + id, serializedSubtask, cacheOptionsSliding);
                 return subtask;
             }
 
@@ -463,9 +465,11 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                 .AsNoTracking()
                 .Where(t => t.ParentTodoItemId == todoItemId && !t.IsDeleted)
                 .ToListAsync();
-            
+
+            DistributedCacheEntryOptions cacheOptionsSliding = new();
+            cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0));
             string serializedSubTasks = JsonSerializer.Serialize(subtasks, JsonSerializerOptions.Web);
-            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "subtasks_" + todoItemId, serializedSubTasks);
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "subtasks_" + todoItemId, serializedSubTasks, cacheOptionsSliding);
 
             return subtasks;
         }
