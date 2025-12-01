@@ -3,7 +3,9 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
@@ -18,16 +20,19 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly ICalendarRecurrencesService _calendarRecurrencesService;
         private readonly IAccessManagementService _accessManagementService;
 
-        public CalendarService(ProgenyDbContext context, IDistributedCache cache, ICalendarRecurrencesService calendarRecurrencesService, IAccessManagementService accessManagementService)
+        public CalendarService(ProgenyDbContext context, IDistributedCache cache, ICalendarRecurrencesService calendarRecurrencesService,
+            IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _context = context;
             _accessManagementService = accessManagementService;
             _cache = cache;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _calendarRecurrencesService = calendarRecurrencesService;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0)); // Expire after a week.
@@ -123,7 +128,8 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 currentUserInfo);
 
             _ = await SetCalendarItemInCache(calendarItemToAdd.EventId);
-            
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(calendarItemToAdd.ProgenyId, calendarItemToAdd.FamilyId, KinaUnaTypes.TimeLineType.Calendar);
+
             return calendarItemToAdd;
         }
 
@@ -279,6 +285,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 currentUserInfo);
 
             _ = await SetCalendarItemInCache(calendarItemToUpdate.EventId);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(calendarItemToUpdate.ProgenyId, calendarItemToUpdate.FamilyId, KinaUnaTypes.TimeLineType.Calendar);
 
             return calendarItemToUpdate;
         }
@@ -325,6 +332,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             }
 
             await RemoveCalendarItemFromCache(item.EventId, item.ProgenyId, item.FamilyId);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(calendarItemToDelete.ProgenyId, calendarItemToDelete.FamilyId, KinaUnaTypes.TimeLineType.Calendar);
 
             return item;
         }
@@ -344,6 +352,15 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             if (progenyId == 0 && familyId == 0)
             {
                 return [];
+            }
+            CalendarListCacheEntry cacheEntry = await _kinaUnaCacheService.GetCalendarItemsListCache(currentUserInfo.UserId, progenyId, familyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.Calendar);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime > timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    return cacheEntry.CalendarItemsList.ToList();
+                }
             }
 
             List<CalendarItem> calendarList = await GetCalendarListFromCache(progenyId, familyId);
@@ -367,7 +384,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                     accessibleCalendarItems.Add(calendarItem);
                 }
             }
-            
+
+            await _kinaUnaCacheService.SetCalendarItemsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleCalendarItems.ToArray());
+
             return accessibleCalendarItems;
 
         }
@@ -431,8 +450,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         public async Task<List<CalendarItem>> GetRecurringCalendarItemsOnThisDay(int progenyId, int familyId, UserInfo currentUserInfo)
         {
             List<CalendarItem> recurringEvents = [];
-            List<RecurrenceRule> recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId && r.FamilyId == familyId).ToListAsync();
-            if (recurrenceRules.Count == 0) return recurringEvents;
+
+            RecurrenceRule[] recurrenceRules = await GetRecurrenceRulesForProgenyOrFamily(progenyId, familyId, currentUserInfo);
+            if (recurrenceRules.Length == 0) return recurringEvents;
             DateTime today = DateTime.UtcNow.Date;
             
             for (int i = 1900; i < today.Year; i++)
@@ -448,6 +468,30 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             return recurringEvents;
         }
 
+        private async Task<RecurrenceRule[]> GetRecurrenceRulesForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo)
+        {
+            RecurrenceRule[] recurrenceRules = [];
+            RecurrenceRulesListCacheEntry cacheEntry = await _kinaUnaCacheService.GetRecurrenceRulesListCache(currentUserInfo.UserId, progenyId, familyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.Calendar);
+            bool cachedDataAvailable = false;
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime > timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    recurrenceRules = cacheEntry.RecurrenceRulesList;
+                    cachedDataAvailable = true;
+                }
+            }
+
+            if (!cachedDataAvailable)
+            {
+                recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId && r.FamilyId == familyId).ToArrayAsync();
+                await _kinaUnaCacheService.SetRecurrenceRulesListCache(currentUserInfo.UserId, progenyId, familyId, recurrenceRules);
+            }
+
+            return recurrenceRules;
+        } 
+
         /// <summary>
         /// Gets the list of CalendarItems for a Progeny that are recurring events for the latest posts list.
         /// Only includes items after 1900.
@@ -459,8 +503,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         public async Task<List<CalendarItem>> GetRecurringCalendarItemsLatestPosts(int progenyId, int familyId, UserInfo currentUserInfo)
         {
             List<CalendarItem> recurringEvents = [];
-            List<RecurrenceRule> recurrenceRules = await _context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId && r.FamilyId == familyId).ToListAsync();
-            if (recurrenceRules.Count == 0) return recurringEvents;
+            RecurrenceRule[] recurrenceRules = await GetRecurrenceRulesForProgenyOrFamily(progenyId, familyId, currentUserInfo);
+
+            if (recurrenceRules.Length == 0) return recurringEvents;
             DateTime start = new(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             recurringEvents = await GetRecurringEventsForProgenyOrFamily(progenyId, familyId, start, DateTime.UtcNow.Date, false, currentUserInfo);
 

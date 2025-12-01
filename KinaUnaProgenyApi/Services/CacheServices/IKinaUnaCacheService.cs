@@ -363,5 +363,50 @@ namespace KinaUnaProgenyApi.Services.CacheServices
         /// langword="null"/>.</returns>
         Task<TodosListCacheEntry> GetTodosListCache(string userId, int progenyId, int familyId);
 
+        /// <summary>
+        /// Stores the specified list of CalendarItems in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached CalendarItems list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the CalendarItems list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the CalendarItems list.</param>
+        /// <param name="familyId">The identifier of the family associated with the CalendarItems list.</param>
+        /// <param name="calendarItemsList">The list of CalendarItems to cache. Cannot be null.</param>
+        Task SetCalendarItemsListCache(string userId, int progenyId, int familyId, CalendarItem[] calendarItemsList);
+
+        /// <summary>
+        /// Retrieves the cached CalendarItems list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose CalendarItems list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the CalendarItems list cache entry is requested.</param>
+        /// <param name="familyId">The identifier of the family for which the CalendarItems list cache entry is requested.</param>
+        /// <returns>A <see cref="CalendarListCacheEntry"/> object containing the cached CalendarItems list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        Task<CalendarListCacheEntry> GetCalendarItemsListCache(string userId, int progenyId, int familyId);
+
+        /// <summary>
+        /// Stores the specified list of RecurrenceRules in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached RecurrenceRules list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the RecurrenceRules list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the RecurrenceRules list.</param>
+        /// <param name="familyId">The identifier of the family associated with the RecurrenceRules list.</param>
+        /// <param name="recurrenceRulesList">The list of RecurrenceRules to cache. Cannot be null.</param>
+        Task SetRecurrenceRulesListCache(string userId, int progenyId, int familyId, RecurrenceRule[] recurrenceRulesList);
+
+        /// <summary>
+        /// Retrieves the cached RecurrenceRules list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose RecurrenceRules list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the RecurrenceRules list cache entry is requested.</param>
+        /// <param name="familyId">The identifier of the family for which the RecurrenceRules list cache entry is requested.</param>
+        /// <returns>A <see cref="RecurrenceRulesListCacheEntry"/> object containing the cached RecurrenceRules list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        Task<RecurrenceRulesListCacheEntry> GetRecurrenceRulesListCache(string userId, int progenyId, int familyId);
     }
 }

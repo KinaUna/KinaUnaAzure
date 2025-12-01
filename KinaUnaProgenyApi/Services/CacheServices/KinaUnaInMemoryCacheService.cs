@@ -845,5 +845,99 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             }
             return null;
         }
+
+        /// <summary>
+        /// Stores the specified list of CalendarItems in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached CalendarItems list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the CalendarItems list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the CalendarItems list.</param>
+        /// <param name="familyId">The identifier of the family associated with the CalendarItems list.</param>
+        /// <param name="calendarItemsList">The list of CalendarItems to cache. Cannot be null.</param>
+        public async Task SetCalendarItemsListCache(string userId, int progenyId, int familyId, CalendarItem[] calendarItemsList)
+        {
+            CalendarListCacheEntry calendarItemsListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                FamilyId = familyId,
+                CalendarItemsList = calendarItemsList,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarItemsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
+                , JsonSerializer.Serialize(calendarItemsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached CalendarItems list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose CalendarItems list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the CalendarItems list cache entry is requested.</param>
+        /// <param name="familyId">The identifier of the family for which the CalendarItems list cache entry is requested.</param>
+        /// <returns>A <see cref="CalendarListCacheEntry"/> object containing the cached CalendarItems list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public async Task<CalendarListCacheEntry> GetCalendarItemsListCache(string userId, int progenyId, int familyId)
+        {
+            string cachedCalendarItemsListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarItemsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
+            if (!string.IsNullOrEmpty(cachedCalendarItemsListEntry))
+            {
+                CalendarListCacheEntry calendarListCacheEntry = JsonSerializer.Deserialize<CalendarListCacheEntry>(cachedCalendarItemsListEntry, JsonSerializerOptions.Web);
+                return calendarListCacheEntry;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Stores the specified list of RecurrenceRules in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached RecurrenceRules list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the RecurrenceRules list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the RecurrenceRules list.</param>
+        /// <param name="familyId">The identifier of the family associated with the RecurrenceRules list.</param>
+        /// <param name="recurrenceRulesList">The list of RecurrenceRules to cache. Cannot be null.</param>
+        public async Task SetRecurrenceRulesListCache(string userId, int progenyId, int familyId, RecurrenceRule[] recurrenceRulesList)
+        {
+            RecurrenceRulesListCacheEntry recurrenceRulesListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                FamilyId = familyId,
+                RecurrenceRulesList = recurrenceRulesList,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "recurrenceRulesListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
+                , JsonSerializer.Serialize(recurrenceRulesListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached RecurrenceRules list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose RecurrenceRules list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the RecurrenceRules list cache entry is requested.</param>
+        /// <param name="familyId">The identifier of the family for which the RecurrenceRules list cache entry is requested.</param>
+        /// <returns>A <see cref="RecurrenceRulesListCacheEntry"/> object containing the cached RecurrenceRules list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public async Task<RecurrenceRulesListCacheEntry> GetRecurrenceRulesListCache(string userId, int progenyId, int familyId)
+        {
+            string cachedRecurrenceRulesListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "recurrenceRulesListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
+            if (!string.IsNullOrEmpty(cachedRecurrenceRulesListEntry))
+            {
+                RecurrenceRulesListCacheEntry recurrenceRulesListCacheEntry = JsonSerializer.Deserialize<RecurrenceRulesListCacheEntry>(cachedRecurrenceRulesListEntry, JsonSerializerOptions.Web);
+                return recurrenceRulesListCacheEntry;
+            }
+            return null;
+        }
     }
 }

@@ -1,17 +1,19 @@
-﻿using KinaUna.Data.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
-using System.Linq;
-using KinaUna.Data.Contexts;
+﻿using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
+using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services.CalendarServices
 {
-    public class CalendarRecurrencesService(ProgenyDbContext context, IAccessManagementService accessManagementService) : ICalendarRecurrencesService
+    public class CalendarRecurrencesService(ProgenyDbContext context, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService) : ICalendarRecurrencesService
     {
         /// <summary>
         /// Gets a list of CalendarItems generated from recurring events for a Progeny.
@@ -27,9 +29,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         {
             List<CalendarItem> recurringEvents = [];
             if (progenyId == 0 && familyId == 0) return recurringEvents;
-            
-            List<RecurrenceRule> recurrenceRules = await context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId && r.FamilyId == familyId).ToListAsync();
-            if (recurrenceRules.Count == 0) return recurringEvents;
+
+            RecurrenceRule[] recurrenceRules = await GetRecurrenceRulesForProgenyOrFamily(progenyId, familyId, currentUserInfo);
+            if (recurrenceRules.Length == 0) return recurringEvents;
 
             end = new DateTime(end.Year, end.Month, end.Day, 23, 59, 59, DateTimeKind.Utc);
             
@@ -39,6 +41,30 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             }
 
             return recurringEvents;
+        }
+
+        private async Task<RecurrenceRule[]> GetRecurrenceRulesForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo)
+        {
+            RecurrenceRule[] recurrenceRules = [];
+            RecurrenceRulesListCacheEntry cacheEntry = await kinaUnaCacheService.GetRecurrenceRulesListCache(currentUserInfo.UserId, progenyId, familyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.Calendar);
+            bool cachedDataAvailable = false;
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime > timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    recurrenceRules = cacheEntry.RecurrenceRulesList;
+                    cachedDataAvailable = true;
+                }
+            }
+
+            if (!cachedDataAvailable)
+            {
+                recurrenceRules = await context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId && r.FamilyId == familyId).ToArrayAsync();
+                await kinaUnaCacheService.SetRecurrenceRulesListCache(currentUserInfo.UserId, progenyId, familyId, recurrenceRules);
+            }
+
+            return recurrenceRules;
         }
 
         public async Task<List<CalendarItem>> GetCalendarItemsForRecurrenceRule(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)

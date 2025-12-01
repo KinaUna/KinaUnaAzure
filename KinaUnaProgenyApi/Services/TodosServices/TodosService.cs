@@ -891,10 +891,10 @@ namespace KinaUnaProgenyApi.Services.TodosServices
                     accessibleTodoItemsForProgeny.Add(todoItem);
                 }
             }
-            todoItemsForProgenyOrFamily = accessibleTodoItemsForProgeny.ToArray();
-            await kinaUnaCacheService.SetTodoItemsListCache(currentUserInfo.UserId, progenyId, familyId, todoItemsForProgenyOrFamily);
+            
+            await kinaUnaCacheService.SetTodoItemsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleTodoItemsForProgeny.ToArray());
 
-            return todoItemsForProgenyOrFamily.ToList();
+            return accessibleTodoItemsForProgeny;
         }
     }
 }
