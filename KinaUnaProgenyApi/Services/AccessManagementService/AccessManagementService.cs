@@ -1489,11 +1489,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="itemType">The type of the timeline item, represented as a <see cref="KinaUnaTypes.TimeLineType"/> enumeration.</param>
         /// <param name="itemId">The unique identifier of the timeline item.</param>
         /// <param name="currentUserInfo">The information of the current user requesting the permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is made by a system process.</param>
         /// <returns>List of <see cref="TimelineItemPermission"/> objects representing the permissions for the specified timeline item that the current user has access to view.</returns>
-        public async Task<List<TimelineItemPermission>> GetTimelineItemPermissionsList(TimeLineType itemType, int itemId, UserInfo currentUserInfo)
+        public async Task<List<TimelineItemPermission>> GetTimelineItemPermissionsList(TimeLineType itemType, int itemId, UserInfo currentUserInfo, bool isSystemRequest = false)
         {
             string cachedItemPermissions = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "getTimelineItemPermissionsList" + "_userId_" + currentUserInfo.UserId + "_type_" + (int)itemType + "_id_" + itemId);
-            if (!string.IsNullOrEmpty(cachedItemPermissions))
+            if (!string.IsNullOrEmpty(cachedItemPermissions) && !isSystemRequest)
             {
                 ItemPermissionListCacheEntry cachedPermissions = JsonSerializer.Deserialize<ItemPermissionListCacheEntry>(cachedItemPermissions, JsonSerializerOptions.Web);
                 // Check if user data has been modified since the cache was created.
@@ -1554,7 +1555,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (permission.PermissionLevel == PermissionLevel.CreatorOnly)
                 {
                     // CreatorOnly permissions can be viewed by the creator of the item.
-                    if (await HasCreatorOnlyPermission(itemType, itemId, currentUserInfo))
+                    if (isSystemRequest || await HasCreatorOnlyPermission(itemType, itemId, currentUserInfo))
                     {
                         accessibleItemPermissions.Add(permission);
                     }
@@ -1562,7 +1563,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (permission.PermissionLevel == PermissionLevel.Private)
                 {
                     // Private permissions can be viewed by the owner of the progeny.
-                    if (await HasPrivatePermission(itemType, itemId, currentUserInfo))
+                    if (isSystemRequest || await HasPrivatePermission(itemType, itemId, currentUserInfo))
                     {
                         accessibleItemPermissions.Add(permission);
                     }
@@ -1573,7 +1574,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     // Check if the current user can view the specified permission level.
                     if (permission.ProgenyId > 0)
                     {
-                        if (await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, permission.ProgenyId))
+                        if (isSystemRequest || await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, permission.ProgenyId))
                         {
                             accessibleItemPermissions.Add(permission);
                         }
@@ -1596,7 +1597,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                     }
                     else
                     {
-                        if (await IsUserAccessManager(currentUserInfo, PermissionType.Family, permission.FamilyId))
+                        if (isSystemRequest || await IsUserAccessManager(currentUserInfo, PermissionType.Family, permission.FamilyId))
                         {
                             accessibleItemPermissions.Add(permission);
                         }

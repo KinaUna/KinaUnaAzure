@@ -12,8 +12,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// </summary>
         /// <param name="groupId">The unique identifier of the user group to retrieve.</param>
         /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is made by a system user.</param>
         /// <returns>The <see cref="UserGroup"/> object representing the requested user group, including its members, if the user has access.</returns>
-        Task<UserGroup> GetUserGroup(int groupId, UserInfo currentUserInfo);
+        Task<UserGroup> GetUserGroup(int groupId, UserInfo currentUserInfo, bool isSystemRequest = false);
 
         /// <summary>
         /// Retrieves a list of user groups associated with the specified progeny that the current user has

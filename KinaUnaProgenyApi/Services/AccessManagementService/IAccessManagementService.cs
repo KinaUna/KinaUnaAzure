@@ -3,6 +3,7 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static KinaUna.Data.Models.KinaUnaTypes;
 
 namespace KinaUnaProgenyApi.Services.AccessManagementService
 {
@@ -22,7 +23,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="userInfo">The information of the user whose access is being verified.</param>
         /// <param name="requiredLevel">The minimum permission level required for access.</param>
         /// <returns>Boolean value indicating whether the user has the required access level for the timeline item.</returns>
-        Task<bool> HasItemPermission(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo userInfo, PermissionLevel requiredLevel);
+        Task<bool> HasItemPermission(TimeLineType itemType, int itemId, UserInfo userInfo, PermissionLevel requiredLevel);
 
         /// <summary>
         /// Retrieves the permission level for a specific timeline item and user.
@@ -41,7 +42,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <returns>A <see cref="TimelineItemPermission"/> object representing the highest permission level the specified user
         /// has for the given timeline item. If no permissions are found, the returned object will have a <see
         /// cref="PermissionLevel"/> of <see cref="PermissionLevel.None"/>.</returns>
-        Task<TimelineItemPermission> GetItemPermissionForUser(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, UserInfo userInfo, PermissionLevel? requiredLevel = null);
+        Task<TimelineItemPermission> GetItemPermissionForUser(TimeLineType itemType, int itemId, int progenyId, int familyId, UserInfo userInfo, PermissionLevel? requiredLevel = null);
 
         /// <summary>
         /// Grants a specified permission to a user or group for a timeline item, if the current user has the necessary
@@ -321,9 +322,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="itemPermissionsDtoList">A list of <see cref="ItemPermissionDto"/> objects representing the permissions to be added.</param>
         /// <param name="currentUserInfo">The information about the current user performing the operation.</param>
         /// <returns></returns>
-        Task AddItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo);
+        Task AddItemPermissions(TimeLineType itemType, int itemId, int progenyId, int familyId, List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo);
 
-        Task CopyItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId,
+        Task CopyItemPermissions(TimeLineType itemType, int itemId, int progenyId, int familyId,
             List<TimelineItemPermission> itemPermissionsList, UserInfo currentUserInfo);
 
         /// <summary>
@@ -347,7 +348,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="currentUserInfo">The user information of the current user making the update request.</param>
         /// <returns>A list of <see cref="TimelineItemPermission"/> objects representing the permissions that were changed as a
         /// result of the update. If no changes were made, the list will be empty.</returns>
-        Task<List<TimelineItemPermission>> UpdateItemPermissions(KinaUnaTypes.TimeLineType itemType, int itemId, int progenyId, int familyId, List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo);
+        Task<List<TimelineItemPermission>> UpdateItemPermissions(TimeLineType itemType, int itemId, int progenyId, int familyId, List<ItemPermissionDto> itemPermissionsDtoList, UserInfo currentUserInfo);
 
         /// <summary>
         /// Retrieves a list of permissions for a specific timeline item that the current user has access to view.
@@ -355,8 +356,9 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="itemType">The type of the timeline item, represented as a <see cref="KinaUnaTypes.TimeLineType"/> enumeration.</param>
         /// <param name="itemId">The unique identifier of the timeline item.</param>
         /// <param name="currentUserInfo">The information of the current user requesting the permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is made by a system process.</param>
         /// <returns>List of <see cref="TimelineItemPermission"/> objects representing the permissions for the specified timeline item that the current user has access to view.</returns>
-        Task<List<TimelineItemPermission>> GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType itemType, int itemId, UserInfo currentUserInfo);
+        Task<List<TimelineItemPermission>> GetTimelineItemPermissionsList(TimeLineType itemType, int itemId, UserInfo currentUserInfo, bool isSystemRequest = false);
 
         /// <summary>
         /// Gets the highest permission level for a specific progeny and user by checking both direct user permissions and group permissions.

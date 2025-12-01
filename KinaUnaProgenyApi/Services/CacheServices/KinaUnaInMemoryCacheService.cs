@@ -939,5 +939,52 @@ namespace KinaUnaProgenyApi.Services.CacheServices
             }
             return null;
         }
+
+        /// <summary>
+        /// Stores the specified list of UserGroups in the distributed cache for the given user and progeny identifiers.
+        /// </summary>
+        /// <remarks>The cached UserGroups list is stored with a sliding expiration of 7 days. Subsequent
+        /// accesses to the cache entry will reset the expiration period.</remarks>
+        /// <param name="userId">The unique identifier of the user for whom the UserGroups list is being cached. Cannot be null.</param>
+        /// <param name="progenyId">The identifier of the progeny associated with the UserGroups list.</param>
+        /// <param name="familyId">The identifier of the family associated with the UserGroups list.</param>
+        /// <param name="userGroupsList">The list of UserGroups to cache. Cannot be null.</param>
+        public async Task SetUserGroupsListCache(string userId, int progenyId, int familyId, UserGroup[] userGroupsList)
+        {
+            UserGroupsListCacheEntry userGroupsListCacheEntry = new()
+            {
+                UserId = userId,
+                ProgenyId = progenyId,
+                FamilyId = familyId,
+                UserGroupsList = userGroupsList,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userGroupsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId
+                , JsonSerializer.Serialize(userGroupsListCacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        /// <summary>
+        /// Retrieves the cached UserGroups list entry for the specified user and progeny identifiers.
+        /// </summary>
+        /// <remarks>Returns a cached result if available; otherwise, returns null. The cache key is based
+        /// on the combination of user and progeny identifiers.</remarks>
+        /// <param name="userId">The unique identifier of the user whose UserGroups list cache entry is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="progenyId">The identifier of the progeny for which the UserGroups list cache entry is requested.</param>
+        /// <param name="familyId">The identifier of the family for which the UserGroups list cache entry is requested.</param>
+        /// <returns>A <see cref="UserGroupsListCacheEntry"/> object containing the cached UserGroups list entry if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public async Task<UserGroupsListCacheEntry> GetUserGroupsListCache(string userId, int progenyId, int familyId)
+        {
+            string cachedUserGroupsListEntry = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userGroupsListCacheEntry_u_" + userId + "_p_" + progenyId + "_f_" + familyId);
+            if (!string.IsNullOrEmpty(cachedUserGroupsListEntry))
+            {
+                UserGroupsListCacheEntry userGroupsListCacheEntry = JsonSerializer.Deserialize<UserGroupsListCacheEntry>(cachedUserGroupsListEntry, JsonSerializerOptions.Web);
+                return userGroupsListCacheEntry;
+            }
+            return null;
+        }
     }
 }
