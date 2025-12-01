@@ -866,38 +866,34 @@ namespace KinaUnaProgenyApi.Services.TodosServices
         /// objects  that match the specified criteria. The list will be empty if no matching items are found.</returns>
         public async Task<List<TodoItem>> GetTodosList(int progenyId, int familyId, UserInfo currentUserInfo)
         {
-            TodoItem[] todoItemsForProgenyOrFamily = [];
-
             TodosListCacheEntry cacheEntry = await kinaUnaCacheService.GetTodosListCache(currentUserInfo.UserId, progenyId, familyId);
             TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.TodoItem);
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    todoItemsForProgenyOrFamily = cacheEntry.TodosList;
+                    return cacheEntry.TodosList.ToList();
                 }
             }
-            else
-            {
-                todoItemsForProgenyOrFamily = await progenyDbContext.TodoItemsDb
-                    .AsNoTracking()
-                    .Where(t => t.ProgenyId == progenyId && t.FamilyId == familyId && t.ParentTodoItemId == 0 && !t.IsDeleted)
-                    .ToArrayAsync();
-                // Filter by access level
 
-                List<TodoItem> accessibleTodoItemsForProgeny = [];
-                foreach (TodoItem todoItem in todoItemsForProgenyOrFamily)
+            TodoItem[] todoItemsForProgenyOrFamily = await progenyDbContext.TodoItemsDb
+                .AsNoTracking()
+                .Where(t => t.ProgenyId == progenyId && t.FamilyId == familyId && t.ParentTodoItemId == 0 && !t.IsDeleted)
+                .ToArrayAsync();
+
+            // Filter by access level
+            List<TodoItem> accessibleTodoItemsForProgeny = [];
+            foreach (TodoItem todoItem in todoItemsForProgenyOrFamily)
+            {
+                if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUserInfo, PermissionLevel.View))
                 {
-                    if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUserInfo, PermissionLevel.View))
-                    {
-                        todoItem.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, todoItem.ProgenyId, todoItem.FamilyId, currentUserInfo);
-                        accessibleTodoItemsForProgeny.Add(todoItem);
-                    }
+                    todoItem.ItemPerMission = await accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, todoItem.ProgenyId, todoItem.FamilyId, currentUserInfo);
+                    accessibleTodoItemsForProgeny.Add(todoItem);
                 }
-                todoItemsForProgenyOrFamily = accessibleTodoItemsForProgeny.ToArray();
-                await kinaUnaCacheService.SetTodoItemsListCache(currentUserInfo.UserId, progenyId, familyId, todoItemsForProgenyOrFamily);
             }
-            
+            todoItemsForProgenyOrFamily = accessibleTodoItemsForProgeny.ToArray();
+            await kinaUnaCacheService.SetTodoItemsListCache(currentUserInfo.UserId, progenyId, familyId, todoItemsForProgenyOrFamily);
+
             return todoItemsForProgenyOrFamily.ToList();
         }
     }

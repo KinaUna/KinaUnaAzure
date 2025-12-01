@@ -163,6 +163,10 @@ namespace KinaUnaWeb.Controllers
             if (parameters.TodoItemId == 0)
             {
                 todoItemResponse.TodoItem = new TodoItem { TodoItemId = 0 };
+                todoItemResponse.TodoItem.ItemPerMission = new TimelineItemPermission()
+                {
+                    PermissionLevel = PermissionLevel.View
+                };
             }
             else
             {
