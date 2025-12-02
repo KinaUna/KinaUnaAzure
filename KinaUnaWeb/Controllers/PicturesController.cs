@@ -167,7 +167,11 @@ namespace KinaUnaWeb.Controllers
                 HereMapsApiKey = _hereMapsApiKey,
                 PartialView = true
             };
-            
+            if (request.SortOrder > 1)
+            {
+                request.SortOrder = 1;
+            }
+
             request.TimeZone = model.CurrentUser.Timezone;
             PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(request);
 
