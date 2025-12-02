@@ -58,7 +58,7 @@ namespace KinaUnaWeb.Controllers
                 }
                 if (!string.IsNullOrWhiteSpace(familyMember.UserId))
                 {
-                    familyMember.UserInfo = await userInfosHttpClient.GetUserInfoByUserId(familyMember.UserId);
+                    familyMember.UserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(familyMember.UserId);
                 }
             }
 

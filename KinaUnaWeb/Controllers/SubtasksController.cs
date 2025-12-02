@@ -136,7 +136,7 @@ namespace KinaUnaWeb.Controllers
 
                 todoItemResponse.TodoItemId = todoItemResponse.TodoItem.TodoItemId;
 
-                UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(todoItemResponse.TodoItem.CreatedBy);
+                UserInfo todoUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(todoItemResponse.TodoItem.CreatedBy);
                 todoItemResponse.TodoItem.CreatedBy = todoUserInfo.FullName();
             }
             

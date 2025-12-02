@@ -86,7 +86,7 @@ namespace KinaUnaWeb.Controllers
                 webNotificationsList.NotificationsList = [.. webNotificationsList.NotificationsList.Where(n => !n.IsRead)];
             }
 
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(userId);
+            UserInfo userInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(userId);
 
             string timezoneId = userInfo.Timezone;
 
@@ -113,7 +113,7 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
 
             model.WebNotification = await webNotificationsService.GetNotificationById(model.Id);
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(model.WebNotification.To);
+            UserInfo userInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(model.WebNotification.To);
             model.WebNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(model.WebNotification.DateTime, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
             model.WebNotification.DateTimeString = model.WebNotification.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
 
@@ -139,7 +139,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.WebNotification.Icon = model.WebNotification.GetIconUrl();
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(model.WebNotification.To);
+            UserInfo userInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(model.WebNotification.To);
             model.WebNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(model.WebNotification.DateTime, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
             model.WebNotification.DateTimeString = model.WebNotification.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
 

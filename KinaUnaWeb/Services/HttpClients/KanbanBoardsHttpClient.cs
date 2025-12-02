@@ -47,10 +47,10 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string kanbanBoardsApiPath = "/api/KanbanBoards/";
-            HttpResponseMessage kanbanBoardsResponse = await _httpClient.PostAsJsonAsync(kanbanBoardsApiPath, kanbanBoard).ConfigureAwait(false);
+            HttpResponseMessage kanbanBoardsResponse = await _httpClient.PostAsJsonAsync(kanbanBoardsApiPath, kanbanBoard);
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
 
-            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync();
             kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;
@@ -63,10 +63,10 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string kanbanBoardsApiPath = "/api/KanbanBoards/" + kanbanBoard.KanbanBoardId + "?hardDelete=" + hardDelete;
-            HttpResponseMessage kanbanBoardsResponse = await _httpClient.DeleteAsync(kanbanBoardsApiPath).ConfigureAwait(false);
+            HttpResponseMessage kanbanBoardsResponse = await _httpClient.DeleteAsync(kanbanBoardsApiPath);
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
 
-            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync();
             kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;
@@ -80,10 +80,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             KanbanBoard kanbanBoard = new();
             string kanbanBoardsApiPath = "/api/KanbanBoards/GetKanbanBoard/" + kanbanBoardId;
-            HttpResponseMessage kanbanBoardsResponse = await _httpClient.GetAsync(kanbanBoardsApiPath).ConfigureAwait(false);
+            HttpResponseMessage kanbanBoardsResponse = await _httpClient.GetAsync(kanbanBoardsApiPath);
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
 
-            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync();
             kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;
@@ -97,10 +97,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             KanbanBoardsResponse kanbanBoardsResponse = new();
             string kanbanBoardsApiPath = "/api/KanbanBoards/GetKanbanBoardsList";
-            HttpResponseMessage kanbanBoardsListResponse = await _httpClient.PostAsJsonAsync(kanbanBoardsApiPath, kanbanBoardsRequest).ConfigureAwait(false);
+            HttpResponseMessage kanbanBoardsListResponse = await _httpClient.PostAsJsonAsync(kanbanBoardsApiPath, kanbanBoardsRequest);
             if (!kanbanBoardsListResponse.IsSuccessStatusCode) return kanbanBoardsResponse;
             
-            string kanbanBoardsListAsString = await kanbanBoardsListResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string kanbanBoardsListAsString = await kanbanBoardsListResponse.Content.ReadAsStringAsync();
             kanbanBoardsResponse = JsonSerializer.Deserialize<KanbanBoardsResponse>(kanbanBoardsListAsString, JsonSerializerOptions.Web);
 
             return kanbanBoardsResponse;
@@ -113,10 +113,10 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string kanbanBoardsApiPath = "/api/KanbanBoards/" + kanbanBoard.KanbanBoardId;
-            HttpResponseMessage kanbanBoardsResponse = await _httpClient.PutAsJsonAsync(kanbanBoardsApiPath, kanbanBoard).ConfigureAwait(false);
+            HttpResponseMessage kanbanBoardsResponse = await _httpClient.PutAsJsonAsync(kanbanBoardsApiPath, kanbanBoard);
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
             
-            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync();
             kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;

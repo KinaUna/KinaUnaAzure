@@ -156,7 +156,7 @@ namespace KinaUnaWeb.Controllers
                 model.LanguageId = languageId;
                 Response.SetLanguageCookie(languageId.ToString());
             }
-            model.CurrentUser = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            model.CurrentUser = await userInfosHttpClient.GetSimpleUserInfoByUserId(User.GetUserId());
             
             return View(model);
         }
@@ -180,7 +180,7 @@ namespace KinaUnaWeb.Controllers
                 Response.SetLanguageCookie(languageId.ToString());
             }
 
-            model.CurrentUser = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            model.CurrentUser = await userInfosHttpClient.GetSimpleUserInfoByUserId(User.GetUserId());
 
             return View(model);
         }
@@ -205,7 +205,7 @@ namespace KinaUnaWeb.Controllers
                 Response.SetLanguageCookie(languageId.ToString());
             }
 
-            model.CurrentUser = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            model.CurrentUser = await userInfosHttpClient.GetSimpleUserInfoByUserId(User.GetUserId());
 
             return View(model);
         }

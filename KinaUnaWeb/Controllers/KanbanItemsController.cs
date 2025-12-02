@@ -74,7 +74,7 @@ namespace KinaUnaWeb.Controllers
                 model.KanbanItem.TodoItem.Family = await familiesHttpClient.GetFamily(model.KanbanItem.TodoItem.FamilyId);
             }
             
-            UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.KanbanItem.TodoItem.CreatedBy);
+            UserInfo todoUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(model.KanbanItem.TodoItem.CreatedBy);
             model.KanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
             
             model.SetStatusList(model.KanbanItem.TodoItem.Status);
@@ -120,7 +120,7 @@ namespace KinaUnaWeb.Controllers
                         }
                     }
 
-                    UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(kanbanItem.TodoItem.CreatedBy);
+                    UserInfo todoUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(kanbanItem.TodoItem.CreatedBy);
                     kanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
                     if (kanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || kanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
                     {
@@ -185,7 +185,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(addedKanbanItem.TodoItem.CreatedBy);
+            UserInfo todoUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(addedKanbanItem.TodoItem.CreatedBy);
             addedKanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
             if (addedKanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || addedKanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
             {
@@ -610,7 +610,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(addedKanbanItem.TodoItem.CreatedBy);
+            UserInfo todoUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(addedKanbanItem.TodoItem.CreatedBy);
             addedKanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
 
             if (addedKanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || addedKanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
@@ -677,7 +677,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(updatedKanbanItem.TodoItem.CreatedBy);
+            UserInfo todoUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(updatedKanbanItem.TodoItem.CreatedBy);
             updatedKanbanItem.TodoItem.CreatedBy = todoUserInfo.FullName();
 
             if (updatedKanbanItem.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || updatedKanbanItem.TodoItem.Progeny?.UserId == User.GetUserId())
@@ -751,7 +751,7 @@ namespace KinaUnaWeb.Controllers
            
             if (updatedTodoItem != null)
             {
-                UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(updatedTodoItem.CreatedBy);
+                UserInfo todoUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(updatedTodoItem.CreatedBy);
                 updatedTodoItem.CreatedBy = todoUserInfo.FullName();
                 if (updatedTodoItem.ProgenyId > 0)
                 {

@@ -336,7 +336,7 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
                 .ReturnsAsync(todoItem);
             _mockProgenyHttpClient.Setup(x => x.GetProgeny(TestProgenyId))
                 .ReturnsAsync(progeny);
-            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(todoItem.CreatedBy))
+            _mockUserInfosHttpClient.Setup(x => x.GetExtendedUserInfoByUserId(todoItem.CreatedBy))
                 .ReturnsAsync(userInfo);
 
             // Act
@@ -381,7 +381,7 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
                 .ReturnsAsync(todoItem);
             _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
                 .ReturnsAsync(baseModel);
-            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(todoItem.CreatedBy))
+            _mockUserInfosHttpClient.Setup(x => x.GetExtendedUserInfoByUserId(todoItem.CreatedBy))
                 .ReturnsAsync(userInfo);
             _mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestTodoItemId))
                 .ReturnsAsync([]);
@@ -413,7 +413,7 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
                 .ReturnsAsync(todoItem);
             _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
                 .ReturnsAsync(baseModel);
-            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(todoItem.CreatedBy))
+            _mockUserInfosHttpClient.Setup(x => x.GetExtendedUserInfoByUserId(todoItem.CreatedBy))
                 .ReturnsAsync(userInfo);
             _mockKanbanItemsHttpClient.Setup(x => x.GetKanbanItemsForTodoItem(TestTodoItemId))
                 .ReturnsAsync([]);

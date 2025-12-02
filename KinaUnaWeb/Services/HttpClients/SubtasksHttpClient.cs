@@ -48,10 +48,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             TodoItem todoItem = new();
             string subtasksApiPath = "/api/Subtasks/" + itemId;
-            HttpResponseMessage todosResponse = await _httpClient.GetAsync(subtasksApiPath).ConfigureAwait(false);
+            HttpResponseMessage todosResponse = await _httpClient.GetAsync(subtasksApiPath);
             if (!todosResponse.IsSuccessStatusCode) return todoItem;
 
-            string todoItemAsString = await todosResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string todoItemAsString = await todosResponse.Content.ReadAsStringAsync();
 
             todoItem = JsonSerializer.Deserialize<TodoItem>(todoItemAsString, JsonSerializerOptions.Web);
 
@@ -72,10 +72,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string subtasksApiPath = "/api/Subtasks/GetSubtasksForTodoItem/";
             HttpResponseMessage subtasksResponse =
-                await _httpClient.PostAsync(subtasksApiPath, new StringContent(JsonSerializer.Serialize(request, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                await _httpClient.PostAsync(subtasksApiPath, new StringContent(JsonSerializer.Serialize(request, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!subtasksResponse.IsSuccessStatusCode) return progenySubtasksResponse;
 
-            string subtasksResponseAsString = await subtasksResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string subtasksResponseAsString = await subtasksResponse.Content.ReadAsStringAsync();
 
             progenySubtasksResponse = JsonSerializer.Deserialize<SubtasksResponse>(subtasksResponseAsString, JsonSerializerOptions.Web);
 

@@ -188,7 +188,7 @@ namespace KinaUnaWeb.Controllers
 
                 todoItemResponse.TodoItemId = todoItemResponse.TodoItem.TodoItemId;
 
-                UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(todoItemResponse.TodoItem.CreatedBy);
+                UserInfo todoUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(todoItemResponse.TodoItem.CreatedBy);
                 todoItemResponse.TodoItem.CreatedBy = todoUserInfo.FullName();
             }
 
@@ -227,7 +227,7 @@ namespace KinaUnaWeb.Controllers
                 model.TodoItem.Family = model.CurrentFamily;
             }
 
-            UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.TodoItem.CreatedBy);
+            UserInfo todoUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(model.TodoItem.CreatedBy);
             model.TodoItem.CreatedBy = todoUserInfo.FullName();
             model.SetStatusList(model.TodoItem.Status);
             model.KanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForTodoItem(todoId);

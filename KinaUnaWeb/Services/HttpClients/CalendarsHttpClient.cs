@@ -57,10 +57,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             CalendarItem calendarItem = new();
             string calendarApiPath = "/api/Calendar/" + eventId;
-            HttpResponseMessage calendarResponse = await _httpClient.GetAsync(calendarApiPath).ConfigureAwait(false);
+            HttpResponseMessage calendarResponse = await _httpClient.GetAsync(calendarApiPath);
             if (!calendarResponse.IsSuccessStatusCode) return calendarItem;
 
-            string calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string calendarAsString = await calendarResponse.Content.ReadAsStringAsync();
 
             calendarItem = JsonSerializer.Deserialize<CalendarItem>(calendarAsString, JsonSerializerOptions.Web);
 
@@ -121,7 +121,7 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string calendarApiPath = "/api/Calendar/" + eventId;
-            HttpResponseMessage calendarResponse = await _httpClient.DeleteAsync(calendarApiPath).ConfigureAwait(false);
+            HttpResponseMessage calendarResponse = await _httpClient.DeleteAsync(calendarApiPath);
             return calendarResponse.IsSuccessStatusCode;
         }
 
@@ -138,10 +138,10 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string calendarApiPath = "/api/Calendar/Progenies/";
-            HttpResponseMessage calendarResponse = await _httpClient.PostAsync(calendarApiPath, new StringContent(JsonSerializer.Serialize(request, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
+            HttpResponseMessage calendarResponse = await _httpClient.PostAsync(calendarApiPath, new StringContent(JsonSerializer.Serialize(request, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!calendarResponse.IsSuccessStatusCode) return progenyCalendarList;
 
-            string calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string calendarAsString = await calendarResponse.Content.ReadAsStringAsync();
 
             progenyCalendarList = JsonSerializer.Deserialize<List<CalendarItem>>(calendarAsString, JsonSerializerOptions.Web);
 

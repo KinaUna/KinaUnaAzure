@@ -71,16 +71,36 @@ namespace KinaUnaWeb.Services.HttpClients
         /// </summary>
         /// <param name="userId">The user's UserId.</param>
         /// <returns>The UserInfo with the given UserId. If not found or an error occurs a new UserInfo with Id=0 is returned.</returns>
-        public async Task<UserInfo> GetUserInfoByUserId(string userId)
+        public async Task<UserInfo> GetExtendedUserInfoByUserId(string userId)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
-            const string userInfoApiPath = "api/UserInfo/ByUserIdPost/";
+            const string userInfoApiPath = "api/UserInfo/ExtendedUserInfoByUserId/";
             HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonSerializer.Serialize(userId, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
             
+            string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
+            UserInfo userInfo = JsonSerializer.Deserialize<UserInfo>(userinfoAsString, JsonSerializerOptions.Web);
+            return userInfo ?? new UserInfo();
+        }
+
+        /// <summary>
+        /// Gets a user's information without extended properties from the UserId.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>The UserInfo with the given UserId. If not found or an error occurs a new UserInfo with Id=0 is returned.</returns>
+        public async Task<UserInfo> GetSimpleUserInfoByUserId(string userId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            const string userInfoApiPath = "api/UserInfo/SimpleUserInfoByUserId/";
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonSerializer.Serialize(userId, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
+            if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
+
             string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
             UserInfo userInfo = JsonSerializer.Deserialize<UserInfo>(userinfoAsString, JsonSerializerOptions.Web);
             return userInfo ?? new UserInfo();

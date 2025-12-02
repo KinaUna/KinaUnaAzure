@@ -58,10 +58,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             Friend friendItem = new();
             string friendsApiPath = "/api/Friends/" + friendId;
-            HttpResponseMessage friendResponse = await _httpClient.GetAsync(friendsApiPath).ConfigureAwait(false);
+            HttpResponseMessage friendResponse = await _httpClient.GetAsync(friendsApiPath);
             if (!friendResponse.IsSuccessStatusCode) return friendItem;
 
-            string friendAsString = await friendResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string friendAsString = await friendResponse.Content.ReadAsStringAsync();
 
             friendItem = JsonSerializer.Deserialize<Friend>(friendAsString, JsonSerializerOptions.Web);
 
@@ -122,7 +122,7 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string friendsApiPath = "/api/Friends/" + friendId;
-            HttpResponseMessage friendResponse = await _httpClient.DeleteAsync(friendsApiPath).ConfigureAwait(false);
+            HttpResponseMessage friendResponse = await _httpClient.DeleteAsync(friendsApiPath);
             return friendResponse.IsSuccessStatusCode;
         }
 
@@ -140,10 +140,10 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string friendsApiPath = "/api/Friends/Progeny/" + progenyId;
-            HttpResponseMessage friendsResponse = await _httpClient.GetAsync(friendsApiPath).ConfigureAwait(false);
+            HttpResponseMessage friendsResponse = await _httpClient.GetAsync(friendsApiPath);
             if (!friendsResponse.IsSuccessStatusCode) return progenyFriendsList;
 
-            string friendsAsString = await friendsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string friendsAsString = await friendsResponse.Content.ReadAsStringAsync();
 
             progenyFriendsList = JsonSerializer.Deserialize<List<Friend>>(friendsAsString, JsonSerializerOptions.Web);
 

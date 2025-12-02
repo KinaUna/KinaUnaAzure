@@ -74,7 +74,7 @@ namespace KinaUnaWeb.Controllers
 
             model.NoteItem.Progeny = model.CurrentProgeny;
             model.NoteItem.Progeny.PictureLink = model.NoteItem.Progeny.GetProfilePictureUrl();
-            UserInfo noteUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.NoteItem.Owner);
+            UserInfo noteUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(model.NoteItem.Owner);
             model.NoteItem.Owner = noteUserInfo.FullName();
             if (partialView)
             {
@@ -170,7 +170,7 @@ namespace KinaUnaWeb.Controllers
                 }
                 noteItemResponse.Note.Progeny = await progenyHttpClient.GetProgeny(noteItemResponse.Note.ProgenyId);
                 noteItemResponse.NoteId = noteItemResponse.Note.NoteId; 
-                UserInfo noteUserInfo = await userInfosHttpClient.GetUserInfoByUserId(noteItemResponse.Note.Owner);
+                UserInfo noteUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(noteItemResponse.Note.Owner);
                 noteItemResponse.Note.Owner = noteUserInfo.FullName();
             }
             

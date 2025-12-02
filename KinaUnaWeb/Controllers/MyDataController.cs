@@ -232,7 +232,7 @@ namespace KinaUnaWeb.Controllers
             //            }
             //            else
             //            {
-            //                UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(pic.Author);
+            //                UserInfo author = await _userInfosHttpClient.GetExtendedUserInfoByUserId(pic.Author);
             //                photosWorksheet.Cells[photoRowNumber, 13].Value = author.UserEmail;
             //                userEmails.Add(pic.Author, author.UserEmail);
             //            }
@@ -318,7 +318,7 @@ namespace KinaUnaWeb.Controllers
             //            }
             //            else
             //            {
-            //                UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(vid.Author);
+            //                UserInfo author = await _userInfosHttpClient.GetExtendedUserInfoByUserId(vid.Author);
             //                videosWorksheet.Cells[videoRowNumber, 13].Value = author.UserEmail;
             //                userEmails.Add(vid.Author, author.UserEmail);
             //            }
@@ -406,7 +406,7 @@ namespace KinaUnaWeb.Controllers
             //            }
             //            else
             //            {
-            //                UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(evt.Author);
+            //                UserInfo author = await _userInfosHttpClient.GetExtendedUserInfoByUserId(evt.Author);
             //                calendarWorksheet.Cells[calendarRowNumber, 10].Value = author.UserEmail;
             //                userEmails.Add(evt.Author, author.UserEmail);
             //            }
@@ -507,7 +507,7 @@ namespace KinaUnaWeb.Controllers
             //            }
             //            else
             //            {
-            //                UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(loc.Author);
+            //                UserInfo author = await _userInfosHttpClient.GetExtendedUserInfoByUserId(loc.Author);
             //                locationsWorksheet.Cells[locationsRowNumber, 17].Value = author.UserEmail;
             //                userEmails.Add(loc.Author, author.UserEmail);
             //            }
@@ -581,7 +581,7 @@ namespace KinaUnaWeb.Controllers
             //            }
             //            else
             //            {
-            //                UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(voc.Author);
+            //                UserInfo author = await _userInfosHttpClient.GetExtendedUserInfoByUserId(voc.Author);
             //                vocabularyWorksheet.Cells[vocabularyRowNumber, 8].Value = author.UserEmail;
             //                userEmails.Add(voc.Author, author.UserEmail);
             //            }
@@ -655,7 +655,7 @@ namespace KinaUnaWeb.Controllers
             //            }
             //            else
             //            {
-            //                UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(skill.Author);
+            //                UserInfo author = await _userInfosHttpClient.GetExtendedUserInfoByUserId(skill.Author);
             //                skillsWorksheet.Cells[skillsRowNumber, 8].Value = author.UserEmail;
             //                userEmails.Add(skill.Author, author.UserEmail);
             //            }
@@ -738,7 +738,7 @@ namespace KinaUnaWeb.Controllers
             //            }
             //            else
             //            {
-            //                UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(friend.Author);
+            //                UserInfo author = await _userInfosHttpClient.GetExtendedUserInfoByUserId(friend.Author);
             //                friendsWorksheet.Cells[friendsRowNumber, 11].Value = author.UserEmail;
             //                userEmails.Add(friend.Author, author.UserEmail);
             //            }
@@ -815,7 +815,7 @@ namespace KinaUnaWeb.Controllers
             //            }
             //            else
             //            {
-            //                UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(measurement.Author);
+            //                UserInfo author = await _userInfosHttpClient.GetExtendedUserInfoByUserId(measurement.Author);
             //                measurementsWorksheet.Cells[measurementsRowNumber, 10].Value = author.UserEmail;
             //                userEmails.Add(measurement.Author, author.UserEmail);
             //            }
@@ -888,7 +888,7 @@ namespace KinaUnaWeb.Controllers
             //            }
             //            else
             //            {
-            //                UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(sleep.Author);
+            //                UserInfo author = await _userInfosHttpClient.GetExtendedUserInfoByUserId(sleep.Author);
             //                sleepWorksheet.Cells[sleepRowNumber, 8].Value = author.UserEmail;
             //                userEmails.Add(sleep.Author, author.UserEmail);
             //            }
@@ -1011,7 +1011,7 @@ namespace KinaUnaWeb.Controllers
             //            }
             //            else
             //            {
-            //                UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(contact.Author);
+            //                UserInfo author = await _userInfosHttpClient.GetExtendedUserInfoByUserId(contact.Author);
             //                contactsWorksheet.Cells[contactsRowNumber, 23].Value = author.UserEmail;
             //                userEmails.Add(contact.Author, author.UserEmail);
             //            }
@@ -1079,7 +1079,7 @@ namespace KinaUnaWeb.Controllers
             //            }
             //            else
             //            {
-            //                UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(vaccination.Author);
+            //                UserInfo author = await _userInfosHttpClient.GetExtendedUserInfoByUserId(vaccination.Author);
             //                vaccinationsWorksheet.Cells[vaccinationsRowNumber, 7].Value = author.UserEmail;
             //                userEmails.Add(vaccination.Author, author.UserEmail);
             //            }

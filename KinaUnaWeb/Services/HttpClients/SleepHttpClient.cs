@@ -55,10 +55,10 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string sleepApiPath = "/api/Sleep/" + sleepId;
-            HttpResponseMessage sleepResponse = await _httpClient.GetAsync(sleepApiPath).ConfigureAwait(false);
+            HttpResponseMessage sleepResponse = await _httpClient.GetAsync(sleepApiPath);
             if (!sleepResponse.IsSuccessStatusCode) return new Sleep();
 
-            string sleepAsString = await sleepResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();
             Sleep sleepItem = JsonSerializer.Deserialize<Sleep>(sleepAsString, JsonSerializerOptions.Web);
             return sleepItem ?? new Sleep();
         }

@@ -60,10 +60,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string tagsApiPath = "/api/AutoSuggests/GetTagsAutoSuggestList/" + progenyId + "/" + familyId;
 
-            HttpResponseMessage tagsResponse = await _httpClient.GetAsync(tagsApiPath).ConfigureAwait(false);
+            HttpResponseMessage tagsResponse = await _httpClient.GetAsync(tagsApiPath);
             if (!tagsResponse.IsSuccessStatusCode) return resultTagsList;
 
-            string tagsListAsString = await tagsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string tagsListAsString = await tagsResponse.Content.ReadAsStringAsync();
 
             resultTagsList = JsonSerializer.Deserialize<List<string>>(tagsListAsString, JsonSerializerOptions.Web);
 
@@ -86,10 +86,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string contextsApiPath = "/api/AutoSuggests/GetContextAutoSuggestList/" + progenyId + "/" + familyId;
 
-            HttpResponseMessage contextsResponse = await _httpClient.GetAsync(contextsApiPath).ConfigureAwait(false);
+            HttpResponseMessage contextsResponse = await _httpClient.GetAsync(contextsApiPath);
             if (!contextsResponse.IsSuccessStatusCode) return resultContextsList;
 
-            string contextsListAsString = await contextsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string contextsListAsString = await contextsResponse.Content.ReadAsStringAsync();
 
             resultContextsList = JsonSerializer.Deserialize<List<string>>(contextsListAsString, JsonSerializerOptions.Web);
 
@@ -112,10 +112,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string locationsApiPath = "/api/AutoSuggests/GetLocationAutoSuggestList/" + progenyId + "/" + familyId;
 
-            HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath).ConfigureAwait(false);
+            HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath);
             if (!locationsResponse.IsSuccessStatusCode) return resultLocationsList;
 
-            string locationsListAsString = await locationsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string locationsListAsString = await locationsResponse.Content.ReadAsStringAsync();
 
             resultLocationsList = JsonSerializer.Deserialize<List<string>>(locationsListAsString, JsonSerializerOptions.Web);
 
@@ -137,10 +137,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string categoriesApiPath = "/api/AutoSuggests/GetCategoryAutoSuggestList/" + progenyId;
 
-            HttpResponseMessage categoriesResponse = await _httpClient.GetAsync(categoriesApiPath).ConfigureAwait(false);
+            HttpResponseMessage categoriesResponse = await _httpClient.GetAsync(categoriesApiPath);
             if (!categoriesResponse.IsSuccessStatusCode) return resultCategoriesList;
 
-            string categoriesListAsString = await categoriesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string categoriesListAsString = await categoriesResponse.Content.ReadAsStringAsync();
 
             resultCategoriesList = JsonSerializer.Deserialize<List<string>>(categoriesListAsString, JsonSerializerOptions.Web);
 
@@ -162,10 +162,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string languagesApiPath = "/api/AutoSuggests/GetVocabularyLanguagesSuggestList/" + progenyId;
 
-            HttpResponseMessage languagesResponse = await _httpClient.GetAsync(languagesApiPath).ConfigureAwait(false);
+            HttpResponseMessage languagesResponse = await _httpClient.GetAsync(languagesApiPath);
             if (!languagesResponse.IsSuccessStatusCode) return resultLanguagesList;
 
-            string languagesListAsString = await languagesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string languagesListAsString = await languagesResponse.Content.ReadAsStringAsync();
 
             resultLanguagesList = JsonSerializer.Deserialize<List<string>>(languagesListAsString, JsonSerializerOptions.Web);
 

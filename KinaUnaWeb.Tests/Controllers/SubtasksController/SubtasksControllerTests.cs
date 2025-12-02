@@ -378,7 +378,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
                 .ReturnsAsync(progeny);
             _mockFamiliesHttpClient.Setup(x => x.GetFamily(TestFamilyId))
                 .ReturnsAsync(family);
-            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+            _mockUserInfosHttpClient.Setup(x => x.GetExtendedUserInfoByUserId(subtask.CreatedBy))
                 .ReturnsAsync(userInfo);
 
             // Act
@@ -415,7 +415,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
                 .ReturnsAsync(subtask);
             _mockProgenyHttpClient.Setup(x => x.GetProgeny(TestProgenyId))
                 .ReturnsAsync(progeny);
-            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+            _mockUserInfosHttpClient.Setup(x => x.GetExtendedUserInfoByUserId(subtask.CreatedBy))
                 .ReturnsAsync(userInfo);
 
             // Act
@@ -453,7 +453,7 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
                 .ReturnsAsync(subtask);
             _mockFamiliesHttpClient.Setup(x => x.GetFamily(TestFamilyId))
                 .ReturnsAsync(family);
-            _mockUserInfosHttpClient.Setup(x => x.GetUserInfoByUserId(subtask.CreatedBy))
+            _mockUserInfosHttpClient.Setup(x => x.GetExtendedUserInfoByUserId(subtask.CreatedBy))
                 .ReturnsAsync(userInfo);
 
             // Act

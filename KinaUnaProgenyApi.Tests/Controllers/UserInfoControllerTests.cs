@@ -443,7 +443,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testFamily);
 
             // Act
-            IActionResult result = await _controller.ByUserIdPost(TestUserId);
+            IActionResult result = await _controller.ExtendedUserInfoByUserId(TestUserId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
@@ -467,7 +467,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync([]);
 
             // Act
-            IActionResult result = await _controller.ByUserIdPost(unknownUserId);
+            IActionResult result = await _controller.ExtendedUserInfoByUserId(unknownUserId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);

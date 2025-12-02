@@ -235,7 +235,7 @@ namespace KinaUnaWeb.Services.HttpClients
             foreach (KinaUnaLanguage language in languages)
             {
                 if (deletedTranslation != null) await _cache.RemoveAsync("PageTranslations" + deletedTranslation.Page + "&Lang" + language.Id);
-                _ = await GetAllTranslations(language.Id, true).ConfigureAwait(false);
+                _ = await GetAllTranslations(language.Id, true);
             }
 
             return deletedTranslation;

@@ -145,7 +145,7 @@ namespace KinaUnaWeb.Controllers
                 kanbanBoard.Family = await familiesHttpClient.GetFamily(kanbanBoard.FamilyId);
             }
 
-            UserInfo kanbanBoardUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.KanbanBoard.CreatedBy);
+            UserInfo kanbanBoardUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(model.KanbanBoard.CreatedBy);
             model.KanbanBoard.CreatedBy = kanbanBoardUserInfo.FullName();
 
             if (partialView)

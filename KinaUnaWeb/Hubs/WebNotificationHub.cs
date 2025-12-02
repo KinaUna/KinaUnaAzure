@@ -67,7 +67,7 @@ namespace KinaUnaWeb.Hubs
         public async Task SendUpdateToUser(WebNotification notification)
         {
             string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
-            UserInfo currentUserInfo = await userInfosHttpClient.GetUserInfoByUserId(userId);
+            UserInfo currentUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(userId);
             
             // Todo: Check if sender has access rights to send to receiver.
 
@@ -81,7 +81,7 @@ namespace KinaUnaWeb.Hubs
                 }
                 else
                 {
-                    userinfo = await userInfosHttpClient.GetUserInfoByUserId(notification.To);
+                    userinfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(notification.To);
                 }
 
 

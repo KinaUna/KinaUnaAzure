@@ -138,10 +138,10 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string measurementsApiPath = "/api/measurements/progeny/" + progenyId;
-            HttpResponseMessage measurementsResponse = await _httpClient.GetAsync(measurementsApiPath).ConfigureAwait(false);
+            HttpResponseMessage measurementsResponse = await _httpClient.GetAsync(measurementsApiPath);
             if (!measurementsResponse.IsSuccessStatusCode) return progenyMeasurementsList;
 
-            string measurementsAsString = await measurementsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string measurementsAsString = await measurementsResponse.Content.ReadAsStringAsync();
 
             progenyMeasurementsList = JsonSerializer.Deserialize<List<Measurement>>(measurementsAsString, JsonSerializerOptions.Web);
 

@@ -50,10 +50,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             CalendarReminder calendarReminder = new();
             string calendarApiPath = "/api/CalendarReminders/GetCalendarReminder/" + reminderId;
-            HttpResponseMessage calendarResponse = await _httpClient.GetAsync(calendarApiPath).ConfigureAwait(false);
+            HttpResponseMessage calendarResponse = await _httpClient.GetAsync(calendarApiPath);
             if (!calendarResponse.IsSuccessStatusCode) return calendarReminder;
 
-            string calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string calendarAsString = await calendarResponse.Content.ReadAsStringAsync();
 
             calendarReminder = JsonSerializer.Deserialize<CalendarReminder>(calendarAsString, JsonSerializerOptions.Web);
 

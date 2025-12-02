@@ -21,7 +21,14 @@ namespace KinaUnaWeb.Services.HttpClients
         /// </summary>
         /// <param name="userId">The user's UserId.</param>
         /// <returns>The UserInfo with the given UserId. If not found or an error occurs a new UserInfo with Id=0 is returned.</returns>
-        Task<UserInfo> GetUserInfoByUserId(string userId);
+        Task<UserInfo> GetExtendedUserInfoByUserId(string userId);
+
+        /// <summary>
+        /// Gets a user's information without extended properties from the UserId.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>The UserInfo with the given UserId. If not found or an error occurs a new UserInfo with Id=0 is returned.</returns>
+        Task<UserInfo> GetSimpleUserInfoByUserId(string userId);
 
         /// <summary>
         /// Adds a new UserInfo object.

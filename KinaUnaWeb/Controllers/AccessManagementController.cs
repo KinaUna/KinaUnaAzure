@@ -72,7 +72,7 @@ namespace KinaUnaWeb.Controllers
                                 continue;
                             }
 
-                            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                            UserInfo userInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(permission.UserId);
                             model.UserList.Add(userInfo);
                         }
                         model.SetPermissionTypeSelectListItems(permissionType);
@@ -95,7 +95,7 @@ namespace KinaUnaWeb.Controllers
                         {
                             continue;
                         }
-                        UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(member.UserId);
+                        UserInfo userInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(member.UserId);
                         model.UserList.Add(userInfo);
                     }
                 }
@@ -141,7 +141,7 @@ namespace KinaUnaWeb.Controllers
                                 continue;
                             }
 
-                            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                            UserInfo userInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(permission.UserId);
                             model.UserList.Add(userInfo);
                         }
 
@@ -168,7 +168,7 @@ namespace KinaUnaWeb.Controllers
                             {
                                 continue;
                             }
-                            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(permission.UserId);
+                            UserInfo userInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(permission.UserId);
                             model.UserList.Add(userInfo);
                         }
                     }
@@ -183,7 +183,7 @@ namespace KinaUnaWeb.Controllers
                             continue;
                         }
 
-                        UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(member.UserId);
+                        UserInfo userInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(member.UserId);
                         model.UserList.Add(userInfo);
                     }
                 }

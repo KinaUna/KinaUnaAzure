@@ -241,7 +241,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             const string newCommentApiPath = "/api/Comments/";
 
-            HttpResponseMessage newCommentResponse = await _httpClient.PostAsync(newCommentApiPath, new StringContent(JsonSerializer.Serialize(comment, JsonSerializerOptions.Web), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+            HttpResponseMessage newCommentResponse = await _httpClient.PostAsync(newCommentApiPath, new StringContent(JsonSerializer.Serialize(comment, JsonSerializerOptions.Web), Encoding.UTF8, "application/json"));
             return newCommentResponse.IsSuccessStatusCode;
         }
 
@@ -258,7 +258,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string deleteCommentApiPath = "/api/Comments/" + commentId;
 
-            HttpResponseMessage newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath).ConfigureAwait(false);
+            HttpResponseMessage newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath);
             return newCommentResponse.IsSuccessStatusCode;
         }
         
@@ -636,7 +636,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string deleteVideoApiPath = "/api/videos/" + videoId;
 
-            HttpResponseMessage deleteVideoResponse = await _httpClient.DeleteAsync(deleteVideoApiPath).ConfigureAwait(false);
+            HttpResponseMessage deleteVideoResponse = await _httpClient.DeleteAsync(deleteVideoApiPath);
             return deleteVideoResponse.IsSuccessStatusCode;
         }
 
@@ -652,7 +652,7 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string newCommentApiPath = "/api/comments/";
-            HttpResponseMessage newCommentResponse = await _httpClient.PostAsync(newCommentApiPath, new StringContent(JsonSerializer.Serialize(comment, JsonSerializerOptions.Web), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+            HttpResponseMessage newCommentResponse = await _httpClient.PostAsync(newCommentApiPath, new StringContent(JsonSerializer.Serialize(comment, JsonSerializerOptions.Web), Encoding.UTF8, "application/json"));
             return newCommentResponse.IsSuccessStatusCode;
         }
 
@@ -668,7 +668,7 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string deleteCommentApiPath = "/api/comments/" + commentId;
-            HttpResponseMessage newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath).ConfigureAwait(false);
+            HttpResponseMessage newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath);
             return newCommentResponse.IsSuccessStatusCode;
         }
 

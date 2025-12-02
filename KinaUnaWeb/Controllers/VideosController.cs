@@ -126,7 +126,7 @@ namespace KinaUnaWeb.Controllers
             {
                 foreach (Comment comment in model.CommentsList)
                 {
-                    UserInfo commentAuthor = await userInfosHttpClient.GetUserInfoByUserId(comment.Author);
+                    UserInfo commentAuthor = await userInfosHttpClient.GetSimpleUserInfoByUserId(comment.Author);
                     if (commentAuthor == null) continue;
                     if (commentAuthor.ProfilePicture != null)
                     {
@@ -187,7 +187,7 @@ namespace KinaUnaWeb.Controllers
             {
                 foreach (Comment comment in model.CommentsList)
                 {
-                    UserInfo commentAuthor = await userInfosHttpClient.GetUserInfoByUserId(comment.Author);
+                    UserInfo commentAuthor = await userInfosHttpClient.GetSimpleUserInfoByUserId(comment.Author);
                     if (commentAuthor == null) continue;
                     if (commentAuthor.ProfilePicture != null)
                     {
@@ -362,7 +362,7 @@ namespace KinaUnaWeb.Controllers
                 {
                     foreach (Comment comment in videoModel.CommentsList)
                     {
-                        UserInfo commentAuthor = await userInfosHttpClient.GetUserInfoByUserId(comment.Author);
+                        UserInfo commentAuthor = await userInfosHttpClient.GetSimpleUserInfoByUserId(comment.Author);
                         if (commentAuthor == null) continue;
                         if (commentAuthor.ProfilePicture != null)
                         {
