@@ -78,14 +78,15 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// for which the current user has  administrative permissions are included in the result.</remarks>
         /// <param name="progenyId">The unique identifier of the progeny whose user groups are to be retrieved.</param>
         /// <param name="currentUserInfo">The information about the current user, used to determine access permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is a system request.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
         /// cref="UserGroup"/> objects  that the current user has administrative access to. If no groups are accessible,
         /// the list will be empty.</returns>
-        public async Task<List<UserGroup>> GetUserGroupsForProgeny(int progenyId, UserInfo currentUserInfo)
+        public async Task<List<UserGroup>> GetUserGroupsForProgeny(int progenyId, UserInfo currentUserInfo, bool isSystemRequest = false)
         {
             UserGroupsListCacheEntry cacheEntry = await kinaUnaCacheService.GetUserGroupsListCache(currentUserInfo.UserId, progenyId, 0);
             ProgenyOrFamilyUpdatedCacheEntry progenyOrFamilyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(progenyId, 0);
-            if (cacheEntry != null && progenyOrFamilyUpdatedCacheEntry != null)
+            if (!isSystemRequest && cacheEntry != null && progenyOrFamilyUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime > progenyOrFamilyUpdatedCacheEntry.UpdateTime)
                 {
@@ -94,12 +95,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             List<UserGroup> groups = await progenyDbContext.UserGroupsDb.AsNoTracking().Where(ug => ug.ProgenyId == progenyId).ToListAsync();
+            
             List<UserGroup> accessibleGroups = [];
             foreach (UserGroup group in groups)
             {
                 bool hasAccess = await accessManagementService.HasProgenyPermission(progenyId, currentUserInfo, PermissionLevel.Admin);
-                if (!hasAccess) continue;
-                ProgenyPermission groupPermission = await accessManagementService.GetProgenyPermissionForGroup(group.ProgenyId, group.UserGroupId, currentUserInfo);
+                if (!hasAccess && !isSystemRequest) continue;
+                ProgenyPermission groupPermission = await accessManagementService.GetProgenyPermissionForGroup(group.ProgenyId, group.UserGroupId, currentUserInfo, isSystemRequest);
                 if (groupPermission == null) continue;
 
                 group.PermissionLevel = groupPermission.PermissionLevel;
@@ -107,7 +109,10 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 accessibleGroups.Add(group);
             }
 
-            await kinaUnaCacheService.SetUserGroupsListCache(currentUserInfo.UserId, progenyId, 0, accessibleGroups.ToArray());
+            if (!isSystemRequest)
+            {
+                await kinaUnaCacheService.SetUserGroupsListCache(currentUserInfo.UserId, progenyId, 0, accessibleGroups.ToArray());
+            }
 
             return accessibleGroups;
         }
@@ -119,14 +124,15 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// included in the result.</remarks>
         /// <param name="familyId">The unique identifier of the family whose user groups are to be retrieved.</param>
         /// <param name="currentUserInfo">The information of the current user, used to determine access permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is a system request.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
         /// cref="UserGroup"/> objects  that the current user has access to. Each user group includes its associated
         /// members.</returns>
-        public async Task<List<UserGroup>> GetUserGroupsForFamily(int familyId, UserInfo currentUserInfo)
+        public async Task<List<UserGroup>> GetUserGroupsForFamily(int familyId, UserInfo currentUserInfo, bool isSystemRequest = false)
         {
             UserGroupsListCacheEntry cacheEntry = await kinaUnaCacheService.GetUserGroupsListCache(currentUserInfo.UserId, 0, familyId);
             ProgenyOrFamilyUpdatedCacheEntry progenyOrFamilyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(0, familyId);
-            if (cacheEntry != null && progenyOrFamilyUpdatedCacheEntry != null)
+            if (!isSystemRequest && cacheEntry != null && progenyOrFamilyUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime > progenyOrFamilyUpdatedCacheEntry.UpdateTime)
                 {
@@ -135,18 +141,22 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
 
             List<UserGroup> groups = await progenyDbContext.UserGroupsDb.AsNoTracking().Where(ug => ug.FamilyId == familyId).ToListAsync();
+            
             List<UserGroup> accessibleGroups = [];
             foreach (UserGroup group in groups)
             {
                 bool hasAccess = await accessManagementService.HasFamilyPermission(familyId, currentUserInfo, PermissionLevel.Admin);
-                if (!hasAccess) continue;
-                FamilyPermission groupPermission = await accessManagementService.GetFamilyPermissionForGroup(group.FamilyId, group.UserGroupId, currentUserInfo);
+                if (!hasAccess && !isSystemRequest) continue;
+                FamilyPermission groupPermission = await accessManagementService.GetFamilyPermissionForGroup(group.FamilyId, group.UserGroupId, currentUserInfo, isSystemRequest);
                 group.PermissionLevel = groupPermission.PermissionLevel;
                 group.Members = await GetUserGroupMembersList(group.UserGroupId);
                 accessibleGroups.Add(group);
             }
 
-            await kinaUnaCacheService.SetUserGroupsListCache(currentUserInfo.UserId, 0, familyId, accessibleGroups.ToArray());
+            if (!isSystemRequest)
+            {
+                await kinaUnaCacheService.SetUserGroupsListCache(currentUserInfo.UserId, 0, familyId, accessibleGroups.ToArray());
+            }
 
             return accessibleGroups;
         }

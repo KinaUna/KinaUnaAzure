@@ -24,10 +24,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// for which the current user has  administrative permissions are included in the result.</remarks>
         /// <param name="progenyId">The unique identifier of the progeny whose user groups are to be retrieved.</param>
         /// <param name="currentUserInfo">The information about the current user, used to determine access permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is a system request.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
         /// cref="UserGroup"/> objects  that the current user has administrative access to. If no groups are accessible,
         /// the list will be empty.</returns>
-        Task<List<UserGroup>> GetUserGroupsForProgeny(int progenyId, UserInfo currentUserInfo);
+        Task<List<UserGroup>> GetUserGroupsForProgeny(int progenyId, UserInfo currentUserInfo, bool isSystemRequest = false);
 
         /// <summary>
         /// Retrieves a list of user groups associated with the specified family that the current user has access to.
@@ -36,10 +37,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// included in the result.</remarks>
         /// <param name="familyId">The unique identifier of the family whose user groups are to be retrieved.</param>
         /// <param name="currentUserInfo">The information of the current user, used to determine access permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is a system request.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
         /// cref="UserGroup"/> objects  that the current user has access to. Each user group includes its associated
         /// members.</returns>
-        Task<List<UserGroup>> GetUserGroupsForFamily(int familyId, UserInfo currentUserInfo);
+        Task<List<UserGroup>> GetUserGroupsForFamily(int familyId, UserInfo currentUserInfo, bool isSystemRequest = false);
 
         /// <summary>
         /// Adds a new user group to the database.

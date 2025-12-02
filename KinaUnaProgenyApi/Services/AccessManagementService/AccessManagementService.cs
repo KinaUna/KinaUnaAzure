@@ -1621,6 +1621,12 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 }
             }
 
+            if (isSystemRequest)
+            {
+                // Do not cache system requests.
+                return accessibleItemPermissions;
+            }
+
             ItemPermissionListCacheEntry itemPermissionListCacheEntry = new()
             {
                 TimelineItemPermissions = accessibleItemPermissions,
@@ -2503,10 +2509,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="progenyId">The unique identifier of the progeny. Must be greater than 0.</param>
         /// <param name="userGroupId">The unique identifier of the user group. Must be greater than 0.</param>
         /// <param name="currentUserInfo">The information of the current user making the request. Used to verify access permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is made by the system (default is <see langword="false"/>).</param>
         /// <returns>A <see cref="ProgenyPermission"/> object representing the permission settings for the specified progeny and
         /// user group,  or <see langword="null"/> if the progeny or user group does not exist, the user lacks access,
         /// or the identifiers are invalid.</returns>
-        public async Task<ProgenyPermission> GetProgenyPermissionForGroup(int progenyId, int userGroupId, UserInfo currentUserInfo)
+        public async Task<ProgenyPermission> GetProgenyPermissionForGroup(int progenyId, int userGroupId, UserInfo currentUserInfo, bool isSystemRequest = false)
         {
             if (progenyId == 0 || userGroupId == 0)
             {
@@ -2515,7 +2522,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             string cacheKey = $"getProgenyPermissionForGroup_userId_{currentUserInfo.UserId}_progenyId_{progenyId}_userGroupId_{userGroupId}";
 
             string cachedProgenyPermissionString = await cache.GetStringAsync(cacheKey);
-            if (!string.IsNullOrEmpty(cachedProgenyPermissionString))
+            if (!isSystemRequest && !string.IsNullOrEmpty(cachedProgenyPermissionString))
             {
                 ProgenyOrFamilyPermissionCacheEntry cachedProgenyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedProgenyPermissionString, JsonSerializerOptions.Web);
                 ProgenyOrFamilyUpdatedCacheEntry progenyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(progenyId, 0);
@@ -2540,7 +2547,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 UpdateTime = DateTime.UtcNow
             };
             bool hasAccess = await IsUserAccessManager(currentUserInfo, PermissionType.Progeny, progenyId);
-            if (hasAccess)
+            if (hasAccess || isSystemRequest)
             {
                 ProgenyPermission progenyPermission = await progenyDbContext.ProgenyPermissionsDb
                     .AsNoTracking()
@@ -2548,6 +2555,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (progenyPermission != null)
                 {
                     cacheEntry.ProgenyPermission = progenyPermission;
+                    if (isSystemRequest)
+                    {
+                        // If the request is from the system, return the permission without setting the cache.
+                        return cacheEntry.ProgenyPermission;
+                    }
                 }
             }
 
@@ -2568,9 +2580,10 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="familyId">The unique identifier of the family. Must be greater than zero.</param>
         /// <param name="userGroupId">The unique identifier of the user group. Must be greater than zero.</param>
         /// <param name="currentUserInfo">The information of the current user making the request. Cannot be <c>null</c>.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is coming from a system process. Defaults to <c>false</c>.</param>
         /// <returns>A <see cref="FamilyPermission"/> object representing the permission for the specified family and user group,
         /// or <c>null</c> if the identifiers are invalid, the user lacks access, or no matching permission is found.</returns>
-        public async Task<FamilyPermission> GetFamilyPermissionForGroup(int familyId, int userGroupId, UserInfo currentUserInfo)
+        public async Task<FamilyPermission> GetFamilyPermissionForGroup(int familyId, int userGroupId, UserInfo currentUserInfo, bool isSystemRequest = false)
         {
             if (familyId == 0 || userGroupId == 0)
             {
@@ -2580,7 +2593,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             string cacheKey = $"getFamilyPermissionForGroup_userId_{currentUserInfo.UserId}_familyId_{familyId}_userGroupId_{userGroupId}";
 
             string cachedFamilyPermissionString = await cache.GetStringAsync(cacheKey);
-            if (!string.IsNullOrEmpty(cachedFamilyPermissionString))
+            if (!isSystemRequest && !string.IsNullOrEmpty(cachedFamilyPermissionString))
             {
                 ProgenyOrFamilyPermissionCacheEntry cachedFamilyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedFamilyPermissionString, JsonSerializerOptions.Web);
                 ProgenyOrFamilyUpdatedCacheEntry familyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(0, familyId);
@@ -2606,7 +2619,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             };
 
             bool hasAccess = await IsUserAccessManager(currentUserInfo, PermissionType.Family, familyId);
-            if (hasAccess)
+            if (isSystemRequest || hasAccess)
             {
                 FamilyPermission familyPermission = await progenyDbContext.FamilyPermissionsDb
                     .AsNoTracking()
@@ -2614,6 +2627,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 if (familyPermission != null)
                 {
                     cacheEntry.FamilyPermission = familyPermission;
+                    if (isSystemRequest)
+                    {
+                        // If the request is from the system, return the permission without setting the cache.
+                        return cacheEntry.FamilyPermission;
+                    }
                 }
             }
             DistributedCacheEntryOptions cacheOptionsSlidingView = new();

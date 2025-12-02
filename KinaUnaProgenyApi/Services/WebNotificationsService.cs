@@ -20,8 +20,14 @@ namespace KinaUnaProgenyApi.Services
     /// <param name="notificationsService"></param>
     /// <param name="userAccessService"></param>
     /// <param name="userInfoService"></param>
-    public class WebNotificationsService(IPushMessageSender pushMessageSender, INotificationsService notificationsService, IUserAccessService userAccessService,
-        IUserInfoService userInfoService, IAccessManagementService accessManagementService, IUserGroupsService userGroupsService, IWebHostEnvironment webHostEnvironment)
+    public class WebNotificationsService(
+        IPushMessageSender pushMessageSender,
+        INotificationsService notificationsService,
+        IUserAccessService userAccessService,
+        IUserInfoService userInfoService,
+        IAccessManagementService accessManagementService,
+        IUserGroupsService userGroupsService,
+        IWebHostEnvironment webHostEnvironment)
         : IWebNotificationsService
     {
         /// <summary>
@@ -40,28 +46,8 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            List<UserInfo> usersToNotify = [];
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Calendar, eventItem.EventId, currentUser);
             
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Calendar, eventItem.EventId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-            }
-
             foreach (UserInfo userInfo in usersToNotify)
             {
                 if (eventItem.StartTime == null) continue;
@@ -111,36 +97,7 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            List<UserInfo> usersToNotify = [];
-
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, contactItem.ContactId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Contact, contactItem.ContactId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
@@ -178,40 +135,11 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            List<UserInfo> usersToNotify = [];
-
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Friend, friendItem.FriendId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Friend, friendItem.FriendId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
-                
+
                 WebNotification notification = new()
                 {
                     To = userInfo.UserId,
@@ -247,36 +175,7 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            List<UserInfo> usersToNotify = [];
-
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Location, locationItem.LocationId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Location, locationItem.LocationId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
@@ -320,36 +219,7 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            List<UserInfo> usersToNotify = [];
-
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Measurement, measurementItem.MeasurementId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Measurement, measurementItem.MeasurementId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
@@ -380,42 +250,13 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendNoteNotification(Note noteItem, UserInfo currentUser, string title)
         {
-            // Don't send for development environment, unless explicitly enabled.
+            //Don't send for development environment, unless explicitly enabled.
             if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
                 return;
             }
 
-            List<UserInfo> usersToNotify = [];
-
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Note, noteItem.NoteId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Note, noteItem.NoteId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
@@ -452,36 +293,7 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            List<UserInfo> usersToNotify = [];
-
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Photo, pictureItem.PictureId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Photo, pictureItem.PictureId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
@@ -496,6 +308,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     picTimeString = "Photo taken: Unknown";
                 }
+
                 WebNotification notification = new()
                 {
                     To = userInfo.UserId,
@@ -528,36 +341,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 return;
             }
-            List<UserInfo> usersToNotify = [];
 
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Video, videoItem.VideoId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Video, videoItem.VideoId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
@@ -572,6 +357,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     picTimeString = "Video recorded: Unknown";
                 }
+
                 WebNotification notification = new()
                 {
                     To = userInfo.UserId,
@@ -604,36 +390,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 return;
             }
-            List<UserInfo> usersToNotify = [];
 
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Skill, skillItem.SkillId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Skill, skillItem.SkillId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
@@ -674,40 +432,12 @@ namespace KinaUnaProgenyApi.Services
             {
                 return;
             }
-
-            List<UserInfo> usersToNotify = [];
+            
             bool itemIdParsed = int.TryParse(commentItem.ItemId, out int itemId);
             if (!itemIdParsed) return;
 
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList((KinaUnaTypes.TimeLineType)commentItem.ItemType, itemId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
-
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem((KinaUnaTypes.TimeLineType)commentItem.ItemType, itemId, currentUser);
+            
             foreach (UserInfo userInfo in usersToNotify)
             {
                 WebNotification webNotification = new()
@@ -755,36 +485,7 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            List<UserInfo> usersToNotify = [];
-
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Sleep, sleepItem.SleepId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Sleep, sleepItem.SleepId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
@@ -824,36 +525,7 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            List<UserInfo> usersToNotify = [];
-
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Vaccination, vaccinationItem.VaccinationId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Vaccination, vaccinationItem.VaccinationId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
@@ -890,36 +562,7 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            List<UserInfo> usersToNotify = [];
-
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
@@ -1013,36 +656,7 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            List<UserInfo> usersToNotify = [];
-
-            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Measurement, todoItem.TodoItemId, currentUser, true);
-            foreach (TimelineItemPermission permission in permissions)
-            {
-                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
-                {
-                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
-                    if (userGroup != null)
-                    {
-                        foreach (UserGroupMember member in userGroup.Members)
-                        {
-                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
-                            {
-                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
-                                usersToNotify.Add(memberUserInfo);
-                            }
-                        }
-                    }
-                }
-
-                if (permission.PermissionLevel >= PermissionLevel.CreatorOnly)
-                {
-                    UserInfo permissionUserInfo = await userInfoService.GetUserInfoByUserId(permission.UserId);
-                    if (permissionUserInfo != null && !usersToNotify.Exists(u => u.UserId == permission.UserId))
-                    {
-                        usersToNotify.Add(permissionUserInfo);
-                    }
-                }
-            }
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUser);
 
             foreach (UserInfo userInfo in usersToNotify)
             {
@@ -1059,7 +673,7 @@ namespace KinaUnaProgenyApi.Services
                         TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
                     eventTimeString = "\r\nStart: " + startDate.ToString("dd-MMM-yyyy");
                 }
-                
+
 
                 if (todoItem.DueDate != null)
                 {
@@ -1085,6 +699,62 @@ namespace KinaUnaProgenyApi.Services
                 await pushMessageSender.SendMessage(userInfo.UserId, webNotification.Title,
                     webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunatodolist" + todoItem.TodoItemId);
             }
+        }
+
+        private async Task<List<UserInfo>> GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType type, int itemId, UserInfo currentUser)
+        {
+            List<UserInfo> usersToNotify = [];
+            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(type, itemId, currentUser, true);
+            foreach (TimelineItemPermission permission in permissions)
+            {
+
+                if (permission.InheritPermissions)
+                {
+                    // Get user groups and members
+                    List<UserGroup> userGroups = [];
+                    if (permission.ProgenyId > 0)
+                    {
+                        userGroups = await userGroupsService.GetUserGroupsForProgeny(permission.ProgenyId, currentUser, true);
+                    }
+                    else if (permission.FamilyId > 0)
+                    {
+                        userGroups = await userGroupsService.GetUserGroupsForFamily(permission.FamilyId, currentUser, true);
+                    }
+
+                    foreach (UserGroup userGroup in userGroups)
+                    {
+                        if (userGroup.PermissionLevel > PermissionLevel.None)
+                        {
+                            foreach (UserGroupMember member in userGroup.Members)
+                            {
+                                if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
+                                {
+                                    UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
+                                    usersToNotify.Add(memberUserInfo);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
+                {
+                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
+                    if (userGroup != null)
+                    {
+                        foreach (UserGroupMember member in userGroup.Members)
+                        {
+                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
+                            {
+                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
+                                usersToNotify.Add(memberUserInfo);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return usersToNotify;
         }
     }
 }

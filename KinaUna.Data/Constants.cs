@@ -27,7 +27,7 @@
         public const int DefaultUpcomingCalendarItemsCount = 8;
         public const string PlaceholderImageLink = "ab5fe7cb-2a66-4785-b39a-aa4eb7953c3d.png";
         public const string SystemAccountEmail = "system@kinauna.com";
-        public const bool SendNotificationsInDevelopment = false;
+        public const bool SendNotificationsInDevelopment = true;
         public static readonly string[] ProductionCorsList = ["https://web.kinauna.com", "https://auth.kinauna.com", "https://progenyapi.kinauna.com"];
         public static readonly string[] DevelopmentCorsList = ["https://localhost:44397", "https://localhost:44376", "https://localhost:44324"];
         public static readonly string[] StagingCorsList = ["https://kinaunaweb.azurewebsites.net", "https://kinaunaauth.azurewebsites.net", "https://kinaunaprogenyapi.azurewebsites.net"];

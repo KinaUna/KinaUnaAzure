@@ -246,10 +246,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="progenyId">The unique identifier of the progeny. Must be greater than 0.</param>
         /// <param name="userGroupId">The unique identifier of the user group. Must be greater than 0.</param>
         /// <param name="currentUserInfo">The information of the current user making the request. Used to verify access permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is made by the system (default is <see langword="false"/>).</param>
         /// <returns>A <see cref="ProgenyPermission"/> object representing the permission settings for the specified progeny and
         /// user group,  or <see langword="null"/> if the progeny or user group does not exist, the user lacks access,
         /// or the identifiers are invalid.</returns>
-        Task<ProgenyPermission> GetProgenyPermissionForGroup(int progenyId, int userGroupId, UserInfo currentUserInfo);
+        Task<ProgenyPermission> GetProgenyPermissionForGroup(int progenyId, int userGroupId, UserInfo currentUserInfo, bool isSystemRequest = false);
 
         /// <summary>
         /// Retrieves the family permission associated with a specific family and user group.
@@ -260,9 +261,10 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         /// <param name="familyId">The unique identifier of the family. Must be greater than zero.</param>
         /// <param name="userGroupId">The unique identifier of the user group. Must be greater than zero.</param>
         /// <param name="currentUserInfo">The information of the current user making the request. Cannot be <c>null</c>.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is made by the system (default is <see langword="false"/>).</param>
         /// <returns>A <see cref="FamilyPermission"/> object representing the permission for the specified family and user group,
         /// or <c>null</c> if the identifiers are invalid, the user lacks access, or no matching permission is found.</returns>
-        Task<FamilyPermission> GetFamilyPermissionForGroup(int familyId, int userGroupId, UserInfo currentUserInfo);
+        Task<FamilyPermission> GetFamilyPermissionForGroup(int familyId, int userGroupId, UserInfo currentUserInfo, bool isSystemRequest = false);
 
         /// <summary>
         /// Retrieves a list of progeny IDs that the specified user can access based on their permissions.
