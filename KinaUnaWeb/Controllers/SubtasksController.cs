@@ -187,6 +187,15 @@ namespace KinaUnaWeb.Controllers
                 model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
 
+            if (model.TodoItem.ProgenyId > 0)
+            {
+                model.TodoItem.Progeny = await progenyHttpClient.GetProgeny(model.TodoItem.ProgenyId);
+            }
+            if (model.TodoItem.FamilyId > 0)
+            {
+                model.TodoItem.Family = await familiesHttpClient.GetFamily(model.TodoItem.FamilyId);
+            }
+
             return Json(model.TodoItem);
         }
 
@@ -252,6 +261,16 @@ namespace KinaUnaWeb.Controllers
             {
                 model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
+
+            if (model.TodoItem.ProgenyId > 0)
+            {
+                model.TodoItem.Progeny = await progenyHttpClient.GetProgeny(model.TodoItem.ProgenyId);
+            }
+            if (model.TodoItem.FamilyId > 0)
+            {
+                model.TodoItem.Family = await familiesHttpClient.GetFamily(model.TodoItem.FamilyId);
+            }
+
             return PartialView("../Todos/_TodoDetailsPartial", model);
         }
         

@@ -232,6 +232,15 @@ namespace KinaUnaWeb.Controllers
             model.CalendarItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
 
+            if (model.CalendarItem.ProgenyId > 0)
+            {
+                model.CalendarItem.Progeny = await progenyHttpClient.GetProgeny(model.CalendarItem.ProgenyId);
+            }
+            if (model.CalendarItem.FamilyId > 0)
+            {
+                model.CalendarItem.Family = await familiesHttpClient.GetFamily(model.CalendarItem.FamilyId);
+            }
+
             return PartialView("_EventAddedPartial", model);
         }
 
@@ -310,6 +319,15 @@ namespace KinaUnaWeb.Controllers
             model.CalendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.CalendarItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
+
+            if (model.CalendarItem.ProgenyId > 0)
+            {
+                model.CalendarItem.Progeny = await progenyHttpClient.GetProgeny(model.CalendarItem.ProgenyId);
+            }
+            if (model.CalendarItem.FamilyId > 0)
+            {
+                model.CalendarItem.Family = await familiesHttpClient.GetFamily(model.CalendarItem.FamilyId);
+            }
 
             return PartialView("_EventUpdatedPartial", model);
         }
@@ -459,6 +477,15 @@ namespace KinaUnaWeb.Controllers
             model.CalendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.CalendarItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(model.CalendarItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SetReminderOffsetList(await viewModelSetupService.CreateReminderOffsetSelectListItems(model.LanguageId));
+
+            if (model.CalendarItem.ProgenyId > 0)
+            {
+                model.CalendarItem.Progeny = await progenyHttpClient.GetProgeny(model.CalendarItem.ProgenyId);
+            }
+            if (model.CalendarItem.FamilyId > 0)
+            {
+                model.CalendarItem.Family = await familiesHttpClient.GetFamily(model.CalendarItem.FamilyId);
+            }
 
             return PartialView("_EventCopiedPartial", model);
         }

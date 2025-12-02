@@ -311,6 +311,8 @@ namespace KinaUnaWeb.Controllers
             {
                 model.FriendItem.FriendSince = TimeZoneInfo.ConvertTimeFromUtc(model.FriendItem.FriendSince.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
+
+            model.FriendItem.Progeny = await progenyHttpClient.GetProgeny(model.FriendItem.ProgenyId);
             
             return PartialView("_FriendAddedPartial", model);
         }
@@ -391,6 +393,8 @@ namespace KinaUnaWeb.Controllers
             {
                 model.FriendItem.FriendSince = TimeZoneInfo.ConvertTimeFromUtc(model.FriendItem.FriendSince.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
+
+            model.FriendItem.Progeny = await progenyHttpClient.GetProgeny(model.FriendItem.ProgenyId);
 
             return PartialView("_FriendUpdatedPartial", model);
         }
@@ -531,6 +535,8 @@ namespace KinaUnaWeb.Controllers
             {
                 model.FriendItem.FriendSince = TimeZoneInfo.ConvertTimeFromUtc(model.FriendItem.FriendSince.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
+
+            model.FriendItem.Progeny = await progenyHttpClient.GetProgeny(model.FriendItem.ProgenyId);
 
             return PartialView("_FriendCopiedPartial", model);
         }

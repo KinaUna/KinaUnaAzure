@@ -125,6 +125,7 @@ namespace KinaUnaWeb.Controllers
             model.MeasurementItem = await measurementsHttpClient.AddMeasurement(measurementItem);
             model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.Date, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.MeasurementItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.MeasurementItem.Progeny = await progenyHttpClient.GetProgeny(model.MeasurementItem.ProgenyId);
 
             return PartialView("_MeasurementAddedPartial", model);
         }
@@ -185,6 +186,7 @@ namespace KinaUnaWeb.Controllers
             model.MeasurementItem = await measurementsHttpClient.UpdateMeasurement(editedMeasurement);
             model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.Date, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.MeasurementItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.MeasurementItem.Progeny = await progenyHttpClient.GetProgeny(model.MeasurementItem.ProgenyId);
 
             return PartialView("_MeasurementUpdatedPartial", model);
         }
@@ -299,7 +301,8 @@ namespace KinaUnaWeb.Controllers
             model.MeasurementItem = await measurementsHttpClient.AddMeasurement(editedMeasurement);
             model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.Date, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.MeasurementItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            
+            model.MeasurementItem.Progeny = await progenyHttpClient.GetProgeny(model.MeasurementItem.ProgenyId);
+
             return PartialView("_MeasurementCopiedPartial", model);
         }
     }

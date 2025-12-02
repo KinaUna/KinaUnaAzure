@@ -128,6 +128,8 @@ namespace KinaUnaWeb.Controllers
 
             model.VocabularyItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.DateAdded, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
+            model.VocabularyItem.Progeny = await progenyHttpClient.GetProgeny(model.VocabularyItem.ProgenyId);
+
             return PartialView("_VocabularyAddedPartial", model);
         }
 
@@ -189,6 +191,8 @@ namespace KinaUnaWeb.Controllers
                 model.VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
             model.VocabularyItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.DateAdded, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.VocabularyItem.Progeny = await progenyHttpClient.GetProgeny(model.VocabularyItem.ProgenyId);
 
             return PartialView("_VocabularyUpdatedPartial", model);
         }
@@ -308,6 +312,8 @@ namespace KinaUnaWeb.Controllers
                 model.VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
             model.VocabularyItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.DateAdded, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.VocabularyItem.Progeny = await progenyHttpClient.GetProgeny(model.VocabularyItem.ProgenyId);
 
             return PartialView("_VocabularyCopiedPartial", model);
         }
