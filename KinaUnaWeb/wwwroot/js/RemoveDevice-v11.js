@@ -1,5 +1,5 @@
 ﻿//var applicationServerPublicKey = '';
-var serviceWorker = '/pwabuilder-sw.js';
+var serviceWorker = '/pwabuilder-sw-v11.js';
 var isSubscribed = false;
 
 $(function () {
@@ -66,7 +66,7 @@ function initialiseState(reg) {
                     console.log(subscription);
 
                     $('#PushEndpoint').val(subscription.endpoint);
-                    $('#PushP256DH').val(p256dh);
+                    $('#PushP256Dh').val(p256dh);
                     $('#PushAuth').val(auth);
                     console.log('User is already subscribed to push notifications');
                 } else {

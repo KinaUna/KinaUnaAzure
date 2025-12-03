@@ -58,7 +58,7 @@ namespace KinaUnaProgenyApi.Services
                         }
                         catch (WebPushException ex)
                         {
-                            if (ex.Message == "Subscription no longer valid")
+                            if (ex.Message.Contains("subscription no longer valid", System.StringComparison.CurrentCultureIgnoreCase))
                             {
                                 await notificationsService.RemovePushDevice(dev);
                             }
@@ -67,7 +67,6 @@ namespace KinaUnaProgenyApi.Services
 
                 }
             }
-
         }
 
         /// <summary>

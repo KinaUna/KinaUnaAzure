@@ -1,5 +1,4 @@
-﻿const serviceWorkerVersion = 'v8';
-import { setAddItemButtonEventListeners } from './addItem/add-item-v11.js';
+﻿import { setAddItemButtonEventListeners } from './addItem/add-item-v11.js';
 import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v11.js';
 import { addFamilyItemEventListenersForAllFamilies } from './families/family-details-v11.js';
 import { hideBodyScrollbars, showBodyScrollbars } from './item-details/items-display-v11.js';
@@ -9,6 +8,7 @@ import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-d
 import { getSelectedFamilies, getSelectedProgenies } from './settings-tools-v11.js';
 import { initSidebar } from './sidebar-v11.js';
 
+const serviceWorkerVersion = 'v11';
 const serviceWorkerVersion_key = 'service_worker_version';
 
 /**
@@ -32,8 +32,10 @@ function updateServiceWorkers(): void {
     navigator.serviceWorker.getRegistrations().then(
         function (registrations) {
             for (let registration of registrations) {
-                registration.update();
+                registration.unregister();
             }
+            // Register current service worker
+            navigator.serviceWorker.register('/pwabuilder-sw-v11.js');
         }).catch(function (error) {
             console.log('Error updating service workers. Error: ' + error);
         });

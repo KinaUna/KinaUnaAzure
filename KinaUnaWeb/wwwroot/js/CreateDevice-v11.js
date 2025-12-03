@@ -1,5 +1,5 @@
 ﻿//var applicationServerPublicKey = '';
-var serviceWorker = '/pwabuilder-sw.js';
+var serviceWorker = '/pwabuilder-sw-v11.js';
 var isSubscribed = false;
 
 $(function () {
@@ -89,9 +89,10 @@ function subscribe() {
                 var auth = base64Encode(subscription.getKey('auth'));
 
                 console.log(subscription);
+                console.log('p256dh: ' + p256dh);
 
                 $('#PushEndpoint').val(subscription.endpoint);
-                $('#PushP256DH').val(p256dh);
+                $('#PushP256Dh').val(p256dh);
                 $('#PushAuth').val(auth);
             })
             .catch(function (e) {

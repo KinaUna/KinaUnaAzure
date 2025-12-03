@@ -168,6 +168,11 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!deviceResponse.IsSuccessStatusCode) return pushDevice;
 
             string deviceResponseString = await deviceResponse.Content.ReadAsStringAsync();
+            if (string.IsNullOrEmpty(deviceResponseString))
+            {
+                return null;
+            }
+
             pushDevice = JsonSerializer.Deserialize<PushDevices>(deviceResponseString, JsonSerializerOptions.Web);
             return pushDevice;
         }

@@ -70,7 +70,7 @@
     <PackageReference Include="Microsoft.Bcl.Cryptography" Version="10.0.0" />
     <PackageReference Include="Microsoft.Build" Version="18.0.2" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Framework" Version="18.0.2" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.11.1" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.11.2" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="18.0.2" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="18.0.2" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0">
@@ -120,8 +120,8 @@
     <PackageReference Include="System.ValueTuple" Version="4.6.1" />
     <PackageReference Include="System.Windows.Extensions" Version="10.0.0" />
     <PackageReference Include="WebPush" Version="1.0.12" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="4.1.0" />
-    <PackageReference Include="xunit.analyzers" Version="1.25.0">
+    <PackageReference Include="Microsoft.Identity.Web" Version="4.1.1" />
+    <PackageReference Include="xunit.analyzers" Version="1.26.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -216,10 +216,10 @@
     <Content Update="wwwroot\images\kinaunalogo_badge4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\js\RemoveDevice.js">
+    <Content Update="wwwroot\js\RemoveDevice-v11.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\js\CreateDevice.js">
+    <Content Update="wwwroot\js\CreateDevice-v11.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\js\SendDevice.js">
@@ -243,7 +243,7 @@
     <Content Update="wwwroot\pwabuilder-sw-register.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\pwabuilder-sw-002.js">
+    <Content Update="wwwroot\pwabuilder-sw-v11.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\robots.txt">

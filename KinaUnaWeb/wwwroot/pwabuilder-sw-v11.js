@@ -1,6 +1,6 @@
 // This is the service worker with the combined offline experience (Offline page + Offline copy of pages)
 
-const CACHE = "kinauna-cache-v2";
+const CACHE = "kinauna-cache-v11";
 
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
 
@@ -109,12 +109,12 @@ self.addEventListener('push', function (event) {
     }
 
     const notification = JSON.parse(data);
-    const title = notification.Title;
-    const message = notification.Message;
-    const link = notification.Link;
+    const title = notification.title;
+    const message = notification.message;
+    const link = notification.link;
     const icon = "https://web.kinauna.com/images/kinaunalogo192x192_round.png";
     const badge = "https://web.kinauna.com/images/kinaunalogo_badge5.png";
-    const tag = notification.Tag;
+    const tag = notification.tag;
     event.waitUntil(self.registration.showNotification(title, {
         body: message,
         icon: icon,

@@ -1,4 +1,3 @@
-const serviceWorkerVersion = 'v8';
 import { setAddItemButtonEventListeners } from './addItem/add-item-v11.js';
 import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v11.js';
 import { addFamilyItemEventListenersForAllFamilies } from './families/family-details-v11.js';
@@ -7,6 +6,7 @@ import { SetProgenyRequest } from './page-models-v11.js';
 import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-details-v11.js';
 import { getSelectedFamilies, getSelectedProgenies } from './settings-tools-v11.js';
 import { initSidebar } from './sidebar-v11.js';
+const serviceWorkerVersion = 'v11';
 const serviceWorkerVersion_key = 'service_worker_version';
 /**
  * Removes all service workers from the browser.
@@ -26,8 +26,10 @@ function removeServiceWorkers() {
 function updateServiceWorkers() {
     navigator.serviceWorker.getRegistrations().then(function (registrations) {
         for (let registration of registrations) {
-            registration.update();
+            registration.unregister();
         }
+        // Register current service worker
+        navigator.serviceWorker.register('/pwabuilder-sw-v11.js');
     }).catch(function (error) {
         console.log('Error updating service workers. Error: ' + error);
     });
