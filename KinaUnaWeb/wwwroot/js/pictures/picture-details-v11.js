@@ -3,7 +3,7 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v11.js';
 import { setupHereMaps } from '../locations/location-tools-v11.js';
 import { PicturesPageParameters, PictureViewModelRequest } from '../page-models-v11.js';
-import { setEditItemButtonEventListeners } from '../addItem/add-item-v11.js';
+import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from '../addItem/add-item-v11.js';
 import { getSelectedProgenies } from '../settings-tools-v11.js';
 let pictureDetailsTouchStartX = 0;
 let pictureDetailsTouchStartY = 0;
@@ -302,6 +302,7 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
                 await addCommentEventListeners();
                 addShowMapButtonEventListener();
                 setEditItemButtonEventListeners();
+                setDeleteItemButtonEventListeners();
             }
         }
         else {

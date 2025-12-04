@@ -4,7 +4,7 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v11.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools-v11.js';
 import { PicturesPageParameters, PictureViewModelRequest } from '../page-models-v11.js';
-import { setEditItemButtonEventListeners } from '../addItem/add-item-v11.js';
+import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from '../addItem/add-item-v11.js';
 import { getSelectedProgenies } from '../settings-tools-v11.js';
 
 let pictureDetailsTouchStartX: number = 0;
@@ -344,6 +344,7 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
                 await addCommentEventListeners();
                 addShowMapButtonEventListener();
                 setEditItemButtonEventListeners();
+                setDeleteItemButtonEventListeners();
             }
         } else {
             console.error('Error getting picture item. Status: ' + response.status + ', Message: ' + response.statusText);

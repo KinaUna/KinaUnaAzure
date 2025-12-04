@@ -34,6 +34,10 @@ function addSelectTriviaProgenyEventListeners() {
 }
 
 function setActiveProgenyTriviaButton(progenyId: number) {
+    if (progenyId === 0) {
+        return;
+    }
+
     const progenyElements = document.querySelectorAll<HTMLAnchorElement>('.select-trivia-progeny-link');
     progenyElements.forEach(function (progenyElement) {
         const elementProgenyId = progenyElement.getAttribute('data-progeny-id');
@@ -47,7 +51,6 @@ function setActiveProgenyTriviaButton(progenyId: number) {
 }
 
 async function getProgenyTrivia(progenyId: number, familyId: number) {
-    setActiveProgenyTriviaButton(progenyId);
     const triviaDiv = document.querySelector<HTMLDivElement>('#progeny-trivia-div');
     if (triviaDiv) {
         startLoadingItemsSpinner('progeny-trivia-content');

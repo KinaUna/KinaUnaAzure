@@ -136,7 +136,20 @@ namespace KinaUnaWeb.Controllers
             }
             
             model.Picture.Progeny.PictureLink = model.Picture.Progeny.GetProfilePictureUrl();
-            
+
+            model.ProgenyLocations = [];
+            if (model.Picture.ItemPerMission != null && model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
+            {
+                foreach (Progeny progeny in model.CurrentUser.ProgenyList)
+                {
+                    List<Location> locations = await locationsHttpClient.GetProgenyLocations(progeny.Id);
+                    if (locations != null)
+                    {
+                        model.ProgenyLocations.AddRange(locations);
+                    }
+                }
+            }
+
             if (partialView)
             {
                 return PartialView("_PictureDetailsPartial", model);
@@ -195,10 +208,10 @@ namespace KinaUnaWeb.Controllers
 
                 }
             }
-
+            
+            model.ProgenyLocations = [];
             if (model.Picture.ItemPerMission != null && model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
-                model.ProgenyLocations = [];
                 foreach (Progeny progeny in model.CurrentUser.ProgenyList)
                 {
                     List<Location> locations = await locationsHttpClient.GetProgenyLocations(progeny.Id);
@@ -560,8 +573,9 @@ namespace KinaUnaWeb.Controllers
             
             model.SetPropertiesFromPictureItem(picture);
             model.Picture.PictureLink600 = model.Picture.GetPictureUrl(600);
-            
-            return View(model);
+            model.Picture.Progeny = await progenyHttpClient.GetProgeny(model.Picture.ProgenyId);
+
+            return PartialView("_DeletePicturePartial", model);
         }
 
         /// <summary>
@@ -593,10 +607,8 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
 
             _ = await mediaHttpClient.DeletePicture(model.Picture.PictureId);
-
-            // Todo: show confirmation info, instead of gallery page.
-
-            return RedirectToAction("Index", "Pictures");
+            
+            return Json(model.Picture);
         }
 
         /// <summary>

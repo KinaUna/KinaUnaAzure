@@ -613,6 +613,14 @@ async function onSaveItemFormSubmit(event) {
                         resolve();
                     });
                 }
+                if (formAction.includes('/DeletePicture')) {
+                    // Todo: reload the pictures list.
+                    let pictureItem = await response.json();
+                    dispatchTimelineItemChangedEvent(TimeLineType.Photo.toString(), pictureItem.pictureId.toString());
+                    return new Promise(function (resolve, reject) {
+                        resolve();
+                    });
+                }
                 if (itemDetailsPopupDiv) {
                     let modalContent = await response.text();
                     const fullScreenOverlay = document.createElement('div');

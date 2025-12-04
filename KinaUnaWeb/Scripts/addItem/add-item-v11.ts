@@ -17,7 +17,7 @@ import { popupVideoDetails } from "../videos/video-details-v11.js";
 import { initializeAddEditVocabulary } from "../vocabulary/add-edit-vocabulary-v11.js";
 import { initializeAddEditTodo } from "../todos/add-edit-todo-v11.js";
 import { TimelineChangedEvent } from "../data-tools-v11.js";
-import { KanbanBoard, TimelineItem, TimeLineType, TodoItem } from "../page-models-v11.js";
+import { KanbanBoard, Picture, TimelineItem, TimeLineType, TodoItem } from "../page-models-v11.js";
 import { popupTodoItem } from "../todos/todo-details-v11.js";
 import { initializeAddEditKanbanBoard } from "../kanbans/add-edit-kanban-board-v11.js";
 import { dispatchKanbanBoardChangedEvent, popupKanbanBoard } from "../kanbans/kanban-board-details-v11.js";
@@ -721,6 +721,15 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
                     // Todo: reload the todos list.
                     let todoItem = await response.json() as TodoItem;
                     dispatchTimelineItemChangedEvent(TimeLineType.TodoItem.toString(), todoItem.todoItemId.toString());
+                    return new Promise<void>(function (resolve, reject) {
+                        resolve();
+                    });
+                }
+
+                if (formAction.includes('/DeletePicture')) {
+                    // Todo: reload the pictures list.
+                    let pictureItem = await response.json() as Picture;
+                    dispatchTimelineItemChangedEvent(TimeLineType.Photo.toString(), pictureItem.pictureId.toString());
                     return new Promise<void>(function (resolve, reject) {
                         resolve();
                     });

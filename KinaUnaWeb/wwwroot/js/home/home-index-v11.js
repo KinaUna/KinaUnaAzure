@@ -30,6 +30,9 @@ function addSelectTriviaProgenyEventListeners() {
     });
 }
 function setActiveProgenyTriviaButton(progenyId) {
+    if (progenyId === 0) {
+        return;
+    }
     const progenyElements = document.querySelectorAll('.select-trivia-progeny-link');
     progenyElements.forEach(function (progenyElement) {
         const elementProgenyId = progenyElement.getAttribute('data-progeny-id');
@@ -42,7 +45,6 @@ function setActiveProgenyTriviaButton(progenyId) {
     });
 }
 async function getProgenyTrivia(progenyId, familyId) {
-    setActiveProgenyTriviaButton(progenyId);
     const triviaDiv = document.querySelector('#progeny-trivia-div');
     if (triviaDiv) {
         startLoadingItemsSpinner('progeny-trivia-content');

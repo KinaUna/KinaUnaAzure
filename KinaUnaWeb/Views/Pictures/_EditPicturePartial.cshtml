@@ -127,20 +127,6 @@
                             </div>
                         </div>
                     </form>
-                    @if (Model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
-                    {
-                        <form asp-controller="Pictures" asp-action="DeletePicture" role="form" method="get">
-                            <div class="form-group">
-                                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Remove this picture:", PageNames.Pictures, Model.LanguageId)</label>
-                                <div class="col-auto">
-                                    <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete picture", PageNames.Pictures, Model.LanguageId)</button>
-                                </div>
-                            </div>
-                            <input name="pictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden"/>
-                            <input name="partialView" class="form-control" value="@Model.PartialView" type="hidden"/>
-                        </form>
-                    }
-
                 </div>
             }
         </div>
