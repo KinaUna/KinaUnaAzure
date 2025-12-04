@@ -1,12 +1,10 @@
-﻿import { ProgenyChangedEvent } from "../data-tools-v11.js";
-import { Progeny, TimelineParameters } from "../page-models-v11.js";
+import { ProgenyChangedEvent } from "../data-tools-v11.js";
+import { Progeny } from "../page-models-v11.js";
 import { getSelectedFamilies, getSelectedProgenies } from "../settings-tools-v11.js";
-
-export async function getProgenySelector(progenyId: number, familyId: number, parentDivId: string) {
-    const selectorContainerDiv = document.querySelector<HTMLDivElement>('#' + parentDivId);
+export async function getProgenySelector(progenyId, familyId, parentDivId) {
+    const selectorContainerDiv = document.querySelector('#' + parentDivId);
     if (selectorContainerDiv) {
-        
-        const progenySelectorRequest: TimelineParameters = {
+        const progenySelectorRequest = {
             progenyId: progenyId,
             progenies: await getSelectedProgenies(),
             familyId: familyId,
@@ -19,7 +17,7 @@ export async function getProgenySelector(progenyId: number, familyId: number, pa
             day: 0,
             firstItemYear: 0,
             tagFilter: ''
-        }
+        };
         await fetch('/Progeny/ProgenySelectorElement', {
             method: 'POST',
             headers: {
@@ -30,23 +28,20 @@ export async function getProgenySelector(progenyId: number, familyId: number, pa
         }).then(async function (getProgenySelectorContent) {
             if (getProgenySelectorContent != null) {
                 const progenySelectorHtml = await getProgenySelectorContent.text();
-
                 if (selectorContainerDiv) {
                     selectorContainerDiv.innerHTML = progenySelectorHtml;
                 }
-                addSelectTriviaProgenyEventListeners();
+                addSelectProgenySelectorEventListeners();
                 setActiveProgenySelectorButton(progenyId);
             }
         });
     }
 }
-
-function setActiveProgenySelectorButton(progenyId: number) {
+function setActiveProgenySelectorButton(progenyId) {
     if (progenyId === 0) {
         return;
     }
-
-    const progenyElements = document.querySelectorAll<HTMLAnchorElement>('.progeny-selector-link');
+    const progenyElements = document.querySelectorAll('.progeny-selector-link');
     progenyElements.forEach(function (progenyElement) {
         const elementProgenyId = progenyElement.getAttribute('data-progeny-id');
         if (elementProgenyId) {
@@ -57,11 +52,10 @@ function setActiveProgenySelectorButton(progenyId: number) {
         }
     });
 }
-
-function addSelectTriviaProgenyEventListeners() {
-    const progenyElements = document.querySelectorAll<HTMLAnchorElement>('.progeny-selector-link');
+function addSelectProgenySelectorEventListeners() {
+    const progenyElements = document.querySelectorAll('.progeny-selector-link');
     progenyElements.forEach(function (progenyElement) {
-        const progenySelectorProgenyClicked = function (event: MouseEvent) {
+        const progenySelectorProgenyClicked = function (event) {
             event.preventDefault();
             const progenyId = progenyElement.getAttribute('data-progeny-id');
             if (progenyId) {
@@ -76,3 +70,4 @@ function addSelectTriviaProgenyEventListeners() {
         progenyElement.addEventListener('click', progenySelectorProgenyClicked);
     });
 }
+//# sourceMappingURL=progeny-selector-v11.js.map

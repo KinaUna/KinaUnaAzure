@@ -3,7 +3,7 @@ import { getCurrentLanguageId, getCurrentProgenyId, ProgenyChangedEvent, setMome
 import { showPopupAtLoad } from "../item-details/items-display-v11.js";
 import { startTopMenuSpinner, stopTopMenuSpinner } from "../navigation-tools-v11.js";
 import { Measurement, TimeLineType } from "../page-models-v11.js";
-import { getProgenySelector } from "../shared/progeny-selector.js";
+import { getProgenySelector } from "../shared/progeny-selector-v11.js";
 import { getTranslation } from "../localization-v11.js";
 
 declare global {

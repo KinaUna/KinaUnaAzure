@@ -44,16 +44,6 @@ namespace KinaUnaWeb.Controllers
             {
                 model.MeasurementsList = [.. model.MeasurementsList.OrderBy(m => m.Date)];
             }
-            else
-            {
-                Measurement m = new()
-                {
-                    ProgenyId = progenyId,
-                    Date = DateTime.UtcNow,
-                    CreatedDate = DateTime.UtcNow
-                };
-                model.MeasurementsList = [m];
-            }
 
             return PartialView("_MeasurementsTablePartial", model);
         }

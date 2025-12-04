@@ -27,12 +27,24 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SkillsListViewModel model = new(baseModel);
             
+            model.SkillId = skillId;
+
+            return View(model);
+
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SkillsTable(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            SkillsListViewModel model = new(baseModel);
+
             List<Skill> skillsList = await skillsHttpClient.GetSkillsList(model.CurrentProgenyId);
-            
+
             if (skillsList.Count != 0)
             {
                 skillsList = [.. skillsList.OrderBy(s => s.SkillFirstObservation)];
-                
+
                 foreach (Skill skill in skillsList)
                 {
                     SkillViewModel skillViewModel = new(baseModel);
@@ -41,27 +53,8 @@ namespace KinaUnaWeb.Controllers
 
                 }
             }
-            else
-            {
-                SkillViewModel skillViewModel = new()
-                {
-                    SkillItem =
-                    {
-                        ProgenyId = childId,
-                        Description = "The skills list is empty.",
-                        Category = "",
-                        Name = "No items",
-                        SkillFirstObservation = DateTime.UtcNow
-                    }
-                };
-
-                model.SkillsList.Add(skillViewModel);
-            }
-
-            model.SkillId = skillId;
-
-            return View(model);
-
+            
+            return PartialView("_SkillsTablePartial", model);
         }
 
         /// <summary>

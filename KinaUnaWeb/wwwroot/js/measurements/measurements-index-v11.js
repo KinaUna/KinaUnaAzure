@@ -3,7 +3,7 @@ import { getCurrentLanguageId, getCurrentProgenyId, setMomentLocale } from "../d
 import { showPopupAtLoad } from "../item-details/items-display-v11.js";
 import { startTopMenuSpinner, stopTopMenuSpinner } from "../navigation-tools-v11.js";
 import { TimeLineType } from "../page-models-v11.js";
-import { getProgenySelector } from "../shared/progeny-selector.js";
+import { getProgenySelector } from "../shared/progeny-selector-v11.js";
 import { getTranslation } from "../localization-v11.js";
 async function getMeasurements(progenyId) {
     const measurementsListTable = document.querySelector('#measurements-list-container-div');
