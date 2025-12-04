@@ -556,4 +556,14 @@ export class TimelineChangedEvent extends Event {
         return this.timelineItem;
     }
 }
+export class ProgenyChangedEvent extends Event {
+    constructor(progeny) {
+        super('progenyChanged');
+        this.progeny = null;
+        this.progeny = progeny;
+    }
+    get Progeny() {
+        return this.progeny;
+    }
+}
 //# sourceMappingURL=data-tools-v11.js.map

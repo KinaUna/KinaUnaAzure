@@ -27,8 +27,19 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             MeasurementViewModel model = new(baseModel);
             
+            model.MeasurementId = measurementId;
+             
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MeasurementsTable(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            MeasurementViewModel model = new(baseModel);
+
             model.MeasurementsList = await measurementsHttpClient.GetMeasurementsList(model.CurrentProgenyId);
-            
+
             if (model.MeasurementsList.Count != 0)
             {
                 model.MeasurementsList = [.. model.MeasurementsList.OrderBy(m => m.Date)];
@@ -37,16 +48,41 @@ namespace KinaUnaWeb.Controllers
             {
                 Measurement m = new()
                 {
-                    ProgenyId = childId,
+                    ProgenyId = progenyId,
                     Date = DateTime.UtcNow,
                     CreatedDate = DateTime.UtcNow
                 };
                 model.MeasurementsList = [m];
             }
 
-            model.MeasurementId = measurementId;
+            return PartialView("_MeasurementsTablePartial", model);
+        }
 
-            return View(model);
+        [HttpGet]
+        public async Task<IActionResult> GetMeasurementsData(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            MeasurementViewModel model = new(baseModel);
+
+            model.MeasurementsList = await measurementsHttpClient.GetMeasurementsList(model.CurrentProgenyId);
+
+            if (model.MeasurementsList.Count != 0)
+            {
+                model.MeasurementsList = [.. model.MeasurementsList.OrderBy(m => m.Date)];
+            }
+            else
+            {
+                Measurement m = new()
+                {
+                    ProgenyId = progenyId,
+                    Date = DateTime.UtcNow,
+                    CreatedDate = DateTime.UtcNow
+                };
+                model.MeasurementsList = [m];
+            }
+
+            return Json(model.MeasurementsList);
+
         }
 
         /// <summary>
@@ -87,6 +123,7 @@ namespace KinaUnaWeb.Controllers
             
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
+            model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             
             return PartialView("_AddMeasurementPartial", model);
         }

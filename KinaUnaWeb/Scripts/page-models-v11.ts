@@ -725,3 +725,12 @@ export class ItemPermissionDto {
     permissionLevel: PermissionLevel = PermissionLevel.None;
     groupId: number = 0;
 }
+
+export class Measurement {
+    measurementId: number = 0;
+    progenyId: number = 0;
+    height: number = 0;
+    weight: number = 0;
+    circumference: number = 0;
+    date: Date = new Date();
+}

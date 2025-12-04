@@ -1,5 +1,5 @@
 ﻿import { getTranslation } from './localization-v11.js';
-import { AutoSuggestList, TimelineItem } from './page-models-v11.js';
+import { AutoSuggestList, Progeny, TimelineItem } from './page-models-v11.js';
 
 declare let moment: any;
 let currentMomentLocale: string = 'en';
@@ -627,6 +627,18 @@ export class TimelineChangedEvent extends Event {
 
     get TimelineItem(): TimelineItem | null {
         return this.timelineItem;
+    }
+}
+
+export class ProgenyChangedEvent extends Event {
+    progeny: Progeny | null = null;
+    constructor(progeny: Progeny) {
+        super('progenyChanged');
+        this.progeny = progeny;
+    }
+
+    get Progeny(): Progeny | null {
+        return this.progeny;
     }
 }
 

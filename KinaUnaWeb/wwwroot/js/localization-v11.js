@@ -100,7 +100,7 @@ export async function getTranslation(word, page, languageId) {
         const textTranslation = await translationsResponse.json();
         translationString = textTranslation.translation;
     }).catch(function (error) {
-        console.log('Error loading Zebra Date Picker translations. Error: ' + error);
+        console.log('Error loading translation. Error: ' + error);
     });
     return new Promise(function (resolve, reject) {
         resolve(translationString);

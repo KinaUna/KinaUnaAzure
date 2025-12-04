@@ -1,0 +1,13 @@
+﻿@using KinaUna.Data.Extensions
+@model KinaUnaWeb.Models.ProgeniesViewModels.ProgenySelectorViewModel
+@foreach (Progeny progeny in Model.Progenies)
+{
+    string selectProgenyClass = "progeny-selector-link";
+    if (Model.CurrentProgeny.Id == progeny.Id)
+    {
+        selectProgenyClass = "progeny-selector-link active";
+    }
+    <a id="progeny-selector-select-@progeny.Id" class="@selectProgenyClass" data-progeny-id="@progeny.Id">
+        <img src="@progeny.GetProfilePictureUrl()" class="progeny-selector-picture" alt="@progeny.NickName" />
+    </a>
+}

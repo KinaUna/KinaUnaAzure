@@ -794,4 +794,14 @@ export class ItemPermissionDto {
         this.groupId = 0;
     }
 }
+export class Measurement {
+    constructor() {
+        this.measurementId = 0;
+        this.progenyId = 0;
+        this.height = 0;
+        this.weight = 0;
+        this.circumference = 0;
+        this.date = new Date();
+    }
+}
 //# sourceMappingURL=page-models-v11.js.map

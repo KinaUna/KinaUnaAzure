@@ -4594,3 +4594,37 @@ noUi-handle:after, .noUi-handle:before {
     max-width: 42px;
     object-fit: contain;
 }
+
+.progeny-selector-link {
+    display: inline-block;
+    text-decoration: none;
+    color: #ffffff;
+    margin: 6px;
+    padding: 4px;
+    cursor: pointer;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+    border-radius: 5px;
+}
+
+    .progeny-selector-link:hover {
+        text-decoration: none;
+        color: #ffef2f;
+    }
+
+    .progeny-selector-link:focus {
+        text-decoration: none;
+        color: #ffef2f;
+    }
+
+    .progeny-selector-link.active {
+        border-top: 1px solid #fbd10d;
+        border-bottom: 1px solid #fbd10d;
+    }
+
+.progeny-selector-picture {
+    border-radius: 10px;
+    height: 42px;
+    max-width: 42px;
+    object-fit: contain;
+}

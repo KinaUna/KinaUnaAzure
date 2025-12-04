@@ -4,17 +4,18 @@ using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
 using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.FamiliesViewModels;
 using KinaUnaWeb.Models.ProgeniesViewModels;
 using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUnaWeb.Models.FamiliesViewModels;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -697,6 +698,62 @@ namespace KinaUnaWeb.Controllers
             FamilyMember addedFamilyMember = await familiesHttpClient.AddFamilyMember(newFamilyMember);
 
             return Json(addedFamilyMember);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ProgenySelectorElement([FromBody] TimelineRequest request)
+        {
+            List<int> allowedProgenies = [];
+            if (request.Progenies.Count > 0)
+            {
+                foreach (int progenyId in request.Progenies)
+                {
+                    Progeny progeny = await progenyHttpClient.GetProgeny(progenyId);
+                    if (progeny != null && progeny.Id > 0)
+                    {
+                        allowedProgenies.Add(progeny.Id);
+                    }
+                }
+
+                request.Progenies = allowedProgenies;
+            }
+
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                request.ProgenyId = Constants.DefaultChildId;
+            }
+            else
+            {
+                if (request.ProgenyId == 0)
+                {
+                    // Select a random Progeny if none is selected.
+                    if (request.Progenies.Count > 0)
+                    {
+                        Random rand = new();
+                        request.ProgenyId = request.Progenies[rand.Next(request.Progenies.Count)];
+                    }
+                    else
+                    {
+                        request.ProgenyId = Constants.DefaultChildId;
+                    }
+                }
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), request.ProgenyId, 0, false);
+            ProgenySelectorViewModel model = new(baseModel);
+            model.Progenies = [];
+            if (request.Progenies.Count > 0)
+            {
+                foreach (int requestProgenyId in request.Progenies)
+                {
+                    Progeny progeny = await progenyHttpClient.GetProgeny(requestProgenyId);
+                    if (progeny != null && progeny.Id > 0)
+                    {
+                        model.Progenies.Add(progeny);
+                    }
+                }
+            }
+
+            return PartialView("_ProgenySelectorElementPartial", model);
         }
     }
 }
