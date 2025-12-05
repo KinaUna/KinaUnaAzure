@@ -216,10 +216,10 @@
     <Content Update="wwwroot\images\kinaunalogo_badge4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\js\RemoveDevice-v11.js">
+    <Content Update="wwwroot\js\RemoveDevice-v12.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\js\CreateDevice-v11.js">
+    <Content Update="wwwroot\js\CreateDevice-v12.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\js\SendDevice.js">
@@ -243,7 +243,7 @@
     <Content Update="wwwroot\pwabuilder-sw-register.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\pwabuilder-sw-v11.js">
+    <Content Update="wwwroot\pwabuilder-sw-v12.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\robots.txt">
@@ -287,6 +287,7 @@
 
   <ItemGroup>
     <Folder Include="Models\TypeScriptModels\AccessManagement\" />
+    <Folder Include="wwwroot\js\video\" />
     <Folder Include="wwwroot\lib\signalr\" />
   </ItemGroup>
 

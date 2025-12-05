@@ -106,7 +106,7 @@
     <link rel="manifest" href="~/manifest.json">
     <script>
         if (typeof navigator.serviceWorker !== 'undefined') {
-            navigator.serviceWorker.register('/pwabuilder-sw-v11.js')
+            navigator.serviceWorker.register('/pwabuilder-sw-v12.js')
         }
     </script>
     @Html.Raw(JavaScriptSnippet.FullScript)
@@ -259,13 +259,13 @@
 
 <div id="language-id-div" class="d-none" data-language-id="@languageId"></div>
 <div id="progeny-id-div" class="d-none" data-progeny-id="@child.Id"></div>
-    <script src="~/js/app-v11.js" type="module" asp-append-version="true"></script>
+    <script src="~/js/app-v12.js" type="module" asp-append-version="true"></script>
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
     <script src="~/lib/signalr/signalr.js"></script>
     <script src="~/signalr/msgpack5.min.js"></script>
     <script src="~/signalr/signalr-protocol-msgpack.min.js"></script>
-    <script src="~/js/notifications/notifications-menu-v11.js" type="module" asp-append-version="true"></script>
+    <script src="~/js/notifications/notifications-menu-v12.js" type="module" asp-append-version="true"></script>
 }
 <ejs-scripts></ejs-scripts>
 </body>
