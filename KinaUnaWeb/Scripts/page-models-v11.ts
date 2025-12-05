@@ -734,3 +734,17 @@ export class Measurement {
     circumference: number = 0;
     date: Date = new Date();
 }
+
+export class VocabularyItem {
+    wordId: number = 0;
+    word: string = '';
+    soundsLike: string = '';
+    description: string = '';
+    language: string = '';
+    date: Date | null = new Date();
+}
+
+export class WordDateCount {
+    wordDate: Date = new Date();
+    wordCount: number = 0;
+}

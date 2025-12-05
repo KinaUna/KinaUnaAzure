@@ -27,15 +27,38 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             VocabularyListViewModel model = new(baseModel);
-
-            List<VocabularyItem> wordList = await wordsHttpClient.GetWordsList(model.CurrentProgenyId);
             
-            model.SetVocabularyList(wordList, baseModel);
-            
-            model.SetChartData();
             model.VocabularyId = vocabularyId;
 
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> VocabularyTable(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            VocabularyListViewModel model = new(baseModel);
+
+            List<VocabularyItem> wordList = await wordsHttpClient.GetWordsList(model.CurrentProgenyId);
+
+            model.SetVocabularyList(wordList, baseModel);
+
+            return PartialView("_VocabularyTablePartial", model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetVocabularyData(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            VocabularyListViewModel model = new(baseModel);
+
+            List<VocabularyItem> wordList = await wordsHttpClient.GetWordsList(model.CurrentProgenyId);
+
+            model.SetVocabularyList(wordList, baseModel);
+
+            model.SetChartData();
+
+            return Json(model.ChartData);
         }
 
         /// <summary>

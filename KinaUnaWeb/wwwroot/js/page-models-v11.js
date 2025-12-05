@@ -804,4 +804,20 @@ export class Measurement {
         this.date = new Date();
     }
 }
+export class VocabularyItem {
+    constructor() {
+        this.wordId = 0;
+        this.word = '';
+        this.soundsLike = '';
+        this.description = '';
+        this.language = '';
+        this.date = new Date();
+    }
+}
+export class WordDateCount {
+    constructor() {
+        this.wordDate = new Date();
+        this.wordCount = 0;
+    }
+}
 //# sourceMappingURL=page-models-v11.js.map
