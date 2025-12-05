@@ -3,8 +3,10 @@ using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using KinaUnaWeb.Models.TypeScriptModels.Sleep;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -256,6 +258,30 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
 
             SleepList = [.. SleepList.OrderBy(s => s.SleepStart)];
+        }
+
+        public SleepDataModel GetSleepDataModel()
+        {
+            SleepDataModel sleepDataModel = new()
+            {
+                ChartList = ChartList,
+                SleepTotal = SleepTotal.ToString(),
+                SleepTotalHours = SleepTotal.TotalHours.ToString("0.000"),
+                SleepAveragePerDay = TotalAverage.ToString(),
+                SleepLastYear = SleepLastYear.ToString(),
+                SleepAveragePerDayLastYear = LastYearAverage.ToString(),
+                SleepLastMonth = SleepLastMonth.ToString(),
+                SleepAveragePerDayLastMonth = LastMonthAverage.ToString(),
+                SliderStart = ChartList.First().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                SliderEnd = ChartList.Last().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            };
+
+            foreach (Sleep sleep in sleepDataModel.ChartList)
+            {
+                sleep.SleepDurationHours = sleep.SleepDuration.TotalHours;
+            }
+
+            return sleepDataModel;
         }
     }
 }

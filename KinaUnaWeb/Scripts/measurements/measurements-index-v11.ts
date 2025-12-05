@@ -27,7 +27,7 @@ async function getMeasurements(progenyId: number): Promise<void> {
                 measurementsListTable.innerHTML = measurementsListHtml;
                 setupDataTable();
                 setEditItemButtonEventListeners();
-                renderMeasurementsChartData(progenyId);
+                await renderMeasurementsChartData(progenyId);
             }
         });
     }
@@ -37,7 +37,7 @@ async function getMeasurements(progenyId: number): Promise<void> {
 function setupDataTable(): void {
     setMomentLocale();
     (<any>$.fn.dataTable).moment('DD-MMM-YYYY');
-    $('#measurements-list').DataTable({ 'scrollX': false, 'order': [[0, 'desc']], drawCallback: setEditItemButtonEventListeners });
+    $('#measurements-list').DataTable({ 'scrollX': false, 'order': [[0, 'desc']] });
 }
 
 function addProgenyChangedEventListener() {
@@ -54,11 +54,11 @@ class MeasurementData {
     t: Date = new Date();
     y: number = 0;
 }
-function renderMeasurementsChartData(progenyId: number): void {
+async function renderMeasurementsChartData(progenyId: number): Promise<void> {
     const heightChartContainer = document.getElementById('height-chart-container');
     const weightChartContainer = document.getElementById('weight-chart-container');
     let measurementsData: Measurement[] = [];
-    fetch(`/Measurements/GetMeasurementsData?progenyId=${progenyId}`)
+    await fetch(`/Measurements/GetMeasurementsData?progenyId=${progenyId}`)
         .then(response => response.json())
         .then(async data => {
             measurementsData = data;

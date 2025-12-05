@@ -52,6 +52,8 @@ namespace KinaUna.Data.Models
         [NotMapped]
         public TimeSpan SleepDuration { get; set; }
         [NotMapped]
+        public double SleepDurationHours { get; set; }
+        [NotMapped]
         public string StartString { get; set; }
         [NotMapped]
         public string EndString { get; set; }

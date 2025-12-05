@@ -1,21 +1,42 @@
 ﻿import { setEditItemButtonEventListeners } from '../addItem/add-item-v11.js';
-import { setMomentLocale } from '../data-tools-v11.js';
+import { getCurrentLanguageId, getCurrentProgenyId, ProgenyChangedEvent, setMomentLocale } from '../data-tools-v11.js';
 import { showPopupAtLoad } from '../item-details/items-display-v11.js';
+import { getTranslation } from '../localization-v11.js';
 import { startTopMenuSpinner, stopTopMenuSpinner } from '../navigation-tools-v11.js';
-import { TimeLineType } from '../page-models-v11.js';
+import { Sleep, SleepDataModel, TimeLineType } from '../page-models-v11.js';
+import { getProgenySelector } from '../shared/progeny-selector-v11.js';
+
+declare global {
+    interface WindowEventMap {
+        'progenyChanged': ProgenyChangedEvent;
+    }
+}
 
 declare var Chart: any;
 declare var moment: any;
-declare var noUiSlider: any;
-declare var sleepData: any;
-declare var sleepLabel: string;
-declare var durationInHoursString: string;
-declare var sliderStartString: string;
-declare var sliderEndString: string;
-declare var sliderRangeMin: string;
-declare var sliderRangeMax: string;
-
 let sleepChart: any;
+declare var noUiSlider: any;
+
+async function getSleepTable(progenyId: number): Promise<void> {
+    const sleepListTable = document.querySelector<HTMLTableElement>('#sleep-list-container-div');
+    if (sleepListTable) {
+        await fetch('/Sleep/SleepTable?progenyId=' + progenyId, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(async function (sleepListResponse) {
+            if (sleepListResponse != null) {
+                const sleepListHtml = await sleepListResponse.text();
+                sleepListTable.innerHTML = sleepListHtml;
+                setupDataTable();
+                setEditItemButtonEventListeners();
+                await renderSleepChartData(progenyId);
+            }
+        });
+    }
+
+}
 
 /**
  * Formats a date string to a timestamp.
@@ -32,28 +53,61 @@ function timestamp(dateString: string): number {
 function setupDataTable(): void {
     setMomentLocale();
     (<any>$.fn.dataTable).moment('DD-MMMM-YYYY HH:mm');
-    $('#sleep-list').DataTable({ 'scrollX': false, 'order': [[0, 'desc']], drawCallback: setEditItemButtonEventListeners });
+    $('#sleep-list').DataTable({ 'scrollX': false, 'order': [[0, 'desc']] });
+}
+
+class MeasurementData {
+    x: Date = new Date();
+    y: number = 0.0;
 }
 
 /**
  * Configures the sleep chart: Assigns data, labels, axis types and scales, sets time/date formats.
  */
-function setupSleepChart(): void {
-    let chartContainer = document.querySelector<HTMLCanvasElement>("#chart-container");
+async function renderSleepChartData(progenyId: number): Promise<void> {
+    let chartContainer = document.getElementById("sleep-chart-container");
     
     if (chartContainer === null) {
         return;
     }
 
+    let sleepData: MeasurementData[] = [];
+    let sleepDataModel: SleepDataModel = new SleepDataModel;
+    await fetch(`/Sleep/SleepChartData?progenyId=${progenyId}`).then(async (response) => {
+        if (response.ok) {
+            sleepDataModel = await response.json();
+            if (sleepDataModel === null || sleepDataModel === undefined) {                
+                return;
+            }
+
+            sleepDataModel.chartList.forEach((item: Sleep) => {
+                if (item.sleepStart) {
+                    let dataPoint: MeasurementData = {
+                        x: item.sleepStart,
+                            y: item.sleepDurationHours
+                    };
+                    sleepData.push(dataPoint);
+                }
+               
+            });            
+        }
+    });
+    console.log(sleepData);
+    const sleepLabel: string = await getTranslation('Sleep list', "Sleep", getCurrentLanguageId());
+    const durationInHoursString: string = await getTranslation('Duration in hours', "Sleep", getCurrentLanguageId());
+    
     sleepChart = new Chart(chartContainer, {
-        type: 'bar',
+        type: 'line',
         data: {
             datasets: [
                 {
-                    label: sleepLabel,
+                    label: durationInHoursString,
                     data: sleepData,
-                    borderColor: 'rgb(75, 192, 192)',
-                    borderWidth: 1
+                    borderColor: 'rgb(224, 168, 224)',
+                    backgroundColor: 'rgb(100, 60, 100)',
+                    borderWidth: 1,
+                    borderDash: [5, 5],
+                    fill: 'start'
                 }
             ]
         },
@@ -80,12 +134,12 @@ function setupSleepChart(): void {
             }
         }
     });
-
-    sleepChart.update();
+    // sleepChart.update();
+    await setupSleepSlider(sleepChart, sleepDataModel.sliderStart, sleepDataModel.sliderEnd); 
 }
 
-function setupSleepSlider(): void {
-    let chartContainer = document.querySelector<HTMLCanvasElement>("#chart-container");
+async function setupSleepSlider(chart: any, sliderRangeMin: string, sliderRangeMax: string): Promise<void> {
+    let chartContainer = document.querySelector<HTMLCanvasElement>("#sleep-chart-container");
     let sliderElement: any = null;
     const sleepSlider = document.querySelector<HTMLDivElement>('#sleep-slider');
 
@@ -93,6 +147,10 @@ function setupSleepSlider(): void {
         return;
     }
 
+    var durationInHoursString = await getTranslation('Duration in hours', "Sleep", getCurrentLanguageId());
+    var sliderStartString = await getTranslation('Start:', "Sleep", getCurrentLanguageId());
+    var sliderEndString = await getTranslation('End:', "Sleep", getCurrentLanguageId());
+    
     sliderElement = sleepSlider as any;
     if (sliderElement === null) {
         return;
@@ -111,50 +169,56 @@ function setupSleepSlider(): void {
                 timestamp(sliderRangeMax)
             ]
         });
-
-    let slpChart: CanvasRenderingContext2D | null;
-    if (chartContainer !== null) {
-        slpChart = chartContainer.getContext("2d");
-
-    }
+        
     // Replace JQuery with vanilla JS
     // const pos = $(document).scrollTop();
     const pos = document.documentElement.scrollTop;
-
-    sliderElement.noUiSlider.on('end',
-        function () {
-            const sliderValues: string[] = sliderElement.noUiSlider.get() as string[];
-            let sliderStartValue: number = 0;
-            let sliderEndValue: number = 1;
-            if (sliderValues.length === 2) {
-                sliderStartValue = parseInt(sliderValues[0]);
-                sliderEndValue = parseInt(sliderValues[1]);
-                const sliderStartValueDiv = document.querySelector<HTMLDivElement>('#slider-start-value');
-                const sliderEndValueDiv = document.querySelector<HTMLDivElement>('#slider-end-value');
-                if (sliderStartValueDiv !== null && sliderEndValueDiv !== null) {
-                    sliderStartValueDiv.textContent = sliderStartString + moment(sliderStartValue).format("dddd, DD-MMMM-YYYY");
-                    sliderEndValueDiv.textContent = sliderEndString + moment(sliderEndValue).format("dddd, DD-MMMM-YYYY");
-                }
-
-                sleepChart.options.scales.x = {
-                    type: 'time',
-                    time: {
-                        tooltipFormat: 'dd DD MMMM YYYY',
-                        displayFormats: {
-                            quarter: 'MMMM YYYY'
-                        }
-                    },
-                    min: sliderStartValue,
-                    max: sliderEndValue
-                };
-                sleepChart.update();
-                if (pos) {
-                    // Replace Jquery with vanilla JS
-                    // $(document).scrollTop(pos);
-                    document.documentElement.scrollTop = pos;
-                }
+    const onSliderEnd = function () {
+        const sliderValues: string[] = sliderElement.noUiSlider.get() as string[];
+        let sliderStartValue: number = 0;
+        let sliderEndValue: number = 1;
+        if (sliderValues.length === 2) {
+            sliderStartValue = parseInt(sliderValues[0]);
+            sliderEndValue = parseInt(sliderValues[1]);
+            const sliderStartValueDiv = document.querySelector<HTMLDivElement>('#slider-start-value');
+            const sliderEndValueDiv = document.querySelector<HTMLDivElement>('#slider-end-value');
+            if (sliderStartValueDiv !== null && sliderEndValueDiv !== null) {
+                sliderStartValueDiv.textContent = sliderStartString + moment(sliderStartValue).format("dddd, DD-MMMM-YYYY");
+                sliderEndValueDiv.textContent = sliderEndString + moment(sliderEndValue).format("dddd, DD-MMMM-YYYY");
             }
-        });
+                        
+            console.log(chart);    
+            chart.options.scales.x = {
+                type: 'time',
+                time: {
+                    tooltipFormat: 'dd DD MMMM YYYY',
+                    displayFormats: {
+                        quarter: 'MMMM YYYY'
+                    }
+                },
+                min: new Date(sliderStartValue),
+                max: new Date(sliderEndValue)
+            };
+
+            chart.update();
+            //if (pos) {
+            //    document.documentElement.scrollTop = pos;
+            //}
+        }
+    };
+
+    sliderElement.noUiSlider.on('end', onSliderEnd);
+        
+}
+
+function addProgenyChangedEventListener() {
+    // Subscribe to the timelineChanged event to refresh the todos list when a todo is added, updated, or deleted.
+    window.addEventListener('progenyChanged', async (event: ProgenyChangedEvent) => {
+        let changedItem = event.Progeny;
+        if (changedItem !== null && changedItem.id !== 0) {
+            await getSleepTable(changedItem.id);
+        }
+    });
 }
 
 /**
@@ -162,13 +226,14 @@ function setupSleepSlider(): void {
  */
 document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     startTopMenuSpinner();
-
-    setupDataTable();
-    setupSleepChart();
-    setupSleepSlider();
+    const currentProgenyId = await getCurrentProgenyId();
+    await getProgenySelector(currentProgenyId, 0, 'progeny-selector-container');
 
     await showPopupAtLoad(TimeLineType.Sleep);
-    setEditItemButtonEventListeners();
+
+    await getSleepTable(currentProgenyId);
+
+    addProgenyChangedEventListener();
 
     stopTopMenuSpinner();
 

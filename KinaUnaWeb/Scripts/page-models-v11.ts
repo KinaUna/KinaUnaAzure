@@ -748,3 +748,24 @@ export class WordDateCount {
     wordDate: Date = new Date();
     wordCount: number = 0;
 }
+
+export class Sleep {
+    sleepId: number = 0;
+    progenyId: number = 0;
+    sleepStart: Date = new Date();
+    sleepEnd: Date = new Date();
+    sleepDurationHours: number = 0.0;
+}
+
+export class SleepDataModel {
+    chartList: Sleep[] = [];
+    sleepTotal: string = '';
+    sleepTotalHours: string = '';
+    sleepAveragePerDay: string = '';
+    sleepLastYear: string = '';
+    sleepAveragePerDayLastYear: string = '';
+    sleepLastMonth: string = '';
+    sleepAveragePerDayLastMonth: string = '';
+    sliderStart: string = '';
+    sliderEnd: string = '';
+}

@@ -820,4 +820,27 @@ export class WordDateCount {
         this.wordCount = 0;
     }
 }
+export class Sleep {
+    constructor() {
+        this.sleepId = 0;
+        this.progenyId = 0;
+        this.sleepStart = new Date();
+        this.sleepEnd = new Date();
+        this.sleepDurationHours = 0.0;
+    }
+}
+export class SleepDataModel {
+    constructor() {
+        this.chartList = [];
+        this.sleepTotal = '';
+        this.sleepTotalHours = '';
+        this.sleepAveragePerDay = '';
+        this.sleepLastYear = '';
+        this.sleepAveragePerDayLastYear = '';
+        this.sleepLastMonth = '';
+        this.sleepAveragePerDayLastMonth = '';
+        this.sliderStart = '';
+        this.sliderEnd = '';
+    }
+}
 //# sourceMappingURL=page-models-v11.js.map

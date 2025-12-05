@@ -19,7 +19,7 @@ async function getMeasurements(progenyId) {
                 measurementsListTable.innerHTML = measurementsListHtml;
                 setupDataTable();
                 setEditItemButtonEventListeners();
-                renderMeasurementsChartData(progenyId);
+                await renderMeasurementsChartData(progenyId);
             }
         });
     }
@@ -27,7 +27,7 @@ async function getMeasurements(progenyId) {
 function setupDataTable() {
     setMomentLocale();
     $.fn.dataTable.moment('DD-MMM-YYYY');
-    $('#measurements-list').DataTable({ 'scrollX': false, 'order': [[0, 'desc']], drawCallback: setEditItemButtonEventListeners });
+    $('#measurements-list').DataTable({ 'scrollX': false, 'order': [[0, 'desc']] });
 }
 function addProgenyChangedEventListener() {
     // Subscribe to the timelineChanged event to refresh the todos list when a todo is added, updated, or deleted.
@@ -44,11 +44,11 @@ class MeasurementData {
         this.y = 0;
     }
 }
-function renderMeasurementsChartData(progenyId) {
+async function renderMeasurementsChartData(progenyId) {
     const heightChartContainer = document.getElementById('height-chart-container');
     const weightChartContainer = document.getElementById('weight-chart-container');
     let measurementsData = [];
-    fetch(`/Measurements/GetMeasurementsData?progenyId=${progenyId}`)
+    await fetch(`/Measurements/GetMeasurementsData?progenyId=${progenyId}`)
         .then(response => response.json())
         .then(async (data) => {
         measurementsData = data;

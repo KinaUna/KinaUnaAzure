@@ -27,14 +27,35 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SleepViewModel model = new(baseModel);
-
-            List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId);
-
-            model.ProcessSleepListData(sleepList);
             
             model.SleepId = sleepId;
 
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SleepTable(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            SleepViewModel model = new(baseModel);
+
+            List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId);
+            model.ProcessSleepListData(sleepList);
+
+            return PartialView("_SleepTablePartial", model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SleepChartData(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            SleepViewModel model = new(baseModel);
+
+            List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId);
+
+            model.ProcessSleepListData(sleepList);
+
+            return Json(model.GetSleepDataModel());
         }
 
         /// <summary>

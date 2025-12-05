@@ -1,0 +1,105 @@
+﻿@using System.Globalization
+@using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Sleep list", PageNames.Sleep, Model.LanguageId);
+}
+@if (!Model.SleepList.Any())
+{
+    <h2>@title</h2>
+    <div>
+        @await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Sleep, Model.LanguageId)
+    </div>
+}
+else
+{
+
+    <div class="table-responsive">
+        <table id="sleep-list" class="table table-striped table-bordered" style="border-spacing: 0;">
+            <thead>
+                <tr>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Start", PageNames.Sleep, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("End", PageNames.Sleep, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Duration", PageNames.Sleep, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Rating", PageNames.Sleep, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Notes", PageNames.Sleep, Model.LanguageId)</th>
+                    @if (Model.SleepList.Exists(s => s.ItemPerMission.PermissionLevel >= PermissionLevel.Edit))
+                    {
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Sleep, Model.LanguageId)</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Sleep sleepItem in Model.SleepList)
+                {
+                    <tr>
+                        <td style="min-width: 100px;">
+                            @sleepItem.SleepStart.ToString("dd-MMMM-yyyy")<br /> <strong>@sleepItem.SleepStart.ToString("HH:mm", CultureInfo.InvariantCulture)</strong>
+                        </td>
+                        <td style="min-width: 100px;">
+                            @sleepItem.SleepEnd.ToString("dd-MMMM-yyyy")<br /> <strong>@sleepItem.SleepEnd.ToString("HH:mm", CultureInfo.InvariantCulture)</strong>
+                        </td>
+                        <td>@sleepItem.SleepDuration</td>
+                        <td>@sleepItem.SleepRating</td>
+                        <td>@sleepItem.SleepNotes</td>
+                        @if (sleepItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
+                        {
+                            <td style="min-width: 120px;">
+                                <div>
+                                    <a data-edit-item-type="sleep" data-edit-item-item-id="@sleepItem.SleepId" class="btn btn-info btn-round btn-sm item-details-edit-button edit-item-button">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </a>
+                                    @if (sleepItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                                    {
+                                        <a asp-controller="Sleep" asp-action="DeleteSleep" asp-route-itemId="@sleepItem.SleepId" class="btn btn-danger btn-round btn-sm leave-page">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <br />
+    <div class="container">
+        @await LocaleManager.GetTranslation("Total sleep recorded:", PageNames.Sleep, Model.LanguageId) @Model.SleepTotal = @Model.SleepTotal.TotalHours Hours<br />
+        @await LocaleManager.GetTranslation("Average sleep per day:", PageNames.Sleep, Model.LanguageId) @Model.TotalAverage<br /><br />
+        @await LocaleManager.GetTranslation("Sleep recorded in the last year:", PageNames.Sleep, Model.LanguageId) @Model.SleepLastYear = @Model.SleepLastYear.TotalHours Hours<br />
+        @await LocaleManager.GetTranslation("Average sleep per day in the last year:", PageNames.Sleep, Model.LanguageId) @Model.LastYearAverage<br /><br />
+        @await LocaleManager.GetTranslation("Sleep recorded in the last 30 days:", PageNames.Sleep, Model.LanguageId) @Model.SleepLastMonth = @Model.SleepLastMonth.TotalHours Hours<br />
+        @await LocaleManager.GetTranslation("Average sleep per day in the last 30 days:", PageNames.Sleep, Model.LanguageId) @Model.LastMonthAverage<br /><br />
+    </div>
+    <br />
+    <div id="chartDiv">
+        <canvas id="sleep-chart-container" style="clear: both; height: 380px;"></canvas>
+    </div>
+    <br />
+    <div class="col-12">
+        <div class="row">
+            <div class="col-6">
+                <div id="slider-start-value" class="float-right" style="margin-right: 25px;"></div>
+            </div>
+            <div class="col-6">
+                <div id="slider-end-value" class="float-left" style="margin-left: 25px;"></div>
+            </div>
+        </div>
+    </div>
+    <div style="margin-left: 25px; margin-right: 25px;">
+        <div id="sleep-slider" class="slider slider-info" style="width: 90%; margin-left: auto; margin-right: auto;"></div>
+    </div>
+    <br />
+    <div class="row">
+        <br />
+        <div class="container">
+            <div class="col-6" style="margin-right: auto; margin-left: auto; margin-top: 30px;">@await LocaleManager.GetTranslation("Drag the circles above to change the chart's start and end dates.", PageNames.Sleep, Model.LanguageId)</div>
+        </div>
+    </div>
+    <div class="space-20"></div>
+
+}

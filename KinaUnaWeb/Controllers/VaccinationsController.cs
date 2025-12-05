@@ -28,11 +28,21 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             VaccinationViewModel model = new(baseModel);
             
-            List<Vaccination> vaccinations = await vaccinationsHttpClient.GetVaccinationsList(model.CurrentProgenyId);
-            model.SetVaccinationsList(vaccinations);
             model.VaccinationId = vaccinationId;
 
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> VaccinationsTable(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            VaccinationViewModel model = new(baseModel);
+
+            List<Vaccination> vaccinations = await vaccinationsHttpClient.GetVaccinationsList(model.CurrentProgenyId);
+            model.SetVaccinationsList(vaccinations);
+
+            return PartialView("_VaccinationsTablePartial", model);
         }
 
         /// <summary>
