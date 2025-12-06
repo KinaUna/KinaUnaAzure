@@ -355,19 +355,37 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
             }
             CalendarListCacheEntry cacheEntry = await _kinaUnaCacheService.GetCalendarItemsListCache(currentUserInfo.UserId, progenyId, familyId);
             TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.Calendar);
+            bool cachedDataAvailable = false;
+            List<CalendarItem> calendarList = [];
             if (cacheEntry != null && timelineUpdatedCacheEntry != null)
             {
                 if (cacheEntry.UpdateTime > timelineUpdatedCacheEntry.UpdateTime)
                 {
-                    return cacheEntry.CalendarItemsList.ToList();
+                    cachedDataAvailable = true;
+                    calendarList = cacheEntry.CalendarItemsList.ToList();
                 }
             }
 
-            List<CalendarItem> calendarList = await GetCalendarListFromCache(progenyId, familyId);
-            if (calendarList == null || calendarList.Count == 0)
+            if (!cachedDataAvailable)
             {
-                calendarList = await SetCalendarListInCache(progenyId, familyId);
+                calendarList = await GetCalendarListFromCache(progenyId, familyId);
+                if (calendarList == null || calendarList.Count == 0)
+                {
+                    calendarList = await SetCalendarListInCache(progenyId, familyId);
+                }
+                List<CalendarItem> accessibleCalendarItems = [];
+                foreach (CalendarItem calendarItem in calendarList)
+                {
+                    if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
+                    {
+                        accessibleCalendarItems.Add(calendarItem);
+                    }
+                }
+
+                await _kinaUnaCacheService.SetCalendarItemsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleCalendarItems.ToArray());
+                calendarList = accessibleCalendarItems;
             }
+            
 
             if (start != null && end != null)
             {
@@ -376,18 +394,9 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 calendarList.AddRange(recurringEvents);
             }
             
-            List<CalendarItem> accessibleCalendarItems = [];
-            foreach (CalendarItem calendarItem in calendarList)
-            {
-                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
-                {
-                    accessibleCalendarItems.Add(calendarItem);
-                }
-            }
+            
 
-            await _kinaUnaCacheService.SetCalendarItemsListCache(currentUserInfo.UserId, progenyId, familyId, accessibleCalendarItems.ToArray());
-
-            return accessibleCalendarItems;
+            return calendarList;
 
         }
 
