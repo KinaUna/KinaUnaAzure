@@ -79,11 +79,11 @@
                         </span>
                     </a>
                 </li>
-                <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="sleep">
-                    <a class="btn-sidebar leave-page" asp-controller="Sleep" asp-action="Index">
-                        <i class="material-icons sidebar-icon">hotel</i>
+                <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="contacts">
+                    <a class="btn-sidebar leave-page" asp-controller="Contacts" asp-action="Index">
+                        <i class="material-icons sidebar-icon">contact_phone</i>
                         <span class="sidebar-item-text sidebar-item-text-hide">
-                            @await LocaleManager.GetTranslation("Sleep", PageNames.Layout, Model.LanguageId)
+                            @await LocaleManager.GetTranslation("Contacts", PageNames.Layout, Model.LanguageId)
                         </span>
                     </a>
                 </li>
@@ -95,11 +95,11 @@
                         </span>
                     </a>
                 </li>
-                <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="contacts">
-                    <a class="btn-sidebar leave-page" asp-controller="Contacts" asp-action="Index" >
-                        <i class="material-icons sidebar-icon">contact_phone</i>
+                <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="skills">
+                    <a class="btn-sidebar leave-page" asp-controller="Skills" asp-action="Index">
+                        <i class="material-icons sidebar-icon">school</i>
                         <span class="sidebar-item-text sidebar-item-text-hide">
-                            @await LocaleManager.GetTranslation("Contacts", PageNames.Layout, Model.LanguageId)
+                            @await LocaleManager.GetTranslation("Skillz", PageNames.Layout, Model.LanguageId)
                         </span>
                     </a>
                 </li>
@@ -119,19 +119,19 @@
                         </span>
                     </a>
                 </li>
-                <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="skills">
-                    <a class="btn-sidebar leave-page" asp-controller="Skills" asp-action="Index" >
-                        <i class="material-icons sidebar-icon">school</i>
-                        <span class="sidebar-item-text sidebar-item-text-hide">
-                            @await LocaleManager.GetTranslation("Skillz", PageNames.Layout, Model.LanguageId)
-                        </span>
-                    </a>
-                </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="vocabulary" >
                     <a class="btn-sidebar leave-page" asp-controller="Vocabulary" asp-action="Index">
                         <i class="material-icons sidebar-icon">forum</i>
                         <span class="sidebar-item-text sidebar-item-text-hide">
                             @await LocaleManager.GetTranslation("Vocabulary", PageNames.Layout, Model.LanguageId)
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="sleep">
+                    <a class="btn-sidebar leave-page" asp-controller="Sleep" asp-action="Index">
+                        <i class="material-icons sidebar-icon">hotel</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Sleep", PageNames.Layout, Model.LanguageId)
                         </span>
                     </a>
                 </li>
