@@ -15,7 +15,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherSleepItem"></param>
         public static void CopyPropertiesForUpdate(this Sleep currentSleepItem, Sleep otherSleepItem )
         {
-            currentSleepItem.AccessLevel = otherSleepItem.AccessLevel;
             currentSleepItem.SleepDuration = otherSleepItem.SleepDuration;
             currentSleepItem.SleepEnd = otherSleepItem.SleepEnd;
             currentSleepItem.SleepNotes = otherSleepItem.SleepNotes;
@@ -36,7 +35,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherSleepItem"></param>
         public static void CopyPropertiesForAdd(this Sleep currentSleepItem, Sleep otherSleepItem)
         {
-            currentSleepItem.AccessLevel = otherSleepItem.AccessLevel;
             currentSleepItem.Author = otherSleepItem.Author;
             currentSleepItem.CreatedBy = otherSleepItem.CreatedBy;
             currentSleepItem.CreatedTime = DateTime.UtcNow;

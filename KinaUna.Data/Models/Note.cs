@@ -23,7 +23,6 @@ namespace KinaUna.Data.Models
         [MaxLength(256)]
         public string Category { get; set; } = string.Empty;
         public DateTime CreatedDate { get; set; } // Todo: Replace with CreatedTime?
-        public int AccessLevel { get; set; }
         public int ProgenyId { get; set; }
         
         [MaxLength(256)]

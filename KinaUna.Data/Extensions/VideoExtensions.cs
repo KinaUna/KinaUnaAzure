@@ -46,7 +46,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="parseDuration">If set to true the duration will be obtained from the string values in DurationHours, DurationMinutes, and DurationSeconds.</param>
         public static void CopyPropertiesForUpdate(this Video currentVideo, Video otherVideo, bool parseDuration = false)
         {
-            currentVideo.AccessLevel = otherVideo.AccessLevel;
             currentVideo.ProgenyId = otherVideo.ProgenyId;
             currentVideo.CommentThreadNumber = otherVideo.CommentThreadNumber;
             currentVideo.Duration = otherVideo.Duration;
@@ -113,7 +112,6 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForCopy(this Video currentVideo, Video otherVideo, string ownerEmail, Progeny progeny, bool parseDuration = false)
         {
             currentVideo.VideoId = 0;
-            currentVideo.AccessLevel = otherVideo.AccessLevel;
             currentVideo.ProgenyId = otherVideo.ProgenyId;
             currentVideo.CommentThreadNumber = 0;
             currentVideo.Duration = otherVideo.Duration;

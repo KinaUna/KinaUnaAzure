@@ -411,7 +411,6 @@ namespace KinaUnaWeb.Controllers
                     Picture picture = new()
                     {
                         ProgenyId = model.Picture.ProgenyId,
-                        AccessLevel = model.Picture.AccessLevel,
                         Author = model.CurrentUser.UserId,
                         Owners = model.CurrentUser.UserEmail,
                         TimeZone = model.CurrentUser.Timezone,

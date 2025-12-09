@@ -161,7 +161,7 @@ async function onSubmitAddPicturesForm(event) {
 }
 /**
  * Uploads a picture file with the given form data.
- * @param {FormData} formData The Picture item form data (location, tags, accesslevel).
+ * @param {FormData} formData The Picture item form data (location, tags).
  * @param {File} pictureFile The picture file to upload.
  * @param {number} itemNumber The number of the picture item to upload in fileList, for identifying íts preview HTML element.
  */

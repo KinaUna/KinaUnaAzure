@@ -155,8 +155,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             int id,
             int progenyId,
             int familyId,
-            string title = "Test Board",
-            int accessLevel = 5)
+            string title = "Test Board")
         {
             return new KanbanBoard
             {
@@ -171,7 +170,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 ModifiedBy = TestUserId,
                 CreatedTime = DateTime.UtcNow,
                 ModifiedTime = DateTime.UtcNow,
-                AccessLevel = accessLevel,
                 Tags = "test,board",
                 Context = "test-context",
                 IsDeleted = false

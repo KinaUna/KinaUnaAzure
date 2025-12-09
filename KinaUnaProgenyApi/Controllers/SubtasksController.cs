@@ -211,8 +211,6 @@ namespace KinaUnaProgenyApi.Controllers
                 return BadRequest("Parent TodoItem not found.");
             }
 
-            // Ensure the subtask inherits the access level of the parent TodoItem
-            value.AccessLevel = parentTodoItem.AccessLevel;
             value.ProgenyId = parentTodoItem.ProgenyId;
 
             subtask = await subtasksService.UpdateSubtask(value, currentUserInfo);

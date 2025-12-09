@@ -26,7 +26,6 @@ namespace KinaUna.Data.Models
 
         [MaxLength(2048)]
         public string Owners { get; set; } // Comma separated list of emails.
-        public int AccessLevel { get; set; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
         public int CommentThreadNumber { get; set; }
         public int VideoType { get; set; } // 0 = file upload, 1 = OneDrive, 2 = Youtube
 

@@ -426,7 +426,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Verify that the subtask inherits properties from parent
             _mockSubtasksService.Verify(x => x.AddSubtask(It.Is<TodoItem>(s =>
-                s.AccessLevel == parentTodoItem.AccessLevel &&
                 s.ProgenyId == parentTodoItem.ProgenyId &&
                 s.CreatedBy == TestUserId &&
                 s.ModifiedBy == TestUserId &&
@@ -601,7 +600,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Verify that the subtask inherits properties from parent
             _mockSubtasksService.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(s =>
-                s.AccessLevel == parentTodoItem.AccessLevel &&
                 s.ProgenyId == parentTodoItem.ProgenyId &&
                 s.ModifiedBy == TestUserId &&
                 !string.IsNullOrWhiteSpace(s.UId)), _testUser), Times.Once);

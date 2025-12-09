@@ -39,8 +39,7 @@ namespace KinaUna.Data.Models
 
         [MaxLength(1024)]
         public string Tags { get; set; }
-        public int AccessLevel { get; set; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
-
+        
         [MaxLength(128)]
         public string Author { get; set; } = string.Empty; // Todo: Replace with CreatedBy?
 

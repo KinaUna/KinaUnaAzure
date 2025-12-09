@@ -15,7 +15,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherLocation"></param>
         public static void CopyPropertiesForUpdate(this Location currentLocation, Location otherLocation )
         {
-            currentLocation.AccessLevel = otherLocation.AccessLevel;
             currentLocation.Author = otherLocation.Author;
             currentLocation.ModifiedBy = otherLocation.ModifiedBy;
             currentLocation.ModifiedTime = DateTime.UtcNow;
@@ -45,7 +44,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherLocation"></param>
         public static void CopyPropertiesForAdd(this Location currentLocation, Location otherLocation)
         {
-            currentLocation.AccessLevel = otherLocation.AccessLevel;
             currentLocation.Author = otherLocation.Author;
             currentLocation.CreatedBy = otherLocation.CreatedBy;
             currentLocation.CreatedTime = DateTime.UtcNow;

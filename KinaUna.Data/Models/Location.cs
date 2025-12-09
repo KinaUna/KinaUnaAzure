@@ -49,9 +49,7 @@ namespace KinaUna.Data.Models
         public DateTime? Date { get; set; }
         [MaxLength(4096)]
         public string Notes { get; set; } = string.Empty;
-
-        public int AccessLevel { get; set; }
-
+        
         [MaxLength(512)]
         public string Tags { get; set; } = string.Empty; // Comma separated list of tags.
         public DateTime? DateAdded { get; set; }

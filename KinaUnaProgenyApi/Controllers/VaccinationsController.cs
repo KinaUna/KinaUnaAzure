@@ -177,8 +177,6 @@ namespace KinaUnaProgenyApi.Controllers
 
             string notificationTitle = "Vaccination deleted for " + progeny.NickName;
             
-            vaccinationItem.AccessLevel = timeLineItem.AccessLevel = 0;
-
             await webNotificationsService.SendVaccinationNotification(vaccinationItem, currentUserInfo, notificationTitle);
 
             return NoContent();

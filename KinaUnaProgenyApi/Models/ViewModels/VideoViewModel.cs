@@ -60,7 +60,6 @@ namespace KinaUnaProgenyApi.Models.ViewModels
             DurationHours = video.DurationHours;
             DurationMinutes = video.DurationMinutes;
             DurationSeconds = video.DurationSeconds;
-            AccessLevel = video.AccessLevel;
             Author = video.Author;
             Tags = video.Tags;
             Location = video.Location;

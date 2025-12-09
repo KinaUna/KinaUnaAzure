@@ -15,7 +15,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherVaccinationItem"></param>
         public static void CopyPropertiesForUpdate(this Vaccination currentVaccinationItem, Vaccination otherVaccinationItem)
         {
-            currentVaccinationItem.AccessLevel = otherVaccinationItem.AccessLevel;
             currentVaccinationItem.ProgenyId = otherVaccinationItem.ProgenyId;
             currentVaccinationItem.Notes = otherVaccinationItem.Notes;
             currentVaccinationItem.VaccinationDate = otherVaccinationItem.VaccinationDate;
@@ -34,7 +33,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherVaccinationItem"></param>
         public static void CopyPropertiesForAdd(this Vaccination currentVaccinationItem, Vaccination otherVaccinationItem)
         {
-            currentVaccinationItem.AccessLevel = otherVaccinationItem.AccessLevel;
             currentVaccinationItem.Author = otherVaccinationItem.Author;
             currentVaccinationItem.CreatedBy = otherVaccinationItem.CreatedBy;
             currentVaccinationItem.CreatedTime = DateTime.UtcNow;

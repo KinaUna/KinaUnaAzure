@@ -18,7 +18,6 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.EventId = otherCalendarItem.EventId;
             currentCalendarItem.UId = otherCalendarItem.UId;
             currentCalendarItem.Author = otherCalendarItem.Author;
-            currentCalendarItem.AccessLevel = otherCalendarItem.AccessLevel;
             currentCalendarItem.AllDay = otherCalendarItem.AllDay;
             currentCalendarItem.Context = otherCalendarItem.Context;
             currentCalendarItem.EndString = otherCalendarItem.EndString;
@@ -45,7 +44,6 @@ namespace KinaUna.Data.Extensions
         {
             currentCalendarItem.UId = otherCalendarItem.UId;
             currentCalendarItem.Author = otherCalendarItem.Author;
-            currentCalendarItem.AccessLevel = otherCalendarItem.AccessLevel;
             currentCalendarItem.AllDay = otherCalendarItem.AllDay;
             currentCalendarItem.Context = otherCalendarItem.Context;
             currentCalendarItem.EndString = otherCalendarItem.EndString;
@@ -71,7 +69,6 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForAdd(this CalendarItem currentCalendarItem, CalendarItem otherCalendarItem)
         {
             currentCalendarItem.UId = otherCalendarItem.UId;
-            currentCalendarItem.AccessLevel = otherCalendarItem.AccessLevel;
             currentCalendarItem.CreatedBy = otherCalendarItem.CreatedBy;
             currentCalendarItem.Author = otherCalendarItem.Author;
             currentCalendarItem.Notes = otherCalendarItem.Notes;
@@ -102,7 +99,6 @@ namespace KinaUna.Data.Extensions
                 ItemId = calendarItem.EventId.ToString(),
                 ProgenyId = calendarItem.ProgenyId,
                 FamilyId = calendarItem.FamilyId,
-                AccessLevel = calendarItem.AccessLevel,
                 ItemType = (int)KinaUnaTypes.TimeLineType.Calendar,
                 CreatedBy = calendarItem.Author,
                 CreatedTime = DateTime.UtcNow,

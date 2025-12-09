@@ -304,7 +304,6 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 Progeny progeny = await progenyService.GetProgeny(todoItem.ProgenyId, currentUserInfo);
                 string notificationTitle = "Todo item deleted for " + progeny.NickName;
-                todoItem.AccessLevel = timeLineItem.AccessLevel = 0; // Set access level to 0 for notifications, to only notify admins.
                 await webNotificationsService.SendTodoItemNotification(todoItem, currentUserInfo, notificationTitle);
             }
             // Todo: Send notification for family too.

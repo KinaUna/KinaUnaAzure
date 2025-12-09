@@ -79,12 +79,7 @@ namespace KinaUna.Data.Models
         /// </summary>
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the access level required to view this Kanban board.
-        /// </summary>
-        public int AccessLevel { get; set; }
-
+        
         /// <summary>
         /// Comma-separated list of tags associated with the entity for categorization and filtering.
         /// </summary>

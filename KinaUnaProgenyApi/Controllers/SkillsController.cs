@@ -171,8 +171,6 @@ namespace KinaUnaProgenyApi.Controllers
             Progeny progeny = await progenyService.GetProgeny(skillItem.ProgenyId, currentUserInfo);
             string notificationTitle = "Skill deleted for " + progeny.NickName;
             
-            skillItem.AccessLevel = timeLineItem.AccessLevel = 0;
-
             await webNotificationsService.SendSkillNotification(skillItem, currentUserInfo, notificationTitle);
 
             return NoContent();

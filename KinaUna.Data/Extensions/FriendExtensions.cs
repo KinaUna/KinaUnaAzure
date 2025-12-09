@@ -15,7 +15,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherFriend"></param>
         public static void CopyPropertiesForUpdate(this Friend currentFriend, Friend otherFriend )
         {
-            currentFriend.AccessLevel = otherFriend.AccessLevel;
             currentFriend.Author = otherFriend.Author;
             currentFriend.ModifiedBy = otherFriend.ModifiedBy;
             currentFriend.ModifiedTime = DateTime.UtcNow;
@@ -41,7 +40,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherFriend"></param>
         public static void CopyPropertiesForAdd(this Friend currentFriend, Friend otherFriend)
         {
-            currentFriend.AccessLevel = otherFriend.AccessLevel;
             currentFriend.Author = otherFriend.Author;
             currentFriend.CreatedBy = otherFriend.CreatedBy;
             currentFriend.CreatedTime = DateTime.UtcNow;

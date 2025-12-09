@@ -1,7 +1,5 @@
-﻿using KinaUna.Data.Extensions;
-using KinaUna.Data.Models;
+﻿using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -15,14 +13,12 @@ namespace KinaUnaProgenyApi.Controllers
     /// </summary>
     /// <param name="progenyService"></param>
     /// <param name="userInfoService"></param>
-    /// <param name="userAccessService"></param>
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
     public class AccessController(
         IProgenyService progenyService,
         IUserInfoService userInfoService,
-        IUserAccessService userAccessService,
         IAccessManagementService accessManagementService,
         IUserGroupsService userGroupsService,
         IFamiliesService familiesService,
@@ -68,34 +64,6 @@ namespace KinaUnaProgenyApi.Controllers
             // Update progenies where the user is an admin or is the progeny
             await progenyService.ChangeUsersEmailForProgenies(userInfo, model.NewEmail);
 
-            return Ok();
-        }
-
-        [Authorize(Policy = "UserOrClient")]
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> ConvertUserAccessesToUserGroups()
-        {
-            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            if (currentUserInfo == null || !currentUserInfo.IsKinaUnaAdmin) return Unauthorized();
-
-            await userAccessService.ConvertUserAccessesToUserGroups();
-            return Ok();
-        }
-
-        [Authorize(Policy = "UserOrClient")]
-        [HttpGet]
-        [Route("[action]/{itemType:int}")]
-        public async Task<IActionResult> ConvertItemAccessLevelToItemPermissions(int itemType)
-        {
-            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            if (currentUserInfo == null || !currentUserInfo.IsKinaUnaAdmin) return Unauthorized();
-            bool moreItem = true;
-            while (moreItem)
-            {
-                moreItem = await userAccessService.ConvertItemAccessLevelToItemPermissionsForGroups((KinaUnaTypes.TimeLineType)itemType, 100);
-            }
-            
             return Ok();
         }
     }

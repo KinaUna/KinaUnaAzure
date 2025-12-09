@@ -32,8 +32,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<Progeny> ProgenyList { get; init; }
         [NotMapped]
         public bool CanUserAddItems { get; init; }
-        [NotMapped]
-        public List<UserAccess> AccessList { get; init; }
+        
         [NotMapped]
         public SelectListItem[] TimezoneList { get; init; }
         [NotMapped]

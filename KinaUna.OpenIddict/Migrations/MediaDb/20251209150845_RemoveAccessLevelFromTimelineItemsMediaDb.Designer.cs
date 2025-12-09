@@ -4,16 +4,19 @@ using KinaUna.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace KinaUna.IDP.Migrations.MediaDb
+namespace KinaUna.OpenIddict.Migrations.MediaDb
 {
     [DbContext(typeof(MediaDbContext))]
-    partial class MediaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251209150845_RemoveAccessLevelFromTimelineItemsMediaDb")]
+    partial class RemoveAccessLevelFromTimelineItemsMediaDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

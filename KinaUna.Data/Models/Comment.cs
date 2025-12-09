@@ -59,10 +59,5 @@ namespace KinaUna.Data.Models
         /// </summary>
         [NotMapped]
         public string ItemId { get; set; }
-        /// <summary>
-        /// The access level required to view the comment and the item the comment is associated with.
-        /// </summary>
-        [NotMapped]
-        public int AccessLevel { get; set; }
     }
 }

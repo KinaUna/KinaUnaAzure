@@ -42,8 +42,6 @@ namespace KinaUna.Data.Models
         /// </summary>
         public DateTime ModifiedTime { get; set; }
 
-        public int AccessLevel { get; set; }
-
         [NotMapped]
         public int ItemYear { get; set; } // For recurring events.
 

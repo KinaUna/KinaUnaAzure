@@ -25,8 +25,7 @@ namespace KinaUna.Data.Models
         public string HairColor { get; set; }
         public DateTime Date { get; set; }
         public DateTime CreatedDate { get; set; } // Todo: Replace with CreatedTime?
-        public int AccessLevel { get; set; }
-
+        
         [MaxLength(256)]
         public string Author { get; set; } = string.Empty; // Todo: Replace with CreatedBy?
 

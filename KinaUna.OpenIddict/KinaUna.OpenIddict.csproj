@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -6,6 +6,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>479ebcc9-86ab-4684-8786-df91c7707a2e</UserSecretsId>
     <ApplicationInsightsResourceId>/subscriptions/2a9afdaa-1e5a-4b6f-a1c0-c626b6b0e7aa/resourceGroups/KinaUna/providers/microsoft.insights/components/KinaUnaAuth</ApplicationInsightsResourceId>
+    <NuGetAudit>True</NuGetAudit>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;NU1902</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;NU1902</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

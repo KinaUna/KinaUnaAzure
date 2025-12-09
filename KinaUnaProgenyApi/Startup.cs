@@ -4,7 +4,6 @@ using KinaUnaProgenyApi.AuthorizationHandlers;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -67,7 +66,6 @@ namespace KinaUnaProgenyApi
             services.AddScoped<INotificationsService, NotificationsService>();
             services.AddScoped<IProgenyService, ProgenyService>();
             services.AddScoped<IUserInfoService, UserInfoService>();
-            services.AddScoped<IUserAccessService, UserAccessService>();
             services.AddScoped<ICalendarService, CalendarService>();
             services.AddScoped<IContactService, ContactService>();
             services.AddScoped<IFriendService, FriendService>();

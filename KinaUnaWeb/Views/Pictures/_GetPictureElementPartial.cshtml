@@ -1,34 +1,10 @@
 ﻿@using KinaUna.Data
-@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @inject ILocaleManager LocaleManager
 @model KinaUnaWeb.Models.ItemViewModels.PictureItemViewModel
 @{
     string locationString = await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId);
-
-    bool isProgenyAdmin = Model.CurrentProgeny.IsInAdminList(Model.CurrentUser.UserEmail);
     
-    string bgColor = "#181274";
-    if (isProgenyAdmin && Model.Picture.AccessLevel == 0)
-    {
-        bgColor = "#870000";
-    }
-
-    if (isProgenyAdmin && Model.Picture.AccessLevel == 1)
-    {
-        bgColor = "#247f00";
-    }
-
-    if (isProgenyAdmin && Model.Picture.AccessLevel == 2)
-    {
-        bgColor = "#72007f";
-    }
-
-    if (isProgenyAdmin && Model.Picture.AccessLevel == 3)
-    {
-        bgColor = "#007987";
-    }
-
     string pictureTimeText = "";
     if (Model.Picture.PictureTime != null)
     {
@@ -45,7 +21,7 @@
 <button id="picture-item-@Model.Picture.PictureId" data-picture-id="@Model.Picture.PictureId" class="item-btn-gallery picture-item col-sm-12 col-md-6 col-lg-auto align-self-center p-1 m-1" style="background-color: black;">
     <div class="photo-gallery-frame">
         <img data-src="@Model.Picture.PictureLink" class="photo-gallery-picture lazyload" alt="@altText"/>
-        <div class="photo-picture-number-frame" style="background-color: @bgColor;">
+        <div class="photo-picture-number-frame">
             <span class="photo-picture-number-text">@Model.PictureNumber</span>
         </div>
         <div class="photo-picture-time-frame">

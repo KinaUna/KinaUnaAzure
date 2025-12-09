@@ -68,10 +68,7 @@ namespace KinaUna.Data.Models
         /// </summary>
         [MaxLength(4096)]
         public string Notes { get; set; } = string.Empty;
-        /// <summary>
-        /// Gets or sets the access level required to view this task.
-        /// </summary>
-        public int AccessLevel { get; set; }
+        
         /// <summary>
         /// Gets or sets a comma-separated list of tags associated with the task.
         /// </summary>

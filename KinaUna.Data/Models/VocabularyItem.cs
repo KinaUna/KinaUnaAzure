@@ -30,8 +30,7 @@ namespace KinaUna.Data.Models
         [MaxLength(256)]
         public string Author { get; set; } = string.Empty; // Todo: Replace with CreatedBy?
         public int ProgenyId { get; set; }
-        public int AccessLevel { get; set; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUsers, 4= public.
-
+        
         /// <summary>
         /// Gets or sets the identifier of the user or system that created the entity.
         /// </summary>

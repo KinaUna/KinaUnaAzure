@@ -893,37 +893,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             Assert.IsType<NoContentResult>(result);
             _mockTimelineService.Verify(x => x.DeleteTimeLineItem(It.IsAny<TimeLineItem>(), It.IsAny<UserInfo>()), Times.Never);
         }
-
-        [Fact]
-        public async Task Delete_Should_Set_AccessLevel_To_Zero_For_Notifications()
-        {
-            // Arrange
-            _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
-                .ReturnsAsync(_testUser);
-            _mockTodosService.Setup(x => x.GetTodoItem(TestTodoItemId, _testUser))
-                .ReturnsAsync(_testTodoItem);
-            _mockTodosService.Setup(x => x.DeleteTodoItem(It.IsAny<TodoItem>(), _testUser, false))
-                .ReturnsAsync(true);
-            _mockTimelineService.Setup(x => x.GetTimeLineItemByItemId(
-                TestTodoItemId.ToString(), (int)KinaUnaTypes.TimeLineType.TodoItem, _testUser))
-                .ReturnsAsync(_testTimeLineItem);
-            _mockTimelineService.Setup(x => x.DeleteTimeLineItem(_testTimeLineItem, _testUser))
-                .ReturnsAsync(_testTimeLineItem);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
-                .ReturnsAsync(_testProgeny);
-
-            // Act
-            IActionResult result = await _controller.Delete(TestTodoItemId);
-
-            // Assert
-            Assert.IsType<NoContentResult>(result);
-
-            _mockWebNotificationsService.Verify(x => x.SendTodoItemNotification(
-                It.Is<TodoItem>(t => t.AccessLevel == 0),
-                It.IsAny<UserInfo>(),
-                It.IsAny<string>()), Times.Once);
-        }
-
+        
         [Fact]
         public async Task Delete_Should_Handle_Family_TodoItem()
         {

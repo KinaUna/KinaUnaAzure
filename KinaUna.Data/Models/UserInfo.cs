@@ -50,8 +50,7 @@ namespace KinaUna.Data.Models
         public List<Family.Family> FamilyList { get; set; }
         [NotMapped]
         public bool CanUserAddItems { get; set; }
-        [NotMapped]
-        public List<UserAccess> AccessList { get; set; }
+        
         [NotMapped]
         public bool UpdateIsAdmin { get; set; }
     }

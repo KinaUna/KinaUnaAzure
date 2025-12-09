@@ -21,9 +21,5 @@ namespace KinaUnaWeb.Services.HttpClients
         /// cref="TimelineItemPermission"/> objects representing the permissions for the specified timeline item. If the
         /// operation fails, an empty list is returned.</returns>
         Task<List<TimelineItemPermission>> GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType itemType, int itemId);
-
-        Task<bool> ConvertUserAccessesToUserGroups();
-
-        Task<bool> ConvertItemAccessLevelToItemPermissions(int itemType);
     }
 }

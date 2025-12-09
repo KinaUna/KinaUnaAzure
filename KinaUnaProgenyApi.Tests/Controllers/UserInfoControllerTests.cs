@@ -70,8 +70,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 UpdatedTime = DateTime.UtcNow,
                 CanUserAddItems = false,
                 ProgenyList = [],
-                FamilyList = [],
-                AccessList = []
+                FamilyList = []
             };
 
             _otherUser = new UserInfo
@@ -94,7 +93,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 CanUserAddItems = false,
                 ProgenyList = [],
                 FamilyList = [],
-                AccessList = []
             };
 
             _adminUser = new UserInfo
@@ -116,8 +114,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 UpdatedTime = DateTime.UtcNow,
                 CanUserAddItems = false,
                 ProgenyList = [],
-                FamilyList = [],
-                AccessList = []
+                FamilyList = []
             };
 
             _testProgeny = new Progeny

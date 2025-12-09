@@ -15,7 +15,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherMeasurement"></param>
         public static void CopyPropertiesForUpdate(this Measurement currentMeasurement, Measurement otherMeasurement )
         {
-            currentMeasurement.AccessLevel = otherMeasurement.AccessLevel;
             currentMeasurement.Circumference = otherMeasurement.Circumference;
             currentMeasurement.Date = otherMeasurement.Date;
             currentMeasurement.EyeColor = otherMeasurement.EyeColor;
@@ -47,7 +46,6 @@ namespace KinaUna.Data.Extensions
             currentMeasurement.Circumference = otherMeasurement.Circumference;
             currentMeasurement.HairColor = otherMeasurement.HairColor;
             currentMeasurement.EyeColor = otherMeasurement.EyeColor;
-            currentMeasurement.AccessLevel = otherMeasurement.AccessLevel;
             currentMeasurement.Author = otherMeasurement.Author;
             currentMeasurement.ItemPermissionsDtoList = otherMeasurement.ItemPermissionsDtoList;
         }

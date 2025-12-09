@@ -184,8 +184,6 @@ namespace KinaUnaProgenyApi.Controllers
                 
                 string notificationTitle = "Sleep for " + progeny.NickName + " deleted";
                 
-                sleepItem.AccessLevel = timeLineItem.AccessLevel = 0;
-
                 await webNotificationsService.SendSleepNotification(sleepItem, currentUserInfo, notificationTitle);
 
                 return NoContent();

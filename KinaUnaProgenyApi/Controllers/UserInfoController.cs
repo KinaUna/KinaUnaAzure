@@ -138,7 +138,6 @@ namespace KinaUnaProgenyApi.Controllers
                         UserEmail = "Unknown",
                         CanUserAddItems = false,
                         UserId = "Unknown",
-                        AccessList = [],
                         ProgenyList = []
                     };
                 }
@@ -249,7 +248,6 @@ namespace KinaUnaProgenyApi.Controllers
                     UserEmail = "Unknown",
                     CanUserAddItems = false,
                     UserId = "Unknown",
-                    AccessList = [],
                     ProgenyList = []
                 };
             }
@@ -274,7 +272,6 @@ namespace KinaUnaProgenyApi.Controllers
                 UserEmail = "Unknown",
                 CanUserAddItems = false,
                 UserId = "Unknown",
-                AccessList = [],
                 ProgenyList = []
             };
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -322,7 +319,6 @@ namespace KinaUnaProgenyApi.Controllers
                     UserEmail = "Unknown",
                     CanUserAddItems = false,
                     UserId = "Unknown",
-                    AccessList = [],
                     ProgenyList = []
                 };
             }
@@ -346,7 +342,6 @@ namespace KinaUnaProgenyApi.Controllers
                 UserEmail = "Unknown",
                 CanUserAddItems = false,
                 UserId = "Unknown",
-                AccessList = [],
                 ProgenyList = []
             };
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -367,7 +362,6 @@ namespace KinaUnaProgenyApi.Controllers
                     UserEmail = "Unknown",
                     CanUserAddItems = false,
                     UserId = "Unknown",
-                    AccessList = [],
                     ProgenyList = []
                 };
             }

@@ -83,7 +83,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 ModifiedTime = DateTime.UtcNow,
                 CreatedBy = CurrentUser.UserId,
                 ModifiedBy = CurrentUser.UserId,
-                AccessLevel = KanbanBoard.AccessLevel,
                 Tags = KanbanBoard.Tags,
                 Context = KanbanBoard.Context,
                 IsDeleted = false,

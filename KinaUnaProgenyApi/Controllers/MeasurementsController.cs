@@ -180,8 +180,6 @@ namespace KinaUnaProgenyApi.Controllers
                 Progeny progeny = await progenyService.GetProgeny(measurementItem.ProgenyId, currentUserInfo);
                 string notificationTitle = "Measurement deleted for " + progeny.NickName; // Todo: Localize.
                 
-                measurementItem.AccessLevel = timeLineItem.AccessLevel = 0;
-
                 await webNotificationsService.SendMeasurementNotification(measurementItem, userInfo, notificationTitle);
 
                 return NoContent();

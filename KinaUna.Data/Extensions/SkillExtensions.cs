@@ -15,7 +15,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherSkillItem"></param>
         public static void CopyPropertiesForUpdate(this Skill currentSkillItem, Skill otherSkillItem )
         {
-            currentSkillItem.AccessLevel = otherSkillItem.AccessLevel;
             currentSkillItem.Author = otherSkillItem.Author;
             currentSkillItem.ModifiedBy = otherSkillItem.ModifiedBy;
             currentSkillItem.ModifiedTime = DateTime.UtcNow;
@@ -35,7 +34,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherSkillItem"></param>
         public static void CopyPropertiesForAdd(this Skill currentSkillItem, Skill otherSkillItem)
         {
-            currentSkillItem.AccessLevel = otherSkillItem.AccessLevel;
             currentSkillItem.Author = otherSkillItem.Author;
             currentSkillItem.CreatedBy = otherSkillItem.CreatedBy;
             currentSkillItem.CreatedTime = DateTime.UtcNow;

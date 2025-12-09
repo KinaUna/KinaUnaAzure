@@ -171,7 +171,6 @@ namespace KinaUnaProgenyApi.Controllers
                 Owners = video.Owners,
                 VideoLink = video.VideoLink,
                 ThumbLink = video.ThumbLink,
-                AccessLevel = video.AccessLevel,
                 Author = video.Author,
                 ItemPerMission = video.ItemPerMission
             };
@@ -311,7 +310,6 @@ namespace KinaUnaProgenyApi.Controllers
                 Owners = video.Owners,
                 VideoLink = video.VideoLink,
                 ThumbLink = video.ThumbLink,
-                AccessLevel = video.AccessLevel,
                 Author = video.Author
             };
             model.CommentThreadNumber = video.CommentThreadNumber;
@@ -500,7 +498,6 @@ namespace KinaUnaProgenyApi.Controllers
             }
             
             video.Tags = value.Tags;
-            video.AccessLevel = value.AccessLevel;
             video.Author = value.Author;
             video.VideoTime = value.VideoTime;
             video.Duration = value.Duration;

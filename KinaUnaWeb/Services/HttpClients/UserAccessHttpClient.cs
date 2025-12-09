@@ -70,38 +70,5 @@ namespace KinaUnaWeb.Services.HttpClients
             List<TimelineItemPermission> timelineItemPermissions = JsonSerializer.Deserialize<List<TimelineItemPermission>>(permissionListAsString, JsonSerializerOptions.Web);
             return timelineItemPermissions;
         }
-
-        public async Task<bool> ConvertUserAccessesToUserGroups()
-        {
-            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
-            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
-
-            _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            
-            _httpClient.Timeout = TimeSpan.FromMinutes(20);
-            
-            string accessApiPath = "/api/Access/ConvertUserAccessesToUserGroups/";
-            HttpResponseMessage accessManagementResponse = await _httpClient.GetAsync(accessApiPath);
-            
-            if (!accessManagementResponse.IsSuccessStatusCode) return false;
-            
-            return true;
-        }
-
-        public async Task<bool> ConvertItemAccessLevelToItemPermissions(int itemType)
-        {
-            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
-            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
-            _httpClient.SetBearerToken(tokenInfo.AccessToken);
-
-            _httpClient.Timeout = TimeSpan.FromMinutes(60);
-
-            string accessApiPath = "/api/Access/ConvertItemAccessLevelToItemPermissions/" + itemType;
-            HttpResponseMessage accessManagementResponse = await _httpClient.GetAsync(accessApiPath);
-            
-            if (!accessManagementResponse.IsSuccessStatusCode) return false;
-
-            return true;
-        }
     }
 }

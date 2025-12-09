@@ -40,7 +40,6 @@ namespace KinaUna.Data.Extensions
         {
             otherPicture.RemoveNullStrings();
 
-            currentPicture.AccessLevel = otherPicture.AccessLevel;
             currentPicture.PictureTime = otherPicture.PictureTime;
             currentPicture.ItemPerMission = otherPicture.ItemPerMission;
             currentPicture.ItemPermissionsDtoList = otherPicture.ItemPermissionsDtoList;
@@ -182,7 +181,6 @@ namespace KinaUna.Data.Extensions
             currentPicture.ProgenyId = otherPicture.ProgenyId;
             currentPicture.Progeny = progeny;
             currentPicture.Owners = ownerEmail;
-            currentPicture.AccessLevel = otherPicture.AccessLevel;
             currentPicture.PictureTime = otherPicture.PictureTime;
             currentPicture.Tags = otherPicture.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
             currentPicture.Location = otherPicture.Location.TrimEnd(',', ' ');
@@ -213,7 +211,6 @@ namespace KinaUna.Data.Extensions
 
             picture.ProgenyId = 0;
             picture.Progeny = progeny;
-            picture.AccessLevel = 5;
             picture.PictureLink = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             picture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             picture.PictureLink1200 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";

@@ -537,7 +537,6 @@ namespace KinaUnaWeb.Controllers
                 {
                     ProgenyId = eventItem.ProgenyId,
                     FamilyId = eventItem.FamilyId,
-                    AccessLevel = eventItem.AccessLevel,
                     ItemId = eventItem.EventId.ToString(),
                     ItemType = (int)KinaUnaTypes.TimeLineType.Calendar,
                     ItemYear = eventItem.StartTime?.Year ?? DateTime.UtcNow.Year,
@@ -558,7 +557,6 @@ namespace KinaUnaWeb.Controllers
                 {
                     ProgenyId = todoItem.ProgenyId,
                     FamilyId = todoItem.FamilyId,
-                    AccessLevel = todoItem.AccessLevel,
                     ItemId = todoItem.TodoItemId.ToString(),
                     ItemType = (int)KinaUnaTypes.TimeLineType.TodoItem,
                     ItemYear = todoItem.StartDate?.Year ?? DateTime.UtcNow.Year,

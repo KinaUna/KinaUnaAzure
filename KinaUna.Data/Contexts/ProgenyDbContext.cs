@@ -8,7 +8,6 @@ namespace KinaUna.Data.Contexts
     public class ProgenyDbContext(DbContextOptions<ProgenyDbContext> options) : DbContext(options)
     {
         public DbSet<Progeny> ProgenyDb { get; init; }
-        public DbSet<UserAccess> UserAccessDb { get; init; }
         public DbSet<TimeLineItem> TimeLineDb { get; init; }
         public DbSet<UserInfo> UserInfoDb { get; init; }
         public DbSet<Location> LocationsDb { get; init; }

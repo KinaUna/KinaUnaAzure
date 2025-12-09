@@ -211,8 +211,6 @@ namespace KinaUnaProgenyApi.Controllers
             
             string notificationTitle = "Friend deleted for " + progeny.NickName; // Todo: Localize.
             
-            friendItem.AccessLevel = timeLineItem.AccessLevel = 0;
-
             await webNotificationsService.SendFriendNotification(friendItem, currentUserInfo, notificationTitle);
 
             return NoContent();

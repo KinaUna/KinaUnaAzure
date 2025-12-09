@@ -15,7 +15,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherNote"></param>
         public static void CopyPropertiesForUpdate(this Note currentNote, Note otherNote )
         {
-            currentNote.AccessLevel = otherNote.AccessLevel;
             currentNote.ProgenyId = otherNote.ProgenyId;
             currentNote.Category = otherNote.Category;
             currentNote.Content = otherNote.Content;
@@ -36,7 +35,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherNote"></param>
         public static void CopyPropertiesForAdd(this Note currentNote, Note otherNote)
         {
-            currentNote.AccessLevel = otherNote.AccessLevel;
             currentNote.Owner = otherNote.Owner;
             currentNote.CreatedBy = otherNote.CreatedBy;
             currentNote.CreatedTime = DateTime.UtcNow;

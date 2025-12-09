@@ -167,7 +167,7 @@ namespace KinaUnaWeb.Controllers
                 parameters.CurrentPageNumber = 1;
             }
             
-            List<Friend> friendsList = []; // await friendsHttpClient.GetFriendsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+            List<Friend> friendsList = [];
             
             foreach (int progenyId in parameters.Progenies)
             {

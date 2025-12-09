@@ -54,7 +54,7 @@ namespace KinaUna.Data.Models
 
         [MaxLength(1024)]
         public string Website { get; set; } = string.Empty;
-        public int AccessLevel { get; set; }
+        
         public int ProgenyId { get; set; } = 0; // Which Progeny this contact belongs to. 0 if it belongs to a family
         public int FamilyId { get; set; } = 0; // Which Family this contact belongs to. 0 if it belongs to a Progeny
 

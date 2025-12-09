@@ -15,7 +15,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherContact"></param>
         public static void CopyPropertiesForUpdate(this Contact currentContact, Contact otherContact )
         {
-            currentContact.AccessLevel = otherContact.AccessLevel;
             currentContact.Active = otherContact.Active;
             currentContact.AddressIdNumber = otherContact.AddressIdNumber;
             currentContact.AddressString = otherContact.AddressString;
@@ -59,7 +58,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherContact"></param>
         public static void CopyPropertiesForAdd(this Contact currentContact, Contact otherContact)
         {
-            currentContact.AccessLevel = otherContact.AccessLevel;
             currentContact.Active = otherContact.Active;
             currentContact.AddressString = otherContact.AddressString;
             currentContact.ProgenyId = otherContact.ProgenyId;

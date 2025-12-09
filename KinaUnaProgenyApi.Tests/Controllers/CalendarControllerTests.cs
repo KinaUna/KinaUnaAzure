@@ -87,7 +87,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 AllDay = false,
                 Author = TestUserId,
                 CreatedBy = TestUserId,
-                AccessLevel = 0,
                 UId = Guid.NewGuid().ToString()
             };
 

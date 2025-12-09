@@ -7,7 +7,7 @@ namespace KinaUnaWeb.Services;
 
 /// <summary>
 /// Service for setting up the BaseItemsViewModel and related entities.
-/// Gets the frequently used ViewModel properties, such as LanguageId, CurrentUser, CurrentProgeny, CurrentProgenyAccessList and CurrentUsersAccessLevel properties.
+/// Gets the frequently used ViewModel properties, such as LanguageId, CurrentUser, CurrentProgeny, CurrentProgenyAccessList properties.
 /// </summary>
 public interface IViewModelSetupService
 {

@@ -41,8 +41,7 @@ namespace KinaUnaWeb.Controllers
         IPageTextsHttpClient pageTextsHttpClient,
         ImageStore imageStore,
         IWebNotificationsService webNotificationsService,
-        ITasksHttpClient tasksHttpClient,
-        IUserAccessHttpClient userAccessHttpClient)
+        ITasksHttpClient tasksHttpClient)
         : Controller
     {
         /// <summary>
@@ -799,37 +798,6 @@ namespace KinaUnaWeb.Controllers
             }
 
             return task;
-        }
-
-        public async Task<IActionResult> ConvertAccesses()
-        {
-            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
-            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
-
-            return View();
-        }
-
-
-        [HttpGet("[action]")]
-        public async Task<IActionResult> ConvertUserAccessesToUserGroups()
-        {
-            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
-            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
-
-            await userAccessHttpClient.ConvertUserAccessesToUserGroups();
-
-            return View();
-        }
-
-        [HttpGet("[action]/{itemType:int}")]
-        public async Task<IActionResult> ConvertItemAccessLevelToItemPermissions(int itemType)
-        {
-            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
-            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
-
-            await userAccessHttpClient.ConvertItemAccessLevelToItemPermissions(itemType);
-
-            return View(itemType);
         }
     }
 }

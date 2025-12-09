@@ -67,7 +67,6 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedTime = DateTime.UtcNow.AddDays(-5),
                 CreatedBy = "admin1",
                 ModifiedBy = "admin1",
-                AccessLevel = 1,
                 IsDeleted = false
             };
             _progenyDbContext.KanbanBoardsDb.Add(testBoard1);
@@ -85,7 +84,6 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedTime = DateTime.UtcNow.AddDays(-10),
                 CreatedBy = "user1",
                 ModifiedBy = "user1",
-                AccessLevel = 2,
                 IsDeleted = false
             };
             _progenyDbContext.KanbanBoardsDb.Add(testBoard2);

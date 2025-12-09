@@ -70,11 +70,7 @@ namespace KinaUna.Data.Models
         /// All day event. I.e. birthday, holiday etc.
         /// </summary>
         public bool AllDay { get; set; }
-        /// <summary>
-        /// The required access level to view the event.
-        /// </summary>
-        public int AccessLevel { get; set; }
-
+        
         /// <summary>
         /// The User Id of the user who created the event.
         /// </summary>

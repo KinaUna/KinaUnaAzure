@@ -5,9 +5,7 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
-using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services.AccessManagementService;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
@@ -18,12 +16,10 @@ namespace KinaUnaProgenyApi.Services
     /// </summary>
     /// <param name="pushMessageSender"></param>
     /// <param name="notificationsService"></param>
-    /// <param name="userAccessService"></param>
     /// <param name="userInfoService"></param>
     public class WebNotificationsService(
         IPushMessageSender pushMessageSender,
         INotificationsService notificationsService,
-        IUserAccessService userAccessService,
         IUserInfoService userInfoService,
         IAccessManagementService accessManagementService,
         IUserGroupsService userGroupsService,
@@ -592,51 +588,7 @@ namespace KinaUnaProgenyApi.Services
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavocabulary" + vocabularyItem.WordId);
             }
         }
-
-        /// <summary>
-        /// Adds a notification for a UserAccess item to the database, and sends a push notification (if they registered for it), for all users with admin access to the Progeny that the item belongs to.
-        /// </summary>
-        /// <param name="userAccessItem">The UserAccess item that was added, updated, or deleted.</param>
-        /// <param name="userInfo">The UserInfo for the user who made changes.</param>
-        /// <param name="title">The title of the notification.</param>
-        public async Task SendUserAccessNotification(UserAccess userAccessItem, UserInfo userInfo, string title)
-        {
-            // Don't send for development environment, unless explicitly enabled.
-            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
-            {
-                return;
-            }
-
-            CustomResult<List<UserAccess>> usersToNotifResult = await userAccessService.GetProgenyUserAccessList(userAccessItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifResult == null) return;
-
-            foreach (UserAccess userAccess in usersToNotifResult.Value)
-            {
-                if (userAccess.AccessLevel != 0) continue;
-
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
-
-                WebNotification notification = new()
-                {
-                    To = uaUserInfo.UserId,
-                    From = userInfo.FullName(),
-                    Message = "User email: " + userAccessItem.UserId, // Todo: Translation of User email
-                    DateTime = DateTime.UtcNow,
-                    Icon = userInfo.ProfilePicture,
-                    Title = title,
-                    Link = "/Family",
-                    Type = "Notification"
-                };
-
-                notification = await notificationsService.AddWebNotification(notification);
-
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunauseraccess" + userAccessItem.ProgenyId);
-            }
-        }
-
+        
         /// <summary>
         /// Sends a notification to users with appropriate access to a specified to-do item.
         /// </summary>

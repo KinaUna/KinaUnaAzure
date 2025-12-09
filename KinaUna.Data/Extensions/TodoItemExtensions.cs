@@ -143,7 +143,6 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.StartDate = otherTodoItem.StartDate;
             currentTodoItem.CompletedDate = otherTodoItem.CompletedDate;
             currentTodoItem.Notes = otherTodoItem.Notes;
-            currentTodoItem.AccessLevel = otherTodoItem.AccessLevel;
             currentTodoItem.Tags = otherTodoItem.Tags;
             currentTodoItem.Context = otherTodoItem.Context;
             currentTodoItem.Location = otherTodoItem.Location;
@@ -177,7 +176,6 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.StartDate = otherTodoItem.StartDate;
             currentTodoItem.CompletedDate = otherTodoItem.CompletedDate;
             currentTodoItem.Notes = otherTodoItem.Notes;
-            currentTodoItem.AccessLevel = otherTodoItem.AccessLevel;
             currentTodoItem.Tags = otherTodoItem.Tags;
             currentTodoItem.Context = otherTodoItem.Context;
             currentTodoItem.Location = otherTodoItem.Location;
@@ -208,7 +206,6 @@ namespace KinaUna.Data.Extensions
                 ItemId = todoItem.TodoItemId.ToString(),
                 ProgenyId = todoItem.ProgenyId,
                 FamilyId = todoItem.FamilyId,
-                AccessLevel = todoItem.AccessLevel,
                 ItemType = (int)KinaUnaTypes.TimeLineType.TodoItem,
                 CreatedBy = todoItem.CreatedBy,
                 CreatedTime = DateTime.UtcNow,

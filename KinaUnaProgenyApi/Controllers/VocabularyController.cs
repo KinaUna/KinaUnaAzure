@@ -173,7 +173,6 @@ namespace KinaUnaProgenyApi.Controllers
             
             // Todo: Translate
             string notificationTitle = "Word deleted for " + progeny.NickName;
-            vocabularyItem.AccessLevel = timeLineItem.AccessLevel = 0;
 
             await webNotificationsService.SendVocabularyNotification(vocabularyItem, currentUserInfo, notificationTitle);
 

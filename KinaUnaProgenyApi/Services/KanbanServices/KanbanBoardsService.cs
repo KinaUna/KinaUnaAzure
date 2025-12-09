@@ -182,7 +182,6 @@ namespace KinaUnaProgenyApi.Services.KanbanServices
             existingKanbanBoard.Columns = kanbanBoard.Columns;
             existingKanbanBoard.ModifiedBy = kanbanBoard.ModifiedBy;
             existingKanbanBoard.ModifiedTime = kanbanBoard.ModifiedTime;
-            existingKanbanBoard.AccessLevel = kanbanBoard.AccessLevel;
             existingKanbanBoard.Tags = kanbanBoard.Tags;
             existingKanbanBoard.Context = kanbanBoard.Context;
             existingKanbanBoard.ItemPermissionsDtoList = kanbanBoard.ItemPermissionsDtoList;

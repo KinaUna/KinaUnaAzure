@@ -183,7 +183,6 @@ namespace KinaUnaProgenyApi.Controllers
             
             string notificationTitle = "Note deleted for " + progeny.NickName;
             
-            noteItem.AccessLevel = timeLineItem.AccessLevel = 0;
             await webNotificationsService.SendNoteNotification(noteItem, currentUserInfo, notificationTitle);
 
             return NoContent();

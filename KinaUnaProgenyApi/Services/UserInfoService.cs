@@ -250,7 +250,6 @@ namespace KinaUnaProgenyApi.Services
             userInfoToUpdate.IsKinaUnaAdmin = userInfo.IsKinaUnaAdmin;
             userInfoToUpdate.UpdateIsAdmin = userInfo.UpdateIsAdmin;
             userInfoToUpdate.ProgenyList = userInfo.ProgenyList;
-            userInfoToUpdate.AccessList = userInfo.AccessList;
             userInfoToUpdate.UpdatedTime = DateTime.UtcNow;
             
             _ = _context.UserInfoDb.Update(userInfoToUpdate);

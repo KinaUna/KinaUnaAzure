@@ -23,13 +23,12 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Comment comment1 = new()
             {
-                CommentText = "Test1", Author = "User1", AccessLevel = 0, AuthorImage = Constants.ProfilePictureUrl, CommentThreadNumber = 1, Created = DateTime.UtcNow, DisplayName = "User1", ItemType = 1, ItemId = "1"
+                CommentText = "Test1", Author = "User1", AuthorImage = Constants.ProfilePictureUrl, CommentThreadNumber = 1, Created = DateTime.UtcNow, DisplayName = "User1", ItemType = 1, ItemId = "1"
             };
             Comment comment2 = new()
             {
                 CommentText = "Test2",
                 Author = "User2",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -52,14 +51,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.IsType<Comment>(resultComment1);
             Assert.Equal(comment1.Author, resultComment1.Author);
             Assert.Equal(comment1.CommentText, resultComment1.CommentText);
-            Assert.Equal(comment1.AccessLevel, resultComment1.AccessLevel);
             Assert.Equal(comment1.CommentThreadNumber, resultComment1.CommentThreadNumber);
 
             Assert.NotNull(resultComment2);
             Assert.IsType<Comment>(resultComment2);
             Assert.Equal(comment1.Author, resultComment2.Author);
             Assert.Equal(comment1.CommentText, resultComment2.CommentText);
-            Assert.Equal(comment1.AccessLevel, resultComment2.AccessLevel);
             Assert.Equal(comment1.CommentThreadNumber, resultComment2.CommentThreadNumber);
         }
 
@@ -73,7 +70,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test1",
                 Author = "User1",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -85,7 +81,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test2",
                 Author = "User2",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -119,7 +114,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test1",
                 Author = "User1",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -131,7 +125,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test2",
                 Author = "User2",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -170,7 +163,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test1",
                 Author = "User1",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -182,7 +174,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test2",
                 Author = "User2",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -220,7 +211,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test1",
                 Author = "User1",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -232,7 +222,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test2",
                 Author = "User2",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -252,7 +241,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test3",
                 Author = "User3",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 2,
                 Created = DateTime.UtcNow,
@@ -269,7 +257,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.IsType<Comment>(addedComment);
             Assert.NotEqual(0, addedComment.CommentId);
             Assert.Equal("User3", addedComment.Author);
-            Assert.Equal(0, addedComment.AccessLevel);
             Assert.Equal(2, addedComment.CommentThreadNumber);
 
             if (dbComment != null)
@@ -277,14 +264,12 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Assert.IsType<Comment>(dbComment);
                 Assert.NotEqual(0, dbComment.CommentId);
                 Assert.Equal("User3", dbComment.Author);
-                Assert.Equal(0, dbComment.AccessLevel);
                 Assert.Equal(2, dbComment.CommentThreadNumber);
             }
             Assert.NotNull(savedComment);
             Assert.IsType<Comment>(savedComment);
             Assert.NotEqual(0, savedComment.CommentId);
             Assert.Equal("User3", savedComment.Author);
-            Assert.Equal(0, savedComment.AccessLevel);
             Assert.Equal(2, savedComment.CommentThreadNumber);
 
         }
@@ -299,7 +284,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test1",
                 Author = "User1",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -311,7 +295,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test2",
                 Author = "User2",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -337,7 +320,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test3",
                 Author = "User3",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -376,7 +358,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test1",
                 Author = "User1",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -388,7 +369,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test2",
                 Author = "User2",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -414,7 +394,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.IsType<Comment>(updatedComment);
             Assert.NotEqual(0, updatedComment.CommentId);
             Assert.Equal("User1", updatedComment.Author);
-            Assert.Equal(0, updatedComment.AccessLevel);
             Assert.Equal(1, updatedComment.CommentThreadNumber);
             Assert.Equal("Test1 Updated", updatedComment.CommentText);
 
@@ -423,7 +402,6 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Assert.IsType<Comment>(dbComment);
                 Assert.NotEqual(0, dbComment.CommentId);
                 Assert.Equal("User1", dbComment.Author);
-                Assert.Equal(0, dbComment.AccessLevel);
                 Assert.Equal(1, dbComment.CommentThreadNumber);
                 Assert.Equal("Test1 Updated", dbComment.CommentText);
             }
@@ -431,7 +409,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.IsType<Comment>(savedComment);
             Assert.NotEqual(0, savedComment.CommentId);
             Assert.Equal("User1", savedComment.Author);
-            Assert.Equal(0, savedComment.AccessLevel);
             Assert.Equal(1, savedComment.CommentThreadNumber);
             Assert.Equal("Test1 Updated", savedComment.CommentText);
         }
@@ -446,7 +423,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test1",
                 Author = "User1",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -458,7 +434,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test2",
                 Author = "User2",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -493,7 +468,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test1",
                 Author = "User1",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,
@@ -505,7 +479,6 @@ namespace KinaUnaProgenyApi.Tests.Services
             {
                 CommentText = "Test2",
                 Author = "User2",
-                AccessLevel = 0,
                 AuthorImage = Constants.ProfilePictureUrl,
                 CommentThreadNumber = 1,
                 Created = DateTime.UtcNow,

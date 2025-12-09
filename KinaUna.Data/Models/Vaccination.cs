@@ -24,8 +24,7 @@ namespace KinaUna.Data.Models
         [MaxLength(4096)]
         public string Notes { get; set; } = string.Empty;
         public int ProgenyId { get; set; }
-        public int AccessLevel { get; set; }
-
+        
         [MaxLength(256)]
         public string Author { get; set; } = string.Empty; // Todo: Replace with CreatedBy?
 
