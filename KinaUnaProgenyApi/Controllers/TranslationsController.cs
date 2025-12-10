@@ -1,12 +1,10 @@
-﻿using KinaUna.Data;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -18,7 +16,7 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class TranslationsController(IUserInfoService userInfoService, ITextTranslationService textTranslationService, IHostEnvironment env) : ControllerBase
+    public class TranslationsController(IUserInfoService userInfoService, ITextTranslationService textTranslationService) : ControllerBase
     {
         /// <summary>
         /// Get all translations for a specific language.
@@ -105,35 +103,35 @@ namespace KinaUnaProgenyApi.Controllers
                 value.LanguageId = 1;
             }
 
-            string userId = User.GetUserId();
+            //string userId = User.GetUserId();
 
-            List<string> allowedClients = AuthConstants.AllowedApiOnlyClients;
-            if (env.IsDevelopment())
-            {
-                List<string> allowedDevelopmentClients = [];
-                foreach (string client in AuthConstants.AllowedApiOnlyClients)
-                {
-                    allowedDevelopmentClients.Add(client + "local");
-                }
+            //List<string> allowedClients = AuthConstants.AllowedApiOnlyClients;
+            //if (env.IsDevelopment())
+            //{
+            //    List<string> allowedDevelopmentClients = [];
+            //    foreach (string client in AuthConstants.AllowedApiOnlyClients)
+            //    {
+            //        allowedDevelopmentClients.Add(client + "local");
+            //    }
 
-                allowedClients = allowedDevelopmentClients;
-            }
+            //    allowedClients = allowedDevelopmentClients;
+            //}
 
-            if (env.IsStaging())
-            {
-                List<string> allowedStagingClients = [];
-                foreach (string client in AuthConstants.AllowedApiOnlyClients)
-                {
-                    allowedStagingClients.Add(client + "azure");
-                }
+            //if (env.IsStaging())
+            //{
+            //    List<string> allowedStagingClients = [];
+            //    foreach (string client in AuthConstants.AllowedApiOnlyClients)
+            //    {
+            //        allowedStagingClients.Add(client + "azure");
+            //    }
 
-                allowedClients = allowedStagingClients;
-            }
+            //    allowedClients = allowedStagingClients;
+            //}
 
-            if (!await userInfoService.IsAdminUserId(userId) && !allowedClients.Contains(userId))
-            {
-                return Ok(value);
-            }
+            //if (!await userInfoService.IsAdminUserId(userId) && !allowedClients.Contains(userId))
+            //{
+            //    return Ok(value);
+            //}
 
             TextTranslation existingTranslation = await textTranslationService.GetTranslationByWord(value.Word, value.Page, value.LanguageId);
             if (existingTranslation == null)

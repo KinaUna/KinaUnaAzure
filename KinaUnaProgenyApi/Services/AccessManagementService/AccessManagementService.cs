@@ -10,9 +10,11 @@ using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using static KinaUna.Data.Models.KinaUnaTypes;
 
@@ -24,6 +26,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     /// <param name="progenyDbContext"></param>
     public class AccessManagementService(ProgenyDbContext progenyDbContext, MediaDbContext mediaDbContext, IPermissionAuditLogsService permissionAuditLogService, IDistributedCache cache, IKinaUnaCacheService kinaUnaCacheService) : IAccessManagementService
     {
+        private readonly ConcurrentDictionary<int, SemaphoreSlim> _progenyPermissionSemaphores = new();
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _itemPermissionDictionarySemaphores = new();
         /// <summary>
         /// Determines whether a user has the specified access level for a given timeline item (e.g., Note, TodoItem, Sleep, etc.).
         /// </summary>
@@ -1820,23 +1824,39 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             // If the new permission is admin, ensure only one admin group exists.
             if (progenyPermission.PermissionLevel == PermissionLevel.Admin)
             {
-                ProgenyPermission adminPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
-                    .SingleOrDefaultAsync(pp => pp.ProgenyId == progenyPermission.ProgenyId && pp.PermissionLevel == PermissionLevel.Admin);
+                ProgenyPermission adminPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progenyPermission.ProgenyId && pp.PermissionLevel == PermissionLevel.Admin);
                 if (adminPermission != null)
                 {
-                    return null;
+                    UserGroup adminGroup = await progenyDbContext.UserGroupsDb.AsNoTracking()
+                        .SingleOrDefaultAsync(ug => ug.UserGroupId == adminPermission.GroupId);
+                    if (adminGroup == null)
+                    {
+                        // The group doesn't exist. Reassign the admin permission to the new group.
+                        adminPermission.GroupId = progenyPermission.GroupId;
+                        progenyDbContext.ProgenyPermissionsDb.Update(adminPermission);
+                        await progenyDbContext.SaveChangesAsync();
+                        progenyPermission.ProgenyPermissionId = adminPermission.ProgenyPermissionId;
+                        await permissionAuditLogService.AddProgenyPermissionAuditLogEntry(PermissionAction.Update, adminPermission, currentUserInfo);
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
             }
-            
-            progenyPermission.CreatedBy = currentUserInfo.UserId;
-            progenyPermission.CreatedTime = DateTime.UtcNow;
-            progenyPermission.ModifiedBy = currentUserInfo.UserId;
-            progenyPermission.ModifiedTime = DateTime.UtcNow;
 
-            progenyDbContext.ProgenyPermissionsDb.Add(progenyPermission);
-            await progenyDbContext.SaveChangesAsync();
+            if (progenyPermission.ProgenyPermissionId == 0)
+            {
+                progenyPermission.CreatedBy = currentUserInfo.UserId;
+                progenyPermission.CreatedTime = DateTime.UtcNow;
+                progenyPermission.ModifiedBy = currentUserInfo.UserId;
+                progenyPermission.ModifiedTime = DateTime.UtcNow;
 
-            await permissionAuditLogService.AddProgenyPermissionAuditLogEntry(PermissionAction.Add, progenyPermission, currentUserInfo);
+                progenyDbContext.ProgenyPermissionsDb.Add(progenyPermission);
+                await progenyDbContext.SaveChangesAsync();
+
+                await permissionAuditLogService.AddProgenyPermissionAuditLogEntry(PermissionAction.Add, progenyPermission, currentUserInfo);
+            }
 
             if (progenyPermission.GroupId > 0)
             {
@@ -2655,7 +2675,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 PermissionLevel = PermissionLevel.None
             };
-
+            
             if (progenyId == Constants.DefaultChildId && userInfo.UserId != Constants.DefaultUserId)
             {
                 ProgenyPermission defaultChildPermission = new()
@@ -2666,138 +2686,172 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return defaultChildPermission;
             }
 
-            string cacheKey = $"getProgenyPermissionForUser_userId_{userInfo.UserId}_progenyId_{progenyId}";
-            string cachedProgenyPermissionString = await cache.GetStringAsync(cacheKey);
-            if (!string.IsNullOrEmpty(cachedProgenyPermissionString))
+            // Prevent multiple threads from updating the DB for the same user/progeny combination.
+            // Lock on progenyId to allow parallel updates for different progeny.
+
+            SemaphoreSlim semaphore = _progenyPermissionSemaphores.GetOrAdd(progenyId, new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
+            
+            try
             {
-                ProgenyOrFamilyPermissionCacheEntry cachedProgenyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedProgenyPermissionString, JsonSerializerOptions.Web);
-                ProgenyOrFamilyUpdatedCacheEntry progenyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(progenyId, 0);
-                if (progenyUpdatedCacheEntry != null)
+                string cacheKey = $"getProgenyPermissionForUser_userId_{userInfo.UserId}_progenyId_{progenyId}";
+                string cachedProgenyPermissionString = await cache.GetStringAsync(cacheKey);
+                if (!string.IsNullOrEmpty(cachedProgenyPermissionString))
                 {
-                    // If the progeny updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
-                    if (progenyUpdatedCacheEntry.UpdateTime < cachedProgenyPermissionEntry.UpdateTime)
+                    ProgenyOrFamilyPermissionCacheEntry cachedProgenyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedProgenyPermissionString, JsonSerializerOptions.Web);
+                    ProgenyOrFamilyUpdatedCacheEntry progenyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(progenyId, 0);
+                    if (progenyUpdatedCacheEntry != null)
                     {
-                        return cachedProgenyPermissionEntry.ProgenyPermission;
-                    }
-                }
-                else
-                {
-                    // No progeny updated cache entry found, return cached permissions.
-                    return cachedProgenyPermissionEntry.ProgenyPermission;
-                }
-            }
-
-
-            // Check group permissions.
-            List<ProgenyPermission> groupPermissions = await progenyDbContext.ProgenyPermissionsDb
-                .AsNoTracking()
-                .Where(pp => pp.GroupId > 0 && pp.ProgenyId == progenyId && pp.PermissionLevel < PermissionLevel.CreatorOnly)
-                .ToListAsync();
-            foreach (ProgenyPermission permission in groupPermissions)
-            {
-                bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
-                if (!isMember || permission.PermissionLevel <= highestPermission) continue;
-
-                highestPermission = permission.PermissionLevel;
-                resultPermission = permission;
-            }
-
-            Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == progenyId);
-            if (progeny.IsInAdminList(userInfo.UserEmail) && resultPermission.PermissionLevel < PermissionLevel.Admin)
-            {
-                // There is no explicit permission set, but the user is in the admin list, so give them admin permissions.
-                List<UserGroup> progenyGroups = await progenyDbContext.UserGroupsDb.AsNoTracking()
-                    .Where(ug => ug.ProgenyId == progenyId).ToListAsync();
-                
-                bool adminGroupExists = false;
-
-                if (progenyGroups.Count > 0)
-                {
-                    foreach (UserGroup progenyGroup in progenyGroups)
-                    {
-                        ProgenyPermission progenyGroupPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
-                            .SingleOrDefaultAsync(pp => pp.ProgenyId == progenyId && pp.GroupId == progenyGroup.UserGroupId);
-                        if (progenyGroupPermission != null && progenyGroupPermission.PermissionLevel == PermissionLevel.Admin)
+                        // If the progeny updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
+                        if (progenyUpdatedCacheEntry.UpdateTime < cachedProgenyPermissionEntry.UpdateTime)
                         {
-                            adminGroupExists = true;
-                            // Add the user to the admin group if not already a member.
-                            bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == progenyGroup.UserGroupId);
-                            if(!isMember)
+                            if (cachedProgenyPermissionEntry.ProgenyPermission != null)
                             {
-                                UserGroupMember newMember = new()
-                                {
-                                    UserId = userInfo.UserId,
-                                    Email = userInfo.UserEmail,
-                                    UserGroupId = progenyGroup.UserGroupId,
-                                    CreatedBy = "System",
-                                    CreatedTime = DateTime.UtcNow,
-                                    ModifiedBy = "System",
-                                    ModifiedTime = DateTime.UtcNow
-                                };
-                                progenyDbContext.UserGroupMembersDb.Add(newMember);
+                                return cachedProgenyPermissionEntry.ProgenyPermission;
                             }
-                            await kinaUnaCacheService.SetUserUpdatedCache(userInfo.UserId);
-                            resultPermission = progenyGroupPermission;
-                            break;
+                        }
+                    }
+                    else
+                    {
+                        // No progeny updated cache entry found, return cached permissions.
+                        if (cachedProgenyPermissionEntry.ProgenyPermission != null)
+                        {
+                            return cachedProgenyPermissionEntry.ProgenyPermission;
                         }
                     }
                 }
-                if (progenyGroups.Count == 0 || !adminGroupExists)
+
+                // Check group permissions.
+                List<ProgenyPermission> groupPermissions = await progenyDbContext.ProgenyPermissionsDb
+                    .AsNoTracking()
+                    .Where(pp => pp.GroupId > 0 && pp.ProgenyId == progenyId && pp.PermissionLevel < PermissionLevel.CreatorOnly)
+                    .ToListAsync();
+                foreach (ProgenyPermission permission in groupPermissions)
                 {
-                    UserGroup adminGroup = new()
-                    {
-                        IsFamily = false,
-                        Name = $"Admins - {progeny.NickName}",
-                        Description = $"Administrators group for {progeny.Name} created automatically.",
-                        ProgenyId = progenyId,
-                        FamilyId = 0,
-                        CreatedBy = "System",
-                        CreatedTime = DateTime.UtcNow,
-                        ModifiedBy = "System",
-                        ModifiedTime = DateTime.UtcNow
-                    };
+                    bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
+                    if (!isMember || permission.PermissionLevel <= highestPermission) continue;
 
-                    progenyDbContext.UserGroupsDb.Add(adminGroup);
-                    await progenyDbContext.SaveChangesAsync();
-
-                    UserGroupMember adminMember = new()
-                    {
-                        UserId = userInfo.UserId,
-                        Email = userInfo.UserEmail,
-                        UserGroupId = adminGroup.UserGroupId,
-                        CreatedBy = "System",
-                        CreatedTime = DateTime.UtcNow,
-                        ModifiedBy = "System",
-                        ModifiedTime = DateTime.UtcNow
-                    };
-                    progenyDbContext.UserGroupMembersDb.Add(adminMember);
-                    await progenyDbContext.SaveChangesAsync();
-
-                    ProgenyPermission adminPermission = new()
-                    {
-                        ProgenyId = progenyId,
-                        GroupId = adminGroup.UserGroupId,
-                        PermissionLevel = PermissionLevel.Admin,
-                        CreatedBy = "System",
-                        CreatedTime = DateTime.UtcNow,
-                        ModifiedBy = "System",
-                        ModifiedTime = DateTime.UtcNow
-                    };
-                    resultPermission = await GrantProgenyPermission(adminPermission, userInfo);
+                    highestPermission = permission.PermissionLevel;
+                    resultPermission = permission;
                 }
+
+                Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == progenyId);
+                if (progeny.IsInAdminList(userInfo.UserEmail) && resultPermission.PermissionLevel < PermissionLevel.Admin)
+                {
+                    // There is no explicit permission set, but the user is in the admin list, so give them admin permissions.
+                    List<UserGroup> progenyGroups = await progenyDbContext.UserGroupsDb.AsNoTracking()
+                        .Where(ug => ug.ProgenyId == progenyId).ToListAsync();
+
+                    bool adminGroupExists = false;
+
+                    if (progenyGroups.Count > 0)
+                    {
+                        foreach (UserGroup progenyGroup in progenyGroups)
+                        {
+                            ProgenyPermission progenyGroupPermission = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking()
+                                .SingleOrDefaultAsync(pp => pp.ProgenyId == progenyId && pp.GroupId == progenyGroup.UserGroupId);
+                            if (progenyGroupPermission != null && progenyGroupPermission.PermissionLevel == PermissionLevel.Admin)
+                            {
+                                adminGroupExists = true;
+                                // Add the user to the admin group if not already a member.
+                                bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == progenyGroup.UserGroupId);
+                                if (!isMember)
+                                {
+                                    UserGroupMember newMember = new()
+                                    {
+                                        UserId = userInfo.UserId,
+                                        Email = userInfo.UserEmail,
+                                        UserGroupId = progenyGroup.UserGroupId,
+                                        CreatedBy = "System",
+                                        CreatedTime = DateTime.UtcNow,
+                                        ModifiedBy = "System",
+                                        ModifiedTime = DateTime.UtcNow
+                                    };
+                                    progenyDbContext.UserGroupMembersDb.Add(newMember);
+                                }
+                                await kinaUnaCacheService.SetUserUpdatedCache(userInfo.UserId);
+                                resultPermission = progenyGroupPermission;
+                                break;
+                            }
+                        }
+                    }
+                    if (progenyGroups.Count == 0 || !adminGroupExists)
+                    {
+                        UserGroup adminGroup = new()
+                        {
+                            IsFamily = false,
+                            Name = $"Admins - {progeny.NickName}",
+                            Description = $"Administrators group for {progeny.Name} created automatically.",
+                            ProgenyId = progenyId,
+                            FamilyId = 0,
+                            CreatedBy = "System",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "System",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+
+                        progenyDbContext.UserGroupsDb.Add(adminGroup);
+                        await progenyDbContext.SaveChangesAsync();
+
+                        ProgenyPermission existingAdminPermission = await progenyDbContext.ProgenyPermissionsDb.SingleOrDefaultAsync(pp => pp.ProgenyId == progenyId && pp.PermissionLevel == PermissionLevel.Admin);
+                        if (existingAdminPermission != null)
+                        {
+                            // An admin permissions exists, but for some reason the group doesn't.
+                            existingAdminPermission.GroupId = adminGroup.UserGroupId;
+                            progenyDbContext.ProgenyPermissionsDb.Update(existingAdminPermission);
+                            await progenyDbContext.SaveChangesAsync();
+                            resultPermission = existingAdminPermission;
+                        }
+
+                        UserGroupMember adminMember = new()
+                        {
+                            UserId = userInfo.UserId,
+                            Email = userInfo.UserEmail,
+                            UserGroupId = adminGroup.UserGroupId,
+                            CreatedBy = "System",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "System",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        progenyDbContext.UserGroupMembersDb.Add(adminMember);
+                        await progenyDbContext.SaveChangesAsync();
+
+                        if (existingAdminPermission == null)
+                        {
+                            ProgenyPermission adminPermission = new()
+                            {
+                                ProgenyId = progenyId,
+                                GroupId = adminGroup.UserGroupId,
+                                PermissionLevel = PermissionLevel.Admin,
+                                CreatedBy = "System",
+                                CreatedTime = DateTime.UtcNow,
+                                ModifiedBy = "System",
+                                ModifiedTime = DateTime.UtcNow
+                            };
+                            resultPermission = await GrantProgenyPermission(adminPermission, userInfo);
+                        }
+
+                    }
+
+                }
+
+                ProgenyOrFamilyPermissionCacheEntry cacheEntry = new()
+                {
+                    ProgenyPermission = resultPermission,
+                    UpdateTime = DateTime.UtcNow
+                };
+
+                DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+                cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+                await cache.SetStringAsync(cacheKey
+                    , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+
                 
             }
-            
-            ProgenyOrFamilyPermissionCacheEntry cacheEntry = new()
+            finally
             {
-                ProgenyPermission = resultPermission,
-                UpdateTime = DateTime.UtcNow
-            };
-            
-            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
-            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            await cache.SetStringAsync(cacheKey
-                , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+                semaphore.Release();
+            }
 
             return resultPermission;
         }
@@ -3114,88 +3168,102 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
         {
             Dictionary<int, PermissionLevel> allPermissions = new();
 
-            string cachedItemPermissions = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion +
-                                                                     "allUsersItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type);
-            if (!string.IsNullOrEmpty(cachedItemPermissions))
+            // Only allow one thread per user/type combination to update the cache at a time.
+            SemaphoreSlim semaphore = _itemPermissionDictionarySemaphores.GetOrAdd(userInfo.UserId + "_" + (int)type, new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
+            try
             {
-                ItemPermissionDictionaryCacheEntry cachedPermissions = JsonSerializer.Deserialize<ItemPermissionDictionaryCacheEntry>(cachedItemPermissions, JsonSerializerOptions.Web);
-
-                // Check if user data has been modified since the cache was created.
-                UserUpdatedCacheEntry userCacheEntry = await kinaUnaCacheService.GetUserUpdatedCache(userInfo.UserId);
-                if (userCacheEntry != null)
+                string cachedItemPermissions = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion +
+                                                                         "allUsersItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type);
+                if (!string.IsNullOrEmpty(cachedItemPermissions))
                 {
-                    // If the user cache entry is found, check if the time stamp is newer than the cache for item permissions.
-                    if (userCacheEntry.UpdateTime < cachedPermissions.UpdateTime)
+                    ItemPermissionDictionaryCacheEntry cachedPermissions = JsonSerializer.Deserialize<ItemPermissionDictionaryCacheEntry>(cachedItemPermissions, JsonSerializerOptions.Web);
+
+                    // Check if user data has been modified since the cache was created.
+                    UserUpdatedCacheEntry userCacheEntry = await kinaUnaCacheService.GetUserUpdatedCache(userInfo.UserId);
+                    if (userCacheEntry != null)
                     {
+                        // If the user cache entry is found, check if the time stamp is newer than the cache for item permissions.
+                        if (userCacheEntry.UpdateTime < cachedPermissions.UpdateTime)
+                        {
+                            return cachedPermissions.ItemPermissionDictionary;
+                        }
+                    }
+                    else
+                    {
+                        // No user cache entry found, return cached permissions.
                         return cachedPermissions.ItemPermissionDictionary;
                     }
-                }
-                else
-                {
-                    // No user cache entry found, return cached permissions.
-                    return cachedPermissions.ItemPermissionDictionary;
-                }
-                
-            }
 
-            // Get user specific permissions.
-            List<TimelineItemPermission> timelineItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.UserId == userInfo.UserId && tp.TimelineType == type).ToListAsync();
-            // Get group permissions.
-            IEnumerable<UserGroupMember> userGroups = progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ug => ug.UserId == userInfo.UserId);
-            foreach (UserGroupMember group in userGroups)
-            {
-                IEnumerable<TimelineItemPermission> groupPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.GroupId == group.UserGroupId && tp.TimelineType == type);
-                timelineItemPermissions.AddRange(groupPermissions);
-            }
-            // Get inherited permissions.
-            IEnumerable<int> progeniesUserCanAccess = await ProgeniesUserCanAccess(userInfo, PermissionLevel.View);
-            foreach (int progenyId in progeniesUserCanAccess)
-            {
-                IEnumerable<TimelineItemPermission> inheritedPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
-                    .Where(tp => tp.ProgenyId == progenyId && tp.InheritPermissions && tp.TimelineType == type);
-                if (inheritedPermissions.Any())
+                }
+
+
+
+                // Get user specific permissions.
+                List<TimelineItemPermission> timelineItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.UserId == userInfo.UserId && tp.TimelineType == type).ToListAsync();
+                // Get group permissions.
+                IEnumerable<UserGroupMember> userGroups = progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ug => ug.UserId == userInfo.UserId);
+                foreach (UserGroupMember group in userGroups)
                 {
-                    ProgenyPermission progenyPermission = await GetProgenyPermissionForUser(progenyId, userInfo);
-                    foreach (TimelineItemPermission timelineItemPermission in inheritedPermissions)
+                    IEnumerable<TimelineItemPermission> groupPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.GroupId == group.UserGroupId && tp.TimelineType == type);
+                    timelineItemPermissions.AddRange(groupPermissions);
+                }
+                // Get inherited permissions.
+                IEnumerable<int> progeniesUserCanAccess = await ProgeniesUserCanAccess(userInfo, PermissionLevel.View);
+                foreach (int progenyId in progeniesUserCanAccess)
+                {
+                    IEnumerable<TimelineItemPermission> inheritedPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                        .Where(tp => tp.ProgenyId == progenyId && tp.InheritPermissions && tp.TimelineType == type);
+                    if (inheritedPermissions.Any())
                     {
-                        timelineItemPermission.PermissionLevel = progenyPermission.PermissionLevel;
-                        timelineItemPermissions.Add(timelineItemPermission);
+                        ProgenyPermission progenyPermission = await GetProgenyPermissionForUser(progenyId, userInfo);
+                        foreach (TimelineItemPermission timelineItemPermission in inheritedPermissions)
+                        {
+                            timelineItemPermission.PermissionLevel = progenyPermission.PermissionLevel;
+                            timelineItemPermissions.Add(timelineItemPermission);
+                        }
                     }
                 }
-            }
 
-            IEnumerable<int> familiesUserCanAccess = await FamiliesUserCanAccess(userInfo, PermissionLevel.View);
-            foreach (int familyId in familiesUserCanAccess)
-            {
-                
-                IEnumerable<TimelineItemPermission> inheritedPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
-                    .Where(tp => tp.FamilyId == familyId && tp.InheritPermissions && tp.TimelineType == type);
-                if (inheritedPermissions.Any())
+                IEnumerable<int> familiesUserCanAccess = await FamiliesUserCanAccess(userInfo, PermissionLevel.View);
+                foreach (int familyId in familiesUserCanAccess)
                 {
-                    FamilyPermission familyPermission = await GetFamilyPermissionForUser(familyId, userInfo);
-                    foreach (TimelineItemPermission timelineItemPermission in inheritedPermissions)
+
+                    IEnumerable<TimelineItemPermission> inheritedPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                        .Where(tp => tp.FamilyId == familyId && tp.InheritPermissions && tp.TimelineType == type);
+                    if (inheritedPermissions.Any())
                     {
-                        timelineItemPermission.PermissionLevel = familyPermission.PermissionLevel;
-                        timelineItemPermissions.Add(timelineItemPermission);
+                        FamilyPermission familyPermission = await GetFamilyPermissionForUser(familyId, userInfo);
+                        foreach (TimelineItemPermission timelineItemPermission in inheritedPermissions)
+                        {
+                            timelineItemPermission.PermissionLevel = familyPermission.PermissionLevel;
+                            timelineItemPermissions.Add(timelineItemPermission);
+                        }
                     }
                 }
+
+                foreach (TimelineItemPermission timelineItemPermission in timelineItemPermissions)
+                {
+                    allPermissions[timelineItemPermission.ItemId] = timelineItemPermission.PermissionLevel;
+                }
+
+                ItemPermissionDictionaryCacheEntry cacheEntry = new()
+                {
+                    ItemPermissionDictionary = allPermissions,
+                    UpdateTime = DateTime.UtcNow
+                };
+
+                DistributedCacheEntryOptions cacheOptionsSliding = new();
+                cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0));
+                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "allUsersItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type
+                    , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSliding);
+
+                
             }
-
-            foreach (TimelineItemPermission timelineItemPermission in timelineItemPermissions)
+            finally
             {
-                allPermissions[timelineItemPermission.ItemId] = timelineItemPermission.PermissionLevel;
+                semaphore.Release();
             }
-
-            ItemPermissionDictionaryCacheEntry cacheEntry = new()
-            {
-                ItemPermissionDictionary = allPermissions,
-                UpdateTime = DateTime.UtcNow
-            };
-
-            DistributedCacheEntryOptions cacheOptionsSliding = new();
-            cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0));
-            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "allUsersItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type
-                , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSliding);
 
             return allPermissions;
         }
