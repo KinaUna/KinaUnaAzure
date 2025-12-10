@@ -27,6 +27,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
     public class AccessManagementService(ProgenyDbContext progenyDbContext, MediaDbContext mediaDbContext, IPermissionAuditLogsService permissionAuditLogService, IDistributedCache cache, IKinaUnaCacheService kinaUnaCacheService) : IAccessManagementService
     {
         private readonly ConcurrentDictionary<int, SemaphoreSlim> _progenyPermissionSemaphores = new();
+        private readonly ConcurrentDictionary<int, SemaphoreSlim> _familyPermissionSemaphores = new();
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _itemPermissionDictionarySemaphores = new();
         /// <summary>
         /// Determines whether a user has the specified access level for a given timeline item (e.g., Note, TodoItem, Sleep, etc.).
@@ -2845,15 +2846,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
                 await cache.SetStringAsync(cacheKey
                     , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
-
                 
+                return resultPermission;
             }
             finally
             {
                 semaphore.Release();
             }
-
-            return resultPermission;
         }
 
         /// <summary>
@@ -2877,56 +2876,163 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 PermissionLevel = PermissionLevel.None
             };
 
-            string cacheKey = $"getFamilyPermissionForUser_userId_{userInfo.UserId}_familyId_{familyId}";
-            string cachedFamilyPermissionString = await cache.GetStringAsync(cacheKey);
-            if (!string.IsNullOrEmpty(cachedFamilyPermissionString))
+            SemaphoreSlim semaphore = _familyPermissionSemaphores.GetOrAdd(familyId, new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
+            try
             {
-                ProgenyOrFamilyPermissionCacheEntry cachedFamilyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedFamilyPermissionString, JsonSerializerOptions.Web);
-                ProgenyOrFamilyUpdatedCacheEntry familyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(0, familyId);
-                if (familyUpdatedCacheEntry != null)
+                string cacheKey = $"getFamilyPermissionForUser_userId_{userInfo.UserId}_familyId_{familyId}";
+                string cachedFamilyPermissionString = await cache.GetStringAsync(cacheKey);
+                if (!string.IsNullOrEmpty(cachedFamilyPermissionString))
                 {
-                    // If the family updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
-                    if (familyUpdatedCacheEntry.UpdateTime < cachedFamilyPermissionEntry.UpdateTime)
+                    ProgenyOrFamilyPermissionCacheEntry cachedFamilyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedFamilyPermissionString, JsonSerializerOptions.Web);
+                    ProgenyOrFamilyUpdatedCacheEntry familyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(0, familyId);
+                    if (familyUpdatedCacheEntry != null)
                     {
+                        // If the family updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
+                        if (familyUpdatedCacheEntry.UpdateTime < cachedFamilyPermissionEntry.UpdateTime)
+                        {
+                            return cachedFamilyPermissionEntry.FamilyPermission;
+                        }
+                    }
+                    else
+                    {
+                        // No family updated cache entry found, return cached permissions.
                         return cachedFamilyPermissionEntry.FamilyPermission;
                     }
                 }
-                else
+
+                // Check group permissions.
+                List<FamilyPermission> groupPermissions = await progenyDbContext.FamilyPermissionsDb
+                    .AsNoTracking()
+                    .Where(fp => fp.GroupId > 0 && fp.FamilyId == familyId && fp.PermissionLevel < PermissionLevel.CreatorOnly)
+                    .ToListAsync();
+                foreach (FamilyPermission permission in groupPermissions)
                 {
-                    // No family updated cache entry found, return cached permissions.
-                    return cachedFamilyPermissionEntry.FamilyPermission;
+                    bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
+                    if (isMember && permission.PermissionLevel > highestPermission)
+                    {
+                        highestPermission = permission.PermissionLevel;
+                        resultPermission = permission;
+                    }
                 }
-            }
 
-            
-
-            // Check group permissions.
-            List<FamilyPermission> groupPermissions = await progenyDbContext.FamilyPermissionsDb
-                .AsNoTracking()
-                .Where(fp => fp.GroupId > 0 && fp.FamilyId == familyId && fp.PermissionLevel < PermissionLevel.CreatorOnly)
-                .ToListAsync();
-            foreach (FamilyPermission permission in groupPermissions)
-            {
-                bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == permission.GroupId);
-                if (isMember && permission.PermissionLevel > highestPermission)
+                Family family = await progenyDbContext.FamiliesDb.AsNoTracking().SingleOrDefaultAsync(f => f.FamilyId == familyId);
+                if (family.IsInAdminList(userInfo.UserEmail) && resultPermission.PermissionLevel < PermissionLevel.Admin)
                 {
-                    highestPermission = permission.PermissionLevel;
-                    resultPermission = permission;
+                    // There is no explicit permission set, but the user is in the admin list, so give them admin permissions.
+                    List<UserGroup> familyGroups = await progenyDbContext.UserGroupsDb.AsNoTracking()
+                        .Where(ug => ug.FamilyId == familyId).ToListAsync();
+
+                    bool adminGroupExists = false;
+
+                    if (familyGroups.Count > 0)
+                    {
+                        foreach (UserGroup familyGroup in familyGroups)
+                        {
+                            FamilyPermission familyGroupPermission = await progenyDbContext.FamilyPermissionsDb.AsNoTracking()
+                                .SingleOrDefaultAsync(pp => pp.FamilyId == familyId && pp.GroupId == familyGroup.UserGroupId);
+                            if (familyGroupPermission != null && familyGroupPermission.PermissionLevel == PermissionLevel.Admin)
+                            {
+                                adminGroupExists = true;
+                                // Add the user to the admin group if not already a member.
+                                bool isMember = await progenyDbContext.UserGroupMembersDb.AnyAsync(ug => ug.UserId == userInfo.UserId && ug.UserGroupId == familyGroup.UserGroupId);
+                                if (!isMember)
+                                {
+                                    UserGroupMember newMember = new()
+                                    {
+                                        UserId = userInfo.UserId,
+                                        Email = userInfo.UserEmail,
+                                        UserGroupId = familyGroup.UserGroupId,
+                                        CreatedBy = "System",
+                                        CreatedTime = DateTime.UtcNow,
+                                        ModifiedBy = "System",
+                                        ModifiedTime = DateTime.UtcNow
+                                    };
+                                    progenyDbContext.UserGroupMembersDb.Add(newMember);
+                                }
+                                await kinaUnaCacheService.SetUserUpdatedCache(userInfo.UserId);
+                                resultPermission = familyGroupPermission;
+                                break;
+                            }
+                        }
+                    }
+                    if (familyGroups.Count == 0 || !adminGroupExists)
+                    {
+                        UserGroup adminGroup = new()
+                        {
+                            IsFamily = false,
+                            Name = $"Admins - {family.Name}",
+                            Description = $"Administrators group for {family.Name} created automatically.",
+                            ProgenyId = 0,
+                            FamilyId = family.FamilyId,
+                            CreatedBy = "System",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "System",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+
+                        progenyDbContext.UserGroupsDb.Add(adminGroup);
+                        await progenyDbContext.SaveChangesAsync();
+
+                        FamilyPermission existingAdminPermission = await progenyDbContext.FamilyPermissionsDb.SingleOrDefaultAsync(pp => pp.FamilyId == family.FamilyId && pp.PermissionLevel == PermissionLevel.Admin);
+                        if (existingAdminPermission != null)
+                        {
+                            // An admin permissions exists, but for some reason the group doesn't.
+                            existingAdminPermission.GroupId = adminGroup.UserGroupId;
+                            progenyDbContext.FamilyPermissionsDb.Update(existingAdminPermission);
+                            await progenyDbContext.SaveChangesAsync();
+                            resultPermission = existingAdminPermission;
+                        }
+
+                        UserGroupMember adminMember = new()
+                        {
+                            UserId = userInfo.UserId,
+                            Email = userInfo.UserEmail,
+                            UserGroupId = adminGroup.UserGroupId,
+                            CreatedBy = "System",
+                            CreatedTime = DateTime.UtcNow,
+                            ModifiedBy = "System",
+                            ModifiedTime = DateTime.UtcNow
+                        };
+                        progenyDbContext.UserGroupMembersDb.Add(adminMember);
+                        await progenyDbContext.SaveChangesAsync();
+
+                        if (existingAdminPermission == null)
+                        {
+                            FamilyPermission adminPermission = new()
+                            {
+                                FamilyId = family.FamilyId,
+                                GroupId = adminGroup.UserGroupId,
+                                PermissionLevel = PermissionLevel.Admin,
+                                CreatedBy = "System",
+                                CreatedTime = DateTime.UtcNow,
+                                ModifiedBy = "System",
+                                ModifiedTime = DateTime.UtcNow
+                            };
+                            resultPermission = await GrantFamilyPermission(adminPermission, userInfo);
+                        }
+
+                    }
+
                 }
+
+                ProgenyOrFamilyPermissionCacheEntry cacheEntry = new()
+                {
+                    FamilyPermission = resultPermission,
+                    UpdateTime = DateTime.UtcNow
+                };
+
+                DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+                cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+                await cache.SetStringAsync(cacheKey
+                    , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+
+                return resultPermission;
             }
-
-            ProgenyOrFamilyPermissionCacheEntry cacheEntry = new()
+            finally
             {
-                FamilyPermission = resultPermission,
-                UpdateTime = DateTime.UtcNow
-            };
-
-            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
-            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            await cache.SetStringAsync(cacheKey
-                , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
-
-            return resultPermission;
+                semaphore.Release();
+            }
         }
 
         /// <summary>
