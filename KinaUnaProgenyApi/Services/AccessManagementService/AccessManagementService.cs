@@ -2663,6 +2663,53 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             return cacheEntry.FamilyPermission;
         }
 
+        private async Task<ProgenyPermission> GetProgenyPermissionForUserFromCache(int progenyId, UserInfo userInfo)
+        {
+            string cacheKey = $"getProgenyPermissionForUser_userId_{userInfo.UserId}_progenyId_{progenyId}";
+            string cachedProgenyPermissionString = await cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedProgenyPermissionString))
+            {
+                ProgenyOrFamilyPermissionCacheEntry cachedProgenyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedProgenyPermissionString, JsonSerializerOptions.Web);
+                ProgenyOrFamilyUpdatedCacheEntry progenyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(progenyId, 0);
+                if (progenyUpdatedCacheEntry != null)
+                {
+                    // If the progeny updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
+                    if (progenyUpdatedCacheEntry.UpdateTime < cachedProgenyPermissionEntry.UpdateTime)
+                    {
+                        if (cachedProgenyPermissionEntry.ProgenyPermission != null)
+                        {
+                            return cachedProgenyPermissionEntry.ProgenyPermission;
+                        }
+                    }
+                }
+                else
+                {
+                    // No progeny updated cache entry found, return cached permissions.
+                    if (cachedProgenyPermissionEntry.ProgenyPermission != null)
+                    {
+                        return cachedProgenyPermissionEntry.ProgenyPermission;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private async Task SetProgenyPermissionsForUserInCache(int progenyId, ProgenyPermission permission, UserInfo userInfo)
+        {
+            string cacheKey = $"getProgenyPermissionForUser_userId_{userInfo.UserId}_progenyId_{progenyId}";
+            ProgenyOrFamilyPermissionCacheEntry cacheEntry = new()
+            {
+                ProgenyPermission = permission,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            await cache.SetStringAsync(cacheKey
+                , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
         /// <summary>
         /// Gets the highest permission level for a specific progeny and user by checking both direct user permissions and group permissions.
         /// </summary>
@@ -2687,6 +2734,13 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 return defaultChildPermission;
             }
 
+            // First, check cache for existing permission.
+            ProgenyPermission cachedPermission = await GetProgenyPermissionForUserFromCache(progenyId, userInfo);
+            if (cachedPermission != null)
+            {
+                return cachedPermission;
+            }
+
             // Prevent multiple threads from updating the DB for the same user/progeny combination.
             // Lock on progenyId to allow parallel updates for different progeny.
 
@@ -2695,31 +2749,11 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             
             try
             {
-                string cacheKey = $"getProgenyPermissionForUser_userId_{userInfo.UserId}_progenyId_{progenyId}";
-                string cachedProgenyPermissionString = await cache.GetStringAsync(cacheKey);
-                if (!string.IsNullOrEmpty(cachedProgenyPermissionString))
+                // Re-check cache inside the lock, it may have been updated while waiting for the lock.
+                cachedPermission = await GetProgenyPermissionForUserFromCache(progenyId, userInfo);
+                if (cachedPermission != null)
                 {
-                    ProgenyOrFamilyPermissionCacheEntry cachedProgenyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedProgenyPermissionString, JsonSerializerOptions.Web);
-                    ProgenyOrFamilyUpdatedCacheEntry progenyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(progenyId, 0);
-                    if (progenyUpdatedCacheEntry != null)
-                    {
-                        // If the progeny updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
-                        if (progenyUpdatedCacheEntry.UpdateTime < cachedProgenyPermissionEntry.UpdateTime)
-                        {
-                            if (cachedProgenyPermissionEntry.ProgenyPermission != null)
-                            {
-                                return cachedProgenyPermissionEntry.ProgenyPermission;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // No progeny updated cache entry found, return cached permissions.
-                        if (cachedProgenyPermissionEntry.ProgenyPermission != null)
-                        {
-                            return cachedProgenyPermissionEntry.ProgenyPermission;
-                        }
-                    }
+                    return cachedPermission;
                 }
 
                 // Check group permissions.
@@ -2836,17 +2870,8 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
                 }
 
-                ProgenyOrFamilyPermissionCacheEntry cacheEntry = new()
-                {
-                    ProgenyPermission = resultPermission,
-                    UpdateTime = DateTime.UtcNow
-                };
+                await SetProgenyPermissionsForUserInCache(progenyId, resultPermission, userInfo);
 
-                DistributedCacheEntryOptions cacheOptionsSlidingView = new();
-                cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-                await cache.SetStringAsync(cacheKey
-                    , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
-                
                 return resultPermission;
             }
             finally
