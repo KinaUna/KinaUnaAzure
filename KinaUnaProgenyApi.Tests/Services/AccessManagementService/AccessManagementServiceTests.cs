@@ -228,8 +228,24 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission progenyPermission = new()
             {
                 ProgenyId = _progenyId,
-                PermissionLevel = PermissionLevel.Admin
+                PermissionLevel = PermissionLevel.Admin,
+                GroupId = 1
             };
+
+            UserGroup userGroup = new()
+            {
+                UserGroupId = 1,
+                ProgenyId = _progenyId
+            };
+
+            UserGroupMember groupMembership = new()
+            {
+                UserGroupId = userGroup.UserGroupId,
+                UserId = _testUser.UserId
+            };
+
+            _progenyDbContext.UserGroupMembersDb.Add(groupMembership);
+            _progenyDbContext.UserGroupsDb.Add(userGroup);
 
             _progenyDbContext.TimelineItemPermissionsDb.Add(inheritedPermission);
             _progenyDbContext.ProgenyPermissionsDb.Add(progenyPermission);
@@ -308,9 +324,22 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission permission = new()
             {
                 ProgenyId = _progenyId,
-                PermissionLevel = PermissionLevel.Edit
+                PermissionLevel = PermissionLevel.Edit,
+                GroupId = 1
             };
-
+            UserGroup userGroup = new()
+            {
+                UserGroupId = 1,
+                ProgenyId = _progenyId
+            };
+            UserGroupMember groupMembership = new()
+            {
+                UserGroupId = userGroup.UserGroupId,
+                UserId = _testUser.UserId
+            };
+            _progenyDbContext.UserGroupMembersDb.Add(groupMembership);
+            _progenyDbContext.UserGroupsDb.Add(userGroup);
+            
             _progenyDbContext.ProgenyPermissionsDb.Add(permission);
             await _progenyDbContext.SaveChangesAsync();
 
@@ -382,8 +411,22 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             FamilyPermission permission = new()
             {
                 FamilyId = _familyId,
-                PermissionLevel = PermissionLevel.Edit
+                PermissionLevel = PermissionLevel.Edit,
+                GroupId = 1
             };
+
+            UserGroup userGroup = new()
+            {
+                UserGroupId = 1,
+                ProgenyId = _progenyId
+            };
+            UserGroupMember groupMembership = new()
+            {
+                UserGroupId = userGroup.UserGroupId,
+                UserId = _testUser.UserId
+            };
+            _progenyDbContext.UserGroupMembersDb.Add(groupMembership);
+            _progenyDbContext.UserGroupsDb.Add(userGroup);
 
             _progenyDbContext.FamilyPermissionsDb.Add(permission);
             await _progenyDbContext.SaveChangesAsync();
@@ -509,8 +552,22 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission adminPermission = new()
             {
                 ProgenyId = _progenyId,
-                PermissionLevel = PermissionLevel.Admin
+                PermissionLevel = PermissionLevel.Admin,
+                GroupId = 1
             };
+
+            UserGroup userGroup = new()
+            {
+                UserGroupId = 1,
+                ProgenyId = _progenyId
+            };
+            UserGroupMember groupMembership = new()
+            {
+                UserGroupId = userGroup.UserGroupId,
+                UserId = _adminUser.UserId
+            };
+            _progenyDbContext.UserGroupMembersDb.Add(groupMembership);
+            _progenyDbContext.UserGroupsDb.Add(userGroup);
 
             // New permission to grant
             TimelineItemPermission newPermission = new()
@@ -603,15 +660,46 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission adminPermission = new()
             {
                 ProgenyId = _progenyId,
-                PermissionLevel = PermissionLevel.Admin
+                PermissionLevel = PermissionLevel.Admin,
+                GroupId = 1
             };
+
+            UserGroup userGroup = new()
+            {
+                UserGroupId = 1,
+                ProgenyId = _progenyId
+            };
+            UserGroupMember groupMembership = new()
+            {
+                UserGroupId = userGroup.UserGroupId,
+                UserId = _adminUser.UserId
+            };
+            _progenyDbContext.UserGroupMembersDb.Add(groupMembership);
+            _progenyDbContext.UserGroupsDb.Add(userGroup);
+
+            UserGroup userGroup2 = new()
+            {
+                UserGroupId = 2,
+                ProgenyId = _progenyId
+            };
+            _progenyDbContext.UserGroupsDb.Add(userGroup2);
+
 
             // New permission to grant
             ProgenyPermission newPermission = new()
             {
                 ProgenyId = _progenyId,
-                PermissionLevel = PermissionLevel.View
+                PermissionLevel = PermissionLevel.View,
+                GroupId = 2
             };
+
+            Progeny progeny = new Progeny()
+            {
+                Id = _progenyId,
+                Name = "Test Progeny",
+                Admins = _adminUser.UserEmail
+            };
+            _progenyDbContext.ProgenyDb.Add(progeny);
 
             _progenyDbContext.ProgenyPermissionsDb.Add(adminPermission);
             await _progenyDbContext.SaveChangesAsync();
@@ -712,7 +800,19 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             ProgenyPermission adminPermission = new()
             {
                 ProgenyId = _progenyId,
-                PermissionLevel = PermissionLevel.Admin
+                PermissionLevel = PermissionLevel.Admin,
+                GroupId = 1
+            };
+
+            UserGroup userGroup = new()
+            {
+                UserGroupId = 1,
+                ProgenyId = _progenyId
+            };
+            UserGroupMember groupMembership = new()
+            {
+                UserGroupId = userGroup.UserGroupId,
+                UserId = _adminUser.UserId
             };
 
             TimelineItemPermission existingPermission = new()
@@ -721,7 +821,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 ItemId = itemId,
                 TimelineType = timelineType,
                 ProgenyId = _progenyId,
-                UserId = _otherUser.UserId,
+                GroupId = 2,
                 PermissionLevel = PermissionLevel.View
             };
 
@@ -731,9 +831,20 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 ItemId = itemId,
                 TimelineType = timelineType,
                 ProgenyId = _progenyId,
-                UserId = _otherUser.UserId,
+                GroupId = 2,
                 PermissionLevel = PermissionLevel.Edit
             };
+
+            UserGroup userGroup2 = new()
+            {
+                UserGroupId = 2,
+                ProgenyId = _progenyId
+            };
+            
+
+            _progenyDbContext.UserGroupMembersDb.Add(groupMembership);
+            _progenyDbContext.UserGroupsDb.Add(userGroup);
+            _progenyDbContext.UserGroupsDb.Add(userGroup2);
 
             _progenyDbContext.ProgenyPermissionsDb.Add(adminPermission);
             _progenyDbContext.TimelineItemPermissionsDb.Add(existingPermission);
@@ -774,32 +885,40 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             // Arrange
             int progenyId1 = 1;
             int progenyId2 = 2;
-            int groupId = 1;
-
-            // Direct permission
-            ProgenyPermission directPermission = new()
-            {
-                ProgenyId = progenyId1,
-                PermissionLevel = PermissionLevel.View
-            };
-
+            int groupId1 = 1;
+            int groupId2 = 2;
+            
             // Group permission
-            ProgenyPermission groupPermission = new()
+            ProgenyPermission groupPermission1 = new()
             {
                 ProgenyId = progenyId2,
-                GroupId = groupId,
+                GroupId = groupId1,
                 PermissionLevel = PermissionLevel.View
             };
 
-            UserGroupMember groupMembership = new()
+            UserGroupMember groupMembership1 = new()
             {
-                UserGroupId = groupId,
+                UserGroupId = groupId1,
                 UserId = _testUser.UserId
             };
 
-            _progenyDbContext.ProgenyPermissionsDb.Add(directPermission);
-            _progenyDbContext.ProgenyPermissionsDb.Add(groupPermission);
-            _progenyDbContext.UserGroupMembersDb.Add(groupMembership);
+            ProgenyPermission groupPermission2 = new()
+            {
+                ProgenyId = progenyId1,
+                GroupId = groupId2,
+                PermissionLevel = PermissionLevel.Edit
+            };
+            UserGroupMember groupMembership2 = new()
+            {
+                UserGroupId = groupId2,
+                UserId = _testUser.UserId
+            };
+            
+            _progenyDbContext.ProgenyPermissionsDb.Add(groupPermission1);
+            _progenyDbContext.UserGroupMembersDb.Add(groupMembership1);
+            _progenyDbContext.ProgenyPermissionsDb.Add(groupPermission2);
+            _progenyDbContext.UserGroupMembersDb.Add(groupMembership2);
+
             await _progenyDbContext.SaveChangesAsync();
 
             // Act
@@ -817,32 +936,40 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             // Arrange
             int familyId1 = 1;
             int familyId2 = 2;
-            int groupId = 1;
-
-            // Direct permission
-            FamilyPermission directPermission = new()
-            {
-                FamilyId = familyId1,
-                PermissionLevel = PermissionLevel.View
-            };
-
-            // Group permission
-            FamilyPermission groupPermission = new()
+            int groupId1 = 1;
+            int groupId2 = 2;
+            
+            // Group permissions
+            FamilyPermission groupPermission1 = new()
             {
                 FamilyId = familyId2,
-                GroupId = groupId,
+                GroupId = groupId1,
                 PermissionLevel = PermissionLevel.View
             };
 
-            UserGroupMember groupMembership = new()
+            FamilyPermission groupPermission2 = new()
             {
-                UserGroupId = groupId,
+                FamilyId = familyId1,
+                GroupId = groupId2,
+                PermissionLevel = PermissionLevel.Edit
+            };
+
+            UserGroupMember groupMembership1 = new()
+            {
+                UserGroupId = groupId1,
                 UserId = _testUser.UserId
             };
 
-            _progenyDbContext.FamilyPermissionsDb.Add(directPermission);
-            _progenyDbContext.FamilyPermissionsDb.Add(groupPermission);
-            _progenyDbContext.UserGroupMembersDb.Add(groupMembership);
+            UserGroupMember groupMembership2 = new()
+            {
+                UserGroupId = groupId2,
+                UserId = _testUser.UserId
+            };
+
+            _progenyDbContext.FamilyPermissionsDb.Add(groupPermission1);
+            _progenyDbContext.UserGroupMembersDb.Add(groupMembership1);
+            _progenyDbContext.FamilyPermissionsDb.Add(groupPermission2);
+            _progenyDbContext.UserGroupMembersDb.Add(groupMembership2);
             await _progenyDbContext.SaveChangesAsync();
 
             // Act

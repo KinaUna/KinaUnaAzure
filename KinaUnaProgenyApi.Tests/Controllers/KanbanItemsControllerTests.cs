@@ -149,8 +149,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             List<Claim> claims =
             [
-                new Claim(ClaimTypes.Email, userEmail),
-                new Claim(ClaimTypes.NameIdentifier, userId)
+                new(ClaimTypes.Email, userEmail),
+                new(ClaimTypes.NameIdentifier, userId)
             ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
@@ -461,7 +461,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testTodoItem);
             _mockKanbanItemsService.Setup(x => x.AddKanbanItem(It.IsAny<KanbanItem>(), _testUser))
                 .ReturnsAsync(addedKanbanItem);
-
+            _mockKanbanItemsService.Setup(x => x.GetKanbanItemById(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(addedKanbanItem);
             // Act
             IActionResult result = await _controller.Post(kanbanItemToAdd);
 
@@ -567,6 +568,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testTodoItem);
             _mockKanbanItemsService.Setup(x => x.AddKanbanItem(It.IsAny<KanbanItem>(), _adminUser))
                 .ReturnsAsync(addedKanbanItem);
+            _mockKanbanItemsService.Setup(x => x.GetKanbanItemById(It.IsAny<int>(), _adminUser))
+                .ReturnsAsync(addedKanbanItem);
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(It.IsAny<string>())).ReturnsAsync(_adminUser);
             // Act
             IActionResult result = await _controller.Post(kanbanItemToAdd);
@@ -600,6 +603,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockTodosService.Setup(x => x.GetTodoItem(TestTodoItemId, _testUser))
                 .ReturnsAsync(_testTodoItem);
             _mockKanbanItemsService.Setup(x => x.UpdateKanbanItem(It.IsAny<KanbanItem>(), _testUser))
+                .ReturnsAsync(updatedKanbanItem);
+            _mockKanbanItemsService.Setup(x => x.GetKanbanItemById(It.IsAny<int>(), _testUser))
                 .ReturnsAsync(updatedKanbanItem);
 
             // Act

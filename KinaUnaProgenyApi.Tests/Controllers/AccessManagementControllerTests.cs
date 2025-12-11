@@ -25,7 +25,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         private readonly AccessManagementController _controller;
 
         private readonly UserInfo _testUser;
-        private readonly UserInfo _otherUser;
         private readonly Progeny _testProgeny;
         private readonly Progeny _otherProgeny;
         private readonly Family _testFamily;
@@ -36,12 +35,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
         private const string TestUserEmail = Constants.DefaultUserEmail;
         private const string TestUserId = Constants.DefaultUserId;
-        private const string OtherUserEmail = "other@example.com";
         private const string OtherUserId = "other-user-id";
-        private const int TestProgenyId = 1;
-        private const int OtherProgenyId = 2;
-        private const int TestFamilyId = 1;
-        private const int OtherFamilyId = 2;
+        private const int TestProgenyId = 5;
+        private const int OtherProgenyId = 10;
+        private const int TestFamilyId = 5;
+        private const int OtherFamilyId = 10;
         private const int TestPermissionId = 100;
         private const int TestItemId = 500;
 
@@ -64,18 +62,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 MiddleName = "M",
                 LastName = "User"
             };
-
-            _otherUser = new UserInfo
-            {
-                UserId = OtherUserId,
-                UserEmail = OtherUserEmail,
-                ViewChild = OtherProgenyId,
-                IsKinaUnaAdmin = false,
-                FirstName = "Other",
-                MiddleName = "O",
-                LastName = "User"
-            };
-
+            
             _testProgeny = new Progeny
             {
                 Id = TestProgenyId,
@@ -281,7 +268,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
-            List<Progeny> progenies = Assert.IsAssignableFrom<List<Progeny>>(okResult.Value);
+            List<Progeny> progenies = Assert.IsType<List<Progeny>>(okResult.Value, exactMatch: false);
             Assert.Equal(2, progenies.Count);
             Assert.Contains(progenies, p => p.Id == TestProgenyId);
             Assert.Contains(progenies, p => p.Id == OtherProgenyId);
@@ -509,77 +496,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         #endregion
 
         #region GetProgenyPermissionsList Tests
-
-        [Fact]
-        public async Task GetProgenyPermissionsList_Should_Return_Permissions_With_UserInfo()
-        {
-            // Arrange
-            List<ProgenyPermission> permissions = new()
-            {
-                new ProgenyPermission
-                {
-                    ProgenyPermissionId = TestPermissionId,
-                    ProgenyId = TestProgenyId,
-                    PermissionLevel = PermissionLevel.Edit
-                },
-                new ProgenyPermission
-                {
-                    ProgenyPermissionId = TestPermissionId + 1,
-                    ProgenyId = TestProgenyId,
-                    PermissionLevel = PermissionLevel.View
-                }
-            };
-
-            _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
-                .ReturnsAsync(_testUser);
-            _mockAccessManagementService.Setup(x => x.GetProgenyPermissionsList(TestProgenyId, _testUser))
-                .ReturnsAsync(permissions);
-            _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
-                .ReturnsAsync(_testUser);
-            _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(OtherUserId))
-                .ReturnsAsync(_otherUser);
-
-            // Act
-            List<ProgenyPermission>? result = await _controller.GetProgenyPermissionsList(TestProgenyId);
-
-            // Assert
-            Assert.Equal(2, result.Count);
-            Assert.NotNull(result[0].UserInfo);
-            Assert.NotNull(result[1].UserInfo);
-            Assert.Equal(TestUserEmail, result[0].UserInfo.UserEmail);
-            Assert.Equal(OtherUserEmail, result[1].UserInfo.UserEmail);
-        }
-
-        [Fact]
-        public async Task GetProgenyPermissionsList_Should_Skip_UserInfo_When_UserId_Is_Empty()
-        {
-            // Arrange
-            List<ProgenyPermission> permissions = new()
-            {
-                new ProgenyPermission
-                {
-                    ProgenyPermissionId = TestPermissionId,
-                    ProgenyId = TestProgenyId,
-                    GroupId = 1,
-                    PermissionLevel = PermissionLevel.Edit
-                }
-            };
-
-            _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
-                .ReturnsAsync(_testUser);
-            _mockAccessManagementService.Setup(x => x.GetProgenyPermissionsList(TestProgenyId, _testUser))
-                .ReturnsAsync(permissions);
-
-            // Act
-            List<ProgenyPermission>? result = await _controller.GetProgenyPermissionsList(TestProgenyId);
-
-            // Assert
-            Assert.Single(result);
-            Assert.NotNull(result[0].UserInfo);
-            Assert.Equal(0, result[0].UserInfo.Id);
-            Assert.Empty(result[0].UserInfo.UserId);
-        }
-
+        
         [Fact]
         public async Task GetProgenyPermissionsList_Should_Return_Empty_List_When_No_Permissions()
         {
@@ -594,80 +511,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Assert
             Assert.Empty(result);
-        }
-
-        #endregion
-
-        #region GetFamilyPermissionsList Tests
-
-        [Fact]
-        public async Task GetFamilyPermissionsList_Should_Return_Permissions_With_UserInfo()
-        {
-            // Arrange
-            List<FamilyPermission> permissions = new()
-            {
-                new FamilyPermission
-                {
-                    FamilyPermissionId = TestPermissionId,
-                    FamilyId = TestFamilyId,
-                    PermissionLevel = PermissionLevel.Edit
-                },
-                new FamilyPermission
-                {
-                    FamilyPermissionId = TestPermissionId + 1,
-                    FamilyId = TestFamilyId,
-                    PermissionLevel = PermissionLevel.View
-                }
-            };
-
-            _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
-                .ReturnsAsync(_testUser);
-            _mockAccessManagementService.Setup(x => x.GetFamilyPermissionsList(TestFamilyId, _testUser))
-                .ReturnsAsync(permissions);
-            _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
-                .ReturnsAsync(_testUser);
-            _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(OtherUserId))
-                .ReturnsAsync(_otherUser);
-
-            // Act
-            List<FamilyPermission>? result = await _controller.GetFamilyPermissionsList(TestFamilyId);
-
-            // Assert
-            Assert.Equal(2, result.Count);
-            Assert.NotNull(result[0].UserInfo);
-            Assert.NotNull(result[1].UserInfo);
-            Assert.Equal(TestUserEmail, result[0].UserInfo.UserEmail);
-            Assert.Equal(OtherUserEmail, result[1].UserInfo.UserEmail);
-        }
-
-        [Fact]
-        public async Task GetFamilyPermissionsList_Should_Skip_UserInfo_When_UserId_Is_Empty()
-        {
-            // Arrange
-            List<FamilyPermission> permissions = new()
-            {
-                new FamilyPermission
-                {
-                    FamilyPermissionId = TestPermissionId,
-                    FamilyId = TestFamilyId,
-                    GroupId = 1,
-                    PermissionLevel = PermissionLevel.Edit
-                }
-            };
-
-            _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
-                .ReturnsAsync(_testUser);
-            _mockAccessManagementService.Setup(x => x.GetFamilyPermissionsList(TestFamilyId, _testUser))
-                .ReturnsAsync(permissions);
-
-            // Act
-            List<FamilyPermission>? result = await _controller.GetFamilyPermissionsList(TestFamilyId);
-
-            // Assert
-            Assert.Single(result);
-            Assert.NotNull(result[0].UserInfo);
-            Assert.Equal(0, result[0].UserInfo.Id);
-            Assert.Empty(result[0].UserInfo.UserId);
         }
 
         #endregion

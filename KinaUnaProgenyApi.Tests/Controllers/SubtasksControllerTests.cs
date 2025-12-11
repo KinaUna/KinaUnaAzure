@@ -131,8 +131,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             List<Claim> claims =
             [
-                new Claim(ClaimTypes.Email, userEmail),
-                new Claim(ClaimTypes.NameIdentifier, userId)
+                new(ClaimTypes.Email, userEmail),
+                new(ClaimTypes.NameIdentifier, userId)
             ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
@@ -415,6 +415,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(parentTodoItem);
             _mockSubtasksService.Setup(x => x.AddSubtask(It.IsAny<TodoItem>(), _testUser))
                 .ReturnsAsync(addedSubtask);
+            _mockSubtasksService.Setup(x => x.GetSubtask(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(addedSubtask);
 
             // Act
             IActionResult result = await _controller.Post(subtaskToAdd);
@@ -445,6 +447,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync(parentTodoItem);
             _mockSubtasksService.Setup(x => x.AddSubtask(It.IsAny<TodoItem>(), _testUser))
+                .ReturnsAsync(addedSubtask);
+            _mockSubtasksService.Setup(x => x.GetSubtask(It.IsAny<int>(), _testUser))
                 .ReturnsAsync(addedSubtask);
 
             // Act
@@ -588,6 +592,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync(parentTodoItem);
             _mockSubtasksService.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>(), _testUser))
+                .ReturnsAsync(updatedSubtask);
+            _mockSubtasksService.Setup(x => x.GetSubtask(It.IsAny<int>(), _testUser))
                 .ReturnsAsync(updatedSubtask);
 
             // Act

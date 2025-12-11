@@ -85,8 +85,8 @@ public class UserGroupsControllerTests
     {
         List<Claim> claims =
         [
-            new Claim(ClaimTypes.NameIdentifier, userId),
-            new Claim(ClaimTypes.Email, userEmail)
+            new(ClaimTypes.NameIdentifier, userId),
+            new(ClaimTypes.Email, userEmail)
         ];
         ClaimsIdentity identity = new(claims, "TestAuthType");
         ClaimsPrincipal claimsPrincipal = new(identity);
@@ -174,7 +174,7 @@ public class UserGroupsControllerTests
     {
         // Arrange
         SetupControllerContext(TestUserEmail, TestUserId);
-        List<UserGroup> userGroups = [_testUserGroup, new UserGroup { UserGroupId = 2, Name = "Another Group" }];
+        List<UserGroup> userGroups = [_testUserGroup, new() { UserGroupId = 2, Name = "Another Group" }];
         
         _mockUserInfoService
             .Setup(s => s.GetUserInfoByEmail(TestUserEmail))

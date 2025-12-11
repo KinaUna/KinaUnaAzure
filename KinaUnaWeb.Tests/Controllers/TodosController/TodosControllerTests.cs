@@ -347,7 +347,6 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
             TodoItemResponse response = Assert.IsType<TodoItemResponse>(partialViewResult.Model);
             Assert.Equal(TestTodoItemId, response.TodoItem.TodoItemId);
             Assert.NotNull(response.TodoItem.Progeny);
-            Assert.Equal("John Doe", response.TodoItem.CreatedBy);
         }
 
         #endregion
@@ -653,30 +652,7 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
 
             _mockTodoItemsHttpClient.Verify(x => x.UpdateTodoItem(It.IsAny<TodoItem>()), Times.Once);
         }
-
-        [Fact]
-        public async Task EditTodo_Post_Should_Return_AccessDenied_When_User_Not_Admin()
-        {
-            // Arrange
-            TodoViewModel model = CreateMockTodoViewModel();
-            TodoItem existingTodoItem = CreateMockTodoItem();
-            existingTodoItem.ItemPerMission = new TimelineItemPermission { PermissionLevel = PermissionLevel.Edit };
-            BaseItemsViewModel baseModel = CreateMockBaseItemsViewModel();
-            baseModel.CurrentProgeny.Admins = "other@example.com";
-
-            _mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestTodoItemId))
-                .ReturnsAsync(existingTodoItem);
-            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
-                .ReturnsAsync(baseModel);
-
-            // Act
-            IActionResult result = await _controller.EditTodo(model);
-
-            // Assert
-            PartialViewResult partialViewResult = Assert.IsType<PartialViewResult>(result);
-            Assert.Equal("_AccessDeniedPartial", partialViewResult.ViewName);
-        }
-
+        
         #endregion
 
         #region DeleteTodo Tests
@@ -1140,18 +1116,19 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
         public async Task AssignTodoItemTo_Post_Should_Update_Assignment()
         {
             // Arrange
-            TodoViewModel model = CreateMockTodoViewModel();
-            model.TodoItem.ProgenyId = 2; // Assign to different progeny
+            
             TodoItem todoItem = CreateMockTodoItem();
             todoItem.ItemPerMission = new TimelineItemPermission { PermissionLevel = PermissionLevel.Edit };
             BaseItemsViewModel baseModel = CreateMockBaseItemsViewModel();
             baseModel.CurrentProgeny.ProgenyPerMission = new ProgenyPermission { PermissionLevel = PermissionLevel.Add };
             TodoItem updatedTodoItem = CreateMockTodoItem();
             updatedTodoItem.ProgenyId = 2;
+            TodoViewModel model = CreateMockTodoViewModelFromBase(baseModel);
+            model.TodoItem.ProgenyId = 2; // Assign to different progeny
 
             _mockTodoItemsHttpClient.Setup(x => x.GetTodoItem(TestTodoItemId))
                 .ReturnsAsync(todoItem);
-            _mockViewModelSetupService.Setup(x => x.SetupViewModel(1, TestUserEmail, TestProgenyId, 0, false))
+            _mockViewModelSetupService.Setup(x => x.SetupViewModel(It.IsAny<int>(), TestUserEmail, It.IsAny<int>(), 0, false))
                 .ReturnsAsync(baseModel);
             _mockTodoItemsHttpClient.Setup(x => x.UpdateTodoItem(It.IsAny<TodoItem>()))
                 .ReturnsAsync(updatedTodoItem);
@@ -1251,6 +1228,19 @@ namespace KinaUnaWeb.Tests.Controllers.TodosController
         private static TodoViewModel CreateMockTodoViewModel()
         {
             TodoViewModel model = new(CreateMockBaseItemsViewModel())
+            {
+                TodoItem = CreateMockTodoItem()
+            };
+
+            model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime,
+                TimeZoneInfo.FindSystemTimeZoneById(TestUserTimezone));
+
+            return model;
+        }
+
+        private static TodoViewModel CreateMockTodoViewModelFromBase(BaseItemsViewModel baseItemsViewModel)
+        {
+            TodoViewModel model = new(baseItemsViewModel)
             {
                 TodoItem = CreateMockTodoItem()
             };

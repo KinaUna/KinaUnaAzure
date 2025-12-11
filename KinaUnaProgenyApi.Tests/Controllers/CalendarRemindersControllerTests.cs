@@ -77,8 +77,8 @@ public class CalendarRemindersControllerTests
     {
         List<Claim> claims =
         [
-            new Claim(ClaimTypes.NameIdentifier, userId),
-            new Claim(ClaimTypes.Email, userEmail)
+            new(ClaimTypes.NameIdentifier, userId),
+            new(ClaimTypes.Email, userEmail)
         ];
         ClaimsIdentity identity = new(claims, "TestAuthType");
         ClaimsPrincipal claimsPrincipal = new(identity);

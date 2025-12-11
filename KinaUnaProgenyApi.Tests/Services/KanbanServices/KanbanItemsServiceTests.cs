@@ -236,7 +236,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             };
 
             _mockAccessManagementService
-                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanItem, itemId, _testUser, PermissionLevel.View))
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, itemId, _testUser, PermissionLevel.View))
                 .ReturnsAsync(true);
             _mockTodosService
                 .Setup(x => x.GetTodoItem(1, _testUser))
@@ -312,6 +312,19 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedBy = "user1"
             };
 
+            TimelineItemPermission itemPermission = new()
+            {
+                TimelineItemPermissionId = 1,
+                TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
+                ItemId = 1,
+                UserId = "user1",
+                PermissionLevel = PermissionLevel.Add,
+                CreatedTime = DateTime.UtcNow.AddDays(-1),
+                ModifiedTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "admin1",
+                ModifiedBy = "admin1"
+            };
+
             _mockTodosService
                 .Setup(x => x.GetTodoItem(1, _testUser))
                 .ReturnsAsync(todoItem);
@@ -322,6 +335,9 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _testUser, PermissionLevel.Add))
                 .ReturnsAsync(true);
 
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(itemPermission);
             // Act
             KanbanItem result = await _service.AddKanbanItem(newItem, _testUser);
 
@@ -354,6 +370,19 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedBy = "user1"
             };
 
+            TimelineItemPermission itemPermission = new()
+            {
+                TimelineItemPermissionId = 1,
+                TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
+                ItemId = 2,
+                UserId = "user1",
+                PermissionLevel = PermissionLevel.Add,
+                CreatedTime = DateTime.UtcNow.AddDays(-1),
+                ModifiedTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "admin1",
+                ModifiedBy = "admin1"
+            };
+
             _mockTodosService
                 .Setup(x => x.GetTodoItem(4, _testUser))
                 .ReturnsAsync(todoItem);
@@ -363,7 +392,9 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 2, _testUser, PermissionLevel.Add))
                 .ReturnsAsync(true);
-
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, 2, It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(itemPermission);
             // Act
             KanbanItem result = await _service.AddKanbanItem(newItem, _testUser);
 
@@ -464,6 +495,19 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedBy = "user1"
             };
 
+            TimelineItemPermission itemPermission = new()
+            {
+                TimelineItemPermissionId = 1,
+                TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
+                ItemId = 1,
+                UserId = "user1",
+                PermissionLevel = PermissionLevel.Add,
+                CreatedTime = DateTime.UtcNow.AddDays(-1),
+                ModifiedTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "admin1",
+                ModifiedBy = "admin1"
+            };
+
             _mockTodosService
                 .Setup(x => x.GetTodoItem(1, _testUser))
                 .ReturnsAsync(todoItem);
@@ -473,7 +517,9 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _testUser, PermissionLevel.Add))
                 .ReturnsAsync(true);
-
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, 1, 1, 0, _testUser))
+                .ReturnsAsync(itemPermission);
             // Act
             KanbanItem result = await _service.AddKanbanItem(newItem, _testUser);
 
@@ -502,6 +548,19 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedBy = "user1"
             };
 
+            TimelineItemPermission itemPermission = new()
+            {
+                TimelineItemPermissionId = 1,
+                TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
+                ItemId = 1,
+                UserId = "user1",
+                PermissionLevel = PermissionLevel.Add,
+                CreatedTime = DateTime.UtcNow.AddDays(-1),
+                ModifiedTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "admin1",
+                ModifiedBy = "admin1"
+            };
+
             _mockTodosService
                 .Setup(x => x.GetTodoItem(1, _testUser))
                 .ReturnsAsync(todoItem);
@@ -511,7 +570,9 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _testUser, PermissionLevel.Add))
                 .ReturnsAsync(true);
-
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser( KinaUnaTypes.TimeLineType.KanbanBoard, 1,1, 0,_testUser))
+                .ReturnsAsync(itemPermission);
             // Act
             KanbanItem result = await _service.AddKanbanItem(newItem, _testUser);
 
@@ -539,13 +600,27 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedBy = "user1"
             };
 
+            TimelineItemPermission itemPermission = new()
+            {
+                TimelineItemPermissionId = 1,
+                TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
+                ItemId = 1,
+                UserId = "user1",
+                PermissionLevel = PermissionLevel.Edit,
+                CreatedTime = DateTime.UtcNow.AddDays(-1),
+                ModifiedTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "admin1",
+                ModifiedBy = "admin1"
+            };
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 1, _testUser, PermissionLevel.Edit))
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _testUser, PermissionLevel.Edit))
                 .ReturnsAsync(true);
-
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(itemPermission);
             // Act
             KanbanItem result = await _service.UpdateKanbanItem(updatedItem, _testUser);
 
@@ -570,9 +645,33 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedBy = "user2"
             };
 
+            Progeny progeny = new()
+            {
+                Id = 1
+            };
+            _progenyDbContext.ProgenyDb.Add(progeny);
+            await _progenyDbContext.SaveChangesAsync();
+
+            TimelineItemPermission itemPermission = new()
+            {
+                TimelineItemPermissionId = 1,
+                TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
+                ItemId = 1,
+                UserId = "user2",
+                PermissionLevel = PermissionLevel.Edit,
+                CreatedTime = DateTime.UtcNow.AddDays(-1),
+                ModifiedTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "admin1",
+                ModifiedBy = "admin1"
+            };
+
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 1, _otherUser, PermissionLevel.Edit))
                 .ReturnsAsync(false);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _otherUser))
+                .ReturnsAsync(itemPermission);
 
             // Act
             KanbanItem result = await _service.UpdateKanbanItem(updatedItem, _otherUser);
@@ -595,12 +694,29 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedBy = "user2"
             };
 
+            TimelineItemPermission itemPermission = new()
+            {
+                TimelineItemPermissionId = 1,
+                TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
+                ItemId = 1,
+                UserId = "user2",
+                PermissionLevel = PermissionLevel.View,
+                CreatedTime = DateTime.UtcNow.AddDays(-1),
+                ModifiedTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "admin1",
+                ModifiedBy = "admin1"
+            };
+
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 1, _otherUser, PermissionLevel.Edit))
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _otherUser, PermissionLevel.Edit))
                 .ReturnsAsync(false);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _otherUser))
+                .ReturnsAsync(itemPermission);
 
             // Act
             KanbanItem result = await _service.UpdateKanbanItem(updatedItem, _otherUser);
@@ -665,12 +781,29 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedBy = "user1"
             };
 
+            TimelineItemPermission itemPermission = new()
+            {
+                TimelineItemPermissionId = 1,
+                TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
+                ItemId = 1,
+                UserId = "user1",
+                PermissionLevel = PermissionLevel.Edit,
+                CreatedTime = DateTime.UtcNow.AddDays(-1),
+                ModifiedTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "admin1",
+                ModifiedBy = "admin1"
+            };
+
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 1, _testUser, PermissionLevel.Edit))
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _testUser, PermissionLevel.Edit))
                 .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(itemPermission);
 
             // Act
             KanbanItem result = await _service.UpdateKanbanItem(updatedItem, _testUser);
@@ -695,12 +828,29 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedBy = "user1"
             };
 
+            TimelineItemPermission itemPermission = new()
+            {
+                TimelineItemPermissionId = 1,
+                TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
+                ItemId = 1,
+                UserId = "user1",
+                PermissionLevel = PermissionLevel.Edit,
+                CreatedTime = DateTime.UtcNow.AddDays(-1),
+                ModifiedTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "admin1",
+                ModifiedBy = "admin1"
+            };
+
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 1, _testUser, PermissionLevel.Edit))
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _testUser, PermissionLevel.Edit))
                 .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _testUser))
+                .ReturnsAsync(itemPermission);
 
             // Act
             KanbanItem result = await _service.UpdateKanbanItem(updatedItem, _testUser);
@@ -725,6 +875,19 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedBy = "admin1"
             };
 
+            TimelineItemPermission itemPermission = new()
+            {
+                TimelineItemPermissionId = 1,
+                TimelineType = KinaUnaTypes.TimeLineType.KanbanBoard,
+                ItemId = 1,
+                UserId = "admin1",
+                PermissionLevel = PermissionLevel.Edit,
+                CreatedTime = DateTime.UtcNow.AddDays(-1),
+                ModifiedTime = DateTime.UtcNow.AddDays(-1),
+                CreatedBy = "admin1",
+                ModifiedBy = "admin1"
+            };
+
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 1, _adminUser, PermissionLevel.Edit))
                 .ReturnsAsync(true);
@@ -732,6 +895,9 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _adminUser, PermissionLevel.Edit))
                 .ReturnsAsync(true);
 
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.KanbanBoard, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), _adminUser))
+                .ReturnsAsync(itemPermission);
             // Act
             KanbanItem result = await _service.UpdateKanbanItem(updatedItem, _adminUser);
 
@@ -792,6 +958,13 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         {
             // Arrange
             KanbanItem? itemToDelete = await _progenyDbContext.KanbanItemsDb.FindAsync(1);
+
+            Progeny progeny = new()
+            {
+                Id = 1,
+            };
+            _progenyDbContext.ProgenyDb.Add(progeny);
+            await  _progenyDbContext.SaveChangesAsync();
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 1, _otherUser, PermissionLevel.Admin))

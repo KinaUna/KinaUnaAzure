@@ -136,8 +136,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             List<Claim> claims =
             [
-                new Claim(ClaimTypes.Email, userEmail),
-                new Claim(ClaimTypes.NameIdentifier, userId)
+                new(ClaimTypes.Email, userEmail),
+                new(ClaimTypes.NameIdentifier, userId)
             ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
@@ -393,7 +393,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(true);
             _mockKanbanBoardsService.Setup(x => x.AddKanbanBoard(It.IsAny<KanbanBoard>(), _testUser))
                 .ReturnsAsync(addedBoard);
-
+            _mockKanbanBoardsService.Setup(x => x.GetKanbanBoardById(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(addedBoard);
             // Act
             IActionResult result = await _controller.Post(boardToAdd);
 
@@ -415,6 +416,9 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockAccessManagementService.Setup(x => x.HasFamilyPermission(TestFamilyId, _testUser, PermissionLevel.Add))
                 .ReturnsAsync(true);
             _mockKanbanBoardsService.Setup(x => x.AddKanbanBoard(It.IsAny<KanbanBoard>(), _testUser))
+                .ReturnsAsync(addedBoard);
+
+            _mockKanbanBoardsService.Setup(x => x.GetKanbanBoardById(It.IsAny<int>(), _testUser))
                 .ReturnsAsync(addedBoard);
 
             // Act
@@ -520,6 +524,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             updatedBoard.Title = "Updated Title";
 
             _mockKanbanBoardsService.Setup(x => x.UpdateKanbanBoard(It.IsAny<KanbanBoard>(), _testUser))
+                .ReturnsAsync(updatedBoard);
+            _mockKanbanBoardsService.Setup(x => x.GetKanbanBoardById(It.IsAny<int>(), _testUser))
                 .ReturnsAsync(updatedBoard);
 
             // Act

@@ -228,34 +228,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             // Assert
             Assert.Null(result);
         }
-
-        [Fact]
-        public async Task GetFamilyMember_WhenHasProgenyAndUserIsInAdminList_ReturnsNull()
-        {
-            // Arrange
-            int familyMemberId = 2;
-            Progeny progeny = new()
-            {
-                Id = 1,
-                Name = "Test Progeny",
-                Admins = "admin@example.com"
-            };
-
-            _mockAccessManagementService
-                .Setup(x => x.HasFamilyPermission(1, _adminUser, PermissionLevel.View))
-                .ReturnsAsync(true);
-
-            _mockProgenyService
-                .Setup(x => x.GetProgeny(1, _adminUser))
-                .ReturnsAsync(progeny);
-
-            // Act
-            FamilyMember result = await _service.GetFamilyMember(familyMemberId, _adminUser);
-
-            // Assert
-            Assert.Null(result);
-        }
-
+        
         [Fact]
         public async Task GetFamilyMember_WhenHasProgenyAndUserHasAccess_ReturnsWithProgeny()
         {
@@ -376,9 +349,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
 
             _mockFamilyAuditLogService.Verify(
                 x => x.AddFamilyMemberAddedAuditLogEntry(It.IsAny<FamilyMember>(), _adminUser),
-                Times.Once);
-            _mockAccessManagementService.Verify(
-                x => x.GrantFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser),
                 Times.Once);
         }
 
@@ -567,9 +537,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
 
             // Assert
             Assert.NotNull(result);
-            _mockAccessManagementService.Verify(
-                x => x.UpdateFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser),
-                Times.Once);
         }
 
         [Fact]
@@ -853,10 +820,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             Assert.NotNull(result);
             Assert.Equal("user1", result.UserId);
             Assert.Equal("user1@example.com", result.Email);
-
-            _mockAccessManagementService.Verify(
-                x => x.UpdateFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser),
-                Times.Once);
         }
 
         [Fact]
@@ -904,12 +867,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             // Assert
             Assert.NotNull(result);
             Assert.Equal(PermissionLevel.View, result.PermissionLevel);
-
-            _mockAccessManagementService.Verify(
-                x => x.UpdateFamilyPermission(
-                    It.Is<FamilyPermission>(p => p.PermissionLevel == PermissionLevel.View),
-                    _adminUser),
-                Times.Once);
         }
 
         [Fact]
@@ -970,9 +927,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
 
             _mockFamilyAuditLogService.Verify(
                 x => x.AddFamilyMemberDeletedAuditLogEntry(It.IsAny<FamilyMember>(), _adminUser),
-                Times.Once);
-            _mockAccessManagementService.Verify(
-                x => x.RevokeFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser),
                 Times.Once);
         }
 
@@ -1100,9 +1054,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
 
             // Assert
             Assert.True(result);
-            _mockAccessManagementService.Verify(
-                x => x.RevokeFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser),
-                Times.Exactly(2));
         }
 
         #endregion

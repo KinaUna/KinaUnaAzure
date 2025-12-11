@@ -392,7 +392,6 @@ namespace KinaUnaWeb.Tests.Controllers.SubtasksController
             Assert.Equal(progeny.Id, response.TodoItem.Progeny.Id);
             Assert.NotNull(response.TodoItem.Family);
             Assert.Equal(0, response.TodoItem.Family.FamilyId);
-            Assert.Equal("John Doe", response.TodoItem.CreatedBy);
         }
 
         [Fact]

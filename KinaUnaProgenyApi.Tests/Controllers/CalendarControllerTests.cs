@@ -133,8 +133,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             List<Claim> claims =
             [
-                new Claim(ClaimTypes.NameIdentifier, TestUserId),
-                new Claim(ClaimTypes.Email, TestUserEmail)
+                new(ClaimTypes.NameIdentifier, TestUserId),
+                new(ClaimTypes.Email, TestUserEmail)
             ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
@@ -151,7 +151,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progenies_ReturnsOkWithCalendarItems_WhenValidProgenyIdsProvided()
         {
             // Arrange
-            var request = new CalendarItemsRequest
+            CalendarItemsRequest request = new()
             {
                 ProgenyIds = [TestProgenyId],
                 FamilyIds = [],
@@ -162,16 +162,16 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
                 .ReturnsAsync(_testProgeny);
 
-            var expectedItems = new List<CalendarItem> { _testCalendarItem };
+            List<CalendarItem> expectedItems = new() { _testCalendarItem };
             _mockCalendarService.Setup(x => x.GetCalendarList(TestProgenyId, 0, _testUser, request.StartDate, request.EndDate))
                 .ReturnsAsync(expectedItems);
 
             // Act
-            var result = await _controller.Progenies(request);
+            IActionResult? result = await _controller.Progenies(request);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<CalendarItem> returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
             Assert.Single(returnedItems);
             Assert.Equal(_testCalendarItem.EventId, returnedItems[0].EventId);
         }
@@ -180,7 +180,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progenies_ReturnsOkWithCalendarItems_WhenValidFamilyIdsProvided()
         {
             // Arrange
-            var familyCalendarItem = new CalendarItem
+            CalendarItem familyCalendarItem = new()
             {
                 EventId = 200,
                 ProgenyId = 0,
@@ -191,7 +191,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 UId = Guid.NewGuid().ToString()
             };
 
-            var request = new CalendarItemsRequest
+            CalendarItemsRequest request = new()
             {
                 ProgenyIds = [],
                 FamilyIds = [TestFamilyId],
@@ -202,16 +202,16 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
                 .ReturnsAsync(_testFamily);
 
-            var expectedItems = new List<CalendarItem> { familyCalendarItem };
+            List<CalendarItem> expectedItems = new() { familyCalendarItem };
             _mockCalendarService.Setup(x => x.GetCalendarList(0, TestFamilyId, _testUser, request.StartDate, request.EndDate))
                 .ReturnsAsync(expectedItems);
 
             // Act
-            var result = await _controller.Progenies(request);
+            IActionResult? result = await _controller.Progenies(request);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<CalendarItem> returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
             Assert.Single(returnedItems);
             Assert.Equal(familyCalendarItem.EventId, returnedItems[0].EventId);
         }
@@ -220,7 +220,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progenies_ReturnsOkWithCombinedItems_WhenBothProgenyAndFamilyIdsProvided()
         {
             // Arrange
-            var familyCalendarItem = new CalendarItem
+            CalendarItem familyCalendarItem = new()
             {
                 EventId = 200,
                 ProgenyId = 0,
@@ -231,7 +231,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 UId = Guid.NewGuid().ToString()
             };
 
-            var request = new CalendarItemsRequest
+            CalendarItemsRequest request = new()
             {
                 ProgenyIds = [TestProgenyId],
                 FamilyIds = [TestFamilyId],
@@ -252,11 +252,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(new List<CalendarItem> { familyCalendarItem });
 
             // Act
-            var result = await _controller.Progenies(request);
+            IActionResult? result = await _controller.Progenies(request);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<CalendarItem> returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
             Assert.Equal(2, returnedItems.Count);
         }
 
@@ -264,7 +264,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progenies_ReturnsOkWithEmptyList_WhenNoAccessibleProgeniesOrFamilies()
         {
             // Arrange
-            var request = new CalendarItemsRequest
+            CalendarItemsRequest request = new()
             {
                 ProgenyIds = [TestProgenyId],
                 FamilyIds = [TestFamilyId],
@@ -279,11 +279,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((Family)null!);
 
             // Act
-            var result = await _controller.Progenies(request);
+            IActionResult? result = await _controller.Progenies(request);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<CalendarItem> returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
             Assert.Empty(returnedItems);
         }
 
@@ -299,11 +299,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testCalendarItem);
 
             // Act
-            var result = await _controller.GetCalendarItem(TestCalendarItemId);
+            IActionResult? result = await _controller.GetCalendarItem(TestCalendarItemId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            CalendarItem returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
             Assert.Equal(TestCalendarItemId, returnedItem.EventId);
             Assert.Equal(_testCalendarItem.Title, returnedItem.Title);
         }
@@ -316,7 +316,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((CalendarItem)null!);
 
             // Act
-            var result = await _controller.GetCalendarItem(TestCalendarItemId);
+            IActionResult? result = await _controller.GetCalendarItem(TestCalendarItemId);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -330,7 +330,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ReturnsOk_WhenValidProgenyCalendarItemProvided()
         {
             // Arrange
-            var newCalendarItem = new CalendarItem
+            CalendarItem newCalendarItem = new()
             {
                 ProgenyId = TestProgenyId,
                 FamilyId = 0,
@@ -340,7 +340,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 UId = Guid.NewGuid().ToString()
             };
 
-            var addedCalendarItem = new CalendarItem
+            CalendarItem addedCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = TestProgenyId,
@@ -362,15 +362,18 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockTimelineService.Setup(x => x.AddTimeLineItem(It.IsAny<TimeLineItem>(), _testUser))
                 .ReturnsAsync(_testTimeLineItem);
 
+            _mockCalendarService.Setup(x => x.GetCalendarItem(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(addedCalendarItem);
+
             _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
                 .ReturnsAsync(_testProgeny);
 
             // Act
-            var result = await _controller.Post(newCalendarItem);
+            IActionResult? result = await _controller.Post(newCalendarItem);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            CalendarItem returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
             Assert.Equal(TestCalendarItemId, returnedItem.EventId);
             Assert.Equal(TestUserId, returnedItem.Author);
             Assert.Equal(TestUserId, returnedItem.CreatedBy);
@@ -380,7 +383,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ReturnsOk_WhenValidFamilyCalendarItemProvided()
         {
             // Arrange
-            var newCalendarItem = new CalendarItem
+            CalendarItem newCalendarItem = new()
             {
                 ProgenyId = 0,
                 FamilyId = TestFamilyId,
@@ -390,7 +393,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 UId = Guid.NewGuid().ToString()
             };
 
-            var addedCalendarItem = new CalendarItem
+            CalendarItem addedCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = 0,
@@ -412,15 +415,18 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockTimelineService.Setup(x => x.AddTimeLineItem(It.IsAny<TimeLineItem>(), _testUser))
                 .ReturnsAsync(_testTimeLineItem);
 
+            _mockCalendarService.Setup(x => x.GetCalendarItem(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(addedCalendarItem);
+
             _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
                 .ReturnsAsync(_testFamily);
 
             // Act
-            var result = await _controller.Post(newCalendarItem);
+            IActionResult? result = await _controller.Post(newCalendarItem);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            CalendarItem returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
             Assert.Equal(TestCalendarItemId, returnedItem.EventId);
         }
 
@@ -428,7 +434,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ReturnsBadRequest_WhenBothProgenyIdAndFamilyIdAreSet()
         {
             // Arrange
-            var invalidCalendarItem = new CalendarItem
+            CalendarItem invalidCalendarItem = new()
             {
                 ProgenyId = TestProgenyId,
                 FamilyId = TestFamilyId,
@@ -438,10 +444,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             // Act
-            var result = await _controller.Post(invalidCalendarItem);
+            IActionResult? result = await _controller.Post(invalidCalendarItem);
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            BadRequestObjectResult badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("A calendar event must have either a ProgenyId or a FamilyId set, but not both.", badRequestResult.Value);
         }
 
@@ -449,7 +455,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ReturnsBadRequest_WhenNeitherProgenyIdNorFamilyIdAreSet()
         {
             // Arrange
-            var invalidCalendarItem = new CalendarItem
+            CalendarItem invalidCalendarItem = new()
             {
                 ProgenyId = 0,
                 FamilyId = 0,
@@ -459,10 +465,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             // Act
-            var result = await _controller.Post(invalidCalendarItem);
+            IActionResult? result = await _controller.Post(invalidCalendarItem);
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            BadRequestObjectResult badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("A calendar event must have either a ProgenyId or a FamilyId set.", badRequestResult.Value);
         }
 
@@ -470,7 +476,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ReturnsUnauthorized_WhenUserLacksProgenyAddPermission()
         {
             // Arrange
-            var newCalendarItem = new CalendarItem
+            CalendarItem newCalendarItem = new()
             {
                 ProgenyId = TestProgenyId,
                 FamilyId = 0,
@@ -483,7 +489,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(false);
 
             // Act
-            var result = await _controller.Post(newCalendarItem);
+            IActionResult? result = await _controller.Post(newCalendarItem);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -493,7 +499,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ReturnsUnauthorized_WhenUserLacksFamilyAddPermission()
         {
             // Arrange
-            var newCalendarItem = new CalendarItem
+            CalendarItem newCalendarItem = new()
             {
                 ProgenyId = 0,
                 FamilyId = TestFamilyId,
@@ -506,7 +512,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(false);
 
             // Act
-            var result = await _controller.Post(newCalendarItem);
+            IActionResult? result = await _controller.Post(newCalendarItem);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -516,7 +522,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_ReturnsUnauthorized_WhenCalendarServiceReturnsNull()
         {
             // Arrange
-            var newCalendarItem = new CalendarItem
+            CalendarItem newCalendarItem = new()
             {
                 ProgenyId = TestProgenyId,
                 FamilyId = 0,
@@ -532,7 +538,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((CalendarItem)null!);
 
             // Act
-            var result = await _controller.Post(newCalendarItem);
+            IActionResult? result = await _controller.Post(newCalendarItem);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -542,7 +548,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_SendsNotifications_WhenCalendarItemIsAdded()
         {
             // Arrange
-            var newCalendarItem = new CalendarItem
+            CalendarItem newCalendarItem = new()
             {
                 ProgenyId = TestProgenyId,
                 FamilyId = 0,
@@ -552,7 +558,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 UId = Guid.NewGuid().ToString()
             };
 
-            var addedCalendarItem = new CalendarItem
+            CalendarItem addedCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = TestProgenyId,
@@ -595,7 +601,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Put_ReturnsOk_WhenValidUpdateProvided()
         {
             // Arrange
-            var updatedCalendarItem = new CalendarItem
+            CalendarItem updatedCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = TestProgenyId,
@@ -603,10 +609,14 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 Title = "Updated Event",
                 StartTime = DateTime.UtcNow.AddDays(2),
                 EndTime = DateTime.UtcNow.AddDays(2).AddHours(3),
-                UId = _testCalendarItem.UId
+                UId = _testCalendarItem.UId,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.Edit
+                }
             };
 
-            var existingCalendarItem = new CalendarItem
+            CalendarItem existingCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = TestProgenyId,
@@ -629,6 +639,9 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockCalendarService.Setup(x => x.UpdateCalendarItem(It.IsAny<CalendarItem>(), _testUser))
                 .ReturnsAsync(updatedCalendarItem);
 
+            _mockCalendarService.Setup(x => x.GetCalendarItem(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(updatedCalendarItem);
+
             _mockTimelineService.Setup(x => x.GetTimeLineItemByItemId(
                 TestCalendarItemId.ToString(),
                 (int)KinaUnaTypes.TimeLineType.Calendar,
@@ -639,11 +652,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testTimeLineItem);
 
             // Act
-            var result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
+            IActionResult? result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            CalendarItem returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
             Assert.Equal(updatedCalendarItem.Title, returnedItem.Title);
             Assert.Equal(TestUserId, updatedCalendarItem.ModifiedBy);
         }
@@ -652,7 +665,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Put_ReturnsUnauthorized_WhenCalendarItemNotFound()
         {
             // Arrange
-            var updatedCalendarItem = new CalendarItem
+            CalendarItem updatedCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = TestProgenyId,
@@ -664,7 +677,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((CalendarItem)null!);
 
             // Act
-            var result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
+            IActionResult? result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -674,7 +687,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Put_ReturnsUnauthorized_WhenUserLacksEditPermission()
         {
             // Arrange
-            var updatedCalendarItem = new CalendarItem
+            CalendarItem updatedCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = TestProgenyId,
@@ -682,7 +695,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 Title = "Updated Event"
             };
 
-            var existingCalendarItem = new CalendarItem
+            CalendarItem existingCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = TestProgenyId,
@@ -698,7 +711,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(existingCalendarItem);
 
             // Act
-            var result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
+            IActionResult? result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -708,7 +721,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Put_ReturnsUnauthorized_WhenCalendarServiceUpdateFails()
         {
             // Arrange
-            var updatedCalendarItem = new CalendarItem
+            CalendarItem updatedCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = TestProgenyId,
@@ -716,7 +729,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 Title = "Updated Event"
             };
 
-            var existingCalendarItem = new CalendarItem
+            CalendarItem existingCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = TestProgenyId,
@@ -735,7 +748,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((CalendarItem)null!);
 
             // Act
-            var result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
+            IActionResult? result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -745,7 +758,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Put_UpdatesTimeLineItem_WhenTimeLineItemExists()
         {
             // Arrange
-            var updatedCalendarItem = new CalendarItem
+            CalendarItem updatedCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = TestProgenyId,
@@ -756,7 +769,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 UId = _testCalendarItem.UId
             };
 
-            var existingCalendarItem = new CalendarItem
+            CalendarItem existingCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = TestProgenyId,
@@ -824,7 +837,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testProgeny);
 
             // Act
-            var result = await _controller.Delete(TestCalendarItemId);
+            IActionResult? result = await _controller.Delete(TestCalendarItemId);
 
             // Assert
             Assert.IsType<NoContentResult>(result);
@@ -843,7 +856,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(false);
 
             // Act
-            var result = await _controller.Delete(TestCalendarItemId);
+            IActionResult? result = await _controller.Delete(TestCalendarItemId);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -864,7 +877,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((CalendarItem)null!);
 
             // Act
-            var result = await _controller.Delete(TestCalendarItemId);
+            IActionResult? result = await _controller.Delete(TestCalendarItemId);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -888,7 +901,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync((CalendarItem)null!);
 
             // Act
-            var result = await _controller.Delete(TestCalendarItemId);
+            IActionResult? result = await _controller.Delete(TestCalendarItemId);
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -973,7 +986,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Delete_SendsFamilyNotifications_WhenFamilyCalendarItemDeleted()
         {
             // Arrange
-            var familyCalendarItem = new CalendarItem
+            CalendarItem familyCalendarItem = new()
             {
                 EventId = TestCalendarItemId,
                 ProgenyId = 0,
@@ -985,7 +998,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 UId = Guid.NewGuid().ToString()
             };
 
-            var familyTimeLineItem = new TimeLineItem
+            TimeLineItem familyTimeLineItem = new()
             {
                 TimeLineId = 1,
                 ProgenyId = 0,

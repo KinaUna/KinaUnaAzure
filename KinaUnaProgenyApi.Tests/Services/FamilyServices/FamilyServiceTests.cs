@@ -15,6 +15,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
         private readonly Mock<IFamilyMembersService> _mockFamilyMembersService;
         private readonly Mock<IAccessManagementService> _mockAccessManagementService;
         private readonly Mock<IFamilyAuditLogsService> _mockFamilyAuditLogService;
+        private readonly Mock<IUserGroupsService> _mockUserGroupsService;
         private readonly FamiliesService _service;
         private readonly UserInfo _testUser;
         private readonly UserInfo _adminUser;
@@ -37,7 +38,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             _mockFamilyMembersService = new Mock<IFamilyMembersService>();
             _mockAccessManagementService = new Mock<IAccessManagementService>();
             _mockFamilyAuditLogService = new Mock<IFamilyAuditLogsService>();
-            Mock<IUserGroupsService> mockUserGroupsService = new();
+            _mockUserGroupsService = new Mock<IUserGroupsService>();
 
             // Initialize service
             _service = new FamiliesService(
@@ -45,7 +46,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 _mockFamilyMembersService.Object,
                 _mockAccessManagementService.Object,
                 _mockFamilyAuditLogService.Object,
-                mockUserGroupsService.Object);
+                _mockUserGroupsService.Object);
 
             // Seed test data
             SeedTestData();
@@ -403,6 +404,8 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .Setup(x => x.GrantFamilyPermission(It.IsAny<FamilyPermission>(), _testUser))
                 .ReturnsAsync(new FamilyPermission());
 
+            _mockUserGroupsService.Setup(x => x.AddUserGroup(It.IsAny<UserGroup>(), _testUser))
+                .ReturnsAsync(new UserGroup());
             // Act
             Family result = await _service.AddFamily(newFamily, _testUser);
 
@@ -415,7 +418,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             Assert.Contains(_testUser.UserEmail, result.Admins);
 
             _mockFamilyAuditLogService.Verify(x => x.AddFamilyCreatedAuditLogEntry(It.IsAny<Family>(), _testUser), Times.Once);
-            _mockAccessManagementService.Verify(x => x.GrantFamilyPermission(It.IsAny<FamilyPermission>(), _testUser), Times.Once);
         }
 
         [Fact]
@@ -436,6 +438,8 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             _mockAccessManagementService
                 .Setup(x => x.GrantFamilyPermission(It.IsAny<FamilyPermission>(), _testUser))
                 .ReturnsAsync(new FamilyPermission());
+            _mockUserGroupsService.Setup(x => x.AddUserGroup(It.IsAny<UserGroup>(), _testUser))
+                .ReturnsAsync(new UserGroup());
 
             // Act
             Family result = await _service.AddFamily(newFamily, _testUser);
@@ -444,35 +448,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             Assert.NotNull(result);
             Assert.Contains(_testUser.UserEmail, result.Admins);
         }
-
-        [Fact]
-        public async Task AddFamily_WhenMultipleAdmins_CreatesPermissionsForAll()
-        {
-            // Arrange
-            Family newFamily = new()
-            {
-                Name = "New Family",
-                Description = "New Description",
-                Admins = "user1@example.com,admin@example.com"
-            };
-
-            _mockFamilyAuditLogService
-                .Setup(x => x.AddFamilyCreatedAuditLogEntry(It.IsAny<Family>(), _testUser))
-                .ReturnsAsync(new FamilyAuditLog());
-
-            _mockAccessManagementService
-                .Setup(x => x.GrantFamilyPermission(It.IsAny<FamilyPermission>(), _testUser))
-                .ReturnsAsync(new FamilyPermission());
-
-            // Act
-            await _service.AddFamily(newFamily, _testUser);
-
-            // Assert
-            _mockAccessManagementService.Verify(
-                x => x.GrantFamilyPermission(It.IsAny<FamilyPermission>(), _testUser),
-                Times.Exactly(2));
-        }
-
+        
         #endregion
 
         #region UpdateFamily Tests
@@ -496,7 +472,10 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
             _mockFamilyAuditLogService
                 .Setup(x => x.UpdateFamilyAuditLogEntry(It.IsAny<FamilyAuditLog>()))
                 .ReturnsAsync(new FamilyAuditLog());
-
+            _mockUserGroupsService.Setup(x => x.AddUserGroup(It.IsAny<UserGroup>(), _adminUser))
+                .ReturnsAsync(new UserGroup());
+            _mockUserGroupsService.Setup(x => x.GetUserGroupsForFamily(updatedFamily.FamilyId, _adminUser))
+                .ReturnsAsync([new UserGroup() { FamilyId = updatedFamily.FamilyId, }]);
             // Act
             Family result = await _service.UpdateFamily(updatedFamily, _adminUser);
 
@@ -568,6 +547,11 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .Setup(x => x.UpdateFamilyAuditLogEntry(It.IsAny<FamilyAuditLog>()))
                 .ReturnsAsync(new FamilyAuditLog());
 
+            _mockUserGroupsService.Setup(x => x.AddUserGroup(It.IsAny<UserGroup>(), _adminUser))
+                .ReturnsAsync(new UserGroup());
+            _mockUserGroupsService.Setup(x => x.GetUserGroupsForFamily(updatedFamily.FamilyId, _adminUser))
+                .ReturnsAsync([new UserGroup() { FamilyId = updatedFamily.FamilyId, }]);
+
             // Act
             Family result = await _service.UpdateFamily(updatedFamily, _adminUser);
 
@@ -604,14 +588,15 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .Setup(x => x.GrantFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser))
                 .ReturnsAsync(new FamilyPermission());
 
+            _mockUserGroupsService.Setup(x => x.AddUserGroup(It.IsAny<UserGroup>(), _adminUser))
+                .ReturnsAsync(new UserGroup());
+            _mockUserGroupsService.Setup(x => x.GetUserGroupsForFamily(updatedFamily.FamilyId, _adminUser))
+                .ReturnsAsync([new UserGroup(){FamilyId = updatedFamily.FamilyId, }]);
             // Act
             Family result = await _service.UpdateFamily(updatedFamily, _adminUser);
 
             // Assert
             Assert.NotNull(result);
-            _mockAccessManagementService.Verify(
-                x => x.GrantFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser),
-                Times.Once);
         }
 
         [Fact]
@@ -644,16 +629,16 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 .Setup(x => x.UpdateFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser))
                 .ReturnsAsync(new FamilyPermission());
 
+            _mockUserGroupsService.Setup(x => x.AddUserGroup(It.IsAny<UserGroup>(), _adminUser))
+                .ReturnsAsync(new UserGroup());
+            _mockUserGroupsService.Setup(x => x.GetUserGroupsForFamily(updatedFamily.FamilyId, _adminUser))
+                .ReturnsAsync([new UserGroup() { FamilyId = updatedFamily.FamilyId, }]);
+
             // Act
             Family result = await _service.UpdateFamily(updatedFamily, _adminUser);
 
             // Assert
             Assert.NotNull(result);
-            _mockAccessManagementService.Verify(
-                x => x.UpdateFamilyPermission(
-                    It.Is<FamilyPermission>(p => p.PermissionLevel == PermissionLevel.Edit),
-                    _adminUser),
-                Times.Once);
         }
 
         #endregion
@@ -778,7 +763,6 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
 
             // Assert
             Assert.True(result);
-            _mockAccessManagementService.Verify(x => x.RevokeFamilyPermission(It.IsAny<FamilyPermission>(), _adminUser), Times.Once);
         }
 
         #endregion

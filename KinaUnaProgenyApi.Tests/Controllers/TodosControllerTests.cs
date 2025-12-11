@@ -115,8 +115,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             List<Claim> claims =
             [
-                new Claim(ClaimTypes.Email, TestUserEmail),
-                new Claim(ClaimTypes.NameIdentifier, TestUserId)
+                new(ClaimTypes.Email, TestUserEmail),
+                new(ClaimTypes.NameIdentifier, TestUserId)
             ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
@@ -196,8 +196,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             List<TodoItem> progenyTodos1 = [_testTodoItem];
-            List<TodoItem> progenyTodos2 = [new TodoItem { TodoItemId = 101, ProgenyId = secondProgenyId, Title = "Todo 2" }];
-            List<TodoItem> familyTodos = [new TodoItem { TodoItemId = 102, FamilyId = TestFamilyId, Title = "Family Todo" }];
+            List<TodoItem> progenyTodos2 = [new() { TodoItemId = 101, ProgenyId = secondProgenyId, Title = "Todo 2" }];
+            List<TodoItem> familyTodos = [new() { TodoItemId = 102, FamilyId = TestFamilyId, Title = "Family Todo" }];
 
             TodoItemsResponse expectedResponse = new()
             {
@@ -336,6 +336,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testTimeLineItem);
             _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
                 .ReturnsAsync(_testProgeny);
+            _mockTodosService.Setup(x => x.GetTodoItem(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(createdTodoItem);
 
             // Act
             IActionResult result = await _controller.Post(newTodoItem);
@@ -383,6 +385,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(createdTodoItem);
             _mockTimelineService.Setup(x => x.AddTimeLineItem(It.IsAny<TimeLineItem>(), _testUser))
                 .ReturnsAsync(_testTimeLineItem);
+            _mockTodosService.Setup(x => x.GetTodoItem(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(createdTodoItem);
 
             // Act
             IActionResult result = await _controller.Post(newTodoItem);
