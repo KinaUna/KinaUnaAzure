@@ -276,6 +276,10 @@ namespace KinaUnaProgenyApi.Services.TodosServices
             if (todoItem == null)
             {
                 todoItem = await SetTodoItemInCache(id);
+                if (todoItem == null)
+                {
+                    return null;
+                }
             }
 
             List<TodoItem> subtasks = await subtasksService.GetSubtasksForTodoItem(todoItem.TodoItemId, currentUserInfo);
