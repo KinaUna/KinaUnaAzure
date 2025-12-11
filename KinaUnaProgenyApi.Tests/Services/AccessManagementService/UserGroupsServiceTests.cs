@@ -29,11 +29,11 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             // Setup default cache service behavior to return null (cache miss)
             _mockKinaUnaCacheService
                 .Setup(m => m.GetUserGroupsListCache(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()))
-                .ReturnsAsync((UserGroupsListCacheEntry)null);
+                .ReturnsAsync((UserGroupsListCacheEntry)null!);
 
             _mockKinaUnaCacheService
                 .Setup(m => m.GetProgenyOrFamilyUpdatedCache(It.IsAny<int>(), It.IsAny<int>()))
-                .ReturnsAsync((ProgenyOrFamilyUpdatedCacheEntry)null);
+                .ReturnsAsync((ProgenyOrFamilyUpdatedCacheEntry)null!);
 
             _mockKinaUnaCacheService
                 .Setup(m => m.SetUserGroupsListCache(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<UserGroup[]>()))
