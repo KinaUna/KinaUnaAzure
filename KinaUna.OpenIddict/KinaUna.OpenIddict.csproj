@@ -8,6 +8,8 @@
     <ApplicationInsightsResourceId>/subscriptions/2a9afdaa-1e5a-4b6f-a1c0-c626b6b0e7aa/resourceGroups/KinaUna/providers/microsoft.insights/components/KinaUnaAuth</ApplicationInsightsResourceId>
     <NuGetAudit>True</NuGetAudit>
     <NuGetAuditLevel>low</NuGetAuditLevel>
+    <PublishAot>False</PublishAot>
+    <PublishTrimmed>False</PublishTrimmed>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

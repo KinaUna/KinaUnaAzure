@@ -9,6 +9,8 @@
 
   <PropertyGroup>
     <DisableMSBuildAssemblyCopyCheck>false</DisableMSBuildAssemblyCopyCheck>
+    <PublishAot>False</PublishAot>
+    <PublishTrimmed>False</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>
