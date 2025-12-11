@@ -205,7 +205,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "New Location",
                 City = "Boston",
                 Country = "USA",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -249,7 +249,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 FamilyId = 1,
                 Name = "New Location",
                 City = "Boston",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -386,7 +386,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 FamilyId = 0,
                 Name = "Updated Name",
                 City = "Updated City",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -395,7 +395,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<KinaUnaTypes.TimeLineType>()))
@@ -563,7 +563,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<KinaUnaTypes.TimeLineType>()))
@@ -657,12 +657,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Location> locations = new()
-            {
+            List<Location> locations =
+            [
                 new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1" },
                 new() { LocationId = 2, ProgenyId = 1, FamilyId = 0, Name = "Location 2" },
                 new() { LocationId = 3, ProgenyId = 1, FamilyId = 0, Name = "Location 3" }
-            };
+            ];
 
             context.LocationsDb.AddRange(locations);
             await context.SaveChangesAsync();
@@ -673,7 +673,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockKinaUnaCacheService
                 .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
-                .ReturnsAsync((LocationsListCacheEntry)null);
+                .ReturnsAsync((LocationsListCacheEntry)null!);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
@@ -697,12 +697,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Location> locations = new()
-            {
+            List<Location> locations =
+            [
                 new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1" },
                 new() { LocationId = 2, ProgenyId = 1, FamilyId = 0, Name = "Location 2" },
                 new() { LocationId = 3, ProgenyId = 1, FamilyId = 0, Name = "Location 3" }
-            };
+            ];
 
             context.LocationsDb.AddRange(locations);
             await context.SaveChangesAsync();
@@ -721,7 +721,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockKinaUnaCacheService
                 .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
-                .ReturnsAsync((LocationsListCacheEntry)null);
+                .ReturnsAsync((LocationsListCacheEntry)null!);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
@@ -749,7 +749,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockKinaUnaCacheService
                 .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
-                .ReturnsAsync((LocationsListCacheEntry)null);
+                .ReturnsAsync((LocationsListCacheEntry)null!);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
@@ -783,7 +783,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockKinaUnaCacheService
                 .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
-                .ReturnsAsync((LocationsListCacheEntry)null);
+                .ReturnsAsync((LocationsListCacheEntry)null!);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
@@ -814,12 +814,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Location> locations = new()
-            {
+            List<Location> locations =
+            [
                 new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1", Tags = "park, playground" },
                 new() { LocationId = 2, ProgenyId = 1, FamilyId = 0, Name = "Location 2", Tags = "museum, park" },
                 new() { LocationId = 3, ProgenyId = 1, FamilyId = 0, Name = "Location 3", Tags = "beach, outdoor" }
-            };
+            ];
 
             context.LocationsDb.AddRange(locations);
             await context.SaveChangesAsync();
@@ -830,7 +830,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockKinaUnaCacheService
                 .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
-                .ReturnsAsync((LocationsListCacheEntry)null);
+                .ReturnsAsync((LocationsListCacheEntry)null!);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
@@ -856,11 +856,11 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Location> locations = new()
-            {
+            List<Location> locations =
+            [
                 new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1", Tags = "park" },
                 new() { LocationId = 2, ProgenyId = 1, FamilyId = 0, Name = "Location 2", Tags = "beach" }
-            };
+            ];
 
             context.LocationsDb.AddRange(locations);
             await context.SaveChangesAsync();
@@ -871,7 +871,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockKinaUnaCacheService
                 .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
-                .ReturnsAsync((LocationsListCacheEntry)null);
+                .ReturnsAsync((LocationsListCacheEntry)null!);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
@@ -905,7 +905,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockKinaUnaCacheService
                 .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
-                .ReturnsAsync((LocationsListCacheEntry)null);
+                .ReturnsAsync((LocationsListCacheEntry)null!);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
