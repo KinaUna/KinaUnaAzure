@@ -2662,54 +2662,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             return cacheEntry.FamilyPermission;
         }
-
-        private async Task<ProgenyPermission> GetProgenyPermissionForUserFromCache(int progenyId, UserInfo userInfo)
-        {
-            string cacheKey = $"getProgenyPermissionForUser_userId_{userInfo.UserId}_progenyId_{progenyId}";
-            string cachedProgenyPermissionString = await cache.GetStringAsync(cacheKey);
-            if (!string.IsNullOrEmpty(cachedProgenyPermissionString))
-            {
-                ProgenyOrFamilyPermissionCacheEntry cachedProgenyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedProgenyPermissionString, JsonSerializerOptions.Web);
-                ProgenyOrFamilyUpdatedCacheEntry progenyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(progenyId, 0);
-                if (progenyUpdatedCacheEntry != null)
-                {
-                    // If the progeny updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
-                    if (progenyUpdatedCacheEntry.UpdateTime < cachedProgenyPermissionEntry.UpdateTime)
-                    {
-                        if (cachedProgenyPermissionEntry.ProgenyPermission != null)
-                        {
-                            return cachedProgenyPermissionEntry.ProgenyPermission;
-                        }
-                    }
-                }
-                else
-                {
-                    // No progeny updated cache entry found, return cached permissions.
-                    if (cachedProgenyPermissionEntry.ProgenyPermission != null)
-                    {
-                        return cachedProgenyPermissionEntry.ProgenyPermission;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private async Task SetProgenyPermissionsForUserInCache(int progenyId, ProgenyPermission permission, UserInfo userInfo)
-        {
-            string cacheKey = $"getProgenyPermissionForUser_userId_{userInfo.UserId}_progenyId_{progenyId}";
-            ProgenyOrFamilyPermissionCacheEntry cacheEntry = new()
-            {
-                ProgenyPermission = permission,
-                UpdateTime = DateTime.UtcNow
-            };
-
-            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
-            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-            await cache.SetStringAsync(cacheKey
-                , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
-        }
-
+        
         /// <summary>
         /// Gets the highest permission level for a specific progeny and user by checking both direct user permissions and group permissions.
         /// </summary>
@@ -2880,6 +2833,93 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             }
         }
 
+        private async Task<ProgenyPermission> GetProgenyPermissionForUserFromCache(int progenyId, UserInfo userInfo)
+        {
+            string cacheKey = $"getProgenyPermissionForUser_userId_{userInfo.UserId}_progenyId_{progenyId}";
+            string cachedProgenyPermissionString = await cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedProgenyPermissionString))
+            {
+                ProgenyOrFamilyPermissionCacheEntry cachedProgenyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedProgenyPermissionString, JsonSerializerOptions.Web);
+                ProgenyOrFamilyUpdatedCacheEntry progenyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(progenyId, 0);
+                if (progenyUpdatedCacheEntry != null)
+                {
+                    // If the progeny updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
+                    if (progenyUpdatedCacheEntry.UpdateTime < cachedProgenyPermissionEntry.UpdateTime)
+                    {
+                        if (cachedProgenyPermissionEntry.ProgenyPermission != null)
+                        {
+                            return cachedProgenyPermissionEntry.ProgenyPermission;
+                        }
+                    }
+                }
+                else
+                {
+                    // No progeny updated cache entry found, return cached permissions.
+                    if (cachedProgenyPermissionEntry.ProgenyPermission != null)
+                    {
+                        return cachedProgenyPermissionEntry.ProgenyPermission;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private async Task SetProgenyPermissionsForUserInCache(int progenyId, ProgenyPermission permission, UserInfo userInfo)
+        {
+            string cacheKey = $"getProgenyPermissionForUser_userId_{userInfo.UserId}_progenyId_{progenyId}";
+            ProgenyOrFamilyPermissionCacheEntry cacheEntry = new()
+            {
+                ProgenyPermission = permission,
+                UpdateTime = DateTime.UtcNow
+            };
+
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            await cache.SetStringAsync(cacheKey
+                , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
+        private async Task<FamilyPermission> GetFamilyPermissionForUserFromCache(int familyId, UserInfo userInfo)
+        {
+            string cacheKey = $"getFamilyPermissionForUser_userId_{userInfo.UserId}_familyId_{familyId}";
+            string cachedFamilyPermissionString = await cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedFamilyPermissionString))
+            {
+                ProgenyOrFamilyPermissionCacheEntry cachedFamilyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedFamilyPermissionString, JsonSerializerOptions.Web);
+                ProgenyOrFamilyUpdatedCacheEntry familyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(0, familyId);
+                if (familyUpdatedCacheEntry != null)
+                {
+                    // If the family updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
+                    if (familyUpdatedCacheEntry.UpdateTime < cachedFamilyPermissionEntry.UpdateTime)
+                    {
+                        return cachedFamilyPermissionEntry.FamilyPermission;
+                    }
+                }
+                else
+                {
+                    // No family updated cache entry found, return cached permissions.
+                    return cachedFamilyPermissionEntry.FamilyPermission;
+                }
+            }
+
+            return null;
+        }
+
+        private async Task SetFamilyPermissionsForUserInCache(int familyId, FamilyPermission permission, UserInfo userInfo)
+        {
+            string cacheKey = $"getFamilyPermissionForUser_userId_{userInfo.UserId}_familyId_{familyId}";
+            ProgenyOrFamilyPermissionCacheEntry cacheEntry = new()
+            {
+                FamilyPermission = permission,
+                UpdateTime = DateTime.UtcNow
+            };
+            DistributedCacheEntryOptions cacheOptionsSlidingView = new();
+            cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
+            await cache.SetStringAsync(cacheKey
+                , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
+        }
+
         /// <summary>
         /// Retrieves the highest permission level for a user within a specified family, considering both direct user
         /// permissions and group memberships.
@@ -2900,30 +2940,22 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             {
                 PermissionLevel = PermissionLevel.None
             };
+            // First, check cache for existing permission.
+            FamilyPermission cachedPermission = await GetFamilyPermissionForUserFromCache(familyId, userInfo);
+            if (cachedPermission != null)
+            {
+                return cachedPermission;
+            }
 
             SemaphoreSlim semaphore = _familyPermissionSemaphores.GetOrAdd(familyId, new SemaphoreSlim(1, 1));
             await semaphore.WaitAsync();
             try
             {
-                string cacheKey = $"getFamilyPermissionForUser_userId_{userInfo.UserId}_familyId_{familyId}";
-                string cachedFamilyPermissionString = await cache.GetStringAsync(cacheKey);
-                if (!string.IsNullOrEmpty(cachedFamilyPermissionString))
+                // Re-check cache inside the lock, it may have been updated while waiting for the lock.
+                cachedPermission = await GetFamilyPermissionForUserFromCache(familyId, userInfo);
+                if (cachedPermission != null)
                 {
-                    ProgenyOrFamilyPermissionCacheEntry cachedFamilyPermissionEntry = JsonSerializer.Deserialize<ProgenyOrFamilyPermissionCacheEntry>(cachedFamilyPermissionString, JsonSerializerOptions.Web);
-                    ProgenyOrFamilyUpdatedCacheEntry familyUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyUpdatedCache(0, familyId);
-                    if (familyUpdatedCacheEntry != null)
-                    {
-                        // If the family updated cache entry is found, check if the time stamp is newer than the cache for item permissions.
-                        if (familyUpdatedCacheEntry.UpdateTime < cachedFamilyPermissionEntry.UpdateTime)
-                        {
-                            return cachedFamilyPermissionEntry.FamilyPermission;
-                        }
-                    }
-                    else
-                    {
-                        // No family updated cache entry found, return cached permissions.
-                        return cachedFamilyPermissionEntry.FamilyPermission;
-                    }
+                    return cachedPermission;
                 }
 
                 // Check group permissions.
@@ -3041,17 +3073,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
                 }
 
-                ProgenyOrFamilyPermissionCacheEntry cacheEntry = new()
-                {
-                    FamilyPermission = resultPermission,
-                    UpdateTime = DateTime.UtcNow
-                };
-
-                DistributedCacheEntryOptions cacheOptionsSlidingView = new();
-                cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0));
-                await cache.SetStringAsync(cacheKey
-                    , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSlidingView);
-
+                await SetFamilyPermissionsForUserInCache(familyId, resultPermission, userInfo);
                 return resultPermission;
             }
             finally
@@ -3295,40 +3317,57 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             return resultFamilies;
         }
 
+        private async Task<Dictionary<int, PermissionLevel>> AllUsersItemPermissionsDictionaryFromCache(UserInfo userInfo, TimeLineType type)
+        {
+            string cachedItemPermissions = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion +
+                                                                      "allUsersItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type);
+            if (!string.IsNullOrEmpty(cachedItemPermissions))
+            {
+                ItemPermissionDictionaryCacheEntry cachedPermissions = JsonSerializer.Deserialize<ItemPermissionDictionaryCacheEntry>(cachedItemPermissions, JsonSerializerOptions.Web);
+
+                // Check if user data has been modified since the cache was created.
+                UserUpdatedCacheEntry userCacheEntry = await kinaUnaCacheService.GetUserUpdatedCache(userInfo.UserId);
+                if (userCacheEntry != null)
+                {
+                    // If the user cache entry is found, check if the time stamp is newer than the cache for item permissions.
+                    if (userCacheEntry.UpdateTime < cachedPermissions.UpdateTime)
+                    {
+                        return cachedPermissions.ItemPermissionDictionary;
+                    }
+                }
+                else
+                {
+                    // No user cache entry found, return cached permissions.
+                    return cachedPermissions.ItemPermissionDictionary;
+                }
+
+            }
+
+            return null;
+        }
+
         private async Task<Dictionary<int, PermissionLevel>> AllUsersItemPermissionsDictionary(UserInfo userInfo, TimeLineType type)
         {
             Dictionary<int, PermissionLevel> allPermissions = new();
+
+            // Check cache first.
+            Dictionary<int, PermissionLevel> cachedPermissions = await AllUsersItemPermissionsDictionaryFromCache(userInfo, type);
+            if (cachedPermissions != null)
+            {
+                return cachedPermissions;
+            }
 
             // Only allow one thread per user/type combination to update the cache at a time.
             SemaphoreSlim semaphore = _itemPermissionDictionarySemaphores.GetOrAdd(userInfo.UserId + "_" + (int)type, new SemaphoreSlim(1, 1));
             await semaphore.WaitAsync();
             try
             {
-                string cachedItemPermissions = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion +
-                                                                         "allUsersItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type);
-                if (!string.IsNullOrEmpty(cachedItemPermissions))
+                // Re-check cache inside the lock, it may have been updated while waiting for the lock.
+                cachedPermissions = await AllUsersItemPermissionsDictionaryFromCache(userInfo, type);
+                if (cachedPermissions != null)
                 {
-                    ItemPermissionDictionaryCacheEntry cachedPermissions = JsonSerializer.Deserialize<ItemPermissionDictionaryCacheEntry>(cachedItemPermissions, JsonSerializerOptions.Web);
-
-                    // Check if user data has been modified since the cache was created.
-                    UserUpdatedCacheEntry userCacheEntry = await kinaUnaCacheService.GetUserUpdatedCache(userInfo.UserId);
-                    if (userCacheEntry != null)
-                    {
-                        // If the user cache entry is found, check if the time stamp is newer than the cache for item permissions.
-                        if (userCacheEntry.UpdateTime < cachedPermissions.UpdateTime)
-                        {
-                            return cachedPermissions.ItemPermissionDictionary;
-                        }
-                    }
-                    else
-                    {
-                        // No user cache entry found, return cached permissions.
-                        return cachedPermissions.ItemPermissionDictionary;
-                    }
-
+                    return cachedPermissions;
                 }
-
-
 
                 // Get user specific permissions.
                 List<TimelineItemPermission> timelineItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.UserId == userInfo.UserId && tp.TimelineType == type).ToListAsync();
@@ -3399,10 +3438,10 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             return allPermissions;
         }
 
-        private async Task<List<TimelineItemPermission>> AllUsersTimelineItemPermissions(UserInfo userInfo, TimeLineType type)
+        private async Task<List<TimelineItemPermission>> AllUsersTimelineItemPermissionsFromCache(UserInfo userInfo, TimeLineType type)
         {
             string cachedItemPermissions = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion +
-                                                                     "allUsersTimelineItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type);
+                                                                      "allUsersTimelineItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type);
             if (!string.IsNullOrEmpty(cachedItemPermissions))
             {
                 ItemPermissionListCacheEntry cachedPermissions = JsonSerializer.Deserialize<ItemPermissionListCacheEntry>(cachedItemPermissions, JsonSerializerOptions.Web);
@@ -3420,48 +3459,77 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 {
                     // No user cache entry found, return cached permissions.
                     return cachedPermissions.TimelineItemPermissions;
-                    
+
                 }
             }
 
-            // Get user specific permissions.
-            List<TimelineItemPermission> timelineItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.UserId == userInfo.UserId && tp.TimelineType == type).ToListAsync();
-            // Get group permissions.
-            IEnumerable<UserGroupMember> userGroups = progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ug => ug.UserId == userInfo.UserId);
-            foreach (UserGroupMember group in userGroups)
+            return null;
+        }
+
+        private async Task<List<TimelineItemPermission>> AllUsersTimelineItemPermissions(UserInfo userInfo, TimeLineType type)
+        {
+            // Check cache first.
+            List<TimelineItemPermission> cachedPermissions = await AllUsersTimelineItemPermissionsFromCache(userInfo, type);
+            if (cachedPermissions != null)
             {
-                IEnumerable<TimelineItemPermission> groupPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.GroupId == group.UserGroupId && tp.TimelineType == type);
-                timelineItemPermissions.AddRange(groupPermissions);
-            }
-            // Get inherited permissions.
-            IEnumerable<int> progeniesUserCanAccess = await ProgeniesUserCanAccess(userInfo, PermissionLevel.View); 
-            foreach (int progenyId in progeniesUserCanAccess)
-            {
-                IEnumerable<TimelineItemPermission> inheritedPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
-                    .Where(tp => tp.ProgenyId == progenyId && tp.InheritPermissions && tp.TimelineType == type);
-                timelineItemPermissions.AddRange(inheritedPermissions);
+                return cachedPermissions;
             }
 
-            IEnumerable<int> familiesUserCanAccess = await FamiliesUserCanAccess(userInfo, PermissionLevel.View);
-            foreach (int familyId in familiesUserCanAccess)
+            // Only allow one thread per user/type combination to update the cache at a time.
+            SemaphoreSlim semaphore = _itemPermissionDictionarySemaphores.GetOrAdd(userInfo.UserId + "_" + (int)type, new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
+            try
             {
-                IEnumerable<TimelineItemPermission> inheritedPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
-                    .Where(tp => tp.FamilyId == familyId && tp.InheritPermissions && tp.TimelineType == type);
-                timelineItemPermissions.AddRange(inheritedPermissions);
+                // Re-check cache inside the lock, it may have been updated while waiting for the lock.
+                cachedPermissions = await AllUsersTimelineItemPermissionsFromCache(userInfo, type);
+                if (cachedPermissions != null)
+                {
+                    return cachedPermissions;
+                }
+
+                // Get user specific permissions.
+                List<TimelineItemPermission> timelineItemPermissions = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.UserId == userInfo.UserId && tp.TimelineType == type).ToListAsync();
+                // Get group permissions.
+                IEnumerable<UserGroupMember> userGroups = progenyDbContext.UserGroupMembersDb.AsNoTracking().Where(ug => ug.UserId == userInfo.UserId);
+                foreach (UserGroupMember group in userGroups)
+                {
+                    IEnumerable<TimelineItemPermission> groupPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().Where(tp => tp.GroupId == group.UserGroupId && tp.TimelineType == type);
+                    timelineItemPermissions.AddRange(groupPermissions);
+                }
+                // Get inherited permissions.
+                IEnumerable<int> progeniesUserCanAccess = await ProgeniesUserCanAccess(userInfo, PermissionLevel.View);
+                foreach (int progenyId in progeniesUserCanAccess)
+                {
+                    IEnumerable<TimelineItemPermission> inheritedPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                        .Where(tp => tp.ProgenyId == progenyId && tp.InheritPermissions && tp.TimelineType == type);
+                    timelineItemPermissions.AddRange(inheritedPermissions);
+                }
+
+                IEnumerable<int> familiesUserCanAccess = await FamiliesUserCanAccess(userInfo, PermissionLevel.View);
+                foreach (int familyId in familiesUserCanAccess)
+                {
+                    IEnumerable<TimelineItemPermission> inheritedPermissions = progenyDbContext.TimelineItemPermissionsDb.AsNoTracking()
+                        .Where(tp => tp.FamilyId == familyId && tp.InheritPermissions && tp.TimelineType == type);
+                    timelineItemPermissions.AddRange(inheritedPermissions);
+                }
+
+                ItemPermissionListCacheEntry cacheEntry = new()
+                {
+                    TimelineItemPermissions = timelineItemPermissions,
+                    UpdateTime = DateTime.UtcNow
+                };
+
+                DistributedCacheEntryOptions cacheOptionsSliding = new();
+                cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0));
+                await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "allUsersTimelineItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type
+                    , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSliding);
+
+                return timelineItemPermissions;
             }
-
-            ItemPermissionListCacheEntry cacheEntry = new()
+            finally
             {
-                TimelineItemPermissions = timelineItemPermissions,
-                UpdateTime = DateTime.UtcNow
-            };
-
-            DistributedCacheEntryOptions cacheOptionsSliding = new();
-            cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(1, 0, 0, 0));
-            await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "allUsersTimelineItemPermissions" + "_userId_" + userInfo.UserId + "_type_" + (int)type
-                , JsonSerializer.Serialize(cacheEntry, JsonSerializerOptions.Web), cacheOptionsSliding);
-
-            return timelineItemPermissions;
+                semaphore.Release();
+            }
         }
 
         /// <summary>
