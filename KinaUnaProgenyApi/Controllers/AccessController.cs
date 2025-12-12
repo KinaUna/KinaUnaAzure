@@ -44,7 +44,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             UserInfo userInfo = await userInfoService.GetUserInfoByUserId(model.UserId);
             // Verify that the user exists and the old email matches.
-            if (!model.OldEmail.Equals(userInfo.UserEmail, System.StringComparison.CurrentCultureIgnoreCase))
+            if (userInfo == null || !model.OldEmail.Equals(userInfo.UserEmail, System.StringComparison.CurrentCultureIgnoreCase))
             {
                 return NotFound("User with given id and email could not be found.");
             }
