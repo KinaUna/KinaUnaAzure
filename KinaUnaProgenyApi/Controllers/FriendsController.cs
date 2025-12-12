@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (!await accessManagementService.HasProgenyPermission(value.ProgenyId, currentUserInfo, PermissionLevel.Add))
             {
-                Unauthorized();
+                return Unauthorized();
             }
 
             value.Author = User.GetUserId();
