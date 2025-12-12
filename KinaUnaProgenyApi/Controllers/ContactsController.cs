@@ -233,9 +233,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             value.ModifiedBy = User.GetUserId();
-
-            contactItem.CopyPropertiesForUpdate(value);
-
+            
             // Todo: Refactor move Address handling to ContactService.
             if (contactItem.AddressIdNumber != null && contactItem.AddressIdNumber.Value != 0)
             {
@@ -263,6 +261,8 @@ namespace KinaUnaProgenyApi.Controllers
                     contactItem.AddressIdNumber = address.AddressId;
                 }
             }
+
+            contactItem.CopyPropertiesForUpdate(value);
 
             contactItem = await contactService.UpdateContact(contactItem, currentUserInfo);
             if (contactItem == null)
