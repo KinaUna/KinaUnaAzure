@@ -43,8 +43,12 @@ namespace KinaUnaProgenyApi.Models
 
             foreach (Sleep s in SleepList)
             {
-                DateTimeOffset sOffset = new(s.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
-                DateTimeOffset eOffset = new(s.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
+                TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(userTimeZone);
+                DateTime localStart = TimeZoneInfo.ConvertTimeFromUtc(s.SleepStart, timeZone);
+                DateTime localEnd = TimeZoneInfo.ConvertTimeFromUtc(s.SleepEnd, timeZone);
+                
+                DateTimeOffset sOffset = new(localStart, timeZone.GetUtcOffset(s.SleepStart));
+                DateTimeOffset eOffset = new(localEnd, timeZone.GetUtcOffset(s.SleepEnd));
                 s.SleepDuration = eOffset - sOffset;
             }
         }
