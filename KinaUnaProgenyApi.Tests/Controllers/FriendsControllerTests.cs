@@ -16,7 +16,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
     public class FriendsControllerTests : IDisposable
     {
         private readonly ProgenyDbContext _progenyDbContext;
-        private readonly Mock<IImageStore> _mockImageStore;
         private readonly Mock<IUserInfoService> _mockUserInfoService;
         private readonly Mock<IFriendService> _mockFriendService;
         private readonly Mock<ITimelineService> _mockTimelineService;
@@ -87,7 +86,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             // Setup mocks
-            _mockImageStore = new Mock<IImageStore>();
+            Mock<IImageStore> mockImageStore = new();
             _mockUserInfoService = new Mock<IUserInfoService>();
             _mockFriendService = new Mock<IFriendService>();
             _mockTimelineService = new Mock<ITimelineService>();
@@ -97,7 +96,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Initialize controller
             _controller = new FriendsController(
-                _mockImageStore.Object,
+                mockImageStore.Object,
                 _mockUserInfoService.Object,
                 _mockFriendService.Object,
                 _mockTimelineService.Object,
