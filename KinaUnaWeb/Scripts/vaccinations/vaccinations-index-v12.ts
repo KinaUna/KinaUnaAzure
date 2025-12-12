@@ -4,6 +4,7 @@ import { showPopupAtLoad } from "../item-details/items-display-v12.js";
 import { startTopMenuSpinner, stopTopMenuSpinner } from "../navigation-tools-v12.js";
 import { TimeLineType } from "../page-models-v12.js";
 import { getProgenySelector } from "../shared/progeny-selector-v12.js";
+import { popupVaccinationItem } from "./vaccination-details-v12.js";
 
 declare global {
     interface WindowEventMap {
@@ -20,9 +21,24 @@ async function getVaccinations(progenyId: number): Promise<void> {
                 vaccinationsListTable.innerHTML = vaccinationTableContent;
                 setupVaccinationsDataTable();
                 setEditItemButtonEventListeners();
+                setDetailsButtonEventListeners();
             }
         });
     }
+}
+
+function setDetailsButtonEventListeners(): void {
+    const detailsButtons = document.querySelectorAll<HTMLAnchorElement>('.vaccination-details-button');
+    detailsButtons.forEach((button) => {
+        function detailsButtonClicked(): void {
+            const itemId = button.getAttribute('data-vaccination-item-id');
+            if (itemId) {
+                popupVaccinationItem(itemId);
+            }
+        }
+        button.removeEventListener('click', detailsButtonClicked)
+        button.addEventListener('click', detailsButtonClicked);
+    });
 }
 
 function setupVaccinationsDataTable(): void {
@@ -53,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     await showPopupAtLoad(TimeLineType.Vaccination);
 
     await getVaccinations(currentProgenyId);
-    setEditItemButtonEventListeners();
+    
     addProgenyChangedEventListener();
 
     stopTopMenuSpinner();
