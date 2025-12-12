@@ -59,7 +59,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (!await userInfoService.IsAdminUserId(userId)) return Unauthorized();
 
             language.Name = language.Name?.Trim();
-            await languagesService.AddLanguage(language);
+            language = await languagesService.AddLanguage(language);
 
             return Ok(language);
         }
