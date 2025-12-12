@@ -22,7 +22,6 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         private readonly Mock<ICommentsService> _mockCommentsService;
         private readonly Mock<IProgenyService> _mockProgenyService;
         private readonly Mock<IUserInfoService> _mockUserInfoService;
-        private readonly Mock<IWebNotificationsService> _mockWebNotificationsService;
         private readonly Mock<ITimelineService> _mockTimelineService;
         private readonly Mock<IAccessManagementService> _mockAccessManagementService;
         private readonly PicturesController _controller;
@@ -106,7 +105,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockCommentsService = new Mock<ICommentsService>();
             _mockProgenyService = new Mock<IProgenyService>();
             _mockUserInfoService = new Mock<IUserInfoService>();
-            _mockWebNotificationsService = new Mock<IWebNotificationsService>();
+            Mock<IWebNotificationsService> mockWebNotificationsService = new();
             _mockTimelineService = new Mock<ITimelineService>();
             _mockAccessManagementService = new Mock<IAccessManagementService>();
 
@@ -118,7 +117,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 _mockCommentsService.Object,
                 _mockProgenyService.Object,
                 _mockUserInfoService.Object,
-                _mockWebNotificationsService.Object,
+                mockWebNotificationsService.Object,
                 _mockTimelineService.Object,
                 _mockAccessManagementService.Object
             );
