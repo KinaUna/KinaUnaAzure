@@ -139,7 +139,7 @@ public class BackgroundTasksController(IBackgroundTasksService backgroundTasksSe
         }
 
         CustomResult<KinaUnaBackgroundTask> result = await backgroundTasksService.DeleteTask(id);
-        if (!result.IsFailure)
+        if (result.IsFailure)
         {
             return BadRequest(result.Error?.Message);
         }
